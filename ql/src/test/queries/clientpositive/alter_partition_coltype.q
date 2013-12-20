@@ -19,7 +19,7 @@ insert overwrite table alter_coltype partition(dt=10, ts='3.0') select * from sr
 select count(*) from alter_coltype where dt = '100x';
 explain extended select count(*) from alter_coltype where dt = '100x';
 
-select count(*) from alter_coltype where dt = 100;
+select count(*) from alter_coltype where dt = '100';
 
 -- alter partition key column data type for ts column.
 alter table alter_coltype partition column (ts double);

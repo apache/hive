@@ -241,6 +241,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     private OutputStream out;
     private final JobID jobid;
     private final Configuration conf;
+    boolean needCloseOutput = false;
 
     public Watcher(Configuration conf, JobID jobid, InputStream in, String statusdir, String name)
       throws IOException {
@@ -258,16 +259,18 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
         Path p = new Path(statusdir, name);
         FileSystem fs = p.getFileSystem(conf);
         out = fs.create(p);
+        needCloseOutput = true;
         LOG.info("templeton: Writing status to " + p);
       }
     }
 
     @Override
     public void run() {
+      PrintWriter writer = null;
       try {
         InputStreamReader isr = new InputStreamReader(in);
         BufferedReader reader = new BufferedReader(isr);
-        PrintWriter writer = new PrintWriter(out);
+        writer = new PrintWriter(out);
 
         String line;
         while ((line = reader.readLine()) != null) {
@@ -308,6 +311,15 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
         }
       } catch (IOException e) {
         LOG.error("templeton: execute error: ", e);
+      } finally {
+        // Need to close() because in some FileSystem
+        // implementations flush() is no-op.
+        // Close the file handle if it is a hdfs file.
+        // But if it is stderr/stdout, skip it since
+        // WebHCat is not supposed to close it
+        if (needCloseOutput && writer!=null) {
+          writer.close();
+        }
       }
     }
   }

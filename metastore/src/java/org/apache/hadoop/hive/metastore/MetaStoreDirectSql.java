@@ -745,9 +745,6 @@ class MetaStoreDirectSql {
         return;
       }
 
-      // Force string-based handling in some cases to be compatible with JDO pushdown.
-      boolean forceStringEq = !isStringCol && node.canJdoUseStringsWithIntegral();
-
       if (joins.isEmpty()) {
         // There's a fixed number of partition cols that we might have filters on. To avoid
         // joining multiple times for one column (if there are several filters on it), we will
@@ -765,16 +762,24 @@ class MetaStoreDirectSql {
 
       // Build the filter and add parameters linearly; we are traversing leaf nodes LTR.
       String tableValue = "\"FILTER" + partColIndex + "\".\"PART_KEY_VAL\"";
-      if (!isStringCol && !forceStringEq) {
+      if (node.isReverseOrder) {
+        params.add(node.value);
+      }
+      if (!isStringCol) {
         // The underlying database field is varchar, we need to compare numbers.
+        // Note that this won't work with __HIVE_DEFAULT_PARTITION__. It will fail and fall
+        // back to JDO. That is by design; we could add an ugly workaround here but didn't.
         tableValue = "cast(" + tableValue + " as decimal(21,0))";
+
         // This is a workaround for DERBY-6358; as such, it is pretty horrible.
         tableValue = "(case when \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ? then "
           + tableValue + " else null end)";
         params.add(table.getTableName().toLowerCase());
         params.add(table.getDbName().toLowerCase());
       }
-      params.add(forceStringEq ? node.value.toString() : node.value);
+      if (!node.isReverseOrder) {
+        params.add(node.value);
+      }
 
       filterBuffer.append(node.isReverseOrder
           ? "(? " + node.operator.getSqlOp() + " " + tableValue + ")"

@@ -2114,4 +2114,15 @@
    </description>
 </property>
 
+<property>
+  <name>hive.metastore.integral.jdo.pushdown</name>
+  <value>false</false>
+  <description>
+   Allow JDO query pushdown for integral partition columns in metastore. Off by default. This
+   improves metastore perf for integral columns, especially if there's a large number of partitions.
+   However, it doesn't work correctly with integral values that are not normalized (e.g. have
+   leading zeroes, like 0012). If metastore direct SQL is enabled and works, this optimization
+   is also irrelevant.
+  </description>
+</property>
 </configuration>

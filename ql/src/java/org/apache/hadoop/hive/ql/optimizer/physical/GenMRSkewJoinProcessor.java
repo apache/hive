@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -113,6 +114,14 @@ public final class GenMRSkewJoinProcessor {
     if (!GenMRSkewJoinProcessor.skewJoinEnabled(parseCtx.getConf(), joinOp)) {
       return;
     }
+
+    List<Task<? extends Serializable>> children = currTask.getChildTasks();
+    if (children != null && children.size() > 1) {
+      throw new SemanticException("Should not happened");
+    }
+
+    Task<? extends Serializable> child =
+        children != null && children.size() == 1 ? children.get(0) : null;
 
     String baseTmpDir = parseCtx.getContext().getMRTmpFileURI();
 
@@ -333,25 +342,27 @@ public final class GenMRSkewJoinProcessor {
       listWorks.add(skewJoinMapJoinTask.getWork());
       listTasks.add(skewJoinMapJoinTask);
     }
+    if (children != null) {
+      for (Task<? extends Serializable> tsk : listTasks) {
+        for (Task<? extends Serializable> oldChild : children) {
+          tsk.addDependentTask(oldChild);
+        }
+      }
+    }
+    if (child != null) {
+      listTasks.add(child);
+    }
+    ConditionalResolverSkewJoinCtx context =
+        new ConditionalResolverSkewJoinCtx(bigKeysDirToTaskMap, child);
 
     ConditionalWork cndWork = new ConditionalWork(listWorks);
     ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, parseCtx.getConf());
     cndTsk.setListTasks(listTasks);
     cndTsk.setResolver(new ConditionalResolverSkewJoin());
-    cndTsk
-        .setResolverCtx(new ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx(
-        bigKeysDirToTaskMap));
-    List<Task<? extends Serializable>> oldChildTasks = currTask.getChildTasks();
+    cndTsk.setResolverCtx(context);
     currTask.setChildTasks(new ArrayList<Task<? extends Serializable>>());
     currTask.addDependentTask(cndTsk);
 
-    if (oldChildTasks != null) {
-      for (Task<? extends Serializable> tsk : cndTsk.getListTasks()) {
-        for (Task<? extends Serializable> oldChild : oldChildTasks) {
-          tsk.addDependentTask(oldChild);
-        }
-      }
-    }
     return;
   }
 

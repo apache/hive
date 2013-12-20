@@ -471,10 +471,17 @@ public class MetaStoreUtils {
     }
     return false;
   }
-
+  
+  /*
+   * At the Metadata level there are no restrictions on Column Names.
+   */
+  public static final boolean validateColumnName(String name) {
+    return true;
+  }
+  
   static public String validateTblColumns(List<FieldSchema> cols) {
     for (FieldSchema fieldSchema : cols) {
-      if (!validateName(fieldSchema.getName())) {
+      if (!validateColumnName(fieldSchema.getName())) {
         return "name: " + fieldSchema.getName();
       }
       if (!validateColumnType(fieldSchema.getType())) {
@@ -559,7 +566,7 @@ public class MetaStoreUtils {
       return null;
     }
     for (String col : cols) {
-      if (!validateName(col)) {
+      if (!validateColumnName(col)) {
         return col;
       }
     }

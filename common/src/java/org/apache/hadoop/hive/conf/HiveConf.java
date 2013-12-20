@@ -340,6 +340,9 @@ public class HiveConf extends Configuration {
     METASTORE_EXECUTE_SET_UGI("hive.metastore.execute.setugi", false),
     METASTORE_PARTITION_NAME_WHITELIST_PATTERN(
         "hive.metastore.partition.name.whitelist.pattern", ""),
+    // Whether to enable integral JDO pushdown. For partition columns storing integers
+    // in non-canonical form, (e.g. '012'), it may not work, so it's off by default.
+    METASTORE_INTEGER_JDO_PUSHDOWN("hive.metastore.integral.jdo.pushdown", false),
     METASTORE_TRY_DIRECT_SQL("hive.metastore.try.direct.sql", true),
     METASTORE_TRY_DIRECT_SQL_DDL("hive.metastore.try.direct.sql.ddl", true),
     METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES(
@@ -878,7 +881,13 @@ public class HiveConf extends Configuration {
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none"),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false),
 
-    HIVECOUNTERGROUP("hive.counters.group.name", "HIVE")
+    HIVECOUNTERGROUP("hive.counters.group.name", "HIVE"),
+    
+    // none, column
+    // none is the default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.
+    // column: implies column names can contain any character.
+    HIVE_QUOTEDID_SUPPORT("hive.support.quoted.identifiers", "column",
+        new PatternValidator("none", "column"))
     ;
 
     public final String varname;
