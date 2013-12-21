@@ -64,7 +64,7 @@ import org.apache.hcatalog.cli.HCatDriver;
 import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hcatalog.common.HCatConstants;
 import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hcatalog.data.HCatRecord;
 import org.apache.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hcatalog.data.schema.HCatSchema;
@@ -188,7 +188,7 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
     String databaseName = newTableName("MyDatabase");
     //Table name will be lower case unless specified by hbase.table.name property
     String hbaseTableName = (databaseName + "." + tableName).toLowerCase();
-    String db_dir = getTestDir() + "/hbasedb";
+    String db_dir = HCatUtil.makePathASafeFileName(getTestDir() + "/hbasedb");
 
     String dbquery = "CREATE DATABASE IF NOT EXISTS " + databaseName + " LOCATION '"
         + db_dir + "'";

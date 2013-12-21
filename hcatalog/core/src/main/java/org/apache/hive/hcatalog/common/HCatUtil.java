@@ -21,6 +21,7 @@ package org.apache.hive.hcatalog.common;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -644,5 +645,11 @@ public class HCatUtil {
     if (version.matches("\\b0\\.23\\..+\\b")||version.matches("\\b2\\..*"))
       return true;
     return false;
+  }
+  /**
+   * Used by various tests to make sure the path is safe for Windows
+   */
+  public static String makePathASafeFileName(String filePath) {
+    return new File(filePath).getPath().replaceAll("\\\\", "/");
   }
 }

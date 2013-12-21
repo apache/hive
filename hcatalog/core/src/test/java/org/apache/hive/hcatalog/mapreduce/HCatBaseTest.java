@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.pig.PigServer;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,8 +41,8 @@ import java.io.IOException;
  */
 public class HCatBaseTest {
   protected static final Logger LOG = LoggerFactory.getLogger(HCatBaseTest.class);
-  protected static final String TEST_DATA_DIR =
-      "/tmp/build/test/data/" + HCatBaseTest.class.getCanonicalName();
+  public static final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty("user.dir") +
+          "/build/test/data/" + HCatBaseTest.class.getCanonicalName() + "-" + System.currentTimeMillis());
   protected static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
 
   protected HiveConf hiveConf = null;
