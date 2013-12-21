@@ -165,12 +165,8 @@ public abstract class SkeletonHBaseTest {
     protected int usageCount = 0;
 
     public Context(String handle) {
-      try {
-        testDir = new File(TEST_DIR + "/test_" + handle + "_" + Math.abs(new Random().nextLong()) + "/").getCanonicalPath();
-        System.out.println("Cluster work directory: " + testDir);
-      } catch (IOException e) {
-        throw new IllegalStateException("Failed to generate testDir", e);
-      }
+      testDir = new File(TEST_DIR + "/test_" + handle + "_" + Math.abs(new Random().nextLong()) + "/").getPath();
+      System.out.println("Cluster work directory: " + testDir);
     }
 
     public void start() {

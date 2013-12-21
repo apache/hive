@@ -45,6 +45,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hcatalog.HcatTestUtils;
 import org.apache.hcatalog.common.HCatConstants;
 import org.apache.hcatalog.data.Pair;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.ResourceStatistics;
@@ -60,8 +61,9 @@ import org.junit.Test;
  * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.TestHCatLoader} instead
  */
 public class TestHCatLoader {
-  private static final String TEST_DATA_DIR = System.getProperty("java.io.tmpdir") + File.separator
-      + TestHCatLoader.class.getCanonicalName() + "-" + System.currentTimeMillis();
+  private static final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(
+          System.getProperty("java.io.tmpdir") + File.separator + TestHCatLoader.class.getCanonicalName() + "-" +
+                  System.currentTimeMillis());
   private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   private static final String BASIC_FILE_NAME = TEST_DATA_DIR + "/basic.input.data";
   private static final String COMPLEX_FILE_NAME = TEST_DATA_DIR + "/complex.input.data";
@@ -409,8 +411,8 @@ public class TestHCatLoader {
     assertEquals(0, driver.run("drop table if exists " + tbl).getResponseCode());
     assertEquals(0, driver.run("create external table " + tbl +
       " (a string, b boolean) row format delimited fields terminated by '\t'" +
-      " stored as textfile location 'file://" +
-      inputDataDir.getAbsolutePath() + "'").getResponseCode());
+      " stored as textfile location 'file:///" +
+      inputDataDir.getPath().replaceAll("\\\\", "/") + "'").getResponseCode());
 
     Properties properties = new Properties();
     properties.setProperty(HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER, "true");

@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.DataType;
@@ -138,7 +139,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     String databaseName = newTableName("MyDatabase");
     //Table name will be lower case unless specified by hbase.table.name property
     String hbaseTableName = "testTable";
-    String db_dir = getTestDir() + "/hbasedb";
+    String db_dir = HCatUtil.makePathASafeFileName(getTestDir() + "/hbasedb");
 
     String dbQuery = "CREATE DATABASE IF NOT EXISTS " + databaseName + " LOCATION '"
         + db_dir + "'";
@@ -193,7 +194,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     String databaseName = newTableName("MyDatabase");
     //Table name will be lower case unless specified by hbase.table.name property
     String hbaseTableName = (databaseName + "." + tableName).toLowerCase();
-    String db_dir = getTestDir() + "/hbasedb";
+    String db_dir = HCatUtil.makePathASafeFileName(getTestDir() + "/hbasedb");
 
     String dbQuery = "CREATE DATABASE IF NOT EXISTS " + databaseName + " LOCATION '"
         + db_dir + "'";
@@ -255,7 +256,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     String databaseName = newTableName("MyDatabase");
     //Table name will be lower case unless specified by hbase.table.name property
     String hbaseTableName = (databaseName + "." + tableName).toLowerCase();
-    String db_dir = getTestDir() + "/hbasedb";
+    String db_dir = HCatUtil.makePathASafeFileName(getTestDir() + "/hbasedb");
     String POPTXT_FILE_NAME = db_dir+"testfile.txt";
     float f = -100.1f;
 
