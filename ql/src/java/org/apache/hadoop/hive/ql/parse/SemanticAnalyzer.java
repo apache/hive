@@ -2021,7 +2021,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         	aliasToOpInfo.put(havingInputAlias, input);
         }
 
-        subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias);
+        subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias, aliasToOpInfo.keySet());
 
         QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(), true);
         Operator sqPlanTopOp = genPlanForSubQueryPredicate(qbSQ, subQuery);

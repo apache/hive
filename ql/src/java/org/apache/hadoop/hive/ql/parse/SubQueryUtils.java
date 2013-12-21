@@ -280,6 +280,32 @@ public class SubQueryUtils {
       getTableAliasesInSubQuery(right, aliases);
     }
   }
+  
+  static ASTNode hasUnQualifiedColumnReferences(ASTNode ast) {
+    int type = ast.getType();
+    if ( type == HiveParser.DOT ) {
+      return null;
+    }
+    else if ( type == HiveParser.TOK_TABLE_OR_COL ) {
+      return ast;
+    }
+    
+    for(int i=0; i < ast.getChildCount(); i++ ) {
+      ASTNode c = hasUnQualifiedColumnReferences((ASTNode) ast.getChild(i));
+      if ( c != null ) {
+        return c;
+      }
+    }
+    return null;
+  }
+  
+  static ASTNode subQueryWhere(ASTNode subQueryAST) {
+    if ( subQueryAST.getChild(1).getChildCount() > 2 &&
+        subQueryAST.getChild(1).getChild(2).getType() == HiveParser.TOK_WHERE ) {
+      return (ASTNode) subQueryAST.getChild(1).getChild(2);
+    }
+    return null;
+  }
 
   /*
    * construct the ASTNode for the SQ column that will join with the OuterQuery Expression.
