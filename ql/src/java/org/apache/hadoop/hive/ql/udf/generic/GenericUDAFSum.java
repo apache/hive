@@ -50,7 +50,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
-    throws SemanticException {
+      throws SemanticException {
     if (parameters.length != 1) {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Exactly one argument is expected.");
@@ -59,15 +59,15 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(0,
           "Only primitive type arguments are accepted but "
-          + parameters[0].getTypeName() + " is passed.");
+              + parameters[0].getTypeName() + " is passed.");
     }
     switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
     case BYTE:
     case SHORT:
     case INT:
     case LONG:
-    case TIMESTAMP:
       return new GenericUDAFSumLong();
+    case TIMESTAMP:
     case FLOAT:
     case DOUBLE:
     case STRING:
@@ -81,7 +81,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric or string type arguments are accepted but "
-          + parameters[0].getTypeName() + " is passed.");
+              + parameters[0].getTypeName() + " is passed.");
     }
   }
 
@@ -145,7 +145,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
           LOG.warn(getClass().getSimpleName() + " "
               + StringUtils.stringifyException(e));
           LOG
-              .warn(getClass().getSimpleName()
+          .warn(getClass().getSimpleName()
               + " ignoring similar exceptions.");
         }
       }
@@ -234,7 +234,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
           LOG.warn(getClass().getSimpleName() + " "
               + StringUtils.stringifyException(e));
           LOG
-              .warn(getClass().getSimpleName()
+          .warn(getClass().getSimpleName()
               + " ignoring similar exceptions.");
         }
       }
