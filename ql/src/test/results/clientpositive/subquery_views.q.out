@@ -1,0 +1,145 @@
+PREHOOK: query: -- exists test
+create view cv1 as 
+select * 
+from src b 
+where exists
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: -- exists test
+create view cv1 as 
+select * 
+from src b 
+where exists
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@cv1
+PREHOOK: query: select * 
+from cv1 where cv1.key in (select key from cv1 c where c.key > '95')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cv1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * 
+from cv1 where cv1.key in (select key from cv1 c where c.key > '95')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cv1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: -- not in test
+create view cv2 as 
+select * 
+from src b 
+where b.key not in
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_11'
+  )
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: -- not in test
+create view cv2 as 
+select * 
+from src b 
+where b.key not in
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_11'
+  )
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@cv2
+PREHOOK: query: select * 
+from cv2 where cv2.key in (select key from cv2 c where c.key < '11')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cv2
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * 
+from cv2 where cv2.key in (select key from cv2 c where c.key < '11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cv2
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+105	val_105
+PREHOOK: query: -- in where + having
+create view cv3 as
+select key, value, count(*) 
+from src b
+where b.key in (select key from src where src.key > '8')
+group by key, value
+having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: -- in where + having
+create view cv3 as
+select key, value, count(*) 
+from src b
+where b.key in (select key from src where src.key > '8')
+group by key, value
+having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@cv3
+PREHOOK: query: select * from cv3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cv3
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cv3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cv3
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+80	val_80	1
+82	val_82	1
+85	val_85	1
+86	val_86	1
+87	val_87	1
+9	val_9	1
+92	val_92	1
+96	val_96	1
+83	val_83	2
+84	val_84	2
+97	val_97	2
+95	val_95	2
+98	val_98	2
+90	val_90	3
+PREHOOK: query: -- join of subquery views
+select *
+from cv3
+where cv3.key in (select key from cv1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cv1
+PREHOOK: Input: default@cv3
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- join of subquery views
+select *
+from cv3
+where cv3.key in (select key from cv1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cv1
+POSTHOOK: Input: default@cv3
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+90	val_90	3
+92	val_92	1
+95	val_95	2
+96	val_96	1
+97	val_97	2
+98	val_98	2
