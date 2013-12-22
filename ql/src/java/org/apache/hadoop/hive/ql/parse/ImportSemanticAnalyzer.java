@@ -281,10 +281,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private Task<?> loadTable(URI fromURI, Table table) {
     Path dataPath = new Path(fromURI.toString(), "data");
-    String tmpURI = ctx.getExternalTmpFileURI(fromURI);
-    Task<?> copyTask = TaskFactory.get(new CopyWork(dataPath.toString(),
-        tmpURI, false), conf);
-    LoadTableDesc loadTableWork = new LoadTableDesc(tmpURI.toString(),
+    Path tmpPath = new Path(ctx.getExternalTmpFileURI(fromURI));
+    Task<?> copyTask = TaskFactory.get(new CopyWork(dataPath,
+       tmpPath, false), conf);
+    LoadTableDesc loadTableWork = new LoadTableDesc(tmpPath,
         ctx.getExternalTmpFileURI(fromURI),
         Utilities.getTableDesc(table), new TreeMap<String, String>(),
         false);
@@ -326,12 +326,12 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("adding dependent CopyWork/AddPart/MoveWork for partition "
           + partSpecToString(addPartitionDesc.getPartSpec())
           + " with source location: " + srcLocation);
-      String tmpURI = ctx.getExternalTmpFileURI(fromURI);
-      Task<?> copyTask = TaskFactory.get(new CopyWork(srcLocation,
-          tmpURI, false), conf);
+      Path tmpPath = new Path(ctx.getExternalTmpFileURI(fromURI));
+      Task<?> copyTask = TaskFactory.get(new CopyWork(new Path(srcLocation),
+          tmpPath, false), conf);
       Task<?> addPartTask = TaskFactory.get(new DDLWork(getInputs(),
           getOutputs(), addPartitionDesc), conf);
-      LoadTableDesc loadTableWork = new LoadTableDesc(tmpURI,
+      LoadTableDesc loadTableWork = new LoadTableDesc(tmpPath,
           ctx.getExternalTmpFileURI(fromURI),
           Utilities.getTableDesc(table),
           addPartitionDesc.getPartSpec(), true);

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -349,7 +350,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     // 2. Constructing a conditional task consisting of a move task and a map reduce task
     //
     MoveWork dummyMv = new MoveWork(null, null, null,
-        new LoadFileDesc(fsInputDesc.getFinalDirName(), finalName, true, null, null), false);
+        new LoadFileDesc(new Path(fsInputDesc.getFinalDirName()), finalName, true, null, null), false);
     MapWork cplan;
     Serializable work;
 

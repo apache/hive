@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.fs.Path;
+
 /**
  * CopyWork.
  *
@@ -27,39 +29,39 @@ import java.io.Serializable;
 @Explain(displayName = "Copy")
 public class CopyWork implements Serializable {
   private static final long serialVersionUID = 1L;
-  private String fromPath;
-  private String toPath;
+  private Path fromPath;
+  private Path toPath;
   private boolean errorOnSrcEmpty;
 
   public CopyWork() {
   }
 
-  public CopyWork(final String fromPath, final String toPath) {
+  public CopyWork(final Path fromPath, final Path toPath) {
     this(fromPath, toPath, true);
   }
 
-  public CopyWork(final String fromPath, final String toPath, boolean errorOnSrcEmpty) {
+  public CopyWork(final Path fromPath, final Path toPath, boolean errorOnSrcEmpty) {
     this.fromPath = fromPath;
     this.toPath = toPath;
     this.setErrorOnSrcEmpty(errorOnSrcEmpty);
   }
 
   @Explain(displayName = "source")
-  public String getFromPath() {
+  public String getFromPathAsString() {
+    return fromPath.toUri().toString();
+  }
+  
+  @Explain(displayName = "destination")
+  public String getToPathAsString() {
+    return toPath.toUri().toString();
+  }
+
+  public Path getFromPath() {
     return fromPath;
   }
 
-  public void setFromPath(final String fromPath) {
-    this.fromPath = fromPath;
-  }
-
-  @Explain(displayName = "destination")
-  public String getToPath() {
+  public Path getToPath() {
     return toPath;
-  }
-
-  public void setToPath(final String toPath) {
-    this.toPath = toPath;
   }
 
   public void setErrorOnSrcEmpty(boolean errorOnSrcEmpty) {
@@ -69,4 +71,5 @@ public class CopyWork implements Serializable {
   public boolean isErrorOnSrcEmpty() {
     return errorOnSrcEmpty;
   }
+
 }

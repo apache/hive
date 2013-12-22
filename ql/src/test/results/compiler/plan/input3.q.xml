@@ -381,9 +381,6 @@
                       <void property="isDfsDir"> 
                        <boolean>true</boolean> 
                       </void> 
-                      <void property="sourceDir"> 
-                       #### A masked pattern was here #### 
-                      </void> 
                       <void property="targetDir"> 
                        #### A masked pattern was here #### 
                       </void> 
@@ -423,9 +420,6 @@
                   </void> 
                   <void property="replace"> 
                    <boolean>true</boolean> 
-                  </void> 
-                  <void property="sourceDir"> 
-                   #### A masked pattern was here #### 
                   </void> 
                   <void property="table"> 
                    <object idref="TableDesc0"/> 
@@ -870,9 +864,6 @@
                       <void property="isDfsDir"> 
                        <boolean>true</boolean> 
                       </void> 
-                      <void property="sourceDir"> 
-                       #### A masked pattern was here #### 
-                      </void> 
                       <void property="targetDir"> 
                        #### A masked pattern was here #### 
                       </void> 
@@ -912,9 +903,6 @@
                   </void> 
                   <void property="replace"> 
                    <boolean>true</boolean> 
-                  </void> 
-                  <void property="sourceDir"> 
-                   #### A masked pattern was here #### 
                   </void> 
                   <void property="table"> 
                    <object idref="TableDesc1"/> 
@@ -1363,9 +1351,6 @@
                       <void property="isDfsDir"> 
                        <boolean>true</boolean> 
                       </void> 
-                      <void property="sourceDir"> 
-                       #### A masked pattern was here #### 
-                      </void> 
                       <void property="targetDir"> 
                        #### A masked pattern was here #### 
                       </void> 
@@ -1414,9 +1399,6 @@
                   </void> 
                   <void property="replace"> 
                    <boolean>true</boolean> 
-                  </void> 
-                  <void property="sourceDir"> 
-                   #### A masked pattern was here #### 
                   </void> 
                   <void property="table"> 
                    <object idref="TableDesc2"/> 
@@ -1748,9 +1730,6 @@
                       <void property="isDfsDir"> 
                        <boolean>true</boolean> 
                       </void> 
-                      <void property="sourceDir"> 
-                       #### A masked pattern was here #### 
-                      </void> 
                       <void property="targetDir"> 
                        #### A masked pattern was here #### 
                       </void> 
@@ -1774,9 +1753,6 @@
                   </void> 
                   <void property="isDfsDir"> 
                    <boolean>true</boolean> 
-                  </void> 
-                  <void property="sourceDir"> 
-                   #### A masked pattern was here #### 
                   </void> 
                   <void property="targetDir"> 
                    <string>../../../../build/contrib/hive/ql/test/data/warehouse/dest4.out</string> 

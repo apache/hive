@@ -15,3 +15,9 @@ PREHOOK: Output: default@load_file_with_space_in_the_name
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person age.txt' INTO TABLE load_file_with_space_in_the_name
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_file_with_space_in_the_name
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person+age.txt' INTO TABLE load_file_with_space_in_the_name
+PREHOOK: type: LOAD
+PREHOOK: Output: default@load_file_with_space_in_the_name
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person+age.txt' INTO TABLE load_file_with_space_in_the_name
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@load_file_with_space_in_the_name
