@@ -83,9 +83,6 @@
               <void property="replace"> 
                <boolean>true</boolean> 
               </void> 
-              <void property="sourceDir"> 
-               #### A masked pattern was here #### 
-              </void> 
               <void property="table"> 
                <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                 <void property="inputFileFormatClass"> 
