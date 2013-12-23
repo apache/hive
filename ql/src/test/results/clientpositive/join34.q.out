@@ -100,6 +100,8 @@ STAGE PLANS:
                       1 [Column[key]]
                     outputColumnNames: _col1, _col2, _col3
                     Position of Big Table: 0
+                    Statistics:
+                        numRows: 19 dataSize: 3966 basicStatsState: COMPLETE colStatsState: NONE
                     Select Operator
                       expressions:
                             expr: _col2
@@ -174,6 +176,8 @@ STAGE PLANS:
                       1 [Column[key]]
                     outputColumnNames: _col1, _col2, _col3
                     Position of Big Table: 0
+                    Statistics:
+                        numRows: 19 dataSize: 3966 basicStatsState: COMPLETE colStatsState: NONE
                     Select Operator
                       expressions:
                             expr: _col2
