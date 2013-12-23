@@ -252,7 +252,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           FileSystem fs;
           try {
             fs = FileSystem.get(table.getDataLocation(), conf);
-            dirs = fs.globStatus(new Path(tbd.getSourceDir()));
+            dirs = fs.globStatus(tbd.getSourcePath());
             files = new ArrayList<FileStatus>();
             for (int i = 0; (dirs != null && i < dirs.length); i++) {
               files.addAll(Arrays.asList(fs.listStatus(dirs[i].getPath())));

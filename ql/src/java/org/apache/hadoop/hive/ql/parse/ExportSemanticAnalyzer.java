@@ -91,7 +91,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
       Path path = new Path(tmpfile, "_metadata");
       EximUtil.createExportDump(FileSystem.getLocal(conf), path, ts.tableHandle, partitions);
       Task<? extends Serializable> rTask = TaskFactory.get(new CopyWork(
-          path.toString(), toURI.toString(), false), conf);
+          path, new Path(toURI), false), conf);
       rootTasks.add(rTask);
       LOG.debug("_metadata file written into " + path.toString()
           + " and then copied to " + toURI.toString());
@@ -108,7 +108,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
         URI fromURI = partition.getDataLocation();
         Path toPartPath = new Path(parentPath, partition.getName());
         Task<? extends Serializable> rTask = TaskFactory.get(
-            new CopyWork(fromURI.toString(), toPartPath.toString(), false),
+            new CopyWork(new Path(fromURI), toPartPath, false),
             conf);
         rootTasks.add(rTask);
         inputs.add(new ReadEntity(partition));
@@ -117,7 +117,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
       URI fromURI = ts.tableHandle.getDataLocation();
       Path toDataPath = new Path(parentPath, "data");
       Task<? extends Serializable> rTask = TaskFactory.get(new CopyWork(
-          fromURI.toString(), toDataPath.toString(), false), conf);
+          new Path(fromURI), toDataPath, false), conf);
       rootTasks.add(rTask);
       inputs.add(new ReadEntity(ts.tableHandle));
     }

@@ -86,7 +86,7 @@ fromClause
 joinSource
 @init { gParent.msgs.push("join source"); }
 @after { gParent.msgs.pop(); }
-    : fromSource ( joinToken^ fromSource (KW_ON! expression)? )*
+    : fromSource ( joinToken^ fromSource ( KW_ON! expression {$joinToken.start.getType() != COMMA}? )? )*
     | uniqueJoinToken^ uniqueJoinSource (COMMA! uniqueJoinSource)+
     ;
 
@@ -114,6 +114,7 @@ joinToken
     :
       KW_JOIN                      -> TOK_JOIN
     | KW_INNER KW_JOIN             -> TOK_JOIN
+    | COMMA                        -> TOK_JOIN
     | KW_CROSS KW_JOIN             -> TOK_CROSSJOIN
     | KW_LEFT  (KW_OUTER)? KW_JOIN -> TOK_LEFTOUTERJOIN
     | KW_RIGHT (KW_OUTER)? KW_JOIN -> TOK_RIGHTOUTERJOIN
@@ -125,10 +126,10 @@ lateralView
 @init {gParent.msgs.push("lateral view"); }
 @after {gParent.msgs.pop(); }
 	:
-	KW_LATERAL KW_VIEW KW_OUTER function tableAlias (KW_AS identifier (COMMA identifier)*)?
+	KW_LATERAL KW_VIEW KW_OUTER function tableAlias (KW_AS identifier ((COMMA)=> COMMA identifier)*)?
 	-> ^(TOK_LATERAL_VIEW_OUTER ^(TOK_SELECT ^(TOK_SELEXPR function identifier* tableAlias)))
 	|
-	KW_LATERAL KW_VIEW function tableAlias (KW_AS identifier (COMMA identifier)*)?
+	KW_LATERAL KW_VIEW function tableAlias (KW_AS identifier ((COMMA)=> COMMA identifier)*)?
 	-> ^(TOK_LATERAL_VIEW ^(TOK_SELECT ^(TOK_SELEXPR function identifier* tableAlias)))
 	;
 

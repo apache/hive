@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10249]: Line 5:6 Unsupported SubQuery Expression 'key': Correlating expression cannot contain unqualified column references.

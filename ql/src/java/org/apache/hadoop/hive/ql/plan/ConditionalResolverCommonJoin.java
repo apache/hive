@@ -48,8 +48,8 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     HashMap<String, Long> aliasToKnownSize;
     private Task<? extends Serializable> commonJoinTask;
 
-    private String localTmpDir;
-    private String hdfsTmpDir;
+    private Path localTmpDir;
+    private Path hdfsTmpDir;
 
     public ConditionalResolverCommonJoinCtx() {
     }
@@ -86,19 +86,19 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       this.pathToAliases = pathToAliases;
     }
 
-    public String getLocalTmpDir() {
+    public Path getLocalTmpDir() {
       return localTmpDir;
     }
 
-    public void setLocalTmpDir(String localTmpDir) {
+    public void setLocalTmpDir(Path localTmpDir) {
       this.localTmpDir = localTmpDir;
     }
 
-    public String getHdfsTmpDir() {
+    public Path getHdfsTmpDir() {
       return hdfsTmpDir;
     }
 
-    public void setHdfsTmpDir(String hdfsTmpDir) {
+    public void setHdfsTmpDir(Path hdfsTmpDir) {
       this.hdfsTmpDir = hdfsTmpDir;
     }
   }
@@ -155,8 +155,8 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
   private String resolveMapJoinTask(
       HashMap<String, ArrayList<String>> pathToAliases,
       HashMap<String, Task<? extends Serializable>> aliasToTask,
-      HashMap<String, Long> aliasToKnownSize, String hdfsTmpDir,
-      String localTmpDir, HiveConf conf) {
+      HashMap<String, Long> aliasToKnownSize, Path hdfsTmpDir,
+      Path localTmpDir, HiveConf conf) {
 
     String bigTableFileAlias = null;
     long smallTablesFileSizeSum = 0;
@@ -175,7 +175,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
           .entrySet()) {
         String p = oneEntry.getKey();
         // this path is intermediate data
-        if (p.startsWith(hdfsTmpDir) || p.startsWith(localTmpDir)) {
+        if (p.startsWith(hdfsTmpDir.toString()) || p.startsWith(localTmpDir.toString())) {
           ArrayList<String> aliasArray = oneEntry.getValue();
           if (aliasArray.size() <= 0) {
             continue;

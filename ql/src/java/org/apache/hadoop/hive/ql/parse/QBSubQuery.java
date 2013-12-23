@@ -2,6 +2,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -375,12 +376,14 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     }
     
     public ASTNode getSubQueryAST() {
-      return SubQueryUtils.buildNotInNullCheckQuery(
+      ASTNode ast = SubQueryUtils.buildNotInNullCheckQuery(
           QBSubQuery.this.getSubQueryAST(), 
           QBSubQuery.this.getAlias(), 
           CNT_ALIAS, 
           subQryCorrExprs,
           sqRR);
+      SubQueryUtils.setOriginDeep(ast, QBSubQuery.this.originalSQASTOrigin);
+      return ast;
     }
     
     public String getAlias() {
@@ -392,8 +395,10 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     }
     
     public ASTNode getJoinConditionAST() {
-      return 
+      ASTNode ast = 
           SubQueryUtils.buildNotInNullJoinCond(getAlias(), CNT_ALIAS);
+      SubQueryUtils.setOriginDeep(ast, QBSubQuery.this.originalSQASTOrigin);
+      return ast;
     }
     
     public QBSubQuery getSubQuery() {
@@ -475,13 +480,52 @@ public class QBSubQuery implements ISubQueryJoinInfo {
 
   void validateAndRewriteAST(RowResolver outerQueryRR,
 		  boolean forHavingClause,
-		  String outerQueryAlias) throws SemanticException {
+		  String outerQueryAlias,
+		  Set<String> outerQryAliases) throws SemanticException {
 
     ASTNode selectClause = (ASTNode) subQueryAST.getChild(1).getChild(1);
 
     int selectExprStart = 0;
     if ( selectClause.getChild(0).getType() == HiveParser.TOK_HINTLIST ) {
       selectExprStart = 1;
+    }
+    
+    /*
+     * Restriction.16.s :: Correlated Expression in Outer Query must not contain
+     * unqualified column references.
+     */
+    if ( parentQueryExpression != null && !forHavingClause ) { 
+        ASTNode u = SubQueryUtils.hasUnQualifiedColumnReferences(parentQueryExpression);
+        if ( u != null ) {
+          subQueryAST.setOrigin(originalSQASTOrigin);
+          throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+              u, "Correlating expression cannot contain unqualified column references."));
+        }
+    }
+    
+    /*
+     * Restriction 17.s :: SubQuery cannot use the same table alias as one used in
+     * the Outer Query.
+     */
+    List<String> sqAliases = SubQueryUtils.getTableAliasesInSubQuery(this);
+    String sharedAlias = null;
+    for(String s : sqAliases ) {
+      if ( outerQryAliases.contains(s) ) {
+        sharedAlias = s;
+      }
+    }
+    if ( sharedAlias != null) {
+      ASTNode whereClause = SubQueryUtils.subQueryWhere(subQueryAST);
+      
+      if ( whereClause != null ) {
+        ASTNode u = SubQueryUtils.hasUnQualifiedColumnReferences(whereClause);
+        if ( u != null ) {
+          subQueryAST.setOrigin(originalSQASTOrigin);
+          throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+              u, "SubQuery cannot use the table alias: " + sharedAlias + "; " +
+              		"this is also an alias in the Outer Query and SubQuery contains a unqualified column reference"));
+        }
+      }
     }
 
     /*
@@ -491,6 +535,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     if ( operator.getType() != SubQueryType.EXISTS &&
         operator.getType() != SubQueryType.NOT_EXISTS &&
         selectClause.getChildCount() - selectExprStart > 1 ) {
+      subQueryAST.setOrigin(originalSQASTOrigin);
       throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
           subQueryAST, "SubQuery can contain only 1 item in Select List."));
     }
@@ -675,11 +720,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
 		  boolean forHavingClause,
 		  String outerQueryAlias) throws SemanticException {
     ASTNode selectClause = (ASTNode) subQueryAST.getChild(1).getChild(1);
-    ASTNode whereClause = null;
-    if ( subQueryAST.getChild(1).getChildCount() > 2 &&
-        subQueryAST.getChild(1).getChild(2).getType() == HiveParser.TOK_WHERE ) {
-      whereClause = (ASTNode) subQueryAST.getChild(1).getChild(2);
-    }
+    ASTNode whereClause = SubQueryUtils.subQueryWhere(subQueryAST);
 
     if ( whereClause == null ) {
       return;

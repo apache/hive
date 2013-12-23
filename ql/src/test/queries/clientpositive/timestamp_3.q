@@ -16,4 +16,6 @@ select cast(t as float) from timestamp_3 limit 1;
 select cast(t as double) from timestamp_3 limit 1;
 select cast(t as string) from timestamp_3 limit 1;
 
+select t, sum(t), count(*), sum(t)/count(*), avg(t) from timestamp_3 group by t;
+
 drop table timestamp_3;

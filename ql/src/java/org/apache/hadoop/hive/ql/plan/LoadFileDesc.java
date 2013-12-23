@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.fs.Path;
+
 /**
  * LoadFileDesc.
  *
@@ -36,10 +38,10 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   public LoadFileDesc() {
   }
 
-  public LoadFileDesc(final CreateTableDesc createTableDesc, final String sourceDir,
+  public LoadFileDesc(final CreateTableDesc createTableDesc, final Path sourcePath,
       final String targetDir,
       final boolean isDfsDir, final String columns, final String columnTypes) {
-    this(sourceDir, targetDir, isDfsDir, columns, columnTypes);
+    this(sourcePath, targetDir, isDfsDir, columns, columnTypes);
     if (createTableDesc != null && createTableDesc.getDatabaseName() != null
         && createTableDesc.getTableName() != null) {
       destinationCreateTable = (createTableDesc.getTableName().contains(".") ? "" : createTableDesc
@@ -48,10 +50,10 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     }
   }
 
-  public LoadFileDesc(final String sourceDir, final String targetDir,
+  public LoadFileDesc(final Path sourcePath, final String targetDir,
       final boolean isDfsDir, final String columns, final String columnTypes) {
 
-    super(sourceDir);
+    super(sourcePath);
     this.targetDir = targetDir;
     this.isDfsDir = isDfsDir;
     this.columns = columns;

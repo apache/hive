@@ -127,7 +127,7 @@ public class TezTask extends Task<TezWork> {
 
       // we will localize all the files (jars, plans, hashtables) to the
       // scratch dir. let's create this first.
-      Path scratchDir = new Path(ctx.getMRScratchDir());
+      Path scratchDir = ctx.getMRScratchDir();
 
       // create the tez tmp dir
       utils.createTezDir(scratchDir, conf);
