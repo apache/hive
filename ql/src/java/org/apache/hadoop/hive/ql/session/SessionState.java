@@ -831,9 +831,13 @@ public class SessionState {
     }
 
     try {
-      tezSessionState.close(false);
+      if (tezSessionState != null) {
+        tezSessionState.close(false);
+      }
     } catch (Exception e) {
       LOG.info("Error closing tez session", e);
+    } finally {
+      tezSessionState = null;
     }
   }
 
