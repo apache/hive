@@ -78,7 +78,7 @@ public class Context {
   private final String scratchDirPermission;
 
   // Keeps track of scratch directories created for different scheme/authority
-  private final Map<String, String> fsScratchDirs = new HashMap<String, String>();
+  private final Map<String, Path> fsScratchDirs = new HashMap<String, Path>();
 
   private final Configuration conf;
   protected int pathid = 10000;
@@ -189,11 +189,11 @@ public class Context {
    * @param mkdir create the directory if true
    * @param scratchDir path of tmp directory
    */
-  private String getScratchDir(String scheme, String authority,
+  private Path getScratchDir(String scheme, String authority,
                                boolean mkdir, String scratchDir) {
 
     String fileSystem =  scheme + ":" + authority;
-    String dir = fsScratchDirs.get(fileSystem + "-" + TaskRunner.getTaskRunnerID());
+    Path dir = fsScratchDirs.get(fileSystem + "-" + TaskRunner.getTaskRunnerID());
 
     if (dir == null) {
       Path dirPath = new Path(scheme, authority,
@@ -216,7 +216,7 @@ public class Context {
           throw new RuntimeException (e);
         }
       }
-      dir = dirPath.toString();
+      dir = dirPath;
       fsScratchDirs.put(fileSystem + "-" + TaskRunner.getTaskRunnerID(), dir);
 
     }
@@ -227,7 +227,7 @@ public class Context {
   /**
    * Create a local scratch directory on demand and return it.
    */
-  public String getLocalScratchDir(boolean mkdir) {
+  public Path getLocalScratchDir(boolean mkdir) {
     try {
       FileSystem fs = FileSystem.getLocal(conf);
       URI uri = fs.getUri();
@@ -243,7 +243,7 @@ public class Context {
    * Create a map-reduce scratch directory on demand and return it.
    *
    */
-  public String getMRScratchDir() {
+  public Path getMRScratchDir() {
 
     // if we are executing entirely on the client side - then
     // just (re)use the local scratch directory
@@ -254,7 +254,7 @@ public class Context {
     try {
       Path dir = FileUtils.makeQualified(nonLocalScratchPath, conf);
       URI uri = dir.toUri();
-      String newScratchDir = getScratchDir(uri.getScheme(), uri.getAuthority(),
+      Path newScratchDir = getScratchDir(uri.getScheme(), uri.getAuthority(),
                            !explain, uri.getPath());
       LOG.info("New scratch dir is " + newScratchDir);
       return newScratchDir;
@@ -266,7 +266,7 @@ public class Context {
     }
   }
 
-  private String getExternalScratchDir(URI extURI) {
+  private Path getExternalScratchDir(URI extURI) {
     return getScratchDir(extURI.getScheme(), extURI.getAuthority(),
                          !explain, nonLocalScratchPath.toUri().getPath());
   }
@@ -275,9 +275,9 @@ public class Context {
    * Remove any created scratch directories.
    */
   private void removeScratchDir() {
-    for (Map.Entry<String, String> entry : fsScratchDirs.entrySet()) {
+    for (Map.Entry<String, Path> entry : fsScratchDirs.entrySet()) {
       try {
-        Path p = new Path(entry.getValue());
+        Path p = entry.getValue();
         p.getFileSystem(conf).delete(p, true);
       } catch (Exception e) {
         LOG.warn("Error Removing Scratch: "
@@ -328,7 +328,7 @@ public class Context {
    */
   public String localizeMRTmpFileURI(String originalURI) {
     Path o = new Path(originalURI);
-    Path mrbase = new Path(getMRScratchDir());
+    Path mrbase = getMRScratchDir();
 
     URI relURI = mrbase.toUri().relativize(o.toUri());
     if (relURI.equals(o.toUri())) {

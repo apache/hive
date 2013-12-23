@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10249]: Line 5:44 Unsupported SubQuery Expression 'key': SubQuery cannot use the table alias: src; this is also an alias in the Outer Query and SubQuery contains a unqualified column reference

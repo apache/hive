@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
+
 /**
  * LoadTableDesc.
  *
@@ -45,32 +47,32 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
     this.holdDDLTime = false;
   }
 
-  public LoadTableDesc(final String sourceDir, final String tmpDir,
+  public LoadTableDesc(final Path sourcePath, final String tmpDir,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec, final boolean replace) {
-    super(sourceDir);
-    init(sourceDir, tmpDir, table, partitionSpec, replace);
+    super(sourcePath);
+    init(tmpDir, table, partitionSpec, replace);
   }
 
-  public LoadTableDesc(final String sourceDir, final String tmpDir,
+  public LoadTableDesc(final Path sourcePath, final String tmpDir,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec) {
-    this(sourceDir, tmpDir, table, partitionSpec, true);
+    this(sourcePath, tmpDir, table, partitionSpec, true);
   }
 
-  public LoadTableDesc(final String sourceDir, final String tmpDir,
+  public LoadTableDesc(final Path sourcePath, final String tmpDir,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final DynamicPartitionCtx dpCtx) {
-    super(sourceDir);
+    super(sourcePath);
     this.dpCtx = dpCtx;
     if (dpCtx != null && dpCtx.getPartSpec() != null && partitionSpec == null) {
-      init(sourceDir, tmpDir, table, dpCtx.getPartSpec(), true);
+      init(tmpDir, table, dpCtx.getPartSpec(), true);
     } else {
-      init(sourceDir, tmpDir, table, new LinkedHashMap<String, String>(), true);
+      init(tmpDir, table, new LinkedHashMap<String, String>(), true);
     }
   }
 
-  private void init(final String sourceDir, final String tmpDir,
+  private void init(final String tmpDir,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec, final boolean replace) {
     this.tmpDir = tmpDir;

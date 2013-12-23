@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -2021,7 +2022,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         	aliasToOpInfo.put(havingInputAlias, input);
         }
 
-        subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias);
+        subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias, aliasToOpInfo.keySet());
 
         QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(), true);
         Operator sqPlanTopOp = genPlanForSubQueryPredicate(qbSQ, subQuery);
@@ -5354,7 +5355,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Create the work for moving the table
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
       if (!isNonNativeTable) {
-        ltd = new LoadTableDesc(queryTmpdir, ctx.getExternalTmpFileURI(dest_path.toUri()),
+        ltd = new LoadTableDesc(new Path(queryTmpdir), ctx.getExternalTmpFileURI(dest_path.toUri()),
             table_desc, dpCtx);
         ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
             dest_tab.getTableName()));
@@ -5438,7 +5439,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       lbCtx = constructListBucketingCtx(dest_part.getSkewedColNames(),
           dest_part.getSkewedColValues(), dest_part.getSkewedColValueLocationMaps(),
           dest_part.isStoredAsSubDirectories(), conf);
-      ltd = new LoadTableDesc(queryTmpdir, ctx.getExternalTmpFileURI(dest_path.toUri()),
+      ltd = new LoadTableDesc(new Path(queryTmpdir), ctx.getExternalTmpFileURI(dest_path.toUri()),
           table_desc, dest_part.getSpec());
       ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
           dest_tab.getTableName()));
@@ -5560,7 +5561,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
-      loadFileWork.add(new LoadFileDesc(tblDesc, queryTmpdir, destStr, isDfsDir, cols,
+      loadFileWork.add(new LoadFileDesc(tblDesc, new Path(queryTmpdir), destStr, isDfsDir, cols,
           colTypes));
 
       if (tblDesc == null) {

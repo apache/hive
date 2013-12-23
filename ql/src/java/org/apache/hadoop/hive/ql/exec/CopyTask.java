@@ -26,7 +26,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
@@ -51,8 +50,8 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
     FileSystem dstFs = null;
     Path toPath = null;
     try {
-      Path fromPath = new Path(work.getFromPath());
-      toPath = new Path(work.getToPath());
+      Path fromPath = work.getFromPath();
+      toPath = work.getToPath();
 
       console.printInfo("Copying data from " + fromPath.toString(), " to "
           + toPath.toString());
@@ -61,7 +60,6 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       dstFs = toPath.getFileSystem(conf);
 
       FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
-
       if (srcs == null || srcs.length == 0) {
         if (work.isErrorOnSrcEmpty()) {
           console.printError("No files matching path: " + fromPath.toString());
