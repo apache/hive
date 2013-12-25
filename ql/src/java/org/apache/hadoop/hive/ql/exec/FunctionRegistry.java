@@ -54,10 +54,6 @@ import org.apache.hadoop.hive.ql.udf.UDFBase64;
 import org.apache.hadoop.hive.ql.udf.UDFBin;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFCos;
-import org.apache.hadoop.hive.ql.udf.UDFDate;
-import org.apache.hadoop.hive.ql.udf.UDFDateAdd;
-import org.apache.hadoop.hive.ql.udf.UDFDateDiff;
-import org.apache.hadoop.hive.ql.udf.UDFDateSub;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFDegrees;
 import org.apache.hadoop.hive.ql.udf.UDFE;
@@ -261,12 +257,12 @@ public final class FunctionRegistry {
     registerUDF("minute", UDFMinute.class, false);
     registerUDF("second", UDFSecond.class, false);
     registerUDF("from_unixtime", UDFFromUnixTime.class, false);
-    registerUDF("to_date", UDFDate.class, false);
+    registerGenericUDF("to_date", GenericUDFDate.class);
     registerUDF("weekofyear", UDFWeekOfYear.class, false);
 
-    registerUDF("date_add", UDFDateAdd.class, false);
-    registerUDF("date_sub", UDFDateSub.class, false);
-    registerUDF("datediff", UDFDateDiff.class, false);
+    registerGenericUDF("date_add", GenericUDFDateAdd.class);
+    registerGenericUDF("date_sub", GenericUDFDateSub.class);
+    registerGenericUDF("datediff", GenericUDFDateDiff.class);
 
     registerUDF("get_json_object", UDFJson.class, false);
 
