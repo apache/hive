@@ -2549,3 +2549,1347 @@ POSTHOOK: Lineage: part_table PARTITION(partitionid=1).value SIMPLE [(src)src.Fi
 POSTHOOK: Lineage: part_table PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 121
+PREHOOK: query: -- HIVE-5891 Alias conflict when merging multiple mapjoin tasks into their common
+-- child mapred task
+EXPLAIN   
+SELECT * FROM (
+  SELECT c.key FROM
+    (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
+    JOIN src c ON tmp.key=c.key
+  UNION ALL
+  SELECT c.key FROM
+    (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
+    JOIN src c ON tmp.key=c.key
+) x
+PREHOOK: type: QUERY
+POSTHOOK: query: -- HIVE-5891 Alias conflict when merging multiple mapjoin tasks into their common
+-- child mapred task
+EXPLAIN   
+SELECT * FROM (
+  SELECT c.key FROM
+    (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
+    JOIN src c ON tmp.key=c.key
+  UNION ALL
+  SELECT c.key FROM
+    (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
+    JOIN src c ON tmp.key=c.key
+) x
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL a) key)))) tmp) (TOK_TABREF (TOK_TABNAME src) c) (= (. (TOK_TABLE_OR_COL tmp) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) key))))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL a) key)))) tmp) (TOK_TABREF (TOK_TABNAME src) c) (= (. (TOK_TABLE_OR_COL tmp) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) key)))))) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+
+STAGE DEPENDENCIES:
+  Stage-17 is a root stage
+  Stage-2 depends on stages: Stage-17
+  Stage-16 depends on stages: Stage-2, Stage-7
+  Stage-4 depends on stages: Stage-16
+  Stage-18 is a root stage
+  Stage-7 depends on stages: Stage-18
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-17
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        null-subquery2:x-subquery2:tmp:a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        null-subquery2:x-subquery2:tmp:a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 1
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery2:x-subquery2:tmp:b 
+          TableScan
+            alias: b
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 1
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-16
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        null-subquery1:x-subquery1:c 
+          Fetch Operator
+            limit: -1
+        null-subquery2:x-subquery2:c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        null-subquery1:x-subquery1:c 
+          TableScan
+            alias: c
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {key}
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[key]]
+              Position of Big Table: 0
+        null-subquery2:x-subquery2:c 
+          TableScan
+            alias: c
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {key}
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1:x-subquery1:$INTNAME 
+          TableScan
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 
+                1 {key}
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[key]]
+              outputColumnNames: _col1
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col1
+                      type: string
+                outputColumnNames: _col0
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        null-subquery2:x-subquery2:$INTNAME 
+          TableScan
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 
+                1 {key}
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[key]]
+              outputColumnNames: _col1
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col1
+                      type: string
+                outputColumnNames: _col0
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-18
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        null-subquery1:x-subquery1:tmp:b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        null-subquery1:x-subquery1:tmp:b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-7
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1:x-subquery1:tmp:a 
+          TableScan
+            alias: a
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: SELECT * FROM (
+  SELECT c.key FROM
+    (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
+    JOIN src c ON tmp.key=c.key
+  UNION ALL
+  SELECT c.key FROM
+    (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
+    JOIN src c ON tmp.key=c.key
+) x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+  SELECT c.key FROM
+    (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
+    JOIN src c ON tmp.key=c.key
+  UNION ALL
+  SELECT c.key FROM
+    (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
+    JOIN src c ON tmp.key=c.key
+) x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+105
+11
+111
+113
+113
+114
+116
+118
+118
+119
+119
+119
+12
+12
+120
+120
+125
+125
+126
+128
+128
+128
+129
+129
+131
+133
+134
+134
+136
+137
+137
+138
+138
+138
+138
+143
+145
+146
+146
+149
+149
+15
+15
+150
+152
+152
+153
+155
+156
+157
+158
+160
+162
+163
+164
+164
+165
+165
+166
+167
+167
+167
+168
+169
+169
+169
+169
+17
+170
+172
+172
+174
+174
+175
+175
+176
+176
+177
+178
+179
+179
+18
+18
+180
+181
+183
+186
+187
+187
+187
+189
+19
+190
+191
+191
+192
+193
+193
+193
+194
+195
+195
+196
+197
+197
+199
+199
+199
+2
+20
+200
+200
+201
+202
+203
+203
+205
+205
+207
+207
+208
+208
+208
+209
+209
+213
+213
+214
+216
+216
+217
+217
+218
+219
+219
+221
+221
+222
+223
+223
+224
+224
+226
+228
+229
+229
+230
+230
+230
+230
+230
+233
+233
+235
+237
+237
+238
+238
+239
+239
+24
+24
+241
+242
+242
+244
+247
+248
+249
+252
+255
+255
+256
+256
+257
+258
+26
+26
+260
+262
+263
+265
+265
+266
+27
+272
+272
+273
+273
+273
+274
+275
+277
+277
+277
+277
+278
+278
+28
+280
+280
+281
+281
+282
+282
+283
+284
+285
+286
+287
+288
+288
+289
+291
+292
+296
+298
+298
+298
+30
+302
+305
+306
+307
+307
+308
+309
+309
+310
+311
+311
+311
+315
+316
+316
+316
+317
+317
+318
+318
+318
+321
+321
+322
+322
+323
+325
+325
+327
+327
+327
+33
+331
+331
+332
+333
+333
+335
+336
+338
+339
+34
+341
+342
+342
+344
+344
+345
+348
+348
+348
+348
+348
+35
+35
+35
+351
+353
+353
+356
+360
+362
+364
+365
+366
+367
+367
+368
+369
+369
+369
+37
+37
+373
+374
+375
+377
+378
+379
+382
+382
+384
+384
+384
+386
+389
+392
+393
+394
+395
+395
+396
+396
+396
+397
+397
+399
+399
+4
+400
+401
+401
+401
+401
+401
+402
+403
+403
+403
+404
+404
+406
+406
+406
+406
+407
+409
+409
+409
+41
+411
+413
+413
+414
+414
+417
+417
+417
+418
+419
+42
+42
+421
+424
+424
+427
+429
+429
+43
+430
+430
+430
+431
+431
+431
+432
+435
+436
+437
+438
+438
+438
+439
+439
+44
+443
+444
+446
+448
+449
+452
+453
+454
+454
+454
+455
+457
+458
+458
+459
+459
+460
+462
+462
+463
+463
+466
+466
+466
+467
+468
+468
+468
+468
+469
+469
+469
+469
+469
+47
+470
+472
+475
+477
+478
+478
+479
+480
+480
+480
+481
+482
+483
+484
+485
+487
+489
+489
+489
+489
+490
+491
+492
+492
+493
+494
+495
+496
+497
+498
+498
+498
+5
+5
+5
+51
+51
+53
+54
+57
+58
+58
+64
+65
+66
+67
+67
+69
+70
+70
+70
+72
+72
+74
+76
+76
+77
+78
+8
+80
+82
+83
+83
+84
+84
+85
+86
+87
+9
+90
+90
+90
+92
+95
+95
+96
+97
+97
+98
+98
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+105
+11
+111
+113
+113
+114
+116
+118
+118
+119
+119
+119
+12
+12
+120
+120
+125
+125
+126
+128
+128
+128
+129
+129
+131
+133
+134
+134
+136
+137
+137
+138
+138
+138
+138
+143
+145
+146
+146
+149
+149
+15
+15
+150
+152
+152
+153
+155
+156
+157
+158
+160
+162
+163
+164
+164
+165
+165
+166
+167
+167
+167
+168
+169
+169
+169
+169
+17
+170
+172
+172
+174
+174
+175
+175
+176
+176
+177
+178
+179
+179
+18
+18
+180
+181
+183
+186
+187
+187
+187
+189
+19
+190
+191
+191
+192
+193
+193
+193
+194
+195
+195
+196
+197
+197
+199
+199
+199
+2
+20
+200
+200
+201
+202
+203
+203
+205
+205
+207
+207
+208
+208
+208
+209
+209
+213
+213
+214
+216
+216
+217
+217
+218
+219
+219
+221
+221
+222
+223
+223
+224
+224
+226
+228
+229
+229
+230
+230
+230
+230
+230
+233
+233
+235
+237
+237
+238
+238
+239
+239
+24
+24
+241
+242
+242
+244
+247
+248
+249
+252
+255
+255
+256
+256
+257
+258
+26
+26
+260
+262
+263
+265
+265
+266
+27
+272
+272
+273
+273
+273
+274
+275
+277
+277
+277
+277
+278
+278
+28
+280
+280
+281
+281
+282
+282
+283
+284
+285
+286
+287
+288
+288
+289
+291
+292
+296
+298
+298
+298
+30
+302
+305
+306
+307
+307
+308
+309
+309
+310
+311
+311
+311
+315
+316
+316
+316
+317
+317
+318
+318
+318
+321
+321
+322
+322
+323
+325
+325
+327
+327
+327
+33
+331
+331
+332
+333
+333
+335
+336
+338
+339
+34
+341
+342
+342
+344
+344
+345
+348
+348
+348
+348
+348
+35
+35
+35
+351
+353
+353
+356
+360
+362
+364
+365
+366
+367
+367
+368
+369
+369
+369
+37
+37
+373
+374
+375
+377
+378
+379
+382
+382
+384
+384
+384
+386
+389
+392
+393
+394
+395
+395
+396
+396
+396
+397
+397
+399
+399
+4
+400
+401
+401
+401
+401
+401
+402
+403
+403
+403
+404
+404
+406
+406
+406
+406
+407
+409
+409
+409
+41
+411
+413
+413
+414
+414
+417
+417
+417
+418
+419
+42
+42
+421
+424
+424
+427
+429
+429
+43
+430
+430
+430
+431
+431
+431
+432
+435
+436
+437
+438
+438
+438
+439
+439
+44
+443
+444
+446
+448
+449
+452
+453
+454
+454
+454
+455
+457
+458
+458
+459
+459
+460
+462
+462
+463
+463
+466
+466
+466
+467
+468
+468
+468
+468
+469
+469
+469
+469
+469
+47
+470
+472
+475
+477
+478
+478
+479
+480
+480
+480
+481
+482
+483
+484
+485
+487
+489
+489
+489
+489
+490
+491
+492
+492
+493
+494
+495
+496
+497
+498
+498
+498
+5
+5
+5
+51
+51
+53
+54
+57
+58
+58
+64
+65
+66
+67
+67
+69
+70
+70
+70
+72
+72
+74
+76
+76
+77
+78
+8
+80
+82
+83
+83
+84
+84
+85
+86
+87
+9
+90
+90
+90
+92
+95
+95
+96
+97
+97
+98
+98

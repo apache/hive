@@ -72,7 +72,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        $INTNAME 
+        src5:$INTNAME 
           TableScan
             Reduce Output Operator
               key expressions:

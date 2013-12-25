@@ -252,6 +252,21 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     }
     String childMRAlias = childMRAliases.get(0);
 
+    // Sanity check to make sure there is no alias conflict after merge.
+    for (Entry<String, ArrayList<String>> entry : childMapWork.getPathToAliases().entrySet()) {
+      String path = entry.getKey();
+      List<String> aliases = entry.getValue();
+
+      if (path.equals(childMRPath)) {
+        continue;
+      }
+
+      if (aliases.contains(mapJoinAlias)) {
+        // alias confict should not happen here.
+        return;
+      }
+    }
+
     MapredLocalWork mapJoinLocalWork = mapJoinMapWork.getMapLocalWork();
     MapredLocalWork childLocalWork = childMapWork.getMapLocalWork();
 
