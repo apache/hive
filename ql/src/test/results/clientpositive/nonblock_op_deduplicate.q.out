@@ -118,7 +118,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        $INTNAME 
+        tmp4:$INTNAME 
           TableScan
             Reduce Output Operator
               sort order: 
@@ -354,7 +354,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        $INTNAME 
+        tmp4:$INTNAME 
           TableScan
             Map Join Operator
               condition map:

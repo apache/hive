@@ -42,10 +42,12 @@ import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MoveTask;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -65,6 +67,7 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -1024,9 +1027,23 @@ public final class GenMapRedUtils {
     MapredWork cplan = (MapredWork) childTask.getWork();
 
     if (needsTagging(cplan.getReduceWork())) {
-      String origStreamDesc;
-      streamDesc = "$INTNAME";
-      origStreamDesc = streamDesc;
+      Operator<? extends OperatorDesc> reducerOp = cplan.getReduceWork().getReducer();
+      QBJoinTree joinTree = null;
+      if (reducerOp instanceof JoinOperator) {
+        joinTree = parseCtx.getJoinContext().get(reducerOp);
+      } else if (reducerOp instanceof MapJoinOperator) {
+        joinTree = parseCtx.getMapJoinContext().get(reducerOp);
+      } else if (reducerOp instanceof SMBMapJoinOperator) {
+        joinTree = parseCtx.getSmbMapJoinContext().get(reducerOp);
+      }
+
+      if (joinTree != null && joinTree.getId() != null) {
+        streamDesc = joinTree.getId() + ":$INTNAME";
+      } else {
+        streamDesc = "$INTNAME";
+      }
+
+      String origStreamDesc = streamDesc;
       int pos = 0;
       while (cplan.getMapWork().getAliasToWork().get(streamDesc) != null) {
         streamDesc = origStreamDesc.concat(String.valueOf(++pos));

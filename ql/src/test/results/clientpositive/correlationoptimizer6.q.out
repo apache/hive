@@ -3642,7 +3642,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        $INTNAME 
+        tmp:$INTNAME 
           TableScan
             Reduce Output Operator
               key expressions:
@@ -3656,7 +3656,7 @@ STAGE PLANS:
               value expressions:
                     expr: _col1
                     type: bigint
-        $INTNAME1 
+        tmp:$INTNAME1 
           TableScan
             Reduce Output Operator
               key expressions:
