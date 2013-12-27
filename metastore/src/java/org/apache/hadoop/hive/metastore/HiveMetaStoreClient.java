@@ -322,7 +322,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         }
       }
       // Wait before launching the next round of connection retries.
-      if (retryDelaySeconds > 0) {
+      if (!isConnected && retryDelaySeconds > 0) {
         try {
           LOG.info("Waiting " + retryDelaySeconds + " seconds before next connection attempt.");
           Thread.sleep(retryDelaySeconds * 1000);
