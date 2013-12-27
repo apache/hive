@@ -120,6 +120,7 @@ noopwithmap
 not
 ntile
 nvl
+nvl2
 or
 parse_url
 parse_url_tuple

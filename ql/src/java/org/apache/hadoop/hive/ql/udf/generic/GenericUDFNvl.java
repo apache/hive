@@ -29,8 +29,8 @@ value = "_FUNC_(value,default_value) - Returns default value if value is null el
 extended = "Example:\n"
 + "  > SELECT _FUNC_(null,'bla') FROM src LIMIT 1;\n" + "  bla")
 public class GenericUDFNvl extends GenericUDF{
-  private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
-  private transient ObjectInspector[] argumentOIs;
+  protected transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  protected transient ObjectInspector[] argumentOIs;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
