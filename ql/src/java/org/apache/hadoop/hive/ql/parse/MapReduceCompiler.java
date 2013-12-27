@@ -191,8 +191,9 @@ public class MapReduceCompiler {
           assert (oneLoadFile); // should not have more than 1 load file for
           // CTAS
           // make the movetask's destination directory the table's destination.
-          String location = qb.getTableDesc().getLocation();
-          if (location == null) {
+          Path location;
+          String loc = qb.getTableDesc().getLocation();
+          if (loc == null) {
             // get the table's default location
             Table dumpTable;
             Path targetPath;
@@ -211,7 +212,9 @@ public class MapReduceCompiler {
               throw new SemanticException(e);
             }
 
-            location = targetPath.toString();
+            location = targetPath;
+          } else {
+              location = new Path(loc);
           }
           lfd.setTargetDir(location);
 

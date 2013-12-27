@@ -381,9 +381,6 @@
                       <void property="isDfsDir"> 
                        <boolean>true</boolean> 
                       </void> 
-                      <void property="targetDir"> 
-                       #### A masked pattern was here #### 
-                      </void> 
                      </object> 
                     </void> 
                    </object> 
@@ -863,9 +860,6 @@
                      <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
                       <void property="isDfsDir"> 
                        <boolean>true</boolean> 
-                      </void> 
-                      <void property="targetDir"> 
-                       #### A masked pattern was here #### 
                       </void> 
                      </object> 
                     </void> 
@@ -1351,9 +1345,6 @@
                       <void property="isDfsDir"> 
                        <boolean>true</boolean> 
                       </void> 
-                      <void property="targetDir"> 
-                       #### A masked pattern was here #### 
-                      </void> 
                      </object> 
                     </void> 
                    </object> 
@@ -1730,9 +1721,6 @@
                       <void property="isDfsDir"> 
                        <boolean>true</boolean> 
                       </void> 
-                      <void property="targetDir"> 
-                       #### A masked pattern was here #### 
-                      </void> 
                      </object> 
                     </void> 
                    </object> 
@@ -1753,9 +1741,6 @@
                   </void> 
                   <void property="isDfsDir"> 
                    <boolean>true</boolean> 
-                  </void> 
-                  <void property="targetDir"> 
-                   <string>../../../../build/contrib/hive/ql/test/data/warehouse/dest4.out</string> 
                   </void> 
                  </object> 
                 </void> 

@@ -158,7 +158,7 @@ public class GenMRFileSink1 implements NodeProcessor {
       }
     }
 
-    String finalName = processFS(fsOp, stack, opProcCtx, chDir);
+    Path finalName = processFS(fsOp, stack, opProcCtx, chDir);
 
     if (chDir) {
       // Merge the files in the destination table/partitions by creating Map-only merge job
@@ -290,7 +290,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    *
    */
   private void createMRWorkForMergingFiles (FileSinkOperator fsInput, GenMRProcContext ctx,
-   String finalName) throws SemanticException {
+   Path finalName) throws SemanticException {
 
     //
     // 1. create the operator tree
@@ -305,7 +305,7 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     // Create a FileSink operator
     TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
-    FileSinkDesc fsOutputDesc = new FileSinkDesc(finalName, ts,
+    FileSinkDesc fsOutputDesc = new FileSinkDesc(finalName.toUri().toString(), ts,
       conf.getBoolVar(ConfVars.COMPRESSRESULT));
     FileSinkOperator fsOutput = (FileSinkOperator) OperatorFactory.getAndMakeChild(
       fsOutputDesc, inputRS, tsMerge);
@@ -509,7 +509,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    *         null otherwise
    */
   private MapWork createRCFileMergeTask(FileSinkDesc fsInputDesc,
-      String finalName, boolean hasDynamicPartitions) throws SemanticException {
+      Path finalName, boolean hasDynamicPartitions) throws SemanticException {
 
     String inputDir = fsInputDesc.getFinalDirName();
     TableDesc tblDesc = fsInputDesc.getTableInfo();
@@ -650,7 +650,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    * @return the final file name to which the FileSinkOperator should store.
    * @throws SemanticException
    */
-  private String processFS(FileSinkOperator fsOp, Stack<Node> stack,
+  private Path processFS(FileSinkOperator fsOp, Stack<Node> stack,
       NodeProcessorCtx opProcCtx, boolean chDir) throws SemanticException {
 
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
@@ -666,16 +666,16 @@ public class GenMRFileSink1 implements NodeProcessor {
     Task<? extends Serializable> currTask = ctx.getCurrTask();
 
     // If the directory needs to be changed, send the new directory
-    String dest = null;
+    Path dest = null;
 
     if (chDir) {
-      dest = fsOp.getConf().getFinalDirName();
+      dest = new Path(fsOp.getConf().getFinalDirName());
 
       // generate the temporary file
       // it must be on the same file system as the current destination
       ParseContext parseCtx = ctx.getParseCtx();
       Context baseCtx = parseCtx.getContext();
-      String tmpDir = baseCtx.getExternalTmpFileURI((new Path(dest)).toUri());
+      String tmpDir = baseCtx.getExternalTmpFileURI(dest.toUri());
 
       FileSinkDesc fileSinkDesc = fsOp.getConf();
       // Change all the linked file sink descriptors

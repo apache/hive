@@ -140,8 +140,8 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
       throw new RuntimeException(e.getMessage());
     }
 
-    String outputPath = this.work.getOutputDir();
-    Path tempOutPath = Utilities.toTempPath(new Path(outputPath));
+    Path outputPath = this.work.getOutputDir();
+    Path tempOutPath = Utilities.toTempPath(outputPath);
     try {
       FileSystem fs = tempOutPath.getFileSystem(job);
       if (!fs.exists(tempOutPath)) {
@@ -152,7 +152,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
       return 6;
     }
 
-    RCFileBlockMergeOutputFormat.setMergeOutputPath(job, new Path(outputPath));
+    RCFileBlockMergeOutputFormat.setMergeOutputPath(job, outputPath);
 
     job.setOutputKeyClass(NullWritable.class);
     job.setOutputValueClass(NullWritable.class);
@@ -340,7 +340,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
       }
     }
 
-    MergeWork mergeWork = new MergeWork(inputPaths, outputDir);
+    MergeWork mergeWork = new MergeWork(inputPaths, new Path(outputDir));
     DriverContext driverCxt = new DriverContext();
     BlockMergeTask taskExec = new BlockMergeTask();
     taskExec.initialize(hiveConf, null, driverCxt);

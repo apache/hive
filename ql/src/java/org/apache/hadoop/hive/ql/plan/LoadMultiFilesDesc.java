@@ -21,23 +21,29 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.PTFUtils;
+
 /**
  * LoadMultiFilesDesc.
  *
  */
 public class LoadMultiFilesDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  private List<String> targetDirs;
+  private transient List<Path> targetDirs;
   private boolean isDfsDir;
   // list of columns, comma separated
   private String columns;
   private String columnTypes;
   private List<String> srcDirs;
 
+  static {
+	  PTFUtils.makeTransient(LoadMultiFilesDesc.class, "targetDirs");
+  }
   public LoadMultiFilesDesc() {
   }
 
-  public LoadMultiFilesDesc(final List<String> sourceDirs, final List<String> targetDir,
+  public LoadMultiFilesDesc(final List<String> sourceDirs, final List<Path> targetDir,
       final boolean isDfsDir, final String columns, final String columnTypes) {
 
     this.srcDirs = sourceDirs;
@@ -48,7 +54,7 @@ public class LoadMultiFilesDesc implements Serializable {
   }
 
   @Explain(displayName = "destinations")
-  public List<String> getTargetDirs() {
+  public List<Path> getTargetDirs() {
     return targetDirs;
   }
 
@@ -61,7 +67,7 @@ public class LoadMultiFilesDesc implements Serializable {
     this.srcDirs = srcs;
   }
 
-  public void setTargetDirs(final List<String> targetDir) {
+  public void setTargetDirs(final List<Path> targetDir) {
     this.targetDirs = targetDir;
   }
 
