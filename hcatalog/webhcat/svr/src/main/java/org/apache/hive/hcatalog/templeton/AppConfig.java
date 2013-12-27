@@ -19,7 +19,13 @@
 package org.apache.hive.hcatalog.templeton;
 
 import java.io.File;
+import java.io.StringBufferInputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -141,16 +147,52 @@ public class AppConfig extends Configuration {
       set("env." + e.getKey(), e.getValue());
 
     String templetonDir = getTempletonDir();
-    for (String fname : TEMPLETON_CONF_FILENAMES)
+    for (String fname : TEMPLETON_CONF_FILENAMES) {
+      logConfigLoadAttempt(templetonDir + File.separator + fname);
       if (! loadOneClasspathConfig(fname))
         loadOneFileConfig(templetonDir, fname);
-
+    }
     String hadoopConfDir = getHadoopConfDir();
-    for (String fname : HADOOP_CONF_FILENAMES)
+    for (String fname : HADOOP_CONF_FILENAMES) {
+      logConfigLoadAttempt(hadoopConfDir + File.separator + fname);
       loadOneFileConfig(hadoopConfDir, fname);
+    }
     ProxyUserSupport.processProxyuserConfig(this);
+    LOG.info(dumpEnvironent());
+  }
+  private static void logConfigLoadAttempt(String path) {
+    LOG.info("Attempting to load config file: " + path);
   }
 
+  /**
+   * Dumps all env and config state.  Should be called once on WebHCat start up to facilitate 
+   * support/debugging.  Later it may be worth adding a REST call which will return this data.
+   */
+  private String dumpEnvironent() {
+    StringBuilder sb = new StringBuilder("WebHCat environment:\n");
+    Map<String, String> env = System.getenv();
+    List<String> propKeys = new ArrayList<String>(env.keySet());
+    Collections.sort(propKeys);
+    for(String propKey : propKeys) {
+      sb.append(propKey).append('=').append(env.get(propKey)).append('\n');
+    }
+    sb.append("Configration properties: \n");
+    Iterator<Map.Entry<String, String>> configIter = this.iterator();
+    List<Map.Entry<String, String>> configVals = new ArrayList<Map.Entry<String, String>>();
+    while(configIter.hasNext()) {
+      configVals.add(configIter.next());
+    }
+    Collections.sort(configVals, new Comparator<Map.Entry<String, String>> () {
+      @Override
+      public int compare(Map.Entry<String, String> ent, Map.Entry<String, String> ent2) {
+        return ent.getKey().compareTo(ent2.getKey());
+      }
+    });
+    for(Map.Entry<String, String> entry : configVals) {
+      sb.append(entry.getKey()).append('=').append(entry.getValue()).append('\n');
+    }
+    return sb.toString();
+  }
   public void startCleanup() {
     JobState.getStorageInstance(this).startCleanup(this);
   }
@@ -182,7 +224,7 @@ public class AppConfig extends Configuration {
     URL x = getResource(fname);
     if (x != null) {
       addResource(x);
-      LOG.debug("loaded config from classpath " + x);
+      LOG.info("loaded config from classpath " + x);
       return true;
     }
 
