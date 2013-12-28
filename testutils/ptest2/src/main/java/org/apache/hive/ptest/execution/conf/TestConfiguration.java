@@ -40,16 +40,16 @@ public class TestConfiguration {
   public static final String ANT_ENV_OPTS = "antEnvOpts";
   public static final String ANT_TEST_ARGS = "antTestArgs";
   public static final String ANT_TEST_TARGET = "antTestTarget";
-  public static final String MAVEN_ENV_OPTS = "mavenEnvOpts";
-  public static final String MAVEN_TEST_ARGS = "mavenTestArgs";
-  public static final String MAVEN_TEST_TARGET = "mavenTestTarget";
 
   private static final String REPOSITORY_TYPE = "repositoryType";
   private static final String GIT = "git";
   private static final String SVN = "svn";
   private static final String ANT = "ant";
   private static final String MAVEN = "maven";
+  private static final String MAVEN_ENV_OPTS = "mavenEnvOpts";
   private static final String MAVEN_ARGS = "mavenArgs";
+  private static final String MAVEN_BUILD_ARGS = "mavenBuildArgs";
+  private static final String MAVEN_TEST_ARGS = "mavenTestArgs";
   private static final String ANT_ARGS = "antArgs";
   private static final String JIRA_URL = "jiraUrl";
   private static final String JIRA_USER = "jiraUser";
@@ -64,6 +64,7 @@ public class TestConfiguration {
   private String antEnvOpts;
   private String antTestTarget;
   private String mavenArgs;
+  private String mavenBuildArgs;
   private String mavenTestArgs;
   private String mavenEnvOpts;
   private String repositoryType;
@@ -105,7 +106,8 @@ public class TestConfiguration {
     antTestArgs =  context.getString(ANT_TEST_ARGS, "").trim();
     antEnvOpts =  context.getString(ANT_ENV_OPTS, "").trim();
     antTestTarget = context.getString(ANT_TEST_TARGET, "test").trim();
-    mavenArgs =  context.getString(MAVEN_ARGS, "").trim();
+    mavenArgs = context.getString(MAVEN_ARGS, "").trim();
+    mavenBuildArgs = context.getString(MAVEN_BUILD_ARGS, "").trim();
     mavenTestArgs =  context.getString(MAVEN_TEST_ARGS, "").trim();
     mavenEnvOpts =  context.getString(MAVEN_ENV_OPTS, "").trim();
     javaHome =  context.getString(JAVA_HOME, "").trim();
@@ -174,6 +176,9 @@ public class TestConfiguration {
   }
   public String getMavenArgs() {
     return mavenArgs;
+  }
+  public String getMavenBuildArgs() {
+    return mavenBuildArgs;
   }
   public String getMavenTestArgs() {
     return mavenTestArgs;
