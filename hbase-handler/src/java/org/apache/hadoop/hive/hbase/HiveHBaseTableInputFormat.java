@@ -177,6 +177,11 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
     final org.apache.hadoop.mapreduce.RecordReader<ImmutableBytesWritable, Result>
     recordReader = createRecordReader(tableSplit, tac);
+    try {
+      recordReader.initialize(tableSplit, tac);
+    } catch (InterruptedException e) {
+      throw new IOException("Failed to initialize RecordReader", e);
+    }
 
     return new RecordReader<ImmutableBytesWritable, ResultWritable>() {
 
