@@ -45,21 +45,13 @@ public class CopyWork implements Serializable {
     this.toPath = toPath;
     this.setErrorOnSrcEmpty(errorOnSrcEmpty);
   }
-
-  @Explain(displayName = "source")
-  public String getFromPathAsString() {
-    return fromPath.toUri().toString();
-  }
   
-  @Explain(displayName = "destination")
-  public String getToPathAsString() {
-    return toPath.toUri().toString();
-  }
-
+  @Explain(displayName = "source")
   public Path getFromPath() {
     return fromPath;
   }
 
+  @Explain(displayName = "destination")
   public Path getToPath() {
     return toPath;
   }

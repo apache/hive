@@ -35,7 +35,7 @@ public class LoadMultiFilesDesc implements Serializable {
   // list of columns, comma separated
   private String columns;
   private String columnTypes;
-  private List<String> srcDirs;
+  private transient List<Path> srcDirs;
 
   static {
 	  PTFUtils.makeTransient(LoadMultiFilesDesc.class, "targetDirs");
@@ -43,7 +43,7 @@ public class LoadMultiFilesDesc implements Serializable {
   public LoadMultiFilesDesc() {
   }
 
-  public LoadMultiFilesDesc(final List<String> sourceDirs, final List<Path> targetDir,
+  public LoadMultiFilesDesc(final List<Path> sourceDirs, final List<Path> targetDir,
       final boolean isDfsDir, final String columns, final String columnTypes) {
 
     this.srcDirs = sourceDirs;
@@ -59,11 +59,11 @@ public class LoadMultiFilesDesc implements Serializable {
   }
 
   @Explain(displayName = "sources")
-  public List<String> getSourceDirs() {
+  public List<Path> getSourceDirs() {
     return srcDirs;
   }
 
-  public void setSourceDirs(List<String> srcs) {
+  public void setSourceDirs(List<Path> srcs) {
     this.srcDirs = srcs;
   }
 

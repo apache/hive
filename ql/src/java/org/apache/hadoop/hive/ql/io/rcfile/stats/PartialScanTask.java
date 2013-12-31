@@ -259,8 +259,8 @@ public class PartialScanTask extends Task<PartialScanWork> implements
   }
 
   private void addInputPaths(JobConf job, PartialScanWork work) {
-    for (String path : work.getInputPaths()) {
-      FileInputFormat.addInputPath(job, new Path(path));
+    for (Path path : work.getInputPaths()) {
+      FileInputFormat.addInputPath(job, path);
     }
   }
 
@@ -296,7 +296,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
       printUsage();
     }
 
-    List<String> inputPaths = new ArrayList<String>();
+    List<Path> inputPaths = new ArrayList<Path>();
     String[] paths = inputPathStr.split(INPUT_SEPERATOR);
     if (paths == null || paths.length == 0) {
       printUsage();
@@ -314,10 +314,10 @@ public class PartialScanTask extends Task<PartialScanWork> implements
         if (fstatus.isDir()) {
           FileStatus[] fileStatus = fs.listStatus(pathObj);
           for (FileStatus st : fileStatus) {
-            inputPaths.add(st.getPath().toString());
+            inputPaths.add(st.getPath());
           }
         } else {
-          inputPaths.add(fstatus.getPath().toString());
+          inputPaths.add(fstatus.getPath());
         }
       } catch (IOException e) {
         e.printStackTrace(System.err);

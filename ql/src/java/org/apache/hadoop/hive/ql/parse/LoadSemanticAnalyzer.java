@@ -259,7 +259,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LoadTableDesc loadTableWork;
     loadTableWork = new LoadTableDesc(new Path(fromURI),
-          loadTmpPath, Utilities.getTableDesc(ts.tableHandle), partSpec, isOverWrite);
+      Utilities.getTableDesc(ts.tableHandle), partSpec, isOverWrite);
 
     Task<? extends Serializable> childTask = TaskFactory.get(new MoveWork(getInputs(),
         getOutputs(), loadTableWork, null, true), conf);

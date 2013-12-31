@@ -78,12 +78,12 @@ public class ColumnTruncateMapper extends MapReduceBase implements
     jc = job;
     work = (ColumnTruncateWork) Utilities.getMapWork(job);
 
-    String specPath = work.getOutputDir();
+    Path specPath = work.getOutputDir();
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
     updatePaths(tmpPath, taskTmpPath);
     try {
-      fs = (new Path(specPath)).getFileSystem(job);
+      fs = specPath.getFileSystem(job);
       autoDelete = fs.deleteOnExit(outPath);
     } catch (IOException e) {
       this.exception = true;
@@ -229,13 +229,12 @@ public class ColumnTruncateMapper extends MapReduceBase implements
     }
   }
 
-  public static void jobClose(String outputPath, boolean success, JobConf job,
+  public static void jobClose(Path outputPath, boolean success, JobConf job,
       LogHelper console, DynamicPartitionCtx dynPartCtx, Reporter reporter
       ) throws HiveException, IOException {
-    Path outpath = new Path(outputPath);
-    FileSystem fs = outpath.getFileSystem(job);
-    Path backupPath = backupOutputPath(fs, outpath, job);
-    Utilities.mvFileToFinalPath(outputPath, job, success, LOG, dynPartCtx, null,
+    FileSystem fs = outputPath.getFileSystem(job);
+    Path backupPath = backupOutputPath(fs, outputPath, job);
+    Utilities.mvFileToFinalPath(outputPath.toUri().toString(), job, success, LOG, dynPartCtx, null,
       reporter);
     fs.delete(backupPath, true);
   }

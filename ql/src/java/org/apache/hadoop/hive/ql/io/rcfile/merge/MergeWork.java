@@ -44,7 +44,7 @@ public class MergeWork extends MapWork implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private List<String> inputPaths;
+  private transient List<Path> inputPaths;
   private transient Path outputDir;
   private boolean hasDynamicPartitions;
   private DynamicPartitionCtx dynPartCtx;
@@ -54,11 +54,11 @@ public class MergeWork extends MapWork implements Serializable {
   public MergeWork() {
   }
 
-  public MergeWork(List<String> inputPaths, Path outputDir) {
+  public MergeWork(List<Path> inputPaths, Path outputDir) {
     this(inputPaths, outputDir, false, null);
   }
 
-  public MergeWork(List<String> inputPaths, Path outputDir,
+  public MergeWork(List<Path> inputPaths, Path outputDir,
       boolean hasDynamicPartitions, DynamicPartitionCtx dynPartCtx) {
     super();
     this.inputPaths = inputPaths;
@@ -70,16 +70,16 @@ public class MergeWork extends MapWork implements Serializable {
     if(this.getPathToPartitionInfo() == null) {
       this.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
     }
-    for(String path: this.inputPaths) {
-      this.getPathToPartitionInfo().put(path, partDesc);
+    for(Path path: this.inputPaths) {
+      this.getPathToPartitionInfo().put(path.toString(), partDesc);
     }
   }
 
-  public List<String> getInputPaths() {
+  public List<Path> getInputPaths() {
     return inputPaths;
   }
 
-  public void setInputPaths(List<String> inputPaths) {
+  public void setInputPaths(List<Path> inputPaths) {
     this.inputPaths = inputPaths;
   }
 
@@ -133,7 +133,7 @@ public class MergeWork extends MapWork implements Serializable {
     super.resolveDynamicPartitionStoredAsSubDirsMerge(conf, path, tblDesc, aliases, partDesc);
 
     // Add the DP path to the list of input paths
-    inputPaths.add(path.toString());
+    inputPaths.add(path);
   }
 
   /**
@@ -148,18 +148,17 @@ public class MergeWork extends MapWork implements Serializable {
       // use sub-dir as inputpath.
       assert ((this.inputPaths != null) && (this.inputPaths.size() == 1)) :
         "alter table ... concatenate should only have one directory inside inputpaths";
-      String dirName = inputPaths.get(0);
-      Path dirPath = new Path(dirName);
+      Path dirPath = inputPaths.get(0);
       try {
         FileSystem inpFs = dirPath.getFileSystem(conf);
         FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(dirPath, listBucketingCtx
             .getSkewedColNames().size(), inpFs);
-        List<String> newInputPath = new ArrayList<String>();
+        List<Path> newInputPath = new ArrayList<Path>();
         boolean succeed = true;
         for (int i = 0; i < status.length; ++i) {
            if (status[i].isDir()) {
              // Add the lb path to the list of input paths
-             newInputPath.add(status[i].getPath().toString());
+             newInputPath.add(status[i].getPath());
            } else {
              // find file instead of dir. dont change inputpath
              succeed = false;
@@ -173,7 +172,7 @@ public class MergeWork extends MapWork implements Serializable {
           inputPaths.addAll(newInputPath);
         }
       } catch (IOException e) {
-        String msg = "Fail to get filesystem for directory name : " + dirName;
+        String msg = "Fail to get filesystem for directory name : " + dirPath.toUri();
         throw new RuntimeException(msg, e);
       }
 

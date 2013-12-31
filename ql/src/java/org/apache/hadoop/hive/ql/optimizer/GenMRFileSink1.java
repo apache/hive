@@ -515,17 +515,19 @@ public class GenMRFileSink1 implements NodeProcessor {
     TableDesc tblDesc = fsInputDesc.getTableInfo();
 
     if (tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class)) {
-      ArrayList<String> inputDirs = new ArrayList<String>();
+      ArrayList<Path> inputDirs = new ArrayList<Path>(1);
+      ArrayList<String> inputDirstr = new ArrayList<String>(1);
       if (!hasDynamicPartitions
           && !isSkewedStoredAsDirs(fsInputDesc)) {
-        inputDirs.add(inputDir);
+        inputDirs.add(new Path(inputDir));
+        inputDirstr.add(inputDir);
       }
 
       MergeWork work = new MergeWork(inputDirs, finalName,
           hasDynamicPartitions, fsInputDesc.getDynPartCtx());
       LinkedHashMap<String, ArrayList<String>> pathToAliases =
           new LinkedHashMap<String, ArrayList<String>>();
-      pathToAliases.put(inputDir, (ArrayList<String>) inputDirs.clone());
+      pathToAliases.put(inputDir, (ArrayList<String>) inputDirstr.clone());
       work.setMapperCannotSpanPartns(true);
       work.setPathToAliases(pathToAliases);
       work.setAliasToWork(

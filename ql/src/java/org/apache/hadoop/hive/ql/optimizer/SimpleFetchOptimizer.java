@@ -237,12 +237,12 @@ public class SimpleFetchOptimizer implements Transform {
         work.setSplitSample(splitSample);
         return work;
       }
-      List<String> listP = new ArrayList<String>();
+      List<Path> listP = new ArrayList<Path>();
       List<PartitionDesc> partP = new ArrayList<PartitionDesc>();
 
       for (Partition partition : partsList.getNotDeniedPartns()) {
         inputs.add(new ReadEntity(partition));
-        listP.add(partition.getPartitionPath().toString());
+        listP.add(partition.getPartitionPath());
         partP.add(Utilities.getPartitionDesc(partition));
       }
       Table sourceTable = partsList.getSourceTable();
