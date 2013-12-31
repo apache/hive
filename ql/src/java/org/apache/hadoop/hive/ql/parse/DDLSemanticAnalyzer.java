@@ -1000,7 +1000,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
         truncateTblDesc.setColumnIndexes(new ArrayList<Integer>(columnIndexes));
 
-        truncateTblDesc.setInputDir(oldTblPartLoc.toString());
+        truncateTblDesc.setInputDir(oldTblPartLoc);
         addInputsOutputsAlterTable(tableName, partSpec);
 
         truncateTblDesc.setLbCtx(lbCtx);
@@ -1011,8 +1011,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         // Write the output to temporary directory and move it to the final location at the end
         // so the operation is atomic.
         String queryTmpdir = ctx.getExternalTmpFileURI(newTblPartLoc.toUri());
-        truncateTblDesc.setOutputDir(queryTmpdir);
-        LoadTableDesc ltd = new LoadTableDesc(new Path(queryTmpdir), queryTmpdir, tblDesc,
+        truncateTblDesc.setOutputDir(new Path(queryTmpdir));
+        LoadTableDesc ltd = new LoadTableDesc(new Path(queryTmpdir), tblDesc,
             partSpec == null ? new HashMap<String, String>() : partSpec);
         ltd.setLbCtx(lbCtx);
         Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
@@ -1534,7 +1534,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     AlterTablePartMergeFilesDesc mergeDesc = new AlterTablePartMergeFilesDesc(
         tableName, partSpec);
 
-    List<String> inputDir = new ArrayList<String>();
+    List<Path> inputDir = new ArrayList<Path>();
     Path oldTblPartLoc = null;
     Path newTblPartLoc = null;
     Table tblObj = null;
@@ -1614,7 +1614,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             "Merge can not perform on archived partitions.");
       }
 
-      inputDir.add(oldTblPartLoc.toString());
+      inputDir.add(oldTblPartLoc);
 
       mergeDesc.setInputDir(inputDir);
 
@@ -1627,7 +1627,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       TableDesc tblDesc = Utilities.getTableDesc(tblObj);
       String queryTmpdir = ctx.getExternalTmpFileURI(newTblPartLoc.toUri());
       mergeDesc.setOutputDir(new Path(queryTmpdir));
-      LoadTableDesc ltd = new LoadTableDesc(new Path(queryTmpdir), queryTmpdir, tblDesc,
+      LoadTableDesc ltd = new LoadTableDesc(new Path(queryTmpdir), tblDesc,
           partSpec == null ? new HashMap<String, String>() : partSpec);
       ltd.setLbCtx(lbCtx);
       Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),

@@ -144,7 +144,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -329,7 +328,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -552,7 +550,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator

@@ -203,7 +203,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -243,7 +242,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -310,7 +309,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -585,7 +584,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl2
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -813,7 +811,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -858,7 +855,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -940,7 +937,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -1216,7 +1213,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -1261,7 +1257,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -1343,7 +1339,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -1637,7 +1633,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl3
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -1677,7 +1672,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -1744,7 +1739,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -2069,7 +2064,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl4
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -2353,7 +2347,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl3
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -2665,7 +2658,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -3040,7 +3032,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -3085,7 +3076,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -3167,7 +3158,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -3622,7 +3613,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -3724,7 +3715,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
-#### A masked pattern was here ####
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -3769,7 +3759,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -3851,7 +3841,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -4272,7 +4262,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -5062,7 +5051,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -5379,7 +5367,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl4
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -5424,7 +5411,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -5506,7 +5493,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -5915,7 +5902,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl5
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -5955,7 +5941,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -6022,7 +6008,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -6406,7 +6392,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl4
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -6451,7 +6436,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -6533,7 +6518,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -6947,7 +6932,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl4
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -6992,7 +6976,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -7074,7 +7058,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10002
+            base file name: -ext-10001
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:

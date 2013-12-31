@@ -326,7 +326,7 @@ public class FetchOperator implements Serializable {
         }
         return;
       } else {
-        iterPath = FetchWork.convertStringToPathArray(work.getPartDir()).iterator();
+        iterPath = work.getPartDir().iterator();
         iterPartDesc = work.getPartDesc().iterator();
       }
     }

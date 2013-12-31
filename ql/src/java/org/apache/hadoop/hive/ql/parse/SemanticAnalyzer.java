@@ -5355,8 +5355,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Create the work for moving the table
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
       if (!isNonNativeTable) {
-        ltd = new LoadTableDesc(new Path(queryTmpdir), ctx.getExternalTmpFileURI(dest_path.toUri()),
-            table_desc, dpCtx);
+        ltd = new LoadTableDesc(new Path(queryTmpdir),table_desc, dpCtx);
         ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
             dest_tab.getTableName()));
         ltd.setLbCtx(lbCtx);
@@ -5439,8 +5438,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       lbCtx = constructListBucketingCtx(dest_part.getSkewedColNames(),
           dest_part.getSkewedColValues(), dest_part.getSkewedColValueLocationMaps(),
           dest_part.isStoredAsSubDirectories(), conf);
-      ltd = new LoadTableDesc(new Path(queryTmpdir), ctx.getExternalTmpFileURI(dest_path.toUri()),
-          table_desc, dest_part.getSpec());
+      ltd = new LoadTableDesc(new Path(queryTmpdir), table_desc, dest_part.getSpec());
       ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
           dest_tab.getTableName()));
       ltd.setLbCtx(lbCtx);

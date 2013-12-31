@@ -381,9 +381,9 @@ public class TestHCatMultiOutputFormat {
     } else {
       List<Partition> partitions = hive.getPartitions(tbl);
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
-      List<String> partLocs = new ArrayList<String>();
+      List<Path> partLocs = new ArrayList<Path>();
       for (Partition part : partitions) {
-        partLocs.add(part.getLocation());
+        partLocs.add(part.getPartitionPath());
         partDesc.add(Utilities.getPartitionDesc(part));
       }
       work = new FetchWork(partLocs, partDesc, Utilities.getTableDesc(tbl));

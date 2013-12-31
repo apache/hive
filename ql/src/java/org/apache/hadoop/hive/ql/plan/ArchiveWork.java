@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
 
 /**
  * ArchiveWork.
@@ -28,9 +27,6 @@ import java.util.LinkedHashMap;
 @Explain(displayName = "Map Reduce")
 public class ArchiveWork implements Serializable {
   private static final long serialVersionUID = 1L;
-  private String tableName;
-  private String dbName;
-  private LinkedHashMap<String, String> partSpec;
   private ArchiveActionType type;
 
   public static enum ArchiveActionType {

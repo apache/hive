@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -173,10 +174,10 @@ public class GenMRTableScan1 implements NodeProcessor {
       Task<? extends Serializable> currTask, QBParseInfo parseInfo, StatsWork statsWork,
       Task<StatsWork> statsTask) throws SemanticException {
     String aggregationKey = op.getConf().getStatsAggPrefix();
-    List<String> inputPaths = new ArrayList<String>();
+    List<Path> inputPaths = new ArrayList<Path>();
     switch (parseInfo.getTableSpec().specType) {
     case TABLE_ONLY:
-      inputPaths.add(parseInfo.getTableSpec().tableHandle.getPath().toString());
+      inputPaths.add(parseInfo.getTableSpec().tableHandle.getPath());
       break;
     case STATIC_PARTITION:
       Partition part = parseInfo.getTableSpec().partHandle;
@@ -186,7 +187,7 @@ public class GenMRTableScan1 implements NodeProcessor {
         throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_AGGKEY.getMsg(
             part.getPartitionPath().toString() + e.getMessage()));
       }
-      inputPaths.add(part.getPartitionPath().toString());
+      inputPaths.add(part.getPartitionPath());
       break;
     default:
       assert false;

@@ -77,7 +77,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       pCtx = ((SemanticAnalyzer)sem).getParseContext();
     }
 
-    ExplainWork work = new ExplainWork(ctx.getResFile().toString(),
+    ExplainWork work = new ExplainWork(ctx.getResFile(),
         pCtx,
         tasks,
         fetchTask,

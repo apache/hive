@@ -216,7 +216,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         boolean isDfsDir = lmfd.getIsDfsDir();
         int i = 0;
         while (i <lmfd.getSourceDirs().size()) {
-          Path srcPath = new Path(lmfd.getSourceDirs().get(i));
+          Path srcPath = lmfd.getSourceDirs().get(i);
           Path destPath = lmfd.getTargetDirs().get(i);
           FileSystem fs = destPath.getFileSystem(conf);
           if (!fs.exists(destPath.getParent())) {

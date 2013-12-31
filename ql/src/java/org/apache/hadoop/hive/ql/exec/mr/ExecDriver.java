@@ -498,21 +498,22 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     ArrayList<String> paths = mWork.getPaths();
     ArrayList<PartitionDesc> parts = mWork.getPartitionDescs();
 
-    Path onePath = new Path(paths.get(0));
-    String tmpPath = context.getCtx().getExternalTmpFileURI(onePath.toUri());
-
+    List<Path> inputPaths = new ArrayList<Path>(paths.size());
+    for (String path : paths) {
+      inputPaths.add(new Path(path));
+    }
+    
+    String tmpPath = context.getCtx().getExternalTmpFileURI(inputPaths.get(0).toUri());
     Path partitionFile = new Path(tmpPath, ".partitions");
     ShimLoader.getHadoopShims().setTotalOrderPartitionFile(job, partitionFile);
-
     PartitionKeySampler sampler = new PartitionKeySampler();
 
     if (mWork.getSamplingType() == MapWork.SAMPLING_ON_PREV_MR) {
       console.printInfo("Use sampling data created in previous MR");
       // merges sampling data from previous MR and make paritition keys for total sort
-      for (String path : paths) {
-        Path inputPath = new Path(path);
-        FileSystem fs = inputPath.getFileSystem(job);
-        for (FileStatus status : fs.globStatus(new Path(inputPath, ".sampling*"))) {
+      for (Path path : inputPaths) {
+        FileSystem fs = path.getFileSystem(job);
+        for (FileStatus status : fs.globStatus(new Path(path, ".sampling*"))) {
           sampler.addSampleFile(status.getPath(), job);
         }
       }
@@ -524,9 +525,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       FetchWork fetchWork;
       if (!partDesc.isPartitioned()) {
         assert paths.size() == 1;
-        fetchWork = new FetchWork(onePath, partDesc.getTableDesc());
+        fetchWork = new FetchWork(inputPaths.get(0), partDesc.getTableDesc());
       } else {
-        fetchWork = new FetchWork(paths, parts, partDesc.getTableDesc());
+        fetchWork = new FetchWork(inputPaths, parts, partDesc.getTableDesc());
       }
       fetchWork.setSource(ts);
 

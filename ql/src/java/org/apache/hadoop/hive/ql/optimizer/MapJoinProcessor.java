@@ -173,9 +173,7 @@ public class MapJoinProcessor implements Transform {
         ArrayList<String> list = entry2.getValue();
         if (list.contains(alias)) {
           // add to path set
-          if (!pathSet.contains(path)) {
-            pathSet.add(path);
-          }
+          pathSet.add(path);
           //remove this alias from the alias list
           list.remove(alias);
           if(list.size() == 0) {
@@ -190,7 +188,7 @@ public class MapJoinProcessor implements Transform {
 
       // create fetch work
       FetchWork fetchWork = null;
-      List<String> partDir = new ArrayList<String>();
+      List<Path> partDir = new ArrayList<Path>();
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
 
       for (String tablePath : pathSet) {
@@ -201,7 +199,7 @@ public class MapJoinProcessor implements Transform {
           break;
         }
         // if table is partitioned,add partDir and partitionDesc
-        partDir.add(tablePath);
+        partDir.add(new Path(tablePath));
         partDesc.add(partitionDesc);
       }
       // create fetchwork for partitioned table

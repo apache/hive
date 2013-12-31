@@ -50,7 +50,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.hive_test_src
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator

@@ -694,7 +694,7 @@ public final class GenMapRedUtils {
         tblDesc = Utilities.getTableDesc(partsList.getSourceTable());
         localPlan.getAliasToFetchWork().put(
             alias_id,
-            new FetchWork(FetchWork.convertPathToStringArray(partDir), partDesc, tblDesc));
+            new FetchWork(partDir, partDesc, tblDesc));
       } else {
         localPlan.getAliasToFetchWork().put(alias_id,
             new FetchWork(tblDir, tblDesc));

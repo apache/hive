@@ -264,7 +264,7 @@
                        #### A masked pattern was here #### 
                        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
                         <void property="baseFileName"> 
-                         <string>-ext-10002</string> 
+                         <string>-ext-10001</string> 
                         </void> 
                         <void property="inputFileFormatClass"> 
                          <class>org.apache.hadoop.mapred.TextInputFormat</class> 
@@ -420,9 +420,6 @@
                   </void> 
                   <void property="table"> 
                    <object idref="TableDesc0"/> 
-                  </void> 
-                  <void property="tmpDir"> 
-                   #### A masked pattern was here #### 
                   </void> 
                  </object> 
                 </void> 
