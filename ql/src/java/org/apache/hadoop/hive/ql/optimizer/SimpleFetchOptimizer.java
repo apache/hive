@@ -232,8 +232,7 @@ public class SimpleFetchOptimizer implements Transform {
       inputs.clear();
       if (!table.isPartitioned()) {
         inputs.add(new ReadEntity(table));
-        String path = table.getPath().toString();
-        FetchWork work = new FetchWork(path, Utilities.getTableDesc(table));
+        FetchWork work = new FetchWork(table.getPath(), Utilities.getTableDesc(table));
         PlanUtils.configureInputJobPropertiesForStorageHandler(work.getTblDesc());
         work.setSplitSample(splitSample);
         return work;

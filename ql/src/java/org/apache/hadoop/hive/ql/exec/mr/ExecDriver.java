@@ -524,7 +524,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       FetchWork fetchWork;
       if (!partDesc.isPartitioned()) {
         assert paths.size() == 1;
-        fetchWork = new FetchWork(paths.get(0), partDesc.getTableDesc());
+        fetchWork = new FetchWork(onePath, partDesc.getTableDesc());
       } else {
         fetchWork = new FetchWork(paths, parts, partDesc.getTableDesc());
       }

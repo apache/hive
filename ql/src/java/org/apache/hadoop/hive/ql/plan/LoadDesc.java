@@ -37,11 +37,7 @@ public class LoadDesc implements Serializable {
     this.sourcePath = sourcePath;
   }
 
-  @Explain(displayName = "source", normalExplain = false)
-  public String getSourceDir() {
-    return sourcePath.toString();
-  }
-  
+  @Explain(displayName = "source", normalExplain = false)  
   public Path getSourcePath() {
     return sourcePath;
   }

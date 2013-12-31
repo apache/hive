@@ -149,7 +149,7 @@ public class MapReduceCompiler {
         resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat);
       }
 
-      FetchWork fetch = new FetchWork(new Path(loadFileDesc.getSourceDir()).toString(),
+      FetchWork fetch = new FetchWork(loadFileDesc.getSourcePath(),
           resultTab, qb.getParseInfo().getOuterQueryLimit());
       fetch.setSource(pCtx.getFetchSource());
       fetch.setSink(pCtx.getFetchSink());
@@ -480,7 +480,7 @@ public class MapReduceCompiler {
     String resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
     TableDesc resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat);
 
-    fetch = new FetchWork(new Path(loadFileWork.get(0).getSourceDir()).toString(),
+    fetch = new FetchWork(loadFileWork.get(0).getSourcePath(),
         resultTab, qb.getParseInfo().getOuterQueryLimit());
 
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName, partName,

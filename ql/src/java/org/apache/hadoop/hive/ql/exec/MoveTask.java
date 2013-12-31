@@ -205,7 +205,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       LoadFileDesc lfd = work.getLoadFileWork();
       if (lfd != null) {
         Path targetPath = lfd.getTargetDir();
-        Path sourcePath = new Path(lfd.getSourceDir());
+        Path sourcePath = lfd.getSourcePath();
         moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
       }
 
@@ -241,7 +241,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           mesg.setLength(mesg.length()-2);
           mesg.append(')');
         }
-        String mesg_detail = " from " + tbd.getSourceDir();
+        String mesg_detail = " from " + tbd.getSourcePath();
         console.printInfo(mesg.toString(), mesg_detail);
         Table table = db.getTable(tbd.getTable().getTableName());
 
@@ -281,7 +281,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         DataContainer dc = null;
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
-          db.loadTable(new Path(tbd.getSourceDir()), tbd.getTable()
+          db.loadTable(tbd.getSourcePath(), tbd.getTable()
               .getTableName(), tbd.getReplace(), tbd.getHoldDDLTime());
           if (work.getOutputs() != null) {
             work.getOutputs().add(new WriteEntity(table));
@@ -294,7 +294,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           List<SortCol> sortCols = null;
           int numBuckets = -1;
           Task task = this;
-          String path = tbd.getSourceDir();
+          String path = tbd.getSourcePath().toUri().toString();
           // Find the first ancestor of this MoveTask which is some form of map reduce task
           // (Either standard, local, or a merge)
           while (task.getParentTasks() != null && task.getParentTasks().size() == 1) {
@@ -330,7 +330,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             // condition for merging is not met, see GenMRFileSink1.
             if (task instanceof MoveTask) {
               if (((MoveTask)task).getWork().getLoadFileWork() != null) {
-                path = ((MoveTask)task).getWork().getLoadFileWork().getSourceDir();
+                path = ((MoveTask)task).getWork().getLoadFileWork().getSourcePath().toUri().toString();
               }
             }
           }
@@ -354,7 +354,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             // want to isolate any potential issue it may introduce.
             ArrayList<LinkedHashMap<String, String>> dp =
               db.loadDynamicPartitions(
-                  new Path(tbd.getSourceDir()),
+                  tbd.getSourcePath(),
                   tbd.getTable().getTableName(),
                 	tbd.getPartitionSpec(),
                 	tbd.getReplace(),
@@ -394,7 +394,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               dc = new DataContainer(table.getTTable(), partn.getTPartition());
 
               if (SessionState.get() != null) {
-                SessionState.get().getLineageState().setLineage(tbd.getSourceDir(), dc,
+                SessionState.get().getLineageState().setLineage(tbd.getSourcePath(), dc,
                     table.getCols());
               }
 
@@ -405,7 +405,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),
                 tbd.getPartitionSpec());
             db.validatePartitionNameCharacters(partVals);
-            db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(),
+            db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
                 tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime(),
                 tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd));
           	Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
@@ -422,7 +422,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
          }
         }
         if (SessionState.get() != null && dc != null) {
-          SessionState.get().getLineageState().setLineage(tbd.getSourceDir(), dc,
+          SessionState.get().getLineageState().setLineage(tbd.getSourcePath(), dc,
               table.getCols());
         }
         releaseLocks(tbd);
