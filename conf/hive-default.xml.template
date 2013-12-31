@@ -877,12 +877,18 @@
   <description>Read from a binary stream and treat each hive.binary.record.max.length bytes as a record.
   The last record before the end of stream can have less than hive.binary.record.max.length bytes</description>
 </property>
-    
+
+<property>
+  <name>hive.server2.max.start.attempts</name>
+  <value>30</value>
+  <description>This number of times HiveServer2 will attempt to start before exiting, sleeping 60 seconds between retries. The default of 30 will keep trying for 30 minutes.</description>
+</property>
+
 <property>
   <name>hive.server2.transport.mode</name>
   <value>binary</value>
   <description>Server transport mode. "binary" or "http".</description>
-</property>    
+</property>
 
 <property>
   <name>hive.server2.thrift.http.port</name>
