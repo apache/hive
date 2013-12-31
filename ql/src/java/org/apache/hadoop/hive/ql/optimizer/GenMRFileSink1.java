@@ -620,16 +620,15 @@ public class GenMRFileSink1 implements NodeProcessor {
     // find the move task
     for (Task<MoveWork> mvTsk : mvTasks) {
       MoveWork mvWork = mvTsk.getWork();
-      String srcDir = null;
+      Path srcDir = null;
       if (mvWork.getLoadFileWork() != null) {
-        srcDir = mvWork.getLoadFileWork().getSourceDir();
+        srcDir = mvWork.getLoadFileWork().getSourcePath();
       } else if (mvWork.getLoadTableWork() != null) {
-        srcDir = mvWork.getLoadTableWork().getSourceDir();
+        srcDir = mvWork.getLoadTableWork().getSourcePath();
       }
 
-      String fsOpDirName = fsOp.getConf().getFinalDirName();
       if ((srcDir != null)
-          && (srcDir.equalsIgnoreCase(fsOpDirName))) {
+          && (srcDir.equals(new Path(fsOp.getConf().getFinalDirName())))) {
         return mvTsk;
       }
     }

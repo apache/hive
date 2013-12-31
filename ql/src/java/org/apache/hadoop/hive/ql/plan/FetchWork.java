@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 public class FetchWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String tblDir;
+  private Path tblDir;
   private TableDesc tblDesc;
 
   private ArrayList<String> partDir;
@@ -75,11 +75,11 @@ public class FetchWork implements Serializable {
     return rowsComputedFromStats;
   }
 
-  public FetchWork(String tblDir, TableDesc tblDesc) {
+  public FetchWork(Path tblDir, TableDesc tblDesc) {
     this(tblDir, tblDesc, -1);
   }
 
-  public FetchWork(String tblDir, TableDesc tblDesc, int limit) {
+  public FetchWork(Path tblDir, TableDesc tblDesc, int limit) {
     this.tblDir = tblDir;
     this.tblDesc = tblDesc;
     this.limit = limit;
@@ -124,22 +124,15 @@ public class FetchWork implements Serializable {
   /**
    * @return the tblDir
    */
-  public String getTblDir() {
+  public Path getTblDir() {
     return tblDir;
-  }
-
-  /**
-   * @return the tblDir
-   */
-  public Path getTblDirPath() {
-    return new Path(tblDir);
   }
 
   /**
    * @param tblDir
    *          the tblDir to set
    */
-  public void setTblDir(String tblDir) {
+  public void setTblDir(Path tblDir) {
     this.tblDir = tblDir;
   }
 

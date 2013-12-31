@@ -5658,7 +5658,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (ltd != null && SessionState.get() != null) {
       SessionState.get().getLineageState()
-          .mapDirToFop(ltd.getSourceDir(), (FileSinkOperator) output);
+          .mapDirToFop(ltd.getSourcePath(), (FileSinkOperator) output);
     }
 
     if (LOG.isDebugEnabled()) {

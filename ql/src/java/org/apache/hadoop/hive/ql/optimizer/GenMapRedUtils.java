@@ -697,7 +697,7 @@ public final class GenMapRedUtils {
             new FetchWork(FetchWork.convertPathToStringArray(partDir), partDesc, tblDesc));
       } else {
         localPlan.getAliasToFetchWork().put(alias_id,
-            new FetchWork(tblDir.toString(), tblDesc));
+            new FetchWork(tblDir, tblDesc));
       }
       plan.setMapLocalWork(localPlan);
     }
@@ -745,7 +745,7 @@ public final class GenMapRedUtils {
       assert localPlan.getAliasToWork().get(alias) == null;
       assert localPlan.getAliasToFetchWork().get(alias) == null;
       localPlan.getAliasToWork().put(alias, topOp);
-      localPlan.getAliasToFetchWork().put(alias, new FetchWork(alias, tt_desc));
+      localPlan.getAliasToFetchWork().put(alias, new FetchWork(new Path(alias), tt_desc));
       plan.setMapLocalWork(localPlan);
     }
   }

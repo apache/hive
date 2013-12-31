@@ -31,6 +31,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -196,7 +197,7 @@ public class MapJoinProcessor implements Transform {
         PartitionDesc partitionDesc = newWork.getMapWork().getPathToPartitionInfo().get(tablePath);
         // create fetchwork for non partitioned table
         if (partitionDesc.getPartSpec() == null || partitionDesc.getPartSpec().size() == 0) {
-          fetchWork = new FetchWork(tablePath, partitionDesc.getTableDesc());
+          fetchWork = new FetchWork(new Path(tablePath), partitionDesc.getTableDesc());
           break;
         }
         // if table is partitioned,add partDir and partitionDesc
