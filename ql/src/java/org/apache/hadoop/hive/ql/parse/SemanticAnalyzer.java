@@ -5471,8 +5471,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // fall through
     case QBMetaData.DEST_DFS_FILE: {
       dest_path = new Path(qbm.getDestFileForAlias(dest));
-      String destStr = dest_path.toString();
-
+      
       if (isLocal) {
         // for local directory - we always write to map-red intermediate
         // store and then copy to local fs
@@ -5554,14 +5553,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tblDesc.setCols(new ArrayList<FieldSchema>(field_schemas));
       }
 
-      if (!ctx.isMRTmpFileURI(destStr)) {
-        idToTableNameMap.put(String.valueOf(destTableId), destStr);
+      if (!ctx.isMRTmpFileURI(dest_path.toUri().toString())) {
+        idToTableNameMap.put(String.valueOf(destTableId), dest_path.toUri().toString());
         currentTableId = destTableId;
         destTableId++;
       }
 
       boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
-      loadFileWork.add(new LoadFileDesc(tblDesc, new Path(queryTmpdir), destStr, isDfsDir, cols,
+      loadFileWork.add(new LoadFileDesc(tblDesc, new Path(queryTmpdir), dest_path, isDfsDir, cols,
           colTypes));
 
       if (tblDesc == null) {
@@ -5577,7 +5576,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (!outputs.add(new WriteEntity(dest_path, !isDfsDir))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
-            .getMsg(destStr));
+            .getMsg(dest_path.toUri().toString()));
       }
       break;
     }

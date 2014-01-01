@@ -1179,7 +1179,7 @@ public final class GenMapRedUtils {
    *
    */
   public static void createMRWorkForMergingFiles (FileSinkOperator fsInput,
-   String finalName, DependencyCollectionTask dependencyTask,
+   Path finalName, DependencyCollectionTask dependencyTask,
    List<Task<MoveWork>> mvTasks, HiveConf conf,
    Task<? extends Serializable> currTask) throws SemanticException {
 
@@ -1195,7 +1195,7 @@ public final class GenMapRedUtils {
 
     // Create a FileSink operator
     TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
-    FileSinkDesc fsOutputDesc = new FileSinkDesc(finalName, ts,
+    FileSinkDesc fsOutputDesc = new FileSinkDesc(finalName.toUri().toString(), ts,
       conf.getBoolVar(ConfVars.COMPRESSRESULT));
     FileSinkOperator fsOutput = (FileSinkOperator) OperatorFactory.getAndMakeChild(
       fsOutputDesc, inputRS, tsMerge);
@@ -1481,7 +1481,7 @@ public final class GenMapRedUtils {
    *         null otherwise
    */
   public static MapWork createRCFileMergeTask(FileSinkDesc fsInputDesc,
-      String finalName, boolean hasDynamicPartitions) throws SemanticException {
+      Path finalName, boolean hasDynamicPartitions) throws SemanticException {
 
     String inputDir = fsInputDesc.getFinalDirName();
     TableDesc tblDesc = fsInputDesc.getTableInfo();
@@ -1679,19 +1679,19 @@ public final class GenMapRedUtils {
    * @param dependencyTask
    * @return
    */
-  public static String createMoveTask(Task<? extends Serializable> currTask, boolean chDir,
+  public static Path createMoveTask(Task<? extends Serializable> currTask, boolean chDir,
       FileSinkOperator fsOp, ParseContext parseCtx, List<Task<MoveWork>> mvTasks,
       HiveConf hconf, DependencyCollectionTask dependencyTask) {
 
-    String dest = null;
+    Path dest = null;
 
     if (chDir) {
-      dest = fsOp.getConf().getFinalDirName();
+      dest = new Path(fsOp.getConf().getFinalDirName());
 
       // generate the temporary file
       // it must be on the same file system as the current destination
       Context baseCtx = parseCtx.getContext();
-      String tmpDir = baseCtx.getExternalTmpFileURI((new Path(dest)).toUri());
+      String tmpDir = baseCtx.getExternalTmpFileURI(dest.toUri());
 
       FileSinkDesc fileSinkDesc = fsOp.getConf();
       // Change all the linked file sink descriptors

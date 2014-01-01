@@ -27,6 +27,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -92,7 +93,7 @@ public class GenMRFileSink1 implements NodeProcessor {
       chDir = GenMapRedUtils.isMergeRequired(ctx.getMvTask(), hconf, fsOp, currTask, isInsertTable);
     }
 
-    String finalName = processFS(fsOp, stack, opProcCtx, chDir);
+    Path finalName = processFS(fsOp, stack, opProcCtx, chDir);
 
     if (chDir) {
       // Merge the files in the destination table/partitions by creating Map-only merge job
@@ -156,14 +157,14 @@ public class GenMRFileSink1 implements NodeProcessor {
    * @return the final file name to which the FileSinkOperator should store.
    * @throws SemanticException
    */
-  private String processFS(FileSinkOperator fsOp, Stack<Node> stack,
+  private Path processFS(FileSinkOperator fsOp, Stack<Node> stack,
       NodeProcessorCtx opProcCtx, boolean chDir) throws SemanticException {
 
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     Task<? extends Serializable> currTask = ctx.getCurrTask();
 
     // If the directory needs to be changed, send the new directory
-    String dest = null;
+    Path dest = null;
 
     List<FileSinkOperator> seenFSOps = ctx.getSeenFileSinkOps();
     if (seenFSOps == null) {

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.PTFUtils;
 
 /**
  * LoadFileDesc.
@@ -28,18 +29,21 @@ import org.apache.hadoop.fs.Path;
  */
 public class LoadFileDesc extends LoadDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  private String targetDir;
+  private transient Path targetDir;
   private boolean isDfsDir;
   // list of columns, comma separated
   private String columns;
   private String columnTypes;
   private String destinationCreateTable;
 
+  static {
+	  PTFUtils.makeTransient(LoadFileDesc.class, "targetDir");
+  }
   public LoadFileDesc() {
   }
 
   public LoadFileDesc(final CreateTableDesc createTableDesc, final Path sourcePath,
-      final String targetDir,
+      final Path targetDir,
       final boolean isDfsDir, final String columns, final String columnTypes) {
     this(sourcePath, targetDir, isDfsDir, columns, columnTypes);
     if (createTableDesc != null && createTableDesc.getDatabaseName() != null
@@ -50,7 +54,7 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     }
   }
 
-  public LoadFileDesc(final Path sourcePath, final String targetDir,
+  public LoadFileDesc(final Path sourcePath, final Path targetDir,
       final boolean isDfsDir, final String columns, final String columnTypes) {
 
     super(sourcePath);
@@ -61,11 +65,11 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   }
 
   @Explain(displayName = "destination")
-  public String getTargetDir() {
+  public Path getTargetDir() {
     return targetDir;
   }
 
-  public void setTargetDir(final String targetDir) {
+  public void setTargetDir(final Path targetDir) {
     this.targetDir = targetDir;
   }
 

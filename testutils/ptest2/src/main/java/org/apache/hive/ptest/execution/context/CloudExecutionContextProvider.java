@@ -67,7 +67,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
   public static final String USERNAME = "user";
   public static final String INSTANCE_TYPE = "instanceType";
   public static final String NUM_THREADS = "numThreads";
-  
+
   private final RandomAccessFile mHostLog;
   private final String mPrivateKey;
   private final String mUser;
@@ -126,7 +126,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
       public void run() {
         while (true) {
           try {
-            TimeUnit.MINUTES.sleep(15);
+            TimeUnit.MINUTES.sleep(60);
             performBackgroundWork();
           } catch (Exception e) {
             LOG.error("Unexpected error in background worker", e);
@@ -194,11 +194,19 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
     Set<NodeMetadata> result = Sets.newHashSet();
     int attempts = 0;
     int numRequired = numHosts;
+    // pause so we don't get banned
+    try {
+      TimeUnit.SECONDS.sleep(mRetrySleepInterval);
+    } catch (InterruptedException e) {
+     Thread.currentThread().interrupt();
+    }
     do {
+      boolean error = false;
       LOG.info("Attempting to create " + numRequired + " nodes");
       try {
-        result.addAll(mCloudComputeService.createNodes(numRequired));
+        result.addAll(mCloudComputeService.createNodes(Math.min(2, numRequired)));
       } catch (RunNodesException e) {
+        error = true;
         LOG.warn("Error creating nodes", e);
         terminateInternal(e.getNodeErrors().keySet());
         result.addAll(e.getSuccessfulNodes());
@@ -206,9 +214,14 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
       result = verifyHosts(result);
       LOG.info("Successfully created " + result.size() + " nodes");
       numRequired = numHosts - result.size();
-      if(numRequired > 0) {
+      if (numRequired > 0) {
+        long sleepTime = mRetrySleepInterval;
+        if (error) {
+          sleepTime *= ++attempts;
+        }
+        LOG.info("Pausing creation process for " + sleepTime + " seconds");
         try {
-          TimeUnit.SECONDS.sleep(++attempts * mRetrySleepInterval);
+          TimeUnit.SECONDS.sleep(sleepTime);
         } catch(InterruptedException e) {
           throw new CreateHostsFailedException("Interrupted while trying to create hosts", e);
         }
@@ -308,12 +321,18 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
     mTerminationExecutor.submit(new Runnable() {
       @Override
       public void run() {
+        // pause so we don't get banned
+        try {
+          TimeUnit.SECONDS.sleep(mRetrySleepInterval);
+        } catch (InterruptedException e) {
+         Thread.currentThread().interrupt();
+        }
         try {
           LOG.info("Terminating " + node.getHostname());
-          mCloudComputeService.destroyNode(node.getId());
           if (!mTerminatedHosts.containsKey(node.getHostname())) {
             mTerminatedHosts.put(node.getHostname(), System.currentTimeMillis());
           }
+          mCloudComputeService.destroyNode(node.getId());
         } catch (Exception e) {
           LOG.error("Error attempting to terminate host " + node, e);
         }

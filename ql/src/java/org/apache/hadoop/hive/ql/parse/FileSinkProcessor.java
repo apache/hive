@@ -22,6 +22,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -60,7 +61,7 @@ public class FileSinkProcessor implements NodeProcessor {
     boolean chDir = GenMapRedUtils.isMergeRequired(context.moveTask,
         hconf, fileSink, context.currentTask, isInsertTable);
 
-    String finalName = GenMapRedUtils.createMoveTask(context.currentTask,
+    Path finalName = GenMapRedUtils.createMoveTask(context.currentTask,
         chDir, fileSink, parseContext, context.moveTask, hconf, context.dependencyTask);
 
     if (chDir) {
