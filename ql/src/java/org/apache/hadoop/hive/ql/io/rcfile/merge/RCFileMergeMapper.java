@@ -311,13 +311,12 @@ public class RCFileMergeMapper extends MapReduceBase implements
     }
   }
 
-  public static void jobClose(String outputPath, boolean success, JobConf job,
+  public static void jobClose(Path outputPath, boolean success, JobConf job,
       LogHelper console, DynamicPartitionCtx dynPartCtx, Reporter reporter
       ) throws HiveException, IOException {
-    Path outpath = new Path(outputPath);
-    FileSystem fs = outpath.getFileSystem(job);
-    Path backupPath = backupOutputPath(fs, outpath, job);
-    Utilities.mvFileToFinalPath(outputPath, job, success, LOG, dynPartCtx, null,
+    FileSystem fs = outputPath.getFileSystem(job);
+    Path backupPath = backupOutputPath(fs, outputPath, job);
+    Utilities.mvFileToFinalPath(outputPath.toUri().toString(), job, success, LOG, dynPartCtx, null,
       reporter);
     fs.delete(backupPath, true);
   }

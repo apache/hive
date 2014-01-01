@@ -85,11 +85,11 @@ cd $workingDir/
   if [[ "${buildTool}" == "maven" ]]
   then
     rm -rf $workingDir/maven/org/apache/hive
-    mvn -B clean install -DskipTests -Dmaven.repo.local=$workingDir/maven $mavenArgs
-    mvn -B test -Dmaven.repo.local=$workingDir/maven -Dtest=TestDummy $mavenArgs
+    mvn -B clean install -DskipTests -Dmaven.repo.local=$workingDir/maven $mavenArgs $mavenBuildArgs
+    mvn -B test -Dmaven.repo.local=$workingDir/maven -Dtest=TestDummy $mavenArgs $mavenTestArgs
     cd itests
-    mvn -B clean install -DskipTests -Dmaven.repo.local=$workingDir/maven $mavenArgs
-    mvn -B test -Dmaven.repo.local=$workingDir/maven -Dtest=TestDummy $mavenArgs
+    mvn -B clean install -DskipTests -Dmaven.repo.local=$workingDir/maven $mavenArgs $mavenBuildArgs
+    mvn -B test -Dmaven.repo.local=$workingDir/maven -Dtest=TestDummy $mavenArgs $mavenTestArgs
   elif [[ "${buildTool}" == "ant" ]]
   then
     ant $antArgs -Divy.default.ivy.user.dir=$workingDir/ivy \

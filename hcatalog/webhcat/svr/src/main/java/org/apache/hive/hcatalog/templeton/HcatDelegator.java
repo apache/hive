@@ -294,8 +294,8 @@ public class HcatDelegator extends LauncherDelegator {
   }
 
   /**
-   * Return a json "show table extended like".  This will return
-   * only the first single table.
+   * Return a json "show table extended like" with extra info from "desc exteded"
+   * This will return table with exact name match.
    */
   public Response descExtendedTable(String user, String db, String table)
     throws HcatException, NotAuthorizedException, BusyException,
@@ -303,11 +303,23 @@ public class HcatDelegator extends LauncherDelegator {
     String exec = String.format("use %s; show table extended like %s;",
       db, table);
     try {
+      //get detailed "tableInfo" from query "desc extended tablename;"
+      Response res0 = descTable(user, db, table, true);
+      if (res0.getStatus() != HttpStatus.OK_200)
+          return res0;
+      Map m = (Map) res0.getEntity();
+      Map tableInfo = (Map) m.get("tableInfo");
+
       String res = jsonRun(user, exec);
       JsonBuilder jb = JsonBuilder.create(singleTable(res, table))
         .remove("tableName")
         .put("database", db)
-        .put("table", table);
+        .put("table", table)
+        .put("retention", tableInfo.get("retention"))
+        .put("sd", tableInfo.get("sd"))
+        .put("parameters", tableInfo.get("parameters"))
+        .put("parametersSize", tableInfo.get("parametersSize"))
+        .put("tableType", tableInfo.get("tableType"));
 
       // If we can get them from HDFS, add group and permission
       String loc = (String) jb.getMap().get("location");

@@ -45,7 +45,7 @@ public class MergeWork extends MapWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private List<String> inputPaths;
-  private String outputDir;
+  private transient Path outputDir;
   private boolean hasDynamicPartitions;
   private DynamicPartitionCtx dynPartCtx;
   private boolean isListBucketingAlterTableConcatenate;
@@ -54,11 +54,11 @@ public class MergeWork extends MapWork implements Serializable {
   public MergeWork() {
   }
 
-  public MergeWork(List<String> inputPaths, String outputDir) {
+  public MergeWork(List<String> inputPaths, Path outputDir) {
     this(inputPaths, outputDir, false, null);
   }
 
-  public MergeWork(List<String> inputPaths, String outputDir,
+  public MergeWork(List<String> inputPaths, Path outputDir,
       boolean hasDynamicPartitions, DynamicPartitionCtx dynPartCtx) {
     super();
     this.inputPaths = inputPaths;
@@ -83,11 +83,11 @@ public class MergeWork extends MapWork implements Serializable {
     this.inputPaths = inputPaths;
   }
 
-  public String getOutputDir() {
+  public Path getOutputDir() {
     return outputDir;
   }
 
-  public void setOutputDir(String outputDir) {
+  public void setOutputDir(Path outputDir) {
     this.outputDir = outputDir;
   }
 

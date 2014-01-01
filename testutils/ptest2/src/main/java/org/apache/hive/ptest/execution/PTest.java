@@ -122,6 +122,7 @@ public class PTest {
     put("antTestTarget", configuration.getAntTestTarget()).
     put("mavenEnvOpts", configuration.getMavenEnvOpts()).
     put("mavenArgs", configuration.getMavenArgs()).
+    put("mavenBuildArgs", configuration.getMavenBuildArgs()).
     put("mavenTestArgs", configuration.getMavenTestArgs());
     final ImmutableMap<String, String> templateDefaults = templateDefaultsBuilder.build();
     TestParser testParser = new TestParser(configuration.getContext(), configuration.getTestCasePropertyName(),
@@ -272,9 +273,9 @@ public class PTest {
     options.addOption(null, PATCH, true, "URI to patch, either file:/// or http(s)://");
     options.addOption(ANT_ARG, null, true, "Supplemntal ant arguments");
     options.addOption(null, JAVA_HOME, true, "Java Home for compiling and running tests (unless " + JAVA_HOME_TEST + " is specified)");
-    options.addOption(null, JAVA_HOME_TEST, true, "Java Home for running tests (optional)");    
+    options.addOption(null, JAVA_HOME_TEST, true, "Java Home for running tests (optional)");
     options.addOption(null, ANT_TEST_ARGS, true, "Arguments to ant test on slave nodes only");
-    options.addOption(null, ANT_ENV_OPTS, true, "ANT_OPTS environemnt variable setting");
+    options.addOption(null, ANT_ENV_OPTS, true, "ANT_OPTS environment variable setting");
     CommandLine commandLine = parser.parse(options, args);
     if(!commandLine.hasOption(PROPERTIES)) {
       throw new IllegalArgumentException(Joiner.on(" ").

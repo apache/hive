@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
+import org.jclouds.Constants;
 import org.jclouds.ContextBuilder;
 import org.jclouds.aws.ec2.compute.AWSEC2TemplateOptions;
 import org.jclouds.compute.ComputeService;
@@ -59,11 +60,13 @@ public class CloudComputeService {
     mMaxBid = maxBid;
     mGroupTag = "group=" + mGroupName;
     Properties overrides = new Properties();
-    overrides.put(ComputeServiceProperties.POLL_INITIAL_PERIOD, String.valueOf(10L * 1000L));
-    overrides.put(ComputeServiceProperties.POLL_MAX_PERIOD, String.valueOf(30L * 1000L));
+    overrides.put(ComputeServiceProperties.POLL_INITIAL_PERIOD, String.valueOf(60L * 1000L));
+    overrides.put(ComputeServiceProperties.POLL_MAX_PERIOD, String.valueOf(600L * 1000L));
+    overrides.put(Constants.PROPERTY_MAX_RETRIES, String.valueOf(60));
     mComputeServiceContext = ContextBuilder.newBuilder("aws-ec2")
         .credentials(apiKey, accessKey)
         .modules(ImmutableSet.of(new Log4JLoggingModule()))
+        .overrides(overrides)
         .buildView(ComputeServiceContext.class);
     mComputeService = mComputeServiceContext.getComputeService();
   }

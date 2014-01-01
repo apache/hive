@@ -285,8 +285,8 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
         MoveWork mvWork = (MoveWork) mvTask.getWork();
         LoadFileDesc lfd = mvWork.getLoadFileWork();
 
-        String targetDir = lfd.getTargetDir();
-        List<String> targetDirs = new ArrayList<String>(toMove.size());
+        Path targetDir = lfd.getTargetDir();
+        List<Path> targetDirs = new ArrayList<Path>(toMove.size());
 
         for (int i = 0; i < toMove.size(); i++) {
           String toMoveStr = toMove.get(i);
@@ -295,9 +295,9 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           }
           String[] moveStrSplits = toMoveStr.split(Path.SEPARATOR);
           int dpIndex = moveStrSplits.length - dpLbLevel;
-          String target = targetDir;
+          Path target = targetDir;
           while (dpIndex < moveStrSplits.length) {
-            target = target + Path.SEPARATOR + moveStrSplits[dpIndex];
+            target = new Path(target, moveStrSplits[dpIndex]);
             dpIndex++;
           }
 

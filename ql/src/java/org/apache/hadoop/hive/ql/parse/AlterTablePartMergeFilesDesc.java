@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 
@@ -33,7 +34,7 @@ public class AlterTablePartMergeFilesDesc {
   private ListBucketingCtx lbCtx; // context for list bucketing.
 
   private List<String> inputDir = new ArrayList<String>();
-  private String outputDir = null;
+  private Path outputDir = null;
 
   public AlterTablePartMergeFilesDesc(String tableName,
       HashMap<String, String> partSpec) {
@@ -59,11 +60,11 @@ public class AlterTablePartMergeFilesDesc {
     this.partSpec = partSpec;
   }
 
-  public String getOutputDir() {
+  public Path getOutputDir() {
     return outputDir;
   }
 
-  public void setOutputDir(String outputDir) {
+  public void setOutputDir(Path outputDir) {
     this.outputDir = outputDir;
   }
 

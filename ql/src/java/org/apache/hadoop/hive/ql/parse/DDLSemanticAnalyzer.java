@@ -1626,7 +1626,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       Task<? extends Serializable> mergeTask = TaskFactory.get(ddlWork, conf);
       TableDesc tblDesc = Utilities.getTableDesc(tblObj);
       String queryTmpdir = ctx.getExternalTmpFileURI(newTblPartLoc.toUri());
-      mergeDesc.setOutputDir(queryTmpdir);
+      mergeDesc.setOutputDir(new Path(queryTmpdir));
       LoadTableDesc ltd = new LoadTableDesc(new Path(queryTmpdir), queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<String, String>() : partSpec);
       ltd.setLbCtx(lbCtx);
