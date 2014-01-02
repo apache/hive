@@ -7,7 +7,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 #### A masked pattern was here ####
 PREHOOK: query: -- UNSET TABLE PROPERTIES
 ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
@@ -23,7 +22,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 numFiles	0
 #### A masked pattern was here ####
 c	3
@@ -48,7 +46,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 numFiles	0
 #### A masked pattern was here ####
 COLUMN_STATS_ACCURATE	false
@@ -68,7 +65,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 d	4
 numFiles	0
 #### A masked pattern was here ####
@@ -94,7 +90,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 numFiles	0
 #### A masked pattern was here ####
 c	3
@@ -118,7 +113,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 numFiles	0
 #### A masked pattern was here ####
 COLUMN_STATS_ACCURATE	false
@@ -138,7 +132,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 d	4
 numFiles	0
 #### A masked pattern was here ####
@@ -165,7 +158,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 numFiles	0
 #### A masked pattern was here ####
 c	3
@@ -190,7 +182,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 numFiles	0
 #### A masked pattern was here ####
 a	1
@@ -218,7 +209,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 #### A masked pattern was here ####
 propA	100
 propB	200
@@ -237,7 +227,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propC'='300', 'propD'='400')
 PREHOOK: type: ALTERVIEW_PROPERTIES
@@ -251,7 +240,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 #### A masked pattern was here ####
 propA	100
 #### A masked pattern was here ####
@@ -271,7 +259,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 #### A masked pattern was here ####
 propD	400
 PREHOOK: query: -- the same property being UNSET multiple times
@@ -288,7 +275,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB' = '200', 'propC'='300', 'propD'='400')
 PREHOOK: type: ALTERVIEW_PROPERTIES
@@ -302,7 +288,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 #### A masked pattern was here ####
 propA	100
 propB	200
@@ -323,7 +308,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 #### A masked pattern was here ####
 propA	100
 propB	200
@@ -342,7 +326,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 #### A masked pattern was here ####
 propA	100
 #### A masked pattern was here ####

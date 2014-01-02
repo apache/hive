@@ -19,14 +19,13 @@ PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table src_autho_test
 POSTHOOK: type: SHOW_GRANT
-
-database	default	
-table	src_autho_test	
-principalName	hive_test_user	
-principalType	USER	
-privilege	All	
+database	default
+table	src_autho_test
+principalName	hive_test_user
+principalType	USER
+privilege	All
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test

@@ -508,11 +508,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int showGrants(ShowGrantDesc showGrantDesc) throws HiveException {
-    DataOutput outStream = null;
+    StringBuilder builder = new StringBuilder();
     try {
-      Path resFile = new Path(showGrantDesc.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
       PrincipalDesc principalDesc = showGrantDesc.getPrincipalDesc();
       PrivilegeObjectDesc hiveObjectDesc = showGrantDesc.getHiveObj();
       String principalName = principalDesc.getName();
@@ -520,21 +517,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         List<HiveObjectPrivilege> users = db.showPrivilegeGrant(
             HiveObjectType.GLOBAL, principalName, principalDesc.getType(),
             null, null, null, null);
-        if (users != null && users.size() > 0) {
-          boolean first = true;
-          sortPrivileges(users);
-          for (HiveObjectPrivilege usr : users) {
-            if (!first) {
-              outStream.write(terminator);
-            } else {
-              first = false;
-            }
-
-            writeGrantInfo(outStream, principalDesc.getType(), principalName,
-                null, null, null, null, usr.getGrantInfo());
-
-          }
-        }
+        writeGrantInfo(builder, principalDesc.getType(), principalName,
+            null, null, null, null, users);
       } else {
         String obj = hiveObjectDesc.getObject();
         boolean notFound = true;
@@ -576,22 +560,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           // show database level privileges
           List<HiveObjectPrivilege> dbs = db.showPrivilegeGrant(HiveObjectType.DATABASE, principalName,
               principalDesc.getType(), dbName, null, null, null);
-          if (dbs != null && dbs.size() > 0) {
-            boolean first = true;
-            sortPrivileges(dbs);
-            for (HiveObjectPrivilege db : dbs) {
-              if (!first) {
-                outStream.write(terminator);
-              } else {
-                first = false;
-              }
-
-              writeGrantInfo(outStream, principalDesc.getType(), principalName,
-                  dbName, null, null, null, db.getGrantInfo());
-
-            }
-          }
-
+          writeGrantInfo(builder, principalDesc.getType(), principalName,
+              dbName, null, null, null, dbs);
         } else {
           if (showGrantDesc.getColumns() != null) {
             // show column level privileges
@@ -600,67 +570,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                   HiveObjectType.COLUMN, principalName,
                   principalDesc.getType(), dbName, tableName, partValues,
                   columnName);
-              if (columnss != null && columnss.size() > 0) {
-                boolean first = true;
-                sortPrivileges(columnss);
-                for (HiveObjectPrivilege col : columnss) {
-                  if (!first) {
-                    outStream.write(terminator);
-                  } else {
-                    first = false;
-                  }
-
-                  writeGrantInfo(outStream, principalDesc.getType(),
-                      principalName, dbName, tableName, partName, columnName,
-                      col.getGrantInfo());
-                }
-              }
+              writeGrantInfo(builder, principalDesc.getType(),
+                  principalName, dbName, tableName, partName, columnName,
+                  columnss);
             }
           } else if (hiveObjectDesc.getPartSpec() != null) {
             // show partition level privileges
             List<HiveObjectPrivilege> parts = db.showPrivilegeGrant(
                 HiveObjectType.PARTITION, principalName, principalDesc
                     .getType(), dbName, tableName, partValues, null);
-            if (parts != null && parts.size() > 0) {
-              boolean first = true;
-              sortPrivileges(parts);
-              for (HiveObjectPrivilege part : parts) {
-                if (!first) {
-                  outStream.write(terminator);
-                } else {
-                  first = false;
-                }
-
-                writeGrantInfo(outStream, principalDesc.getType(),
-                    principalName, dbName, tableName, partName, null, part.getGrantInfo());
-
-              }
-            }
+            writeGrantInfo(builder, principalDesc.getType(),
+                principalName, dbName, tableName, partName, null, parts);
           } else {
             // show table level privileges
             List<HiveObjectPrivilege> tbls = db.showPrivilegeGrant(
                 HiveObjectType.TABLE, principalName, principalDesc.getType(),
                 dbName, tableName, null, null);
-            if (tbls != null && tbls.size() > 0) {
-              boolean first = true;
-              sortPrivileges(tbls);
-              for (HiveObjectPrivilege tbl : tbls) {
-                if (!first) {
-                  outStream.write(terminator);
-                } else {
-                  first = false;
-                }
-
-                writeGrantInfo(outStream, principalDesc.getType(),
-                    principalName, dbName, tableName, null, null, tbl.getGrantInfo());
-
-              }
-            }
+            writeGrantInfo(builder, principalDesc.getType(),
+                principalName, dbName, tableName, null, null, tbls);
           }
         }
       }
-      ((FSDataOutputStream) outStream).close();
-      outStream = null;
+      writeToFile(builder.toString(), showGrantDesc.getResFile());
     } catch (FileNotFoundException e) {
       LOG.info("show table status: " + stringifyException(e));
       return 1;
@@ -670,8 +601,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
     }
     return 0;
   }
@@ -840,7 +769,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           FileSystem fs = resFile.getFileSystem(conf);
           outStream = fs.create(resFile);
           for (Role role : roles) {
-            outStream.writeBytes("role name:" + role.getRoleName());
+            outStream.writeBytes(role.getRoleName());
             outStream.write(terminator);
           }
           ((FSDataOutputStream) outStream).close();
@@ -2813,43 +2742,36 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // show table properties - populate the output stream
     Table tbl = db.getTable(tableName, false);
-    DataOutput outStream = null;
     try {
-      Path resFile = new Path(showTblPrpt.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
-
       if (tbl == null) {
         String errMsg = "Table " + tableName + " does not exist";
-        outStream.write(errMsg.getBytes("UTF-8"));
-        ((FSDataOutputStream) outStream).close();
-        outStream = null;
+        writeToFile(errMsg, showTblPrpt.getResFile());
         return 0;
       }
 
       LOG.info("DDLTask: show properties for " + tbl.getTableName());
 
+      StringBuilder builder = new StringBuilder();
       String propertyName = showTblPrpt.getPropertyName();
       if (propertyName != null) {
         String propertyValue = tbl.getProperty(propertyName);
         if (propertyValue == null) {
           String errMsg = "Table " + tableName + " does not have property: " + propertyName;
-          outStream.write(errMsg.getBytes("UTF-8"));
+          builder.append(errMsg);
         }
         else {
-          outStream.writeBytes(propertyValue);
+          builder.append(propertyValue);
         }
       }
       else {
         Map<String, String> properties = tbl.getParameters();
         for (String key : properties.keySet()) {
-          writeKeyValuePair(outStream, key, properties.get(key));
+          writeKeyValuePair(builder, key, properties.get(key));
         }
       }
 
       LOG.info("DDLTask: written data for showing properties of " + tbl.getTableName());
-      ((FSDataOutputStream) outStream).close();
-      outStream = null;
+      writeToFile(builder.toString(), showTblPrpt.getResFile());
 
     } catch (FileNotFoundException e) {
       LOG.info("show table properties: " + stringifyException(e));
@@ -2859,12 +2781,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return 1;
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
     }
 
     return 0;
   }
+
+  private void writeToFile(String data, String file) throws IOException {
+    Path resFile = new Path(file);
+    FileSystem fs = resFile.getFileSystem(conf);
+    FSDataOutputStream out = fs.create(resFile);
+    try {
+      if (data != null && !data.isEmpty()) {
+        OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8");
+        writer.write(data);
+        writer.write((char) terminator);
+        writer.flush();
+      }
+    } finally {
+      IOUtils.closeStream(out);
+    }
+  }
+
   /**
    * Write the description of a table to a file.
    *
@@ -2965,45 +2902,54 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  public static void writeGrantInfo(DataOutput outStream,
+  public static void writeGrantInfo(StringBuilder builder,
       PrincipalType principalType, String principalName, String dbName,
       String tableName, String partName, String columnName,
-      PrivilegeGrantInfo grantInfo) throws IOException {
-
-    String privilege = grantInfo.getPrivilege();
-    long unixTimestamp = grantInfo.getCreateTime() * 1000L;
-    Date createTime = new Date(unixTimestamp);
-    String grantor = grantInfo.getGrantor();
-
-    if (dbName != null) {
-      writeKeyValuePair(outStream, "database", dbName);
-    }
-    if (tableName != null) {
-      writeKeyValuePair(outStream, "table", tableName);
-    }
-    if (partName != null) {
-      writeKeyValuePair(outStream, "partition", partName);
-    }
-    if (columnName != null) {
-      writeKeyValuePair(outStream, "columnName", columnName);
+      List<HiveObjectPrivilege> privileges) throws IOException {
+    if (privileges == null || privileges.isEmpty()) {
+      return;
     }
 
-    writeKeyValuePair(outStream, "principalName", principalName);
-    writeKeyValuePair(outStream, "principalType", "" + principalType);
-    writeKeyValuePair(outStream, "privilege", privilege);
-    writeKeyValuePair(outStream, "grantTime", "" + createTime);
-    if (grantor != null) {
-      writeKeyValuePair(outStream, "grantor", grantor);
+    sortPrivileges(privileges);
+
+    for (HiveObjectPrivilege privilege : privileges) {
+      PrivilegeGrantInfo grantInfo = privilege.getGrantInfo();
+      String privName = grantInfo.getPrivilege();
+      long unixTimestamp = grantInfo.getCreateTime() * 1000L;
+      Date createTime = new Date(unixTimestamp);
+      String grantor = grantInfo.getGrantor();
+
+      if (dbName != null) {
+        writeKeyValuePair(builder, "database", dbName);
+      }
+      if (tableName != null) {
+        writeKeyValuePair(builder, "table", tableName);
+      }
+      if (partName != null) {
+        writeKeyValuePair(builder, "partition", partName);
+      }
+      if (columnName != null) {
+        writeKeyValuePair(builder, "columnName", columnName);
+      }
+
+      writeKeyValuePair(builder, "principalName", principalName);
+      writeKeyValuePair(builder, "principalType", "" + principalType);
+      writeKeyValuePair(builder, "privilege", privName);
+      writeKeyValuePair(builder, "grantTime", "" + createTime);
+      if (grantor != null) {
+        writeKeyValuePair(builder, "grantor", grantor);
+      }
     }
   }
 
-  private static void writeKeyValuePair(DataOutput outStream, String key,
+  private static void writeKeyValuePair(StringBuilder builder, String key,
       String value) throws IOException {
-    outStream.write(terminator);
-    outStream.writeBytes(key);
-    outStream.write(separator);
-    outStream.writeBytes(value);
-    outStream.write(separator);
+    if (builder.length() > 0) {
+      builder.append((char)terminator);
+    }
+    builder.append(key);
+    builder.append((char)separator);
+    builder.append(value);
   }
 
   private void setAlterProtectMode(boolean protectModeEnable,
@@ -3510,8 +3456,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *
    * @param params
    *          Parameters.
-   * @param user
-   *          user that is doing the updating.
+   * @param conf
+   *          HiveConf of session
    */
   private boolean updateModifiedParameters(Map<String, String> params, HiveConf conf) throws HiveException {
     String user = null;

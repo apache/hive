@@ -24,14 +24,13 @@ PREHOOK: query: show grant user hive_test_user on table authorization_fail_3
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table authorization_fail_3
 POSTHOOK: type: SHOW_GRANT
-
-database	default	
-table	authorization_fail_3	
-principalName	hive_test_user	
-principalType	USER	
-privilege	Create	
+database	default
+table	authorization_fail_3
+principalName	hive_test_user
+principalType	USER
+privilege	Create
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: show grant user hive_test_user on table authorization_fail_3 partition (ds='2010')
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table authorization_fail_3 partition (ds='2010')
