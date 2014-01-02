@@ -52,30 +52,27 @@ PREHOOK: query: show grant user hive_test_user on table authorization_part
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table authorization_part
 POSTHOOK: type: SHOW_GRANT
-
-database	default	
-table	authorization_part	
-principalName	hive_test_user	
-principalType	USER	
-privilege	Create	
+database	default
+table	authorization_part
+principalName	hive_test_user
+principalType	USER
+privilege	Create
 #### A masked pattern was here ####
-grantor	hive_test_user	
-
-database	default	
-table	authorization_part	
-principalName	hive_test_user	
-principalType	USER	
-privilege	Drop	
+grantor	hive_test_user
+database	default
+table	authorization_part
+principalName	hive_test_user
+principalType	USER
+privilege	Drop
 #### A masked pattern was here ####
-grantor	hive_test_user	
-
-database	default	
-table	authorization_part	
-principalName	hive_test_user	
-principalType	USER	
-privilege	Update	
+grantor	hive_test_user
+database	default
+table	authorization_part
+principalName	hive_test_user
+principalType	USER
+privilege	Update
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: grant select(key) on table authorization_part to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@authorization_part
@@ -98,16 +95,15 @@ POSTHOOK: query: show grant user hive_test_user on table authorization_part(key)
 POSTHOOK: type: SHOW_GRANT
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
-
-database	default	
-table	authorization_part	
-partition	ds=2010	
-columnName	key	
-principalName	hive_test_user	
-principalType	USER	
-privilege	Select	
+database	default
+table	authorization_part
+partition	ds=2010
+columnName	key
+principalName	hive_test_user
+principalType	USER
+privilege	Select
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: alter table authorization_part partition (ds='2010') rename to partition (ds='2010_tmp')
 PREHOOK: type: ALTERTABLE_RENAMEPART
 PREHOOK: Input: default@authorization_part
@@ -126,16 +122,15 @@ POSTHOOK: query: show grant user hive_test_user on table authorization_part(key)
 POSTHOOK: type: SHOW_GRANT
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
-
-database	default	
-table	authorization_part	
-partition	ds=2010_tmp	
-columnName	key	
-principalName	hive_test_user	
-principalType	USER	
-privilege	Select	
+database	default
+table	authorization_part
+partition	ds=2010_tmp
+columnName	key
+principalName	hive_test_user
+principalType	USER
+privilege	Select
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: drop table authorization_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@authorization_part

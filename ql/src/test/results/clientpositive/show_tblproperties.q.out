@@ -28,7 +28,6 @@ PREHOOK: query: show tblproperties tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 numFiles	0
 #### A masked pattern was here ####
 tmp	true

@@ -15,7 +15,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 numFiles	0
 #### A masked pattern was here ####
 c	3

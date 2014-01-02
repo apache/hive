@@ -15,7 +15,6 @@ PREHOOK: query: SHOW TBLPROPERTIES testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
-	 
 #### A masked pattern was here ####
 propA	100
 propB	200
