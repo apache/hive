@@ -32,7 +32,6 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
     implements Serializable {
   private static final long serialVersionUID = 1L;
   private boolean replace;
-  private String tmpDir;
   private DynamicPartitionCtx dpCtx;
   private ListBucketingCtx lbCtx;
   private boolean holdDDLTime;
@@ -47,35 +46,34 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
     this.holdDDLTime = false;
   }
 
-  public LoadTableDesc(final Path sourcePath, final String tmpDir,
+  public LoadTableDesc(final Path sourcePath,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec, final boolean replace) {
     super(sourcePath);
-    init(tmpDir, table, partitionSpec, replace);
+    init(table, partitionSpec, replace);
   }
 
-  public LoadTableDesc(final Path sourcePath, final String tmpDir,
+  public LoadTableDesc(final Path sourcePath,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec) {
-    this(sourcePath, tmpDir, table, partitionSpec, true);
+    this(sourcePath, table, partitionSpec, true);
   }
 
-  public LoadTableDesc(final Path sourcePath, final String tmpDir,
+  public LoadTableDesc(final Path sourcePath,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final DynamicPartitionCtx dpCtx) {
     super(sourcePath);
     this.dpCtx = dpCtx;
     if (dpCtx != null && dpCtx.getPartSpec() != null && partitionSpec == null) {
-      init(tmpDir, table, dpCtx.getPartSpec(), true);
+      init(table, dpCtx.getPartSpec(), true);
     } else {
-      init(tmpDir, table, new LinkedHashMap<String, String>(), true);
+      init(table, new LinkedHashMap<String, String>(), true);
     }
   }
 
-  private void init(final String tmpDir,
+  private void init(
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec, final boolean replace) {
-    this.tmpDir = tmpDir;
     this.table = table;
     this.partitionSpec = partitionSpec;
     this.replace = replace;
@@ -88,15 +86,6 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
 
   public boolean getHoldDDLTime() {
     return holdDDLTime;
-  }
-
-  @Explain(displayName = "tmp directory", normalExplain = false)
-  public String getTmpDir() {
-    return tmpDir;
-  }
-
-  public void setTmpDir(final String tmp) {
-    tmpDir = tmp;
   }
 
   @Explain(displayName = "table")

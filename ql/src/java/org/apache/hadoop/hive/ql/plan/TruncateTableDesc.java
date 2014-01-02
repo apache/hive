@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
+
 /**
  * Truncates managed table or partition
  */
@@ -32,8 +34,8 @@ public class TruncateTableDesc extends DDLDesc {
   private String tableName;
   private Map<String, String> partSpec;
   private List<Integer> columnIndexes;
-  private String inputDir;
-  private String outputDir;
+  private Path inputDir;
+  private Path outputDir;
   private ListBucketingCtx lbCtx;
 
   public TruncateTableDesc() {
@@ -71,19 +73,19 @@ public class TruncateTableDesc extends DDLDesc {
     this.columnIndexes = columnIndexes;
   }
 
-  public String getInputDir() {
+  public Path getInputDir() {
     return inputDir;
   }
 
-  public void setInputDir(String inputDir) {
+  public void setInputDir(Path inputDir) {
     this.inputDir = inputDir;
   }
 
-  public String getOutputDir() {
+  public Path getOutputDir() {
     return outputDir;
   }
 
-  public void setOutputDir(String outputDir) {
+  public void setOutputDir(Path outputDir) {
     this.outputDir = outputDir;
   }
 

@@ -188,7 +188,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.list_bucketing_static_part
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator

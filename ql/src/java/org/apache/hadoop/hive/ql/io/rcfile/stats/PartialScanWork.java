@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -38,13 +39,13 @@ public class PartialScanWork extends MapWork implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private List<String> inputPaths;
+  private transient List<Path> inputPaths;
   private String aggKey;
 
   public PartialScanWork() {
   }
 
-  public PartialScanWork(List<String> inputPaths) {
+  public PartialScanWork(List<Path> inputPaths) {
     super();
     this.inputPaths = inputPaths;
     PartitionDesc partDesc = new PartitionDesc();
@@ -52,16 +53,16 @@ public class PartialScanWork extends MapWork implements Serializable {
     if(this.getPathToPartitionInfo() == null) {
       this.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
     }
-    for(String path: this.inputPaths) {
-      this.getPathToPartitionInfo().put(path, partDesc);
+    for(Path path: this.inputPaths) {
+      this.getPathToPartitionInfo().put(path.toString(), partDesc);
     }
   }
 
-  public List<String> getInputPaths() {
+  public List<Path> getInputPaths() {
     return inputPaths;
   }
 
-  public void setInputPaths(List<String> inputPaths) {
+  public void setInputPaths(List<Path> inputPaths) {
     this.inputPaths = inputPaths;
   }
 

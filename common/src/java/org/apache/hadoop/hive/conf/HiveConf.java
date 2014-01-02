@@ -768,6 +768,9 @@ public class HiveConf extends Configuration {
     HIVE_DDL_OUTPUT_FORMAT("hive.ddl.output.format", null),
     HIVE_ENTITY_SEPARATOR("hive.entity.separator", "@"),
 
+    HIVE_SERVER2_MAX_START_ATTEMPTS("hive.server2.max.start.attempts", 30L,
+        new LongRangeValidator(0L, Long.MAX_VALUE)),
+
     // binary or http
     HIVE_SERVER2_TRANSPORT_MODE("hive.server2.transport.mode", "binary",
         new StringsValidator("binary", "http")),
@@ -1400,6 +1403,32 @@ public class HiveConf extends Configuration {
     public String validate(String value) {
       if (value == null || !expected.contains(value.toLowerCase())) {
         return "Invalid value.. expects one of " + expected;
+      }
+      return null;
+    }
+  }
+
+  public static class LongRangeValidator implements Validator {
+    private final long lower, upper;
+
+    public LongRangeValidator(long lower, long upper) {
+      this.lower = lower;
+      this.upper = upper;
+    }
+
+    @Override
+    public String validate(String value) {
+      try {
+        if(value == null) {
+          return "Value cannot be null";
+        }
+        value = value.trim();
+        long lvalue = Long.parseLong(value);
+        if (lvalue < lower || lvalue > upper) {
+          return "Invalid value  " + value + ", which should be in between " + lower + " and " + upper;
+        }
+      } catch (NumberFormatException e) {
+        return e.toString();
       }
       return null;
     }

@@ -37,10 +37,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 public class FetchWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String tblDir;
+  private Path tblDir;
   private TableDesc tblDesc;
 
-  private ArrayList<String> partDir;
+  private ArrayList<Path> partDir;
   private ArrayList<PartitionDesc> partDesc;
 
   private Operator<?> source;
@@ -75,24 +75,24 @@ public class FetchWork implements Serializable {
     return rowsComputedFromStats;
   }
 
-  public FetchWork(String tblDir, TableDesc tblDesc) {
+  public FetchWork(Path tblDir, TableDesc tblDesc) {
     this(tblDir, tblDesc, -1);
   }
 
-  public FetchWork(String tblDir, TableDesc tblDesc, int limit) {
+  public FetchWork(Path tblDir, TableDesc tblDesc, int limit) {
     this.tblDir = tblDir;
     this.tblDesc = tblDesc;
     this.limit = limit;
   }
 
-  public FetchWork(List<String> partDir, List<PartitionDesc> partDesc, TableDesc tblDesc) {
+  public FetchWork(List<Path> partDir, List<PartitionDesc> partDesc, TableDesc tblDesc) {
     this(partDir, partDesc, tblDesc, -1);
   }
 
-  public FetchWork(List<String> partDir, List<PartitionDesc> partDesc,
+  public FetchWork(List<Path> partDir, List<PartitionDesc> partDesc,
       TableDesc tblDesc, int limit) {
     this.tblDesc = tblDesc;
-    this.partDir = new ArrayList<String>(partDir);
+    this.partDir = new ArrayList<Path>(partDir);
     this.partDesc = new ArrayList<PartitionDesc>(partDesc);
     this.limit = limit;
   }
@@ -124,22 +124,15 @@ public class FetchWork implements Serializable {
   /**
    * @return the tblDir
    */
-  public String getTblDir() {
+  public Path getTblDir() {
     return tblDir;
-  }
-
-  /**
-   * @return the tblDir
-   */
-  public Path getTblDirPath() {
-    return new Path(tblDir);
   }
 
   /**
    * @param tblDir
    *          the tblDir to set
    */
-  public void setTblDir(String tblDir) {
+  public void setTblDir(Path tblDir) {
     this.tblDir = tblDir;
   }
 
@@ -161,45 +154,15 @@ public class FetchWork implements Serializable {
   /**
    * @return the partDir
    */
-  public ArrayList<String> getPartDir() {
+  public ArrayList<Path> getPartDir() {
     return partDir;
-  }
-
-  public List<Path> getPartDirPath() {
-    return FetchWork.convertStringToPathArray(partDir);
-  }
-
-  public static List<String> convertPathToStringArray(List<Path> paths) {
-    if (paths == null) {
-      return null;
-    }
-
-    List<String> pathsStr = new ArrayList<String>();
-    for (Path path : paths) {
-      pathsStr.add(path.toString());
-    }
-
-    return pathsStr;
-  }
-
-  public static List<Path> convertStringToPathArray(List<String> paths) {
-    if (paths == null) {
-      return null;
-    }
-
-    List<Path> pathsStr = new ArrayList<Path>();
-    for (String path : paths) {
-      pathsStr.add(new Path(path));
-    }
-
-    return pathsStr;
   }
 
   /**
    * @param partDir
    *          the partDir to set
    */
-  public void setPartDir(ArrayList<String> partDir) {
+  public void setPartDir(ArrayList<Path> partDir) {
     this.partDir = partDir;
   }
 
@@ -228,7 +191,7 @@ public class FetchWork implements Serializable {
       // Construct a sorted Map of Partition Dir - Partition Descriptor; ordering is based on
       // patition dir (map key)
       // Assumption: there is a 1-1 mapping between partition dir and partition descriptor lists
-      TreeMap<String, PartitionDesc> partDirToPartSpecMap = new TreeMap<String, PartitionDesc>();
+      TreeMap<Path, PartitionDesc> partDirToPartSpecMap = new TreeMap<Path, PartitionDesc>();
       for (int i = 0; i < partDir.size(); i++) {
         partDirToPartSpecMap.put(partDir.get(i), partDesc.get(i));
       }
@@ -246,7 +209,7 @@ public class FetchWork implements Serializable {
   public List<PartitionDesc> getPartDescs(List<Path> paths) {
     List<PartitionDesc> parts = new ArrayList<PartitionDesc>(paths.size());
     for (Path path : paths) {
-      parts.add(partDesc.get(partDir.indexOf(path.getParent().toString())));
+      parts.add(partDesc.get(partDir.indexOf(path.getParent())));
     }
     return parts;
   }
@@ -319,8 +282,8 @@ public class FetchWork implements Serializable {
     }
 
     String ret = "partition = ";
-    for (String part : partDir) {
-      ret = ret.concat(part);
+    for (Path part : partDir) {
+      ret = ret.concat(part.toUri().toString());
     }
 
     return ret;

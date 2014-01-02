@@ -31,6 +31,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -172,9 +173,7 @@ public class MapJoinProcessor implements Transform {
         ArrayList<String> list = entry2.getValue();
         if (list.contains(alias)) {
           // add to path set
-          if (!pathSet.contains(path)) {
-            pathSet.add(path);
-          }
+          pathSet.add(path);
           //remove this alias from the alias list
           list.remove(alias);
           if(list.size() == 0) {
@@ -189,18 +188,18 @@ public class MapJoinProcessor implements Transform {
 
       // create fetch work
       FetchWork fetchWork = null;
-      List<String> partDir = new ArrayList<String>();
+      List<Path> partDir = new ArrayList<Path>();
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
 
       for (String tablePath : pathSet) {
         PartitionDesc partitionDesc = newWork.getMapWork().getPathToPartitionInfo().get(tablePath);
         // create fetchwork for non partitioned table
         if (partitionDesc.getPartSpec() == null || partitionDesc.getPartSpec().size() == 0) {
-          fetchWork = new FetchWork(tablePath, partitionDesc.getTableDesc());
+          fetchWork = new FetchWork(new Path(tablePath), partitionDesc.getTableDesc());
           break;
         }
         // if table is partitioned,add partDir and partitionDesc
-        partDir.add(tablePath);
+        partDir.add(new Path(tablePath));
         partDesc.add(partitionDesc);
       }
       // create fetchwork for partitioned table
