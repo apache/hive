@@ -308,7 +308,7 @@ public final class GenMRSkewJoinProcessor {
         localPlan.getAliasToWork().put(small_alias.toString(), tblScan_op2);
         Path tblDir = new Path(smallTblDirs.get(small_alias));
         localPlan.getAliasToFetchWork().put(small_alias.toString(),
-            new FetchWork(tblDir.toString(), tableDescList.get(small_alias)));
+            new FetchWork(tblDir, tableDescList.get(small_alias)));
       }
 
       newPlan.setMapLocalWork(localPlan);

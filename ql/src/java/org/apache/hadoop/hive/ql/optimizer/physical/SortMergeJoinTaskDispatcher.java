@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -118,10 +119,10 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
 
       PartitionDesc partitionInfo = currWork.getAliasToPartnInfo().get(alias);
       if (fetchWork.getTblDir() != null) {
-        currWork.mergeAliasedInput(alias, fetchWork.getTblDir(), partitionInfo);
+        currWork.mergeAliasedInput(alias, fetchWork.getTblDir().toUri().toString(), partitionInfo);
       } else {
-        for (String pathDir : fetchWork.getPartDir()) {
-          currWork.mergeAliasedInput(alias, pathDir, partitionInfo);
+        for (Path pathDir : fetchWork.getPartDir()) {
+          currWork.mergeAliasedInput(alias, pathDir.toUri().toString(), partitionInfo);
         }
       }
     }

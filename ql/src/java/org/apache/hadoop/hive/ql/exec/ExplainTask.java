@@ -193,7 +193,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     PrintStream out = null;
     try {
-      Path resFile = new Path(work.getResFile());
+      Path resFile = work.getResFile();
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       out = new PrintStream(outS);
 

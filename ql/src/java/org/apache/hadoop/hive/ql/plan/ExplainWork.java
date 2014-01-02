@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -34,7 +35,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 public class ExplainWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String resFile;
+  private Path resFile;
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private Task<? extends Serializable> fetchTask;
   private String astStringTree;
@@ -52,7 +53,7 @@ public class ExplainWork implements Serializable {
   public ExplainWork() {
   }
 
-  public ExplainWork(String resFile,
+  public ExplainWork(Path resFile,
       ParseContext pCtx,
       List<Task<? extends Serializable>> rootTasks,
       Task<? extends Serializable> fetchTask,
@@ -74,11 +75,11 @@ public class ExplainWork implements Serializable {
     this.pCtx = pCtx;
   }
 
-  public String getResFile() {
+  public Path getResFile() {
     return resFile;
   }
 
-  public void setResFile(String resFile) {
+  public void setResFile(Path resFile) {
     this.resFile = resFile;
   }
 

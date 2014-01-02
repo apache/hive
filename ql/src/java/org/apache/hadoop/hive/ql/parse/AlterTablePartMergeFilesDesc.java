@@ -33,7 +33,7 @@ public class AlterTablePartMergeFilesDesc {
   private HashMap<String, String> partSpec;
   private ListBucketingCtx lbCtx; // context for list bucketing.
 
-  private List<String> inputDir = new ArrayList<String>();
+  private List<Path> inputDir = new ArrayList<Path>();
   private Path outputDir = null;
 
   public AlterTablePartMergeFilesDesc(String tableName,
@@ -68,11 +68,11 @@ public class AlterTablePartMergeFilesDesc {
     this.outputDir = outputDir;
   }
 
-  public List<String> getInputDir() {
+  public List<Path> getInputDir() {
     return inputDir;
   }
 
-  public void setInputDir(List<String> inputDir) {
+  public void setInputDir(List<Path> inputDir) {
     this.inputDir = inputDir;
   }
 

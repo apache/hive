@@ -379,15 +379,15 @@ public class TestHCatMultiOutputFormat {
     if (!tbl.getPartCols().isEmpty()) {
       List<Partition> partitions = hive.getPartitions(tbl);
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
-      List<String> partLocs = new ArrayList<String>();
+      List<Path> partLocs = new ArrayList<Path>();
       for (Partition part : partitions) {
-        partLocs.add(part.getLocation());
+        partLocs.add(part.getPartitionPath());
         partDesc.add(Utilities.getPartitionDesc(part));
       }
       work = new FetchWork(partLocs, partDesc, Utilities.getTableDesc(tbl));
       work.setLimit(100);
     } else {
-      work = new FetchWork(tbl.getDataLocation().toString(), Utilities.getTableDesc(tbl));
+      work = new FetchWork(new Path(tbl.getDataLocation()), Utilities.getTableDesc(tbl));
     }
     FetchTask task = new FetchTask();
     task.setWork(work);

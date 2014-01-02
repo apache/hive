@@ -299,7 +299,7 @@ public class FetchOperator implements Serializable {
     if (iterPath == null) {
       if (work.isNotPartitioned()) {
         if (!tblDataDone) {
-          currPath = work.getTblDirPath();
+          currPath = work.getTblDir();
           currTbl = work.getTblDesc();
           if (isNativeTable) {
             FileSystem fs = currPath.getFileSystem(job);
@@ -326,7 +326,7 @@ public class FetchOperator implements Serializable {
         }
         return;
       } else {
-        iterPath = FetchWork.convertStringToPathArray(work.getPartDir()).iterator();
+        iterPath = work.getPartDir().iterator();
         iterPartDesc = work.getPartDesc().iterator();
       }
     }

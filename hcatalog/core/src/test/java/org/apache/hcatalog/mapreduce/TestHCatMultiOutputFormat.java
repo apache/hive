@@ -377,13 +377,13 @@ public class TestHCatMultiOutputFormat {
     org.apache.hadoop.hive.ql.metadata.Table tbl = hive.getTable(database, table);
     FetchWork work;
     if (tbl.getPartCols().isEmpty()) {
-      work = new FetchWork(tbl.getDataLocation().toString(), Utilities.getTableDesc(tbl));
+      work = new FetchWork(new Path(tbl.getDataLocation()), Utilities.getTableDesc(tbl));
     } else {
       List<Partition> partitions = hive.getPartitions(tbl);
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
-      List<String> partLocs = new ArrayList<String>();
+      List<Path> partLocs = new ArrayList<Path>();
       for (Partition part : partitions) {
-        partLocs.add(part.getLocation());
+        partLocs.add(part.getPartitionPath());
         partDesc.add(Utilities.getPartitionDesc(part));
       }
       work = new FetchWork(partLocs, partDesc, Utilities.getTableDesc(tbl));

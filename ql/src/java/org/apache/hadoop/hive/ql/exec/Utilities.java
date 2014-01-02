@@ -750,6 +750,20 @@ public final class Utilities {
       output.writeString(token.getText());
     }
   }
+
+  private static class PathSerializer extends com.esotericsoftware.kryo.Serializer<Path> {
+
+    @Override
+    public void write(Kryo kryo, Output output, Path path) {
+      output.writeString(path.toUri().toString());
+    }
+
+    @Override
+    public Path read(Kryo kryo, Input input, Class<Path> type) {
+      return new Path(URI.create(input.readString()));
+    }
+  }
+
   private static void serializePlan(Object plan, OutputStream out, Configuration conf, boolean cloningPlan) {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
@@ -891,6 +905,7 @@ public final class Utilities {
       kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
       kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
+      kryo.register(Path.class, new PathSerializer());
       removeField(kryo, Operator.class, "colExprMap");
       removeField(kryo, ColumnInfo.class, "objectInspector");
       removeField(kryo, MapWork.class, "opParseCtxMap");
@@ -912,6 +927,7 @@ public final class Utilities {
       kryo.register(CommonToken.class, new CommonTokenSerializer());
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
       kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
+      kryo.register(Path.class, new PathSerializer());
       return kryo;
     };
   };

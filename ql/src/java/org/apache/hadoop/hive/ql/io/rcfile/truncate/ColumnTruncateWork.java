@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -36,8 +37,8 @@ public class ColumnTruncateWork extends MapWork implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private String inputDir;
-  private String outputDir;
+  private transient Path inputDir;
+  private Path outputDir;
   private boolean hasDynamicPartitions;
   private DynamicPartitionCtx dynPartCtx;
   private boolean isListBucketingAlterTableConcatenate;
@@ -47,11 +48,11 @@ public class ColumnTruncateWork extends MapWork implements Serializable {
   public ColumnTruncateWork() {
   }
 
-  public ColumnTruncateWork(List<Integer> droppedColumns, String inputDir, String outputDir) {
+  public ColumnTruncateWork(List<Integer> droppedColumns, Path inputDir, Path outputDir) {
     this(droppedColumns, inputDir, outputDir, false, null);
   }
 
-  public ColumnTruncateWork(List<Integer> droppedColumns, String inputDir, String outputDir,
+  public ColumnTruncateWork(List<Integer> droppedColumns, Path inputDir, Path outputDir,
       boolean hasDynamicPartitions, DynamicPartitionCtx dynPartCtx) {
     super();
     this.droppedColumns = droppedColumns;
@@ -64,22 +65,22 @@ public class ColumnTruncateWork extends MapWork implements Serializable {
     if(this.getPathToPartitionInfo() == null) {
       this.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
     }
-    this.getPathToPartitionInfo().put(inputDir, partDesc);
+    this.getPathToPartitionInfo().put(inputDir.toString(), partDesc);
   }
 
-  public String getInputDir() {
+  public Path getInputDir() {
     return inputDir;
   }
 
-  public void setInputPaths(String inputDir) {
+  public void setInputPaths(Path inputDir) {
     this.inputDir = inputDir;
   }
 
-  public String getOutputDir() {
+  public Path getOutputDir() {
     return outputDir;
   }
 
-  public void setOutputDir(String outputDir) {
+  public void setOutputDir(Path outputDir) {
     this.outputDir = outputDir;
   }
 

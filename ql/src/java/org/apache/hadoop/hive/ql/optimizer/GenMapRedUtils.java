@@ -732,10 +732,10 @@ public final class GenMapRedUtils {
         tblDesc = Utilities.getTableDesc(partsList.getSourceTable());
         localPlan.getAliasToFetchWork().put(
             alias_id,
-            new FetchWork(FetchWork.convertPathToStringArray(partDir), partDesc, tblDesc));
+            new FetchWork(partDir, partDesc, tblDesc));
       } else {
         localPlan.getAliasToFetchWork().put(alias_id,
-            new FetchWork(tblDir.toString(), tblDesc));
+            new FetchWork(tblDir, tblDesc));
       }
       plan.setMapLocalWork(localPlan);
     }
@@ -782,7 +782,7 @@ public final class GenMapRedUtils {
       assert localPlan.getAliasToWork().get(alias) == null;
       assert localPlan.getAliasToFetchWork().get(alias) == null;
       localPlan.getAliasToWork().put(alias, topOp);
-      localPlan.getAliasToFetchWork().put(alias, new FetchWork(alias, tt_desc));
+      localPlan.getAliasToFetchWork().put(alias, new FetchWork(new Path(alias), tt_desc));
       plan.setMapLocalWork(localPlan);
     }
   }
@@ -1487,17 +1487,19 @@ public final class GenMapRedUtils {
     TableDesc tblDesc = fsInputDesc.getTableInfo();
 
     if (tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class)) {
-      ArrayList<String> inputDirs = new ArrayList<String>();
+      ArrayList<Path> inputDirs = new ArrayList<Path>(1);
+      ArrayList<String> inputDirstr = new ArrayList<String>(1);
       if (!hasDynamicPartitions
           && !GenMapRedUtils.isSkewedStoredAsDirs(fsInputDesc)) {
-        inputDirs.add(inputDir);
+        inputDirs.add(new Path(inputDir));
+        inputDirstr.add(inputDir);
       }
 
       MergeWork work = new MergeWork(inputDirs, finalName,
           hasDynamicPartitions, fsInputDesc.getDynPartCtx());
       LinkedHashMap<String, ArrayList<String>> pathToAliases =
           new LinkedHashMap<String, ArrayList<String>>();
-      pathToAliases.put(inputDir, (ArrayList<String>) inputDirs.clone());
+      pathToAliases.put(inputDir, (ArrayList<String>) inputDirstr.clone());
       work.setMapperCannotSpanPartns(true);
       work.setPathToAliases(pathToAliases);
       work.setAliasToWork(
@@ -1593,16 +1595,15 @@ public final class GenMapRedUtils {
     // find the move task
     for (Task<MoveWork> mvTsk : mvTasks) {
       MoveWork mvWork = mvTsk.getWork();
-      String srcDir = null;
+      Path srcDir = null;
       if (mvWork.getLoadFileWork() != null) {
-        srcDir = mvWork.getLoadFileWork().getSourceDir();
+        srcDir = mvWork.getLoadFileWork().getSourcePath();
       } else if (mvWork.getLoadTableWork() != null) {
-        srcDir = mvWork.getLoadTableWork().getSourceDir();
+        srcDir = mvWork.getLoadTableWork().getSourcePath();
       }
 
-      String fsOpDirName = fsOp.getConf().getFinalDirName();
       if ((srcDir != null)
-          && (srcDir.equalsIgnoreCase(fsOpDirName))) {
+          && (srcDir.equals(new Path(fsOp.getConf().getFinalDirName())))) {
         return mvTsk;
       }
     }
