@@ -256,6 +256,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     pathToPartitionInfo = mrwork.getPathToPartitionInfo();
   }
 
+  /*
+   * AddSplitsForGroup collects separate calls to setInputPaths into one where possible.
+   * The reason for this is that this is faster on some InputFormats. E.g.: Orc will start
+   * a threadpool to do the work and calling it multiple times unnecessarily will create a lot
+   * of unnecessary thread pools.
+   */
   private void addSplitsForGroup(List<Path> dirs, TableScanOperator tableScan, JobConf conf,
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
       TableDesc table, List<InputSplit> result) throws IOException {
