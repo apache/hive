@@ -290,7 +290,6 @@ public class QTestGenTask extends Task {
   }
 
   public void execute() throws BuildException {
-
     if (getTemplatePath().equals("")) {
       throw new BuildException("No templatePath attribute specified");
     }
@@ -309,10 +308,6 @@ public class QTestGenTask extends Task {
 
     if (logDirectory == null) {
       throw new BuildException("No logDirectory specified");
-    }
-
-    if (resultsDirectory == null) {
-      throw new BuildException("No resultsDirectory specified");
     }
 
     if (className == null) {
@@ -384,8 +379,7 @@ public class QTestGenTask extends Task {
         qFilesMap.put(qFile.getName(), relativePath(hiveRootDir, qFile));
       }
 
-      // Make sure the output directory exists, if it doesn't
-      // then create it.
+      // Make sure the output directory exists, if it doesn't then create it.
       outDir = new File(outputDirectory);
       if (!outDir.exists()) {
         outDir.mkdirs();
@@ -395,15 +389,19 @@ public class QTestGenTask extends Task {
       if (!logDir.exists()) {
         throw new BuildException("Log Directory " + logDir.getCanonicalPath() + " does not exist");
       }
-      
-      resultsDir = new File(resultsDirectory);
-      if (!resultsDir.exists()) {
-        throw new BuildException("Results Directory " + resultsDir.getCanonicalPath() + " does not exist");
+
+      if (resultsDirectory != null) {
+        resultsDir = new File(resultsDirectory);
+        if (!resultsDir.exists()) {
+          throw new BuildException("Results Directory "
+              + resultsDir.getCanonicalPath() + " does not exist");
+        }
       }
     } catch (Exception e) {
+      e.printStackTrace();
       throw new BuildException(e);
     }
-    
+
     VelocityEngine ve = new VelocityEngine();
 
     try {
@@ -439,7 +437,9 @@ public class QTestGenTask extends Task {
       ctx.put("queryDir", relativePath(hiveRootDir, queryDir));
       ctx.put("qfiles", qFiles);
       ctx.put("qfilesMap", qFilesMap);
-      ctx.put("resultsDir", relativePath(hiveRootDir, resultsDir));
+      if (resultsDir != null) {
+        ctx.put("resultsDir", relativePath(hiveRootDir, resultsDir));
+      }
       ctx.put("logDir", relativePath(hiveRootDir, logDir));
       ctx.put("clusterMode", clusterMode);
       ctx.put("hiveConfDir", hiveConfDir);
@@ -462,6 +462,7 @@ public class QTestGenTask extends Task {
     } catch(ResourceNotFoundException e) {
       throw new BuildException("Resource not found", e);
     } catch(Exception e) {
+      e.printStackTrace();
       throw new BuildException("Generation failed", e);
     }
   }

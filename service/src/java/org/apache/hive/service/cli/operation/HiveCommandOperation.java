@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +39,7 @@ import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.RowSet;
+import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 
@@ -158,10 +158,10 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       resetResultReader();
     }
     List<String> rows = readResults((int) maxRows);
-    RowSet rowSet = new RowSet();
+    RowSet rowSet = RowSetFactory.create(resultSchema, getProtocolVersion());
 
     for (String row : rows) {
-      rowSet.addRow(resultSchema, new String[] {row});
+      rowSet.addRow(new String[] {row});
     }
     return rowSet;
   }

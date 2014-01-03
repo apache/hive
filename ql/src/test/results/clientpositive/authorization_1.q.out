@@ -23,14 +23,13 @@ PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table src_autho_test
 POSTHOOK: type: SHOW_GRANT
-
-database	default	
-table	src_autho_test	
-principalName	hive_test_user	
-principalType	USER	
-privilege	Select	
+database	default
+table	src_autho_test
+principalName	hive_test_user
+principalType	USER
+privilege	Select
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: show grant user hive_test_user on table src_autho_test(key)
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table src_autho_test(key)
@@ -95,15 +94,14 @@ PREHOOK: query: show grant user hive_test_user on table src_autho_test(key)
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table src_autho_test(key)
 POSTHOOK: type: SHOW_GRANT
-
-database	default	
-table	src_autho_test	
-columnName	key	
-principalName	hive_test_user	
-principalType	USER	
-privilege	Select	
+database	default
+table	src_autho_test
+columnName	key
+principalName	hive_test_user
+principalType	USER
+privilege	Select
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test
@@ -160,14 +158,13 @@ PREHOOK: query: show grant group hive_test_group1 on table src_autho_test
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test
 POSTHOOK: type: SHOW_GRANT
-
-database	default	
-table	src_autho_test	
-principalName	hive_test_group1	
-principalType	GROUP	
-privilege	Select	
+database	default
+table	src_autho_test
+principalName	hive_test_group1
+principalType	GROUP
+privilege	Select
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
@@ -232,15 +229,14 @@ PREHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
 POSTHOOK: type: SHOW_GRANT
-
-database	default	
-table	src_autho_test	
-columnName	key	
-principalName	hive_test_group1	
-principalType	GROUP	
-privilege	Select	
+database	default
+table	src_autho_test
+columnName	key
+principalName	hive_test_group1
+principalType	GROUP
+privilege	Select
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test
@@ -297,7 +293,7 @@ PREHOOK: query: show role grant user hive_test_user
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user hive_test_user
 POSTHOOK: type: SHOW_ROLE_GRANT
-role name:src_role
+src_role
 PREHOOK: query: --column grant to role
 
 grant select(key) on table src_autho_test to role src_role
@@ -316,15 +312,14 @@ PREHOOK: query: show grant role src_role on table src_autho_test(key)
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant role src_role on table src_autho_test(key)
 POSTHOOK: type: SHOW_GRANT
-
-database	default	
-table	src_autho_test	
-columnName	key	
-principalName	src_role	
-principalType	ROLE	
-privilege	Select	
+database	default
+table	src_autho_test
+columnName	key
+principalName	src_role
+principalType	ROLE
+privilege	Select
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test
@@ -401,14 +396,13 @@ PREHOOK: query: show grant role src_role on table src_autho_test
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant role src_role on table src_autho_test
 POSTHOOK: type: SHOW_GRANT
-
-database	default	
-table	src_autho_test	
-principalName	src_role	
-principalType	ROLE	
-privilege	Select	
+database	default
+table	src_autho_test
+principalName	src_role
+principalType	ROLE
+privilege	Select
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: show grant role src_role on table src_autho_test(key)
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant role src_role on table src_autho_test(key)

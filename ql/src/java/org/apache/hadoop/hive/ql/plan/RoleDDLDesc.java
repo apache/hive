@@ -39,6 +39,15 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
   
   private String roleOwnerName;
 
+  /**
+   * thrift ddl for the result of show role.
+   */
+  private static String schema = "role#string";
+
+  public static String getSchema() {
+    return schema;
+  }
+
   public static enum RoleOperation {
     DROP_ROLE("drop_role"), CREATE_ROLE("create_role"), SHOW_ROLE_GRANT("show_roles");
     private String operationName;

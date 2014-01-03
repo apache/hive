@@ -389,6 +389,7 @@
                   classpath="${test.classpath}" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientpositive/" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientnegative/" />
+                <mkdir dir="${project.build.directory}/qfile-results/clientcompare"/>
                 <mkdir dir="${project.build.directory}/qfile-results/positive/" />
                 <mkdir dir="${project.build.directory}/qfile-results/negative/" />
                 <mkdir dir="${project.build.directory}/qfile-results/hbase-handler/positive/" />
@@ -455,6 +456,20 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientnegative/" className="TestNegativeCliDriver"
                   logFile="${project.build.directory}/testnegativeclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientnegative/"
+                  hadoopVersion="${active.hadoop.version}"/>
+
+                <!-- Compare Cli -->
+                <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
+                  outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
+                  templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCompareCliDriver.vm"
+                  queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientcompare/"
+                  queryFile="${qfile}"
+                  queryFileRegex="${qfile_regex}"
+                  clusterMode="${clustermode}"
+                  runDisabled="${run_disabled}"
+                  className="TestCompareCliDriver"
+                  logFile="${project.build.directory}/testcompareclidrivergen.log"
+                  logDirectory="${project.build.directory}/qfile-results/clientcompare/"
                   hadoopVersion="${active.hadoop.version}"/>
 
                 <!-- Minimr -->

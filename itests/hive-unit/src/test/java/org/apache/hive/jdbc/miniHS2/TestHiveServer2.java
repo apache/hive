@@ -64,6 +64,6 @@ public class TestHiveServer2 {
     serviceClient.executeStatement(sessHandle, "CREATE TABLE " + tabName + " (id INT)", confOverlay);
     OperationHandle opHandle = serviceClient.executeStatement(sessHandle, "SHOW TABLES", confOverlay);
     RowSet rowSet = serviceClient.fetchResults(opHandle);
-    assertFalse(rowSet.getSize() == 0);
+    assertFalse(rowSet.numRows() == 0);
   }
 }

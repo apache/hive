@@ -293,7 +293,20 @@ public class VectorizationContext {
                    || arg0Type(expr).equals("float"))) {
         return true;
       }
-    } else if (gudf instanceof GenericUDFTimestamp && arg0Type(expr).equals("string")) {
+    } else if ((gudf instanceof GenericUDFTimestamp && arg0Type(expr).equals("string"))
+
+            /* GenericUDFCase and GenericUDFWhen are implemented with the UDF Adaptor because
+             * of their complexity and generality. In the future, variations of these
+             * can be optimized to run faster for the vectorized code path. For example,
+             * CASE col WHEN 1 then "one" WHEN 2 THEN "two" ELSE "other" END
+             * is an example of a GenericUDFCase that has all constant arguments
+             * except for the first argument. This is probably a common case and a
+             * good candidate for a fast, special-purpose VectorExpression. Then
+             * the UDF Adaptor code path could be used as a catch-all for
+             * non-optimized general cases.
+             */
+            || gudf instanceof GenericUDFCase
+            || gudf instanceof GenericUDFWhen) {
       return true;
     }
     return false;

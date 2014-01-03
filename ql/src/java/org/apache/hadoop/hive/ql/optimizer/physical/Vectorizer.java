@@ -126,6 +126,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCeil;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFloor;
@@ -156,6 +157,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFPosMod;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 
 public class Vectorizer implements PhysicalPlanResolver {
 
@@ -253,6 +255,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFAbs.class);
     supportedGenericUDFs.add(GenericUDFBetween.class);
     supportedGenericUDFs.add(GenericUDFIn.class);
+    supportedGenericUDFs.add(GenericUDFCase.class);
+    supportedGenericUDFs.add(GenericUDFWhen.class);
 
     // For type casts
     supportedGenericUDFs.add(UDFToLong.class);

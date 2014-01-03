@@ -130,9 +130,6 @@ import org.apache.hadoop.hive.ql.security.authorization.PrivilegeRegistry;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -523,6 +520,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         principalDesc, privHiveObj, cols);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showGrant), conf));
+    setFetchTask(createFetchTask(ShowGrantDesc.getSchema()));
   }
 
   private void analyzeGrant(ASTNode ast) throws SemanticException {
@@ -683,6 +681,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     createRoleDesc.setResFile(ctx.getResFile().toString());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         createRoleDesc), conf));
+    setFetchTask(createFetchTask(RoleDDLDesc.getSchema()));
   }
 
   private void analyzeAlterDatabase(ASTNode ast) throws SemanticException {
@@ -1932,10 +1931,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Create a FetchTask for a given table and thrift ddl schema.
+   * Create a FetchTask for a given thrift ddl schema.
    *
-   * @param tablename
-   *          tablename
    * @param schema
    *          thrift ddl
    */

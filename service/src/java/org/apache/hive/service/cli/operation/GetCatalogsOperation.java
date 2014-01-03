@@ -18,13 +18,12 @@
 
 package org.apache.hive.service.cli.operation;
 
-import java.util.EnumSet;
-
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.OperationType;
 import org.apache.hive.service.cli.RowSet;
+import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 
@@ -36,10 +35,11 @@ public class GetCatalogsOperation extends MetadataOperation {
   private static final TableSchema RESULT_SET_SCHEMA = new TableSchema()
   .addStringColumn("TABLE_CAT", "Catalog name. NULL if not applicable.");
 
-  private final RowSet rowSet = new RowSet();
+  private final RowSet rowSet;
 
   protected GetCatalogsOperation(HiveSession parentSession) {
     super(parentSession, OperationType.GET_CATALOGS);
+    rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion());
   }
 
   /* (non-Javadoc)
