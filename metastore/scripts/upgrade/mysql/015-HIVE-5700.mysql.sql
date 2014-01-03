@@ -1,0 +1,11 @@
+SELECT '< HIVE-5700 enforce single date format for partition column storage >' AS ' ';
+
+-- Normalize the date partition column values as best we can. No schema changes.
+
+
+UPDATE PARTITION_KEY_VALS
+  INNER JOIN PARTITIONS ON PARTITION_KEY_VALS.PART_ID = PARTITIONS.PART_ID
+  INNER JOIN PARTITION_KEYS ON PARTITION_KEYS.TBL_ID = PARTITIONS.TBL_ID
+    AND PARTITION_KEYS.INTEGER_IDX = PARTITION_KEY_VALS.INTEGER_IDX
+    AND PARTITION_KEYS.PKEY_TYPE = 'date'
+SET PART_KEY_VAL = IFNULL(DATE_FORMAT(cast(PART_KEY_VAL as date),'%Y-%m-%d'), PART_KEY_VAL);
