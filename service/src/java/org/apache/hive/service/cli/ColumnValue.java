@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 
@@ -34,133 +35,116 @@ import org.apache.hive.service.cli.thrift.TI64Value;
 import org.apache.hive.service.cli.thrift.TStringValue;
 
 /**
- * ColumnValue.
+ * Protocols before HIVE_CLI_SERVICE_PROTOCOL_V6 (used by RowBasedSet)
  *
  */
 public class ColumnValue {
 
-  public static final TColumnValue NULL = new TColumnValue();
-
-  static {
-    NULL.setStringVal(new TStringValue());
-  }
-
-  // TODO: replace this with a non-Thrift implementation
-  private final TColumnValue tColumnValue;
-
-  public ColumnValue(TColumnValue tColumnValue) {
-    this.tColumnValue = new TColumnValue(tColumnValue);
-  }
-
-  private static boolean isNull(Object value) {
-    return (value == null);
-  }
-
-  public static ColumnValue booleanValue(Boolean value) {
+  private static TColumnValue booleanValue(Boolean value) {
     TBoolValue tBoolValue = new TBoolValue();
     if (value != null) {
       tBoolValue.setValue(value);
     }
-    return new ColumnValue(TColumnValue.boolVal(tBoolValue));
+    return TColumnValue.boolVal(tBoolValue);
   }
 
-  public static ColumnValue byteValue(Byte value) {
+  private static TColumnValue byteValue(Byte value) {
     TByteValue tByteValue = new TByteValue();
     if (value != null) {
       tByteValue.setValue(value);
     }
-    return new ColumnValue(TColumnValue.byteVal(tByteValue));
+    return TColumnValue.byteVal(tByteValue);
   }
 
-  public static ColumnValue shortValue(Short value) {
+  private static TColumnValue shortValue(Short value) {
     TI16Value tI16Value = new TI16Value();
     if (value != null) {
       tI16Value.setValue(value);
     }
-    return new ColumnValue(TColumnValue.i16Val(tI16Value));
+    return TColumnValue.i16Val(tI16Value);
   }
 
-  public static ColumnValue intValue(Integer value) {
+  private static TColumnValue intValue(Integer value) {
     TI32Value tI32Value = new TI32Value();
     if (value != null) {
       tI32Value.setValue(value);
     }
-    return new ColumnValue(TColumnValue.i32Val(tI32Value));
+    return TColumnValue.i32Val(tI32Value);
   }
 
-  public static ColumnValue longValue(Long value) {
+  private static TColumnValue longValue(Long value) {
     TI64Value tI64Value = new TI64Value();
     if (value != null) {
       tI64Value.setValue(value);
     }
-    return new ColumnValue(TColumnValue.i64Val(tI64Value));
+    return TColumnValue.i64Val(tI64Value);
   }
 
-  public static ColumnValue floatValue(Float value) {
+  private static TColumnValue floatValue(Float value) {
     TDoubleValue tDoubleValue = new TDoubleValue();
     if (value != null) {
       tDoubleValue.setValue(value);
     }
-    return new ColumnValue(TColumnValue.doubleVal(tDoubleValue));
+    return TColumnValue.doubleVal(tDoubleValue);
   }
 
-  public static ColumnValue doubleValue(Double value) {
+  private static TColumnValue doubleValue(Double value) {
     TDoubleValue tDoubleValue = new TDoubleValue();
     if (value != null) {
       tDoubleValue.setValue(value);
     }
-    return new ColumnValue(TColumnValue.doubleVal(tDoubleValue));
+    return TColumnValue.doubleVal(tDoubleValue);
   }
 
-  public static ColumnValue stringValue(String value) {
+  private static TColumnValue stringValue(String value) {
     TStringValue tStringValue = new TStringValue();
     if (value != null) {
       tStringValue.setValue(value);
     }
-    return new ColumnValue(TColumnValue.stringVal(tStringValue));
+    return TColumnValue.stringVal(tStringValue);
   }
 
-  public static ColumnValue stringValue(HiveChar value) {
+  private static TColumnValue stringValue(HiveChar value) {
     TStringValue tStringValue = new TStringValue();
     if (value != null) {
       tStringValue.setValue(value.toString());
     }
-    return new ColumnValue(TColumnValue.stringVal(tStringValue));
+    return TColumnValue.stringVal(tStringValue);
   }
 
-  public static ColumnValue stringValue(HiveVarchar value) {
+  private static TColumnValue stringValue(HiveVarchar value) {
     TStringValue tStringValue = new TStringValue();
     if (value != null) {
       tStringValue.setValue(value.toString());
     }
-    return new ColumnValue(TColumnValue.stringVal(tStringValue));
+    return TColumnValue.stringVal(tStringValue);
   }
 
-  public static ColumnValue dateValue(Date value) {
+  private static TColumnValue dateValue(Date value) {
     TStringValue tStringValue = new TStringValue();
     if (value != null) {
       tStringValue.setValue(value.toString());
     }
-    return new ColumnValue(TColumnValue.stringVal(tStringValue));
+    return new TColumnValue(TColumnValue.stringVal(tStringValue));
   }
 
-  public static ColumnValue timestampValue(Timestamp value) {
+  private static TColumnValue timestampValue(Timestamp value) {
     TStringValue tStringValue = new TStringValue();
     if (value != null) {
       tStringValue.setValue(value.toString());
     }
-    return new ColumnValue(TColumnValue.stringVal(tStringValue));
+    return TColumnValue.stringVal(tStringValue);
   }
 
-  public static ColumnValue stringValue(HiveDecimal value) {
+  private static TColumnValue stringValue(HiveDecimal value) {
     TStringValue tStrValue = new TStringValue();
     if (value != null) {
       tStrValue.setValue(value.toString());
     }
-    return new ColumnValue(TColumnValue.stringVal(tStrValue));
+    return TColumnValue.stringVal(tStrValue);
   }
 
-  public static ColumnValue newColumnValue(Type type, Object value) {
+  public static TColumnValue toTColumnValue(Type type, Object value) {
     switch (type) {
     case BOOLEAN_TYPE:
       return booleanValue((Boolean)value);
@@ -189,6 +173,7 @@ public class ColumnValue {
     case DECIMAL_TYPE:
       return stringValue(((HiveDecimal)value));
     case BINARY_TYPE:
+      return stringValue((String)value);
     case ARRAY_TYPE:
     case MAP_TYPE:
     case STRUCT_TYPE:
@@ -200,8 +185,101 @@ public class ColumnValue {
     }
   }
 
-  public TColumnValue toTColumnValue() {
-    return new TColumnValue(tColumnValue);
+  private static Boolean getBooleanValue(TBoolValue tBoolValue) {
+    if (tBoolValue.isSetValue()) {
+      return tBoolValue.isValue();
+    }
+    return null;
   }
 
+  private static Byte getByteValue(TByteValue tByteValue) {
+    if (tByteValue.isSetValue()) {
+      return tByteValue.getValue();
+    }
+    return null;
+  }
+
+  private static Short getShortValue(TI16Value tI16Value) {
+    if (tI16Value.isSetValue()) {
+      return tI16Value.getValue();
+    }
+    return null;
+  }
+
+  private static Integer getIntegerValue(TI32Value tI32Value) {
+    if (tI32Value.isSetValue()) {
+      return tI32Value.getValue();
+    }
+    return null;
+  }
+
+  private static Long getLongValue(TI64Value tI64Value) {
+    if (tI64Value.isSetValue()) {
+      return tI64Value.getValue();
+    }
+    return null;
+  }
+
+  private static Double getDoubleValue(TDoubleValue tDoubleValue) {
+    if (tDoubleValue.isSetValue()) {
+      return tDoubleValue.getValue();
+    }
+    return null;
+  }
+
+  private static String getStringValue(TStringValue tStringValue) {
+    if (tStringValue.isSetValue()) {
+      return tStringValue.getValue();
+    }
+    return null;
+  }
+
+  private static Date getDateValue(TStringValue tStringValue) {
+    if (tStringValue.isSetValue()) {
+      return Date.valueOf(tStringValue.getValue());
+    }
+    return null;
+  }
+
+  private static Timestamp getTimestampValue(TStringValue tStringValue) {
+    if (tStringValue.isSetValue()) {
+      return Timestamp.valueOf(tStringValue.getValue());
+    }
+    return null;
+  }
+
+  private static byte[] getBinaryValue(TStringValue tString) {
+    if (tString.isSetValue()) {
+      return tString.getValue().getBytes();
+    }
+    return null;
+  }
+
+  private static BigDecimal getBigDecimalValue(TStringValue tStringValue) {
+    if (tStringValue.isSetValue()) {
+      return new BigDecimal(tStringValue.getValue());
+    }
+    return null;
+  }
+
+  public static Object toColumnValue(TColumnValue value) {
+    TColumnValue._Fields field = value.getSetField();
+    switch (field) {
+      case BOOL_VAL:
+        return getBooleanValue(value.getBoolVal());
+      case BYTE_VAL:
+        return getByteValue(value.getByteVal());
+      case I16_VAL:
+        return getShortValue(value.getI16Val());
+      case I32_VAL:
+        return getIntegerValue(value.getI32Val());
+      case I64_VAL:
+        return getLongValue(value.getI64Val());
+      case DOUBLE_VAL:
+        return getDoubleValue(value.getDoubleVal());
+      case STRING_VAL:
+        return getStringValue(value.getStringVal());
+    }
+    throw new IllegalArgumentException("never");
+  }
 }

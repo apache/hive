@@ -117,7 +117,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     LOG.info("Client protocol version: " + req.getClient_protocol());
     TOpenSessionResp resp = new TOpenSessionResp();
     try {
-      SessionHandle sessionHandle = getSessionHandle(req);
+      SessionHandle sessionHandle = getSessionHandle(req, resp);
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
       // TODO: set real configuration map
       resp.setConfiguration(new HashMap<String, String>());
@@ -138,33 +138,46 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     }
   }
 
-  SessionHandle getSessionHandle(TOpenSessionReq req)
+  SessionHandle getSessionHandle(TOpenSessionReq req, TOpenSessionResp res)
       throws HiveSQLException, LoginException, IOException {
 
     String userName = getUserName(req);
+    TProtocolVersion protocol = getMinVersion(CLIService.SERVER_VERSION, req.getClient_protocol());
 
-    SessionHandle sessionHandle = null;
-    if (
-        cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
-        .equals(HiveAuthFactory.AuthTypes.KERBEROS.toString())
-        &&
-        cliService.getHiveConf().
-        getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS)
-        )
-    {
+    SessionHandle sessionHandle;
+    if (cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
+        .equals(HiveAuthFactory.AuthTypes.KERBEROS.toString()) &&
+        cliService.getHiveConf().getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
       String delegationTokenStr = null;
       try {
         delegationTokenStr = cliService.getDelegationTokenFromMetaStore(userName);
       } catch (UnsupportedOperationException e) {
         // The delegation token is not applicable in the given deployment mode
       }
-      sessionHandle = cliService.openSessionWithImpersonation(userName, req.getPassword(),
-          req.getConfiguration(), delegationTokenStr);
+      sessionHandle = cliService.openSessionWithImpersonation(protocol, userName,
+          req.getPassword(), req.getConfiguration(), delegationTokenStr);
     } else {
-      sessionHandle = cliService.openSession(userName, req.getPassword(),
+      sessionHandle = cliService.openSession(protocol, userName, req.getPassword(),
           req.getConfiguration());
     }
+    res.setServerProtocolVersion(protocol);
     return sessionHandle;
+  }
+
+  private TProtocolVersion getMinVersion(TProtocolVersion... versions) {
+    TProtocolVersion[] values = TProtocolVersion.values();
+    int current = values[values.length - 1].getValue();
+    for (TProtocolVersion version : versions) {
+      if (current > version.getValue()) {
+        current = version.getValue();
+      }
+    }
+    for (TProtocolVersion version : values) {
+      if (version.getValue() == current) {
+        return version;
+      }
+    }
+    throw new IllegalArgumentException("never");
   }
 
   @Override

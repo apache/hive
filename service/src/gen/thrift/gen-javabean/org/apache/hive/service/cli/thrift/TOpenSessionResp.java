@@ -141,7 +141,7 @@ public class TOpenSessionResp implements org.apache.thrift.TBase<TOpenSessionRes
   }
 
   public TOpenSessionResp() {
-    this.serverProtocolVersion = org.apache.hive.service.cli.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V5;
+    this.serverProtocolVersion = org.apache.hive.service.cli.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V6;
 
   }
 
@@ -191,7 +191,7 @@ public class TOpenSessionResp implements org.apache.thrift.TBase<TOpenSessionRes
   @Override
   public void clear() {
     this.status = null;
-    this.serverProtocolVersion = org.apache.hive.service.cli.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V5;
+    this.serverProtocolVersion = org.apache.hive.service.cli.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V6;
 
     this.sessionHandle = null;
     this.configuration = null;
@@ -650,15 +650,15 @@ public class TOpenSessionResp implements org.apache.thrift.TBase<TOpenSessionRes
           case 4: // CONFIGURATION
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map144 = iprot.readMapBegin();
-                struct.configuration = new HashMap<String,String>(2*_map144.size);
-                for (int _i145 = 0; _i145 < _map144.size; ++_i145)
+                org.apache.thrift.protocol.TMap _map208 = iprot.readMapBegin();
+                struct.configuration = new HashMap<String,String>(2*_map208.size);
+                for (int _i209 = 0; _i209 < _map208.size; ++_i209)
                 {
-                  String _key146; // required
-                  String _val147; // required
-                  _key146 = iprot.readString();
-                  _val147 = iprot.readString();
-                  struct.configuration.put(_key146, _val147);
+                  String _key210; // required
+                  String _val211; // required
+                  _key210 = iprot.readString();
+                  _val211 = iprot.readString();
+                  struct.configuration.put(_key210, _val211);
                 }
                 iprot.readMapEnd();
               }
@@ -702,10 +702,10 @@ public class TOpenSessionResp implements org.apache.thrift.TBase<TOpenSessionRes
           oprot.writeFieldBegin(CONFIGURATION_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.configuration.size()));
-            for (Map.Entry<String, String> _iter148 : struct.configuration.entrySet())
+            for (Map.Entry<String, String> _iter212 : struct.configuration.entrySet())
             {
-              oprot.writeString(_iter148.getKey());
-              oprot.writeString(_iter148.getValue());
+              oprot.writeString(_iter212.getKey());
+              oprot.writeString(_iter212.getValue());
             }
             oprot.writeMapEnd();
           }
@@ -745,10 +745,10 @@ public class TOpenSessionResp implements org.apache.thrift.TBase<TOpenSessionRes
       if (struct.isSetConfiguration()) {
         {
           oprot.writeI32(struct.configuration.size());
-          for (Map.Entry<String, String> _iter149 : struct.configuration.entrySet())
+          for (Map.Entry<String, String> _iter213 : struct.configuration.entrySet())
           {
-            oprot.writeString(_iter149.getKey());
-            oprot.writeString(_iter149.getValue());
+            oprot.writeString(_iter213.getKey());
+            oprot.writeString(_iter213.getValue());
           }
         }
       }
@@ -770,15 +770,15 @@ public class TOpenSessionResp implements org.apache.thrift.TBase<TOpenSessionRes
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TMap _map150 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.configuration = new HashMap<String,String>(2*_map150.size);
-          for (int _i151 = 0; _i151 < _map150.size; ++_i151)
+          org.apache.thrift.protocol.TMap _map214 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.configuration = new HashMap<String,String>(2*_map214.size);
+          for (int _i215 = 0; _i215 < _map214.size; ++_i215)
           {
-            String _key152; // required
-            String _val153; // required
-            _key152 = iprot.readString();
-            _val153 = iprot.readString();
-            struct.configuration.put(_key152, _val153);
+            String _key216; // required
+            String _val217; // required
+            _key216 = iprot.readString();
+            _val217 = iprot.readString();
+            struct.configuration.put(_key216, _val217);
           }
         }
         struct.setConfigurationIsSet(true);

@@ -35,6 +35,7 @@ import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.OperationManager;
+import org.apache.hive.service.cli.thrift.TProtocolVersion;
 
 /**
  * SessionManager.
@@ -92,24 +93,25 @@ public class SessionManager extends CompositeService {
     }
   }
 
-  public SessionHandle openSession(String username, String password, Map<String, String> sessionConf)
-      throws HiveSQLException {
-    return openSession(username, password, sessionConf, false, null);
+  public SessionHandle openSession(TProtocolVersion protocol, String username, String password,
+      Map<String, String> sessionConf) throws HiveSQLException {
+    return openSession(protocol, username, password, sessionConf, false, null);
   }
 
-  public SessionHandle openSession(String username, String password, Map<String, String> sessionConf,
-      boolean withImpersonation, String delegationToken) throws HiveSQLException {
+  public SessionHandle openSession(TProtocolVersion protocol, String username, String password,
+      Map<String, String> sessionConf, boolean withImpersonation, String delegationToken)
+      throws HiveSQLException {
     if (username == null) {
       username = threadLocalUserName.get();
     }
     HiveSession session;
     if (withImpersonation) {
-      HiveSessionImplwithUGI hiveSessionUgi = new HiveSessionImplwithUGI(username, password,
-          sessionConf, delegationToken);
+      HiveSessionImplwithUGI hiveSessionUgi = new HiveSessionImplwithUGI(protocol, username, password,
+        sessionConf, delegationToken);
       session = HiveSessionProxy.getProxy(hiveSessionUgi, hiveSessionUgi.getSessionUgi());
       hiveSessionUgi.setProxySession(session);
     } else {
-      session = new HiveSessionImpl(username, password, sessionConf);
+      session = new HiveSessionImpl(protocol, username, password, sessionConf);
     }
     session.setSessionManager(this);
     session.setOperationManager(operationManager);

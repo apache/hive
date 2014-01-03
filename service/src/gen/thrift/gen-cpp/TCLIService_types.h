@@ -22,7 +22,8 @@ struct TProtocolVersion {
     HIVE_CLI_SERVICE_PROTOCOL_V2 = 1,
     HIVE_CLI_SERVICE_PROTOCOL_V3 = 2,
     HIVE_CLI_SERVICE_PROTOCOL_V4 = 3,
-    HIVE_CLI_SERVICE_PROTOCOL_V5 = 4
+    HIVE_CLI_SERVICE_PROTOCOL_V5 = 4,
+    HIVE_CLI_SERVICE_PROTOCOL_V6 = 5
   };
 };
 
@@ -1277,6 +1278,457 @@ class TRow {
 
 void swap(TRow &a, TRow &b);
 
+
+class TBoolColumn {
+ public:
+
+  static const char* ascii_fingerprint; // = "F9058324D96DB7F974D8ACDC01C54219";
+  static const uint8_t binary_fingerprint[16]; // = {0xF9,0x05,0x83,0x24,0xD9,0x6D,0xB7,0xF9,0x74,0xD8,0xAC,0xDC,0x01,0xC5,0x42,0x19};
+
+  TBoolColumn() : nulls() {
+  }
+
+  virtual ~TBoolColumn() throw() {}
+
+  std::vector<bool>  values;
+  std::string nulls;
+
+  void __set_values(const std::vector<bool> & val) {
+    values = val;
+  }
+
+  void __set_nulls(const std::string& val) {
+    nulls = val;
+  }
+
+  bool operator == (const TBoolColumn & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    if (!(nulls == rhs.nulls))
+      return false;
+    return true;
+  }
+  bool operator != (const TBoolColumn &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TBoolColumn & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TBoolColumn &a, TBoolColumn &b);
+
+
+class TByteColumn {
+ public:
+
+  static const char* ascii_fingerprint; // = "1CB300106BAA463A70BB2A2395900F48";
+  static const uint8_t binary_fingerprint[16]; // = {0x1C,0xB3,0x00,0x10,0x6B,0xAA,0x46,0x3A,0x70,0xBB,0x2A,0x23,0x95,0x90,0x0F,0x48};
+
+  TByteColumn() : nulls() {
+  }
+
+  virtual ~TByteColumn() throw() {}
+
+  std::vector<int8_t>  values;
+  std::string nulls;
+
+  void __set_values(const std::vector<int8_t> & val) {
+    values = val;
+  }
+
+  void __set_nulls(const std::string& val) {
+    nulls = val;
+  }
+
+  bool operator == (const TByteColumn & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    if (!(nulls == rhs.nulls))
+      return false;
+    return true;
+  }
+  bool operator != (const TByteColumn &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TByteColumn & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TByteColumn &a, TByteColumn &b);
+
+
+class TI16Column {
+ public:
+
+  static const char* ascii_fingerprint; // = "6574CDB1F121C8DB47FB257A3F104BDB";
+  static const uint8_t binary_fingerprint[16]; // = {0x65,0x74,0xCD,0xB1,0xF1,0x21,0xC8,0xDB,0x47,0xFB,0x25,0x7A,0x3F,0x10,0x4B,0xDB};
+
+  TI16Column() : nulls() {
+  }
+
+  virtual ~TI16Column() throw() {}
+
+  std::vector<int16_t>  values;
+  std::string nulls;
+
+  void __set_values(const std::vector<int16_t> & val) {
+    values = val;
+  }
+
+  void __set_nulls(const std::string& val) {
+    nulls = val;
+  }
+
+  bool operator == (const TI16Column & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    if (!(nulls == rhs.nulls))
+      return false;
+    return true;
+  }
+  bool operator != (const TI16Column &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TI16Column & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TI16Column &a, TI16Column &b);
+
+
+class TI32Column {
+ public:
+
+  static const char* ascii_fingerprint; // = "CCCCE89C7E9DA10280F5663700677313";
+  static const uint8_t binary_fingerprint[16]; // = {0xCC,0xCC,0xE8,0x9C,0x7E,0x9D,0xA1,0x02,0x80,0xF5,0x66,0x37,0x00,0x67,0x73,0x13};
+
+  TI32Column() : nulls() {
+  }
+
+  virtual ~TI32Column() throw() {}
+
+  std::vector<int32_t>  values;
+  std::string nulls;
+
+  void __set_values(const std::vector<int32_t> & val) {
+    values = val;
+  }
+
+  void __set_nulls(const std::string& val) {
+    nulls = val;
+  }
+
+  bool operator == (const TI32Column & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    if (!(nulls == rhs.nulls))
+      return false;
+    return true;
+  }
+  bool operator != (const TI32Column &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TI32Column & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TI32Column &a, TI32Column &b);
+
+
+class TI64Column {
+ public:
+
+  static const char* ascii_fingerprint; // = "925353917FC0AF87976A2338011F5A31";
+  static const uint8_t binary_fingerprint[16]; // = {0x92,0x53,0x53,0x91,0x7F,0xC0,0xAF,0x87,0x97,0x6A,0x23,0x38,0x01,0x1F,0x5A,0x31};
+
+  TI64Column() : nulls() {
+  }
+
+  virtual ~TI64Column() throw() {}
+
+  std::vector<int64_t>  values;
+  std::string nulls;
+
+  void __set_values(const std::vector<int64_t> & val) {
+    values = val;
+  }
+
+  void __set_nulls(const std::string& val) {
+    nulls = val;
+  }
+
+  bool operator == (const TI64Column & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    if (!(nulls == rhs.nulls))
+      return false;
+    return true;
+  }
+  bool operator != (const TI64Column &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TI64Column & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TI64Column &a, TI64Column &b);
+
+
+class TDoubleColumn {
+ public:
+
+  static const char* ascii_fingerprint; // = "8FF1C050A8D7FD247AEB23CD71539C09";
+  static const uint8_t binary_fingerprint[16]; // = {0x8F,0xF1,0xC0,0x50,0xA8,0xD7,0xFD,0x24,0x7A,0xEB,0x23,0xCD,0x71,0x53,0x9C,0x09};
+
+  TDoubleColumn() : nulls() {
+  }
+
+  virtual ~TDoubleColumn() throw() {}
+
+  std::vector<double>  values;
+  std::string nulls;
+
+  void __set_values(const std::vector<double> & val) {
+    values = val;
+  }
+
+  void __set_nulls(const std::string& val) {
+    nulls = val;
+  }
+
+  bool operator == (const TDoubleColumn & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    if (!(nulls == rhs.nulls))
+      return false;
+    return true;
+  }
+  bool operator != (const TDoubleColumn &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TDoubleColumn & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TDoubleColumn &a, TDoubleColumn &b);
+
+
+class TStringColumn {
+ public:
+
+  static const char* ascii_fingerprint; // = "BE556BF7091B2DABBA1863D5E458B15F";
+  static const uint8_t binary_fingerprint[16]; // = {0xBE,0x55,0x6B,0xF7,0x09,0x1B,0x2D,0xAB,0xBA,0x18,0x63,0xD5,0xE4,0x58,0xB1,0x5F};
+
+  TStringColumn() : nulls() {
+  }
+
+  virtual ~TStringColumn() throw() {}
+
+  std::vector<std::string>  values;
+  std::string nulls;
+
+  void __set_values(const std::vector<std::string> & val) {
+    values = val;
+  }
+
+  void __set_nulls(const std::string& val) {
+    nulls = val;
+  }
+
+  bool operator == (const TStringColumn & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    if (!(nulls == rhs.nulls))
+      return false;
+    return true;
+  }
+  bool operator != (const TStringColumn &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TStringColumn & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TStringColumn &a, TStringColumn &b);
+
+
+class TBinaryColumn {
+ public:
+
+  static const char* ascii_fingerprint; // = "BE556BF7091B2DABBA1863D5E458B15F";
+  static const uint8_t binary_fingerprint[16]; // = {0xBE,0x55,0x6B,0xF7,0x09,0x1B,0x2D,0xAB,0xBA,0x18,0x63,0xD5,0xE4,0x58,0xB1,0x5F};
+
+  TBinaryColumn() : nulls() {
+  }
+
+  virtual ~TBinaryColumn() throw() {}
+
+  std::vector<std::string>  values;
+  std::string nulls;
+
+  void __set_values(const std::vector<std::string> & val) {
+    values = val;
+  }
+
+  void __set_nulls(const std::string& val) {
+    nulls = val;
+  }
+
+  bool operator == (const TBinaryColumn & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    if (!(nulls == rhs.nulls))
+      return false;
+    return true;
+  }
+  bool operator != (const TBinaryColumn &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TBinaryColumn & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TBinaryColumn &a, TBinaryColumn &b);
+
+typedef struct _TColumn__isset {
+  _TColumn__isset() : boolVal(false), byteVal(false), i16Val(false), i32Val(false), i64Val(false), doubleVal(false), stringVal(false), binaryVal(false) {}
+  bool boolVal;
+  bool byteVal;
+  bool i16Val;
+  bool i32Val;
+  bool i64Val;
+  bool doubleVal;
+  bool stringVal;
+  bool binaryVal;
+} _TColumn__isset;
+
+class TColumn {
+ public:
+
+  static const char* ascii_fingerprint; // = "E6ADD10B4CDDE61A19E8878CC7039A17";
+  static const uint8_t binary_fingerprint[16]; // = {0xE6,0xAD,0xD1,0x0B,0x4C,0xDD,0xE6,0x1A,0x19,0xE8,0x87,0x8C,0xC7,0x03,0x9A,0x17};
+
+  TColumn() {
+  }
+
+  virtual ~TColumn() throw() {}
+
+  TBoolColumn boolVal;
+  TByteColumn byteVal;
+  TI16Column i16Val;
+  TI32Column i32Val;
+  TI64Column i64Val;
+  TDoubleColumn doubleVal;
+  TStringColumn stringVal;
+  TBinaryColumn binaryVal;
+
+  _TColumn__isset __isset;
+
+  void __set_boolVal(const TBoolColumn& val) {
+    boolVal = val;
+  }
+
+  void __set_byteVal(const TByteColumn& val) {
+    byteVal = val;
+  }
+
+  void __set_i16Val(const TI16Column& val) {
+    i16Val = val;
+  }
+
+  void __set_i32Val(const TI32Column& val) {
+    i32Val = val;
+  }
+
+  void __set_i64Val(const TI64Column& val) {
+    i64Val = val;
+  }
+
+  void __set_doubleVal(const TDoubleColumn& val) {
+    doubleVal = val;
+  }
+
+  void __set_stringVal(const TStringColumn& val) {
+    stringVal = val;
+  }
+
+  void __set_binaryVal(const TBinaryColumn& val) {
+    binaryVal = val;
+  }
+
+  bool operator == (const TColumn & rhs) const
+  {
+    if (!(boolVal == rhs.boolVal))
+      return false;
+    if (!(byteVal == rhs.byteVal))
+      return false;
+    if (!(i16Val == rhs.i16Val))
+      return false;
+    if (!(i32Val == rhs.i32Val))
+      return false;
+    if (!(i64Val == rhs.i64Val))
+      return false;
+    if (!(doubleVal == rhs.doubleVal))
+      return false;
+    if (!(stringVal == rhs.stringVal))
+      return false;
+    if (!(binaryVal == rhs.binaryVal))
+      return false;
+    return true;
+  }
+  bool operator != (const TColumn &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TColumn & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TColumn &a, TColumn &b);
+
 typedef struct _TRowSet__isset {
   _TRowSet__isset() : columns(false) {}
   bool columns;
@@ -1285,8 +1737,8 @@ typedef struct _TRowSet__isset {
 class TRowSet {
  public:
 
-  static const char* ascii_fingerprint; // = "698727A24268879440EE0DAFE68FC1C5";
-  static const uint8_t binary_fingerprint[16]; // = {0x69,0x87,0x27,0xA2,0x42,0x68,0x87,0x94,0x40,0xEE,0x0D,0xAF,0xE6,0x8F,0xC1,0xC5};
+  static const char* ascii_fingerprint; // = "46DA30A870489C7A58105AE0080DAEBF";
+  static const uint8_t binary_fingerprint[16]; // = {0x46,0xDA,0x30,0xA8,0x70,0x48,0x9C,0x7A,0x58,0x10,0x5A,0xE0,0x08,0x0D,0xAE,0xBF};
 
   TRowSet() : startRowOffset(0) {
   }
@@ -1584,8 +2036,8 @@ class TOpenSessionReq {
   static const char* ascii_fingerprint; // = "C8FD0F306A16C16BDA7B57F58BFAE5B2";
   static const uint8_t binary_fingerprint[16]; // = {0xC8,0xFD,0x0F,0x30,0x6A,0x16,0xC1,0x6B,0xDA,0x7B,0x57,0xF5,0x8B,0xFA,0xE5,0xB2};
 
-  TOpenSessionReq() : client_protocol((TProtocolVersion::type)4), username(), password() {
-    client_protocol = (TProtocolVersion::type)4;
+  TOpenSessionReq() : client_protocol((TProtocolVersion::type)5), username(), password() {
+    client_protocol = (TProtocolVersion::type)5;
 
   }
 
@@ -1660,8 +2112,8 @@ class TOpenSessionResp {
   static const char* ascii_fingerprint; // = "CFE7D7F4E9EC671F2518ED74FEE9F163";
   static const uint8_t binary_fingerprint[16]; // = {0xCF,0xE7,0xD7,0xF4,0xE9,0xEC,0x67,0x1F,0x25,0x18,0xED,0x74,0xFE,0xE9,0xF1,0x63};
 
-  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)4) {
-    serverProtocolVersion = (TProtocolVersion::type)4;
+  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)5) {
+    serverProtocolVersion = (TProtocolVersion::type)5;
 
   }
 
@@ -3302,8 +3754,8 @@ typedef struct _TFetchResultsResp__isset {
 class TFetchResultsResp {
  public:
 
-  static const char* ascii_fingerprint; // = "29891EA4D71B4283E8715DA5B95F2763";
-  static const uint8_t binary_fingerprint[16]; // = {0x29,0x89,0x1E,0xA4,0xD7,0x1B,0x42,0x83,0xE8,0x71,0x5D,0xA5,0xB9,0x5F,0x27,0x63};
+  static const char* ascii_fingerprint; // = "FC43BC2D6F3B76D4DB0F34226A745C8E";
+  static const uint8_t binary_fingerprint[16]; // = {0xFC,0x43,0xBC,0x2D,0x6F,0x3B,0x76,0xD4,0xDB,0x0F,0x34,0x22,0x6A,0x74,0x5C,0x8E};
 
   TFetchResultsResp() : hasMoreRows(0) {
   }

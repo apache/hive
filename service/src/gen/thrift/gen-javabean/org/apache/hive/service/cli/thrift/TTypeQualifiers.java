@@ -360,7 +360,7 @@ public class TTypeQualifiers implements org.apache.thrift.TBase<TTypeQualifiers,
                 for (int _i1 = 0; _i1 < _map0.size; ++_i1)
                 {
                   String _key2; // required
-                  TTypeQualifierValue _val3; // required
+                  TTypeQualifierValue _val3; // optional
                   _key2 = iprot.readString();
                   _val3 = new TTypeQualifierValue();
                   _val3.read(iprot);
@@ -435,7 +435,7 @@ public class TTypeQualifiers implements org.apache.thrift.TBase<TTypeQualifiers,
         for (int _i7 = 0; _i7 < _map6.size; ++_i7)
         {
           String _key8; // required
-          TTypeQualifierValue _val9; // required
+          TTypeQualifierValue _val9; // optional
           _key8 = iprot.readString();
           _val9 = new TTypeQualifierValue();
           _val9.read(iprot);

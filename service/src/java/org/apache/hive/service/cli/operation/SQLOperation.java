@@ -50,8 +50,8 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
-import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.RowSet;
+import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 
@@ -231,6 +231,8 @@ public class SQLOperation extends ExecuteStatementOperation {
     validateDefaultFetchOrientation(orientation);
     assertState(OperationState.FINISHED);
 
+    RowSet rowSet = RowSetFactory.create(resultSchema, getProtocolVersion());
+
     try {
       /* if client is requesting fetch-from-start and its not the first time reading from this operation
        * then reset the fetch position to beginning
@@ -241,9 +243,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       fetchStarted = true;
       driver.setMaxRows((int) maxRows);
       if (driver.getResults(convey)) {
-        return decode(convey);
+        return decode(convey, rowSet);
       }
-      return new RowSet();
+      return rowSet;
     } catch (IOException e) {
       throw new HiveSQLException(e);
     } catch (CommandNeedRetryException e) {
@@ -255,41 +257,41 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
   }
 
-  private RowSet decode(List<Object> rows) throws Exception {
+  private RowSet decode(List<Object> rows, RowSet rowSet) throws Exception {
     if (driver.isFetchingTable()) {
-      return prepareFromRow(rows);
+      return prepareFromRow(rows, rowSet);
     }
-    return decodeFromString(rows);
+    return decodeFromString(rows, rowSet);
   }
 
   // already encoded to thrift-able object in ThriftFormatter
-  private RowSet prepareFromRow(List<Object> rows) throws Exception {
-    RowSet rowSet = new RowSet();
+  private RowSet prepareFromRow(List<Object> rows, RowSet rowSet) throws Exception {
     for (Object row : rows) {
-      rowSet.addRow(resultSchema, (Object[]) row);
+      rowSet.addRow((Object[]) row);
     }
     return rowSet;
   }
 
-  private RowSet decodeFromString(List<Object> rows) throws SQLException, SerDeException {
+  private RowSet decodeFromString(List<Object> rows, RowSet rowSet)
+      throws SQLException, SerDeException {
     getSerDe();
     StructObjectInspector soi = (StructObjectInspector) serde.getObjectInspector();
     List<? extends StructField> fieldRefs = soi.getAllStructFieldRefs();
-    RowSet rowSet = new RowSet();
 
     Object[] deserializedFields = new Object[fieldRefs.size()];
     Object rowObj;
     ObjectInspector fieldOI;
 
+    int protocol = getProtocolVersion().getValue();
     for (Object rowString : rows) {
       rowObj = serde.deserialize(new BytesWritable(((String)rowString).getBytes()));
       for (int i = 0; i < fieldRefs.size(); i++) {
         StructField fieldRef = fieldRefs.get(i);
         fieldOI = fieldRef.getFieldObjectInspector();
         Object fieldData = soi.getStructFieldData(rowObj, fieldRef);
-        deserializedFields[i] = SerDeUtils.toThriftPayload(fieldData, fieldOI);
+        deserializedFields[i] = SerDeUtils.toThriftPayload(fieldData, fieldOI, protocol);
       }
-      rowSet.addRow(resultSchema, deserializedFields);
+      rowSet.addRow(deserializedFields);
     }
     return rowSet;
   }

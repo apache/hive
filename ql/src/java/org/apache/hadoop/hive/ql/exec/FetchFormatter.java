@@ -42,8 +42,11 @@ public interface FetchFormatter<T> extends Closeable {
 
   public static class ThriftFormatter implements FetchFormatter<Object> {
 
+    int protocol;
+
     @Override
     public void initialize(Configuration hconf, Properties props) throws Exception {
+      protocol = hconf.getInt(ListSinkOperator.OUTPUT_PROTOCOL, 0);
     }
 
     @Override
@@ -56,7 +59,7 @@ public interface FetchFormatter<T> extends Closeable {
         StructField fieldRef = fields.get(i);
         Object field = structOI.getStructFieldData(row, fieldRef);
         converted[i] = field == null ? null :
-            SerDeUtils.toThriftPayload(field, fieldRef.getFieldObjectInspector());
+            SerDeUtils.toThriftPayload(field, fieldRef.getFieldObjectInspector(), protocol);
       }
       return converted;
     }
