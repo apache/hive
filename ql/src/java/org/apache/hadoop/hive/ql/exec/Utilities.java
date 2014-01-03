@@ -95,6 +95,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -164,12 +165,14 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -3207,5 +3210,74 @@ public final class Utilities {
     throw new IllegalStateException("Failed to create a temp dir under "
     + baseDir + " Giving up after " + MAX_ATTEMPS + " attemps");
 
+  }
+
+  /**
+   * Skip header lines in the table file when reading the record.
+   *
+   * @param currRecReader
+   *          Record reader.
+   *
+   * @param headerCount
+   *          Header line number of the table files.
+   *
+   * @param key
+   *          Key of current reading record.
+   *
+   * @param value
+   *          Value of current reading record.
+   *
+   * @return Return true if there are 0 or more records left in the file
+   *         after skipping all headers, otherwise return false.
+   */
+  public static boolean skipHeader(RecordReader<WritableComparable, Writable> currRecReader,
+      int headerCount, WritableComparable key, Writable value) throws IOException {
+    while (headerCount > 0) {
+      if (!currRecReader.next(key, value))
+        return false;
+      headerCount--;
+    }
+    return true;
+  }
+
+  /**
+   * Get header line count for a table.
+   *
+   * @param table
+   *          Table description for target table.
+   *
+   */
+  public static int getHeaderCount(TableDesc table) throws IOException {
+    int headerCount;
+    try {
+      headerCount = Integer.parseInt(table.getProperties().getProperty(serdeConstants.HEADER_COUNT, "0"));
+    } catch (NumberFormatException nfe) {
+      throw new IOException(nfe);
+    }
+    return headerCount;
+  }
+
+  /**
+   * Get footer line count for a table.
+   *
+   * @param table
+   *          Table description for target table.
+   *
+   * @param job
+   *          Job configuration for current job.
+   */
+  public static int getFooterCount(TableDesc table, JobConf job) throws IOException {
+    int footerCount;
+    try {
+      footerCount = Integer.parseInt(table.getProperties().getProperty(serdeConstants.FOOTER_COUNT, "0"));
+      if (footerCount > HiveConf.getIntVar(job, HiveConf.ConfVars.HIVE_FILE_MAX_FOOTER)) {
+        throw new IOException("footer number exceeds the limit defined in hive.file.max.footer");
+      }
+    } catch (NumberFormatException nfe) {
+
+      // Footer line number must be set as an integer.
+      throw new IOException(nfe);
+    }
+    return footerCount;
   }
 }

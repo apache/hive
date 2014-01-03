@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -38,6 +39,9 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -70,6 +74,15 @@ public class TestSymlinkTextInputFormat extends TestCase {
   protected void setUp() throws IOException {
     conf = new Configuration();
     job = new JobConf(conf);
+
+    TableDesc tblDesc = Utilities.defaultTd;
+    PartitionDesc partDesc = new PartitionDesc(tblDesc, null);
+    LinkedHashMap<String, PartitionDesc> pt = new LinkedHashMap<String, PartitionDesc>();
+    pt.put("/tmp/testfolder", partDesc);
+    MapredWork mrwork = new MapredWork();
+    mrwork.getMapWork().setPathToPartitionInfo(pt);
+    Utilities.setMapRedWork(job, mrwork,"/tmp/" + System.getProperty("user.name") + "/hive");
+
     fileSystem = FileSystem.getLocal(conf);
     testDir = new Path(System.getProperty("test.tmp.dir", System.getProperty(
         "user.dir", new File(".").getAbsolutePath()))

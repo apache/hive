@@ -34,8 +34,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.FooterBuffer;
 import org.apache.hadoop.hive.ql.io.HiveContextAwareRecordReader;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveRecordReader;
@@ -46,6 +48,7 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.DelegatedObjectInspectorFactory;
@@ -80,6 +83,9 @@ public class FetchOperator implements Serializable {
   private PartitionDesc currPart;
   private TableDesc currTbl;
   private boolean tblDataDone;
+  private FooterBuffer footerBuffer = null;
+  private int headerCount = 0;
+  private int footerCount = 0;
 
   private boolean hasVC;
   private boolean isPartitioned;
@@ -527,6 +533,7 @@ public class FetchOperator implements Serializable {
   public InspectableObject getNextRow() throws IOException {
     try {
       while (true) {
+        boolean opNotEOF = true;
         if (context != null) {
           context.resetRow();
         }
@@ -535,10 +542,49 @@ public class FetchOperator implements Serializable {
           if (currRecReader == null) {
             return null;
           }
+
+          /**
+           * Start reading a new file.
+           * If file contains header, skip header lines before reading the records.
+           * If file contains footer, used FooterBuffer to cache and remove footer
+           * records at the end of the file.
+           */
+          headerCount = 0;
+          footerCount = 0;
+          TableDesc table = null;
+          if (currTbl != null) {
+            table = currTbl;
+          } else if (currPart != null) {
+            table = currPart.getTableDesc();
+          }
+          if (table != null) {
+            headerCount = Utilities.getHeaderCount(table);
+            footerCount = Utilities.getFooterCount(table, job);
+          }
+
+          // Skip header lines.
+          opNotEOF = Utilities.skipHeader(currRecReader, headerCount, key, value);
+
+          // Initialize footer buffer.
+          if (opNotEOF) {
+            if (footerCount > 0) {
+              footerBuffer = new FooterBuffer();
+              opNotEOF = footerBuffer.initializeBuffer(job, currRecReader, footerCount, key, value);
+            }
+          }
         }
 
-        boolean ret = currRecReader.next(key, value);
-        if (ret) {
+        if (opNotEOF && footerBuffer == null) {
+          /**
+           * When file doesn't end after skipping header line
+           * and there is no footer lines, read normally.
+           */
+          opNotEOF = currRecReader.next(key, value);
+        }
+        if (opNotEOF && footerBuffer != null) {
+          opNotEOF = footerBuffer.updateBuffer(job, currRecReader, key, value);
+        }
+        if (opNotEOF) {
           if (operator != null && context != null && context.inputFileChanged()) {
             // The child operators cleanup if input file has changed
             try {
