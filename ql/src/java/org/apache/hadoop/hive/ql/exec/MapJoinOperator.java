@@ -70,6 +70,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   /*
    * We need the base (operator.java) implementation of start/endGroup.
    * The parent class has functionality in those that map join can't use.
+   * Note: The mapjoin can be run in the reducer only on Tez.
    */
   @Override
   public void endGroup() throws HiveException {
@@ -87,6 +88,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     int tagLen = conf.getTagLength();
 
+    // On Tez only: The hash map might already be cached in the container we run
+    // the task in. On MR: The cache is a no-op.
     tableKey = "__HASH_MAP_"+this.getOperatorId()+"_container";
     serdeKey = "__HASH_MAP_"+this.getOperatorId()+"_serde";
 
