@@ -18,27 +18,30 @@
 package org.apache.hive.service.cli;
 
 import org.apache.hive.service.cli.thrift.TOperationHandle;
-
+import org.apache.hive.service.cli.thrift.TProtocolVersion;
 
 public class OperationHandle extends Handle {
 
-  private OperationType opType = OperationType.EXECUTE_STATEMENT;
+  private final OperationType opType;
+  private final TProtocolVersion protocol;
   private boolean hasResultSet = false;
 
-  public OperationHandle() {
-    // TODO: make this type abstract
-    super();
-  }
-
-  public OperationHandle(OperationType opType) {
+  public OperationHandle(OperationType opType, TProtocolVersion protocol) {
     super();
     this.opType = opType;
+    this.protocol = protocol;
   }
 
+  // dummy handle for ThriftCLIService
   public OperationHandle(TOperationHandle tOperationHandle) {
+    this(tOperationHandle, TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V1);
+  }
+
+  public OperationHandle(TOperationHandle tOperationHandle, TProtocolVersion protocol) {
     super(tOperationHandle.getOperationId());
     this.opType = OperationType.getOperationType(tOperationHandle.getOperationType());
     this.hasResultSet = tOperationHandle.isHasResultSet();
+    this.protocol = protocol;
   }
 
   public OperationType getOperationType() {
@@ -59,6 +62,10 @@ public class OperationHandle extends Handle {
     tOperationHandle.setOperationType(opType.toTOperationType());
     tOperationHandle.setHasResultSet(hasResultSet);
     return tOperationHandle;
+  }
+
+  public TProtocolVersion getProtocolVersion() {
+    return protocol;
   }
 
   @Override

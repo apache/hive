@@ -44,25 +44,17 @@ import java.util.Map;
 
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.Type;
-import org.apache.hive.service.cli.thrift.TBoolValue;
-import org.apache.hive.service.cli.thrift.TByteValue;
-import org.apache.hive.service.cli.thrift.TColumnValue;
-import org.apache.hive.service.cli.thrift.TDoubleValue;
-import org.apache.hive.service.cli.thrift.TI16Value;
-import org.apache.hive.service.cli.thrift.TI32Value;
-import org.apache.hive.service.cli.thrift.TI64Value;
-import org.apache.hive.service.cli.thrift.TRow;
-import org.apache.hive.service.cli.thrift.TStringValue;
 
 /**
  * Data independent base class which implements the common part of
  * all Hive result sets.
  */
 public abstract class HiveBaseResultSet implements ResultSet {
+
   protected Statement statement = null;
   protected SQLWarning warningChain = null;
   protected boolean wasNull = false;
-  protected TRow row;
+  protected Object[] row;
   protected List<String> columnNames;
   protected List<String> columnTypes;
   protected List<JdbcColumnAttributes> columnAttributes;
@@ -380,176 +372,47 @@ public abstract class HiveBaseResultSet implements ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  private Boolean getBooleanValue(TBoolValue tBoolValue) {
-    if (tBoolValue.isSetValue()) {
-      wasNull = false;
-      return tBoolValue.isValue();
-    }
-    wasNull = true;
-    return null;
-  }
-
-  private Byte getByteValue(TByteValue tByteValue) {
-    if (tByteValue.isSetValue()) {
-      wasNull = false;
-      return tByteValue.getValue();
-    }
-    wasNull = true;
-    return null;
-  }
-
-  private Short getShortValue(TI16Value tI16Value) {
-    if (tI16Value.isSetValue()) {
-      wasNull = false;
-      return tI16Value.getValue();
-    }
-    wasNull = true;
-    return null;
-  }
-
-  private Integer getIntegerValue(TI32Value tI32Value) {
-    if (tI32Value.isSetValue()) {
-      wasNull = false;
-      return tI32Value.getValue();
-    }
-    wasNull = true;
-    return null;
-  }
-
-  private Long getLongValue(TI64Value tI64Value) {
-    if (tI64Value.isSetValue()) {
-      wasNull = false;
-      return tI64Value.getValue();
-    }
-    wasNull = true;
-    return null;
-  }
-
-  private Double getDoubleValue(TDoubleValue tDoubleValue) {
-    if (tDoubleValue.isSetValue()) {
-      wasNull = false;
-      return tDoubleValue.getValue();
-    }
-    wasNull = true;
-    return null;
-  }
-
-  private String getStringValue(TStringValue tStringValue) {
-    if (tStringValue.isSetValue()) {
-      wasNull = false;
-      return tStringValue.getValue();
-    }
-    wasNull = true;
-    return null;
-  }
-
-  private Date getDateValue(TStringValue tStringValue) {
-    if (tStringValue.isSetValue()) {
-      wasNull = false;
-      return Date.valueOf(tStringValue.getValue());
-    }
-    wasNull = true;
-    return null;
-  }
-
-  private Timestamp getTimestampValue(TStringValue tStringValue) {
-    if (tStringValue.isSetValue()) {
-      wasNull = false;
-      return Timestamp.valueOf(tStringValue.getValue());
-    }
-    wasNull = true;
-    return null;
-  }
-
-  private byte[] getBinaryValue(TStringValue tString) {
-    if (tString.isSetValue()) {
-      wasNull = false;
-      return tString.getValue().getBytes();
-    }
-    wasNull = true;
-    return null;
-  }
-
-  private BigDecimal getBigDecimalValue(TStringValue tStringValue) {
-    if (tStringValue.isSetValue()) {
-      wasNull = false;
-      return new BigDecimal(tStringValue.getValue());
-    }
-    wasNull = true;
-    return null;
-  }
-
   private Object getColumnValue(int columnIndex) throws SQLException {
     if (row == null) {
       throw new SQLException("No row found.");
     }
-    List<TColumnValue> colVals = row.getColVals();
-    if (colVals == null) {
+    if (row.length == 0) {
       throw new SQLException("RowSet does not contain any columns!");
     }
-    if (columnIndex > colVals.size()) {
+    if (columnIndex > row.length) {
       throw new SQLException("Invalid columnIndex: " + columnIndex);
     }
-
-    TColumnValue tColumnValue = colVals.get(columnIndex - 1);
     Type columnType = getSchema().getColumnDescriptorAt(columnIndex - 1).getType();
 
-    switch (columnType) {
-    case BOOLEAN_TYPE:
-      return getBooleanValue(tColumnValue.getBoolVal());
-    case TINYINT_TYPE:
-      return getByteValue(tColumnValue.getByteVal());
-    case SMALLINT_TYPE:
-      return getShortValue(tColumnValue.getI16Val());
-    case INT_TYPE:
-      return getIntegerValue(tColumnValue.getI32Val());
-    case BIGINT_TYPE:
-      return getLongValue(tColumnValue.getI64Val());
-    case FLOAT_TYPE:
-      return getDoubleValue(tColumnValue.getDoubleVal());
-    case DOUBLE_TYPE:
-      return getDoubleValue(tColumnValue.getDoubleVal());
-    case STRING_TYPE:
-      return getStringValue(tColumnValue.getStringVal());
-    case CHAR_TYPE:
-      return getStringValue(tColumnValue.getStringVal());
-    case VARCHAR_TYPE:
-      return getStringValue(tColumnValue.getStringVal());
-    case BINARY_TYPE:
-      return getBinaryValue(tColumnValue.getStringVal());
-    case DATE_TYPE:
-      return getDateValue(tColumnValue.getStringVal());
-    case TIMESTAMP_TYPE:
-      return getTimestampValue(tColumnValue.getStringVal());
-    case DECIMAL_TYPE:
-      return getBigDecimalValue(tColumnValue.getStringVal());
-    case NULL_TYPE:
-      wasNull = true;
-      return null;
-    default:
-      throw new SQLException("Unrecognized column type:" + columnType);
+    try {
+      Object evaluated = evaluate(columnType, row[columnIndex - 1]);
+      wasNull = evaluated == null;
+      return evaluated;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new SQLException("Unrecognized column type:" + columnType, e);
     }
+  }
 
-    /*
-    switch (tColumnValue.getSetField()) {
-    case BOOL_VAL:
-      return getBooleanValue(tColumnValue.getBoolVal());
-    case BYTE_VAL:
-      return getByteValue(tColumnValue.getByteVal());
-    case I16_VAL:
-      return getShortValue(tColumnValue.getI16Val());
-    case I32_VAL:
-      return getIntegerValue(tColumnValue.getI32Val());
-    case I64_VAL:
-      return getLongValue(tColumnValue.getI64Val());
-    case DOUBLE_VAL:
-      return getDoubleValue(tColumnValue.getDoubleVal());
-    case STRING_VAL:
-      return getStringValue(tColumnValue.getStringVal());
-    default:
-      throw new SQLException("Unrecognized column type:" + tColumnValue.getSetField());
+  private Object evaluate(Type type, Object value) {
+    if (value == null) {
+      return null;
     }
-    */
+    switch (type) {
+      case BINARY_TYPE:
+        if (value instanceof String) {
+          return ((String) value).getBytes();
+        }
+        return value;
+      case TIMESTAMP_TYPE:
+        return Timestamp.valueOf((String) value);
+      case DECIMAL_TYPE:
+        return new BigDecimal((String)value);
+      case DATE_TYPE:
+        return Date.valueOf((String) value);
+      default:
+        return value;
+    }
   }
 
   public Object getObject(int columnIndex) throws SQLException {

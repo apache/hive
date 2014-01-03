@@ -19,7 +19,6 @@
 package org.apache.hive.service.cli.operation;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -30,6 +29,7 @@ import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.OperationType;
 import org.apache.hive.service.cli.RowSet;
+import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 
@@ -43,7 +43,7 @@ public class GetTablesOperation extends MetadataOperation {
   private final String schemaName;
   private final String tableName;
   private final List<String> tableTypes = new ArrayList<String>();
-  private final RowSet rowSet = new RowSet();
+  private final RowSet rowSet;
   private final TableTypeMapping tableTypeMapping;
 
 
@@ -68,6 +68,7 @@ public class GetTablesOperation extends MetadataOperation {
     if (tableTypes != null) {
       this.tableTypes.addAll(tableTypes);
     }
+    this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion());
   }
 
   /* (non-Javadoc)
@@ -92,7 +93,7 @@ public class GetTablesOperation extends MetadataOperation {
               };
           if (tableTypes.isEmpty() || tableTypes.contains(
                 tableTypeMapping.mapToClientType(table.getTableType()))) {
-            rowSet.addRow(RESULT_SET_SCHEMA, rowData);
+            rowSet.addRow(rowData);
           }
         }
       }

@@ -33,8 +33,12 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.operation.OperationManager;
+import org.apache.hive.service.cli.thrift.TProtocolVersion;
 
 public interface HiveSession {
+
+  TProtocolVersion getProtocolVersion();
+
   /**
    * Set the session manager for the session
    * @param sessionManager

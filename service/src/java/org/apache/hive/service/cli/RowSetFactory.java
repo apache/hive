@@ -16,27 +16,26 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.cli.thrift;
+package org.apache.hive.service.cli;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.service.cli.CLIService;
-import org.apache.hive.service.cli.ICLIService;
+import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.cli.thrift.TRowSet;
 
+import static org.apache.hive.service.cli.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V6;
 
-/**
- * EmbeddedThriftBinaryCLIService.
- *
- */
-public class EmbeddedThriftBinaryCLIService extends ThriftBinaryCLIService {
+public class RowSetFactory {
 
-  public EmbeddedThriftBinaryCLIService() {
-    super(new CLIService());
-    isEmbedded = true;
-    cliService.init(new HiveConf());
-    cliService.start();
+  public static RowSet create(TableSchema schema, TProtocolVersion version) {
+    if (version.getValue() >= HIVE_CLI_SERVICE_PROTOCOL_V6.getValue()) {
+      return new ColumnBasedSet(schema);
+    }
+    return new RowBasedSet(schema);
   }
 
-  public ICLIService getService() {
-    return cliService;
+  public static RowSet create(TRowSet results, TProtocolVersion version) {
+    if (version.getValue() >= HIVE_CLI_SERVICE_PROTOCOL_V6.getValue()) {
+      return new ColumnBasedSet(results);
+    }
+    return new RowBasedSet(results);
   }
 }
