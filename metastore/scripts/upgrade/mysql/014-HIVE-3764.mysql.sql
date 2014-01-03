@@ -1,3 +1,5 @@
+SELECT '< HIVE-3764 Support metastore version consistency check >' AS ' ';
+
 -- Table structure for VERSION
 CREATE TABLE IF NOT EXISTS `VERSION` (
   `VER_ID` BIGINT NOT NULL,
