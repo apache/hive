@@ -20,24 +20,38 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.FooterBuffer;
 import org.apache.hadoop.hive.ql.io.IOContext.Comparison;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /** This class prepares an IOContext, and provides the ability to perform a binary search on the
   * data.  The binary search can be used by setting the value of inputFormatSorted in the
@@ -217,6 +231,10 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     }
   }
 
+  private FooterBuffer footerBuffer = null;
+  private int headerCount = 0;
+  private int footerCount = 0;
+
   public boolean doNext(K key, V value) throws IOException {
     if (this.isSorted) {
       if (this.getIOContext().shouldEndBinarySearch() ||
@@ -271,7 +289,57 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     }
 
     try {
-      return recordReader.next(key,  value);
+
+      /**
+       * When start reading new file, check header, footer rows.
+       * If file contains header, skip header lines before reading the records.
+       * If file contains footer, used a FooterBuffer to remove footer lines
+       * at the end of the table file.
+       **/
+      if (this.ioCxtRef.getCurrentBlockStart() == 0) {
+
+        // Check if the table file has header to skip.
+        Path filePath = this.ioCxtRef.getInputPath();
+        PartitionDesc part = null;
+        try {
+          Map<String, PartitionDesc> pathToPartitionInfo = Utilities
+              .getMapWork(jobConf).getPathToPartitionInfo();
+          part = HiveFileFormatUtils
+              .getPartitionDescFromPathRecursively(pathToPartitionInfo,
+                  filePath, IOPrepareCache.get().getPartitionDescMap());
+        } catch (AssertionError ae) {
+          LOG.info("Cannot get partition description from " + this.ioCxtRef.getInputPath()
+              + "because " + ae.getMessage());
+          part = null;
+        } catch (Exception e) {
+          LOG.info("Cannot get partition description from " + this.ioCxtRef.getInputPath()
+              + "because " + e.getMessage());
+          part = null;
+        }
+        TableDesc table = (part == null) ? null : part.getTableDesc();
+        if (table != null) {
+          headerCount = Utilities.getHeaderCount(table);
+          footerCount = Utilities.getFooterCount(table, jobConf);
+        }
+
+        // If input contains header, skip header.
+        if (!Utilities.skipHeader(recordReader, headerCount, (WritableComparable)key, (Writable)value)) {
+          return false;
+        }
+        if (footerCount > 0) {
+          footerBuffer = new FooterBuffer();
+          if (!footerBuffer.initializeBuffer(jobConf, recordReader, footerCount, (WritableComparable)key, (Writable)value)) {
+            return false;
+          }
+        }
+      }
+      if (footerBuffer == null) {
+
+        // Table files don't have footer rows.
+        return recordReader.next(key,  value);
+      } else {
+        return footerBuffer.updateBuffer(jobConf, recordReader, (WritableComparable)key, (Writable)value);
+      }
     } catch (Exception e) {
       return HiveIOExceptionHandlerUtil.handleRecordReaderNextException(e, jobConf);
     }

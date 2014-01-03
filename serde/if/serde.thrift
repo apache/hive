@@ -37,6 +37,8 @@ const string LINE_DELIM = "line.delim"
 const string MAPKEY_DELIM = "mapkey.delim"
 const string QUOTE_CHAR = "quote.delim"
 const string ESCAPE_CHAR = "escape.delim"
+const string HEADER_COUNT = "skip.header.line.count"
+const string FOOTER_COUNT = "skip.footer.line.count"
 
 typedef string PrimitiveType
 typedef string CollectionType

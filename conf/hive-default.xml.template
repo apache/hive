@@ -386,6 +386,12 @@
 </property>
 
 <property>
+  <name>hive.file.max.footer</name>
+  <value>100</value>
+  <description>maximum number of lines for footer user can define for a table file</description>
+</property>
+
+<property>
   <name>hive.map.aggr</name>
   <value>true</value>
   <description>Whether to use map-side aggregation in Hive Group By queries</description>

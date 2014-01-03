@@ -24,13 +24,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplit;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
@@ -127,6 +133,15 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     when(rcfReader.getPos()).thenReturn(50L);
     conf = new JobConf();
     conf.setBoolean("hive.input.format.sorted", true);
+
+    TableDesc tblDesc = Utilities.defaultTd;
+    PartitionDesc partDesc = new PartitionDesc(tblDesc, null);
+    LinkedHashMap<String, PartitionDesc> pt = new LinkedHashMap<String, PartitionDesc>();
+    pt.put("/tmp/testfolder", partDesc);
+    MapredWork mrwork = new MapredWork();
+    mrwork.getMapWork().setPathToPartitionInfo(pt);
+    Utilities.setMapRedWork(conf, mrwork,"/tmp/" + System.getProperty("user.name") + "/hive");
+
     hiveSplit = new TestHiveInputSplit();
     hbsReader = new TestHiveRecordReader(rcfReader, conf);
     hbsReader.initIOContext(hiveSplit, conf, Class.class, rcfReader);

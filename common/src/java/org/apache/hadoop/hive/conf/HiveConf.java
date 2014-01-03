@@ -223,6 +223,9 @@ public class HiveConf extends Configuration {
     // ignore the mapjoin hint
     HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true),
 
+    // Max number of lines of footer user can set for a table file.
+    HIVE_FILE_MAX_FOOTER("hive.file.max.footer", 100),
+
     // Hadoop Configuration Properties
     // Properties with null values are ignored and exist only for the purpose of giving us
     // a symbolic name to reference in the Hive source code. Properties with non-null
