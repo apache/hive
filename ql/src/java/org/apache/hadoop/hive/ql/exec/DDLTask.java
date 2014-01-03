@@ -637,7 +637,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           throw new HiveException("Grant does not support partition level.");
         }
         String obj = privSubjectDesc.getObject();
-        boolean notFound = true;
+
         if (privSubjectDesc.getTable()) {
           String[] dbTab = obj.split("\\.");
           if (dbTab.length == 2) {
@@ -648,15 +648,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             tableName = obj;
           }
           dbObj = db.getDatabase(dbName);
+          if (dbObj == null) {
+            throwNotFound("Database", dbName);
+          }
           tableObj = db.getTable(dbName, tableName);
-          notFound = (dbObj == null || tableObj == null);
+          if (tableObj == null) {
+            throwNotFound("Table", obj);
+          }
         } else {
           dbName = privSubjectDesc.getObject();
           dbObj = db.getDatabase(dbName);
-          notFound = (dbObj == null);
-        }
-        if (notFound) {
-          throw new HiveException(obj + " can not be found");
+          if (dbObj == null) {
+            throwNotFound("Database", dbName);
+          }
         }
       }
 
@@ -751,6 +755,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
+  }
+
+  private void throwNotFound(String objType, String objName) throws HiveException {
+    throw new HiveException(objType + " " + objName + " not found");
   }
 
   private int roleDDL(RoleDDLDesc roleDDLDesc) {
