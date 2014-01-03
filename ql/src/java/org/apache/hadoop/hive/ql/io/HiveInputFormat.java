@@ -33,6 +33,7 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
@@ -290,6 +292,18 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());
+      TableDesc tableDesc = part.getTableDesc();
+      int headerCount = 0;
+      int footerCount = 0;
+      if (tableDesc != null) {
+        headerCount = Utilities.getHeaderCount(tableDesc);
+        footerCount = Utilities.getFooterCount(tableDesc, newjob);
+        if (headerCount != 0 || footerCount != 0) {
+
+          // Input file has header or footer, cannot be splitted.
+          newjob.setLong("mapred.min.split.size", Long.MAX_VALUE);
+        }
+      }
       InputSplit[] iss = inputFormat.getSplits(newjob, numSplits / dirs.length);
       for (InputSplit is : iss) {
         result.add(new HiveInputSplit(is, inputFormatClass.getName()));
