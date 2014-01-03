@@ -198,11 +198,15 @@ public final class SerDeUtils {
    *
    * This method is kept consistent with {@link HiveResultSetMetaData#hiveTypeToSqlType}.
    */
-  public static Object toThriftPayload(Object val, ObjectInspector valOI) {
+  public static Object toThriftPayload(Object val, ObjectInspector valOI, int version) {
     if (valOI.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      if (val == null) {
+        return null;
+      }
       Object obj = ObjectInspectorUtils.copyToStandardObject(val, valOI,
           ObjectInspectorUtils.ObjectInspectorCopyOption.JAVA);
-      if (((PrimitiveObjectInspector)valOI).getPrimitiveCategory() ==
+      // uses string type for binary before HIVE_CLI_SERVICE_PROTOCOL_V6
+      if (version < 5 && ((PrimitiveObjectInspector)valOI).getPrimitiveCategory() ==
           PrimitiveObjectInspector.PrimitiveCategory.BINARY) {
         // todo HIVE-5269
         return new String((byte[])obj);

@@ -1,3 +1,5 @@
+SELECT '< HIVE-3764 Support metastore version consistency check >';
+
 --
 -- Table structure for VERSION
 --

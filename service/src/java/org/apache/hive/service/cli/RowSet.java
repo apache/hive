@@ -18,107 +18,21 @@
 
 package org.apache.hive.service.cli;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.hive.service.cli.thrift.TRow;
 import org.apache.hive.service.cli.thrift.TRowSet;
 
-/**
- * RowSet.
- *
- */
-public class RowSet {
+public interface RowSet extends Iterable<Object[]> {
 
-  private long startOffset = 0;
-  private boolean hasMoreResults = false;
-  private List<Row> rows;
+  RowSet addRow(Object[] fields);
 
-  public RowSet() {
-    rows = new ArrayList<Row>();
-  }
+  RowSet extractSubset(int maxRows);
 
-  public RowSet(TRowSet tRowSet) {
-    this();
-    startOffset = tRowSet.getStartRowOffset();
-    for (TRow tRow : tRowSet.getRows()) {
-      rows.add(new Row(tRow));
-    }
-  }
+  int numColumns();
 
-  public RowSet(List<Row> rows, long startOffset) {
-    this();
-    this.rows.addAll(rows);
-    this.startOffset = startOffset;
-  }
+  int numRows();
 
-  public RowSet addRow(Row row) {
-    rows.add(row);
-    return this;
-  }
+  long getStartOffset();
 
-  public RowSet addRow(TableSchema schema, Object[] fields) {
-    return addRow(new Row(schema, fields));
-  }
+  void setStartOffset(long startOffset);
 
-  public RowSet extractSubset(int maxRows) {
-    int numRows = rows.size();
-    maxRows = (maxRows <= numRows) ? maxRows : numRows;
-    RowSet result = new RowSet(rows.subList(0, maxRows), startOffset);
-    rows = new ArrayList<Row>(rows.subList(maxRows, numRows));
-    startOffset += result.getSize();
-    return result;
-  }
-
-  public long getStartOffset() {
-    return startOffset;
-  }
-
-  public RowSet setStartOffset(long startOffset) {
-    this.startOffset = startOffset;
-    return this;
-  }
-
-  public boolean getHasMoreResults() {
-    return hasMoreResults;
-  }
-
-  public RowSet setHasMoreResults(boolean hasMoreResults) {
-    this.hasMoreResults = hasMoreResults;
-    return this;
-  }
-
-  public int getSize() {
-    return rows.size();
-  }
-
-  public TRowSet toTRowSet() {
-    TRowSet tRowSet = new TRowSet();
-    tRowSet.setStartRowOffset(startOffset);
-    List<TRow> tRows = new ArrayList<TRow>();
-    for (Row row : rows) {
-      tRows.add(row.toTRow());
-    }
-    tRowSet.setRows(tRows);
-
-    /*
-    //List<Boolean> booleanColumn = new ArrayList<Boolean>();
-    //List<Byte> byteColumn = new ArrayList<Byte>();
-    //List<Short> shortColumn = new ArrayList<Short>();
-    List<Integer> integerColumn = new ArrayList<Integer>();
-
-    integerColumn.add(1);
-    //integerColumn.add(null);
-    integerColumn.add(3);
-    //integerColumn.add(null);
-
-
-    TColumnUnion column = TColumnUnion.i32Column(integerColumn);
-    List<TColumnUnion> columns = new ArrayList<TColumnUnion>();
-    columns.add(column);
-    tRowSet.setColumns(columns);
-    */
-
-    return tRowSet;
-  }
+  TRowSet toTRowSet();
 }

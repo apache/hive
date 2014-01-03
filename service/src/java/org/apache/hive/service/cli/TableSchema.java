@@ -82,6 +82,14 @@ public class TableSchema {
     return tTableSchema;
   }
 
+  public Type[] toTypes() {
+    Type[] types = new Type[columns.size()];
+    for (int i = 0; i < types.length; i++) {
+      types[i] = columns.get(i).getType();
+    }
+    return types;
+  }
+
   public TableSchema addPrimitiveColumn(String columnName, Type columnType, String columnComment) {
     columns.add(ColumnDescriptor.newPrimitiveColumnDescriptor(columnName, columnComment, columnType, columns.size() + 1));
     return this;

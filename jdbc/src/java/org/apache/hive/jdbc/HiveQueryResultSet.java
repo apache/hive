@@ -20,6 +20,7 @@ package org.apache.hive.jdbc;
 
 import static org.apache.hive.service.cli.thrift.TCLIServiceConstants.TYPE_NAMES;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
@@ -31,6 +32,8 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hive.service.cli.RowSet;
+import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.thrift.TCLIService;
 import org.apache.hive.service.cli.thrift.TCLIServiceConstants;
@@ -42,7 +45,8 @@ import org.apache.hive.service.cli.thrift.TGetResultSetMetadataReq;
 import org.apache.hive.service.cli.thrift.TGetResultSetMetadataResp;
 import org.apache.hive.service.cli.thrift.TOperationHandle;
 import org.apache.hive.service.cli.thrift.TPrimitiveTypeEntry;
-import org.apache.hive.service.cli.thrift.TRow;
+import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.cli.thrift.TRowSet;
 import org.apache.hive.service.cli.thrift.TSessionHandle;
 import org.apache.hive.service.cli.thrift.TTableSchema;
 import org.apache.hive.service.cli.thrift.TTypeQualifierValue;
@@ -63,15 +67,19 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   private int fetchSize;
   private int rowsFetched = 0;
 
-  private List<TRow> fetchedRows;
-  private Iterator<TRow> fetchedRowsItr;
+  private RowSet fetchedRows;
+  private Iterator<Object[]> fetchedRowsItr;
   private boolean isClosed = false;
   private boolean emptyResultSet = false;
   private boolean isScrollable = false;
   private boolean fetchFirst = false;
 
+  private final TProtocolVersion protocol;
+
+
   public static class Builder {
 
+    private final Connection connection;
     private final Statement statement;
     private TCLIService.Iface client = null;
     private TOperationHandle stmtHandle = null;
@@ -91,8 +99,14 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     private boolean emptyResultSet = false;
     private boolean isScrollable = false;
 
-    public Builder(Statement statement) {
+    public Builder(Statement statement) throws SQLException {
       this.statement = statement;
+      this.connection = statement.getConnection();
+    }
+
+    public Builder(Connection connection) {
+      this.statement = null;
+      this.connection = connection;
     }
 
     public Builder setClient(TCLIService.Iface client) {
@@ -155,6 +169,10 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     public HiveQueryResultSet build() throws SQLException {
       return new HiveQueryResultSet(this);
     }
+
+    public TProtocolVersion getProtocolVersion() throws SQLException {
+      return ((HiveConnection)connection).getProtocol();
+    }
   }
 
   protected HiveQueryResultSet(Builder builder) throws SQLException {
@@ -178,6 +196,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       this.maxRows = builder.maxRows;
     }
     this.isScrollable = builder.isScrollable;
+    this.protocol = builder.getProtocolVersion();
   }
 
   /**
@@ -217,6 +236,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
    * Retrieve schema from the server
    */
   private void retrieveSchema() throws SQLException {
+    System.err.println("[HiveQueryResultSet/next] 0");
     try {
       TGetResultSetMetadataReq metadataReq = new TGetResultSetMetadataReq(stmtHandle);
       // TODO need session handle
@@ -304,13 +324,14 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
         fetchedRowsItr = null;
         fetchFirst = false;
       }
-
       if (fetchedRows == null || !fetchedRowsItr.hasNext()) {
         TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle,
             orientation, fetchSize);
         TFetchResultsResp fetchResp = client.FetchResults(fetchReq);
         Utils.verifySuccessWithInfo(fetchResp.getStatus());
-        fetchedRows = fetchResp.getResults().getRows();
+
+        TRowSet results = fetchResp.getResults();
+        fetchedRows = RowSetFactory.create(results, protocol);
         fetchedRowsItr = fetchedRows.iterator();
       }
 

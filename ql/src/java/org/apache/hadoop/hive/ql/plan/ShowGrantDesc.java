@@ -30,6 +30,11 @@ public class ShowGrantDesc {
 
   private String resFile;
 
+  /**
+   * thrift ddl for the result of show grant.
+   */
+  private static final String schema = "property,value#string:string";
+
   public ShowGrantDesc(){
   }
   
@@ -40,7 +45,11 @@ public class ShowGrantDesc {
     this.hiveObj = subjectObj;
     this.columns = columns;
   }
-  
+
+  public static String getSchema() {
+    return schema;
+  }
+
   @Explain(displayName="principal desc")
   public PrincipalDesc getPrincipalDesc() {
     return principalDesc;

@@ -52,14 +52,13 @@ PREHOOK: query: show grant user hive_test on table test_user
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test on table test_user
 POSTHOOK: type: SHOW_GRANT
-
-database	default	
-table	test_user	
-principalName	hive_test	
-principalType	USER	
-privilege	Select	
+database	default
+table	test_user
+principalName	hive_test
+principalType	USER
+privilege	Select
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_user
@@ -118,14 +117,13 @@ PREHOOK: query: show grant user hive_test on table test_user
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test on table test_user
 POSTHOOK: type: SHOW_GRANT
-
-database	default	
-table	test_user	
-principalName	hive_test	
-principalType	USER	
-privilege	Select	
+database	default
+table	test_user
+principalName	hive_test
+principalType	USER
+privilege	Select
 #### A masked pattern was here ####
-grantor	hive_test_user	
+grantor	hive_test_user
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_user

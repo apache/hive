@@ -31,7 +31,7 @@ import org.apache.hive.service.cli.OperationType;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
-
+import org.apache.hive.service.cli.thrift.TProtocolVersion;
 
 
 public abstract class Operation {
@@ -50,7 +50,7 @@ public abstract class Operation {
   protected Operation(HiveSession parentSession, OperationType opType) {
     super();
     this.parentSession = parentSession;
-    opHandle = new OperationHandle(opType);
+    this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
   }
 
   public void setConfiguration(HiveConf configuration) {
@@ -67,6 +67,10 @@ public abstract class Operation {
 
   public OperationHandle getHandle() {
     return opHandle;
+  }
+
+  public TProtocolVersion getProtocolVersion() {
+    return opHandle.getProtocolVersion();
   }
 
   public OperationType getType() {

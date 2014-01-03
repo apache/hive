@@ -20,6 +20,7 @@ package org.apache.hive.service.cli;
 
 import java.util.UUID;
 
+import org.apache.hive.service.cli.thrift.TProtocolVersion;
 import org.apache.hive.service.cli.thrift.TSessionHandle;
 
 
@@ -29,16 +30,20 @@ import org.apache.hive.service.cli.thrift.TSessionHandle;
  */
 public class SessionHandle extends Handle {
 
-  public SessionHandle() {
-    super();
+  private final TProtocolVersion protocol;
+
+  public SessionHandle(TProtocolVersion protocol) {
+    this.protocol = protocol;
   }
 
-  public SessionHandle(HandleIdentifier handleId) {
-    super(handleId);
-  }
-
+  // dummy handle for ThriftCLIService
   public SessionHandle(TSessionHandle tSessionHandle) {
+    this(tSessionHandle, TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V1);
+  }
+
+  public SessionHandle(TSessionHandle tSessionHandle, TProtocolVersion protocol) {
     super(tSessionHandle.getSessionId());
+    this.protocol = protocol;
   }
 
   public UUID getSessionId() {
@@ -49,6 +54,10 @@ public class SessionHandle extends Handle {
     TSessionHandle tSessionHandle = new TSessionHandle();
     tSessionHandle.setSessionId(getHandleIdentifier().toTHandleIdentifier());
     return tSessionHandle;
+  }
+
+  public TProtocolVersion getProtocolVersion() {
+    return protocol;
   }
 
   @Override
