@@ -23,7 +23,8 @@ import java.util.HashMap;
 @Explain(displayName="privilege subject")
 public class PrivilegeObjectDesc {
 
-  private boolean table;
+  //default type is table
+  private boolean table = true;
 
   private String object;
 

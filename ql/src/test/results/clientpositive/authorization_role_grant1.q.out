@@ -1,0 +1,56 @@
+PREHOOK: query: -- role granting without role keyword
+create role src_role2
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: -- role granting without role keyword
+create role src_role2
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant  src_role2 to user user2
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant  src_role2 to user user2
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: show role grant user user2
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user2
+POSTHOOK: type: SHOW_ROLE_GRANT
+src_role2
+PREHOOK: query: -- revoke role without role keyword
+revoke src_role2 from user user2
+PREHOOK: type: REVOKE_ROLE
+POSTHOOK: query: -- revoke role without role keyword
+revoke src_role2 from user user2
+POSTHOOK: type: REVOKE_ROLE
+PREHOOK: query: show role grant user user2
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user2
+POSTHOOK: type: SHOW_ROLE_GRANT
+PREHOOK: query: ----------------------------------------
+-- role granting without role keyword, with admin option (syntax check)
+----------------------------------------
+
+create role src_role_wadmin
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: ----------------------------------------
+-- role granting without role keyword, with admin option (syntax check)
+----------------------------------------
+
+create role src_role_wadmin
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant  src_role_wadmin to user user2 with admin option
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant  src_role_wadmin to user user2 with admin option
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: show role grant user user2
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user2
+POSTHOOK: type: SHOW_ROLE_GRANT
+src_role_wadmin
+PREHOOK: query: -- revoke role without role keyword
+revoke src_role_wadmin from user user2 with admin option
+PREHOOK: type: REVOKE_ROLE
+POSTHOOK: query: -- revoke role without role keyword
+revoke src_role_wadmin from user user2 with admin option
+POSTHOOK: type: REVOKE_ROLE
+PREHOOK: query: show role grant user user2
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user2
+POSTHOOK: type: SHOW_ROLE_GRANT
