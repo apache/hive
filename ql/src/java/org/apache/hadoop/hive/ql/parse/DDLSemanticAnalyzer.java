@@ -456,8 +456,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeGrantRevokeRole(boolean grant, ASTNode ast) {
     List<PrincipalDesc> principalDesc = analyzePrincipalListDef(
         (ASTNode) ast.getChild(0));
+
+    //check if admin option has been specified
+    int rolesStartPos = 1;
+    ASTNode wAdminOption = (ASTNode) ast.getChild(1);
+    if(wAdminOption.getToken().getType() == HiveParser.TOK_GRANT_WITH_ADMIN_OPTION){
+      rolesStartPos = 2; //start reading role names from next postion
+      //TODO: use the admin option
+    }
+
     List<String> roles = new ArrayList<String>();
-    for (int i = 1; i < ast.getChildCount(); i++) {
+    for (int i = rolesStartPos; i < ast.getChildCount(); i++) {
       roles.add(unescapeIdentifier(ast.getChild(i).getText()));
     }
     String roleOwnerName = "";
@@ -489,21 +498,26 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     String principalName = unescapeIdentifier(principal.getChild(0).getText());
     PrincipalDesc principalDesc = new PrincipalDesc(principalName, type);
+
     List<String> cols = null;
     if (ast.getChildCount() > 1) {
       ASTNode child = (ASTNode) ast.getChild(1);
       if (child.getToken().getType() == HiveParser.TOK_PRIV_OBJECT_COL) {
         privHiveObj = new PrivilegeObjectDesc();
+        //set object name
         privHiveObj.setObject(unescapeIdentifier(child.getChild(0).getText()));
-        if (child.getChildCount() > 1) {
-          for (int i = 1; i < child.getChildCount(); i++) {
+        //set object type
+        ASTNode objTypeNode = (ASTNode) child.getChild(1);
+        privHiveObj.setTable(objTypeNode.getToken().getType() == HiveParser.TOK_TABLE_TYPE);
+
+        //set col and partition spec if specified
+        if (child.getChildCount() > 2) {
+          for (int i = 2; i < child.getChildCount(); i++) {
             ASTNode grandChild = (ASTNode) child.getChild(i);
             if (grandChild.getToken().getType() == HiveParser.TOK_PARTSPEC) {
               privHiveObj.setPartSpec(DDLSemanticAnalyzer.getPartSpec(grandChild));
             } else if (grandChild.getToken().getType() == HiveParser.TOK_TABCOLNAME) {
               cols = getColumnNames((ASTNode) grandChild);
-            } else {
-              privHiveObj.setTable(child.getChild(i) != null);
             }
           }
         }
@@ -574,16 +588,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       HashSet<WriteEntity> outputs)
       throws SemanticException {
     PrivilegeObjectDesc subject = new PrivilegeObjectDesc();
+    //set object identifier
     subject.setObject(unescapeIdentifier(ast.getChild(0).getText()));
-    if (ast.getChildCount() > 1) {
-      for (int i = 0; i < ast.getChildCount(); i++) {
-        ASTNode astChild = (ASTNode) ast.getChild(i);
-        if (astChild.getToken().getType() == HiveParser.TOK_PARTSPEC) {
-          subject.setPartSpec(DDLSemanticAnalyzer.getPartSpec(astChild));
-        } else {
-          subject.setTable(ast.getChild(0) != null);
-        }
-      }
+    //set object type
+    ASTNode objTypeNode =  (ASTNode) ast.getChild(1);
+    subject.setTable(objTypeNode.getToken().getType() == HiveParser.TOK_TABLE_TYPE);
+    if (ast.getChildCount() == 3) {
+      //if partition spec node is present, set partition spec
+      ASTNode partSpecNode = (ASTNode) ast.getChild(2);
+      subject.setPartSpec(DDLSemanticAnalyzer.getPartSpec(partSpecNode));
     }
 
     if (subject.getTable()) {

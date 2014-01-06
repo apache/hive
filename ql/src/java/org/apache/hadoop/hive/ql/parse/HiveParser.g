@@ -261,6 +261,7 @@ TOK_USER;
 TOK_GROUP;
 TOK_ROLE;
 TOK_GRANT_WITH_OPTION;
+TOK_GRANT_WITH_ADMIN_OPTION;
 TOK_PRIV_ALL;
 TOK_PRIV_ALTER_METADATA;
 TOK_PRIV_ALTER_DATA;
@@ -310,6 +311,8 @@ TOK_SUBQUERY_EXPR;
 TOK_SUBQUERY_OP;
 TOK_SUBQUERY_OP_NOTIN;
 TOK_SUBQUERY_OP_NOTEXISTS;
+TOK_DB_TYPE;
+TOK_TABLE_TYPE;
 }
 
 
@@ -1299,8 +1302,8 @@ grantPrivileges
     : KW_GRANT privList=privilegeList
       privilegeObject?
       KW_TO principalSpecification
-      (KW_WITH withOption)?
-    -> ^(TOK_GRANT $privList principalSpecification privilegeObject? withOption?)
+      withGrantOption?
+    -> ^(TOK_GRANT $privList principalSpecification privilegeObject? withGrantOption?)
     ;
 
 revokePrivileges
@@ -1313,15 +1316,15 @@ revokePrivileges
 grantRole
 @init {msgs.push("grant role");}
 @after {msgs.pop();}
-    : KW_GRANT KW_ROLE identifier (COMMA identifier)* KW_TO principalSpecification
-    -> ^(TOK_GRANT_ROLE principalSpecification identifier+)
+    : KW_GRANT KW_ROLE? identifier (COMMA identifier)* KW_TO principalSpecification withAdminOption?
+    -> ^(TOK_GRANT_ROLE principalSpecification withAdminOption? identifier+)
     ;
 
 revokeRole
 @init {msgs.push("revoke role");}
 @after {msgs.pop();}
-    : KW_REVOKE KW_ROLE identifier (COMMA identifier)* KW_FROM principalSpecification
-    -> ^(TOK_REVOKE_ROLE principalSpecification identifier+)
+    : KW_REVOKE KW_ROLE? identifier (COMMA identifier)* KW_FROM principalSpecification withAdminOption?
+    -> ^(TOK_REVOKE_ROLE principalSpecification withAdminOption? identifier+)
     ;
 
 showRoleGrants
@@ -1341,16 +1344,26 @@ showGrants
 privilegeIncludeColObject
 @init {msgs.push("privilege object including columns");}
 @after {msgs.pop();}
-    : KW_ON (table=KW_TABLE|KW_DATABASE) identifier (LPAREN cols=columnNameList RPAREN)? partitionSpec?
-    -> ^(TOK_PRIV_OBJECT_COL identifier $table? $cols? partitionSpec?)
+    : KW_ON privObjectType identifier (LPAREN cols=columnNameList RPAREN)? partitionSpec?
+    -> ^(TOK_PRIV_OBJECT_COL identifier privObjectType $cols? partitionSpec?)
     ;
 
 privilegeObject
 @init {msgs.push("privilege subject");}
 @after {msgs.pop();}
-    : KW_ON (table=KW_TABLE|KW_DATABASE) identifier partitionSpec?
-    -> ^(TOK_PRIV_OBJECT identifier $table? partitionSpec?)
+    : KW_ON privObjectType identifier partitionSpec?
+    -> ^(TOK_PRIV_OBJECT identifier privObjectType partitionSpec?)
     ;
+
+
+// database or table type. Type is optional, default type is table
+privObjectType
+@init {msgs.push("privilege object type type");}
+@after {msgs.pop();}
+    : KW_DATABASE -> ^(TOK_DB_TYPE)
+    | KW_TABLE? -> ^(TOK_TABLE_TYPE)
+    ;
+
 
 privilegeList
 @init {msgs.push("grant privilege list");}
@@ -1394,11 +1407,18 @@ principalName
     | KW_ROLE identifier -> ^(TOK_ROLE identifier)
     ;
 
-withOption
-@init {msgs.push("grant with option");}
+withGrantOption
+@init {msgs.push("with grant option");}
 @after {msgs.pop();}
-    : KW_GRANT KW_OPTION
+    : KW_WITH KW_GRANT KW_OPTION
     -> ^(TOK_GRANT_WITH_OPTION)
+    ;
+
+withAdminOption
+@init {msgs.push("with admin option");}
+@after {msgs.pop();}
+    : KW_WITH KW_ADMIN KW_OPTION
+    -> ^(TOK_GRANT_WITH_ADMIN_OPTION)
     ;
 
 metastoreCheck
