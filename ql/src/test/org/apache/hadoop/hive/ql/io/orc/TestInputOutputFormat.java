@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -425,8 +426,8 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(context, fs,
-            fs.getFileStatus(new Path("/a/file")));
-    splitter.createSplit(0, 200);
+            fs.getFileStatus(new Path("/a/file")), null);
+    splitter.createSplit(0, 200, null);
     FileSplit result = context.getResult(-1);
     assertEquals(0, result.getStart());
     assertEquals(200, result.getLength());
@@ -436,14 +437,14 @@ public class TestInputOutputFormat {
     assertEquals("host1-1", locs[0]);
     assertEquals("host1-2", locs[1]);
     assertEquals("host1-3", locs[2]);
-    splitter.createSplit(500, 600);
+    splitter.createSplit(500, 600, null);
     result = context.getResult(-1);
     locs = result.getLocations();
     assertEquals(3, locs.length);
     assertEquals("host2-1", locs[0]);
     assertEquals("host0", locs[1]);
     assertEquals("host2-3", locs[2]);
-    splitter.createSplit(0, 2500);
+    splitter.createSplit(0, 2500, null);
     result = context.getResult(-1);
     locs = result.getLocations();
     assertEquals(1, locs.length);
@@ -468,7 +469,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(context, fs,
-            fs.getFileStatus(new Path("/a/file")));
+            fs.getFileStatus(new Path("/a/file")), null);
     splitter.run();
     if (context.getErrors().size() > 0) {
       for(Throwable th: context.getErrors()) {
@@ -496,7 +497,7 @@ public class TestInputOutputFormat {
     conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 0);
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(context, fs,
-      fs.getFileStatus(new Path("/a/file")));
+      fs.getFileStatus(new Path("/a/file")), null);
     splitter.run();
     if (context.getErrors().size() > 0) {
       for(Throwable th: context.getErrors()) {
@@ -562,7 +563,6 @@ public class TestInputOutputFormat {
     IntObjectInspector intInspector =
         (IntObjectInspector) fields.get(0).getFieldObjectInspector();
     assertEquals(0.0, reader.getProgress(), 0.00001);
-    assertEquals(3, reader.getPos());
     while (reader.next(key, value)) {
       assertEquals(++rowNum, intInspector.get(inspector.
           getStructFieldData(serde.deserialize(value), fields.get(0))));
@@ -697,7 +697,7 @@ public class TestInputOutputFormat {
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
     InputSplit[] splits = in.getSplits(conf, 1);
-    assertEquals(0, splits.length);
+    assertTrue(1 == splits.length);
     assertEquals(null, serde.getSerDeStats());
   }
 

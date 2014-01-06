@@ -149,4 +149,11 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
   protected boolean hasAnyNulls(MapJoinKey key) {
     return key.hasAnyNulls(nullsafes);
   }
+
+  @Override
+  public void closeOp(boolean abort) throws HiveException {
+    super.closeOp(abort);
+    emptyList = null;
+    joinKeys = null;
+  }
 }

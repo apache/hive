@@ -137,7 +137,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         colNames = String.format("%s %s", colNames, colName);
       }
 
-      LOG.info(String.format("keyObjectInspector [%s]%s => %s",
+      LOG.debug(String.format("keyObjectInspector [%s]%s => %s",
           keyObjectInspector.getClass(),
           keyObjectInspector,
           colNames));
@@ -169,7 +169,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         colNames = String.format("%s %s", colNames, colName);
       }
 
-      LOG.info(String.format("valueObjectInspector [%s]%s => %s",
+      LOG.debug(String.format("valueObjectInspector [%s]%s => %s",
           valueObjectInspector.getClass(),
           valueObjectInspector,
           colNames));
@@ -198,7 +198,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
   public void processOp(Object row, int tag) throws HiveException {
     VectorizedRowBatch vrg = (VectorizedRowBatch) row;
 
-    LOG.info(String.format("sinking %d rows, %d values, %d keys, %d parts",
+    LOG.debug(String.format("sinking %d rows, %d values, %d keys, %d parts",
         vrg.size,
         valueEval.length,
         keyEval.length,

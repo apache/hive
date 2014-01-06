@@ -262,12 +262,28 @@ public final class Utilities {
     return w;
   }
 
+  public static void setMapWork(Configuration conf, MapWork work) {
+    setBaseWork(conf, MAP_PLAN_NAME, work);
+  }
+
   public static MapWork getMapWork(Configuration conf) {
     return (MapWork) getBaseWork(conf, MAP_PLAN_NAME);
   }
 
+  public static void setReduceWork(Configuration conf, ReduceWork work) {
+    setBaseWork(conf, REDUCE_PLAN_NAME, work);
+  }
+
   public static ReduceWork getReduceWork(Configuration conf) {
     return (ReduceWork) getBaseWork(conf, REDUCE_PLAN_NAME);
+  }
+
+  /**
+   * Pushes work into the global work map
+   */
+  public static void setBaseWork(Configuration conf, String name, BaseWork work) {
+    Path path = getPlanPath(conf, name);
+    gWorkMap.put(path, work);
   }
 
   /**
@@ -2724,22 +2740,30 @@ public final class Utilities {
         + maxReducers + " totalInputFileSize=" + totalInputFileSize);
     }
 
+    // If this map reduce job writes final data to a table and bucketing is being inferred,
+    // and the user has configured Hive to do this, make sure the number of reducers is a
+    // power of two
+    boolean powersOfTwo = conf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT_NUM_BUCKETS_POWER_TWO) &&
+        finalMapRed && !work.getBucketedColsByDirectory().isEmpty();
+
+    return estimateReducers(totalInputFileSize, bytesPerReducer, maxReducers, powersOfTwo);
+  }
+
+  public static int estimateReducers(long totalInputFileSize, long bytesPerReducer,
+      int maxReducers, boolean powersOfTwo) {
+
     int reducers = (int) ((totalInputFileSize + bytesPerReducer - 1) / bytesPerReducer);
     reducers = Math.max(1, reducers);
     reducers = Math.min(maxReducers, reducers);
 
-    // If this map reduce job writes final data to a table and bucketing is being inferred,
-    // and the user has configured Hive to do this, make sure the number of reducers is a
-    // power of two
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT_NUM_BUCKETS_POWER_TWO) &&
-        finalMapRed && !work.getBucketedColsByDirectory().isEmpty()) {
 
-      int reducersLog = (int)(Math.log(reducers) / Math.log(2)) + 1;
-      int reducersPowerTwo = (int)Math.pow(2, reducersLog);
+    int reducersLog = (int)(Math.log(reducers) / Math.log(2)) + 1;
+    int reducersPowerTwo = (int)Math.pow(2, reducersLog);
 
+    if (powersOfTwo) {
       // If the original number of reducers was a power of two, use that
       if (reducersPowerTwo / 2 == reducers) {
-        return reducers;
+        // nothing to do
       } else if (reducersPowerTwo > maxReducers) {
         // If the next power of two greater than the original number of reducers is greater
         // than the max number of reducers, use the preceding power of two, which is strictly
@@ -2750,7 +2774,6 @@ public final class Utilities {
         reducers = reducersPowerTwo;
       }
     }
-
     return reducers;
   }
 
@@ -3107,6 +3130,10 @@ public final class Utilities {
     }
   }
 
+  public static void clearWorkMap() {
+    gWorkMap.clear();
+  }
+
   /**
    * Create a temp dir in specified baseDir
    * This can go away once hive moves to support only JDK 7
@@ -3202,4 +3229,3 @@ public final class Utilities {
     return footerCount;
   }
 }
-

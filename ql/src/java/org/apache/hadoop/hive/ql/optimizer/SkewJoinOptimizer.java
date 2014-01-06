@@ -398,7 +398,8 @@ public class SkewJoinOptimizer implements Transform {
             return parseContext.getTopToTable().get(tsOp);
           }
         }
-        if ((op.getParentOperators() == null) || (op.getParentOperators().size() > 1)) {
+        if ((op.getParentOperators() == null) || (op.getParentOperators().isEmpty()) || 
+            (op.getParentOperators().size() > 1)) {
           return null;
         }
         op = op.getParentOperators().get(0);

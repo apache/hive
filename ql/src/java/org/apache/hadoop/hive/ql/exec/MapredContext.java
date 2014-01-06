@@ -64,7 +64,7 @@ public class MapredContext {
 
   private Reporter reporter;
 
-  private MapredContext(boolean isMap, JobConf jobConf) {
+  protected MapredContext(boolean isMap, JobConf jobConf) {
     this.isMap = isMap;
     this.jobConf = jobConf;
     this.udfs = new ArrayList<Closeable>();

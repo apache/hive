@@ -504,10 +504,16 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   Throwable getException() {
     return exception;
   }
+
   void setException(Throwable ex) {
     exception = ex;
   }
 
+  public void setConsole(LogHelper console) {
+    this.console = console;
+  }
+
+  @Override
   public String toString() {
     return getId() + ":" + getType();
   }

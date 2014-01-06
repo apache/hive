@@ -116,8 +116,10 @@ public class MapWork extends BaseWork {
   private Map<String, Map<String, Integer>> scratchColumnMap = null;
   private boolean vectorMode = false;
 
+  public MapWork() {}
 
-  public MapWork() {
+  public MapWork(String name) {
+    super(name);
   }
 
   @Explain(displayName = "Path -> Alias", normalExplain = false)

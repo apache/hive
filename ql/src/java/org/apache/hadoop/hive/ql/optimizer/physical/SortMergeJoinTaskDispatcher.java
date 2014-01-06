@@ -205,7 +205,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
 
     Operator<? extends OperatorDesc> currOp = originalSMBJoinOp;
     while (true) {
-      if (currOp.getChildOperators() == null) {
+      if ((currOp.getChildOperators() == null) || (currOp.getChildOperators().isEmpty())) {
         if (currOp instanceof FileSinkOperator) {
           FileSinkOperator fsOp = (FileSinkOperator)currOp;
           // The query has enforced that a sort-merge join should be performed.
@@ -433,7 +433,8 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     opParseContextMap.put(newSMBJoinOp, opParseContextMap.get(oldSMBJoinOp));
 
     // generate the map join operator
-    return MapJoinProcessor.convertSMBJoinToMapJoin(opParseContextMap, newSMBJoinOp,
+    return MapJoinProcessor.convertSMBJoinToMapJoin(physicalContext.getConf(),
+        opParseContextMap, newSMBJoinOp,
         joinTree, mapJoinPos, true);
   }
 }

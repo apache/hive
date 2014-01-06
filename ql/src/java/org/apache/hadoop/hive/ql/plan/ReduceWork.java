@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +46,12 @@ import org.apache.hadoop.mapred.JobConf;
 @SuppressWarnings({"serial", "deprecation"})
 public class ReduceWork extends BaseWork {
 
+  public ReduceWork() {}
+
+  public ReduceWork(String name) {
+    super(name);
+  }
+
   private static transient final Log LOG = LogFactory.getLog(ReduceWork.class);
 
   // schema of the map-reduce 'key' object - this is homogeneous
@@ -62,6 +70,8 @@ public class ReduceWork extends BaseWork {
   // boolean to signal whether tagging will be used (e.g.: join) or 
   // not (e.g.: group by)
   private boolean needsTagging;
+
+  private Map<Integer, String> tagToInput = new HashMap<Integer, String>();
 
   /**
    * If the plan has a reducer and correspondingly a reduce-sink, then store the TableDesc pointing
@@ -101,6 +111,14 @@ public class ReduceWork extends BaseWork {
 
   public void setNeedsTagging(boolean needsTagging) {
     this.needsTagging = needsTagging;
+  }
+
+  public void setTagToInput(final Map<Integer, String> tagToInput) {
+    this.tagToInput = tagToInput;
+  }
+
+  public Map<Integer, String> getTagToInput() {
+    return tagToInput;
   }
 
   @Override

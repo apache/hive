@@ -187,6 +187,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.tagOrder = clone.tagOrder;
     this.filters = clone.filters;
     this.filterMap = clone.filterMap;
+    this.statistics = clone.statistics;
   }
 
   public Map<Byte, List<ExprNodeDesc>> getExprs() {

@@ -128,10 +128,6 @@ public class HadoopJobExecHelper {
     this.jobId = jobId;
   }
 
-
-  public HadoopJobExecHelper() {
-  }
-
   public HadoopJobExecHelper(JobConf job, LogHelper console,
       Task<? extends Serializable> task, HadoopJobExecHook hookCallBack) {
     this.job = job;

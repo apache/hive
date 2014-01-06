@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,12 +38,18 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.orc.Metadata;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.FileGenerator;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitGenerator;
+import org.apache.hadoop.hive.ql.io.orc.Reader.FileMetaInfo;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -59,6 +66,10 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 /**
  * A MapReduce/Hive input format for ORC files.
  */
@@ -70,8 +81,12 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   private static final Log LOG = LogFactory.getLog(OrcInputFormat.class);
   static final String MIN_SPLIT_SIZE = "mapred.min.split.size";
   static final String MAX_SPLIT_SIZE = "mapred.max.split.size";
+
   private static final long DEFAULT_MIN_SPLIT_SIZE = 16 * 1024 * 1024;
   private static final long DEFAULT_MAX_SPLIT_SIZE = 256 * 1024 * 1024;
+
+  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private static final String CLASS_NAME = ReaderImpl.class.getName();
 
   /**
    * When picking the hosts for a split that crosses block boundaries,
@@ -169,7 +184,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     String serializedPushdown = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
     if (serializedPushdown == null
         || conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR) == null) {
-      LOG.info("No ORC pushdown predicate");
+      LOG.debug("No ORC pushdown predicate");
       return null;
     }
     SearchArgument sarg = SearchArgument.FACTORY.create
@@ -181,7 +196,9 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   public static String[] getIncludedColumnNames(
       List<OrcProto.Type> types, boolean[] includedColumns, Configuration conf) {
     String columnNamesString = conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
-    LOG.info("included columns names = " + columnNamesString);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("included columns names = " + columnNamesString);
+    }
     if (columnNamesString == null || conf.get(TableScanDesc.FILTER_EXPR_CONF_STR) == null) {
       return null;
     }
@@ -236,13 +253,27 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           reporter);
       return (RecordReader) vorr;
     }
-
-    FileSplit fileSplit = (FileSplit) inputSplit;
-    Path path = fileSplit.getPath();
+    FileSplit fSplit = (FileSplit)inputSplit;
+    reporter.setStatus(fSplit.toString());
+    Path path = fSplit.getPath();
     FileSystem fs = path.getFileSystem(conf);
-    reporter.setStatus(fileSplit.toString());
-    return new OrcRecordReader(OrcFile.createReader(fs, path), conf,
-                               fileSplit.getStart(), fileSplit.getLength());
+    Reader reader = null;
+
+    if(!(fSplit instanceof OrcSplit)){
+      //If CombineHiveInputFormat is used, it works with FileSplit and not OrcSplit
+      reader = OrcFile.createReader(fs, path);
+    } else {
+      //We have OrcSplit, which may have footer metadata cached, so use the appropriate reader
+      //constructor
+      OrcSplit orcSplit = (OrcSplit) fSplit;
+      if (orcSplit.hasFooter()) {
+        FileMetaInfo fMetaInfo = orcSplit.getFileMetaInfo();
+        reader = OrcFile.createReader(fs, path, fMetaInfo);
+      } else {
+        reader = OrcFile.createReader(fs, path);
+      }
+    }
+    return new OrcRecordReader(reader, conf, fSplit.getStart(), fSplit.getLength());
   }
 
   @Override
@@ -299,13 +330,19 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    * the different worker threads.
    */
   static class Context {
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
-    private final List<FileSplit> splits = new ArrayList<FileSplit>(10000);
+    private final Configuration conf;
+    private static Cache<Path, FileInfo> footerCache;
+    private final ExecutorService threadPool;
+    private final List<OrcSplit> splits = new ArrayList<OrcSplit>(10000);
     private final List<Throwable> errors = new ArrayList<Throwable>();
     private final HadoopShims shims = ShimLoader.getHadoopShims();
-    private final Configuration conf;
     private final long maxSize;
     private final long minSize;
+    private final boolean footerInSplits;
+    private final boolean cacheStripeDetails;
+    private final AtomicInteger cacheHitCounter = new AtomicInteger(0);
+    private final AtomicInteger numFilesCounter = new AtomicInteger(0);
+    private Throwable fatalError = null;
 
     /**
      * A count of the number of threads that may create more work for the
@@ -317,6 +354,22 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       this.conf = conf;
       minSize = conf.getLong(MIN_SPLIT_SIZE, DEFAULT_MIN_SPLIT_SIZE);
       maxSize = conf.getLong(MAX_SPLIT_SIZE, DEFAULT_MAX_SPLIT_SIZE);
+      footerInSplits = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS);
+      int cacheStripeDetailsSize = HiveConf.getIntVar(conf,
+          ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE);
+      int numThreads = HiveConf.getIntVar(conf, ConfVars.HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS);
+
+      cacheStripeDetails = (cacheStripeDetailsSize > 0);
+
+      threadPool = Executors.newFixedThreadPool(numThreads,
+          new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ORC_GET_SPLITS #%d").build());
+
+      synchronized (Context.class) {
+        if (footerCache == null && cacheStripeDetails) {
+          footerCache = CacheBuilder.newBuilder().concurrencyLevel(numThreads)
+              .initialCapacity(cacheStripeDetailsSize).softValues().build();
+        }
+      }
     }
 
     int getSchedulers() {
@@ -329,7 +382,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      *     the back.
      * @result the Nth file split
      */
-    FileSplit getResult(int index) {
+    OrcSplit getResult(int index) {
       if (index >= 0) {
         return splits.get(index);
       } else {
@@ -346,10 +399,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      * @param runnable the object to run
      */
     synchronized void schedule(Runnable runnable) {
-      if (runnable instanceof FileGenerator) {
-        schedulers += 1;
+      if (fatalError == null) {
+        if (runnable instanceof FileGenerator || runnable instanceof SplitGenerator) {
+          schedulers += 1;
+        }
+        threadPool.execute(runnable);
+      } else {
+        throw new RuntimeException("serious problem", fatalError);
       }
-      threadPool.execute(runnable);
     }
 
     /**
@@ -362,6 +419,11 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       }
     }
 
+    synchronized void notifyOnNonIOException(Throwable th) {
+      fatalError = th;
+      notify();
+    }
+
     /**
      * Wait until all of the tasks are done. It waits until all of the
      * threads that may create more work are done and then shuts down the
@@ -371,6 +433,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       try {
         while (schedulers != 0) {
           wait();
+          if (fatalError != null) {
+            threadPool.shutdownNow();
+            throw new RuntimeException("serious problem", fatalError);
+          }
         }
         threadPool.shutdown();
         threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
@@ -406,17 +472,56 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         while (itr.hasNext()) {
           FileStatus file = itr.next();
           if (!file.isDir()) {
-            context.schedule(new SplitGenerator(context, fs, file));
+            FileInfo fileInfo = null;
+            if (context.cacheStripeDetails) {
+              fileInfo = verifyCachedFileInfo(file);
+            }
+            SplitGenerator spgen = new SplitGenerator(context, fs, file, fileInfo);
+            spgen.schedule();
           }
         }
-        // mark the fact that we are done
-        context.decrementSchedulers();
       } catch (Throwable th) {
-        context.decrementSchedulers();
+        if (!(th instanceof IOException)) {
+          LOG.error("Unexpected Exception", th);
+        }
         synchronized (context.errors) {
           context.errors.add(th);
         }
+        if (!(th instanceof IOException)) {
+          context.notifyOnNonIOException(th);
+        }
+      } finally {
+        context.decrementSchedulers();
       }
+    }
+
+    private FileInfo verifyCachedFileInfo(FileStatus file) {
+      context.numFilesCounter.incrementAndGet();
+      FileInfo fileInfo = Context.footerCache.getIfPresent(file.getPath());
+      if (fileInfo != null) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Info cached for path: " + file.getPath());
+        }
+        if (fileInfo.modificationTime == file.getModificationTime() && fileInfo.size == file.getLen()) {
+          // Cached copy is valid
+          context.cacheHitCounter.incrementAndGet();
+          return fileInfo;
+        } else {
+          // Invalidate
+          Context.footerCache.invalidate(file.getPath());
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Meta-Info for : " + file.getPath() + " changed. CachedModificationTime: "
+              + fileInfo.modificationTime + ", CurrentModificationTime: "
+              + file.getModificationTime()
+              + ", CachedLength: " + fileInfo.size + ", CurrentLength: " + file.getLen());
+          }
+        }
+      } else {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Info not cached for path: " + file.getPath());
+        }
+      }
+      return null;
     }
   }
 
@@ -430,18 +535,38 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final FileStatus file;
     private final long blockSize;
     private final BlockLocation[] locations;
+    private final FileInfo fileInfo;
+    private Iterable<StripeInformation> stripes;
+    private FileMetaInfo fileMetaInfo;
+    private Metadata metadata;
+    private List<OrcProto.Type> types;
+
 
     SplitGenerator(Context context, FileSystem fs,
-                   FileStatus file) throws IOException {
+                   FileStatus file, FileInfo fileInfo) throws IOException {
       this.context = context;
       this.fs = fs;
       this.file = file;
       this.blockSize = file.getBlockSize();
+      this.fileInfo = fileInfo;
       locations = context.shims.getLocations(fs, file);
     }
 
     Path getPath() {
       return file.getPath();
+    }
+
+    void schedule() throws IOException {
+      if(locations.length == 1 && file.getLen() < context.maxSize) {
+        String[] hosts = locations[0].getHosts();
+        synchronized (context.splits) {
+          context.splits.add(new OrcSplit(file.getPath(), 0, file.getLen(),
+                hosts, fileMetaInfo));
+        }
+      } else {
+        // if it requires a compute task
+        context.schedule(this);
+      }
     }
 
     @Override
@@ -475,9 +600,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      * are written with large block sizes.
      * @param offset the start of the split
      * @param length the length of the split
+     * @param fileMetaInfo file metadata from footer and postscript
      * @throws IOException
      */
-    void createSplit(long offset, long length) throws IOException {
+    void createSplit(long offset, long length, FileMetaInfo fileMetaInfo) throws IOException {
       String[] hosts;
       if ((offset % blockSize) + length <= blockSize) {
         // handle the single block case
@@ -521,8 +647,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         hostList.toArray(hosts);
       }
       synchronized (context.splits) {
-        context.splits.add(new FileSplit(file.getPath(), offset, length,
-            hosts));
+        context.splits.add(new OrcSplit(file.getPath(), offset, length,
+            hosts, fileMetaInfo));
       }
     }
 
@@ -533,9 +659,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     @Override
     public void run() {
       try {
-        Reader orcReader = OrcFile.createReader(fs, file.getPath());
+        populateAndCacheStripeDetails();
         Configuration conf = context.conf;
-        List<OrcProto.Type> types = orcReader.getTypes();
         SearchArgument sarg = createSarg(types, conf);
         List<StripeStatistics> stripeStats = null;
         int[] filterColumns = null;
@@ -558,14 +683,13 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             }
           }
 
-          Metadata metadata = orcReader.getMetadata();
           stripeStats = metadata.getStripeStatistics();
         }
 
         long currentOffset = -1;
         long currentLength = 0;
         int idx = -1;
-        for(StripeInformation stripe: orcReader.getStripes()) {
+        for(StripeInformation stripe: stripes) {
           idx++;
 
           // eliminate stripes that doesn't satisfy the predicate condition
@@ -579,7 +703,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
             // create split for the previous unfinished stripe
             if (currentOffset != -1) {
-              createSplit(currentOffset, currentLength);
+              createSplit(currentOffset, currentLength, fileMetaInfo);
               currentOffset = -1;
             }
             continue;
@@ -589,7 +713,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           // crossed a block boundary, cut the input split here.
           if (currentOffset != -1 && currentLength > context.minSize &&
               (currentOffset / blockSize != stripe.getOffset() / blockSize)) {
-            createSplit(currentOffset, currentLength);
+            createSplit(currentOffset, currentLength, fileMetaInfo);
             currentOffset = -1;
           }
           // if we aren't building a split, start a new one.
@@ -600,16 +724,68 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             currentLength += stripe.getLength();
           }
           if (currentLength >= context.maxSize) {
-            createSplit(currentOffset, currentLength);
+            createSplit(currentOffset, currentLength, fileMetaInfo);
             currentOffset = -1;
           }
         }
         if (currentOffset != -1) {
-          createSplit(currentOffset, currentLength);
+          createSplit(currentOffset, currentLength, fileMetaInfo);
         }
       } catch (Throwable th) {
+        if (!(th instanceof IOException)) {
+          LOG.error("Unexpected Exception", th);
+        }
         synchronized (context.errors) {
           context.errors.add(th);
+        }
+        if (!(th instanceof IOException)) {
+          context.notifyOnNonIOException(th);
+        }
+      } finally {
+        context.decrementSchedulers();
+      }
+    }
+
+    private void populateAndCacheStripeDetails() {
+      try {
+        Reader orcReader;
+        boolean found = false;
+        if (fileInfo != null) {
+          found = true;
+          stripes = fileInfo.stripeInfos;
+          fileMetaInfo = fileInfo.fileMetaInfo;
+          metadata = fileInfo.metadata;
+          types = fileInfo.types;
+          // For multiple runs, in case sendSplitsInFooter changes
+          if (fileMetaInfo == null && context.footerInSplits) {
+            orcReader = OrcFile.createReader(fs, file.getPath());
+            fileInfo.fileMetaInfo = orcReader.getFileMetaInfo();
+            fileInfo.metadata = orcReader.getMetadata();
+            fileInfo.types = orcReader.getTypes();
+          }
+        }
+        if (!found) {
+          orcReader = OrcFile.createReader(fs, file.getPath());
+          stripes = orcReader.getStripes();
+          metadata = orcReader.getMetadata();
+          types = orcReader.getTypes();
+          fileMetaInfo = context.footerInSplits ? orcReader.getFileMetaInfo() : null;
+          if (context.cacheStripeDetails) {
+            // Populate into cache.
+            Context.footerCache.put(file.getPath(),
+                new FileInfo(file.getModificationTime(), file.getLen(), stripes, metadata, 
+                             types, fileMetaInfo));
+          }
+        }
+      } catch (Throwable th) {
+        if (!(th instanceof IOException)) {
+          LOG.error("Unexpected Exception", th);
+        }
+        synchronized (context.errors) {
+          context.errors.add(th);
+        }
+        if (!(th instanceof IOException)) {
+          context.notifyOnNonIOException(th);
         }
       }
     }
@@ -677,13 +853,13 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         return null;
       }
     }
-
   }
 
   @Override
   public InputSplit[] getSplits(JobConf job,
                                 int numSplits) throws IOException {
     // use threads to resolve directories into splits
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
     Context context = new Context(job);
     for(Path dir: getInputPaths(job)) {
       FileSystem fs = dir.getFileSystem(job);
@@ -698,13 +874,44 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         if (th instanceof IOException) {
           errors.add((IOException) th);
         } else {
-          throw new IOException("serious problem", th);
+          throw new RuntimeException("serious problem", th);
         }
       }
       throw new InvalidInputException(errors);
     }
     InputSplit[] result = new InputSplit[context.splits.size()];
     context.splits.toArray(result);
+    if (context.cacheStripeDetails) {
+      LOG.info("FooterCacheHitRatio: " + context.cacheHitCounter.get() + "/"
+          + context.numFilesCounter.get());
+    }
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
     return result;
+  }
+
+  /**
+   * FileInfo.
+   *
+   * Stores information relevant to split generation for an ORC File.
+   *
+   */
+  private static class FileInfo {
+    long modificationTime;
+    long size;
+    Iterable<StripeInformation> stripeInfos;
+    FileMetaInfo fileMetaInfo;
+    Metadata metadata;
+    List<OrcProto.Type> types;
+
+
+    FileInfo(long modificationTime, long size, Iterable<StripeInformation> stripeInfos, 
+        Metadata metadata, List<OrcProto.Type> types, FileMetaInfo fileMetaInfo) {
+      this.modificationTime = modificationTime;
+      this.size = size;
+      this.stripeInfos = stripeInfos;
+      this.fileMetaInfo = fileMetaInfo;
+      this.metadata = metadata;
+      this.types = types;
+    }
   }
 }

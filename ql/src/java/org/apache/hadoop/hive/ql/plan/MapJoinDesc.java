@@ -47,6 +47,9 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   private transient String bigTableAlias;
 
+  // for tez. used to remember which position maps to which logical input
+  private Map<Integer, String> parentToInput = new HashMap<Integer, String>();
+
   // table alias (small) --> input file name (big) --> target file names (small)
   private Map<String, Map<String, List<String>>> aliasBucketFileNameMapping;
   private Map<String, Integer> bigTableBucketNumMapping;
@@ -74,6 +77,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.bigTableBucketNumMapping = clone.bigTableBucketNumMapping;
     this.bigTablePartSpecToFileMapping = clone.bigTablePartSpecToFileMapping;
     this.dumpFilePrefix = clone.dumpFilePrefix;
+    this.parentToInput = clone.parentToInput;
   }
 
   public MapJoinDesc(final Map<Byte, List<ExprNodeDesc>> keys,
@@ -104,6 +108,14 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       }
       retainList.put(current.getKey(), list);
     }
+  }
+
+  public Map<Integer, String> getParentToInput() {
+    return parentToInput;
+  }
+
+  public void setParentToInput(Map<Integer, String> parentToInput) {
+    this.parentToInput = parentToInput;
   }
 
   public Map<Byte, List<Integer>> getRetainList() {
