@@ -122,6 +122,30 @@ public interface Reader {
   List<OrcProto.Type> getTypes();
 
   /**
+   * FileMetaInfo - represents file metadata stored in footer and postscript sections of the file
+   * that is useful for Reader implementation
+   *
+   */
+  class FileMetaInfo{
+    final String compressionType;
+    final int bufferSize;
+    final int metadataSize;
+    final ByteBuffer footerBuffer;
+    FileMetaInfo(String compressionType, int bufferSize, int metadataSize, ByteBuffer footerBuffer){
+      this.compressionType = compressionType;
+      this.bufferSize = bufferSize;
+      this.metadataSize = metadataSize;
+      this.footerBuffer = footerBuffer;
+    }
+  }
+
+  /**
+   * Get the metadata stored in footer and postscript sections of the file
+   * @return MetaInfo object with file metadata
+   */
+  FileMetaInfo getFileMetaInfo();
+
+  /**
    * Create a RecordReader that will scan the entire file.
    * @param include true for each column that should be included
    * @return A new RecordReader

@@ -104,30 +104,34 @@ public class MapJoinRowContainer extends AbstractRowContainer<List<Object>> {
     }
     return result;
   }
-  
-  @SuppressWarnings({"unchecked"})
-  public void read(MapJoinObjectSerDeContext context, ObjectInputStream in, Writable container) 
+
+  public void read(MapJoinObjectSerDeContext context, ObjectInputStream in, Writable container)
   throws IOException, SerDeException {
     clear();
-    SerDe serde = context.getSerDe();
     long numRows = in.readLong();
     for (long rowIndex = 0L; rowIndex < numRows; rowIndex++) {
-      container.readFields(in);      
-      List<Object> value = (List<Object>)ObjectInspectorUtils.copyToStandardObject(serde.deserialize(container),
-          serde.getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
-      if(value == null) {
-        add(toList(EMPTY_OBJECT_ARRAY));
-      } else {
-        Object[] valuesArray = value.toArray();
-        if (context.hasFilterTag()) {
-          aliasFilter &= ((ShortWritable)valuesArray[valuesArray.length - 1]).get();
-        }
-        add(toList(valuesArray));
-      }
+      container.readFields(in);
+      read(context, container);
     }
   }
-  
-  public void write(MapJoinObjectSerDeContext context, ObjectOutputStream out) 
+
+  @SuppressWarnings("unchecked")
+  public void read(MapJoinObjectSerDeContext context, Writable currentValue) throws SerDeException {
+    SerDe serde = context.getSerDe();
+    List<Object> value = (List<Object>)ObjectInspectorUtils.copyToStandardObject(serde.deserialize(currentValue),
+        serde.getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+    if(value == null) {
+      add(toList(EMPTY_OBJECT_ARRAY));
+    } else {
+      Object[] valuesArray = value.toArray();
+      if (context.hasFilterTag()) {
+        aliasFilter &= ((ShortWritable)valuesArray[valuesArray.length - 1]).get();
+      }
+      add(toList(valuesArray));
+    }
+  }
+
+  public void write(MapJoinObjectSerDeContext context, ObjectOutputStream out)
   throws IOException, SerDeException {
     SerDe serde = context.getSerDe();
     ObjectInspector valueObjectInspector = context.getStandardOI();

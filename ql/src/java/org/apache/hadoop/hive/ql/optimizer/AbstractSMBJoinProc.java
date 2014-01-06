@@ -473,7 +473,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     JoinDesc joinDesc = joinOp.getConf();
     JoinCondDesc[] joinCondns = joinDesc.getConds();
     Set<Integer> joinCandidates = MapJoinProcessor.getBigTableCandidates(joinCondns);
-    if (joinCandidates == null) {
+    if (joinCandidates.isEmpty()) {
       // This is a full outer join. This can never be a map-join
       // of any type. So return false.
       return false;
@@ -527,6 +527,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     SortBucketJoinProcCtx joinContext,
     ParseContext parseContext) throws SemanticException {
     MapJoinOperator mapJoinOp = MapJoinProcessor.convertMapJoin(
+      parseContext.getConf(),
       parseContext.getOpParseCtx(),
       joinOp,
       pGraphContext.getJoinContext().get(joinOp),

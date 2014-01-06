@@ -334,6 +334,8 @@ STAGE PLANS:
                 1 [Column[key]]
                 2 [Column[key]]
               Position of Big Table: 2
+              Statistics:
+                  numRows: 255 dataSize: 25572 basicStatsState: COMPLETE colStatsState: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -345,6 +347,8 @@ STAGE PLANS:
                   0 []
                   1 []
                 Position of Big Table: 0
+                Statistics:
+                    numRows: 280 dataSize: 28129 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   Statistics:
                       numRows: 280 dataSize: 28129 basicStatsState: COMPLETE colStatsState: NONE

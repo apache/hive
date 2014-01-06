@@ -40,6 +40,14 @@ public class MapJoinTableContainerSerDe {
     this.keyContext = keyContext;
     this.valueContext = valueContext;
   }
+
+  public MapJoinObjectSerDeContext getKeyContext() {
+    return keyContext;
+  }
+  public MapJoinObjectSerDeContext getValueContext() {
+    return valueContext;
+  }
+
   @SuppressWarnings({"unchecked"})
   public MapJoinTableContainer load(ObjectInputStream in) 
       throws HiveException {

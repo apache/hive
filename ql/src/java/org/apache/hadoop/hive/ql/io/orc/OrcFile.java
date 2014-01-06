@@ -18,13 +18,14 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.orc.Reader.FileMetaInfo;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-
-import java.io.IOException;
 
 /**
  * Contains factory methods to read or write ORC files.
@@ -124,6 +125,11 @@ public final class OrcFile {
   public static Reader createReader(FileSystem fs, Path path
                                     ) throws IOException {
     return new ReaderImpl(fs, path);
+  }
+
+  public static Reader createReader(FileSystem fs, Path path, FileMetaInfo fileMetaInfo)
+      throws IOException {
+    return new ReaderImpl(fs, path, fileMetaInfo);
   }
 
   /**
@@ -307,4 +313,5 @@ public final class OrcFile {
     }
     return memoryManager;
   }
+
 }

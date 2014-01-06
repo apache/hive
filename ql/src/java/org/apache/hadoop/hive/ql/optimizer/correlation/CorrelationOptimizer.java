@@ -168,7 +168,7 @@ public class CorrelationOptimizer implements Transform {
       int numAliases = order.length;
       Set<Integer> bigTableCandidates =
           MapJoinProcessor.getBigTableCandidates(joinDesc.getConds());
-      if (bigTableCandidates == null) {
+      if (bigTableCandidates.isEmpty()) {
         continue;
       }
 
@@ -346,7 +346,7 @@ public class CorrelationOptimizer implements Transform {
             "involved in this operator");
         return correlatedReduceSinkOperators;
       }
-      if (current.getParentOperators() == null) {
+      if ((current.getParentOperators() == null) || (current.getParentOperators().isEmpty())) {
         return correlatedReduceSinkOperators;
       }
       if (current instanceof PTFOperator) {

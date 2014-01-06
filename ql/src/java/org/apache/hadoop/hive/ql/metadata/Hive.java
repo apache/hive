@@ -2478,7 +2478,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       return getMSC().updateTableColumnStatistics(statsObj);
     } catch (Exception e) {
-      LOG.error(StringUtils.stringifyException(e));
+      LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
   }
@@ -2487,7 +2487,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       return getMSC().updatePartitionColumnStatistics(statsObj);
     } catch (Exception e) {
-      LOG.error(StringUtils.stringifyException(e));
+      LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
   }
@@ -2497,7 +2497,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       return getMSC().getTableColumnStatistics(dbName, tableName, colName);
     } catch (Exception e) {
-      LOG.error(StringUtils.stringifyException(e));
+      LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
 
@@ -2508,7 +2508,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       try {
         return getMSC().getPartitionColumnStatistics(dbName, tableName, partName, colName);
       } catch (Exception e) {
-        LOG.error(StringUtils.stringifyException(e));
+        LOG.debug(StringUtils.stringifyException(e));
         throw new HiveException(e);
       }
     }
@@ -2518,7 +2518,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       return getMSC().deleteTableColumnStatistics(dbName, tableName, colName);
     } catch(Exception e) {
-      LOG.error(StringUtils.stringifyException(e));
+      LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
   }
@@ -2528,7 +2528,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       try {
         return getMSC().deletePartitionColumnStatistics(dbName, tableName, partName, colName);
       } catch(Exception e) {
-        LOG.error(StringUtils.stringifyException(e));
+        LOG.debug(StringUtils.stringifyException(e));
         throw new HiveException(e);
       }
     }

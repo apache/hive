@@ -29,7 +29,9 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -386,7 +388,8 @@ public final class PlanUtils {
   /**
    * Generate the table descriptor for Map-side join key.
    */
-  public static TableDesc getMapJoinKeyTableDesc(List<FieldSchema> fieldSchemas) {
+  public static TableDesc getMapJoinKeyTableDesc(Configuration conf,
+      List<FieldSchema> fieldSchemas) {
     return new TableDesc(SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
         MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),

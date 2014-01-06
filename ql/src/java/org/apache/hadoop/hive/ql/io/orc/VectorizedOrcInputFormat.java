@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.orc.Reader.FileMetaInfo;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.NullWritable;
@@ -140,11 +141,30 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
   public RecordReader<NullWritable, VectorizedRowBatch>
       getRecordReader(InputSplit inputSplit, JobConf conf,
           Reporter reporter) throws IOException {
-    FileSplit fileSplit = (FileSplit) inputSplit;
-    Path path = fileSplit.getPath();
+    FileSplit fSplit = (FileSplit)inputSplit;
+    reporter.setStatus(fSplit.toString());
+
+    Path path = fSplit.getPath();
     FileSystem fs = path.getFileSystem(conf);
-    reporter.setStatus(fileSplit.toString());
-    return new VectorizedOrcRecordReader(OrcFile.createReader(fs, path), conf, fileSplit);
+
+    Reader reader = null;
+
+    if(!(fSplit instanceof OrcSplit)){
+      //If CombineHiveInputFormat is used, it works with FileSplit and not OrcSplit
+      reader = OrcFile.createReader(fs, path);
+    } else {
+      //We have OrcSplit, which may have footer metadata cached, so use the appropriate reader
+      //constructor
+      OrcSplit orcSplit = (OrcSplit) fSplit;
+      if (orcSplit.hasFooter()) {
+        FileMetaInfo fMetaInfo = orcSplit.getFileMetaInfo();
+        reader = OrcFile.createReader(fs, path, fMetaInfo);
+      } else {
+        reader = OrcFile.createReader(fs, path);
+      }
+    }
+
+    return new VectorizedOrcRecordReader(reader, conf, fSplit);
   }
 
   @Override

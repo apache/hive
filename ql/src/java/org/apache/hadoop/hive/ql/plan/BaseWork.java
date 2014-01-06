@@ -19,10 +19,10 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 
 /**
@@ -32,7 +32,21 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 @SuppressWarnings({"serial", "deprecation"})
 public abstract class BaseWork extends AbstractOperatorDesc {
 
+  // dummyOps is a reference to all the HashTableDummy operators in the
+  // plan. These have to be separately initialized when we setup a task.
+  // Their funtion is mainly as root ops to give the mapjoin the correct
+  // schema info.
+  List<HashTableDummyOperator> dummyOps;
+
+  public BaseWork() {}
+
+  public BaseWork(String name) {
+    setName(name);
+  }
+
   private boolean gatheringStats;
+
+  private String name;
 
   public void setGatheringStats(boolean gatherStats) {
     this.gatheringStats = gatherStats;
@@ -40,6 +54,29 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public boolean isGatheringStats() {
     return this.gatheringStats;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public List<HashTableDummyOperator> getDummyOps() {
+    return dummyOps;
+  }
+
+  public void setDummyOps(List<HashTableDummyOperator> dummyOps) {
+    this.dummyOps = dummyOps;
+  }
+
+  public void addDummyOp(HashTableDummyOperator dummyOp) {
+    if (dummyOps == null) {
+      dummyOps = new LinkedList<HashTableDummyOperator>();
+    }
+    dummyOps.add(dummyOp);
   }
 
   protected abstract List<Operator<?>> getAllRootOperators();

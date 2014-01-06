@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -254,6 +256,43 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     pathToPartitionInfo = mrwork.getPathToPartitionInfo();
   }
 
+  /*
+   * AddSplitsForGroup collects separate calls to setInputPaths into one where possible.
+   * The reason for this is that this is faster on some InputFormats. E.g.: Orc will start
+   * a threadpool to do the work and calling it multiple times unnecessarily will create a lot
+   * of unnecessary thread pools.
+   */
+  private void addSplitsForGroup(List<Path> dirs, TableScanOperator tableScan, JobConf conf,
+      InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
+      TableDesc table, List<InputSplit> result) throws IOException {
+
+    Utilities.copyTableJobPropertiesToConf(table, conf);
+
+    if (tableScan != null) {
+      pushFilters(conf, tableScan);
+    }
+
+    FileInputFormat.setInputPaths(conf, dirs.toArray(new Path[dirs.size()]));
+    conf.setInputFormat(inputFormat.getClass());
+
+    int headerCount = 0;
+    int footerCount = 0;
+    if (table != null) {
+      headerCount = Utilities.getHeaderCount(table);
+      footerCount = Utilities.getFooterCount(table, conf);
+      if (headerCount != 0 || footerCount != 0) {
+        
+        // Input file has header or footer, cannot be splitted.
+        conf.setLong("mapred.min.split.size", Long.MAX_VALUE);
+      }
+    }
+
+    InputSplit[] iss = inputFormat.getSplits(conf, splits);
+    for (InputSplit is : iss) {
+      result.add(new HiveInputSplit(is, inputFormatClass.getName()));
+    }
+  }
+
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
@@ -264,24 +303,28 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       throw new IOException("No input paths specified in job");
     }
     JobConf newjob = new JobConf(job);
-    ArrayList<InputSplit> result = new ArrayList<InputSplit>();
+    List<InputSplit> result = new ArrayList<InputSplit>();
+
+    List<Path> currentDirs = new ArrayList<Path>();
+    Class<? extends InputFormat> currentInputFormatClass = null;
+    TableDesc currentTable = null;
+    TableScanOperator currentTableScan = null;
 
     // for each dir, get the InputFormat, and do getSplits.
     for (Path dir : dirs) {
       PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
-      // create a new InputFormat instance if this is the first time to see this
-      // class
-      Class inputFormatClass = part.getInputFileFormatClass();
-      InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
-      Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), newjob);
+      Class<? extends InputFormat> inputFormatClass = part.getInputFileFormatClass();
+      TableDesc table = part.getTableDesc();
+      TableScanOperator tableScan = null;
+
+      List<String> aliases =
+          mrwork.getPathToAliases().get(dir.toUri().toString());
 
       // Make filter pushdown information available to getSplits.
-      ArrayList<String> aliases =
-        mrwork.getPathToAliases().get(dir.toUri().toString());
       if ((aliases != null) && (aliases.size() == 1)) {
         Operator op = mrwork.getAliasToWork().get(aliases.get(0));
         if ((op != null) && (op instanceof TableScanOperator)) {
-          TableScanOperator tableScan = (TableScanOperator) op;
+          tableScan = (TableScanOperator) op;
           // push down projections.
           ColumnProjectionUtils.appendReadColumns(
               newjob, tableScan.getNeededColumnIDs(), tableScan.getNeededColumns());
@@ -290,25 +333,34 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         }
       }
 
-      FileInputFormat.setInputPaths(newjob, dir);
-      newjob.setInputFormat(inputFormat.getClass());
-      TableDesc tableDesc = part.getTableDesc();
-      int headerCount = 0;
-      int footerCount = 0;
-      if (tableDesc != null) {
-        headerCount = Utilities.getHeaderCount(tableDesc);
-        footerCount = Utilities.getFooterCount(tableDesc, newjob);
-        if (headerCount != 0 || footerCount != 0) {
+      if (!currentDirs.isEmpty() &&
+          inputFormatClass.equals(currentInputFormatClass) &&
+          table.equals(currentTable) &&
+          tableScan == currentTableScan) {
+        currentDirs.add(dir);
+        continue;
+      }
 
-          // Input file has header or footer, cannot be splitted.
-          newjob.setLong("mapred.min.split.size", Long.MAX_VALUE);
-        }
+      if (!currentDirs.isEmpty()) {
+        LOG.info("Generating splits");
+        addSplitsForGroup(currentDirs, currentTableScan, newjob,
+            getInputFormatFromCache(currentInputFormatClass, job),
+            currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
+            currentTable, result);
       }
-      InputSplit[] iss = inputFormat.getSplits(newjob, numSplits / dirs.length);
-      for (InputSplit is : iss) {
-        result.add(new HiveInputSplit(is, inputFormatClass.getName()));
-      }
+
+      currentDirs.clear();
+      currentDirs.add(dir);
+      currentTableScan = tableScan;
+      currentTable = table;
+      currentInputFormatClass = inputFormatClass;
     }
+
+    LOG.info("Generating splits");
+    addSplitsForGroup(currentDirs, currentTableScan, newjob,
+        getInputFormatFromCache(currentInputFormatClass, job),
+        currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
+        currentTable, result);
 
     LOG.info("number of splits " + result.size());
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);

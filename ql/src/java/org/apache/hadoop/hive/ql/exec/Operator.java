@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -98,6 +99,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public Operator() {
     id = String.valueOf(seqId.getAndIncrement());
+    childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
+    parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     initOperatorId();
   }
 
@@ -118,6 +121,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public void setChildOperators(
       List<Operator<? extends OperatorDesc>> childOperators) {
+    if (childOperators == null) {
+      childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
+    }
     this.childOperators = childOperators;
   }
 
@@ -151,6 +157,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public void setParentOperators(
       List<Operator<? extends OperatorDesc>> parentOperators) {
+    if (parentOperators == null) {
+      parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
+    }
     this.parentOperators = parentOperators;
   }
 
@@ -333,7 +342,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // initialize structure to maintain child op info. operator tree changes
     // while
     // initializing so this need to be done here instead of initialize() method
-    if (childOperators != null) {
+    if (childOperators != null && !childOperators.isEmpty()) {
       childOperatorsArray = new Operator[childOperators.size()];
       for (int i = 0; i < childOperatorsArray.length; i++) {
         childOperatorsArray[i] = childOperators.get(i);
@@ -364,6 +373,14 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     passExecContext(this.execContext);
 
     initializeOp(hconf);
+
+    // sanity check
+    if (childOperatorsArray == null
+        && !(childOperators == null || childOperators.isEmpty())) {
+      throw new HiveException(
+          "Internal Hive error during operator initialization.");
+    }
+
     LOG.info("Initialization Done " + id + " " + getName());
   }
 
@@ -390,7 +407,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
     LOG.info("Operator " + id + " " + getName() + " initialized");
-    if (childOperators == null) {
+    if (childOperators == null || childOperators.isEmpty()) {
       return;
     }
     LOG.info("Initializing children of " + id + " " + getName());
@@ -466,8 +483,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   public abstract void processOp(Object row, int tag) throws HiveException;
 
-  // If a operator wants to do some work at the beginning of a group
-  public void startGroup() throws HiveException {
+  protected final void defaultStartGroup() throws HiveException {
     LOG.debug("Starting group");
 
     if (childOperators == null) {
@@ -482,8 +498,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     LOG.debug("Start group Done");
   }
 
-  // If an operator wants to do some work at the end of a group
-  public void endGroup() throws HiveException {
+  protected final void defaultEndGroup() throws HiveException {
     LOG.debug("Ending group");
 
     if (childOperators == null) {
@@ -498,13 +513,23 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     LOG.debug("End group Done");
   }
 
+  // If a operator wants to do some work at the beginning of a group
+  public void startGroup() throws HiveException {
+    defaultStartGroup();
+  }
+
+  // If an operator wants to do some work at the end of a group
+  public void endGroup() throws HiveException {
+    defaultEndGroup();
+  }
+
   // an blocking operator (e.g. GroupByOperator and JoinOperator) can
   // override this method to forward its outputs
   public void flush() throws HiveException {
   }
 
   public void processGroup(int tag) throws HiveException {
-    if (childOperators == null) {
+    if (childOperators == null || childOperators.isEmpty()) {
       return;
     }
     for (int i = 0; i < childOperatorsArray.length; i++) {
@@ -547,6 +572,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     // call the operator specific close routine
     closeOp(abort);
+
+    reporter = null;
 
     try {
       logStats();
@@ -632,7 +659,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     int childIndex = childOperators.indexOf(child);
     assert childIndex != -1;
     if (childOperators.size() == 1) {
-      childOperators = null;
+      setChildOperators(null);
     } else {
       childOperators.remove(childIndex);
     }
@@ -681,7 +708,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     int parentIndex = parentOperators.indexOf(parent);
     assert parentIndex != -1;
     if (parentOperators.size() == 1) {
-      parentOperators = null;
+      setParentOperators(null);
     } else {
       parentOperators.remove(parentIndex);
     }
@@ -701,7 +728,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     Operator<? extends OperatorDesc> currOp = this;
     for (int i = 0; i < depth; i++) {
       // If there are more than 1 children at any level, don't do anything
-      if ((currOp.getChildOperators() == null) ||
+      if ((currOp.getChildOperators() == null) || (currOp.getChildOperators().isEmpty()) ||
           (currOp.getChildOperators().size() > 1)) {
         return false;
       }
@@ -749,11 +776,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   protected void forward(Object row, ObjectInspector rowInspector)
       throws HiveException {
-
-    if (childOperatorsArray == null && childOperators != null) {
-      throw new HiveException(
-          "Internal Hive error during operator initialization.");
-    }
 
     if ((childOperatorsArray == null) || (getDone())) {
       return;
@@ -1223,8 +1245,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void setStatistics(Statistics stats) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Setting stats ("+stats+") on "+this);
+    }
     if (conf != null) {
       conf.setStatistics(stats);
+    } else {
+      LOG.warn("Cannot set stats when there's no descriptor: "+this);
     }
   }
 }

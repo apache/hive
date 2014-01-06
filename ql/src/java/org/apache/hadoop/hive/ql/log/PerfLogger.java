@@ -53,6 +53,8 @@ public class PerfLogger {
   public static final String FAILURE_HOOK = "FailureHook.";
   public static final String DRIVER_RUN = "Driver.run";
   public static final String TIME_TO_SUBMIT = "TimeToSubmit";
+  public static final String LOAD_HASHTABLE = "LoadHashtable";
+  public static final String ORC_GET_SPLITS = "OrcGetSplits";
 
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
 

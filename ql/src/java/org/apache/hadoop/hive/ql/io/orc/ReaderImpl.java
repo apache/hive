@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -56,10 +57,17 @@ final class ReaderImpl implements Reader {
   private final int bufferSize;
   private OrcProto.Metadata metadata = null;
   private final int metadataSize;
-  private final int footerOffset;
   private final OrcProto.Footer footer;
   private final ObjectInspector inspector;
   private long deserializedSize = -1;
+
+  //serialized footer - Keeping this around for use by getFileMetaInfo()
+  // will help avoid cpu cycles spend in deserializing at cost of increased
+  // memory footprint.
+  private final ByteBuffer footerByteBuffer;
+
+  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private static final String CLASS_NAME = ReaderImpl.class.getName();
 
   private static class StripeInformationImpl
       implements StripeInformation {
@@ -276,77 +284,184 @@ final class ReaderImpl implements Reader {
     }
   }
 
+  /**
+   * Constructor that extracts metadata information from file footer
+   * @param fs
+   * @param path
+   * @throws IOException
+   */
   ReaderImpl(FileSystem fs, Path path) throws IOException {
     this.fileSystem = fs;
     this.path = path;
+
+    FileMetaInfo footerMetaData = extractMetaInfoFromFooter(fs, path);
+
+    MetaInfoObjExtractor rInfo = new MetaInfoObjExtractor(footerMetaData.compressionType,
+        footerMetaData.bufferSize, footerMetaData.metadataSize, footerMetaData.footerBuffer);
+
+    this.footerByteBuffer = footerMetaData.footerBuffer;
+    this.compressionKind = rInfo.compressionKind;
+    this.codec = rInfo.codec;
+    this.bufferSize = rInfo.bufferSize;
+    this.metadataSize = rInfo.metadataSize;
+    this.metadata = rInfo.metadata;
+    this.footer = rInfo.footer;
+    this.inspector = rInfo.inspector;
+  }
+
+
+  /**
+   * Constructor that takes already saved footer meta information. Used for creating RecordReader
+   * from saved information in InputSplit
+   * @param fs
+   * @param path
+   * @param fMetaInfo
+   * @throws IOException
+   */
+  ReaderImpl(FileSystem fs, Path path, FileMetaInfo fMetaInfo)
+      throws IOException {
+    this.fileSystem = fs;
+    this.path = path;
+
+    MetaInfoObjExtractor rInfo = new MetaInfoObjExtractor(
+            fMetaInfo.compressionType,
+            fMetaInfo.bufferSize,
+            fMetaInfo.metadataSize,
+            fMetaInfo.footerBuffer
+            );
+    this.footerByteBuffer = fMetaInfo.footerBuffer;
+    this.compressionKind = rInfo.compressionKind;
+    this.codec = rInfo.codec;
+    this.bufferSize = rInfo.bufferSize;
+    this.metadataSize = rInfo.metadataSize;
+    this.metadata = rInfo.metadata;
+    this.footer = rInfo.footer;
+    this.inspector = rInfo.inspector;
+  }
+
+
+  private static FileMetaInfo extractMetaInfoFromFooter(FileSystem fs, Path path) throws IOException {
     FSDataInputStream file = fs.open(path);
+
+    //read last bytes into buffer to get PostScript
     long size = fs.getFileStatus(path).getLen();
     int readSize = (int) Math.min(size, DIRECTORY_SIZE_GUESS);
     file.seek(size - readSize);
     ByteBuffer buffer = ByteBuffer.allocate(readSize);
     file.readFully(buffer.array(), buffer.arrayOffset() + buffer.position(),
       buffer.remaining());
+
+    //read the PostScript
+    //get length of PostScript
     int psLen = buffer.get(readSize - 1) & 0xff;
     ensureOrcFooter(file, path, psLen, buffer);
     int psOffset = readSize - 1 - psLen;
     CodedInputStream in = CodedInputStream.newInstance(buffer.array(),
       buffer.arrayOffset() + psOffset, psLen);
     OrcProto.PostScript ps = OrcProto.PostScript.parseFrom(in);
+
     checkOrcVersion(LOG, path, ps.getVersionList());
+
     int footerSize = (int) ps.getFooterLength();
-    metadataSize = (int) ps.getMetadataLength();
-    footerOffset = (int) (size - ( psLen + 1 + footerSize));
-    bufferSize = (int) ps.getCompressionBlockSize();
+    int metadataSize = (int) ps.getMetadataLength();
+
+    //check compression codec
     switch (ps.getCompression()) {
       case NONE:
-        compressionKind = CompressionKind.NONE;
         break;
       case ZLIB:
-        compressionKind = CompressionKind.ZLIB;
         break;
       case SNAPPY:
-        compressionKind = CompressionKind.SNAPPY;
         break;
       case LZO:
-        compressionKind = CompressionKind.LZO;
         break;
       default:
         throw new IllegalArgumentException("Unknown compression");
     }
-    codec = WriterImpl.createCodec(compressionKind);
-    int extra = Math.max(0, psLen + 1 + footerSize - readSize);
+
+    //check if extra bytes need to be read
+    int extra = Math.max(0, psLen + 1 + footerSize + metadataSize - readSize);
     if (extra > 0) {
+      //more bytes need to be read, seek back to the right place and read extra bytes
       file.seek(size - readSize - extra);
       ByteBuffer extraBuf = ByteBuffer.allocate(extra + readSize);
       file.readFully(extraBuf.array(),
         extraBuf.arrayOffset() + extraBuf.position(), extra);
       extraBuf.position(extra);
+      //append with already read bytes
       extraBuf.put(buffer);
       buffer = extraBuf;
       buffer.position(0);
-      buffer.limit(footerSize);
+      buffer.limit(footerSize + metadataSize);
     } else {
-      buffer.position(psOffset - footerSize);
+      //footer is already in the bytes in buffer, just adjust position, length
+      buffer.position(psOffset - footerSize - metadataSize);
       buffer.limit(psOffset);
     }
-    // read footer
-    InputStream instream = InStream.create("footer", new ByteBuffer[]{buffer},
-        new long[]{0L}, footerSize, codec, bufferSize);
-    footer = OrcProto.Footer.parseFrom(instream);
-    inspector = OrcStruct.createObjectInspector(0, footer.getTypesList());
 
-    // if metadata is already contained in first 16K file read then parse it
-    // else do it lazily
-    if(extra == 0) {
-      buffer.position(psOffset - (footerSize + metadataSize));
-      buffer.limit(psOffset - footerSize);
-      instream = InStream.create("metadata", new ByteBuffer[]{buffer},
-          new long[]{0L}, metadataSize, codec, bufferSize);
-      metadata = OrcProto.Metadata.parseFrom(instream);
-    }
+    // remember position for later
+    buffer.mark();
 
     file.close();
+
+    return new FileMetaInfo(
+        ps.getCompression().toString(),
+        (int) ps.getCompressionBlockSize(),
+        (int) ps.getMetadataLength(),
+        buffer
+        );
   }
+
+
+
+  /**
+   * MetaInfoObjExtractor - has logic to create the values for the fields in ReaderImpl
+   *  from serialized fields.
+   * As the fields are final, the fields need to be initialized in the constructor and
+   *  can't be done in some helper function. So this helper class is used instead.
+   *
+   */
+  private static class MetaInfoObjExtractor{
+    final CompressionKind compressionKind;
+    final CompressionCodec codec;
+    final int bufferSize;
+    final int metadataSize;
+    final OrcProto.Metadata metadata;
+    final OrcProto.Footer footer;
+    final ObjectInspector inspector;
+
+    MetaInfoObjExtractor(String codecStr, int bufferSize, int metadataSize, 
+        ByteBuffer footerBuffer) throws IOException {
+
+      this.compressionKind = CompressionKind.valueOf(codecStr);
+      this.bufferSize = bufferSize;
+      this.codec = WriterImpl.createCodec(compressionKind);
+      this.metadataSize = metadataSize;
+
+      int position = footerBuffer.position();
+      int footerBufferSize = footerBuffer.limit() - footerBuffer.position() - metadataSize;
+      footerBuffer.limit(position + metadataSize);
+
+      InputStream instream = InStream.create("metadata", new ByteBuffer[]{footerBuffer},
+          new long[]{0L}, metadataSize, codec, bufferSize);
+      this.metadata = OrcProto.Metadata.parseFrom(instream);
+
+      footerBuffer.position(position + metadataSize);
+      footerBuffer.limit(position + metadataSize + footerBufferSize);
+      instream = InStream.create("footer", new ByteBuffer[]{footerBuffer},
+          new long[]{0L}, footerBufferSize, codec, bufferSize);
+      this.footer = OrcProto.Footer.parseFrom(instream);
+
+      footerBuffer.position(position);
+      this.inspector = OrcStruct.createObjectInspector(0, footer.getTypesList());
+    }
+  }
+
+  public FileMetaInfo getFileMetaInfo(){
+    return new FileMetaInfo(compressionKind.toString(), bufferSize, metadataSize, footerByteBuffer);
+  }
+
+
 
   @Override
   public RecordReader rows(boolean[] include) throws IOException {
@@ -497,20 +612,6 @@ final class ReaderImpl implements Reader {
 
   @Override
   public Metadata getMetadata() throws IOException {
-    // if metadata is not parsed already then read and parse it
-    if (metadata == null && metadataSize > 0) {
-      FSDataInputStream file = this.fileSystem.open(path);
-      file.seek(footerOffset - metadataSize);
-      ByteBuffer buffer = ByteBuffer.allocate(metadataSize);
-      file.readFully(buffer.array(), buffer.arrayOffset() + buffer.position(),
-          buffer.remaining());
-      buffer.position(0);
-      buffer.limit(metadataSize);
-      InputStream instream = InStream.create("metadata", new ByteBuffer[] {buffer},
-          new long[] {0L}, metadataSize, codec, bufferSize);
-      metadata = OrcProto.Metadata.parseFrom(instream);
-      file.close();
-    }
     return new Metadata(metadata);
   }
 
