@@ -712,7 +712,6 @@ public class HiveConf extends Configuration {
     HIVECONFVALIDATION("hive.conf.validation", true),
 
     SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook", ""),
-
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false),
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
         "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider"),
