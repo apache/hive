@@ -45,6 +45,7 @@ public class LazyHBaseRow extends LazyStruct {
    */
   private Result result;
   private List<ColumnMapping> columnsMapping;
+  private Object compositeKeyObj;
   private ArrayList<Object> cachedList;
 
   /**
@@ -59,9 +60,22 @@ public class LazyHBaseRow extends LazyStruct {
    * @see LazyHBaseRow#init(Result)
    */
   public void init(Result r, List<ColumnMapping> columnsMapping) {
+    init(r, columnsMapping, null);
+  }
+
+  /**
+   * Set the HBase row data(a Result writable) for this LazyStruct.
+   *
+   * @see LazyHBaseRow#init(Result)
+   *
+   * @param compositeKeyClass
+   *          custom implementation to interpret the composite key
+   */
+  public void init(Result r, List<ColumnMapping> columnsMapping, Object compositeKeyObj) {
 
     result = r;
     this.columnsMapping = columnsMapping;
+    this.compositeKeyObj = compositeKeyObj;
     setParsed(false);
   }
 
@@ -117,7 +131,13 @@ public class LazyHBaseRow extends LazyStruct {
       parse();
     }
 
-    return uncheckedGetField(fieldID);
+    Object value = uncheckedGetField(fieldID);
+
+    if (columnsMapping.get(fieldID).hbaseRowKey && compositeKeyObj != null) {
+      return compositeKeyObj;
+    } else {
+      return value;
+    }
   }
 
   /**
@@ -162,6 +182,12 @@ public class LazyHBaseRow extends LazyStruct {
 
       if (ref != null) {
         fields[fieldID].init(ref, 0, ref.getData().length);
+
+        // if it was a row key and we have been provided a custom composite key class, initialize it
+        // with the bytes for the row key
+        if (colMap.hbaseRowKey && compositeKeyObj != null) {
+          ((LazyStruct) compositeKeyObj).init(ref, 0, ref.getData().length);
+        }
       }
     }
 

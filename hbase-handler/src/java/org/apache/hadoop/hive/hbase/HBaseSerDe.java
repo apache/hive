@@ -19,16 +19,13 @@
 package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -51,6 +48,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -64,11 +66,12 @@ public class HBaseSerDe extends AbstractSerDe {
   public static final String HBASE_TABLE_DEFAULT_STORAGE_TYPE = "hbase.table.default.storage.type";
   public static final String HBASE_KEY_COL = ":key";
   public static final String HBASE_PUT_TIMESTAMP = "hbase.put.timestamp";
+  public static final String HBASE_COMPOSITE_KEY_CLASS = "hbase.composite.key.class";
   public static final String HBASE_SCAN_CACHE = "hbase.scan.cache";
   public static final String HBASE_SCAN_CACHEBLOCKS = "hbase.scan.cacheblock";
   public static final String HBASE_SCAN_BATCH = "hbase.scan.batch";
-  
-  /** Determines whether a regex matching should be done on the columns or not. Defaults to true. 
+
+  /** Determines whether a regex matching should be done on the columns or not. Defaults to true.
    *  <strong>WARNING: Note that currently this only supports the suffix wildcard .*</strong> **/
   public static final String HBASE_COLUMNS_REGEX_MATCHING = "hbase.columns.mapping.regex.matching";
 
@@ -84,6 +87,8 @@ public class HBaseSerDe extends AbstractSerDe {
   private final ByteStream.Output serializeStream = new ByteStream.Output();
   private int iKey;
   private long putTimestamp;
+  private Class<?> compositeKeyClass;
+  private Object compositeKeyObj;
 
   // used for serializing a field
   private byte [] separators;     // the separators array
@@ -129,6 +134,11 @@ public class HBaseSerDe extends AbstractSerDe {
 
     cachedHBaseRow = new LazyHBaseRow(
       (LazySimpleStructObjectInspector) cachedObjectInspector);
+
+    if (compositeKeyClass != null) {
+      // initialize the constructor of the composite key class with its object inspector
+      initCompositeKeyClass(conf,tbl);
+    }
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("HBaseSerDe initialized with : columnNames = "
@@ -459,6 +469,16 @@ public class HBaseSerDe extends AbstractSerDe {
 
     doColumnRegexMatching = Boolean.valueOf(tbl.getProperty(HBASE_COLUMNS_REGEX_MATCHING, "true"));
 
+    String compKeyClass = tbl.getProperty(HBaseSerDe.HBASE_COMPOSITE_KEY_CLASS);
+
+    if (compKeyClass != null) {
+      try {
+        compositeKeyClass = job.getClassByName(compKeyClass);
+      } catch (ClassNotFoundException e) {
+        throw new SerDeException(e);
+      }
+    }
+
     // Parse and initialize the HBase columns mapping
     columnsMapping = parseColumnsMapping(hbaseColumnsMapping, doColumnRegexMatching);
 
@@ -542,7 +562,7 @@ public class HBaseSerDe extends AbstractSerDe {
       throw new SerDeException(getClass().getName() + ": expects ResultWritable!");
     }
 
-    cachedHBaseRow.init(((ResultWritable) result).getResult(), columnsMapping);
+    cachedHBaseRow.init(((ResultWritable) result).getResult(), columnsMapping, compositeKeyObj);
 
     return cachedHBaseRow;
   }
@@ -807,6 +827,47 @@ public class HBaseSerDe extends AbstractSerDe {
     throw new RuntimeException("Unknown category type: " + objInspector.getCategory());
   }
 
+  /**
+   * Initialize the composite key class with the objectinspector for the key
+   *
+   * @throws SerDeException
+   * */
+  private void initCompositeKeyClass(Configuration conf,Properties tbl) throws SerDeException {
+
+    int i = 0;
+
+    // find the hbase row key
+    for (ColumnMapping colMap : columnsMapping) {
+      if (colMap.hbaseRowKey) {
+        break;
+      }
+      i++;
+    }
+
+    ObjectInspector keyObjectInspector = ((LazySimpleStructObjectInspector) cachedObjectInspector)
+        .getAllStructFieldRefs().get(i).getFieldObjectInspector();
+
+    try {
+      compositeKeyObj = compositeKeyClass.getDeclaredConstructor(
+            LazySimpleStructObjectInspector.class, Properties.class, Configuration.class)
+            .newInstance(
+                ((LazySimpleStructObjectInspector) keyObjectInspector), tbl, conf);
+    } catch (IllegalArgumentException e) {
+      throw new SerDeException(e);
+    } catch (SecurityException e) {
+      throw new SerDeException(e);
+    } catch (InstantiationException e) {
+      throw new SerDeException(e);
+    } catch (IllegalAccessException e) {
+      throw new SerDeException(e);
+    } catch (InvocationTargetException e) {
+      throw new SerDeException(e);
+    } catch (NoSuchMethodException e) {
+      // the constructor wasn't defined in the implementation class. Flag error
+      throw new SerDeException("Constructor not defined in composite key class ["
+          + compositeKeyClass.getName() + "]", e);
+    }
+  }
 
   /**
    * @return the useJSONSerialize
