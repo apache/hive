@@ -16,37 +16,30 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrim;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringTrim;
 
 /**
- * UDFRTrim.
+ * UDFTrim.
  *
  */
-@Description(name = "rtrim",
-    value = "_FUNC_(str) - Removes the trailing space characters from str ",
+@Description(name = "trim",
+    value = "_FUNC_(str) - Removes the leading and trailing space characters from str ",
     extended = "Example:\n"
-    + "  > SELECT _FUNC_('facebook   ') FROM src LIMIT 1;\n" + "  'facebook'")
-@VectorizedExpressions({StringRTrim.class})
-public class UDFRTrim extends UDF {
-
-  Text result = new Text();
-
-  public UDFRTrim() {
+    + "  > SELECT _FUNC_('   facebook  ') FROM src LIMIT 1;\n" + "  'facebook'")
+@VectorizedExpressions({ StringTrim.class })
+public class GenericUDFTrim extends GenericUDFBaseTrim {
+  public GenericUDFTrim() {
+    super("trim");
   }
 
-  public Text evaluate(Text s) {
-    if (s == null) {
-      return null;
-    }
-    result.set(StringUtils.stripEnd(s.toString(), " "));
-    return result;
+  @Override
+  protected String performOp(String val) {
+    return StringUtils.strip(val, " ");
   }
 
 }
