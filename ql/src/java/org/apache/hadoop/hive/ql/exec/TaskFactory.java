@@ -52,42 +52,42 @@ public final class TaskFactory {
    *
    * @param <T>
    */
-  public static final class taskTuple<T extends Serializable> {
+  public static final class TaskTuple<T extends Serializable> {
     public Class<T> workClass;
     public Class<? extends Task<T>> taskClass;
 
-    public taskTuple(Class<T> workClass, Class<? extends Task<T>> taskClass) {
+    public TaskTuple(Class<T> workClass, Class<? extends Task<T>> taskClass) {
       this.workClass = workClass;
       this.taskClass = taskClass;
     }
   }
 
-  public static ArrayList<taskTuple<? extends Serializable>> taskvec;
+  public static ArrayList<TaskTuple<? extends Serializable>> taskvec;
   static {
-    taskvec = new ArrayList<taskTuple<? extends Serializable>>();
-    taskvec.add(new taskTuple<MoveWork>(MoveWork.class, MoveTask.class));
-    taskvec.add(new taskTuple<FetchWork>(FetchWork.class, FetchTask.class));
-    taskvec.add(new taskTuple<CopyWork>(CopyWork.class, CopyTask.class));
-    taskvec.add(new taskTuple<DDLWork>(DDLWork.class, DDLTask.class));
-    taskvec.add(new taskTuple<FunctionWork>(FunctionWork.class,
+    taskvec = new ArrayList<TaskTuple<? extends Serializable>>();
+    taskvec.add(new TaskTuple<MoveWork>(MoveWork.class, MoveTask.class));
+    taskvec.add(new TaskTuple<FetchWork>(FetchWork.class, FetchTask.class));
+    taskvec.add(new TaskTuple<CopyWork>(CopyWork.class, CopyTask.class));
+    taskvec.add(new TaskTuple<DDLWork>(DDLWork.class, DDLTask.class));
+    taskvec.add(new TaskTuple<FunctionWork>(FunctionWork.class,
         FunctionTask.class));
     taskvec
-        .add(new taskTuple<ExplainWork>(ExplainWork.class, ExplainTask.class));
-    taskvec.add(new taskTuple<ConditionalWork>(ConditionalWork.class,
+        .add(new TaskTuple<ExplainWork>(ExplainWork.class, ExplainTask.class));
+    taskvec.add(new TaskTuple<ConditionalWork>(ConditionalWork.class,
         ConditionalTask.class));
-    taskvec.add(new taskTuple<MapredWork>(MapredWork.class,
+    taskvec.add(new TaskTuple<MapredWork>(MapredWork.class,
                                           MapRedTask.class));
 
-    taskvec.add(new taskTuple<MapredLocalWork>(MapredLocalWork.class,
+    taskvec.add(new TaskTuple<MapredLocalWork>(MapredLocalWork.class,
         MapredLocalTask.class));
-    taskvec.add(new taskTuple<StatsWork>(StatsWork.class,
+    taskvec.add(new TaskTuple<StatsWork>(StatsWork.class,
         StatsTask.class));
-    taskvec.add(new taskTuple<ColumnStatsWork>(ColumnStatsWork.class, ColumnStatsTask.class));
-    taskvec.add(new taskTuple<MergeWork>(MergeWork.class,
+    taskvec.add(new TaskTuple<ColumnStatsWork>(ColumnStatsWork.class, ColumnStatsTask.class));
+    taskvec.add(new TaskTuple<MergeWork>(MergeWork.class,
         BlockMergeTask.class));
-    taskvec.add(new taskTuple<DependencyCollectionWork>(DependencyCollectionWork.class,
+    taskvec.add(new TaskTuple<DependencyCollectionWork>(DependencyCollectionWork.class,
         DependencyCollectionTask.class));
-    taskvec.add(new taskTuple<PartialScanWork>(PartialScanWork.class,
+    taskvec.add(new TaskTuple<PartialScanWork>(PartialScanWork.class,
         PartialScanTask.class));
 
   }
@@ -113,7 +113,7 @@ public final class TaskFactory {
   public static <T extends Serializable> Task<T> get(Class<T> workClass,
       HiveConf conf) {
 
-    for (taskTuple<? extends Serializable> t : taskvec) {
+    for (TaskTuple<? extends Serializable> t : taskvec) {
       if (t.workClass == workClass) {
         try {
           Task<T> ret = (Task<T>) t.taskClass.newInstance();

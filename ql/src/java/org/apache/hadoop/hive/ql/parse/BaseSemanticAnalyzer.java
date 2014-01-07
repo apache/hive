@@ -261,13 +261,16 @@ public abstract class BaseSemanticAnalyzer {
         }
       }
     }
-
   }
 
   public BaseSemanticAnalyzer(HiveConf conf) throws SemanticException {
+   this(conf, createHiveDB(conf));
+  }
+
+  public BaseSemanticAnalyzer(HiveConf conf, Hive db) throws SemanticException {
     try {
       this.conf = conf;
-      db = Hive.get(conf);
+      this.db = db;
       rootTasks = new ArrayList<Task<? extends Serializable>>();
       LOG = LogFactory.getLog(this.getClass().getName());
       console = new LogHelper(LOG);
@@ -275,6 +278,14 @@ public abstract class BaseSemanticAnalyzer {
       inputs = new LinkedHashSet<ReadEntity>();
       outputs = new LinkedHashSet<WriteEntity>();
     } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  protected static Hive createHiveDB(HiveConf conf) throws SemanticException {
+    try {
+      return Hive.get(conf);
+    } catch (HiveException e) {
       throw new SemanticException(e);
     }
   }
@@ -615,7 +626,7 @@ public abstract class BaseSemanticAnalyzer {
     return colList;
   }
 
-  protected List<String> getColumnNames(ASTNode ast) {
+  public static List<String> getColumnNames(ASTNode ast) {
     List<String> colList = new ArrayList<String>();
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {
