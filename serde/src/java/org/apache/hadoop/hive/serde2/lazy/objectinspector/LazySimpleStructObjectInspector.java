@@ -198,8 +198,15 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
     if (data == null) {
       return null;
     }
-    LazyStruct struct = (LazyStruct) data;
-    return struct.getFieldsAsList();
+
+    // Iterate over all the fields picking up the nested structs within them
+    List<Object> result = new ArrayList<Object>(fields.size());
+
+    for (MyField myField : fields) {
+      result.add(getStructFieldData(data, myField));
+    }
+
+    return result;
   }
 
   // For LazyStruct

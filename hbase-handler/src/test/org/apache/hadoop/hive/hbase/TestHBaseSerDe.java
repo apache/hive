@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,6 +46,7 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.thrift.TException;
 
 /**
  * Tests the HBaseSerDe class.
@@ -807,6 +809,174 @@ public class TestHBaseSerDe extends TestCase {
 
     if (p != null) {
       assertEquals("Serialized put:", p.toString(), put.toString());
+    }
+  }
+
+  public void testHBaseSerDeCompositeKeyWithSeparator() throws SerDeException, TException,
+      IOException {
+    byte[] cfa = "cola".getBytes();
+
+    byte[] qualStruct = "struct".getBytes();
+
+    TestStruct testStruct = new TestStruct("A", "B", "C", true, (byte) 45);
+
+    byte[] rowKey = testStruct.getBytes();
+
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    byte[] testData = "This is a test data".getBytes();
+
+    kvs.add(new KeyValue(rowKey, cfa, qualStruct, testData));
+
+    Result r = new Result(kvs);
+
+    Put p = new Put(rowKey);
+
+    // Post serialization, separators are automatically inserted between different fields in the
+    // struct. Currently there is not way to disable that. So the work around here is to pad the
+    // data with the separator bytes before creating a "Put" object
+    p.add(new KeyValue(rowKey, cfa, qualStruct, testData));
+
+    // Create, initialize, and test the SerDe
+    HBaseSerDe serDe = new HBaseSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl = createPropertiesForCompositeKeyWithSeparator();
+    serDe.initialize(conf, tbl);
+
+    deserializeAndSerializeHBaseCompositeKey(serDe, r, p);
+  }
+
+  private Properties createPropertiesForCompositeKeyWithSeparator() {
+    Properties tbl = new Properties();
+    tbl.setProperty(serdeConstants.LIST_COLUMNS,
+        "key,astring");
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
+        "struct<col1:string,col2:string,col3:string>,string");
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,
+        ":key,cola:struct");
+    tbl.setProperty(serdeConstants.COLLECTION_DELIM, "-");
+
+    return tbl;
+  }
+
+  public void testHBaseSerDeCompositeKeyWithoutSeparator() throws SerDeException, TException,
+      IOException {
+    byte[] cfa = "cola".getBytes();
+
+    byte[] qualStruct = "struct".getBytes();
+
+    TestStruct testStruct = new TestStruct("A", "B", "C", false, (byte) 0);
+
+    byte[] rowKey = testStruct.getBytes();
+
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    byte[] testData = "This is a test data".getBytes();
+
+    kvs.add(new KeyValue(rowKey, cfa, qualStruct, testData));
+
+    Result r = new Result(kvs);
+
+    byte[] putRowKey = testStruct.getBytesWithDelimiters();
+
+    Put p = new Put(putRowKey);
+
+    // Post serialization, separators are automatically inserted between different fields in the
+    // struct. Currently there is not way to disable that. So the work around here is to pad the
+    // data with the separator bytes before creating a "Put" object
+    p.add(new KeyValue(putRowKey, cfa, qualStruct, testData));
+
+    // Create, initialize, and test the SerDe
+    HBaseSerDe serDe = new HBaseSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl = createPropertiesForCompositeKeyWithoutSeparator();
+    serDe.initialize(conf, tbl);
+
+    deserializeAndSerializeHBaseCompositeKey(serDe, r, p);
+  }
+
+  private Properties createPropertiesForCompositeKeyWithoutSeparator() {
+    Properties tbl = new Properties();
+    tbl.setProperty(serdeConstants.LIST_COLUMNS,
+        "key,astring");
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
+        "struct<col1:string,col2:string,col3:string>,string");
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,
+        ":key,cola:struct");
+    tbl.setProperty(HBaseSerDe.HBASE_COMPOSITE_KEY_CLASS,
+        "org.apache.hadoop.hive.hbase.HBaseTestCompositeKey");
+
+    return tbl;
+  }
+
+  private void deserializeAndSerializeHBaseCompositeKey(HBaseSerDe serDe, Result r, Put p)
+      throws SerDeException, IOException {
+    StructObjectInspector soi = (StructObjectInspector) serDe.getObjectInspector();
+
+    List<? extends StructField> fieldRefs = soi.getAllStructFieldRefs();
+
+    Object row = serDe.deserialize(new ResultWritable(r));
+
+    for (int j = 0; j < fieldRefs.size(); j++) {
+      Object fieldData = soi.getStructFieldData(row, fieldRefs.get(j));
+      assertNotNull(fieldData);
+    }
+
+    assertEquals(
+        "{\"key\":{\"col1\":\"A\",\"col2\":\"B\",\"col3\":\"C\"},\"astring\":\"This is a test data\"}",
+        SerDeUtils.getJSONString(row, soi));
+
+    // Now serialize
+    Put put = ((PutWritable) serDe.serialize(row, soi)).getPut();
+
+    assertEquals("Serialized put:", p.toString(), put.toString());
+  }
+
+  class TestStruct {
+    String f1;
+    String f2;
+    String f3;
+    boolean hasSeparator;
+    byte separator;
+
+    TestStruct(String f1, String f2, String f3, boolean hasSeparator, byte separator) {
+      this.f1 = f1;
+      this.f2 = f2;
+      this.f3 = f3;
+      this.hasSeparator = hasSeparator;
+      this.separator = separator;
+    }
+
+    public byte[] getBytes() throws IOException {
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+      bos.write(f1.getBytes());
+      if (hasSeparator) {
+        bos.write(separator); // Add field separator
+      }
+      bos.write(f2.getBytes());
+      if (hasSeparator) {
+        bos.write(separator);
+      }
+      bos.write(f3.getBytes());
+
+      return bos.toByteArray();
+    }
+
+    public byte[] getBytesWithDelimiters() throws IOException {
+      // Add Ctrl-B delimiter between the fields. This is necessary because for structs in case no
+      // delimiter is provided, hive automatically adds Ctrl-B as a default delimiter between fields
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+      bos.write(f1.getBytes());
+      bos.write("\002".getBytes("UTF8"));
+      bos.write(f2.getBytes());
+      bos.write("\002".getBytes("UTF8"));
+      bos.write(f3.getBytes());
+
+      return bos.toByteArray();
     }
   }
 }
