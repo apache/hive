@@ -99,7 +99,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.udf.UDFLTrim;
 import org.apache.hadoop.hive.ql.udf.UDFLog;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
@@ -108,6 +107,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLTrim;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -770,7 +770,7 @@ public class TestVectorizationContext {
     List<ExprNodeDesc> children2 = new ArrayList<ExprNodeDesc>();
     children2.add(stringUnary);
     anotherUnary.setChildren(children2);
-    GenericUDFBridge udfbridge = new GenericUDFBridge("ltrim", false, UDFLTrim.class.getName());
+    GenericUDFBridge udfbridge = new GenericUDFBridge("ltrim", false, GenericUDFLTrim.class.getName());
     anotherUnary.setGenericUDF(udfbridge);
 
     ve = vc.getVectorExpression(anotherUnary);
