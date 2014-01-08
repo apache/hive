@@ -2937,7 +2937,8 @@ public final class Utilities {
           pathsProcessed.add(path);
 
           LOG.info("Adding input file " + path);
-          if (!HiveConf.getBoolVar(job, ConfVars.HIVE_OPTIMIZE_TEZ) && isEmptyPath(job, path, ctx)) {
+          if (!HiveConf.getVar(job, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") 
+              && isEmptyPath(job, path, ctx)) {
             path = createDummyFileForEmptyPartition(path, job, work,
                  hiveScratchDir, alias, sequenceNumber++);
 
@@ -2954,7 +2955,8 @@ public final class Utilities {
       // T2) x;
       // If T is empty and T2 contains 100 rows, the user expects: 0, 100 (2
       // rows)
-      if (path == null && !HiveConf.getBoolVar(job, ConfVars.HIVE_OPTIMIZE_TEZ)) {
+      if (path == null 
+          && !HiveConf.getVar(job, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
         path = createDummyFileForEmptyTable(job, work, hiveScratchDir,
             alias, sequenceNumber++);
         pathsToAdd.add(path);

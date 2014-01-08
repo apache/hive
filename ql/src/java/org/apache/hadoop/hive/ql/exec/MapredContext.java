@@ -49,7 +49,7 @@ public class MapredContext {
 
   public static MapredContext init(boolean isMap, JobConf jobConf) {
     MapredContext context =
-        HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_TEZ) ?
+        HiveConf.getVar(jobConf, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") ?
             new TezContext(isMap, jobConf) : new MapredContext(isMap, jobConf);
     contexts.set(context);
     return context;

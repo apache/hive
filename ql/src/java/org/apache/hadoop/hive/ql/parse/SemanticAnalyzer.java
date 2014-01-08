@@ -6646,7 +6646,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (((ASTNode) hint.getChild(0)).getToken().getType() == HiveParser.TOK_MAPJOIN) {
         // the user has specified to ignore mapjoin hint
         if (!conf.getBoolVar(HiveConf.ConfVars.HIVEIGNOREMAPJOINHINT)
-            && !conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_TEZ)) {
+            && !conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
           ASTNode hintTblNames = (ASTNode) hint.getChild(1);
           int numCh = hintTblNames.getChildCount();
           for (int tblPos = 0; tblPos < numCh; tblPos++) {

@@ -864,7 +864,8 @@ public class HiveConf extends Configuration {
     // Whether to show the unquoted partition names in query results.
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false),
 
-    HIVE_OPTIMIZE_TEZ("hive.optimize.tez", false),
+    HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr",
+        new StringsValidator("mr", "tez")),
     HIVE_JAR_DIRECTORY("hive.jar.directory", "hdfs:///user/hive/"),
     HIVE_USER_INSTALL_DIR("hive.user.install.directory", "hdfs:///user/"),
 

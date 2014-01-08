@@ -1263,7 +1263,7 @@ public final class GenMapRedUtils {
 
     } else {
       cplan = createMRWorkForMergingFiles(conf, tsMerge, fsInputDesc);
-      if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_TEZ)) {
+      if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
         work = new TezWork();
         cplan.setName("Merge");
         ((TezWork)work).add(cplan);

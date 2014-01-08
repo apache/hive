@@ -189,9 +189,9 @@
 </property>
 
 <property>
-  <name>hive.optimize.tez</name>
-  <value>true</value>
-  <description>Whether tez is on or off</description>
+  <name>hive.execution.engine</name>
+  <value>tez</value>
+  <description>Whether to use MR or Tez</description>
 </property>
 
 </configuration>

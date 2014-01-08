@@ -116,7 +116,7 @@ public class Optimizer {
       transformations.add(new StatsOptimizer());
     }
     if (pctx.getContext().getExplain() ||
-        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_TEZ)) {
+        HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       transformations.add(new AnnotateWithStatistics());
     }
     transformations.add(new SimpleFetchOptimizer());  // must be called last

@@ -1,5 +1,3 @@
-set hive.optimize.tez=true;
-
 -- simple query with multiple reduce stages
 EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt;
 SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt;

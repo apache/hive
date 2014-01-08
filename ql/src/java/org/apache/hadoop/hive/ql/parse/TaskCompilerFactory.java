@@ -35,7 +35,7 @@ public class TaskCompilerFactory {
    * into executable units.
    */
   public static TaskCompiler getCompiler(HiveConf conf, ParseContext parseContext) {
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_TEZ)
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
         && !parseContext.getQB().getParseInfo().isAnalyzeCommand()) {
       return new TezCompiler();
     } else {
