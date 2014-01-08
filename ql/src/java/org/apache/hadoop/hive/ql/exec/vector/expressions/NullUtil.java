@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -27,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
  * Utility functions to handle null propagation.
  */
 public class NullUtil {
+
   /**
    * Set the data value for all NULL entries to the designated NULL_VALUE.
    */
@@ -56,6 +59,7 @@ public class NullUtil {
   public static void setNullOutputEntriesColScalar(
       ColumnVector v, boolean selectedInUse, int[] sel, int n) {
     if (v instanceof DoubleColumnVector) {
+
       // No need to set null data entries because the input NaN values
       // will automatically propagate to the output.
       return;
@@ -281,6 +285,34 @@ public class NullUtil {
           for(int i = 0; i != n; i++) {
             outputColVector.isNull[i] = inputColVector1.isNull[i] || inputColVector2.isNull[i];
           }
+        }
+      }
+    }
+  }
+
+  /**
+   * Follow the convention that null decimal values are internally set to the smallest
+   * positive value available. Prevents accidental zero-divide later in expression
+   * evaluation.
+   */
+  public static void setNullDataEntriesDecimal(
+      DecimalColumnVector v, boolean selectedInUse, int[] sel,
+      int n) {
+    if (v.noNulls) {
+      return;
+    } else if (v.isRepeating && v.isNull[0]) {
+      v.vector[0].setNullDataValue();
+    } else if (selectedInUse) {
+      for (int j = 0; j != n; j++) {
+        int i = sel[j];
+        if(v.isNull[i]) {
+          v.vector[i].setNullDataValue();
+        }
+      }
+    } else {
+      for (int i = 0; i != n; i++) {
+        if(v.isNull[i]) {
+          v.vector[i].setNullDataValue();
         }
       }
     }
