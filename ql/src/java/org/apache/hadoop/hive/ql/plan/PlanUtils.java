@@ -419,7 +419,7 @@ public final class PlanUtils {
   }
 
   /**
-   * Generate the table descriptor for Map-side join key.
+   * Generate the table descriptor for Map-side join value.
    */
   public static TableDesc getMapJoinValueTableDesc(
       List<FieldSchema> fieldSchemas) {

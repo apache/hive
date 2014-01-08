@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 
 /**
- * ConvertJoinMapJoin is an optimization that replaces a commone join
+ * ConvertJoinMapJoin is an optimization that replaces a common join
  * (aka shuffle join) with a map join (aka broadcast or fragment replicate
  * join when possible. Map joins have restrictions on which joins can be
  * converted (e.g.: full outer joins cannot be handled as map joins) as well

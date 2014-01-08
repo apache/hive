@@ -27,6 +27,12 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.tez.common.counters.TezCounters;
 
+/**
+ * This class aggregates stats via counters and does so for Tez Tasks.
+ * With dbclass=counters this class will compute table/partition statistics
+ * using hadoop counters. They will be published using special keys and
+ * then retrieved on the client after the insert/ctas statement ran.
+ */
 public class CounterStatsAggregatorTez implements StatsAggregator {
 
   private static final Log LOG = LogFactory.getLog(CounterStatsAggregatorTez.class.getName());
