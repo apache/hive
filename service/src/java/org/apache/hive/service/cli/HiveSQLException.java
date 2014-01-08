@@ -118,6 +118,7 @@ public class HiveSQLException extends SQLException {
       return ((HiveSQLException)e).toTStatus();
     }
     TStatus tStatus = new TStatus(TStatusCode.ERROR_STATUS);
+    tStatus.setErrorMessage(e.getMessage());
     return tStatus;
   }
 
