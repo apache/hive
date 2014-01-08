@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
 import static org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.EXCEPTION_MESSAGE;
@@ -137,8 +138,8 @@ public class TestAvroSerdeUtils {
     try {
       AvroSerdeUtils.determineSchemaOrThrowException(props);
       fail("Should have tried to open that URL");
-    } catch(MalformedURLException e) {
-      assertEquals("unknown protocol: not", e.getMessage());
+    } catch (AvroSerdeException e) {
+      assertEquals("Unable to read schema from given path: not:///a.real.url", e.getMessage());
     }
   }
 
@@ -173,13 +174,14 @@ public class TestAvroSerdeUtils {
     try {
       determineSchemaOrThrowException(props);
       fail("Should have tried to open that bogus URL");
-    } catch(MalformedURLException e) {
-      assertEquals("unknown protocol: not", e.getMessage());
+    } catch (AvroSerdeException e) {
+      assertEquals("Unable to read schema from given path: not:///a.real.url", e.getMessage());
     }
   }
 
   @Test
-  public void determineSchemaCanReadSchemaFromHDFS() throws IOException, AvroSerdeException {
+  public void determineSchemaCanReadSchemaFromHDFS() throws IOException, AvroSerdeException,
+                                                            URISyntaxException{
     String schemaString = TestAvroObjectInspectorGenerator.RECORD_SCHEMA;
     MiniDFSCluster miniDfs = null;
     try {
@@ -194,7 +196,7 @@ public class TestAvroSerdeUtils {
       String onHDFS = miniDfs.getFileSystem().getUri() + "/path/to/schema/schema.avsc";
 
       Schema schemaFromHDFS =
-              AvroSerdeUtils.getSchemaFromHDFS(onHDFS, miniDfs.getFileSystem().getConf());
+              AvroSerdeUtils.getSchemaFromFS(onHDFS, miniDfs.getFileSystem().getConf());
       Schema expectedSchema = Schema.parse(schemaString);
       assertEquals(expectedSchema, schemaFromHDFS);
     } finally {
