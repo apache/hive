@@ -16,58 +16,44 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
 /**
- * UDFRpad.
+ * UDFLpad.
  *
  */
-@Description(name = "rpad",
-    value = "_FUNC_(str, len, pad) - Returns str, right-padded with pad to a length of len",
+@Description(name = "lpad",
+    value = "_FUNC_(str, len, pad) - Returns str, left-padded with pad to a length of len",
     extended = "If str is longer than len, the return value is shortened to "
     + "len characters.\n"
     + "Example:\n"
     + "  > SELECT _FUNC_('hi', 5, '??') FROM src LIMIT 1;\n"
-    + "  'hi???'"
+    + "  '???hi'"
     + "  > SELECT _FUNC_('hi', 1, '??') FROM src LIMIT 1;\n" + "  'h'")
-public class UDFRpad extends UDF {
-  private final Text result = new Text();
+public class GenericUDFLpad extends GenericUDFBasePad {
+  public GenericUDFLpad() {
+    super("lpad");
+  }
 
-  public Text evaluate(Text s, IntWritable n, Text pad) {
-    if (s == null || n == null || pad == null) {
-      return null;
-    }
-
-    int len = n.get();
-
-    byte[] data = result.getBytes();
-    if (data.length < len) {
-      data = new byte[len];
-    }
-
-    byte[] txt = s.getBytes();
-    byte[] padTxt = pad.getBytes();
-
-    int pos;
-    // Copy the text
-    for (pos = 0; pos < s.getLength() && pos < len; pos++) {
-      data[pos] = txt[pos];
-    }
+  @Override
+  protected void performOp(byte[] data, byte[] txt, byte[] padTxt, int len, Text str, Text pad) {
+    // The length of the padding needed
+    int pos = Math.max(len - str.getLength(), 0);
 
     // Copy the padding
-    while (pos < len) {
-      for (int i = 0; i < pad.getLength() && i < len - pos; i++) {
-        data[pos + i] = padTxt[i];
+    for (int i = 0; i < pos; i += pad.getLength()) {
+      for (int j = 0; j < pad.getLength() && j < pos - i; j++) {
+	data[i + j] = padTxt[j];
       }
-      pos += pad.getLength();
     }
 
-    result.set(data, 0, len);
-    return result;
+    // Copy the text
+    for (int i = 0; pos + i < len && i < str.getLength(); i++) {
+      data[pos + i] = txt[i];
+    }
   }
+
 }

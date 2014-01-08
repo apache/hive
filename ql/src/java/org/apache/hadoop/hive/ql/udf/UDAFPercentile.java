@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
 
 /**
@@ -43,6 +44,12 @@ import org.apache.hadoop.io.LongWritable;
     value = "_FUNC_(expr, pc) - Returns the percentile(s) of expr at pc (range: [0,1])."
       + "pc can be a double or double array")
 public class UDAFPercentile extends UDAF {
+
+  private static final Comparator<LongWritable> COMPARATOR;
+
+  static {
+    COMPARATOR = ShimLoader.getHadoopShims().getLongComparator();
+  }
 
   /**
    * A state class to store intermediate aggregation results.
@@ -59,7 +66,7 @@ public class UDAFPercentile extends UDAF {
     @Override
     public int compare(Map.Entry<LongWritable, LongWritable> o1,
         Map.Entry<LongWritable, LongWritable> o2) {
-      return o1.getKey().compareTo(o2.getKey());
+      return COMPARATOR.compare(o1.getKey(), o2.getKey());
     }
   }
 

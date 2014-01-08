@@ -22,6 +22,7 @@ import java.lang.Integer;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.net.URI;
@@ -39,6 +40,7 @@ import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRCluster;
@@ -166,6 +168,16 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public void setTotalOrderPartitionFile(JobConf jobConf, Path partitionFile){
     TotalOrderPartitioner.setPartitionFile(jobConf, partitionFile);
+  }
+
+  @Override
+  public Comparator<LongWritable> getLongComparator() {
+    return new Comparator<LongWritable>() {
+      @Override
+      public int compare(LongWritable o1, LongWritable o2) {
+        return o1.compareTo(o2);
+      }
+    };
   }
 
   /**

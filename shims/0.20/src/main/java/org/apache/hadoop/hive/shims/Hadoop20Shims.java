@@ -29,6 +29,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -47,6 +48,7 @@ import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -158,6 +160,16 @@ public class Hadoop20Shims implements HadoopShims {
 
   public void setTotalOrderPartitionFile(JobConf jobConf, Path partitionFile){
     TotalOrderPartitioner.setPartitionFile(jobConf, partitionFile);
+  }
+
+  @Override
+  public Comparator<LongWritable> getLongComparator() {
+    return new Comparator<LongWritable>() {
+      @Override
+      public int compare(LongWritable o1, LongWritable o2) {
+        return o1.compareTo(o2);
+      }
+    };
   }
 
   public static class InputSplitShim extends CombineFileSplit implements HadoopShims.InputSplitShim {
