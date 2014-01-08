@@ -147,6 +147,7 @@ public class TezSessionState {
   /**
    * Close a tez session. Will cleanup any tez/am related resources. After closing a session
    * no further DAGs can be executed against it.
+   * @param keepTmpDir whether or not to remove the scratch dir at the same time.
    * @throws IOException
    * @throws TezException
    */
@@ -212,7 +213,6 @@ public class TezSessionState {
   /**
    * Returns a local resource representing the hive-exec jar. This resource will
    * be used to execute the plan on the cluster.
-   * @param conf
    * @return LocalResource corresponding to the localized hive exec resource.
    * @throws IOException when any file system related call fails.
    * @throws LoginException when we are unable to determine the user.
