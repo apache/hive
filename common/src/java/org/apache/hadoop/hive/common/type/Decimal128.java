@@ -1604,4 +1604,13 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
         + signum + ", BigDecimal.toString=" + toBigDecimal().toString()
         + ", unscaledValue=[" + unscaledValue.toString() + "])";
   }
+
+  /**
+   * Vectorized execution uses the smallest possible positive non-zero
+   * value to prevent possible later zero-divide exceptions. Set the field
+   * to this value (1 in the internal unsigned 128 bit int).
+   */
+  public void setNullDataValue() {
+    unscaledValue.update(1, 0, 0, 0);
+  }
 }

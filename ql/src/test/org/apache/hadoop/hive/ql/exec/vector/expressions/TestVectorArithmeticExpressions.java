@@ -23,6 +23,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import junit.framework.Assert;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
@@ -33,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.junit.Test;
 
 /**
- * Unit tests for vectori arithmetic expressions.
+ * Unit tests for vectorized arithmetic expressions.
  */
 public class TestVectorArithmeticExpressions {
 
@@ -283,5 +285,61 @@ public class TestVectorArithmeticExpressions {
     }
     assertFalse(out.noNulls);
     assertFalse(out.isRepeating);
+  }
+
+  @Test
+  public void testDecimalColAddDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    VectorExpression expr = new DecimalColAddDecimalColumn(0, 1, 2);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+
+    // test without nulls
+    expr.evaluate(b);
+    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-2.30", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("1.00", (short) 2)));
+
+    // test nulls propagation
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector c0 = (DecimalColumnVector) b.cols[0];
+    c0.noNulls = false;
+    c0.isNull[0] = true;
+    r = (DecimalColumnVector) b.cols[2];
+    expr.evaluate(b);
+    assertTrue(!r.noNulls && r.isNull[0]);
+
+    // Verify null output data entry is not 0, but rather the value specified by design,
+    // which is the minimum non-0 value, 0.01 in this case.
+    assertTrue(r.vector[0].equals(new Decimal128("0.01", (short) 2)));
+
+    // test that overflow produces NULL
+    b = getVectorizedRowBatch3DecimalCols();
+    c0 = (DecimalColumnVector) b.cols[0];
+    c0.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    r = (DecimalColumnVector) b.cols[2];
+    expr.evaluate(b); // will cause overflow for result at position 0, must yield NULL
+    assertTrue(!r.noNulls && r.isNull[0]);
+
+    // verify proper null output data value
+    assertTrue(r.vector[0].equals(new Decimal128("0.01", (short) 2)));
+  }
+
+  private VectorizedRowBatch getVectorizedRowBatch3DecimalCols() {
+    VectorizedRowBatch b = new VectorizedRowBatch(3);
+    DecimalColumnVector v0, v1;
+    b.cols[0] = v0 = new DecimalColumnVector(18, 2);
+    b.cols[1] = v1 = new DecimalColumnVector(18, 2);
+    b.cols[2] = new DecimalColumnVector(18, 2);
+    v0.vector[0].update("1.20", (short) 2);
+    v0.vector[1].update("-3.30", (short) 2);
+    v0.vector[2].update("0", (short) 2);
+
+    v1.vector[0].update("1.00", (short) 2);
+    v1.vector[1].update("1.00", (short) 2);
+    v1.vector[2].update("1.00", (short) 2);
+
+    b.size = 3;
+
+    return b;
   }
 }
