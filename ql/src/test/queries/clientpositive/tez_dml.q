@@ -1,4 +1,3 @@
-set hive.optimize.tez=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 
 -- CTAS

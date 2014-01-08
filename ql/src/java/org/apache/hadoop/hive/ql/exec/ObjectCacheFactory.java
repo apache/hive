@@ -35,7 +35,7 @@ public class ObjectCacheFactory {
    * Returns the appropriate cache
    */
   public static ObjectCache getCache(Configuration conf) {
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_TEZ)) {
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       return new org.apache.hadoop.hive.ql.exec.tez.ObjectCache();
     } else {
       return new org.apache.hadoop.hive.ql.exec.mr.ObjectCache();

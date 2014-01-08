@@ -310,7 +310,8 @@ public class SessionState {
       throw new RuntimeException(e);
     }
 
-    if (HiveConf.getBoolVar(startSs.getConf(), HiveConf.ConfVars.HIVE_OPTIMIZE_TEZ)) {
+    if (HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)
+        .equals("tez")) {
       try {
         if (startSs.tezSessionState == null) {
           startSs.tezSessionState = new TezSessionState();
@@ -320,7 +321,7 @@ public class SessionState {
         throw new RuntimeException(e);
       }
     } else {
-       LOG.info("No Tez session required at this point. hive.optimize.tez is false.");
+       LOG.info("No Tez session required at this point. hive.execution.engine=mr.");
     }
 
     return startSs;
