@@ -169,7 +169,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket3_1
-#### A masked pattern was here ####
 
   Stage: Stage-3
     Stats-Aggr Operator

@@ -91,7 +91,7 @@ public final class TaskFactory {
         DependencyCollectionTask.class));
     taskvec.add(new TaskTuple<PartialScanWork>(PartialScanWork.class,
         PartialScanTask.class));
-    taskvec.add(new taskTuple<TezWork>(TezWork.class, TezTask.class));
+    taskvec.add(new TaskTuple<TezWork>(TezWork.class, TezTask.class));
 
   }
 
