@@ -1,0 +1,9 @@
+PREHOOK: query: select percentile(cast(key as bigint), 0.3) from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select percentile(cast(key as bigint), 0.3) from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+169.0
