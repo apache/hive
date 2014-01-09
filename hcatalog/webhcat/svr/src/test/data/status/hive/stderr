@@ -19,7 +19,7 @@
 WARNING: org.apache.hadoop.metrics.jvm.EventCounter is deprecated. Please use org.apache.hadoop.log.metrics.EventCounter in all the log4j.properties files.
 Logging initialized using configuration in jar:file:/Users/daijy/hadoop-1.0.3/tmp/mapred/local/taskTracker/distcache/7168149899505899073_637041239_1133292873/localhost/apps/templeton/hive-0.10.0.tar.gz/hive-0.10.0/lib/hive-common-0.10.0.jar!/hive-log4j.properties
 Hive history file=/tmp/daijy/hive_job_log_daijy_201305091500_862342848.txt
-Total MapReduce jobs = 1
+Total jobs = 1
 Launching Job 1 out of 1
 Number of reduce tasks is set to 0 since there's no reduce operator
 Starting Job = job_201305091437_0012, Tracking URL = http://localhost:50030/jobdetails.jsp?jobid=job_201305091437_0012

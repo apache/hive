@@ -89,13 +89,13 @@
       <version>${jetty.version}</version>
       <optional>true</optional>
     </dependency>
-    <dependency> 
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
       <version>${tez.version}</version>
       <optional>true</optional>
     </dependency>
-    <dependency> 
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-dag</artifactId>
       <version>${tez.version}</version>
@@ -107,13 +107,13 @@
        <version>${tez.version}</version>
       <optional>true</optional>
     </dependency>
-    <dependency> 
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-runtime-library</artifactId>
       <version>${tez.version}</version>
       <optional>true</optional>
     </dependency>
-    <dependency> 
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-mapreduce</artifactId>
       <version>${tez.version}</version>
@@ -149,8 +149,8 @@
      <version>${hadoop-23.version}</version>
      <optional>true</optional>
    </dependency>
-   <dependency> 
-     <groupId>org.apache.tez</groupId> 
+   <dependency>
+     <groupId>org.apache.tez</groupId>
      <artifactId>tez-tests</artifactId>
      <version>${tez.version}</version>
       <optional>true</optional>

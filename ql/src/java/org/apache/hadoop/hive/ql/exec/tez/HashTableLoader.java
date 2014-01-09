@@ -81,7 +81,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         while (kvReader.next()) {
           MapJoinKey key = new MapJoinKey();
           key.read(mapJoinTableSerdes[pos].getKeyContext(), (Writable)kvReader.getCurrentKey());
-          
+
           MapJoinRowContainer values = tableContainer.get(key);
           if(values == null){
         	  values = new MapJoinRowContainer();

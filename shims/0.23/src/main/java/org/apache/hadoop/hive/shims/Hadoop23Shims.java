@@ -201,7 +201,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       conf = null;
     }
 
-    public MiniMrShim(Configuration conf, int numberOfTaskTrackers, 
+    public MiniMrShim(Configuration conf, int numberOfTaskTrackers,
                       String nameNode, int numDir) throws IOException {
       this.conf = conf;
 
@@ -254,7 +254,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private final MiniTezCluster mr;
     private final Configuration conf;
 
-    public MiniTezShim(Configuration conf, int numberOfTaskTrackers, 
+    public MiniTezShim(Configuration conf, int numberOfTaskTrackers,
                       String nameNode, int numDir) throws IOException {
 
       mr = new MiniTezCluster("hive", numberOfTaskTrackers);
@@ -273,7 +273,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       if (StringUtils.isBlank(address)) {
         throw new IllegalArgumentException("Invalid YARN resource manager port.");
       }
-      
+
       return Integer.parseInt(address);
     }
 
@@ -281,7 +281,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     public void shutdown() throws IOException {
       mr.stop();
     }
-    
+
     @Override
     public void setupConfiguration(Configuration conf) {
       Configuration config = mr.getConfig();
