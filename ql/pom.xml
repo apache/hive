@@ -215,7 +215,7 @@
       <version>${mockito-all.version}</version>
       <scope>test</scope>
     </dependency>
-    <dependency> 
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
       <version>${tez.version}</version>
@@ -247,7 +247,7 @@
        </exclusion>
       </exclusions>
     </dependency>
-    <dependency> 
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-runtime-library</artifactId>
       <version>${tez.version}</version>
@@ -279,7 +279,7 @@
        </exclusion>
       </exclusions>
     </dependency>
-    <dependency> 
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-mapreduce</artifactId>
       <version>${tez.version}</version>

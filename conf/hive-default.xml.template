@@ -2162,4 +2162,23 @@
   </description>
 </property>
 
+<property>
+  <name>hive.jar.directory</name>
+  <value>hdfs:///user/hive/</value>
+  <description>
+    This is the location hive in tez mode will look for to find a site wide 
+    installed hive instance.
+  </description>
+</property>
+
+<property>
+  <name>hive.user.install.directory</name>
+  <value>hdfs:///user/</value>
+  <description>
+    If hive (in tez mode only) cannot find a usable hive jar in "hive.jar.directory", 
+    it will upload the hive jar to &lthive.user.install.directory&gt/&ltuser name&gt 
+    and use it to run queries.
+  </description>
+</property>
+
 </configuration>

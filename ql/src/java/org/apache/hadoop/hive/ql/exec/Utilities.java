@@ -316,7 +316,7 @@ public final class Utilities {
         }
 
         if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
-          LOG.debug("Loading plan from: "+path.toUri().getPath());
+          LOG.debug("Loading plan from string: "+path.toUri().getPath());
           String planString = conf.get(path.toUri().getPath());
           if (planString == null) {
             LOG.debug("Could not find plan string in conf");
