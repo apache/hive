@@ -246,7 +246,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     }
 
     // The mapJoinTaskFileSinkOperator writes to a different directory
-    String childMRPath = mapJoinTaskFileSinkOperator.getConf().getDirName();
+    String childMRPath = mapJoinTaskFileSinkOperator.getConf().getDirName().toString();
     List<String> childMRAliases = childMapWork.getPathToAliases().get(childMRPath);
     if (childMRAliases == null || childMRAliases.size() != 1) {
       return;

@@ -1343,7 +1343,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // First create the archive in a tmp dir so that if the job fails, the
       // bad files don't pollute the filesystem
       Path tmpPath = new Path(driverContext.getCtx()
-                    .getExternalTmpFileURI(originalDir.toUri()), "partlevel");
+                    .getExternalTmpPath(originalDir.toUri()), "partlevel");
 
       console.printInfo("Creating " + archiveName +
                         " for " + originalDir.toString());
@@ -1538,19 +1538,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException("Haven't found any archive where it should be");
     }
 
-    Path tmpPath = new Path(driverContext
-          .getCtx()
-          .getExternalTmpFileURI(originalDir.toUri()));
+    Path tmpPath = driverContext.getCtx().getExternalTmpPath(originalDir.toUri());
 
     try {
       fs = tmpPath.getFileSystem(conf);
     } catch (IOException e) {
       throw new HiveException(e);
-    }
-
-    // Some sanity checks
-    if (originalDir == null) {
-      throw new HiveException("Missing archive data in the partition");
     }
 
     // Clarification of terms:

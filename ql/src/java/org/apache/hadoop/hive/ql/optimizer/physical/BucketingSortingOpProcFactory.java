@@ -462,7 +462,7 @@ public class BucketingSortingOpProcFactory {
       // Set the inferred bucket columns for the file this FileSink produces
       if (bucketCols != null) {
         List<BucketCol> newBucketCols = getNewBucketCols(bucketCols, colInfos);
-        bctx.getBucketedColsByDirectory().put(fop.getConf().getDirName(), newBucketCols);
+        bctx.getBucketedColsByDirectory().put(fop.getConf().getDirName().toString(), newBucketCols);
         bctx.setBucketedCols(fop, newBucketCols);
       }
 
@@ -471,7 +471,7 @@ public class BucketingSortingOpProcFactory {
       // Set the inferred sort columns for the file this FileSink produces
       if (sortCols != null) {
         List<SortCol> newSortCols = getNewSortCols(sortCols, colInfos);
-        bctx.getSortedColsByDirectory().put(fop.getConf().getDirName(), newSortCols);
+        bctx.getSortedColsByDirectory().put(fop.getConf().getDirName().toString(), newSortCols);
         bctx.setSortedCols(fop, newSortCols);
       }
 

@@ -840,9 +840,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         TableDesc tblDesc = Utilities.getTableDesc(table);
         // Write the output to temporary directory and move it to the final location at the end
         // so the operation is atomic.
-        String queryTmpdir = ctx.getExternalTmpFileURI(newTblPartLoc.toUri());
-        truncateTblDesc.setOutputDir(new Path(queryTmpdir));
-        LoadTableDesc ltd = new LoadTableDesc(new Path(queryTmpdir), tblDesc,
+        Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc.toUri());
+        truncateTblDesc.setOutputDir(queryTmpdir);
+        LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
             partSpec == null ? new HashMap<String, String>() : partSpec);
         ltd.setLbCtx(lbCtx);
         Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
@@ -1455,9 +1455,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ddlWork.setNeedLock(true);
       Task<? extends Serializable> mergeTask = TaskFactory.get(ddlWork, conf);
       TableDesc tblDesc = Utilities.getTableDesc(tblObj);
-      String queryTmpdir = ctx.getExternalTmpFileURI(newTblPartLoc.toUri());
-      mergeDesc.setOutputDir(new Path(queryTmpdir));
-      LoadTableDesc ltd = new LoadTableDesc(new Path(queryTmpdir), tblDesc,
+      Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc.toUri());
+      mergeDesc.setOutputDir(queryTmpdir);
+      LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<String, String>() : partSpec);
       ltd.setLbCtx(lbCtx);
       Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),

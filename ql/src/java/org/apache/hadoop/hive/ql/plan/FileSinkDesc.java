@@ -30,7 +30,7 @@ import org.apache.hadoop.fs.Path;
 @Explain(displayName = "File Output Operator")
 public class FileSinkDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
-  private String dirName;
+  private Path dirName;
   // normally statsKeyPref will be the same as dirName, but the latter
   // could be changed in local execution optimization
   private String statsKeyPref;
@@ -69,7 +69,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   // the sub-queries write to sub-directories of a common directory. So, the file sink
   // descriptors for subq1 and subq2 are linked.
   private boolean linkedFileSink = false;
-  private String parentDir;
+  private Path parentDir;
   transient private List<FileSinkDesc> linkedFileSinkDesc;
 
   private boolean statsReliable;
@@ -81,7 +81,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public FileSinkDesc() {
   }
 
-  public FileSinkDesc(final String dirName, final TableDesc tableInfo,
+  public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
       final boolean compressed, final int destTableId, final boolean multiFileSpray,
       final boolean canBeMerged, final int numFiles, final int totalFiles,
       final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx) {
@@ -98,7 +98,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.dpCtx = dpCtx;
   }
 
-  public FileSinkDesc(final String dirName, final TableDesc tableInfo,
+  public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
       final boolean compressed) {
 
     this.dirName = dirName;
@@ -132,15 +132,15 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "directory", normalExplain = false)
-  public String getDirName() {
+  public Path getDirName() {
     return dirName;
   }
 
-  public void setDirName(final String dirName) {
+  public void setDirName(final Path dirName) {
     this.dirName = dirName;
   }
 
-  public String getFinalDirName() {
+  public Path getFinalDirName() {
     return linkedFileSink ? parentDir : dirName;
   }
 
@@ -320,11 +320,11 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.linkedFileSink = linkedFileSink;
   }
 
-  public String getParentDir() {
+  public Path getParentDir() {
     return parentDir;
   }
 
-  public void setParentDir(String parentDir) {
+  public void setParentDir(Path parentDir) {
     this.parentDir = parentDir;
   }
 

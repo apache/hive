@@ -253,13 +253,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     // The movetask that follows subQ1 and subQ2 tasks still moves the directory
     // 'Parent'
     if ((!conf.isLinkedFileSink()) || (dpCtx == null)) {
-      specPath = new Path(conf.getDirName());
+      specPath = conf.getDirName();
       childSpecPathDynLinkedPartitions = null;
       return;
     }
 
-    specPath = new Path(conf.getParentDir());
-    childSpecPathDynLinkedPartitions = Utilities.getFileNameFromDirName(conf.getDirName());
+    specPath = conf.getParentDir();
+    childSpecPathDynLinkedPartitions = conf.getDirName().getName();
   }
 
   @Override
@@ -816,10 +816,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       throws HiveException {
     try {
       if ((conf != null) && isNativeTable) {
-        String specPath = conf.getDirName();
+        String specPath = conf.getDirName().toString();
         DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
         if (conf.isLinkedFileSink() && (dpCtx != null)) {
-          specPath = conf.getParentDir();
+          specPath = conf.getParentDir().toString();
         }
         Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf,
           reporter);

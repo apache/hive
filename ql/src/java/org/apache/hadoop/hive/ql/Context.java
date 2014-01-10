@@ -359,9 +359,9 @@ public class Context {
    *          external URI to which the tmp data has to be eventually moved
    * @return next available tmp path on the file system corresponding extURI
    */
-  public String getExternalTmpFileURI(URI extURI) {
-    return getExternalScratchDir(extURI) +  Path.SEPARATOR + EXT_PREFIX +
-      nextPathId();
+  public Path getExternalTmpPath(URI extURI) {
+    return new Path(getExternalScratchDir(extURI), EXT_PREFIX +
+      nextPathId());
   }
 
   /**
