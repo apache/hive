@@ -47,6 +47,9 @@ public class StatsSetupConst {
       public String getPublisher(Configuration conf) {
         return "org.apache.hadoop.hive.ql.stats.CounterStatsPublisher"; }
       public String getAggregator(Configuration conf) {
+        if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+          return "org.apache.hadoop.hive.ql.stats.CounterStatsAggregatorTez";
+        }
         return "org.apache.hadoop.hive.ql.stats.CounterStatsAggregator"; }
     },
     custom {

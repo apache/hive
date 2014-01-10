@@ -1,0 +1,227 @@
+PREHOOK: query: -- no agg, corr
+explain
+select * 
+from src b 
+where exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9'
+  )
+PREHOOK: type: QUERY
+POSTHOOK: query: -- no agg, corr
+explain
+select * 
+from src b 
+where exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9'
+  )
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (TOK_SUBQUERY_EXPR (TOK_SUBQUERY_OP exists) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_WHERE (and (and (= (. (TOK_TABLE_OR_COL b) value) (. (TOK_TABLE_OR_COL a) value)) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (> (. (TOK_TABLE_OR_COL a) value) 'val_9')))))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Alias -> Map Operator Tree:
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: value
+                    type: string
+                    expr: key
+                    type: string
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: value
+                    type: string
+                    expr: key
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Filter Operator
+              predicate:
+                  expr: (value > 'val_9')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: value
+                      type: string
+                      expr: key
+                      type: string
+                outputColumnNames: _col1, _col2
+                Group By Operator
+                  bucketGroup: false
+                  keys:
+                        expr: _col1
+                        type: string
+                        expr: _col2
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                    sort order: ++
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                    tag: 1
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Semi Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col1
+          Filter Operator
+            predicate:
+                expr: (1 = 1)
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: select * 
+from src b 
+where exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9'
+  )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * 
+from src b 
+where exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9'
+  )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: -- view test
+create view cv1 as 
+select * 
+from src b 
+where exists
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: -- view test
+create view cv1 as 
+select * 
+from src b 
+where exists
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@cv1
+PREHOOK: query: select * from cv1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cv1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cv1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cv1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: -- sq in from
+select * 
+from (select * 
+      from src b 
+      where exists 
+          (select a.key 
+          from src a 
+          where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+     ) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- sq in from
+select * 
+from (select * 
+      from src b 
+      where exists 
+          (select a.key 
+          from src a 
+          where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+     ) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98

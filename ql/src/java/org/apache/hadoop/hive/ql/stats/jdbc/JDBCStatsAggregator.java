@@ -33,7 +33,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 
@@ -42,7 +41,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
   private Connection conn;
   private String connectionString;
   private Configuration hiveconf;
-  private MapRedTask sourceTask;
+  private Task<?> sourceTask;
   private final Map<String, PreparedStatement> columnMapping;
   private final Log LOG = LogFactory.getLog(this.getClass().getName());
   private int timeout = 30;

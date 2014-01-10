@@ -1,0 +1,98 @@
+PREHOOK: query: drop table sales
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table sales
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table things
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table things
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE sales (name STRING, id INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE sales (name STRING, id INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@sales
+PREHOOK: query: CREATE TABLE things (id INT, name STRING) partitioned by (ds string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE things (id INT, name STRING) partitioned by (ds string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@things
+PREHOOK: query: load data local inpath '../../data/files/sales.txt' INTO TABLE sales
+PREHOOK: type: LOAD
+PREHOOK: Output: default@sales
+POSTHOOK: query: load data local inpath '../../data/files/sales.txt' INTO TABLE sales
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@sales
+PREHOOK: query: load data local inpath '../../data/files/things.txt' INTO TABLE things partition(ds='2011-10-23')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@things
+POSTHOOK: query: load data local inpath '../../data/files/things.txt' INTO TABLE things partition(ds='2011-10-23')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@things
+POSTHOOK: Output: default@things@ds=2011-10-23
+PREHOOK: query: load data local inpath '../../data/files/things2.txt' INTO TABLE things partition(ds='2011-10-24')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@things
+POSTHOOK: query: load data local inpath '../../data/files/things2.txt' INTO TABLE things partition(ds='2011-10-24')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@things
+POSTHOOK: Output: default@things@ds=2011-10-24
+PREHOOK: query: SELECT name,id FROM sales ORDER BY name ASC, id ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sales
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT name,id FROM sales ORDER BY name ASC, id ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales
+#### A masked pattern was here ####
+Hank	2
+Joe	2
+PREHOOK: query: SELECT id,name FROM things ORDER BY id ASC, name ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@things
+PREHOOK: Input: default@things@ds=2011-10-23
+PREHOOK: Input: default@things@ds=2011-10-24
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id,name FROM things ORDER BY id ASC, name ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@things
+POSTHOOK: Input: default@things@ds=2011-10-23
+POSTHOOK: Input: default@things@ds=2011-10-24
+#### A masked pattern was here ####
+2	Tie
+2	Tie
+PREHOOK: query: SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id) ORDER BY name ASC, id ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sales
+PREHOOK: Input: default@things
+PREHOOK: Input: default@things@ds=2011-10-23
+PREHOOK: Input: default@things@ds=2011-10-24
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id) ORDER BY name ASC, id ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales
+POSTHOOK: Input: default@things
+POSTHOOK: Input: default@things@ds=2011-10-23
+POSTHOOK: Input: default@things@ds=2011-10-24
+#### A masked pattern was here ####
+Hank	2
+Joe	2
+PREHOOK: query: drop table sales
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sales
+PREHOOK: Output: default@sales
+POSTHOOK: query: drop table sales
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sales
+POSTHOOK: Output: default@sales
+PREHOOK: query: drop table things
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@things
+PREHOOK: Output: default@things
+POSTHOOK: query: drop table things
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@things
+POSTHOOK: Output: default@things

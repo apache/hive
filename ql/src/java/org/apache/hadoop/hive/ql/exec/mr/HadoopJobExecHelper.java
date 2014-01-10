@@ -134,6 +134,12 @@ public class HadoopJobExecHelper {
     this.console = console;
     this.task = task;
     this.callBackObj = hookCallBack;
+
+    if (job != null) {
+      // even with tez on some jobs are run as MR. disable the flag in
+      // the conf, so that the backend runs fully as MR.
+      HiveConf.setVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+    }
   }
 
 

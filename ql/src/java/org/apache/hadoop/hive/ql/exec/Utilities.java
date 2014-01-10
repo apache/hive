@@ -88,7 +88,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -98,6 +97,7 @@ import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -109,6 +109,7 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
 import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -132,9 +133,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InputEstimator;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
@@ -179,6 +183,8 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
+
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * Utilities.
@@ -301,15 +307,27 @@ public final class Utilities {
     try {
       path = getPlanPath(conf, name);
       assert path != null;
-      gWork = gWorkMap.get(path);
-      if (gWork == null) {
+      if (!gWorkMap.containsKey(path)) {
         Path localPath;
         if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
           localPath = path;
         } else {
           localPath = new Path(name);
         }
-        in = new FileInputStream(localPath.toUri().getPath());
+
+        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+          LOG.debug("Loading plan from string: "+path.toUri().getPath());
+          String planString = conf.get(path.toUri().getPath());
+          if (planString == null) {
+            LOG.debug("Could not find plan string in conf");
+            return null;
+          }
+          byte[] planBytes = Base64.decodeBase64(planString);
+          in = new ByteArrayInputStream(planBytes);
+        } else {
+          in = new FileInputStream(localPath.toUri().getPath());
+        }
+
         if(MAP_PLAN_NAME.equals(name)){
           if (ExecMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))){
             gWork = deserializePlan(in, MapWork.class, conf);
@@ -332,6 +350,9 @@ public final class Utilities {
           }
         }
         gWorkMap.put(path, gWork);
+      } else {
+        LOG.debug("Found plan in cache.");
+        gWork = gWorkMap.get(path);
       }
       return gWork;
     } catch (FileNotFoundException fnf) {
@@ -554,26 +575,37 @@ public final class Utilities {
 
       Path planPath = getPlanPath(conf, name);
 
-      // use the default file system of the conf
-      FileSystem fs = planPath.getFileSystem(conf);
-      FSDataOutputStream out = fs.create(planPath);
-      serializePlan(w, out, conf);
+      OutputStream out;
 
-      // Serialize the plan to the default hdfs instance
-      // Except for hadoop local mode execution where we should be
-      // able to get the plan directly from the cache
-      if (useCache && !ShimLoader.getHadoopShims().isLocalMode(conf)) {
-        // Set up distributed cache
-        if (!DistributedCache.getSymlink(conf)) {
-          DistributedCache.createSymlink(conf);
+      if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+        // add it to the conf
+        out = new ByteArrayOutputStream();
+        serializePlan(w, out, conf);
+        LOG.info("Setting plan: "+planPath.toUri().getPath());
+        conf.set(planPath.toUri().getPath(),
+            Base64.encodeBase64String(((ByteArrayOutputStream)out).toByteArray()));
+      } else {
+        // use the default file system of the conf
+        FileSystem fs = planPath.getFileSystem(conf);
+        out = fs.create(planPath);
+        serializePlan(w, out, conf);
+
+        // Serialize the plan to the default hdfs instance
+        // Except for hadoop local mode execution where we should be
+        // able to get the plan directly from the cache
+        if (useCache && !ShimLoader.getHadoopShims().isLocalMode(conf)) {
+          // Set up distributed cache
+          if (!DistributedCache.getSymlink(conf)) {
+            DistributedCache.createSymlink(conf);
+          }
+          String uriWithLink = planPath.toUri().toString() + "#" + name;
+          DistributedCache.addCacheFile(new URI(uriWithLink), conf);
+
+          // set replication of the plan file to a high number. we use the same
+          // replication factor as used by the hadoop jobclient for job.xml etc.
+          short replication = (short) conf.getInt("mapred.submit.replication", 10);
+          fs.setReplication(planPath, replication);
         }
-        String uriWithLink = planPath.toUri().toString() + "#" + name;
-        DistributedCache.addCacheFile(new URI(uriWithLink), conf);
-
-        // set replication of the plan file to a high number. we use the same
-        // replication factor as used by the hadoop jobclient for job.xml etc.
-        short replication = (short) conf.getInt("mapred.submit.replication", 10);
-        fs.setReplication(planPath, replication);
       }
 
       // Cache the plan in this process
@@ -2235,6 +2267,26 @@ public final class Utilities {
     return true;
   }
 
+  public static List<TezTask> getTezTasks(List<Task<? extends Serializable>> tasks) {
+    List<TezTask> tezTasks = new ArrayList<TezTask>();
+    if (tasks != null) {
+      getTezTasks(tasks, tezTasks);
+    }
+    return tezTasks;
+  }
+
+  private static void getTezTasks(List<Task<? extends Serializable>> tasks, List<TezTask> tezTasks) {
+    for (Task<? extends Serializable> task : tasks) {
+      if (task instanceof TezTask && !tezTasks.contains((TezTask) task)) {
+        tezTasks.add((TezTask) task);
+      }
+
+      if (task.getDependentTasks() != null) {
+        getTezTasks(task.getDependentTasks(), tezTasks);
+      }
+    }
+  }
+
   public static List<ExecDriver> getMRTasks(List<Task<? extends Serializable>> tasks) {
     List<ExecDriver> mrTasks = new ArrayList<ExecDriver>();
     if (tasks != null) {
@@ -2885,7 +2937,8 @@ public final class Utilities {
           pathsProcessed.add(path);
 
           LOG.info("Adding input file " + path);
-          if (isEmptyPath(job, path, ctx)) {
+          if (!HiveConf.getVar(job, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") 
+              && isEmptyPath(job, path, ctx)) {
             path = createDummyFileForEmptyPartition(path, job, work,
                  hiveScratchDir, alias, sequenceNumber++);
 
@@ -2902,7 +2955,8 @@ public final class Utilities {
       // T2) x;
       // If T is empty and T2 contains 100 rows, the user expects: 0, 100 (2
       // rows)
-      if (path == null) {
+      if (path == null 
+          && !HiveConf.getVar(job, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
         path = createDummyFileForEmptyTable(job, work, hiveScratchDir,
             alias, sequenceNumber++);
         pathsToAdd.add(path);

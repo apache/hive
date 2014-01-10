@@ -61,12 +61,14 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.hadoop.security.UserGroupInformation;
-
+import org.apache.tez.test.MiniTezCluster;
 
 /**
  * Implemention of shims against Hadoop 0.23.0.
  */
 public class Hadoop23Shims extends HadoopShimsSecure {
+
+  HadoopShims.MiniDFSShim cluster = null;
 
   @Override
   public String getTaskAttemptLogUrl(JobConf conf,
@@ -194,6 +196,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private final MiniMRCluster mr;
     private final Configuration conf;
 
+    public MiniMrShim() {
+      mr = null;
+      conf = null;
+    }
+
     public MiniMrShim(Configuration conf, int numberOfTaskTrackers,
                       String nameNode, int numDir) throws IOException {
       this.conf = conf;
@@ -231,6 +238,73 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  /**
+   * Returns a shim to wrap MiniMrTez
+   */
+  public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
+                                     String nameNode, int numDir) throws IOException {
+    return new MiniTezShim(conf, numberOfTaskTrackers, nameNode, numDir);
+  }
+
+  /**
+   * Shim for MiniTezCluster
+   */
+  public class MiniTezShim extends Hadoop23Shims.MiniMrShim {
+
+    private final MiniTezCluster mr;
+    private final Configuration conf;
+
+    public MiniTezShim(Configuration conf, int numberOfTaskTrackers,
+                      String nameNode, int numDir) throws IOException {
+
+      mr = new MiniTezCluster("hive", numberOfTaskTrackers);
+      conf.set("fs.defaultFS", nameNode);
+      conf.set(MRJobConfig.MR_AM_STAGING_DIR, "/apps_staging_dir");
+      mr.init(conf);
+      mr.start();
+      this.conf = mr.getConfig();
+    }
+
+    @Override
+    public int getJobTrackerPort() throws UnsupportedOperationException {
+      String address = conf.get("yarn.resourcemanager.address");
+      address = StringUtils.substringAfterLast(address, ":");
+
+      if (StringUtils.isBlank(address)) {
+        throw new IllegalArgumentException("Invalid YARN resource manager port.");
+      }
+
+      return Integer.parseInt(address);
+    }
+
+    @Override
+    public void shutdown() throws IOException {
+      mr.stop();
+    }
+
+    @Override
+    public void setupConfiguration(Configuration conf) {
+      Configuration config = mr.getConfig();
+      for (Map.Entry<String, String> pair: config) {
+        conf.set(pair.getKey(), pair.getValue());
+      }
+
+      Path jarPath = new Path("hdfs:///user/hive");
+      Path hdfsPath = new Path("hdfs:///user/");
+      try {
+        FileSystem fs = cluster.getFileSystem();
+        jarPath = fs.makeQualified(jarPath);
+        conf.set("hive.jar.directory", jarPath.toString());
+        fs.mkdirs(jarPath);
+        hdfsPath = fs.makeQualified(hdfsPath);
+        conf.set("hive.user.install.directory", hdfsPath.toString());
+        fs.mkdirs(hdfsPath);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
   // Don't move this code to the parent class. There's a binary
   // incompatibility between hadoop 1 and 2 wrt MiniDFSCluster and we
   // need to have two different shim classes even though they are
@@ -239,7 +313,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       int numDataNodes,
       boolean format,
       String[] racks) throws IOException {
-    return new MiniDFSShim(new MiniDFSCluster(conf, numDataNodes, format, racks));
+    cluster = new MiniDFSShim(new MiniDFSCluster(conf, numDataNodes, format, racks));
+    return cluster;
   }
 
   /**

@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.JobClient;
@@ -42,7 +43,7 @@ public class CounterStatsAggregator implements StatsAggregator {
   public boolean connect(Configuration hconf, Task sourceTask) {
     try {
       jc = new JobClient(toJobConf(hconf));
-      RunningJob job = jc.getJob(sourceTask.getJobID());
+      RunningJob job = jc.getJob(((MapRedTask)sourceTask).getJobID());
       if (job != null) {
         counters = job.getCounters();
       }

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.history.HiveHistoryImpl;
 import org.apache.hadoop.hive.ql.history.HiveHistoryProxyHandler;
@@ -135,6 +136,8 @@ public class SessionState {
   private Map<String, String> overriddenConfigurations;
 
   private Map<String, List<String>> localMapRedErrors;
+
+  private TezSessionState tezSessionState;
 
   private String currentDatabase;
 
@@ -305,6 +308,20 @@ public class SessionState {
           .getConf());
     } catch (HiveException e) {
       throw new RuntimeException(e);
+    }
+
+    if (HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)
+        .equals("tez")) {
+      try {
+        if (startSs.tezSessionState == null) {
+          startSs.tezSessionState = new TezSessionState();
+        }
+        startSs.tezSessionState.open(startSs.getSessionId(), startSs.conf);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+       LOG.info("No Tez session required at this point. hive.execution.engine=mr.");
     }
 
     return startSs;
@@ -813,6 +830,16 @@ public class SessionState {
     } catch (IOException e) {
       LOG.info("Error removing session resource dir " + resourceDir, e);
     }
+
+    try {
+      if (tezSessionState != null) {
+        tezSessionState.close(false);
+      }
+    } catch (Exception e) {
+      LOG.info("Error closing tez session", e);
+    } finally {
+      tezSessionState = null;
+    }
   }
 
   /**
@@ -835,4 +862,11 @@ public class SessionState {
     return perfLogger;
   }
 
+  public TezSessionState getTezSession() {
+    return tezSessionState;
+  }
+
+  public void setTezSession(TezSessionState session) {
+    this.tezSessionState = session;
+  }
 }

@@ -26,6 +26,9 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
@@ -45,7 +48,9 @@ public class MapredContext {
   }
 
   public static MapredContext init(boolean isMap, JobConf jobConf) {
-    MapredContext context = new MapredContext(isMap, jobConf);
+    MapredContext context =
+        HiveConf.getVar(jobConf, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") ?
+            new TezContext(isMap, jobConf) : new MapredContext(isMap, jobConf);
     contexts.set(context);
     return context;
   }

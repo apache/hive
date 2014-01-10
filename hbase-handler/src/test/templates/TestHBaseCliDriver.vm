@@ -24,6 +24,7 @@ import junit.framework.TestSuite;
 import java.io.*;
 import java.util.*;
 
+import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -42,10 +43,11 @@ public class $className extends TestCase {
 
   @Override
   protected void setUp() {
-    try {
-      boolean miniMR = "$clusterMode".equals("miniMR");
-      qt = new HBaseQTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, setup);
 
+    MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
+
+    try {
+      qt = new HBaseQTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, setup);
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();

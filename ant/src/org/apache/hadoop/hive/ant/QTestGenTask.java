@@ -135,6 +135,8 @@ public class QTestGenTask extends Task {
 
   private String clusterMode;
 
+  private String hiveConfDir;
+
   private String runDisabled;
   
   private String hadoopVersion;
@@ -145,6 +147,14 @@ public class QTestGenTask extends Task {
 
   public String getHadoopVersion() {
     return hadoopVersion;
+  }
+
+  public void setHiveConfDir(String hiveConfDir) {
+    this.hiveConfDir = hiveConfDir;
+  }
+
+  public String getHiveConfDir() {
+    return hiveConfDir;
   }
   
   public void setClusterMode(String clusterMode) {
@@ -416,6 +426,9 @@ public class QTestGenTask extends Task {
       if (hadoopVersion == null) {
         hadoopVersion = "";
       }
+      if (hiveConfDir == null) {
+        hiveConfDir = "";
+      }
 
       // For each of the qFiles generate the test
       VelocityContext ctx = new VelocityContext();
@@ -429,6 +442,7 @@ public class QTestGenTask extends Task {
       }
       ctx.put("logDir", relativePath(hiveRootDir, logDir));
       ctx.put("clusterMode", clusterMode);
+      ctx.put("hiveConfDir", hiveConfDir);
       ctx.put("hadoopVersion", hadoopVersion);
 
       File outFile = new File(outDir, className + ".java");
