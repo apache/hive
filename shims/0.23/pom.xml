@@ -87,6 +87,81 @@
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty</artifactId>
       <version>${jetty.version}</version>
+      <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-api</artifactId>
+      <version>${tez.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-dag</artifactId>
+      <version>${tez.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency >
+       <groupId>org.apache.tez</groupId>
+       <artifactId>tez-common</artifactId>
+       <version>${tez.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-runtime-library</artifactId>
+      <version>${tez.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-mapreduce</artifactId>
+      <version>${tez.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+       <groupId>org.apache.tez</groupId>
+       <artifactId>tez-runtime-internals</artifactId>
+       <version>${tez.version}</version>
+       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop-23.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-api</artifactId>
+      <version>${hadoop-23.version}</version>
+      <optional>true</optional>
+   </dependency>
+   <dependency>
+     <groupId>org.apache.hadoop</groupId>
+     <artifactId>hadoop-yarn-common</artifactId>
+     <version>${hadoop-23.version}</version>
+     <optional>true</optional>
+   </dependency>
+   <dependency>
+     <groupId>org.apache.hadoop</groupId>
+     <artifactId>hadoop-yarn-client</artifactId>
+     <version>${hadoop-23.version}</version>
+     <optional>true</optional>
+   </dependency>
+   <dependency>
+     <groupId>org.apache.tez</groupId>
+     <artifactId>tez-tests</artifactId>
+     <version>${tez.version}</version>
+      <optional>true</optional>
+     <type>test-jar</type>
+   </dependency>
+   <dependency>
+     <groupId>org.apache.hadoop</groupId>
+     <artifactId>hadoop-yarn-server-tests</artifactId>
+     <version>${hadoop-23.version}</version>
+      <optional>true</optional>
+     <type>test-jar</type>
+   </dependency>
   </dependencies>
 </project>

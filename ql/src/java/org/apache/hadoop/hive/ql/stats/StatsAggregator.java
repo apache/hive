@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.stats;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 
 /**
  * An interface for any possible implementation for gathering statistics.

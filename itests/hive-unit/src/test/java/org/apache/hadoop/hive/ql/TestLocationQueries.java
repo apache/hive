@@ -24,6 +24,8 @@ import java.io.FileReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+
 /**
  * Suite for testing location. e.g. if "alter table alter partition
  * location" is run, do the partitions end up in the correct location.
@@ -82,7 +84,7 @@ public class TestLocationQueries extends BaseTestQueries {
       return failedCount;
     }
 
-    public CheckResults(String outDir, String logDir, boolean miniMr,
+    public CheckResults(String outDir, String logDir, MiniClusterType miniMr,
         String hadoopVer, String locationSubdir)
       throws Exception
     {
@@ -102,8 +104,9 @@ public class TestLocationQueries extends BaseTestQueries {
     File[] qfiles = setupQFiles(testNames);
 
     QTestUtil[] qt = new QTestUtil[qfiles.length];
+
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new CheckResults(resDir, logDir, false, "0.20", "parta");
+      qt[i] = new CheckResults(resDir, logDir, MiniClusterType.none, "0.20", "parta");
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }

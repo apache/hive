@@ -6645,7 +6645,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode hint = (ASTNode) hints.getChild(pos);
       if (((ASTNode) hint.getChild(0)).getToken().getType() == HiveParser.TOK_MAPJOIN) {
         // the user has specified to ignore mapjoin hint
-        if (!conf.getBoolVar(HiveConf.ConfVars.HIVEIGNOREMAPJOINHINT)) {
+        if (!conf.getBoolVar(HiveConf.ConfVars.HIVEIGNOREMAPJOINHINT)
+            && !conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
           ASTNode hintTblNames = (ASTNode) hint.getChild(1);
           int numCh = hintTblNames.getChildCount();
           for (int tblPos = 0; tblPos < numCh; tblPos++) {
@@ -8352,6 +8353,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Add a mapping from the table scan operator to Table
       topToTable.put((TableScanOperator) top, tab);
+
       Map<String, String> props = qb.getTabPropsForAlias(alias);
       if (props != null) {
         topToTableProps.put((TableScanOperator) top, props);

@@ -32,7 +32,11 @@ public class HashTableLoaderFactory {
   }
 
   public static HashTableLoader getLoader(Configuration hconf) {
-    return new org.apache.hadoop.hive.ql.exec.mr.HashTableLoader();
+    if (HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+      return new org.apache.hadoop.hive.ql.exec.tez.HashTableLoader();
+    } else {
+      return new org.apache.hadoop.hive.ql.exec.mr.HashTableLoader();
+    }
   }
 
 }

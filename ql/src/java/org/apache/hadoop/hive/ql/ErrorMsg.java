@@ -366,6 +366,11 @@ public enum ErrorMsg {
   UNSUPPORTED_SUBQUERY_EXPRESSION(10249, "Unsupported SubQuery Expression"),
   INVALID_SUBQUERY_EXPRESSION(10250, "Invalid SubQuery expression"),
 
+  INVALID_HDFS_URI(10251, "{0} is not a hdfs uri", true),
+  INVALID_DIR(10252, "{0} is not a directory", true),
+  NO_VALID_LOCATIONS(10253, "Could not find any valid location to place the jars. " +
+  "Please update hive.jar.directory or hive.user.install.directory with a valid location", false),
+
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
       + "It may have crashed with an error."),

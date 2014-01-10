@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class $className extends TestCase {
@@ -34,10 +35,12 @@ public class $className extends TestCase {
   private static QTestUtil qt;
 
   static {
+
+    MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
+    String hiveConfDir = "$hiveConfDir";
     try {
-      boolean miniMR = "$clusterMode".equals("miniMR");
       String hadoopVer = "$hadoopVersion";
-      qt = new QTestUtil(null, (HIVE_ROOT + "$logDir"), miniMR, hadoopVer);
+      qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, hiveConfDir, hadoopVer);
 
       // do a one time initialization
       qt.cleanUp();

@@ -1,0 +1,2440 @@
+PREHOOK: query: -- simple query with multiple reduce stages
+EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
+PREHOOK: type: QUERY
+POSTHOOK: query: -- simple query with multiple reduce stages
+EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL value)) cnt)) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: key, value
+              Group By Operator
+                aggregations:
+                      expr: count(value)
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Reduce Output Operator
+              key expressions:
+                    expr: _col1
+                    type: bigint
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+490	1
+287	1
+286	1
+285	1
+284	1
+283	1
+114	1
+487	1
+485	1
+28	1
+484	1
+181	1
+275	1
+274	1
+183	1
+483	1
+27	1
+266	1
+482	1
+263	1
+262	1
+260	1
+481	1
+258	1
+257	1
+116	1
+479	1
+252	1
+249	1
+248	1
+247	1
+244	1
+92	1
+241	1
+477	1
+475	1
+472	1
+470	1
+235	1
+47	1
+186	1
+126	1
+228	1
+226	1
+131	1
+467	1
+222	1
+133	1
+82	1
+218	1
+80	1
+460	1
+214	1
+8	1
+78	1
+189	1
+457	1
+455	1
+136	1
+202	1
+201	1
+453	1
+20	1
+2	1
+19	1
+452	1
+196	1
+449	1
+194	1
+190	1
+192	1
+448	1
+446	1
+444	1
+443	1
+44	1
+77	1
+143	1
+437	1
+436	1
+435	1
+432	1
+145	1
+150	1
+43	1
+10	1
+427	1
+74	1
+421	1
+9	1
+419	1
+418	1
+153	1
+105	1
+69	1
+411	1
+41	1
+155	1
+407	1
+156	1
+87	1
+157	1
+402	1
+158	1
+400	1
+4	1
+66	1
+65	1
+160	1
+64	1
+394	1
+393	1
+392	1
+389	1
+386	1
+162	1
+86	1
+379	1
+378	1
+377	1
+375	1
+374	1
+373	1
+57	1
+163	1
+368	1
+54	1
+366	1
+365	1
+364	1
+362	1
+360	1
+356	1
+53	1
+351	1
+166	1
+168	1
+345	1
+85	1
+11	1
+341	1
+34	1
+339	1
+338	1
+336	1
+335	1
+111	1
+332	1
+497	1
+33	1
+17	1
+496	1
+323	1
+495	1
+494	1
+170	1
+493	1
+177	1
+315	1
+178	1
+310	1
+96	1
+308	1
+491	1
+306	1
+305	1
+302	1
+30	1
+180	1
+296	1
+292	1
+291	1
+289	1
+98	2
+97	2
+95	2
+84	2
+83	2
+76	2
+72	2
+67	2
+58	2
+51	2
+492	2
+478	2
+463	2
+462	2
+459	2
+458	2
+439	2
+429	2
+424	2
+42	2
+414	2
+413	2
+404	2
+399	2
+397	2
+395	2
+382	2
+37	2
+367	2
+353	2
+344	2
+342	2
+333	2
+331	2
+325	2
+322	2
+321	2
+317	2
+309	2
+307	2
+288	2
+282	2
+281	2
+280	2
+278	2
+272	2
+265	2
+26	2
+256	2
+255	2
+242	2
+24	2
+239	2
+238	2
+237	2
+233	2
+229	2
+224	2
+223	2
+221	2
+219	2
+217	2
+216	2
+213	2
+209	2
+207	2
+205	2
+203	2
+200	2
+197	2
+195	2
+191	2
+18	2
+179	2
+176	2
+175	2
+174	2
+172	2
+165	2
+164	2
+152	2
+15	2
+149	2
+146	2
+137	2
+134	2
+129	2
+125	2
+120	2
+12	2
+118	2
+113	2
+104	2
+103	2
+100	2
+498	3
+369	3
+384	3
+396	3
+403	3
+409	3
+417	3
+5	3
+430	3
+70	3
+119	3
+0	3
+431	3
+438	3
+480	3
+193	3
+199	3
+208	3
+187	3
+273	3
+298	3
+454	3
+311	3
+316	3
+466	3
+90	3
+128	3
+318	3
+327	3
+167	3
+35	3
+468	4
+489	4
+406	4
+169	4
+138	4
+277	4
+469	5
+401	5
+230	5
+348	5
+PREHOOK: query: -- join query with multiple reduce stages;
+EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt
+PREHOOK: type: QUERY
+POSTHOOK: query: -- join query with multiple reduce stages;
+EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) s1) (TOK_TABREF (TOK_TABNAME src) s2) (= (. (TOK_TABLE_OR_COL s1) key) (. (TOK_TABLE_OR_COL s2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key)) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL s2) value)) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL s2) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Alias -> Map Operator Tree:
+        s2 
+          TableScan
+            alias: s2
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Alias -> Map Operator Tree:
+        s1 
+          TableScan
+            alias: s1
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 0
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 
+            1 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
+          outputColumnNames: _col4, _col5
+          Select Operator
+            expressions:
+                  expr: _col4
+                  type: string
+                  expr: _col5
+                  type: string
+            outputColumnNames: _col4, _col5
+            Group By Operator
+              aggregations:
+                    expr: count(DISTINCT _col5)
+              bucketGroup: false
+              keys:
+                    expr: _col4
+                    type: string
+                    expr: _col5
+                    type: string
+              mode: hash
+              outputColumnNames: _col0, _col1, _col2
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+                sort order: ++
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                tag: -1
+                value expressions:
+                      expr: _col2
+                      type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(DISTINCT KEY._col1:0._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Reduce Output Operator
+              key expressions:
+                    expr: _col1
+                    type: bigint
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+98	1
+97	1
+96	1
+95	1
+92	1
+90	1
+9	1
+87	1
+86	1
+85	1
+84	1
+83	1
+82	1
+80	1
+8	1
+78	1
+77	1
+76	1
+74	1
+72	1
+70	1
+69	1
+67	1
+66	1
+65	1
+64	1
+58	1
+57	1
+54	1
+53	1
+51	1
+5	1
+498	1
+497	1
+496	1
+495	1
+494	1
+493	1
+492	1
+491	1
+490	1
+489	1
+487	1
+485	1
+484	1
+483	1
+482	1
+481	1
+480	1
+479	1
+478	1
+477	1
+475	1
+472	1
+470	1
+47	1
+469	1
+468	1
+467	1
+466	1
+463	1
+462	1
+460	1
+459	1
+458	1
+457	1
+455	1
+454	1
+453	1
+452	1
+449	1
+448	1
+446	1
+444	1
+443	1
+44	1
+439	1
+438	1
+437	1
+436	1
+435	1
+432	1
+431	1
+430	1
+43	1
+429	1
+427	1
+424	1
+421	1
+42	1
+419	1
+418	1
+417	1
+414	1
+413	1
+411	1
+41	1
+409	1
+407	1
+406	1
+404	1
+403	1
+402	1
+401	1
+400	1
+4	1
+399	1
+397	1
+396	1
+395	1
+394	1
+393	1
+392	1
+389	1
+386	1
+384	1
+382	1
+379	1
+378	1
+377	1
+375	1
+374	1
+373	1
+37	1
+369	1
+368	1
+367	1
+366	1
+365	1
+364	1
+362	1
+360	1
+356	1
+353	1
+351	1
+35	1
+348	1
+345	1
+344	1
+342	1
+341	1
+34	1
+339	1
+338	1
+336	1
+335	1
+333	1
+332	1
+331	1
+33	1
+327	1
+325	1
+323	1
+322	1
+321	1
+318	1
+317	1
+316	1
+315	1
+311	1
+310	1
+309	1
+308	1
+307	1
+306	1
+305	1
+302	1
+30	1
+298	1
+296	1
+292	1
+291	1
+289	1
+288	1
+287	1
+286	1
+285	1
+284	1
+283	1
+282	1
+281	1
+280	1
+28	1
+278	1
+277	1
+275	1
+274	1
+273	1
+272	1
+27	1
+266	1
+265	1
+263	1
+262	1
+260	1
+26	1
+258	1
+257	1
+256	1
+255	1
+252	1
+249	1
+248	1
+247	1
+244	1
+242	1
+241	1
+24	1
+239	1
+238	1
+237	1
+235	1
+233	1
+230	1
+229	1
+228	1
+226	1
+224	1
+223	1
+222	1
+221	1
+219	1
+218	1
+217	1
+216	1
+214	1
+213	1
+209	1
+208	1
+207	1
+205	1
+203	1
+202	1
+201	1
+200	1
+20	1
+2	1
+199	1
+197	1
+196	1
+195	1
+194	1
+193	1
+192	1
+191	1
+190	1
+19	1
+189	1
+187	1
+186	1
+183	1
+181	1
+180	1
+18	1
+179	1
+178	1
+177	1
+176	1
+175	1
+174	1
+172	1
+170	1
+17	1
+169	1
+168	1
+167	1
+166	1
+165	1
+164	1
+163	1
+162	1
+160	1
+158	1
+157	1
+156	1
+155	1
+153	1
+152	1
+150	1
+15	1
+149	1
+146	1
+145	1
+143	1
+138	1
+137	1
+136	1
+134	1
+133	1
+131	1
+129	1
+128	1
+126	1
+125	1
+120	1
+12	1
+119	1
+118	1
+116	1
+114	1
+113	1
+111	1
+11	1
+105	1
+104	1
+103	1
+100	1
+10	1
+0	1
+PREHOOK: query: -- same query with broadcast join
+EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt
+PREHOOK: type: QUERY
+POSTHOOK: query: -- same query with broadcast join
+EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) s1) (TOK_TABREF (TOK_TABNAME src) s2) (= (. (TOK_TABLE_OR_COL s1) key) (. (TOK_TABLE_OR_COL s2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key)) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL s2) value)) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL s2) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Alias -> Map Operator Tree:
+        s2 
+          TableScan
+            alias: s2
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Alias -> Map Operator Tree:
+        s1 
+          TableScan
+            alias: s1
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 
+                1 {key} {value}
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col4, _col5
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col4
+                      type: string
+                      expr: _col5
+                      type: string
+                outputColumnNames: _col4, _col5
+                Group By Operator
+                  aggregations:
+                        expr: count(DISTINCT _col5)
+                  bucketGroup: false
+                  keys:
+                        expr: _col4
+                        type: string
+                        expr: _col5
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                    sort order: ++
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col2
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(DISTINCT KEY._col1:0._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Reduce Output Operator
+              key expressions:
+                    expr: _col1
+                    type: bigint
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+98	1
+97	1
+96	1
+95	1
+92	1
+90	1
+9	1
+87	1
+86	1
+85	1
+84	1
+83	1
+82	1
+80	1
+8	1
+78	1
+77	1
+76	1
+74	1
+72	1
+70	1
+69	1
+67	1
+66	1
+65	1
+64	1
+58	1
+57	1
+54	1
+53	1
+51	1
+5	1
+498	1
+497	1
+496	1
+495	1
+494	1
+493	1
+492	1
+491	1
+490	1
+489	1
+487	1
+485	1
+484	1
+483	1
+482	1
+481	1
+480	1
+479	1
+478	1
+477	1
+475	1
+472	1
+470	1
+47	1
+469	1
+468	1
+467	1
+466	1
+463	1
+462	1
+460	1
+459	1
+458	1
+457	1
+455	1
+454	1
+453	1
+452	1
+449	1
+448	1
+446	1
+444	1
+443	1
+44	1
+439	1
+438	1
+437	1
+436	1
+435	1
+432	1
+431	1
+430	1
+43	1
+429	1
+427	1
+424	1
+421	1
+42	1
+419	1
+418	1
+417	1
+414	1
+413	1
+411	1
+41	1
+409	1
+407	1
+406	1
+404	1
+403	1
+402	1
+401	1
+400	1
+4	1
+399	1
+397	1
+396	1
+395	1
+394	1
+393	1
+392	1
+389	1
+386	1
+384	1
+382	1
+379	1
+378	1
+377	1
+375	1
+374	1
+373	1
+37	1
+369	1
+368	1
+367	1
+366	1
+365	1
+364	1
+362	1
+360	1
+356	1
+353	1
+351	1
+35	1
+348	1
+345	1
+344	1
+342	1
+341	1
+34	1
+339	1
+338	1
+336	1
+335	1
+333	1
+332	1
+331	1
+33	1
+327	1
+325	1
+323	1
+322	1
+321	1
+318	1
+317	1
+316	1
+315	1
+311	1
+310	1
+309	1
+308	1
+307	1
+306	1
+305	1
+302	1
+30	1
+298	1
+296	1
+292	1
+291	1
+289	1
+288	1
+287	1
+286	1
+285	1
+284	1
+283	1
+282	1
+281	1
+280	1
+28	1
+278	1
+277	1
+275	1
+274	1
+273	1
+272	1
+27	1
+266	1
+265	1
+263	1
+262	1
+260	1
+26	1
+258	1
+257	1
+256	1
+255	1
+252	1
+249	1
+248	1
+247	1
+244	1
+242	1
+241	1
+24	1
+239	1
+238	1
+237	1
+235	1
+233	1
+230	1
+229	1
+228	1
+226	1
+224	1
+223	1
+222	1
+221	1
+219	1
+218	1
+217	1
+216	1
+214	1
+213	1
+209	1
+208	1
+207	1
+205	1
+203	1
+202	1
+201	1
+200	1
+20	1
+2	1
+199	1
+197	1
+196	1
+195	1
+194	1
+193	1
+192	1
+191	1
+190	1
+19	1
+189	1
+187	1
+186	1
+183	1
+181	1
+180	1
+18	1
+179	1
+178	1
+177	1
+176	1
+175	1
+174	1
+172	1
+170	1
+17	1
+169	1
+168	1
+167	1
+166	1
+165	1
+164	1
+163	1
+162	1
+160	1
+158	1
+157	1
+156	1
+155	1
+153	1
+152	1
+150	1
+15	1
+149	1
+146	1
+145	1
+143	1
+138	1
+137	1
+136	1
+134	1
+133	1
+131	1
+129	1
+128	1
+126	1
+125	1
+120	1
+12	1
+119	1
+118	1
+116	1
+114	1
+113	1
+111	1
+11	1
+105	1
+104	1
+103	1
+100	1
+10	1
+0	1
+PREHOOK: query: -- query with multiple branches in the task dag
+EXPLAIN
+SELECT * 
+FROM
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s1
+  JOIN
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s2
+  JOIN
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s3
+  ON (s1.key = s2.key and s1.key = s3.key)
+WHERE
+  s1.cnt > 1
+ORDER BY s1.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- query with multiple branches in the task dag
+EXPLAIN
+SELECT * 
+FROM
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s1
+  JOIN
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s2
+  JOIN
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s3
+  ON (s1.key = s2.key and s1.key = s3.key)
+WHERE
+  s1.cnt > 1
+ORDER BY s1.key
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL value)) cnt)) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt))))) s1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL value)) cnt)) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt))))) s2)) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL value)) cnt)) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt))))) s3) (and (= (. (TOK_TABLE_OR_COL s1) key) (. (TOK_TABLE_OR_COL s2) key)) (= (. (TOK_TABLE_OR_COL s1) key) (. (TOK_TABLE_OR_COL s3) key))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL s1) cnt) 1)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL s1) key)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: key, value
+              Group By Operator
+                aggregations:
+                      expr: count(value)
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Reduce Output Operator
+              key expressions:
+                    expr: _col1
+                    type: bigint
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          Reduce Output Operator
+            key expressions:
+                  expr: _col0
+                  type: string
+            sort order: +
+            Map-reduce partition columns:
+                  expr: _col0
+                  type: string
+            tag: 2
+            value expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: key, value
+              Group By Operator
+                aggregations:
+                      expr: count(value)
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Reduce Output Operator
+              key expressions:
+                    expr: _col1
+                    type: bigint
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          Reduce Output Operator
+            key expressions:
+                  expr: _col0
+                  type: string
+            sort order: +
+            Map-reduce partition columns:
+                  expr: _col0
+                  type: string
+            tag: 1
+            value expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: key, value
+              Group By Operator
+                aggregations:
+                      expr: count(value)
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Reduce Output Operator
+              key expressions:
+                    expr: _col1
+                    type: bigint
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          Reduce Output Operator
+            key expressions:
+                  expr: _col0
+                  type: string
+            sort order: +
+            Map-reduce partition columns:
+                  expr: _col0
+                  type: string
+            tag: 0
+            value expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 0 to 2
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          Filter Operator
+            predicate:
+                expr: (_col1 > 1)
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+                    expr: _col2
+                    type: string
+                    expr: _col3
+                    type: bigint
+                    expr: _col4
+                    type: string
+                    expr: _col5
+                    type: bigint
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: bigint
+                      expr: _col2
+                      type: string
+                      expr: _col3
+                      type: bigint
+                      expr: _col4
+                      type: string
+                      expr: _col5
+                      type: bigint
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: SELECT * 
+FROM
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s1
+  JOIN
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s2
+  JOIN
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s3
+  ON (s1.key = s2.key and s1.key = s3.key)
+WHERE
+  s1.cnt > 1
+ORDER BY s1.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * 
+FROM
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s1
+  JOIN
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s2
+  JOIN
+  (SELECT key, count(value) as cnt 
+  FROM src GROUP BY key ORDER BY cnt) s3
+  ON (s1.key = s2.key and s1.key = s3.key)
+WHERE
+  s1.cnt > 1
+ORDER BY s1.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	3	0	3	0	3
+100	2	100	2	100	2
+103	2	103	2	103	2
+104	2	104	2	104	2
+113	2	113	2	113	2
+118	2	118	2	118	2
+119	3	119	3	119	3
+12	2	12	2	12	2
+120	2	120	2	120	2
+125	2	125	2	125	2
+128	3	128	3	128	3
+129	2	129	2	129	2
+134	2	134	2	134	2
+137	2	137	2	137	2
+138	4	138	4	138	4
+146	2	146	2	146	2
+149	2	149	2	149	2
+15	2	15	2	15	2
+152	2	152	2	152	2
+164	2	164	2	164	2
+165	2	165	2	165	2
+167	3	167	3	167	3
+169	4	169	4	169	4
+172	2	172	2	172	2
+174	2	174	2	174	2
+175	2	175	2	175	2
+176	2	176	2	176	2
+179	2	179	2	179	2
+18	2	18	2	18	2
+187	3	187	3	187	3
+191	2	191	2	191	2
+193	3	193	3	193	3
+195	2	195	2	195	2
+197	2	197	2	197	2
+199	3	199	3	199	3
+200	2	200	2	200	2
+203	2	203	2	203	2
+205	2	205	2	205	2
+207	2	207	2	207	2
+208	3	208	3	208	3
+209	2	209	2	209	2
+213	2	213	2	213	2
+216	2	216	2	216	2
+217	2	217	2	217	2
+219	2	219	2	219	2
+221	2	221	2	221	2
+223	2	223	2	223	2
+224	2	224	2	224	2
+229	2	229	2	229	2
+230	5	230	5	230	5
+233	2	233	2	233	2
+237	2	237	2	237	2
+238	2	238	2	238	2
+239	2	239	2	239	2
+24	2	24	2	24	2
+242	2	242	2	242	2
+255	2	255	2	255	2
+256	2	256	2	256	2
+26	2	26	2	26	2
+265	2	265	2	265	2
+272	2	272	2	272	2
+273	3	273	3	273	3
+277	4	277	4	277	4
+278	2	278	2	278	2
+280	2	280	2	280	2
+281	2	281	2	281	2
+282	2	282	2	282	2
+288	2	288	2	288	2
+298	3	298	3	298	3
+307	2	307	2	307	2
+309	2	309	2	309	2
+311	3	311	3	311	3
+316	3	316	3	316	3
+317	2	317	2	317	2
+318	3	318	3	318	3
+321	2	321	2	321	2
+322	2	322	2	322	2
+325	2	325	2	325	2
+327	3	327	3	327	3
+331	2	331	2	331	2
+333	2	333	2	333	2
+342	2	342	2	342	2
+344	2	344	2	344	2
+348	5	348	5	348	5
+35	3	35	3	35	3
+353	2	353	2	353	2
+367	2	367	2	367	2
+369	3	369	3	369	3
+37	2	37	2	37	2
+382	2	382	2	382	2
+384	3	384	3	384	3
+395	2	395	2	395	2
+396	3	396	3	396	3
+397	2	397	2	397	2
+399	2	399	2	399	2
+401	5	401	5	401	5
+403	3	403	3	403	3
+404	2	404	2	404	2
+406	4	406	4	406	4
+409	3	409	3	409	3
+413	2	413	2	413	2
+414	2	414	2	414	2
+417	3	417	3	417	3
+42	2	42	2	42	2
+424	2	424	2	424	2
+429	2	429	2	429	2
+430	3	430	3	430	3
+431	3	431	3	431	3
+438	3	438	3	438	3
+439	2	439	2	439	2
+454	3	454	3	454	3
+458	2	458	2	458	2
+459	2	459	2	459	2
+462	2	462	2	462	2
+463	2	463	2	463	2
+466	3	466	3	466	3
+468	4	468	4	468	4
+469	5	469	5	469	5
+478	2	478	2	478	2
+480	3	480	3	480	3
+489	4	489	4	489	4
+492	2	492	2	492	2
+498	3	498	3	498	3
+5	3	5	3	5	3
+51	2	51	2	51	2
+58	2	58	2	58	2
+67	2	67	2	67	2
+70	3	70	3	70	3
+72	2	72	2	72	2
+76	2	76	2	76	2
+83	2	83	2	83	2
+84	2	84	2	84	2
+90	3	90	3	90	3
+95	2	95	2	95	2
+97	2	97	2	97	2
+98	2	98	2	98	2
+PREHOOK: query: -- query with broadcast join in the reduce stage
+EXPLAIN
+SELECT *
+FROM
+  (SELECT key, count(value) as cnt FROM src GROUP BY key) s1
+  JOIN src ON (s1.key = src.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: -- query with broadcast join in the reduce stage
+EXPLAIN
+SELECT *
+FROM
+  (SELECT key, count(value) as cnt FROM src GROUP BY key) s1
+  JOIN src ON (s1.key = src.key)
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL value)) cnt)) (TOK_GROUPBY (TOK_TABLE_OR_COL key)))) s1) (TOK_TABREF (TOK_TABNAME src)) (= (. (TOK_TABLE_OR_COL s1) key) (. (TOK_TABLE_OR_COL src) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: key, value
+              Group By Operator
+                aggregations:
+                      expr: count(value)
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {_col0} {_col1}
+                1 {key} {value}
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[key]]
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Position of Big Table: 1
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: bigint
+                      expr: _col2
+                      type: string
+                      expr: _col3
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: SELECT *
+FROM
+  (SELECT key, count(value) as cnt FROM src GROUP BY key) s1
+  JOIN src ON (s1.key = src.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM
+  (SELECT key, count(value) as cnt FROM src GROUP BY key) s1
+  JOIN src ON (s1.key = src.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	2	238	val_238
+86	1	86	val_86
+311	3	311	val_311
+27	1	27	val_27
+165	2	165	val_165
+409	3	409	val_409
+255	2	255	val_255
+278	2	278	val_278
+98	2	98	val_98
+484	1	484	val_484
+265	2	265	val_265
+193	3	193	val_193
+401	5	401	val_401
+150	1	150	val_150
+273	3	273	val_273
+224	2	224	val_224
+369	3	369	val_369
+66	1	66	val_66
+128	3	128	val_128
+213	2	213	val_213
+146	2	146	val_146
+406	4	406	val_406
+429	2	429	val_429
+374	1	374	val_374
+152	2	152	val_152
+469	5	469	val_469
+145	1	145	val_145
+495	1	495	val_495
+37	2	37	val_37
+327	3	327	val_327
+281	2	281	val_281
+277	4	277	val_277
+209	2	209	val_209
+15	2	15	val_15
+82	1	82	val_82
+403	3	403	val_403
+166	1	166	val_166
+417	3	417	val_417
+430	3	430	val_430
+252	1	252	val_252
+292	1	292	val_292
+219	2	219	val_219
+287	1	287	val_287
+153	1	153	val_153
+193	3	193	val_193
+338	1	338	val_338
+446	1	446	val_446
+459	2	459	val_459
+394	1	394	val_394
+237	2	237	val_237
+482	1	482	val_482
+174	2	174	val_174
+413	2	413	val_413
+494	1	494	val_494
+207	2	207	val_207
+199	3	199	val_199
+466	3	466	val_466
+208	3	208	val_208
+174	2	174	val_174
+399	2	399	val_399
+396	3	396	val_396
+247	1	247	val_247
+417	3	417	val_417
+489	4	489	val_489
+162	1	162	val_162
+377	1	377	val_377
+397	2	397	val_397
+309	2	309	val_309
+365	1	365	val_365
+266	1	266	val_266
+439	2	439	val_439
+342	2	342	val_342
+367	2	367	val_367
+325	2	325	val_325
+167	3	167	val_167
+195	2	195	val_195
+475	1	475	val_475
+17	1	17	val_17
+113	2	113	val_113
+155	1	155	val_155
+203	2	203	val_203
+339	1	339	val_339
+0	3	0	val_0
+455	1	455	val_455
+128	3	128	val_128
+311	3	311	val_311
+316	3	316	val_316
+57	1	57	val_57
+302	1	302	val_302
+205	2	205	val_205
+149	2	149	val_149
+438	3	438	val_438
+345	1	345	val_345
+129	2	129	val_129
+170	1	170	val_170
+20	1	20	val_20
+489	4	489	val_489
+157	1	157	val_157
+378	1	378	val_378
+221	2	221	val_221
+92	1	92	val_92
+111	1	111	val_111
+47	1	47	val_47
+72	2	72	val_72
+4	1	4	val_4
+280	2	280	val_280
+35	3	35	val_35
+427	1	427	val_427
+277	4	277	val_277
+208	3	208	val_208
+356	1	356	val_356
+399	2	399	val_399
+169	4	169	val_169
+382	2	382	val_382
+498	3	498	val_498
+125	2	125	val_125
+386	1	386	val_386
+437	1	437	val_437
+469	5	469	val_469
+192	1	192	val_192
+286	1	286	val_286
+187	3	187	val_187
+176	2	176	val_176
+54	1	54	val_54
+459	2	459	val_459
+51	2	51	val_51
+138	4	138	val_138
+103	2	103	val_103
+239	2	239	val_239
+213	2	213	val_213
+216	2	216	val_216
+430	3	430	val_430
+278	2	278	val_278
+176	2	176	val_176
+289	1	289	val_289
+221	2	221	val_221
+65	1	65	val_65
+318	3	318	val_318
+332	1	332	val_332
+311	3	311	val_311
+275	1	275	val_275
+137	2	137	val_137
+241	1	241	val_241
+83	2	83	val_83
+333	2	333	val_333
+180	1	180	val_180
+284	1	284	val_284
+12	2	12	val_12
+230	5	230	val_230
+181	1	181	val_181
+67	2	67	val_67
+260	1	260	val_260
+404	2	404	val_404
+384	3	384	val_384
+489	4	489	val_489
+353	2	353	val_353
+373	1	373	val_373
+272	2	272	val_272
+138	4	138	val_138
+217	2	217	val_217
+84	2	84	val_84
+348	5	348	val_348
+466	3	466	val_466
+58	2	58	val_58
+8	1	8	val_8
+411	1	411	val_411
+230	5	230	val_230
+208	3	208	val_208
+348	5	348	val_348
+24	2	24	val_24
+463	2	463	val_463
+431	3	431	val_431
+179	2	179	val_179
+172	2	172	val_172
+42	2	42	val_42
+129	2	129	val_129
+158	1	158	val_158
+119	3	119	val_119
+496	1	496	val_496
+0	3	0	val_0
+322	2	322	val_322
+197	2	197	val_197
+468	4	468	val_468
+393	1	393	val_393
+454	3	454	val_454
+100	2	100	val_100
+298	3	298	val_298
+199	3	199	val_199
+191	2	191	val_191
+418	1	418	val_418
+96	1	96	val_96
+26	2	26	val_26
+165	2	165	val_165
+327	3	327	val_327
+230	5	230	val_230
+205	2	205	val_205
+120	2	120	val_120
+131	1	131	val_131
+51	2	51	val_51
+404	2	404	val_404
+43	1	43	val_43
+436	1	436	val_436
+156	1	156	val_156
+469	5	469	val_469
+468	4	468	val_468
+308	1	308	val_308
+95	2	95	val_95
+196	1	196	val_196
+288	2	288	val_288
+481	1	481	val_481
+457	1	457	val_457
+98	2	98	val_98
+282	2	282	val_282
+197	2	197	val_197
+187	3	187	val_187
+318	3	318	val_318
+318	3	318	val_318
+409	3	409	val_409
+470	1	470	val_470
+137	2	137	val_137
+369	3	369	val_369
+316	3	316	val_316
+169	4	169	val_169
+413	2	413	val_413
+85	1	85	val_85
+77	1	77	val_77
+0	3	0	val_0
+490	1	490	val_490
+87	1	87	val_87
+364	1	364	val_364
+179	2	179	val_179
+118	2	118	val_118
+134	2	134	val_134
+395	2	395	val_395
+282	2	282	val_282
+138	4	138	val_138
+238	2	238	val_238
+419	1	419	val_419
+15	2	15	val_15
+118	2	118	val_118
+72	2	72	val_72
+90	3	90	val_90
+307	2	307	val_307
+19	1	19	val_19
+435	1	435	val_435
+10	1	10	val_10
+277	4	277	val_277
+273	3	273	val_273
+306	1	306	val_306
+224	2	224	val_224
+309	2	309	val_309
+389	1	389	val_389
+327	3	327	val_327
+242	2	242	val_242
+369	3	369	val_369
+392	1	392	val_392
+272	2	272	val_272
+331	2	331	val_331
+401	5	401	val_401
+242	2	242	val_242
+452	1	452	val_452
+177	1	177	val_177
+226	1	226	val_226
+5	3	5	val_5
+497	1	497	val_497
+402	1	402	val_402
+396	3	396	val_396
+317	2	317	val_317
+395	2	395	val_395
+58	2	58	val_58
+35	3	35	val_35
+336	1	336	val_336
+95	2	95	val_95
+11	1	11	val_11
+168	1	168	val_168
+34	1	34	val_34
+229	2	229	val_229
+233	2	233	val_233
+143	1	143	val_143
+472	1	472	val_472
+322	2	322	val_322
+498	3	498	val_498
+160	1	160	val_160
+195	2	195	val_195
+42	2	42	val_42
+321	2	321	val_321
+430	3	430	val_430
+119	3	119	val_119
+489	4	489	val_489
+458	2	458	val_458
+78	1	78	val_78
+76	2	76	val_76
+41	1	41	val_41
+223	2	223	val_223
+492	2	492	val_492
+149	2	149	val_149
+449	1	449	val_449
+218	1	218	val_218
+228	1	228	val_228
+138	4	138	val_138
+453	1	453	val_453
+30	1	30	val_30
+209	2	209	val_209
+64	1	64	val_64
+468	4	468	val_468
+76	2	76	val_76
+74	1	74	val_74
+342	2	342	val_342
+69	1	69	val_69
+230	5	230	val_230
+33	1	33	val_33
+368	1	368	val_368
+103	2	103	val_103
+296	1	296	val_296
+113	2	113	val_113
+216	2	216	val_216
+367	2	367	val_367
+344	2	344	val_344
+167	3	167	val_167
+274	1	274	val_274
+219	2	219	val_219
+239	2	239	val_239
+485	1	485	val_485
+116	1	116	val_116
+223	2	223	val_223
+256	2	256	val_256
+263	1	263	val_263
+70	3	70	val_70
+487	1	487	val_487
+480	3	480	val_480
+401	5	401	val_401
+288	2	288	val_288
+191	2	191	val_191
+5	3	5	val_5
+244	1	244	val_244
+438	3	438	val_438
+128	3	128	val_128
+467	1	467	val_467
+432	1	432	val_432
+202	1	202	val_202
+316	3	316	val_316
+229	2	229	val_229
+469	5	469	val_469
+463	2	463	val_463
+280	2	280	val_280
+2	1	2	val_2
+35	3	35	val_35
+283	1	283	val_283
+331	2	331	val_331
+235	1	235	val_235
+80	1	80	val_80
+44	1	44	val_44
+193	3	193	val_193
+321	2	321	val_321
+335	1	335	val_335
+104	2	104	val_104
+466	3	466	val_466
+366	1	366	val_366
+175	2	175	val_175
+403	3	403	val_403
+483	1	483	val_483
+53	1	53	val_53
+105	1	105	val_105
+257	1	257	val_257
+406	4	406	val_406
+409	3	409	val_409
+190	1	190	val_190
+406	4	406	val_406
+401	5	401	val_401
+114	1	114	val_114
+258	1	258	val_258
+90	3	90	val_90
+203	2	203	val_203
+262	1	262	val_262
+348	5	348	val_348
+424	2	424	val_424
+12	2	12	val_12
+396	3	396	val_396
+201	1	201	val_201
+217	2	217	val_217
+164	2	164	val_164
+431	3	431	val_431
+454	3	454	val_454
+478	2	478	val_478
+298	3	298	val_298
+125	2	125	val_125
+431	3	431	val_431
+164	2	164	val_164
+424	2	424	val_424
+187	3	187	val_187
+382	2	382	val_382
+5	3	5	val_5
+70	3	70	val_70
+397	2	397	val_397
+480	3	480	val_480
+291	1	291	val_291
+24	2	24	val_24
+351	1	351	val_351
+255	2	255	val_255
+104	2	104	val_104
+70	3	70	val_70
+163	1	163	val_163
+438	3	438	val_438
+119	3	119	val_119
+414	2	414	val_414
+200	2	200	val_200
+491	1	491	val_491
+237	2	237	val_237
+439	2	439	val_439
+360	1	360	val_360
+248	1	248	val_248
+479	1	479	val_479
+305	1	305	val_305
+417	3	417	val_417
+199	3	199	val_199
+444	1	444	val_444
+120	2	120	val_120
+429	2	429	val_429
+169	4	169	val_169
+443	1	443	val_443
+323	1	323	val_323
+325	2	325	val_325
+277	4	277	val_277
+230	5	230	val_230
+478	2	478	val_478
+178	1	178	val_178
+468	4	468	val_468
+310	1	310	val_310
+317	2	317	val_317
+333	2	333	val_333
+493	1	493	val_493
+460	1	460	val_460
+207	2	207	val_207
+249	1	249	val_249
+265	2	265	val_265
+480	3	480	val_480
+83	2	83	val_83
+136	1	136	val_136
+353	2	353	val_353
+172	2	172	val_172
+214	1	214	val_214
+462	2	462	val_462
+233	2	233	val_233
+406	4	406	val_406
+133	1	133	val_133
+175	2	175	val_175
+189	1	189	val_189
+454	3	454	val_454
+375	1	375	val_375
+401	5	401	val_401
+421	1	421	val_421
+407	1	407	val_407
+384	3	384	val_384
+256	2	256	val_256
+26	2	26	val_26
+134	2	134	val_134
+67	2	67	val_67
+384	3	384	val_384
+379	1	379	val_379
+18	2	18	val_18
+462	2	462	val_462
+492	2	492	val_492
+100	2	100	val_100
+298	3	298	val_298
+9	1	9	val_9
+341	1	341	val_341
+498	3	498	val_498
+146	2	146	val_146
+458	2	458	val_458
+362	1	362	val_362
+186	1	186	val_186
+285	1	285	val_285
+348	5	348	val_348
+167	3	167	val_167
+18	2	18	val_18
+273	3	273	val_273
+183	1	183	val_183
+281	2	281	val_281
+344	2	344	val_344
+97	2	97	val_97
+469	5	469	val_469
+315	1	315	val_315
+84	2	84	val_84
+28	1	28	val_28
+37	2	37	val_37
+448	1	448	val_448
+152	2	152	val_152
+348	5	348	val_348
+307	2	307	val_307
+194	1	194	val_194
+414	2	414	val_414
+477	1	477	val_477
+222	1	222	val_222
+126	1	126	val_126
+90	3	90	val_90
+169	4	169	val_169
+403	3	403	val_403
+400	1	400	val_400
+200	2	200	val_200
+97	2	97	val_97

@@ -92,6 +92,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
@@ -1262,8 +1263,14 @@ public final class GenMapRedUtils {
 
     } else {
       cplan = createMRWorkForMergingFiles(conf, tsMerge, fsInputDesc);
-      work = new MapredWork();
-      ((MapredWork)work).setMapWork(cplan);
+      if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        work = new TezWork();
+        cplan.setName("Merge");
+        ((TezWork)work).add(cplan);
+      } else {
+        work = new MapredWork();
+        ((MapredWork)work).setMapWork(cplan);
+      }
     }
     // use CombineHiveInputFormat for map-only merging
     cplan.setInputformat("org.apache.hadoop.hive.ql.io.CombineHiveInputFormat");
@@ -1394,6 +1401,11 @@ public final class GenMapRedUtils {
       mrWork.getMapWork().setGatheringStats(true);
       if (mrWork.getReduceWork() != null) {
         mrWork.getReduceWork().setGatheringStats(true);
+      }
+    } else {
+      TezWork work = (TezWork) currTask.getWork();
+      for (BaseWork w: work.getAllWork()) {
+        w.setGatheringStats(true);
       }
     }
 
@@ -1634,7 +1646,10 @@ public final class GenMapRedUtils {
           // There are separate configuration parameters to control whether to
           // merge for a map-only job
           // or for a map-reduce job
-          if (currTask.getWork() instanceof MapredWork) {
+          if (currTask.getWork() instanceof TezWork) {
+            return hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) || 
+                hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES);
+          } else if (currTask.getWork() instanceof MapredWork) {
             ReduceWork reduceWork = ((MapredWork) currTask.getWork()).getReduceWork();
             boolean mergeMapOnly =
                 hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && reduceWork == null;
