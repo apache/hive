@@ -1670,7 +1670,9 @@
                  <int>1</int> 
                 </void> 
                 <void property="dirName"> 
-                 #### A masked pattern was here #### 
+                 <object class="org.apache.hadoop.fs.Path"> 
+                  #### A masked pattern was here #### 
+                 </object> 
                 </void> 
                 <void property="gatherStats"> 
                  <boolean>true</boolean> 

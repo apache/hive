@@ -502,8 +502,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     for (String path : paths) {
       inputPaths.add(new Path(path));
     }
-    
-    String tmpPath = context.getCtx().getExternalTmpFileURI(inputPaths.get(0).toUri());
+
+    Path tmpPath = context.getCtx().getExternalTmpPath(inputPaths.get(0).toUri());
     Path partitionFile = new Path(tmpPath, ".partitions");
     ShimLoader.getHadoopShims().setTotalOrderPartitionFile(job, partitionFile);
     PartitionKeySampler sampler = new PartitionKeySampler();

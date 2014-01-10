@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -94,7 +95,7 @@ public class SimpleFetchAggregation implements Transform {
       }
       GroupByOperator pGBY = (GroupByOperator) stack.get(stack.size() - 5);
 
-      String fileName = FS.getConf().getFinalDirName();
+      Path fileName = FS.getConf().getFinalDirName();
       TableDesc tsDesc = createIntermediateFS(pGBY, fileName);
 
       for (AggregationDesc aggregation : cGBY.getConf().getAggregators()) {
@@ -112,7 +113,7 @@ public class SimpleFetchAggregation implements Transform {
       return null;
     }
 
-    private TableDesc createIntermediateFS(Operator<?> parent, String fileName) {
+    private TableDesc createIntermediateFS(Operator<?> parent, Path fileName) {
       TableDesc tsDesc = PlanUtils.getIntermediateFileTableDesc(PlanUtils
           .getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol"));
 

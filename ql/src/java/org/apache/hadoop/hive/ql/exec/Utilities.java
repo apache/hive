@@ -554,6 +554,15 @@ public final class Utilities {
     }
   }
 
+  public static class PathDelegate extends PersistenceDelegate {
+    @Override
+    protected Expression instantiate(Object oldInstance, Encoder out) {
+      Path p = (Path)oldInstance;
+      Object[] args = {p.toString()};
+      return new Expression(p, p.getClass(), "new", args);
+    }
+  }
+
   public static void setMapRedWork(Configuration conf, MapredWork w, String hiveScratchDir) {
     setMapWork(conf, w.getMapWork(), hiveScratchDir, true);
     if (w.getReduceWork() != null) {
@@ -860,6 +869,7 @@ public final class Utilities {
     e.setPersistenceDelegate(org.datanucleus.store.types.backed.Map.class, new MapDelegate());
     e.setPersistenceDelegate(org.datanucleus.store.types.backed.List.class, new ListDelegate());
     e.setPersistenceDelegate(CommonToken.class, new CommonTokenDelegate());
+    e.setPersistenceDelegate(Path.class, new PathDelegate());
 
     e.writeObject(plan);
     e.close();
@@ -2315,7 +2325,7 @@ public final class Utilities {
       DynamicPartitionCtx dpCtx) throws HiveException {
 
     try {
-      Path loadPath = new Path(dpCtx.getRootPath());
+      Path loadPath = dpCtx.getRootPath();
       FileSystem fs = loadPath.getFileSystem(conf);
       int numDPCols = dpCtx.getNumDPCols();
       FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
@@ -3169,10 +3179,10 @@ public final class Utilities {
 
       if (op instanceof FileSinkOperator) {
         FileSinkDesc fdesc = ((FileSinkOperator) op).getConf();
-        String tempDir = fdesc.getDirName();
+        Path tempDir = fdesc.getDirName();
 
         if (tempDir != null) {
-          Path tempPath = Utilities.toTempPath(new Path(tempDir));
+          Path tempPath = Utilities.toTempPath(tempDir);
           FileSystem fs = tempPath.getFileSystem(conf);
           fs.mkdirs(tempPath);
         }
