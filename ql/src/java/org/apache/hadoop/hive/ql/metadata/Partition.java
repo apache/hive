@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -235,7 +236,19 @@ public class Partition implements Serializable {
     if (table.isPartitioned()) {
       return new Path(tPartition.getSd().getLocation());
     } else {
-      return new Path(table.getTTable().getSd().getLocation());
+
+      /**
+       * Table location string need to be constructed as URI first to decode
+       * the http encoded characters in the location path (because location is
+       * stored as URI in org.apache.hadoop.hive.ql.metadata.Table before saved
+       * to metastore database). This is not necessary for partition location.
+       */
+      try {
+        return new Path(new URI(table.getTTable().getSd().getLocation()));
+      } catch (URISyntaxException e) {
+        throw new RuntimeException("Invalid table path " +
+          table.getTTable().getSd().getLocation(), e);
+      }
     }
   }
 

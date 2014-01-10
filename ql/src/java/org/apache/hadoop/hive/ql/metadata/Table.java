@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -244,7 +245,11 @@ public class Table implements Serializable {
     if (location == null) {
       return null;
     }
-    return new Path(location);
+    try {
+      return new Path(new URI(location));
+    } catch (URISyntaxException e) {
+      throw new RuntimeException("Invalid table path " + location, e);
+    }
   }
 
   final public String getTableName() {
