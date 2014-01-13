@@ -333,8 +333,10 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     // do this for reconciling HBaseStorageHandler for use in HCatalog
     // check to see if this an input job or an outputjob
     if (this.configureInputJobProps) {
+      for (String k : jobProperties.keySet()) {
+        jobConf.set(k, jobProperties.get(k));
+      }
       try {
-        HBaseConfiguration.addHbaseResources(jobConf);
         addHBaseDelegationToken(jobConf);
       }//try
       catch (IOException e) {
@@ -342,8 +344,6 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       } //input job properties
     }
     else {
-      Configuration copyOfConf = new Configuration(jobConf);
-      HBaseConfiguration.addHbaseResources(copyOfConf);
       jobProperties.put(TableOutputFormat.OUTPUT_TABLE, tableName);
     } // output job properties
   }
