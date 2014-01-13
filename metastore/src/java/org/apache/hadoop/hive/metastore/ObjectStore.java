@@ -56,7 +56,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -127,13 +126,14 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringS
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
+
+import org.antlr.runtime.Token;
+
 
 /**
  * This class is the interface between the application logic and the database
@@ -2137,24 +2137,20 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private FilterParser getFilterParser(String filter) throws MetaException {
-    CharStream cs = new ANTLRNoCaseStringStream(filter);
-    FilterLexer lexer = new FilterLexer(cs);
-
-    CommonTokenStream tokens = new CommonTokenStream();
-    tokens.setTokenSource (lexer);
+    FilterLexer lexer = new FilterLexer(new ANTLRNoCaseStringStream(filter));
+    CommonTokenStream tokens = new CommonTokenStream(lexer);
 
     FilterParser parser = new FilterParser(tokens);
-
     try {
       parser.filter();
     } catch(RecognitionException re) {
-      throw new MetaException("Error parsing partition filter : " + re);
+      throw new MetaException("Error parsing partition filter; lexer error: "
+          + lexer.errorMsg + "; exception " + re);
     }
 
     if (lexer.errorMsg != null) {
       throw new MetaException("Error parsing partition filter : " + lexer.errorMsg);
     }
-
     return parser;
   }
 
@@ -5980,6 +5976,30 @@ public class ObjectStore implements RawStore, Configurable {
       if (!commited) {
         rollbackTransaction();
       }
+    }
+  }
+
+  /** Add this to code to debug lexer if needed. DebugTokenStream may also be added here. */
+  private void debugLexer(CommonTokenStream stream, FilterLexer lexer) {
+    try {
+      stream.fill();
+      List<?> tokens = stream.getTokens();
+      String report = "LEXER: tokens (" + ((tokens == null) ? "null" : tokens.size()) + "): ";
+      if (tokens != null) {
+        for (Object o : tokens) {
+          if (o == null || !(o instanceof Token)) {
+            report += "[not a token: " + o + "], ";
+          } else {
+            Token t = (Token)o;
+            report += "[at " + t.getCharPositionInLine() + ": "
+                + t.getType() + " " + t.getText() + "], ";
+          }
+        }
+      }
+      report += "; lexer error: " + lexer.errorMsg;
+      LOG.error(report);
+    } catch (Throwable t) {
+      LOG.error("LEXER: tokens (error)", t);
     }
   }
 }

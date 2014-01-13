@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.parser;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,8 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -451,14 +454,20 @@ public class ExpressionTree {
         return null;
       }
 
-      boolean isStringValue = value instanceof String;
-      if (!isStringValue && (!isIntegralSupported || !(value instanceof Long))) {
+      // There's no support for date cast in JDO. Let's convert it to string; the date
+      // columns have been excluded above, so it will either compare w/string or fail.
+      Object val = value;
+      if (value instanceof Date) {
+        val = HiveMetaStore.PARTITION_DATE_FORMAT.format((Date)value);
+      }
+      boolean isStringValue = val instanceof String;
+      if (!isStringValue && (!isIntegralSupported || !(val instanceof Long))) {
         filterBuilder.setError("Filtering is supported only on partition keys of type " +
             "string" + (isIntegralSupported ? ", or integral types" : ""));
         return null;
       }
 
-      return isStringValue ? (String) value : Long.toString((Long) value);
+      return isStringValue ? (String)val : Long.toString((Long)val);
     }
   }
 

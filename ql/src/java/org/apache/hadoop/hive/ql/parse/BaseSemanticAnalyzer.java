@@ -39,6 +39,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -1256,9 +1257,6 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  /** A fixed date format to be used for hive partition column values. */
-  private static final DateFormat partitionDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
   private static String normalizeDateCol(
       Object colValue, String originalColSpec) throws SemanticException {
     Date value;
@@ -1269,7 +1267,7 @@ public abstract class BaseSemanticAnalyzer {
     } else {
       throw new SemanticException("Unexpected date type " + colValue.getClass());
     }
-    return partitionDateFormat.format(value);
+    return HiveMetaStore.PARTITION_DATE_FORMAT.format(value);
   }
 
   protected Database getDatabase(String dbName) throws SemanticException {
