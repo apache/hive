@@ -24,11 +24,16 @@ import static org.junit.Assert.assertTrue;
 
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDecimalColGreaterEqualDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDecimalColLessDecimalScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDecimalScalarGreaterDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualLongScalar;
@@ -41,6 +46,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarGre
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarLessLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColumnBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColumnNotBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDecimalColEqualDecimalScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDecimalColEqualDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDecimalScalarEqualDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.junit.Assert;
@@ -783,5 +791,238 @@ public class TestVectorFilterExpressions {
     bcv.setVal(0, b, 0, 1);
     expr.evaluate(vrb);
     assertEquals(0, vrb.size);
+  }
+
+  /**
+   * This tests the template for Decimal Column-Scalar comparison filters,
+   * called FilterDecimalColumnCompareScalar.txt. Only equal is tested for
+   * multiple cases because the logic is the same for <, >, <=, >=, == and !=.
+   */
+  @Test
+  public void testFilterDecimalColEqualDecimalScalar() {
+    VectorizedRowBatch b = getVectorizedRowBatch1DecimalCol();
+    Decimal128 scalar = new Decimal128();
+    scalar.update("-3.30", (short) 2);
+    VectorExpression expr = new FilterDecimalColEqualDecimalScalar(0, scalar);
+    expr.evaluate(b);
+
+    // check that right row(s) are selected
+    assertTrue(b.selectedInUse);
+    assertEquals(1, b.selected[0]);
+    assertEquals(1, b.size);
+
+    // try again with a null value
+    b = getVectorizedRowBatch1DecimalCol();
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[1] = true;
+    expr.evaluate(b);
+
+    // verify that no rows were selected
+    assertEquals(0, b.size);
+
+    // try the repeating case
+    b = getVectorizedRowBatch1DecimalCol();
+    b.cols[0].isRepeating = true;
+    expr.evaluate(b);
+
+    // verify that no rows were selected
+    assertEquals(0, b.size);
+
+    // try the repeating null case
+    b = getVectorizedRowBatch1DecimalCol();
+    b.cols[0].isRepeating = true;
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[0] = true;
+    expr.evaluate(b);
+
+    // verify that no rows were selected
+    assertEquals(0, b.size);
+  }
+
+  /**
+   * This tests the template for Decimal Scalar-Column comparison filters,
+   * called FilterDecimalScalarCompareColumn.txt. Only equal is tested for multiple
+   * cases because the logic is the same for <, >, <=, >=, == and !=.
+   */
+  @Test
+  public void testFilterDecimalScalarEqualDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch1DecimalCol();
+    Decimal128 scalar = new Decimal128();
+    scalar.update("-3.30", (short) 2);
+    VectorExpression expr = new FilterDecimalScalarEqualDecimalColumn(scalar, 0);
+    expr.evaluate(b);
+
+    // check that right row(s) are selected
+    assertTrue(b.selectedInUse);
+    assertEquals(1, b.selected[0]);
+    assertEquals(1, b.size);
+
+    // try again with a null value
+    b = getVectorizedRowBatch1DecimalCol();
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[1] = true;
+    expr.evaluate(b);
+
+    // verify that no rows were selected
+    assertEquals(0, b.size);
+
+    // try the repeating case
+    b = getVectorizedRowBatch1DecimalCol();
+    b.cols[0].isRepeating = true;
+    expr.evaluate(b);
+
+    // verify that no rows were selected
+    assertEquals(0, b.size);
+
+    // try the repeating null case
+    b = getVectorizedRowBatch1DecimalCol();
+    b.cols[0].isRepeating = true;
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[0] = true;
+    expr.evaluate(b);
+
+    // verify that no rows were selected
+    assertEquals(0, b.size);
+  }
+
+  /**
+   * This tests the template for Decimal Column-Column comparison filters,
+   * called FilterDecimalColumnCompareColumn.txt. Only equal is tested for multiple
+   * cases because the logic is the same for <, >, <=, >=, == and !=.
+   */
+  @Test
+  public void testFilterDecimalColumnEqualDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch2DecimalCol();
+    VectorExpression expr = new FilterDecimalColEqualDecimalColumn(0, 1);
+    expr.evaluate(b);
+
+    // check that right row(s) are selected
+    assertTrue(b.selectedInUse);
+    assertEquals(1, b.selected[0]);
+    assertEquals(1, b.size);
+
+    // try again with a null value
+    b = getVectorizedRowBatch2DecimalCol();
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[1] = true;
+    expr.evaluate(b);
+
+    // verify that no rows were selected
+    assertEquals(0, b.size);
+
+    // try the repeating case
+    b = getVectorizedRowBatch2DecimalCol();
+    b.cols[0].isRepeating = true;
+    expr.evaluate(b);
+
+    // verify that no rows were selected
+    assertEquals(0, b.size);
+
+    // try the repeating null case
+    b = getVectorizedRowBatch2DecimalCol();
+    b.cols[0].isRepeating = true;
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[0] = true;
+    expr.evaluate(b);
+
+    // verify that no rows were selected
+    assertEquals(0, b.size);
+
+    // try nulls on both sides
+    b = getVectorizedRowBatch2DecimalCol();
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[0] = true;
+    b.cols[1].noNulls = false;
+    b.cols[1].isNull[2] = true;
+    expr.evaluate(b);
+    assertEquals(1, b.size);  // second of three was selected
+
+    // try repeating on both sides
+    b = getVectorizedRowBatch2DecimalCol();
+    b.cols[0].isRepeating = true;
+    b.cols[1].isRepeating = true;
+    expr.evaluate(b);
+
+    // verify that no rows were selected
+    assertEquals(0, b.size);
+  }
+
+  /**
+   * Spot check col < scalar for decimal.
+   */
+  @Test
+  public void testFilterDecimalColLessScalar() {
+    VectorizedRowBatch b = getVectorizedRowBatch1DecimalCol();
+    Decimal128 scalar = new Decimal128();
+    scalar.update("0", (short) 2);
+    VectorExpression expr = new FilterDecimalColLessDecimalScalar(0, scalar);
+    expr.evaluate(b);
+
+    // check that right row(s) are selected
+    assertTrue(b.selectedInUse);
+    assertEquals(1, b.selected[0]);
+    assertEquals(1, b.size);
+  }
+
+  /**
+   * Spot check scalar > col for decimal.
+   */
+  @Test
+  public void testFilterDecimalScalarGreaterThanColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch1DecimalCol();
+    Decimal128 scalar = new Decimal128();
+    scalar.update("0", (short) 2);
+    VectorExpression expr = new FilterDecimalScalarGreaterDecimalColumn(scalar, 0);
+    expr.evaluate(b);
+
+    // check that right row(s) are selected
+    assertTrue(b.selectedInUse);
+    assertEquals(1, b.selected[0]);
+    assertEquals(1, b.size);
+  }
+
+  /**
+   * Spot check col >= col for decimal.
+   */
+  @Test
+  public void testFilterDecimalColGreaterEqualCol() {
+    VectorizedRowBatch b = getVectorizedRowBatch2DecimalCol();
+    VectorExpression expr = new FilterDecimalColGreaterEqualDecimalColumn(0, 1);
+    expr.evaluate(b);
+
+    // check that right row(s) are selected
+    assertTrue(b.selectedInUse);
+    assertEquals(0, b.selected[0]);
+    assertEquals(1, b.selected[1]);
+    assertEquals(2, b.size);
+  }
+
+  private VectorizedRowBatch getVectorizedRowBatch1DecimalCol() {
+    VectorizedRowBatch b = new VectorizedRowBatch(1);
+    DecimalColumnVector v0;
+    b.cols[0] = v0 = new DecimalColumnVector(18, 2);
+    v0.vector[0].update("1.20", (short) 2);
+    v0.vector[1].update("-3.30", (short) 2);
+    v0.vector[2].update("0", (short) 2);
+
+    b.size = 3;
+    return b;
+  }
+
+  private VectorizedRowBatch getVectorizedRowBatch2DecimalCol() {
+    VectorizedRowBatch b = new VectorizedRowBatch(2);
+    DecimalColumnVector v0, v1;
+    b.cols[0] = v0 = new DecimalColumnVector(18, 2);
+    v0.vector[0].update("1.20", (short) 2);
+    v0.vector[1].update("-3.30", (short) 2);
+    v0.vector[2].update("0", (short) 2);
+
+    b.cols[1] = v1 = new DecimalColumnVector(18, 2);
+    v1.vector[0].update("-1", (short) 2);
+    v1.vector[1].update("-3.30", (short) 2);
+    v1.vector[2].update("10", (short) 2);
+
+    b.size = 3;
+    return b;
   }
 }
