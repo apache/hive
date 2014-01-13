@@ -24,6 +24,8 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_N
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -146,8 +148,14 @@ import com.facebook.fb303.fb_status;
  * TODO:pc remove application logic to a separate interface.
  */
 public class HiveMetaStore extends ThriftHiveMetastore {
-  public static final Log LOG = LogFactory.getLog(
-      HiveMetaStore.class);
+  public static final Log LOG = LogFactory.getLog(HiveMetaStore.class);
+
+  /** A fixed date format to be used for hive partition column values. */
+  public static final DateFormat PARTITION_DATE_FORMAT;
+  static {
+    PARTITION_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    PARTITION_DATE_FORMAT.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
+  }
 
   /**
    * default port on which to start the Hive server
