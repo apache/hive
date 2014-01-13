@@ -171,20 +171,28 @@ public class JsonSerDe implements SerDe {
       throw new IOException("Field name expected");
     }
     String fieldName = p.getText();
-    int fpos;
-    try {
-      fpos = s.getPosition(fieldName);
-    } catch (NullPointerException npe) {
+    Integer fpos = s.getPosition(fieldName);
+    if (fpos == null) {
       fpos = getPositionFromHiveInternalColumnName(fieldName);
-      LOG.debug("NPE finding position for field [{}] in schema [{}]", fieldName, s);
+      LOG.debug("NPE finding position for field [{}] in schema [{}],"
+        +" attempting to check if it is an internal column name like _col0", fieldName, s);
+      if (fpos == -1) {
+        skipValue(p);
+        return; // unknown field, we return. We'll continue from the next field onwards.
+      }
+      // If we get past this, then the column name did match the hive pattern for an internal
+      // column name, such as _col0, etc, so it *MUST* match the schema for the appropriate column.
+      // This means people can't use arbitrary column names such as _col0, and expect us to ignore it
+      // if we find it.
       if (!fieldName.equalsIgnoreCase(getHiveInternalColumnName(fpos))) {
         LOG.error("Hive internal column name {} and position "
           + "encoding {} for the column name are at odds", fieldName, fpos);
-        throw npe;
+        throw new IOException("Hive internal column name ("+ fieldName
+            + ") and position encoding (" + fpos
+            + ") for the column name are at odds");
       }
-      if (fpos == -1) {
-        return; // unknown field, we return.
-      }
+      // If we reached here, then we were successful at finding an alternate internal
+      // column mapping, and we're about to proceed.
     }
     HCatFieldSchema hcatFieldSchema = s.getFields().get(fpos);
     Object currField = extractCurrentField(p, null, hcatFieldSchema, false);
@@ -207,6 +215,27 @@ public class JsonSerDe implements SerDe {
     } else {
       return Integer.parseInt(m.group(1));
     }
+  }
+
+  /**
+   * Utility method to extract (and forget) the next value token from the JsonParser,
+   * as a whole. The reason this function gets called is to yank out the next value altogether,
+   * because it corresponds to a field name that we do not recognize, and thus, do not have
+   * a schema/type for. Thus, this field is to be ignored.
+   * @throws IOException
+   * @throws JsonParseException
+   */
+  private void skipValue(JsonParser p) throws JsonParseException, IOException {
+    JsonToken valueToken = p.nextToken();
+
+    if ((valueToken == JsonToken.START_ARRAY) || (valueToken == JsonToken.START_OBJECT)){
+      // if the currently read token is a beginning of an array or object, move stream forward
+      // skipping any child tokens till we're at the corresponding END_ARRAY or END_OBJECT token
+      p.skipChildren();
+    }
+    // At the end of this function, the stream should be pointing to the last token that
+    // corresponds to the value being skipped. This way, the next call to nextToken
+    // will advance it to the next field name.
   }
 
   /**
