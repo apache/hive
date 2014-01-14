@@ -23,7 +23,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -67,9 +66,9 @@ public class IndexMetadataChangeTask extends Task<IndexMetadataChangeWork>{
           return 1;
         }
 
-        Path url = new Path(part.getPartitionPath().toString());
-        FileSystem fs = url.getFileSystem(conf);
-        FileStatus fstat = fs.getFileStatus(url);
+        Path path = part.getDataLocation();
+        FileSystem fs = path.getFileSystem(conf);
+        FileStatus fstat = fs.getFileStatus(path);
 
         part.getParameters().put(HiveIndex.INDEX_TABLE_CREATETIME, Long.toString(fstat.getModificationTime()));
         db.alterPartition(tbl.getTableName(), part);

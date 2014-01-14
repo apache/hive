@@ -206,8 +206,8 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.LOAD_INTO_STORED_AS_DIR.getMsg());
     }
 
-    URI toURI = (ts.partHandle != null) ? ts.partHandle.getDataLocation()
-        : ts.tableHandle.getDataLocation();
+    URI toURI = ((ts.partHandle != null) ? ts.partHandle.getDataLocation()
+        : ts.tableHandle.getDataLocation()).toUri();
 
     List<FieldSchema> parts = ts.tableHandle.getPartitionKeys();
     if ((parts != null && parts.size() > 0)

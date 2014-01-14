@@ -1195,13 +1195,13 @@ public class Hive {
       Partition oldPart = getPartition(tbl, partSpec, false);
       Path oldPartPath = null;
       if(oldPart != null) {
-        oldPartPath = oldPart.getPartitionPath();
+        oldPartPath = oldPart.getDataLocation();
       }
 
       Path newPartPath = null;
 
       if (inheritTableSpecs) {
-        Path partPath = new Path(tbl.getDataLocation().getPath(),
+        Path partPath = new Path(tbl.getDataLocation(),
             Warehouse.makePartPath(partSpec));
         newPartPath = new Path(loadPath.toUri().getScheme(), loadPath.toUri().getAuthority(),
             partPath.toUri().getPath());
@@ -1227,7 +1227,7 @@ public class Hive {
       if (replace) {
         Hive.replaceFiles(loadPath, newPartPath, oldPartPath, getConf());
       } else {
-        FileSystem fs = FileSystem.get(tbl.getDataLocation(), getConf());
+        FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
         Hive.copyFiles(conf, loadPath, newPartPath, fs);
       }
 
@@ -2395,6 +2395,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private IMetaStoreClient createMetaStoreClient() throws MetaException {
 
     HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
+        @Override
         public HiveMetaHook getHook(
           org.apache.hadoop.hive.metastore.api.Table tbl)
           throws MetaException {

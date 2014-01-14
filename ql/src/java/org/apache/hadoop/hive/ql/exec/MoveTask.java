@@ -251,7 +251,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           ArrayList<FileStatus> files;
           FileSystem fs;
           try {
-            fs = FileSystem.get(table.getDataLocation(), conf);
+            fs = table.getDataLocation().getFileSystem(conf);
             dirs = fs.globStatus(tbd.getSourcePath());
             files = new ArrayList<FileStatus>();
             for (int i = 0; (dirs != null && i < dirs.length); i++) {
@@ -460,9 +460,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     boolean updateBucketCols = false;
     if (bucketCols != null) {
-      FileSystem fileSys = partn.getPartitionPath().getFileSystem(conf);
+      FileSystem fileSys = partn.getDataLocation().getFileSystem(conf);
       FileStatus[] fileStatus = HiveStatsUtils.getFileStatusRecurse(
-          partn.getPartitionPath(), 1, fileSys);
+          partn.getDataLocation(), 1, fileSys);
       // Verify the number of buckets equals the number of files
       // This will not hold for dynamic partitions where not every reducer produced a file for
       // those partitions.  In this case the table is not bucketed as Hive requires a files for

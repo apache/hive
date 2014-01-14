@@ -883,8 +883,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             }
             if (baseParts != null) {
               for (Partition p : baseParts) {
-                FileSystem fs = p.getPartitionPath().getFileSystem(db.getConf());
-                FileStatus fss = fs.getFileStatus(p.getPartitionPath());
+                FileSystem fs = p.getDataLocation().getFileSystem(db.getConf());
+                FileStatus fss = fs.getFileStatus(p.getDataLocation());
                 basePartTs.put(p.getSpec(), fss.getModificationTime());
               }
             }
@@ -1212,12 +1212,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (MetaException e) {
       throw new HiveException("Unable to get partition's directory", e);
     }
-    URI tableDir = tbl.getDataLocation();
+    Path tableDir = tbl.getDataLocation();
     if(tableDir == null) {
       throw new HiveException("Table has no location set");
     }
 
-    String standardLocation = (new Path(tableDir.toString(), subdir)).toString();
+    String standardLocation = (new Path(tableDir, subdir)).toString();
     if(ArchiveUtils.isArchived(p)) {
       return !getOriginalLocation(p).equals(standardLocation);
     } else {
@@ -1266,7 +1266,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if(ArchiveUtils.isArchived(p)) {
         originalDir = new Path(getOriginalLocation(p));
       } else {
-        originalDir = p.getPartitionPath();
+        originalDir = p.getDataLocation();
       }
     }
 
@@ -1418,8 +1418,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Record this change in the metastore
     try {
       for(Partition p: partitions) {
-        URI originalPartitionUri = ArchiveUtils.addSlash(p.getPartitionPath().toUri());
-        URI test = p.getPartitionPath().toUri();
+        URI originalPartitionUri = ArchiveUtils.addSlash(p.getDataLocation().toUri());
+        URI test = p.getDataLocation().toUri();
         URI harPartitionDir = harHelper.getHarUri(originalPartitionUri, shim);
         StringBuilder authority = new StringBuilder();
         if(harPartitionDir.getUserInfo() != null) {
@@ -3204,7 +3204,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (part != null) {
           part.setLocation(newLocation);
         } else {
-          tbl.setDataLocation(locUri);
+          tbl.setDataLocation(new Path(locUri));
         }
       } catch (URISyntaxException e) {
         throw new HiveException(e);
@@ -3661,7 +3661,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setProperty("comment", crtTbl.getComment());
     }
     if (crtTbl.getLocation() != null) {
-      tbl.setDataLocation(new Path(crtTbl.getLocation()).toUri());
+      tbl.setDataLocation(new Path(crtTbl.getLocation()));
     }
 
     if (crtTbl.getSkewedColNames() != null) {
@@ -3799,7 +3799,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setTableName(newTable.getTableName());
 
       if (crtTbl.getLocation() != null) {
-        tbl.setDataLocation(new Path(crtTbl.getLocation()).toUri());
+        tbl.setDataLocation(new Path(crtTbl.getLocation()));
       } else {
         tbl.unsetDataLocation();
       }
@@ -3953,14 +3953,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (partSpec == null) {
       if (table.isPartitioned()) {
         for (Partition partition : db.getPartitions(table)) {
-          locations.add(partition.getPartitionPath());
+          locations.add(partition.getDataLocation());
         }
       } else {
         locations.add(table.getPath());
       }
     } else {
       for (Partition partition : db.getPartitionsByNames(table, partSpec)) {
-        locations.add(partition.getPartitionPath());
+        locations.add(partition.getDataLocation());
       }
     }
     return locations;

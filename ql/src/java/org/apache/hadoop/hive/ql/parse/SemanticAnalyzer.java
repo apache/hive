@@ -5418,7 +5418,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       Path tabPath = dest_tab.getPath();
-      Path partPath = dest_part.getPartitionPath();
+      Path partPath = dest_part.getDataLocation();
 
       // if the table is in a different dfs than the partition,
       // replace the partition's dfs with the table's dfs.

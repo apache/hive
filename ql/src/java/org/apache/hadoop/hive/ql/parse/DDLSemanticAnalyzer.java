@@ -758,7 +758,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           Partition part = db.getPartition(table, partSpec, false);
 
           Path tabPath = table.getPath();
-          Path partPath = part.getPartitionPath();
+          Path partPath = part.getDataLocation();
 
           // if the table is in a different dfs than the partition,
           // replace the partition's dfs with the table's dfs.
@@ -1402,7 +1402,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           isArchived = ArchiveUtils.isArchived(part);
 
           Path tabPath = tblObj.getPath();
-          Path partPath = part.getPartitionPath();
+          Path partPath = part.getDataLocation();
 
           // if the table is in a different dfs than the partition,
           // replace the partition's dfs with the table's dfs.

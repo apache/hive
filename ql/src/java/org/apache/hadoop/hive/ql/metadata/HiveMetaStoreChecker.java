@@ -254,7 +254,7 @@ public class HiveMetaStoreChecker {
         // most likely the user specified an invalid partition
         continue;
       }
-      Path partPath = partition.getPartitionPath();
+      Path partPath = partition.getDataLocation();
       fs = partPath.getFileSystem(conf);
       if (!fs.exists(partPath)) {
         PartitionResult pr = new PartitionResult();
