@@ -33,6 +33,7 @@ inputformat
 'org.apache.hadoop.mapred.TextInputFormat'
 outputformat
 'org.apache.hadoop.hive.ql.io.HiveNullValueSequenceFileOutputFormat'
+#### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: -- this is a dummy table used for controlling how the input file
 -- for TotalOrderPartitioner is created
@@ -44,6 +45,7 @@ inputformat
 'org.apache.hadoop.mapred.TextInputFormat'
 outputformat
 'org.apache.hadoop.hive.ql.io.HiveNullValueSequenceFileOutputFormat'
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@hbpartition
 PREHOOK: query: -- this should produce one file, but we do not
