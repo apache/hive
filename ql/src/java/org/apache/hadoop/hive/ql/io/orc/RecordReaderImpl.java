@@ -1018,6 +1018,23 @@ class RecordReaderImpl implements RecordReader {
     }
 
     @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      LongColumnVector result = null;
+      if (previousVector == null) {
+        result = new LongColumnVector();
+      } else {
+        result = (LongColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      // Read value entries based on isNull entries
+      reader.nextVector(result, batchSize);
+      return result;
+    }
+
+    @Override
     void skipRows(long items) throws IOException {
       reader.skip(countNonNulls(items));
     }
