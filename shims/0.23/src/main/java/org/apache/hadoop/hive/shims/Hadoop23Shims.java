@@ -103,7 +103,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public org.apache.hadoop.mapreduce.TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable) {
-    return new TaskAttemptContextImpl(conf, new TaskAttemptID()) {
+    TaskAttemptID taskAttemptId = TaskAttemptID.forName(conf.get(MRJobConfig.TASK_ATTEMPT_ID));
+    if (taskAttemptId == null) {
+      // If the caller is not within a mapper/reducer (if reading from the table via CliDriver),
+      // then TaskAttemptID.forname() may return NULL. Fall back to using default constructor.
+      taskAttemptId = new TaskAttemptID();
+    }
+    return new TaskAttemptContextImpl(conf, taskAttemptId) {
       @Override
       public void progress() {
         progressable.progress();
