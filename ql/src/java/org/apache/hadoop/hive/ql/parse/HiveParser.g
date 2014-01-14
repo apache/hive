@@ -385,7 +385,7 @@ import java.util.HashMap;
     xlateMap.put("KW_ALTER", "ALTER");
     xlateMap.put("KW_DESCRIBE", "DESCRIBE");
     xlateMap.put("KW_DROP", "DROP");
-    xlateMap.put("KW_REANME", "REANME");
+    xlateMap.put("KW_RENAME", "RENAME");
     xlateMap.put("KW_TO", "TO");
     xlateMap.put("KW_COMMENT", "COMMENT");
     xlateMap.put("KW_BOOLEAN", "BOOLEAN");
