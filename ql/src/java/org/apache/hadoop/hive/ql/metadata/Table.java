@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -321,8 +322,22 @@ public class Table implements Serializable {
           }
           c = getStorageHandler().getOutputFormatClass();
         } else {
-          c = Class.forName(className, true,
-            JavaUtils.getClassLoader());
+            // if HivePassThroughOutputFormat
+            if (className.equals(
+                 HivePassThroughOutputFormat.HIVE_PASSTHROUGH_OF_CLASSNAME)) {
+              if (getStorageHandler() != null) {
+                // get the storage handler real output format class
+                c = getStorageHandler().getOutputFormatClass();
+              }
+              else {
+                //should not happen
+                return null;
+              }
+            }
+            else {
+              c = Class.forName(className, true,
+                  JavaUtils.getClassLoader());
+            }
         }
         if (!HiveOutputFormat.class.isAssignableFrom(c)) {
           if (getStorageHandler() != null) {
