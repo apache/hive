@@ -165,8 +165,8 @@ public final class IndexUtils {
       Partition part) throws HiveException {
     LOG.info("checking index staleness...");
     try {
-      FileSystem partFs = part.getPartitionPath().getFileSystem(hive.getConf());
-      FileStatus partFss = partFs.getFileStatus(part.getPartitionPath());
+      FileSystem partFs = part.getDataLocation().getFileSystem(hive.getConf());
+      FileStatus partFss = partFs.getFileStatus(part.getDataLocation());
       String ts = index.getParameters().get(part.getSpec().toString());
       if (ts == null) {
         return false;

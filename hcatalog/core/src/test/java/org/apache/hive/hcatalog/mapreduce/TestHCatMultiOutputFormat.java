@@ -381,13 +381,13 @@ public class TestHCatMultiOutputFormat {
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
       List<Path> partLocs = new ArrayList<Path>();
       for (Partition part : partitions) {
-        partLocs.add(part.getPartitionPath());
+        partLocs.add(part.getDataLocation());
         partDesc.add(Utilities.getPartitionDesc(part));
       }
       work = new FetchWork(partLocs, partDesc, Utilities.getTableDesc(tbl));
       work.setLimit(100);
     } else {
-      work = new FetchWork(new Path(tbl.getDataLocation()), Utilities.getTableDesc(tbl));
+      work = new FetchWork(tbl.getDataLocation(), Utilities.getTableDesc(tbl));
     }
     FetchTask task = new FetchTask();
     task.setWork(work);

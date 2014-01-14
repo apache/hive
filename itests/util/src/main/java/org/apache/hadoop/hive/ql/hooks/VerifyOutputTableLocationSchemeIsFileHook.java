@@ -22,10 +22,11 @@ import org.junit.Assert;
 
 public class VerifyOutputTableLocationSchemeIsFileHook implements ExecuteWithHookContext {
 
+  @Override
   public void run(HookContext hookContext) {
     for (WriteEntity output : hookContext.getOutputs()) {
       if (output.getType() == WriteEntity.Type.TABLE) {
-        String scheme = output.getTable().getDataLocation().getScheme();
+        String scheme = output.getTable().getDataLocation().toUri().getScheme();
         Assert.assertTrue(output.getTable().getTableName() + " has a location which has a " +
               "scheme other than file: " + scheme, scheme.equals("file"));
       }

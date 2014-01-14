@@ -399,7 +399,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (tableDesc.getLocation() != null) { // IMPORT statement specified
                                                // location
           if (!table.getDataLocation()
-              .equals(new URI(tableDesc.getLocation()))) {
+              .equals(new Path(tableDesc.getLocation()))) {
             throw new SemanticException(
                 ErrorMsg.INCOMPATIBLE_SCHEMA.getMsg(" Location does not match"));
           }

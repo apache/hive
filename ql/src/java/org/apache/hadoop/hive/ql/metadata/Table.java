@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,7 +35,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -84,7 +81,7 @@ public class Table implements Serializable {
   private Deserializer deserializer;
   private Class<? extends HiveOutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
-  private URI uri;
+  private Path path;
   private HiveStorageHandler storageHandler;
 
   /**
@@ -245,25 +242,18 @@ public class Table implements Serializable {
     if (location == null) {
       return null;
     }
-    try {
-      return new Path(new URI(location));
-    } catch (URISyntaxException e) {
-      throw new RuntimeException("Invalid table path " + location, e);
-    }
+    return new Path(location);
   }
 
   final public String getTableName() {
     return tTable.getTableName();
   }
 
-  final public URI getDataLocation() {
-    if (uri == null) {
-      Path path = getPath();
-      if (path != null) {
-        uri = path.toUri();
-      }
+  final public Path getDataLocation() {
+    if (path == null) {
+      path = getPath();
     }
-    return uri;
+    return path;
   }
 
   final public Deserializer getDeserializer() {
@@ -504,13 +494,13 @@ public class Table implements Serializable {
     return bcols.get(0);
   }
 
-  public void setDataLocation(URI uri) {
-    this.uri = uri;
-    tTable.getSd().setLocation(uri.toString());
+  public void setDataLocation(Path path) {
+    this.path = path;
+    tTable.getSd().setLocation(path.toString());
   }
 
   public void unsetDataLocation() {
-    this.uri = null;
+    this.path = null;
     tTable.getSd().unsetLocation();
   }
 
@@ -641,7 +631,7 @@ public class Table implements Serializable {
    *          Source directory
    */
   protected void replaceFiles(Path srcf) throws HiveException {
-    Path tableDest =  new Path(getDataLocation().getPath());
+    Path tableDest = getPath();
     Hive.replaceFiles(srcf, tableDest, tableDest, Hive.get().getConf());
   }
 
@@ -654,8 +644,8 @@ public class Table implements Serializable {
   protected void copyFiles(Path srcf) throws HiveException {
     FileSystem fs;
     try {
-      fs = FileSystem.get(getDataLocation(), Hive.get().getConf());
-      Hive.copyFiles(Hive.get().getConf(), srcf, new Path(getDataLocation().getPath()), fs);
+      fs = getDataLocation().getFileSystem(Hive.get().getConf());
+      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }

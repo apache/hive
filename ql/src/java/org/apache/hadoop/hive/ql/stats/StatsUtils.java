@@ -305,7 +305,7 @@ public class StatsUtils {
   public static List<Long> getFileSizeForPartitions(HiveConf conf, List<Partition> parts) {
     List<Long> sizes = Lists.newArrayList();
     for (Partition part : parts) {
-      Path path = part.getPartitionPath();
+      Path path = part.getDataLocation();
       long size = 0;
       try {
         FileSystem fs = path.getFileSystem(conf);

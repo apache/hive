@@ -49,6 +49,7 @@ import org.apache.hcatalog.mapreduce.HCatStorageHandler;
 /**
  * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.SemanticAnalysis.CreateTableHook} instead
  */
+@Deprecated
 final class CreateTableHook extends HCatSemanticAnalyzerBase {
 
   private String tableName;
@@ -216,7 +217,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
       try {
         Table table = context.getHive().newTable(desc.getTableName());
         if (desc.getLocation() != null) {
-          table.setDataLocation(new Path(desc.getLocation()).toUri());
+          table.setDataLocation(new Path(desc.getLocation()));
         }
         if (desc.getStorageHandler() != null) {
           table.setProperty(

@@ -174,7 +174,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     if ((part == null) || (part.getLocation() == null)) {
       authorize(table, readRequiredPriv, writeRequiredPriv);
     } else {
-      authorize(part.getPartitionPath(), readRequiredPriv, writeRequiredPriv);
+      authorize(part.getDataLocation(), readRequiredPriv, writeRequiredPriv);
     }
   }
 

@@ -242,7 +242,7 @@ public class SimpleFetchOptimizer implements Transform {
 
       for (Partition partition : partsList.getNotDeniedPartns()) {
         inputs.add(new ReadEntity(partition));
-        listP.add(partition.getPartitionPath());
+        listP.add(partition.getDataLocation());
         partP.add(Utilities.getPartitionDesc(partition));
       }
       Table sourceTable = partsList.getSourceTable();
@@ -296,7 +296,7 @@ public class SimpleFetchOptimizer implements Transform {
       }
       long total = 0;
       for (Partition partition : partsList.getNotDeniedPartns()) {
-        Path path = partition.getPartitionPath();
+        Path path = partition.getDataLocation();
         total += getFileLength(jobConf, path, partition.getInputFormatClass());
       }
       return total;

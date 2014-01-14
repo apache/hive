@@ -208,7 +208,7 @@ public class HdfsAuthorizationProvider extends HiveAuthorizationProviderBase {
     if (part == null || part.getLocation() == null) {
       authorize(table, readRequiredPriv, writeRequiredPriv);
     } else {
-      authorize(part.getPartitionPath(), readRequiredPriv, writeRequiredPriv);
+      authorize(part.getDataLocation(), readRequiredPriv, writeRequiredPriv);
     }
   }
 

@@ -319,9 +319,8 @@ public class SamplePruner implements Transform {
       throws SemanticException {
 
     try {
-      FileSystem fs = FileSystem.get(part.getPartitionPath().toUri(), Hive.get()
-          .getConf());
-      String pathPattern = part.getPartitionPath().toString() + "/*";
+      FileSystem fs = part.getDataLocation().getFileSystem(Hive.get().getConf());
+      String pathPattern = part.getDataLocation().toString() + "/*";
       AddPathReturnStatus ret = addPath(fs, pathPattern, sizeLimit, fileLimit, retPathList);
       if (ret == null) {
         return LimitPruneRetStatus.NotQualify;
