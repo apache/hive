@@ -380,23 +380,22 @@ public final class HiveFileFormatUtils {
     }
 
     if (part == null) {
-      String dirStr = dir.toString();
-      int dirPathIndex = dirPath.lastIndexOf(Path.SEPARATOR);
-      int dirStrIndex = dirStr.lastIndexOf(Path.SEPARATOR);
-      while (dirPathIndex >= 0 && dirStrIndex >= 0) {
-        dirStr = dirStr.substring(0, dirStrIndex);
-        dirPath = dirPath.substring(0, dirPathIndex);
-        //first try full match
-        part = pathToPartitionInfo.get(dirStr);
+      Path curPath = new Path(dir.toUri().getPath()).getParent();
+      dir = dir.getParent();
+      while (dir != null) {
+
+        // first try full match
+        part = pathToPartitionInfo.get(dir.toString());
         if (part == null) {
-          // LOG.warn("exact match not found, try ripping input path's theme and authority");
-          part = pathToPartitionInfo.get(dirPath);
+
+          // exact match not found, try ripping input path's scheme and authority
+          part = pathToPartitionInfo.get(curPath.toString());
         }
         if (part != null) {
           break;
         }
-        dirPathIndex = dirPath.lastIndexOf(Path.SEPARATOR);
-        dirStrIndex = dirStr.lastIndexOf(Path.SEPARATOR);
+        dir = dir.getParent();
+        curPath = curPath.getParent();
       }
     }
     return part;
