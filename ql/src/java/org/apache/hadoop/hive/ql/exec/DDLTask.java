@@ -22,7 +22,6 @@ import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.util.StringUtils.stringifyException;
 
 import java.io.BufferedWriter;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -763,7 +762,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int roleDDL(RoleDDLDesc roleDDLDesc) {
     RoleDDLDesc.RoleOperation operation = roleDDLDesc.getOperation();
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     try {
       if (operation.equals(RoleDDLDesc.RoleOperation.CREATE_ROLE)) {
         db.createRole(roleDDLDesc.getName(), roleDDLDesc.getRoleOwnerName());
@@ -780,9 +779,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             outStream.writeBytes(role.getRoleName());
             outStream.write(terminator);
           }
-          ((FSDataOutputStream) outStream).close();
+          outStream.close();
           outStream = null;
         }
+      } else if (operation.equals(RoleDDLDesc.RoleOperation.SHOW_ROLES)) {
+        List<String> roleNames = db.getAllRoleNames();
+        Path resFile = new Path(roleDDLDesc.getResFile());
+        FileSystem fs = resFile.getFileSystem(conf);
+        outStream = fs.create(resFile);
+        for (String roleName : roleNames) {
+          outStream.writeBytes(roleName);
+          outStream.write(terminator);
+        }
+        outStream.close();
+        outStream = null;
       } else {
         throw new HiveException("Unkown role operation "
             + operation.getOperationName());
@@ -1863,7 +1873,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     String tableName = showCreateTbl.getTableName();
     Table tbl = db.getTable(tableName, false);
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     List<String> duplicateProps = new ArrayList<String>();
     try {
       Path resFile = new Path(showCreateTbl.getResFile());
@@ -1873,7 +1883,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (tbl.isView()) {
         String createTab_stmt = "CREATE VIEW `" + tableName + "` AS " + tbl.getViewExpandedText();
         outStream.writeBytes(createTab_stmt.toString());
-        ((FSDataOutputStream) outStream).close();
+        outStream.close();
         outStream = null;
         return 0;
       }
@@ -2060,7 +2070,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       createTab_stmt.add(TBL_PROPERTIES, tbl_properties);
 
       outStream.writeBytes(createTab_stmt.render());
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
     } catch (FileNotFoundException e) {
       LOG.info("show create table: " + stringifyException(e));
@@ -2099,7 +2109,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     indexes = db.getIndexes(tbl.getDbName(), tbl.getTableName(), (short) -1);
 
     // write the results in the file
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     try {
       Path resFile = new Path(showIndexes.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
@@ -2117,7 +2127,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(index));
       }
 
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
 
     } catch (FileNotFoundException e) {
@@ -2233,7 +2243,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // write the results in the file
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     try {
       Path resFile = new Path(showCols.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
@@ -2243,7 +2253,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       cols.addAll(table.getPartCols());
       outStream.writeBytes(
           MetaDataFormatUtils.getAllColumnsInformation(cols, false));
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
     } catch (IOException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
@@ -2274,7 +2284,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // write the results in the file
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     try {
       Path resFile = new Path(showFuncs.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
@@ -2289,7 +2299,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.writeBytes(iterFuncs.next());
         outStream.write(terminator);
       }
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
     } catch (FileNotFoundException e) {
       LOG.warn("show function: " + stringifyException(e));
@@ -2323,7 +2333,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // write the results in the file
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     try {
       Path resFile = new Path(showLocks.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
@@ -2381,7 +2391,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         outStream.write(terminator);
       }
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
     } catch (FileNotFoundException e) {
       LOG.warn("show function: " + stringifyException(e));
@@ -2583,7 +2593,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String funcName = descFunc.getName();
 
     // write the results in the file
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     try {
       Path resFile = new Path(descFunc.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
@@ -2622,7 +2632,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       outStream.write(terminator);
 
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
     } catch (FileNotFoundException e) {
       LOG.warn("describe function: " + stringifyException(e));
