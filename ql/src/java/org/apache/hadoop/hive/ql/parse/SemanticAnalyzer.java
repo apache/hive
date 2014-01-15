@@ -967,10 +967,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_UNION:
-        // currently, we dont support subq1 union subq2 - the user has to
-        // explicitly say:
-        // select * from (subq1 union subq2) subqalias
         if (!qbp.getIsSubQ()) {
+          // this shouldn't happen. The parser should have converted the union to be
+          // contained in a subquery. Just in case, we keep the error as a fallback.
           throw new SemanticException(generateErrorMessage(ast,
               ErrorMsg.UNION_NOTIN_SUBQ.getMsg()));
         }
