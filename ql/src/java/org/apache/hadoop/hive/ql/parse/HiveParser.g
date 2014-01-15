@@ -556,6 +556,13 @@ import java.util.HashMap;
     }
     return msg;
   }
+  
+  // counter to generate unique union aliases
+  private int aliasCounter;
+  
+  private String generateUnionAlias() {
+    return "_u" + (++aliasCounter);
+  }
 }
 
 @rulecatch {
@@ -581,7 +588,7 @@ explainStatement
 execStatement
 @init { msgs.push("statement"); }
 @after { msgs.pop(); }
-    : queryStatementExpression
+    : queryStatementExpression[true]
     | loadStatement
     | exportStatement
     | importStatement
@@ -761,7 +768,7 @@ createTableStatement
          tableFileFormat?
          tableLocation?
          tablePropertiesPrefixed?
-         (KW_AS selectStatement)?
+         (KW_AS selectStatement[true])?
       )
     -> ^(TOK_CREATETABLE $name $ext? ifNotExists?
          ^(TOK_LIKETABLE $likeName?)
@@ -905,7 +912,7 @@ alterViewStatementSuffix
         -> ^(TOK_ALTERVIEW_ADDPARTS alterStatementSuffixAddPartitions)
     | alterStatementSuffixDropPartitions
         -> ^(TOK_ALTERVIEW_DROPPARTS alterStatementSuffixDropPartitions)
-    | name=tableName KW_AS selectStatement
+    | name=tableName KW_AS selectStatement[true]
         -> ^(TOK_ALTERVIEW_AS $name selectStatement)
     ;
 
@@ -1475,7 +1482,7 @@ createViewStatement
         (LPAREN columnNameCommentList RPAREN)? tableComment? viewPartition?
         tablePropertiesPrefixed?
         KW_AS
-        selectStatement
+        selectStatement[true]
     -> ^(TOK_CREATEVIEW $name orReplace?
          ifNotExists?
          columnNameCommentList?
@@ -1866,45 +1873,75 @@ unionType
     : KW_UNIONTYPE LESSTHAN colTypeList GREATERTHAN -> ^(TOK_UNIONTYPE colTypeList)
     ;
 
-queryOperator
-@init { msgs.push("query operator"); }
+setOperator
+@init { msgs.push("set operator"); }
 @after { msgs.pop(); }
     : KW_UNION KW_ALL -> ^(TOK_UNION)
     ;
 
-// select statement select ... from ... where ... group by ... order by ...
-queryStatementExpression
-    : queryStatement (queryOperator^ queryStatement)*
+queryStatementExpression[boolean topLevel]
+    :
+    fromStatement[topLevel]
+    | regularBody[topLevel]
     ;
+    
+fromStatement[boolean topLevel]
+: (singleFromStatement  -> singleFromStatement)
+	(u=setOperator r=singleFromStatement
+	  -> ^($u {$fromStatement.tree} $r)
+	)*
+	 -> {u != null && topLevel}? ^(TOK_QUERY
+	       ^(TOK_FROM
+	         ^(TOK_SUBQUERY
+	           {$fromStatement.tree}
+	            {adaptor.create(Identifier, generateUnionAlias())}
+	           )
+	        )
+	       ^(TOK_INSERT 
+	          ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+	          ^(TOK_SELECT ^(TOK_SELEXPR TOK_ALLCOLREF))
+	        )
+	      )
+    -> {$fromStatement.tree}
+	;
 
-queryStatement
+
+singleFromStatement
     :
     fromClause
     ( b+=body )+ -> ^(TOK_QUERY fromClause body+)
-    | regular_body
     ;
 
-regular_body
+regularBody[boolean topLevel]
    :
-   insertClause
-   selectClause
-   fromClause
-   whereClause?
-   groupByClause?
-   havingClause?
-   orderByClause?
-   clusterByClause?
-   distributeByClause?
-   sortByClause?
-   window_clause?
-   limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT insertClause
-                     selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? window_clause? limitClause?))
+   i=insertClause
+   s=selectStatement[topLevel]
+     {$s.tree.getChild(1).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
    |
-   selectStatement
+   selectStatement[topLevel]
    ;
 
-selectStatement
+ selectStatement[boolean topLevel]
+ : (singleSelectStatement -> singleSelectStatement)
+   (u=setOperator b=singleSelectStatement
+       -> ^($u {$selectStatement.tree} $b)
+   )*
+   -> {u != null && topLevel}? ^(TOK_QUERY
+         ^(TOK_FROM
+           ^(TOK_SUBQUERY
+             {$selectStatement.tree}
+              {adaptor.create(Identifier, generateUnionAlias())}
+             )
+          )
+         ^(TOK_INSERT 
+            ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+            ^(TOK_SELECT ^(TOK_SELEXPR TOK_ALLCOLREF))
+          )
+        )
+    -> {$selectStatement.tree}
+ ;
+
+singleSelectStatement
    :
    selectClause
    fromClause
@@ -1920,7 +1957,6 @@ selectStatement
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? window_clause? limitClause?))
    ;
-
 
 body
    :

@@ -373,7 +373,7 @@ precedenceEqualOperator
 
 subQueryExpression 
     : 
-    LPAREN! selectStatement RPAREN!     
+    LPAREN! selectStatement[true] RPAREN!     
  ;
  
 precedenceEqualExpression
