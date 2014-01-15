@@ -445,13 +445,13 @@ public class TDoubleColumn implements org.apache.thrift.TBase<TDoubleColumn, TDo
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list150 = iprot.readListBegin();
-                struct.values = new ArrayList<Double>(_list150.size);
-                for (int _i151 = 0; _i151 < _list150.size; ++_i151)
+                org.apache.thrift.protocol.TList _list94 = iprot.readListBegin();
+                struct.values = new ArrayList<Double>(_list94.size);
+                for (int _i95 = 0; _i95 < _list94.size; ++_i95)
                 {
-                  double _elem152; // required
-                  _elem152 = iprot.readDouble();
-                  struct.values.add(_elem152);
+                  double _elem96; // required
+                  _elem96 = iprot.readDouble();
+                  struct.values.add(_elem96);
                 }
                 iprot.readListEnd();
               }
@@ -485,9 +485,9 @@ public class TDoubleColumn implements org.apache.thrift.TBase<TDoubleColumn, TDo
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.DOUBLE, struct.values.size()));
-          for (double _iter153 : struct.values)
+          for (double _iter97 : struct.values)
           {
-            oprot.writeDouble(_iter153);
+            oprot.writeDouble(_iter97);
           }
           oprot.writeListEnd();
         }
@@ -517,9 +517,9 @@ public class TDoubleColumn implements org.apache.thrift.TBase<TDoubleColumn, TDo
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.values.size());
-        for (double _iter154 : struct.values)
+        for (double _iter98 : struct.values)
         {
-          oprot.writeDouble(_iter154);
+          oprot.writeDouble(_iter98);
         }
       }
       oprot.writeBinary(struct.nulls);
@@ -529,13 +529,13 @@ public class TDoubleColumn implements org.apache.thrift.TBase<TDoubleColumn, TDo
     public void read(org.apache.thrift.protocol.TProtocol prot, TDoubleColumn struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list155 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.DOUBLE, iprot.readI32());
-        struct.values = new ArrayList<Double>(_list155.size);
-        for (int _i156 = 0; _i156 < _list155.size; ++_i156)
+        org.apache.thrift.protocol.TList _list99 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.DOUBLE, iprot.readI32());
+        struct.values = new ArrayList<Double>(_list99.size);
+        for (int _i100 = 0; _i100 < _list99.size; ++_i100)
         {
-          double _elem157; // required
-          _elem157 = iprot.readDouble();
-          struct.values.add(_elem157);
+          double _elem101; // required
+          _elem101 = iprot.readDouble();
+          struct.values.add(_elem101);
         }
       }
       struct.setValuesIsSet(true);

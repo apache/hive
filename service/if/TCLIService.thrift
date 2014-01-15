@@ -307,16 +307,6 @@ struct TStringValue {
   1: optional string value
 }
 
-union TColumn {
-  1: list<TBoolValue> boolColumn
-  2: list<TByteValue> byteColumn
-  3: list<TI16Value> i16Column
-  4: list<TI32Value> i32Column
-  5: list<TI64Value> i64Column
-  6: list<TDoubleValue> doubleColumn
-  7: list<TStringValue> stringColumn
-}
-
 // A single column value in a result set.
 // Note that Hive's type system is richer than Thrift's,
 // so in some cases we have to map multiple Hive types

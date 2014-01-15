@@ -445,13 +445,13 @@ public class TByteColumn implements org.apache.thrift.TBase<TByteColumn, TByteCo
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list118 = iprot.readListBegin();
-                struct.values = new ArrayList<Byte>(_list118.size);
-                for (int _i119 = 0; _i119 < _list118.size; ++_i119)
+                org.apache.thrift.protocol.TList _list62 = iprot.readListBegin();
+                struct.values = new ArrayList<Byte>(_list62.size);
+                for (int _i63 = 0; _i63 < _list62.size; ++_i63)
                 {
-                  byte _elem120; // required
-                  _elem120 = iprot.readByte();
-                  struct.values.add(_elem120);
+                  byte _elem64; // required
+                  _elem64 = iprot.readByte();
+                  struct.values.add(_elem64);
                 }
                 iprot.readListEnd();
               }
@@ -485,9 +485,9 @@ public class TByteColumn implements org.apache.thrift.TBase<TByteColumn, TByteCo
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.BYTE, struct.values.size()));
-          for (byte _iter121 : struct.values)
+          for (byte _iter65 : struct.values)
           {
-            oprot.writeByte(_iter121);
+            oprot.writeByte(_iter65);
           }
           oprot.writeListEnd();
         }
@@ -517,9 +517,9 @@ public class TByteColumn implements org.apache.thrift.TBase<TByteColumn, TByteCo
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.values.size());
-        for (byte _iter122 : struct.values)
+        for (byte _iter66 : struct.values)
         {
-          oprot.writeByte(_iter122);
+          oprot.writeByte(_iter66);
         }
       }
       oprot.writeBinary(struct.nulls);
@@ -529,13 +529,13 @@ public class TByteColumn implements org.apache.thrift.TBase<TByteColumn, TByteCo
     public void read(org.apache.thrift.protocol.TProtocol prot, TByteColumn struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list123 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.BYTE, iprot.readI32());
-        struct.values = new ArrayList<Byte>(_list123.size);
-        for (int _i124 = 0; _i124 < _list123.size; ++_i124)
+        org.apache.thrift.protocol.TList _list67 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.BYTE, iprot.readI32());
+        struct.values = new ArrayList<Byte>(_list67.size);
+        for (int _i68 = 0; _i68 < _list67.size; ++_i68)
         {
-          byte _elem125; // required
-          _elem125 = iprot.readByte();
-          struct.values.add(_elem125);
+          byte _elem69; // required
+          _elem69 = iprot.readByte();
+          struct.values.add(_elem69);
         }
       }
       struct.setValuesIsSet(true);

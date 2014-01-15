@@ -445,13 +445,13 @@ public class TStringColumn implements org.apache.thrift.TBase<TStringColumn, TSt
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list158 = iprot.readListBegin();
-                struct.values = new ArrayList<String>(_list158.size);
-                for (int _i159 = 0; _i159 < _list158.size; ++_i159)
+                org.apache.thrift.protocol.TList _list102 = iprot.readListBegin();
+                struct.values = new ArrayList<String>(_list102.size);
+                for (int _i103 = 0; _i103 < _list102.size; ++_i103)
                 {
-                  String _elem160; // required
-                  _elem160 = iprot.readString();
-                  struct.values.add(_elem160);
+                  String _elem104; // required
+                  _elem104 = iprot.readString();
+                  struct.values.add(_elem104);
                 }
                 iprot.readListEnd();
               }
@@ -485,9 +485,9 @@ public class TStringColumn implements org.apache.thrift.TBase<TStringColumn, TSt
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.values.size()));
-          for (String _iter161 : struct.values)
+          for (String _iter105 : struct.values)
           {
-            oprot.writeString(_iter161);
+            oprot.writeString(_iter105);
           }
           oprot.writeListEnd();
         }
@@ -517,9 +517,9 @@ public class TStringColumn implements org.apache.thrift.TBase<TStringColumn, TSt
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.values.size());
-        for (String _iter162 : struct.values)
+        for (String _iter106 : struct.values)
         {
-          oprot.writeString(_iter162);
+          oprot.writeString(_iter106);
         }
       }
       oprot.writeBinary(struct.nulls);
@@ -529,13 +529,13 @@ public class TStringColumn implements org.apache.thrift.TBase<TStringColumn, TSt
     public void read(org.apache.thrift.protocol.TProtocol prot, TStringColumn struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list163 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.values = new ArrayList<String>(_list163.size);
-        for (int _i164 = 0; _i164 < _list163.size; ++_i164)
+        org.apache.thrift.protocol.TList _list107 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.values = new ArrayList<String>(_list107.size);
+        for (int _i108 = 0; _i108 < _list107.size; ++_i108)
         {
-          String _elem165; // required
-          _elem165 = iprot.readString();
-          struct.values.add(_elem165);
+          String _elem109; // required
+          _elem109 = iprot.readString();
+          struct.values.add(_elem109);
         }
       }
       struct.setValuesIsSet(true);

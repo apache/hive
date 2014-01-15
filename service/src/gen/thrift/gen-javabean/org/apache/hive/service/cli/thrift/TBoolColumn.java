@@ -445,13 +445,13 @@ public class TBoolColumn implements org.apache.thrift.TBase<TBoolColumn, TBoolCo
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list110 = iprot.readListBegin();
-                struct.values = new ArrayList<Boolean>(_list110.size);
-                for (int _i111 = 0; _i111 < _list110.size; ++_i111)
+                org.apache.thrift.protocol.TList _list54 = iprot.readListBegin();
+                struct.values = new ArrayList<Boolean>(_list54.size);
+                for (int _i55 = 0; _i55 < _list54.size; ++_i55)
                 {
-                  boolean _elem112; // required
-                  _elem112 = iprot.readBool();
-                  struct.values.add(_elem112);
+                  boolean _elem56; // required
+                  _elem56 = iprot.readBool();
+                  struct.values.add(_elem56);
                 }
                 iprot.readListEnd();
               }
@@ -485,9 +485,9 @@ public class TBoolColumn implements org.apache.thrift.TBase<TBoolColumn, TBoolCo
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.BOOL, struct.values.size()));
-          for (boolean _iter113 : struct.values)
+          for (boolean _iter57 : struct.values)
           {
-            oprot.writeBool(_iter113);
+            oprot.writeBool(_iter57);
           }
           oprot.writeListEnd();
         }
@@ -517,9 +517,9 @@ public class TBoolColumn implements org.apache.thrift.TBase<TBoolColumn, TBoolCo
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.values.size());
-        for (boolean _iter114 : struct.values)
+        for (boolean _iter58 : struct.values)
         {
-          oprot.writeBool(_iter114);
+          oprot.writeBool(_iter58);
         }
       }
       oprot.writeBinary(struct.nulls);
@@ -529,13 +529,13 @@ public class TBoolColumn implements org.apache.thrift.TBase<TBoolColumn, TBoolCo
     public void read(org.apache.thrift.protocol.TProtocol prot, TBoolColumn struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list115 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.BOOL, iprot.readI32());
-        struct.values = new ArrayList<Boolean>(_list115.size);
-        for (int _i116 = 0; _i116 < _list115.size; ++_i116)
+        org.apache.thrift.protocol.TList _list59 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.BOOL, iprot.readI32());
+        struct.values = new ArrayList<Boolean>(_list59.size);
+        for (int _i60 = 0; _i60 < _list59.size; ++_i60)
         {
-          boolean _elem117; // required
-          _elem117 = iprot.readBool();
-          struct.values.add(_elem117);
+          boolean _elem61; // required
+          _elem61 = iprot.readBool();
+          struct.values.add(_elem61);
         }
       }
       struct.setValuesIsSet(true);
