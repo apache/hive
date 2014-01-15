@@ -426,6 +426,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowRoleGrant(ast);
       break;
+    case HiveParser.TOK_SHOW_ROLES:
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      analyzeShowRoles(ast);
+      break;
     case HiveParser.TOK_GRANT_ROLE:
       analyzeGrantRevokeRole(true, ast);
       break;
@@ -513,6 +517,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       rootTasks.add(task);
       setFetchTask(createFetchTask(RoleDDLDesc.getSchema()));
     }
+  }
+
+  private void analyzeShowRoles(ASTNode ast) {
+    RoleDDLDesc showRolesDesc = new RoleDDLDesc(null, null,
+        RoleDDLDesc.RoleOperation.SHOW_ROLES, null);
+    showRolesDesc.setResFile(ctx.getResFile().toString());
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showRolesDesc), conf));
+    setFetchTask(createFetchTask(RoleDDLDesc.getSchema()));
   }
 
   private void analyzeAlterDatabase(ASTNode ast) throws SemanticException {
