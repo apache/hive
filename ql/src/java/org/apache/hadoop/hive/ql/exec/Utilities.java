@@ -95,7 +95,6 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -133,12 +132,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InputEstimator;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
@@ -183,8 +179,6 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
-
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * Utilities.
@@ -2191,6 +2185,8 @@ public final class Utilities {
                   }
                   resultMap.put(pathStr, new ContentSummary(total, -1, -1));
                 }
+                // todo: should nullify summary for non-native tables,
+                // not to be selected as a mapjoin target
                 FileSystem fs = p.getFileSystem(myConf);
                 resultMap.put(pathStr, fs.getContentSummary(p));
               } catch (Exception e) {
@@ -2250,6 +2246,23 @@ public final class Utilities {
         HiveInterruptUtils.remove(interrup);
       }
     }
+  }
+
+  // return sum of lengths except one alias. returns -1 if any of other alias is unknown
+  public static long sumOfExcept(Map<String, Long> aliasToSize,
+      Set<String> aliases, String except) {
+    long total = 0;
+    for (String alias : aliases) {
+      if (alias.equals(except)) {
+        continue;
+      }
+      Long size = aliasToSize.get(alias);
+      if (size == null) {
+        return -1;
+      }
+      total += size;
+    }
+    return total;
   }
 
   public static boolean isEmptyPath(JobConf job, Path dirPath, Context ctx)
