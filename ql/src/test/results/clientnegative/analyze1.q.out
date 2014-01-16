@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10098]: Non-Partition column appears in the partition specification:  key
+FAILED: SemanticException Partition spec {key=null} contains non-partition columns

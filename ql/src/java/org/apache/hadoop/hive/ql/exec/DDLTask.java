@@ -301,7 +301,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
       if (addPartitionDesc != null) {
-        return addPartition(db, addPartitionDesc);
+        return addPartitions(db, addPartitionDesc); // TODO#: here
       }
 
       RenamePartitionDesc renamePartitionDesc = work.getRenamePartitionDesc();
@@ -942,61 +942,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Add a partition to a table.
+   * Add a partitions to a table.
    *
    * @param db
    *          Database to add the partition to.
    * @param addPartitionDesc
-   *          Add this partition.
+   *          Add these partitions.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException
    */
-  private int addPartition(Hive db, AddPartitionDesc addPartitionDesc) throws HiveException {
-
-    Table tbl = db.getTable(addPartitionDesc.getDbName(), addPartitionDesc.getTableName());
-
-    // If the add partition was created with IF NOT EXISTS, then we should
-    // not throw an error if the specified part does exist.
-    Partition checkPart = db.getPartition(tbl, addPartitionDesc.getPartSpec(), false);
-    if (checkPart != null && addPartitionDesc.getIfNotExists()) {
-      return 0;
+  private int addPartitions(Hive db, AddPartitionDesc addPartitionDesc) throws HiveException {
+    List<Partition> parts = db.createPartitions(addPartitionDesc); // TODO#: here
+    for (Partition part : parts) {
+      work.getOutputs().add(new WriteEntity(part));
     }
-
-
-
-    if (addPartitionDesc.getLocation() == null) {
-      db.createPartition(tbl, addPartitionDesc.getPartSpec(), null,
-          addPartitionDesc.getPartParams(),
-                    addPartitionDesc.getInputFormat(),
-                    addPartitionDesc.getOutputFormat(),
-                    addPartitionDesc.getNumBuckets(),
-                    addPartitionDesc.getCols(),
-                    addPartitionDesc.getSerializationLib(),
-                    addPartitionDesc.getSerdeParams(),
-                    addPartitionDesc.getBucketCols(),
-                    addPartitionDesc.getSortCols());
-
-    } else {
-      if (tbl.isView()) {
-        throw new HiveException("LOCATION clause illegal for view partition");
-      }
-      // set partition path relative to table
-      db.createPartition(tbl, addPartitionDesc.getPartSpec(), new Path(tbl
-                    .getPath(), addPartitionDesc.getLocation()), addPartitionDesc.getPartParams(),
-                    addPartitionDesc.getInputFormat(),
-                    addPartitionDesc.getOutputFormat(),
-                    addPartitionDesc.getNumBuckets(),
-                    addPartitionDesc.getCols(),
-                    addPartitionDesc.getSerializationLib(),
-                    addPartitionDesc.getSerdeParams(),
-                    addPartitionDesc.getBucketCols(),
-                    addPartitionDesc.getSortCols());
-    }
-
-    Partition part = db
-        .getPartition(tbl, addPartitionDesc.getPartSpec(), false);
-    work.getOutputs().add(new WriteEntity(part));
-
     return 0;
   }
 

@@ -786,7 +786,7 @@ public abstract class BaseSemanticAnalyzer {
         }
 
         // check if the columns, as well as value types in the partition() clause are valid
-        validatePartSpec(tableHandle, tmpPartSpec, ast, conf);
+        validatePartSpec(tableHandle, tmpPartSpec, ast, conf, false);
 
         List<FieldSchema> parts = tableHandle.getPartitionKeys();
         partSpec = new LinkedHashMap<String, String>(partspec.getChildCount());
@@ -1188,8 +1188,8 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
-      ASTNode astNode, HiveConf conf) throws SemanticException {
-    Utilities.validatePartSpecColumnNames(tbl, partSpec);
+      ASTNode astNode, HiveConf conf, boolean shouldBeFull) throws SemanticException {
+    tbl.validatePartColumnNames(partSpec, shouldBeFull);
 
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TYPE_CHECK_ON_INSERT)) {
       return;

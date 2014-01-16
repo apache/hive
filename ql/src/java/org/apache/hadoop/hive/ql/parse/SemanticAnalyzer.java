@@ -1020,7 +1020,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           } catch (HiveException e) {
             LOG.info("Error while getting metadata : ", e);
           }
-          validatePartSpec(table, partition, (ASTNode)tab, conf);
+          validatePartSpec(table, partition, (ASTNode)tab, conf, false);
         }
         skipRecursion = false;
         break;
@@ -5306,7 +5306,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         dpCtx = qbm.getDPCtx(dest);
         if (dpCtx == null) {
-          Utilities.validatePartSpecColumnNames(dest_tab, partSpec);
+          dest_tab.validatePartColumnNames(partSpec, false);
           dpCtx = new DynamicPartitionCtx(dest_tab, partSpec,
               conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
               conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));

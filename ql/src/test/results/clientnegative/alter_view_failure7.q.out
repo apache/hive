@@ -13,4 +13,4 @@ AS
 SELECT key,ds,hr FROM srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx8
-FAILED: SemanticException [Error 10214]: Invalid partition spec specified table is partitioned but partition spec is not specified or does not fully match table partitioning: {ds=2011-01-01}
+FAILED: SemanticException partition spec {ds=2011-01-01} doesn't contain all (2) partition columns

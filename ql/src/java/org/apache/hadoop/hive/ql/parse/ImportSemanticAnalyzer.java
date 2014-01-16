@@ -129,9 +129,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         List<Partition> partitions = rv.getValue();
         for (Partition partition : partitions) {
-          AddPartitionDesc partDesc = new AddPartitionDesc(dbname, tblDesc.getTableName(),
+          // TODO: this should not create AddPartitionDesc per partition
+          AddPartitionDesc partsDesc = new AddPartitionDesc(dbname, tblDesc.getTableName(),
               EximUtil.makePartSpec(tblDesc.getPartCols(), partition.getValues()),
               partition.getSd().getLocation(), partition.getParameters());
+          AddPartitionDesc.OnePartitionDesc partDesc = partsDesc.getPartition(0);
           partDesc.setInputFormat(partition.getSd().getInputFormat());
           partDesc.setOutputFormat(partition.getSd().getOutputFormat());
           partDesc.setNumBuckets(partition.getSd().getNumBuckets());
@@ -142,7 +144,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           partDesc.setSortCols(partition.getSd().getSortCols());
           partDesc.setLocation(new Path(fromPath,
               Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString());
-          partitionDescs.add(partDesc);
+          partitionDescs.add(partsDesc);
         }
       } catch (IOException e) {
         throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
@@ -188,7 +190,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             for (Iterator<AddPartitionDesc> partnIter = partitionDescs
                   .listIterator(); partnIter.hasNext();) {
               AddPartitionDesc addPartitionDesc = partnIter.next();
-              if (!found && addPartitionDesc.getPartSpec().equals(partSpec)) {
+              if (!found && addPartitionDesc.getPartition(0).getPartSpec().equals(partSpec)) {
                 found = true;
               } else {
                 partnIter.remove();
@@ -221,12 +223,12 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (table.isPartitioned()) {
           LOG.debug("table partitioned");
           for (AddPartitionDesc addPartitionDesc : partitionDescs) {
-            if (db.getPartition(table, addPartitionDesc.getPartSpec(), false) == null) {
+            Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
+            if (db.getPartition(table, partSpec, false) == null) {
               rootTasks.add(addSinglePartition(fromURI, fs, tblDesc, table, wh, addPartitionDesc));
             } else {
               throw new SemanticException(
-                  ErrorMsg.PARTITION_EXISTS
-                      .getMsg(partSpecToString(addPartitionDesc.getPartSpec())));
+                  ErrorMsg.PARTITION_EXISTS.getMsg(partSpecToString(partSpec)));
             }
           }
         } else {
@@ -297,33 +299,34 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   private Task<?> addSinglePartition(URI fromURI, FileSystem fs, CreateTableDesc tblDesc,
       Table table, Warehouse wh,
       AddPartitionDesc addPartitionDesc) throws MetaException, IOException, HiveException {
+    AddPartitionDesc.OnePartitionDesc partSpec = addPartitionDesc.getPartition(0);
     if (tblDesc.isExternal() && tblDesc.getLocation() == null) {
       LOG.debug("Importing in-place: adding AddPart for partition "
-          + partSpecToString(addPartitionDesc.getPartSpec()));
+          + partSpecToString(partSpec.getPartSpec()));
       // addPartitionDesc already has the right partition location
       Task<?> addPartTask = TaskFactory.get(new DDLWork(getInputs(),
           getOutputs(), addPartitionDesc), conf);
       return addPartTask;
     } else {
-      String srcLocation = addPartitionDesc.getLocation();
+      String srcLocation = partSpec.getLocation();
       Path tgtPath = null;
       if (tblDesc.getLocation() == null) {
         if (table.getDataLocation() != null) {
           tgtPath = new Path(table.getDataLocation().toString(),
-              Warehouse.makePartPath(addPartitionDesc.getPartSpec()));
+              Warehouse.makePartPath(partSpec.getPartSpec()));
         } else {
           tgtPath = new Path(wh.getTablePath(
               db.getDatabaseCurrent(), tblDesc.getTableName()),
-              Warehouse.makePartPath(addPartitionDesc.getPartSpec()));
+              Warehouse.makePartPath(partSpec.getPartSpec()));
         }
       } else {
         tgtPath = new Path(tblDesc.getLocation(),
-            Warehouse.makePartPath(addPartitionDesc.getPartSpec()));
+            Warehouse.makePartPath(partSpec.getPartSpec()));
       }
       checkTargetLocationEmpty(fs, tgtPath);
-      addPartitionDesc.setLocation(tgtPath.toString());
+      partSpec.setLocation(tgtPath.toString());
       LOG.debug("adding dependent CopyWork/AddPart/MoveWork for partition "
-          + partSpecToString(addPartitionDesc.getPartSpec())
+          + partSpecToString(partSpec.getPartSpec())
           + " with source location: " + srcLocation);
       Path tmpPath = ctx.getExternalTmpPath(fromURI);
       Task<?> copyTask = TaskFactory.get(new CopyWork(new Path(srcLocation),
@@ -332,7 +335,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           getOutputs(), addPartitionDesc), conf);
       LoadTableDesc loadTableWork = new LoadTableDesc(tmpPath,
           Utilities.getTableDesc(table),
-          addPartitionDesc.getPartSpec(), true);
+          partSpec.getPartSpec(), true);
       loadTableWork.setInheritTableSpecs(false);
       Task<?> loadPartTask = TaskFactory.get(new MoveWork(
           getInputs(), getOutputs(), loadTableWork, null, false),

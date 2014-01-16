@@ -614,6 +614,18 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public void setMetaStoreSchemaVersion(String version, String comment) throws MetaException {
   }
+
+  @Override
+  public boolean doesPartitionExist(String dbName, String tableName,
+      List<String> partVals) throws MetaException, NoSuchObjectException {
+    return false;
+  }
+
+  @Override
+  public boolean addPartitions(String dbName, String tblName, List<Partition> parts)
+      throws InvalidObjectException, MetaException {
+    return false;
+  }
 }
 
 

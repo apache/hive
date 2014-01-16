@@ -472,6 +472,24 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'append_partition failed: unknown result')
     end
 
+    def add_partitions_req(request)
+      send_add_partitions_req(request)
+      return recv_add_partitions_req()
+    end
+
+    def send_add_partitions_req(request)
+      send_message('add_partitions_req', Add_partitions_req_args, :request => request)
+    end
+
+    def recv_add_partitions_req()
+      result = receive_message(Add_partitions_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_partitions_req failed: unknown result')
+    end
+
     def append_partition_with_environment_context(db_name, tbl_name, part_vals, environment_context)
       send_append_partition_with_environment_context(db_name, tbl_name, part_vals, environment_context)
       return recv_append_partition_with_environment_context()
@@ -1797,6 +1815,21 @@ module ThriftHiveMetastore
         result.o3 = o3
       end
       write_result(result, oprot, 'append_partition', seqid)
+    end
+
+    def process_add_partitions_req(seqid, iprot, oprot)
+      args = read_args(iprot, Add_partitions_req_args)
+      result = Add_partitions_req_result.new()
+      begin
+        result.success = @handler.add_partitions_req(args.request)
+      rescue ::InvalidObjectException => o1
+        result.o1 = o1
+      rescue ::AlreadyExistsException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'add_partitions_req', seqid)
     end
 
     def process_append_partition_with_environment_context(seqid, iprot, oprot)
@@ -3551,6 +3584,44 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Partition},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::AlreadyExistsException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_partitions_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::AddPartitionsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_partitions_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::AddPartitionsResult},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::AlreadyExistsException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
