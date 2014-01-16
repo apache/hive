@@ -1400,53 +1400,53 @@ public class TestJdbcDriver2 {
     assertTrue(colRS.next());
 
     assertEquals("a", meta.getColumnName(5));
-    assertEquals(Types.VARCHAR, meta.getColumnType(5));
-    assertEquals("string", meta.getColumnTypeName(5));
+    assertEquals(Types.ARRAY, meta.getColumnType(5));
+    assertEquals("array", meta.getColumnTypeName(5));
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(5));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(5));
     assertEquals(0, meta.getScale(5));
 
     assertEquals("c5", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals(Types.ARRAY, colRS.getInt("DATA_TYPE"));
     assertEquals("array<int>", colRS.getString("TYPE_NAME").toLowerCase());
 
     assertTrue(colRS.next());
 
     assertEquals("c6", meta.getColumnName(6));
-    assertEquals(Types.VARCHAR, meta.getColumnType(6));
-    assertEquals("string", meta.getColumnTypeName(6));
+    assertEquals(Types.JAVA_OBJECT, meta.getColumnType(6));
+    assertEquals("map", meta.getColumnTypeName(6));
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(6));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(6));
     assertEquals(0, meta.getScale(6));
 
     assertEquals("c6", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals(Types.JAVA_OBJECT, colRS.getInt("DATA_TYPE"));
     assertEquals("map<int,string>", colRS.getString("TYPE_NAME").toLowerCase());
 
     assertTrue(colRS.next());
 
     assertEquals("c7", meta.getColumnName(7));
-    assertEquals(Types.VARCHAR, meta.getColumnType(7));
-    assertEquals("string", meta.getColumnTypeName(7));
+    assertEquals(Types.JAVA_OBJECT, meta.getColumnType(7));
+    assertEquals("map", meta.getColumnTypeName(7));
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(7));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(7));
     assertEquals(0, meta.getScale(7));
 
     assertEquals("c7", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals(Types.JAVA_OBJECT, colRS.getInt("DATA_TYPE"));
     assertEquals("map<string,string>", colRS.getString("TYPE_NAME").toLowerCase());
 
     assertTrue(colRS.next());
 
     assertEquals("c8", meta.getColumnName(8));
-    assertEquals(Types.VARCHAR, meta.getColumnType(8));
-    assertEquals("string", meta.getColumnTypeName(8));
+    assertEquals(Types.STRUCT, meta.getColumnType(8));
+    assertEquals("struct", meta.getColumnTypeName(8));
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(8));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(8));
     assertEquals(0, meta.getScale(8));
 
     assertEquals("c8", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals(Types.STRUCT, colRS.getInt("DATA_TYPE"));
     assertEquals("struct<r:string,s:int,t:double>", colRS.getString("TYPE_NAME").toLowerCase());
 
     assertTrue(colRS.next());
@@ -1517,8 +1517,8 @@ public class TestJdbcDriver2 {
     assertEquals(0, meta.getScale(13));
 
     assertEquals("b", meta.getColumnName(14));
-    assertEquals(Types.VARCHAR, meta.getColumnType(14));
-    assertEquals("string", meta.getColumnTypeName(14));
+    assertEquals(Types.ARRAY, meta.getColumnType(14));
+    assertEquals("array", meta.getColumnTypeName(14));
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(14));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(14));
     assertEquals(0, meta.getScale(14));

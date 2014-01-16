@@ -410,6 +410,11 @@ public abstract class HiveBaseResultSet implements ResultSet {
         return new BigDecimal((String)value);
       case DATE_TYPE:
         return Date.valueOf((String) value);
+      case ARRAY_TYPE:
+      case MAP_TYPE:
+      case STRUCT_TYPE:
+        // todo: returns json string. should recreate object from it?
+        return value;
       default:
         return value;
     }
