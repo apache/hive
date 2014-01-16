@@ -177,8 +177,8 @@
 
 <property>
   <name>datanucleus.connectionPoolingType</name>
-  <value>DBCP</value>
-  <description>Uses a DBCP connection pool for JDBC metastore</description>
+  <value>BoneCP</value>
+  <description>Uses a BoneCP connection pool for JDBC metastore</description>
 </property>
 
 <property>
