@@ -2464,21 +2464,6 @@ public final class Utilities {
     jobConf.set(serdeConstants.LIST_COLUMN_TYPES, columnTypesString);
   }
 
-  public static void validatePartSpecColumnNames(Table tbl, Map<String, String> partSpec)
-      throws SemanticException {
-
-    List<FieldSchema> parts = tbl.getPartitionKeys();
-    Set<String> partCols = new HashSet<String>(parts.size());
-    for (FieldSchema col : parts) {
-      partCols.add(col.getName());
-    }
-    for (String col : partSpec.keySet()) {
-      if (!partCols.contains(col)) {
-        throw new SemanticException(ErrorMsg.NONEXISTPARTCOL.getMsg(col));
-      }
-    }
-  }
-
   public static String suffix = ".hashtable";
 
   public static String generatePath(String baseURI, String dumpFilePrefix,

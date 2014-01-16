@@ -2511,32 +2511,30 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     validateAlterTableType(tab, AlterTableTypes.ADDPARTITION, expectView);
     inputs.add(new ReadEntity(tab));
 
-    List<AddPartitionDesc> partitionDescs = new ArrayList<AddPartitionDesc>();
-
     int numCh = ast.getChildCount();
     int start = ifNotExists ? 2 : 1;
 
     String currentLocation = null;
     Map<String, String> currentPart = null;
+    // Parser has done some verification, so the order of tokens doesn't need to be verified here.
+    AddPartitionDesc addPartitionDesc = new AddPartitionDesc(tab.getDbName(), tblName, ifNotExists);
     for (int num = start; num < numCh; num++) {
       ASTNode child = (ASTNode) ast.getChild(num);
       switch (child.getToken().getType()) {
       case HiveParser.TOK_PARTSPEC:
         if (currentPart != null) {
-          Partition partition = getPartitionForOutput(tab, currentPart);
-          if (partition == null || !ifNotExists) {
-            AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
-              tab.getDbName(), tblName, currentPart,
-              currentLocation, ifNotExists, expectView);
-            partitionDescs.add(addPartitionDesc);
-          }
+          addPartitionDesc.addPartition(currentPart, currentLocation);
           currentLocation = null;
         }
         currentPart = getPartSpec(child);
-        validatePartSpec(tab, currentPart, (ASTNode)child, conf);
+        validatePartitionValues(currentPart); // validate reserved values
+        validatePartSpec(tab, currentPart, (ASTNode)child, conf, true);
         break;
       case HiveParser.TOK_PARTITIONLOCATION:
         // if location specified, set in partition
+        if (isView) {
+          throw new SemanticException("LOCATION clause illegal for view partition");
+        }
         currentLocation = unescapeSQLString(child.getChild(0).getText());
         break;
       default:
@@ -2546,47 +2544,25 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // add the last one
     if (currentPart != null) {
-      Partition partition = getPartitionForOutput(tab, currentPart);
-      if (partition == null || !ifNotExists) {
-        AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
-          tab.getDbName(), tblName, currentPart,
-          currentLocation, ifNotExists, expectView);
-        partitionDescs.add(addPartitionDesc);
-      }
+      addPartitionDesc.addPartition(currentPart, currentLocation);
     }
 
-    if (partitionDescs.isEmpty()) {
+    if (addPartitionDesc.getPartitionCount() == 0) {
       // nothing to do
       return;
     }
 
-    for (AddPartitionDesc addPartitionDesc : partitionDescs) {
-      try {
-        tab.isValidSpec(addPartitionDesc.getPartSpec());
-      } catch (HiveException ex) {
-        throw new SemanticException(ErrorMsg.INVALID_PARTITION_SPEC.getMsg(ex.getMessage()));
-      }
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-          addPartitionDesc), conf));
-    }
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), addPartitionDesc), conf));
 
     if (isView) {
-      // Compile internal query to capture underlying table partition
-      // dependencies
+      // Compile internal query to capture underlying table partition dependencies
       StringBuilder cmd = new StringBuilder();
       cmd.append("SELECT * FROM ");
       cmd.append(HiveUtils.unparseIdentifier(tblName));
       cmd.append(" WHERE ");
       boolean firstOr = true;
-      for (AddPartitionDesc partitionDesc : partitionDescs) {
-        // Perform this check early so that we get a better error message.
-        try {
-          // Note that isValidSpec throws an exception (it never
-          // actually returns false).
-          tab.isValidSpec(partitionDesc.getPartSpec());
-        } catch (HiveException ex) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION_SPEC.getMsg(ex.getMessage()));
-        }
+      for (int i = 0; i < addPartitionDesc.getPartitionCount(); ++i) {
+        AddPartitionDesc.OnePartitionDesc partitionDesc = addPartitionDesc.getPartition(i);
         if (firstOr) {
           firstOr = false;
         } else {
@@ -2594,8 +2570,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         boolean firstAnd = true;
         cmd.append("(");
-        for (Map.Entry<String, String> entry : partitionDesc.getPartSpec().entrySet())
-        {
+        for (Map.Entry<String, String> entry : partitionDesc.getPartSpec().entrySet()) {
           if (firstAnd) {
             firstAnd = false;
           } else {

@@ -32,10 +32,12 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import javax.security.auth.login.LoginException;
 
@@ -43,6 +45,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
@@ -390,6 +394,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       throws InvalidObjectException, AlreadyExistsException, MetaException,
       TException {
     return client.add_partitions(new_parts);
+  }
+
+  @Override
+  public List<Partition> add_partitions(
+      List<Partition> parts, boolean ifNotExists, boolean needResults)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
+    if (parts.isEmpty()) {
+      return needResults ? new ArrayList<Partition>() : null;
+    }
+    Partition part = parts.get(0);
+    AddPartitionsRequest req = new AddPartitionsRequest(
+        part.getDbName(), part.getTableName(), parts, ifNotExists);
+    req.setNeedResult(needResults);
+    AddPartitionsResult result = client.add_partitions_req(req);
+    return needResults ? result.getPartitions() : null;
   }
 
   /**

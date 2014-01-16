@@ -23,11 +23,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,10 +47,12 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -357,35 +361,34 @@ public class Table implements Serializable {
     return outputFormatClass;
   }
 
-  final public boolean isValidSpec(Map<String, String> spec)
-      throws HiveException {
-
-    // TODO - types need to be checked.
+  final public void validatePartColumnNames(
+      Map<String, String> spec, boolean shouldBeFull) throws SemanticException {
     List<FieldSchema> partCols = tTable.getPartitionKeys();
     if (partCols == null || (partCols.size() == 0)) {
       if (spec != null) {
-        throw new HiveException(
-            "table is not partitioned but partition spec exists: " + spec);
-      } else {
-        return true;
+        throw new SemanticException("table is not partitioned but partition spec exists: " + spec);
       }
-    }
-
-    if ((spec == null) || (spec.size() != partCols.size())) {
-      throw new HiveException(
-          "table is partitioned but partition spec is not specified or"
-          + " does not fully match table partitioning: "
-          + spec);
-    }
-
-    for (FieldSchema field : partCols) {
-      if (spec.get(field.getName()) == null) {
-        throw new HiveException(field.getName()
-            + " not found in table's partition spec: " + spec);
+      return;
+    } else if (spec == null) {
+      if (shouldBeFull) {
+        throw new SemanticException("table is partitioned but partition spec is not specified");
       }
+      return;
     }
-
-    return true;
+    int columnsFound = 0;
+    for (FieldSchema fs : partCols) {
+      if (spec.containsKey(fs.getName())) {
+        ++columnsFound;
+      }
+      if (columnsFound == spec.size()) break;
+    }
+    if (columnsFound < spec.size()) {
+      throw new SemanticException("Partition spec " + spec + " contains non-partition columns");
+    }
+    if (shouldBeFull && (spec.size() != partCols.size())) {
+      throw new SemanticException("partition spec " + spec
+          + " doesn't contain all (" + partCols.size() + ") partition columns");
+    }
   }
 
   public void setProperty(String name, String value) {

@@ -133,14 +133,14 @@ PREHOOK: query: -- should work since we use IF NOT EXISTS
 ALTER VIEW vp1
 ADD IF NOT EXISTS PARTITION (value='val_xyz')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src
 PREHOOK: Input: default@vp1
-PREHOOK: Output: default@vp1@value=val_xyz
 POSTHOOK: query: -- should work since we use IF NOT EXISTS
 ALTER VIEW vp1
 ADD IF NOT EXISTS PARTITION (value='val_xyz')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src
 POSTHOOK: Input: default@vp1
-POSTHOOK: Output: default@vp1@value=val_xyz
 PREHOOK: query: SHOW PARTITIONS vp1
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS vp1

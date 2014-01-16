@@ -13,4 +13,4 @@ AS
 SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx6
-FAILED: SemanticException [Error 10098]: Non-Partition column appears in the partition specification:  v
+FAILED: SemanticException Partition spec {v=val_86} contains non-partition columns

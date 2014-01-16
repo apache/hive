@@ -50,6 +50,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  Partition add_partition_with_environment_context(Partition new_part, EnvironmentContext environment_context)'
   print '  i32 add_partitions( new_parts)'
   print '  Partition append_partition(string db_name, string tbl_name,  part_vals)'
+  print '  AddPartitionsResult add_partitions_req(AddPartitionsRequest request)'
   print '  Partition append_partition_with_environment_context(string db_name, string tbl_name,  part_vals, EnvironmentContext environment_context)'
   print '  Partition append_partition_by_name(string db_name, string tbl_name, string part_name)'
   print '  Partition append_partition_by_name_with_environment_context(string db_name, string tbl_name, string part_name, EnvironmentContext environment_context)'
@@ -318,6 +319,12 @@ elif cmd == 'append_partition':
     print 'append_partition requires 3 args'
     sys.exit(1)
   pp.pprint(client.append_partition(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'add_partitions_req':
+  if len(args) != 1:
+    print 'add_partitions_req requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.add_partitions_req(eval(args[0]),))
 
 elif cmd == 'append_partition_with_environment_context':
   if len(args) != 4:

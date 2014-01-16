@@ -1173,6 +1173,58 @@ public class ObjectStore implements RawStore, Configurable {
             .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
   }
 
+  @Override
+  public boolean addPartitions(String dbName, String tblName, List<Partition> parts)
+      throws InvalidObjectException, MetaException {
+    boolean success = false;
+    openTransaction();
+    try {
+      List<MTablePrivilege> tabGrants = null;
+      List<MTableColumnPrivilege> tabColumnGrants = null;
+      MTable table = this.getMTable(dbName, tblName);
+      if ("TRUE".equalsIgnoreCase(table.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+        tabGrants = this.listAllTableGrants(dbName, tblName);
+        tabColumnGrants = this.listTableAllColumnGrants(dbName, tblName);
+      }
+      List<Object> toPersist = new ArrayList<Object>();
+      for (Partition part : parts) {
+        if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
+          throw new MetaException("Partition does not belong to target table "
+              + dbName + "." + tblName + ": " + part);
+        }
+        MPartition mpart = convertToMPart(part, true);
+        toPersist.add(mpart);
+        int now = (int)(System.currentTimeMillis()/1000);
+        if (tabGrants != null) {
+          for (MTablePrivilege tab: tabGrants) {
+            toPersist.add(new MPartitionPrivilege(tab.getPrincipalName(),
+                tab.getPrincipalType(), mpart, tab.getPrivilege(), now,
+                tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption()));
+          }
+        }
+
+        if (tabColumnGrants != null) {
+          for (MTableColumnPrivilege col : tabColumnGrants) {
+            toPersist.add(new MPartitionColumnPrivilege(col.getPrincipalName(),
+                col.getPrincipalType(), mpart, col.getColumnName(), col.getPrivilege(),
+                now, col.getGrantor(), col.getGrantorType(), col.getGrantOption()));
+          }
+        }
+      }
+      if (toPersist.size() > 0) {
+        pm.makePersistentAll(toPersist);
+      }
+
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return success;
+  }
+
+  @Override
   public boolean addPartition(Partition part) throws InvalidObjectException,
       MetaException {
     boolean success = false;
@@ -5974,6 +6026,40 @@ public class ObjectStore implements RawStore, Configurable {
       commited = commitTransaction();
     } finally {
       if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public boolean doesPartitionExist(String dbName, String tableName, List<String> partVals)
+      throws MetaException {
+    boolean success = false;
+    try {
+      openTransaction();
+      dbName = dbName.toLowerCase().trim();
+      tableName = tableName.toLowerCase().trim();
+
+      // TODO: this could also be passed from upper layer; or this method should filter the list.
+      MTable mtbl = getMTable(dbName, tableName);
+      if (mtbl == null) {
+        success = commitTransaction();
+        return false;
+      }
+
+      Query query = pm.newQuery(
+          "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
+          + "where table.tableName == t1 && table.database.name == t2 && partitionName == t3");
+      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+      query.setUnique(true);
+      query.setResult("partitionName");
+      String name = Warehouse.makePartName(
+          convertToFieldSchemas(mtbl.getPartitionKeys()), partVals);
+      String result = (String)query.execute(tableName, dbName, name);
+      success = commitTransaction();
+      return result != null;
+    } finally {
+      if (!success) {
         rollbackTransaction();
       }
     }
