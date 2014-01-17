@@ -9,7 +9,7 @@ create table over10k(
            d double,
            bo boolean,
            s string,
-	   ts timestamp, 
+           ts timestamp, 
            dec decimal,  
            bin binary)
        row format delimited
@@ -51,9 +51,9 @@ insert into table stats_tbl_part partition (dt='2011') select * from over10k whe
 insert into table stats_tbl_part partition (dt='2012') select * from over10k where t>60;
 
 explain 
-select count(*), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b) from stats_tbl;
+select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b) from stats_tbl;
 explain
-select count(*), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b) from stats_tbl_part;
+select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b) from stats_tbl_part;
 
 analyze table stats_tbl compute statistics for columns t,si,i,b,f,d,bo,s,bin;
 analyze table stats_tbl_part partition(dt='2010') compute statistics for columns t,si,i,b,f,d,bo,s,bin;
@@ -61,11 +61,11 @@ analyze table stats_tbl_part partition(dt='2011') compute statistics for columns
 analyze table stats_tbl_part partition(dt='2012') compute statistics for columns t,si,i,b,f,d,bo,s,bin;
 
 explain 
-select count(*), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl;
-select count(*), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl;
+select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl;
+select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl;
 explain 
-select count(*), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part;
-select count(*), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part;
+select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part;
+select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part;
 
 explain select count(ts) from stats_tbl_part;
 
