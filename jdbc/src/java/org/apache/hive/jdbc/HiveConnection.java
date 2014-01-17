@@ -297,8 +297,10 @@ public class HiveConnection implements java.sql.Connection {
       for (Entry<String, String> hiveVar : hiveVarMap.entrySet()) {
         stmt.execute("set hivevar:" + hiveVar.getKey() + "=" + hiveVar.getValue());
       }
-      if(dbName!=null)
-        stmt.execute("use "+dbName);
+      // if the client is setting a non-default db, then switch the database
+      if (!Utils.DEFAULT_DATABASE.equalsIgnoreCase(dbName)) {
+        stmt.execute("use " + dbName);
+      }
       stmt.close();
     }
   }

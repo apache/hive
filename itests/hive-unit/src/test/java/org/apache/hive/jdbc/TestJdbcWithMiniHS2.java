@@ -163,5 +163,46 @@ import org.junit.Test;
      stmt.execute(" drop table if exists table_in_non_default_schema");
      expected = stmt.execute("DROP DATABASE "+ dbName);
      stmt.close();
+     
+     hs2Conn  = DriverManager.getConnection(jdbcUri+"default",System.getProperty("user.name"),"bar");
+     stmt = hs2Conn .createStatement();
+     res = stmt.executeQuery("show tables");
+     testTableExists = false;
+     while (res.next()) {
+       assertNotNull("table name is null in result set", res.getString(1));
+       if (tableInNonDefaultSchema.equalsIgnoreCase(res.getString(1))) {
+         testTableExists = true;
+        }
+     }
+
+     // test URI with no dbName
+     hs2Conn  = DriverManager.getConnection(jdbcUri, System.getProperty("user.name"),"bar");
+     verifyCurrentDB("default", hs2Conn);
+     hs2Conn.close();
+
+     hs2Conn  = DriverManager.getConnection(jdbcUri + ";", System.getProperty("user.name"),"bar");
+     verifyCurrentDB("default", hs2Conn);
+     hs2Conn.close();
+
+     hs2Conn  = DriverManager.getConnection(jdbcUri + ";/foo=bar;foo1=bar1", System.getProperty("user.name"),"bar");
+     verifyCurrentDB("default", hs2Conn);
+     hs2Conn.close();
+     }
+
+   /**
+    * verify that the current db is the one expected. first create table as <db>.tab and then 
+    * describe that table to check if <db> is the current database
+    * @param expectedDbName
+    * @param hs2Conn
+    * @throws Exception
+    */
+   private void verifyCurrentDB(String expectedDbName, Connection hs2Conn) throws Exception {
+     String verifyTab = "miniHS2DbVerificationTable";
+     Statement stmt = hs2Conn.createStatement();
+     stmt.execute("DROP TABLE IF EXISTS " + expectedDbName + "." + verifyTab);
+     stmt.execute("CREATE TABLE " + expectedDbName + "." + verifyTab + "(id INT)");
+     stmt.execute("DESCRIBE " + verifyTab);
+     stmt.execute("DROP TABLE IF EXISTS " + expectedDbName + "." + verifyTab);
+     stmt.close();
    }
 }
