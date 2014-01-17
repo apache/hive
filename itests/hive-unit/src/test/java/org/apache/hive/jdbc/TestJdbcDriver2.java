@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -187,7 +188,8 @@ public class TestJdbcDriver2 {
         + " c19 binary, "
         + " c20 date,"
         + " c21 varchar(20),"
-        + " c22 char(15)"
+        + " c22 char(15),"
+        + " c23 binary"
         + ") comment'" + dataTypeTableComment
         +"' partitioned by (dt STRING)");
 
@@ -443,7 +445,7 @@ public class TestJdbcDriver2 {
 
     ResultSet res = stmt.executeQuery(
         "explain select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-            "c1*2, sentences(null, null, null) as b from " + dataTypeTableName + " limit 1");
+            "c1*2, sentences(null, null, null) as b, c23 from " + dataTypeTableName + " limit 1");
 
     ResultSetMetaData md = res.getMetaData();
     // only one result column
@@ -821,6 +823,7 @@ public class TestJdbcDriver2 {
     assertEquals(null, res.getDate(20));
     assertEquals(null, res.getString(21));
     assertEquals(null, res.getString(22));
+    assertEquals(null, res.getString(23));
 
     // row 3
     assertTrue(res.next());
@@ -848,6 +851,15 @@ public class TestJdbcDriver2 {
     assertEquals("2013-01-01", res.getDate(20).toString());
     assertEquals("abc123", res.getString(21));
     assertEquals("abc123         ", res.getString(22));
+
+    byte[] bytes = "X'01FF'".getBytes("UTF-8");
+    InputStream resultSetInputStream = res.getBinaryStream(23);
+    int len = bytes.length;
+    byte[] b = new byte[len];
+    resultSetInputStream.read(b, 0, len);
+    for ( int i = 0; i< len; i++) {
+      assertEquals(bytes[i], b[i]);
+    }
 
     // test getBoolean rules on non-boolean columns
     assertEquals(true, res.getBoolean(1));
@@ -1329,14 +1341,14 @@ public class TestJdbcDriver2 {
 
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-            "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21, c22 from " + dataTypeTableName +
+            "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21, c22, c23 from " + dataTypeTableName +
         " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
     ResultSet colRS = con.getMetaData().getColumns(null, null,
         dataTypeTableName.toLowerCase(), null);
 
-    assertEquals(19, meta.getColumnCount());
+    assertEquals(20, meta.getColumnCount());
 
     assertTrue(colRS.next());
 
@@ -1559,6 +1571,13 @@ public class TestJdbcDriver2 {
     assertEquals(15, meta.getColumnDisplaySize(19));
     assertEquals(15, meta.getPrecision(19));
     assertEquals(0, meta.getScale(19));
+
+    assertEquals("c23", meta.getColumnName(20));
+    assertEquals(Types.BINARY, meta.getColumnType(20));
+    assertEquals("binary", meta.getColumnTypeName(20));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(20));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(20));
+    assertEquals(0, meta.getScale(20));
 
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));

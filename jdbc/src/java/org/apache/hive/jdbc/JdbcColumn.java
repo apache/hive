@@ -194,6 +194,8 @@ public class JdbcColumn {
     case Types.CHAR:
     case Types.VARCHAR:
       return columnPrecision(columnType, columnAttributes);
+    case Types.BINARY:
+      return Integer.MAX_VALUE; // hive has no max limit for binary
     case Types.TINYINT:
     case Types.SMALLINT:
     case Types.INTEGER:
@@ -212,7 +214,6 @@ public class JdbcColumn {
       return 25; // e.g. -(17#).e-####
     case Types.DECIMAL:
       return columnPrecision(columnType, columnAttributes) + 2;  // '-' sign and '.'
-    case Types.BINARY:
     case Types.JAVA_OBJECT:
     case Types.ARRAY:
     case Types.STRUCT:
@@ -234,6 +235,8 @@ public class JdbcColumn {
         return columnAttributes.precision;
       }
       return Integer.MAX_VALUE; // hive has no max limit for strings
+    case Types.BINARY:
+      return Integer.MAX_VALUE; // hive has no max limit for binary
     case Types.TINYINT:
       return 3;
     case Types.SMALLINT:
@@ -252,7 +255,6 @@ public class JdbcColumn {
       return 29;
     case Types.DECIMAL:
       return columnAttributes.precision;
-    case Types.BINARY:
     case Types.JAVA_OBJECT:
     case Types.ARRAY:
     case Types.STRUCT:
@@ -274,6 +276,7 @@ public class JdbcColumn {
     case Types.INTEGER:
     case Types.BIGINT:
     case Types.DATE:
+    case Types.BINARY:
       return 0;
     case Types.FLOAT:
       return 7;
@@ -283,7 +286,6 @@ public class JdbcColumn {
       return 9;
     case Types.DECIMAL:
       return columnAttributes.scale;
-    case Types.BINARY:
     case Types.JAVA_OBJECT:
     case Types.ARRAY:
     case Types.STRUCT:
