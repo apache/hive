@@ -45,7 +45,7 @@ public enum ErrorMsg {
   // 30000 to 39999: Runtime errors which Hive thinks may be transient and retrying may succeed.
   // 40000 to 49999: Errors where Hive is unable to advise about retries.
   // In addition to the error code, ErrorMsg also has a SQLState field.
-  // SQLStates are taken from Section 12.5 of ISO-9075.
+  // SQLStates are taken from Section 22.1 of ISO-9075.
   // See http://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt
   // Most will just rollup to the generic syntax error state of 42000, but
   // specific errors can override the that state.
@@ -53,6 +53,7 @@ public enum ErrorMsg {
   // http://dev.mysql.com/doc/refman/5.0/en/connector-j-reference-error-sqlstates.html
   GENERIC_ERROR(40000, "Exception while processing"),
 
+  //========================== 10000 range starts here ========================//
   INVALID_TABLE(10001, "Table not found", "42S02"),
   INVALID_COLUMN(10002, "Invalid column reference"),
   INVALID_INDEX(10003, "Invalid index"),
@@ -370,7 +371,11 @@ public enum ErrorMsg {
   INVALID_DIR(10252, "{0} is not a directory", true),
   NO_VALID_LOCATIONS(10253, "Could not find any valid location to place the jars. " +
   "Please update hive.jar.directory or hive.user.install.directory with a valid location", false),
+  UNNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP(10254,
+      "Principal type GROUP is not supported in this authorization setting", "28000"),
+  INVALID_TABLE_NAME(10255, "Invalid table name {0}", true),
 
+  //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
       + "It may have crashed with an error."),
@@ -382,6 +387,7 @@ public enum ErrorMsg {
       "tried to create too many dynamic partitions. The maximum number of dynamic partitions " +
       "is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. "),
 
+  //========================== 30000 range starts here ========================//
   STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
     "There was a error to retrieve the StatsPublisher, and retrying " +
     "might help. If you dont want the query to fail because accurate statistics " +

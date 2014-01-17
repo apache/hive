@@ -156,6 +156,12 @@ import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -398,7 +404,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       GrantDesc grantDesc = work.getGrantDesc();
       if (grantDesc != null) {
         return grantOrRevokePrivileges(grantDesc.getPrincipals(), grantDesc
-            .getPrivileges(), grantDesc.getPrivilegeSubjectDesc(), grantDesc.getGrantor(), grantDesc.getGrantorType(), grantDesc.isGrantOption(), true);
+            .getPrivileges(), grantDesc.getPrivilegeSubjectDesc(), grantDesc.getGrantor(),
+            grantDesc.getGrantorType(), grantDesc.isGrantOption(), true);
       }
 
       RevokeDesc revokeDesc = work.getRevokeDesc();
@@ -488,6 +495,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       boolean grantRole = grantOrRevokeRoleDDL.getGrant();
       List<PrincipalDesc> principals = grantOrRevokeRoleDDL.getPrincipalDesc();
       List<String> roles = grantOrRevokeRoleDDL.getRoles();
+
+      if(SessionState.get().isAuthorizationModeV2()){
+        return grantOrRevokeRoleV2(grantOrRevokeRoleDDL);
+      }
+
       for (PrincipalDesc principal : principals) {
         String userName = principal.getName();
         for (String roleName : roles) {
@@ -506,6 +518,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  private int grantOrRevokeRoleV2(GrantRevokeRoleDDL grantOrRevokeRoleDDL) throws HiveException {
+    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
+    //convert to the types needed for plugin api
+    HivePrincipal grantorPrinc = null;
+    if(grantOrRevokeRoleDDL.getGrantor() != null){
+      grantorPrinc = new HivePrincipal(grantOrRevokeRoleDDL.getGrantor(),
+          getHivePrincipalType(grantOrRevokeRoleDDL.getGrantorType()));
+    }
+    List<HivePrincipal> hivePrincipals = getHivePrincipals(grantOrRevokeRoleDDL.getPrincipalDesc());
+    List<String> roles = grantOrRevokeRoleDDL.getRoles();
+
+    if(grantOrRevokeRoleDDL.getGrant()){
+      authorizer.grantRole(hivePrincipals, roles,
+          grantOrRevokeRoleDDL.isGrantOption(), grantorPrinc);
+    }
+    else{
+      authorizer.revokeRole(hivePrincipals, roles,
+          grantOrRevokeRoleDDL.isGrantOption(), grantorPrinc);
+    }
+    return 0;
+  }
+
   private int showGrants(ShowGrantDesc showGrantDesc) throws HiveException {
     StringBuilder builder = new StringBuilder();
     try {
@@ -513,6 +547,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       PrivilegeObjectDesc hiveObjectDesc = showGrantDesc.getHiveObj();
       String principalName = principalDesc.getName();
       if (hiveObjectDesc == null) {
+        //show all privileges for this user
         List<HiveObjectPrivilege> users = db.showPrivilegeGrant(
             HiveObjectType.GLOBAL, principalName, principalDesc.getType(),
             null, null, null, null);
@@ -618,7 +653,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int grantOrRevokePrivileges(List<PrincipalDesc> principals,
       List<PrivilegeDesc> privileges, PrivilegeObjectDesc privSubjectDesc,
-      String grantor, PrincipalType grantorType, boolean grantOption, boolean isGrant) {
+      String grantor, PrincipalType grantorType, boolean grantOption, boolean isGrant)
+          throws HiveException {
+
+    if(SessionState.get().isAuthorizationModeV2()){
+      return grantOrRevokePrivilegesV2(principals, privileges, privSubjectDesc, grantor,
+          grantorType, grantOption, isGrant);
+    }
+
     if (privileges == null || privileges.size() == 0) {
       console.printError("No privilege found.");
       return 1;
@@ -637,15 +679,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         String obj = privSubjectDesc.getObject();
 
+        //get the db, table objects
         if (privSubjectDesc.getTable()) {
-          String[] dbTab = obj.split("\\.");
-          if (dbTab.length == 2) {
-            dbName = dbTab[0];
-            tableName = dbTab[1];
-          } else {
-            dbName = SessionState.get().getCurrentDatabase();
-            tableName = obj;
-          }
+          String[] dbTable = Utilities.getDbTableName(obj);
+          dbName = dbTable[0];
+          tableName = dbTable[1];
+
           dbObj = db.getDatabase(dbName);
           if (dbObj == null) {
             throwNotFound("Database", dbName);
@@ -756,13 +795,83 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  private int grantOrRevokePrivilegesV2(List<PrincipalDesc> principals,
+      List<PrivilegeDesc> privileges, PrivilegeObjectDesc privSubjectDesc, String grantor,
+      PrincipalType grantorType, boolean grantOption, boolean isGrant) throws HiveException {
+    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
+
+    //Convert to object types used by the authorization plugin interface
+    List<HivePrincipal> hivePrincipals = getHivePrincipals(principals);
+    List<HivePrivilege> hivePrivileges = getHivePrivileges(privileges);
+    HivePrivilegeObject hivePrivObject = getHivePrivilegeObject(privSubjectDesc);
+    HivePrincipal grantorPrincipal = new HivePrincipal(grantor, getHivePrincipalType(grantorType));
+
+    if(isGrant){
+      authorizer.grantPrivileges(hivePrincipals, hivePrivileges, hivePrivObject,
+          grantorPrincipal, grantOption);
+    }else {
+      authorizer.revokePrivileges(hivePrincipals, hivePrivileges,
+          hivePrivObject, grantorPrincipal, grantOption);
+    }
+    //no exception thrown, so looks good
+    return 0;
+  }
+
+  private HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
+      throws HiveException {
+    String [] dbTable = Utilities.getDbTableName(privSubjectDesc.getObject());
+    return new HivePrivilegeObject(getPrivObjectType(privSubjectDesc), dbTable[0], dbTable[1]);
+  }
+
+  private HivePrivilegeObjectType getPrivObjectType(PrivilegeObjectDesc privSubjectDesc) {
+    //TODO: This needs to change to support view once view grant/revoke is supported as
+    // part of HIVE-6181
+    return privSubjectDesc.getTable() ? HivePrivilegeObjectType.TABLE : HivePrivilegeObjectType.DATABASE;
+  }
+
+  private List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges) {
+    List<HivePrivilege> hivePrivileges = new ArrayList<HivePrivilege>();
+    for(PrivilegeDesc privilege : privileges){
+      hivePrivileges.add(
+          new HivePrivilege(privilege.getPrivilege().toString(), privilege.getColumns()));
+    }
+    return hivePrivileges;
+  }
+
+  private List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals) throws HiveException {
+    ArrayList<HivePrincipal> hivePrincipals = new ArrayList<HivePrincipal>();
+    for(PrincipalDesc principal : principals){
+      hivePrincipals.add(
+          new HivePrincipal(principal.getName(), getHivePrincipalType(principal.getType())));
+    }
+    return hivePrincipals;
+  }
+
+  private HivePrincipalType getHivePrincipalType(PrincipalType type) throws HiveException {
+    switch(type){
+    case USER:
+      return HivePrincipalType.USER;
+    case ROLE:
+      return HivePrincipalType.ROLE;
+    case GROUP:
+      throw new HiveException(ErrorMsg.UNNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP);
+    default:
+      //should not happen as we take care of all existing types
+      throw new HiveException("Unsupported authorization type specified");
+    }
+  }
+
   private void throwNotFound(String objType, String objName) throws HiveException {
     throw new HiveException(objType + " " + objName + " not found");
   }
 
-  private int roleDDL(RoleDDLDesc roleDDLDesc) {
-    RoleDDLDesc.RoleOperation operation = roleDDLDesc.getOperation();
+  private int roleDDL(RoleDDLDesc roleDDLDesc) throws HiveException, IOException {
+    if(SessionState.get().isAuthorizationModeV2()){
+      return roleDDLV2(roleDDLDesc);
+    }
+
     DataOutputStream outStream = null;
+    RoleDDLDesc.RoleOperation operation = roleDDLDesc.getOperation();
     try {
       if (operation.equals(RoleDDLDesc.RoleOperation.CREATE_ROLE)) {
         db.createRole(roleDDLDesc.getName(), roleDDLDesc.getRoleOwnerName());
@@ -810,6 +919,48 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
+  }
+
+  private int roleDDLV2(RoleDDLDesc roleDDLDesc) throws HiveException, IOException {
+    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
+    RoleDDLDesc.RoleOperation operation = roleDDLDesc.getOperation();
+    //call the appropriate hive authorizer function
+    switch(operation){
+    case CREATE_ROLE:
+      authorizer.createRole(roleDDLDesc.getName(), null);
+      break;
+    case DROP_ROLE:
+      authorizer.dropRole(roleDDLDesc.getName());
+      break;
+    case SHOW_ROLE_GRANT:
+      List<String> roles = authorizer.getRoles(new HivePrincipal(roleDDLDesc.getName(),
+          getHivePrincipalType(roleDDLDesc.getPrincipalType())));
+      writeListToFile(roles, roleDDLDesc.getResFile());
+      break;
+    case SHOW_ROLES:
+      List<String> allRoles = authorizer.getAllRoles();
+      writeListToFile(allRoles, roleDDLDesc.getResFile());
+      break;
+    default:
+      throw new HiveException("Unkown role operation "
+          + operation.getOperationName());
+    }
+    return 0;
+  }
+
+  /**
+   * Write list of string entries into given file
+   * @param entries
+   * @param resFile
+   * @throws IOException
+   */
+  private void writeListToFile(List<String> entries, String resFile) throws IOException {
+    StringBuilder sb = new StringBuilder(entries.size()*2);
+    for(String entry : entries){
+      sb.append(entry);
+      sb.append(terminator);
+    }
+    writeToFile(sb.toString(), resFile);
   }
 
   private int alterDatabase(AlterDatabaseDesc alterDbDesc) throws HiveException {

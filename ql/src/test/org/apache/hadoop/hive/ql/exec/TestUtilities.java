@@ -26,10 +26,13 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
@@ -74,4 +77,33 @@ public class TestUtilities extends TestCase {
     assertEquals(desc.getExprString(), Utilities.deserializeExpression(
       Utilities.serializeExpression(desc)).getExprString());
   }
+
+  public void testgetDbTableName() throws HiveException{
+    String tablename;
+    String [] dbtab;
+    SessionState.start(new HiveConf(this.getClass()));
+    String curDefaultdb = SessionState.get().getCurrentDatabase();
+
+    //test table without db portion
+    tablename = "tab1";
+    dbtab = Utilities.getDbTableName(tablename);
+    assertEquals("db name", curDefaultdb, dbtab[0]);
+    assertEquals("table name", tablename, dbtab[1]);
+
+    //test table with db portion
+    tablename = "dab1.tab1";
+    dbtab = Utilities.getDbTableName(tablename);
+    assertEquals("db name", "dab1", dbtab[0]);
+    assertEquals("table name", "tab1", dbtab[1]);
+
+    //test invalid table name
+    tablename = "dab1.tab1.x1";
+    try {
+      dbtab = Utilities.getDbTableName(tablename);
+      fail("exception was expected for invalid table name");
+    } catch(HiveException ex){
+      assertEquals("Invalid table name " + tablename, ex.getMessage());
+    }
+  }
+
 }
