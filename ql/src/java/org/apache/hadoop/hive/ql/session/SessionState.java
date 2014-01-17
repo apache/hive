@@ -116,6 +116,8 @@ public class SessionState {
    */
   private HiveOperation commandType;
 
+  private String lastCommand;
+
   private HiveAuthorizationProvider authorizer;
 
   private HiveAuthenticationProvider authenticator;
@@ -377,6 +379,14 @@ public class SessionState {
    */
   private static String makeSessionId() {
     return UUID.randomUUID().toString();
+  }
+
+  public String getLastCommand() {
+    return lastCommand;
+  }
+
+  public void setLastCommand(String lastCommand) {
+    this.lastCommand = lastCommand;
   }
 
   /**

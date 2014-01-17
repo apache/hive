@@ -51,6 +51,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -1708,5 +1709,32 @@ public class QTestUtil {
       result.add(candidate);
     }
     return result;
+  }
+
+  public void failed(int ecode, String fname, String debugHint) {
+    String command = SessionState.get() != null ? SessionState.get().getLastCommand() : null;
+    Assert.fail("Client Execution failed with error code = " + ecode +
+        (command != null ? " running " + command : "") + (debugHint != null ? debugHint : ""));
+  }
+
+  public void failed(String fname, String debugHint) {
+    String command = SessionState.get() != null ? SessionState.get().getLastCommand() : null;
+    Assert.fail("Client Execution was expected to fail, but succeeded with error code 0 " +
+        (command != null ? " running " + command : "") + (debugHint != null ? debugHint : ""));
+  }
+
+  public void failedDiff(int ecode, String fname, String debugHint) {
+    Assert.fail("Client Execution results failed with error code = " + ecode +
+        (debugHint != null ? debugHint : ""));
+  }
+
+  public void failed(Throwable e, String fname, String debugHint) {
+    String command = SessionState.get() != null ? SessionState.get().getLastCommand() : null;
+    System.err.println("Exception: " + e.getMessage());
+    e.printStackTrace();
+    System.err.println("Failed query: " + fname);
+    System.err.flush();
+    Assert.fail("Unexpected exception" + (command != null ? " running " + command : "") +
+        (debugHint != null ? debugHint : ""));
   }
 }

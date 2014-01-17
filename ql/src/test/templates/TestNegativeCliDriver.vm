@@ -141,22 +141,16 @@ public class $className extends TestCase {
       qt.cliInit(fname, false);
       int ecode = qt.executeClient(fname);
       if (ecode == 0) {
-        fail("Client Execution was expected to fail, but succeeded with error code 0 "
-            + debugHint);
+        qt.failed(fname, debugHint);
       }
 
       ecode = qt.checkCliDriverResults(fname);
       if (ecode != 0) {
-        fail("Client execution results failed with error code = " + ecode
-            + debugHint);
+        qt.failedDiff(ecode, fname, debugHint);
       }
     }
     catch (Throwable e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.println("Failed query: " + fname);
-      System.err.flush();
-      fail("Unexpected exception" + debugHint);
+      qt.failed(e, fname, debugHint);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;
