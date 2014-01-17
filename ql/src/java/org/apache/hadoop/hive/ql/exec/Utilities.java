@@ -3192,10 +3192,24 @@ public final class Utilities {
     }
   }
 
-  public static void clearWorkMap() {
+  /**
+   * Returns true if a plan is both configured for vectorized execution
+   * and vectorization is allowed. The plan may be configured for vectorization
+   * but vectorization dissalowed eg. for FetchOperator execution. 
+   */
+  public static boolean isVectorMode(Configuration conf) {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
+        Utilities.getPlanPath(conf) != null && Utilities
+        .getMapRedWork(conf).getMapWork().getVectorMode()) {
+      return true;
+    }
+    return false;
+  }
+  
+    public static void clearWorkMap() {
     gWorkMap.clear();
   }
-
+  
   /**
    * Create a temp dir in specified baseDir
    * This can go away once hive moves to support only JDK 7
