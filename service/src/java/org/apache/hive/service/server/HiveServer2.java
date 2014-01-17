@@ -122,8 +122,9 @@ public class HiveServer2 extends CompositeService {
 
       //NOTE: It is critical to do this here so that log4j is reinitialized
       // before any of the other core hive classes are loaded
-      LogUtils.initHiveLog4j();
-
+      String initLog4jMessage = LogUtils.initHiveLog4j();
+      LOG.debug(initLog4jMessage);
+      
       HiveStringUtils.startupShutdownMessage(HiveServer2.class, args, LOG);
       //log debug message from "oproc" after log4j initialize properly
       LOG.debug(oproc.getDebugMessage().toString());
