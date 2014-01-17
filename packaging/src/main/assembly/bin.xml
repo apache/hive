@@ -40,6 +40,7 @@
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
         <exclude>org.apache.hive.hcatalog:*</exclude>
+		<exclude>org.slf4j:*</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>
