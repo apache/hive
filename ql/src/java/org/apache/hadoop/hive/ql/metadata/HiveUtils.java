@@ -29,6 +29,9 @@ import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.DefaultHiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -334,6 +337,23 @@ public final class HiveUtils {
   public static HiveAuthorizationProvider getAuthorizeProviderManager(
       Configuration conf, HiveConf.ConfVars authorizationProviderConfKey,
       HiveAuthenticationProvider authenticator) throws HiveException {
+    return getAuthorizeProviderManager(conf, authorizationProviderConfKey, authenticator, false);
+  }
+
+  /**
+   * Create a new instance of HiveAuthorizationProvider
+   * @param conf
+   * @param authorizationProviderConfKey
+   * @param authenticator
+   * @param nullIfOtherClass - return null if configuration
+   *  does not point to a HiveAuthorizationProvider subclass
+   * @return new instance of HiveAuthorizationProvider
+   * @throws HiveException
+   */
+  @SuppressWarnings("unchecked")
+  public static HiveAuthorizationProvider getAuthorizeProviderManager(
+      Configuration conf, HiveConf.ConfVars authorizationProviderConfKey,
+      HiveAuthenticationProvider authenticator, boolean nullIfOtherClass) throws HiveException {
 
     String clsStr = HiveConf.getVar(conf, authorizationProviderConfKey);
 
@@ -343,8 +363,11 @@ public final class HiveUtils {
       if (clsStr == null || clsStr.trim().equals("")) {
         cls = DefaultHiveAuthorizationProvider.class;
       } else {
-        cls = (Class<? extends HiveAuthorizationProvider>) Class.forName(
-            clsStr, true, JavaUtils.getClassLoader());
+        Class<?> configClass = Class.forName(clsStr, true, JavaUtils.getClassLoader());
+        if(nullIfOtherClass && !HiveAuthorizationProvider.class.isAssignableFrom(configClass) ){
+          return null;
+        }
+        cls = (Class<? extends HiveAuthorizationProvider>)configClass;
       }
       if (cls != null) {
         ret = ReflectionUtils.newInstance(cls, conf);
@@ -354,6 +377,31 @@ public final class HiveUtils {
     }
     ret.setAuthenticator(authenticator);
     return ret;
+  }
+
+
+  /**
+   * Return HiveAuthorizerFactory used by new authorization plugin interface.
+   * @param conf
+   * @param authorizationProviderConfKey
+   * @return
+   * @throws HiveException if HiveAuthorizerFactory specified in configuration could not
+   */
+  public static HiveAuthorizerFactory getAuthorizerFactory(
+      Configuration conf, HiveConf.ConfVars authorizationProviderConfKey)
+          throws HiveException {
+
+    Class<? extends HiveAuthorizerFactory> cls = conf.getClass(authorizationProviderConfKey.varname,
+        DefaultHiveAuthorizerFactory.class, HiveAuthorizerFactory.class);
+
+    if(cls == null){
+      //should not happen as default value is set
+      throw new HiveException("Configuration value " + authorizationProviderConfKey.varname
+          + " is not set to valid HiveAuthorizerFactory subclass" );
+    }
+
+    HiveAuthorizerFactory authFactory = ReflectionUtils.newInstance(cls, conf);
+    return authFactory;
   }
 
   @SuppressWarnings("unchecked")

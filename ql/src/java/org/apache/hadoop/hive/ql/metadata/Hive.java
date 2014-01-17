@@ -2514,20 +2514,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
   public Table newTable(String tableName) throws HiveException {
-    String[] names = getQualifiedNames(tableName);
-    switch (names.length) {
-    case 2:
-      return new Table(names[0], names[1]);
-    case 1:
-      return new Table(SessionState.get().getCurrentDatabase(), names[0]);
-    default:
-      try{
-        throw new HiveException("Invalid table name: " + tableName);
-      }catch(Exception e) {
-        e.printStackTrace();
-      }
-      throw new HiveException("Invalid table name: " + tableName);
-    }
+    String[] names = Utilities.getDbTableName(tableName);
+    return new Table(names[0], names[1]);
   }
 
   public String getDelegationToken(String owner, String renewer)

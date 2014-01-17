@@ -181,7 +181,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
 
 /**
- * Implementation of the semantic analyzer.
+ * Implementation of the semantic analyzer. It generates the query plan.
+ * There are other specific semantic analyzers for some hive operations such as
+ * DDLSemanticAnalyzer for ddl operations.
  */
 
 public class SemanticAnalyzer extends BaseSemanticAnalyzer {

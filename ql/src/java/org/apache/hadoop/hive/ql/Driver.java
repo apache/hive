@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
+import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -101,6 +102,9 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -523,6 +527,11 @@ public class Driver implements CommandProcessor {
     SessionState ss = SessionState.get();
     HiveOperation op = ss.getHiveOperation();
     Hive db = sem.getDb();
+    if(ss.isAuthorizationModeV2()){
+      doAuthorizationV2(ss, op, inputs, outputs);
+      return;
+    }
+
     if (op != null) {
       if (op.equals(HiveOperation.CREATEDATABASE)) {
         ss.getAuthorizer().authorize(
@@ -543,6 +552,7 @@ public class Driver implements CommandProcessor {
         }
       }
       if (outputs != null && outputs.size() > 0) {
+        //do authorization for each output
         for (WriteEntity write : outputs) {
           if (write.getType() == Entity.Type.DATABASE) {
             ss.getAuthorizer().authorize(write.getDatabase(),
@@ -570,10 +580,10 @@ public class Driver implements CommandProcessor {
     }
 
     if (inputs != null && inputs.size() > 0) {
-
       Map<Table, List<String>> tab2Cols = new HashMap<Table, List<String>>();
       Map<Partition, List<String>> part2Cols = new HashMap<Partition, List<String>>();
 
+      //determine if partition level privileges should be checked for input tables
       Map<String, Boolean> tableUsePartLevelAuth = new HashMap<String, Boolean>();
       for (ReadEntity read : inputs) {
         if (read.getType() == Entity.Type.DATABASE) {
@@ -596,6 +606,8 @@ public class Driver implements CommandProcessor {
         }
       }
 
+      //for a select or create-as-select query, populate the partition to column (par2Cols) or
+      // table to columns mapping (tab2Cols)
       if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
           || op.equals(HiveOperation.QUERY)) {
         SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
@@ -689,6 +701,49 @@ public class Driver implements CommandProcessor {
       }
 
     }
+  }
+
+  private void doAuthorizationV2(SessionState ss, HiveOperation op, HashSet<ReadEntity> inputs,
+      HashSet<WriteEntity> outputs) {
+    HiveOperationType hiveOpType = getHiveOperationType(op);
+    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputs);
+    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputs);
+    ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs);
+    return;
+  }
+
+  private List<HivePrivilegeObject> getHivePrivObjects(HashSet<? extends Entity> inputs) {
+    List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
+    for(Entity input : inputs){
+      HivePrivilegeObjectType privObjType = getHivePrivilegeObjectType(input.getType());
+      //support for authorization on partitions or uri needs to be added
+      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType,
+          input.getDatabase().getName(),
+          input.getTable().getTableName());
+      hivePrivobjs.add(hPrivObject);
+    }
+    return hivePrivobjs;
+  }
+
+  private HivePrivilegeObjectType getHivePrivilegeObjectType(Type type) {
+    switch(type){
+    case DATABASE:
+      return HivePrivilegeObjectType.DATABASE;
+    case TABLE:
+      return HivePrivilegeObjectType.TABLE;
+    case LOCAL_DIR:
+    case DFS_DIR:
+      return HivePrivilegeObjectType.URI;
+    case PARTITION:
+    case DUMMYPARTITION: //need to determine if a different type is needed for dummy partitions
+      return HivePrivilegeObjectType.PARTITION;
+    default:
+      return null;
+    }
+  }
+
+  private HiveOperationType getHiveOperationType(HiveOperation op) {
+    return HiveOperationType.valueOf(op.name());
   }
 
   /**
