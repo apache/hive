@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
 import org.apache.hadoop.http.HtmlQuoting;
@@ -324,18 +325,18 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
     @Override
     public InputSplitShim[] getSplits(JobConf job, int numSplits) throws IOException {
-      long minSize = job.getLong("mapred.min.split.size", 0);
+      long minSize = job.getLong(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"), 0);
 
       // For backward compatibility, let the above parameter be used
-      if (job.getLong("mapred.min.split.size.per.node", 0) == 0) {
+      if (job.getLong(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZEPERNODE"), 0) == 0) {
         super.setMinSplitSizeNode(minSize);
       }
 
-      if (job.getLong("mapred.min.split.size.per.rack", 0) == 0) {
+      if (job.getLong(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZEPERRACK"), 0) == 0) {
         super.setMinSplitSizeRack(minSize);
       }
 
-      if (job.getLong("mapred.max.split.size", 0) == 0) {
+      if (job.getLong(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMAXSPLITSIZE"), 0) == 0) {
         super.setMaxSplitSize(minSize);
       }
 
@@ -426,11 +427,11 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
     // option to bypass job setup and cleanup was introduced in hadoop-21 (MAPREDUCE-463)
     // but can be backported. So we disable setup/cleanup in all versions >= 0.19
-    conf.setBoolean("mapred.committer.job.setup.cleanup.needed", false);
+    conf.setBoolean(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDSETUPCLEANUPNEEDED"), false);
 
     // option to bypass task cleanup task was introduced in hadoop-23 (MAPREDUCE-2206)
     // but can be backported. So we disable setup/cleanup in all versions >= 0.19
-    conf.setBoolean("mapreduce.job.committer.task.cleanup.needed", false);
+    conf.setBoolean(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDTASKCLEANUPNEEDED"), false);
   }
 
   @Override

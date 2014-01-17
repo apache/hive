@@ -28,6 +28,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 
@@ -517,4 +518,6 @@ public interface HadoopShims {
    * other file system.
    */
   public FileSystem createProxyFileSystem(FileSystem fs, URI uri);
+
+  public Map<String, String> getHadoopConfNames();
 }

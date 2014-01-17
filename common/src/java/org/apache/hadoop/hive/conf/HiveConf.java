@@ -146,7 +146,6 @@ public class HiveConf extends Configuration {
    */
   public static final HiveConf.ConfVars[] dbVars = {
     HiveConf.ConfVars.HADOOPBIN,
-    HiveConf.ConfVars.HADOOPJT,
     HiveConf.ConfVars.METASTOREWAREHOUSE,
     HiveConf.ConfVars.SCRATCHDIR
   };
@@ -231,22 +230,23 @@ public class HiveConf extends Configuration {
     // a symbolic name to reference in the Hive source code. Properties with non-null
     // values will override any values set in the underlying Hadoop configuration.
     HADOOPBIN("hadoop.bin.path", findHadoopBinary()),
-    HADOOPFS("fs.default.name", null),
     HIVE_FS_HAR_IMPL("fs.har.impl", "org.apache.hadoop.hive.shims.HiveHarFileSystem"),
-    HADOOPMAPFILENAME("map.input.file", null),
-    HADOOPMAPREDINPUTDIR("mapred.input.dir", null),
-    HADOOPMAPREDINPUTDIRRECURSIVE("mapred.input.dir.recursive", false),
-    HADOOPJT("mapred.job.tracker", null),
-    MAPREDMAXSPLITSIZE("mapred.max.split.size", 256000000L),
-    MAPREDMINSPLITSIZE("mapred.min.split.size", 1L),
-    MAPREDMINSPLITSIZEPERNODE("mapred.min.split.size.per.rack", 1L),
-    MAPREDMINSPLITSIZEPERRACK("mapred.min.split.size.per.node", 1L),
+    HADOOPFS(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPFS"), null),
+    HADOOPMAPFILENAME(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPMAPFILENAME"), null),
+    HADOOPMAPREDINPUTDIR(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPMAPREDINPUTDIR"), null),
+    HADOOPMAPREDINPUTDIRRECURSIVE(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPMAPREDINPUTDIRRECURSIVE"), false),
+    MAPREDMAXSPLITSIZE(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMAXSPLITSIZE"), 256000000L),
+    MAPREDMINSPLITSIZE(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"), 1L),
+    MAPREDMINSPLITSIZEPERNODE(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZEPERNODE"), 1L),
+    MAPREDMINSPLITSIZEPERRACK(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZEPERRACK"), 1L),
     // The number of reduce tasks per job. Hadoop sets this value to 1 by default
     // By setting this property to -1, Hive will automatically determine the correct
     // number of reducers.
-    HADOOPNUMREDUCERS("mapred.reduce.tasks", -1),
-    HADOOPJOBNAME("mapred.job.name", null),
-    HADOOPSPECULATIVEEXECREDUCERS("mapred.reduce.tasks.speculative.execution", true),
+    HADOOPNUMREDUCERS(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPNUMREDUCERS"), -1),
+    HADOOPJOBNAME(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPJOBNAME"), null),
+    HADOOPSPECULATIVEEXECREDUCERS(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPSPECULATIVEEXECREDUCERS"), true),
+    MAPREDSETUPCLEANUPNEEDED(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDSETUPCLEANUPNEEDED"), false),
+    MAPREDTASKCLEANUPNEEDED(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDTASKCLEANUPNEEDED"), false),
 
     // Metastore stuff. Be sure to update HiveConf.metaVars when you add
     // something here!
