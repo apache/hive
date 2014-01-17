@@ -128,21 +128,17 @@ public class $className extends TestCase {
     catch (ParseException pe) {
       int ecode = qt.checkNegativeResults(fname, pe);
       if (ecode != 0) {
-        fail("failed with error code = " + ecode + debugHint);
+        qt.failed(ecode, fname, debugHint);
       }
     }
     catch (SemanticException se) {
       int ecode = qt.checkNegativeResults(fname, se);
       if (ecode != 0) {
-        fail("failed with error code = " + ecode + debugHint);
+        qt.failedDiff(ecode, fname, debugHint);
       }
     }
     catch (Throwable e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.println("Failed query: " + fname);
-      System.err.flush();
-      fail("Unexpected exception" + debugHint);
+      qt.failed(e, fname, debugHint);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;
