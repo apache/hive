@@ -336,4 +336,39 @@ public class NullUtil {
       Arrays.fill(v.isNull, 0, n, false);
     }
   }
+
+  /**
+   * Filter out rows with null values. Return the number of rows in the batch.
+   */
+  public static int filterNulls(ColumnVector v, boolean selectedInUse, int[] sel, int n) {
+    int newSize = 0;
+
+    if (v.noNulls) {
+
+      // no rows will be filtered
+      return n;
+    }
+
+    if (v.isRepeating) {
+
+      // all rows are filtered if repeating null, otherwise no rows are filtered
+      return v.isNull[0] ? 0 : n;
+    }
+
+    if (selectedInUse) {
+      for (int j = 0; j != n; j++) {
+        int i = sel[j];
+        if (!v.isNull[i]) {
+          sel[newSize++] = i;
+        }
+      }
+    } else {
+      for (int i = 0; i != n; i++) {
+        if (!v.isNull[i]) {
+          sel[newSize++] = i;
+        }
+      }
+    }
+    return newSize;
+  }
 }

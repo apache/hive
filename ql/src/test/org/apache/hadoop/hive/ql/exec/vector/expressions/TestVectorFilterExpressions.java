@@ -70,31 +70,60 @@ public class TestVectorFilterExpressions {
   }
 
   @Test
-  public void testFilterLongColEqualLongColumn() {
+  public void testFilterLongColGreaterLongColumn() {
     int seed = 17;
-    VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+    VectorizedRowBatch b = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
         VectorizedRowBatch.DEFAULT_SIZE,
         2, seed);
-    LongColumnVector lcv0 = (LongColumnVector) vrg.cols[0];
-    LongColumnVector lcv1 = (LongColumnVector) vrg.cols[1];
+    LongColumnVector lcv0 = (LongColumnVector) b.cols[0];
+    LongColumnVector lcv1 = (LongColumnVector) b.cols[1];
+    b.size = 3;
     FilterLongColGreaterLongColumn expr = new FilterLongColGreaterLongColumn(0, 1);
 
-    //Basic case
-    lcv0.vector[1] = 23;
-    lcv1.vector[1] = 19;
-    lcv0.vector[5] = 23;
-    lcv1.vector[5] = 19;
-    expr.evaluate(vrg);
-    assertEquals(2, vrg.size);
-    assertEquals(1, vrg.selected[0]);
-    assertEquals(5, vrg.selected[1]);
+    // Basic case
+    lcv0.vector[0] = 10;
+    lcv0.vector[1] = 10;
+    lcv0.vector[2] = 10;
+    lcv1.vector[0] = 20;
+    lcv1.vector[1] = 1;
+    lcv1.vector[2] = 7;
 
-    //handle null
+    expr.evaluate(b);
+    assertEquals(2, b.size);
+    assertEquals(1, b.selected[0]);
+    assertEquals(2, b.selected[1]);
+
+    // handle null with selected in use
     lcv0.noNulls = false;
     lcv0.isNull[1] = true;
-    expr.evaluate(vrg);
-    assertEquals(1, vrg.size);
-    assertEquals(5, vrg.selected[0]);
+    expr.evaluate(b);
+    assertEquals(1, b.size);
+    assertEquals(2, b.selected[0]);
+
+    // handle repeating
+    b.size = 3;
+    b.selectedInUse = false;
+    lcv0.isRepeating = true;
+    lcv0.noNulls = true;
+    expr.evaluate(b);
+    assertEquals(2, b.size);
+
+    // handle repeating null
+    b.size = 3;
+    b.selectedInUse = false;
+    lcv0.isNull[0] = true;
+    lcv0.noNulls = false;
+    expr.evaluate(b);
+    assertEquals(0, b.size);
+
+    // handle null on both sizes (not repeating)
+    b.size = 3;
+    b.selectedInUse = false;
+    lcv0.isRepeating = false;
+    lcv1.noNulls = false;
+    lcv1.isNull[2] = true;
+    expr.evaluate(b);
+    assertEquals(0, b.size);
   }
 
   @Test
