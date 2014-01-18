@@ -207,12 +207,11 @@ public class DagUtils {
     Path tezDir = getTezDir(mrScratchDir);
 
     // set up the operator plan
-    Path planPath = Utilities.setMapWork(conf, mapWork,
-        mrScratchDir.toUri().toString(), false);
+    Utilities.setMapWork(conf, mapWork, mrScratchDir, false);
 
     // setup input paths and split info
     List<Path> inputPaths = Utilities.getInputPaths(conf, mapWork,
-        mrScratchDir.toUri().toString(), ctx);
+        mrScratchDir, ctx);
     Utilities.setInputPaths(conf, inputPaths);
 
     // create the directories FileSinkOperators need
@@ -317,8 +316,7 @@ public class DagUtils {
       Path mrScratchDir, Context ctx) throws Exception {
 
     // set up operator plan
-    Path planPath = Utilities.setReduceWork(conf, reduceWork,
-        mrScratchDir.toUri().toString(), false);
+    Utilities.setReduceWork(conf, reduceWork, mrScratchDir, false);
 
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, reduceWork);

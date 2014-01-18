@@ -946,12 +946,12 @@ public final class GenMapRedUtils {
    */
   protected static TableScanOperator createTemporaryFile(
       Operator<? extends OperatorDesc> parent, Operator<? extends OperatorDesc> child,
-      String taskTmpDir, TableDesc tt_desc, ParseContext parseCtx) {
+      Path taskTmpDir, TableDesc tt_desc, ParseContext parseCtx) {
 
     // Create a FileSinkOperator for the file name of taskTmpDir
     boolean compressIntermediate =
         parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESSINTERMEDIATE);
-    FileSinkDesc desc = new FileSinkDesc(new Path(taskTmpDir), tt_desc, compressIntermediate);
+    FileSinkDesc desc = new FileSinkDesc(taskTmpDir, tt_desc, compressIntermediate);
     if (compressIntermediate) {
       desc.setCompressCodec(parseCtx.getConf().getVar(
           HiveConf.ConfVars.COMPRESSINTERMEDIATECODEC));
@@ -1008,7 +1008,7 @@ public final class GenMapRedUtils {
 
     // Generate the temporary file name
     Context baseCtx = parseCtx.getContext();
-    String taskTmpDir = baseCtx.getMRTmpFileURI();
+    Path taskTmpDir = baseCtx.getMRTmpPath();
 
     Operator<? extends OperatorDesc> parent = op.getParentOperators().get(0);
     TableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(PlanUtils
@@ -1023,7 +1023,7 @@ public final class GenMapRedUtils {
         opProcCtx.getMapCurrCtx();
     mapCurrCtx.put(tableScanOp, new GenMapRedCtx(childTask, null));
 
-    String streamDesc = taskTmpDir;
+    String streamDesc = taskTmpDir.toUri().toString();
     MapredWork cplan = (MapredWork) childTask.getWork();
 
     if (needsTagging(cplan.getReduceWork())) {
@@ -1055,7 +1055,7 @@ public final class GenMapRedUtils {
     }
 
     // Add the path to alias mapping
-    setTaskPlan(taskTmpDir, streamDesc, tableScanOp, cplan.getMapWork(), false, tt_desc);
+    setTaskPlan(taskTmpDir.toUri().toString(), streamDesc, tableScanOp, cplan.getMapWork(), false, tt_desc);
     opProcCtx.setCurrTopOp(null);
     opProcCtx.setCurrAliasId(null);
     opProcCtx.setCurrTask(childTask);

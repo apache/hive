@@ -83,7 +83,7 @@ public class MapWork extends BaseWork {
       new HashMap<String, List<SortCol>>();
 
   private MapredLocalWork mapLocalWork;
-  private String tmpHDFSFileURI;
+  private Path tmpHDFSPath;
 
   private String inputformat;
 
@@ -432,12 +432,12 @@ public class MapWork extends BaseWork {
     this.opParseCtxMap = opParseCtxMap;
   }
 
-  public String getTmpHDFSFileURI() {
-    return tmpHDFSFileURI;
+  public Path getTmpHDFSPath() {
+    return tmpHDFSPath;
   }
 
-  public void setTmpHDFSFileURI(String tmpHDFSFileURI) {
-    this.tmpHDFSFileURI = tmpHDFSFileURI;
+  public void setTmpHDFSPath(Path tmpHDFSPath) {
+    this.tmpHDFSPath = tmpHDFSPath;
   }
 
   public void mergingInto(MapWork mapWork) {

@@ -203,7 +203,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     Context ctx = driverContext.getCtx();
     boolean ctxCreated = false;
-    String emptyScratchDirStr;
     Path emptyScratchDir;
 
     MapWork mWork = work.getMapWork();
@@ -215,8 +214,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         ctxCreated = true;
       }
 
-      emptyScratchDirStr = ctx.getMRTmpFileURI();
-      emptyScratchDir = new Path(emptyScratchDirStr);
+      emptyScratchDir = ctx.getMRTmpPath();
       FileSystem fs = emptyScratchDir.getFileSystem(job);
       fs.mkdirs(emptyScratchDir);
     } catch (IOException e) {
@@ -331,8 +329,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       MapredLocalWork localwork = mWork.getMapLocalWork();
       if (localwork != null) {
         if (!ShimLoader.getHadoopShims().isLocalMode(job)) {
-          Path localPath = new Path(localwork.getTmpFileURI());
-          Path hdfsPath = new Path(mWork.getTmpHDFSFileURI());
+          Path localPath = localwork.getTmpPath();
+          Path hdfsPath = mWork.getTmpHDFSPath();
 
           FileSystem hdfs = hdfsPath.getFileSystem(job);
           FileSystem localFS = localPath.getFileSystem(job);
@@ -345,19 +343,16 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           }
 
           //package and compress all the hashtable files to an archive file
-          String parentDir = localPath.toUri().getPath();
           String stageId = this.getId();
-          String archiveFileURI = Utilities.generateTarURI(parentDir, stageId);
           String archiveFileName = Utilities.generateTarFileName(stageId);
           localwork.setStageID(stageId);
 
-          CompressionUtils.tar(parentDir, fileNames,archiveFileName);
-          Path archivePath = new Path(archiveFileURI);
-          LOG.info("Archive "+ hashtableFiles.length+" hash table files to " + archiveFileURI);
+          CompressionUtils.tar(localPath.toUri().getPath(), fileNames,archiveFileName);
+          Path archivePath = Utilities.generateTarPath(localPath, stageId);
+          LOG.info("Archive "+ hashtableFiles.length+" hash table files to " + archivePath);
 
           //upload archive file to hdfs
-          String hdfsFile =Utilities.generateTarURI(hdfsPath, stageId);
-          Path hdfsFilePath = new Path(hdfsFile);
+          Path hdfsFilePath =Utilities.generateTarPath(hdfsPath, stageId);
           short replication = (short) job.getInt("mapred.submit.replication", 10);
           hdfs.setReplication(hdfsFilePath, replication);
           hdfs.copyFromLocalFile(archivePath, hdfsFilePath);
@@ -370,10 +365,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
       work.configureJobConf(job);
-      List<Path> inputPaths = Utilities.getInputPaths(job, mWork, emptyScratchDirStr, ctx);
+      List<Path> inputPaths = Utilities.getInputPaths(job, mWork, emptyScratchDir, ctx);
       Utilities.setInputPaths(job, inputPaths);
 
-      Utilities.setMapRedWork(job, work, ctx.getMRTmpFileURI());
+      Utilities.setMapRedWork(job, work, ctx.getMRTmpPath());
 
       if (mWork.getSamplingType() > 0 && rWork != null && rWork.getNumReduceTasks() > 1) {
         try {

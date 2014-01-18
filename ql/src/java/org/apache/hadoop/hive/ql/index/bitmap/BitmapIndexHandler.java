@@ -97,7 +97,7 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
     // Build reentrant QL for index query
     StringBuilder qlCommand = new StringBuilder("INSERT OVERWRITE DIRECTORY ");
 
-    String tmpFile = pctx.getContext().getMRTmpFileURI();
+    String tmpFile = pctx.getContext().getMRTmpPath().toUri().toString();
     qlCommand.append( "\"" + tmpFile + "\" ");            // QL includes " around file name
     qlCommand.append("SELECT bucketname AS `_bucketname` , COLLECT_SET(offset) AS `_offsets` FROM ");
     qlCommand.append("(SELECT `_bucketname` AS bucketname , `_offset` AS offset FROM ");

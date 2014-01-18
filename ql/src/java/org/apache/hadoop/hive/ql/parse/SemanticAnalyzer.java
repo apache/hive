@@ -1279,7 +1279,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               }
             } else {
               qb.setIsQuery(true);
-              fname = ctx.getMRTmpFileURI();
+              fname = ctx.getMRTmpPath().toString();
               ctx.setResDir(new Path(fname));
             }
           }
@@ -5474,7 +5474,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (isLocal) {
         // for local directory - we always write to map-red intermediate
         // store and then copy to local fs
-        queryTmpdir = new Path(ctx.getMRTmpFileURI());
+        queryTmpdir = ctx.getMRTmpPath();
       } else {
         // otherwise write to the file system implied by the directory
         // no copy is required. we may want to revisit this policy in future

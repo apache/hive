@@ -55,13 +55,13 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       MapJoinTableContainer[] mapJoinTables,
       MapJoinTableContainerSerDe[] mapJoinTableSerdes) throws HiveException {
 
-    String baseDir = null;
+    Path baseDir = null;
     Path currentInputPath = context.getCurrentInputPath();
     LOG.info("******* Load from HashTable File: input : " + currentInputPath);
     String fileName = context.getLocalWork().getBucketFileName(currentInputPath.toString());
     try {
       if (ShimLoader.getHadoopShims().isLocalMode(hconf)) {
-        baseDir = context.getLocalWork().getTmpFileURI();
+        baseDir = context.getLocalWork().getTmpPath();
       } else {
         Path[] localArchives;
         String stageID = context.getLocalWork().getStageID();
@@ -74,8 +74,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           if (!archive.getName().endsWith(suffix)) {
             continue;
           }
-          Path archiveLocalLink = archive.makeQualified(localFs);
-          baseDir = archiveLocalLink.toUri().getPath();
+          baseDir = archive.makeQualified(localFs);
         }
       }
       for (int pos = 0; pos < mapJoinTables.length; pos++) {
@@ -85,8 +84,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         if(baseDir == null) {
           throw new IllegalStateException("baseDir cannot be null");
         }
-        String filePath = Utilities.generatePath(baseDir, desc.getDumpFilePrefix(), (byte)pos, fileName);
-        Path path = new Path(filePath);
+        Path path = Utilities.generatePath(baseDir, desc.getDumpFilePrefix(), (byte)pos, fileName);
         LOG.info("\tLoad back 1 hashtable file from tmp file uri:" + path);
         ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(
             new FileInputStream(path.toUri().getPath()), 4096));
