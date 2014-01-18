@@ -4896,7 +4896,7 @@ class PartitionsByExprResult {
       self::$_TSPEC = array(
         1 => array(
           'var' => 'partitions',
-          'type' => TType::SET,
+          'type' => TType::LST,
           'etype' => TType::STRUCT,
           'elem' => array(
             'type' => TType::STRUCT,
@@ -4939,23 +4939,19 @@ class PartitionsByExprResult {
       switch ($fid)
       {
         case 1:
-          if ($ftype == TType::SET) {
+          if ($ftype == TType::LST) {
             $this->partitions = array();
             $_size227 = 0;
             $_etype230 = 0;
-            $xfer += $input->readSetBegin($_etype230, $_size227);
+            $xfer += $input->readListBegin($_etype230, $_size227);
             for ($_i231 = 0; $_i231 < $_size227; ++$_i231)
             {
               $elem232 = null;
               $elem232 = new \metastore\Partition();
               $xfer += $elem232->read($input);
-              if (is_scalar($elem232)) {
-                $this->partitions[$elem232] = true;
-              } else {
-                $this->partitions []= $elem232;
-              }
+              $this->partitions []= $elem232;
             }
-            $xfer += $input->readSetEnd();
+            $xfer += $input->readListEnd();
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -4984,20 +4980,16 @@ class PartitionsByExprResult {
       if (!is_array($this->partitions)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('partitions', TType::SET, 1);
+      $xfer += $output->writeFieldBegin('partitions', TType::LST, 1);
       {
-        $output->writeSetBegin(TType::STRUCT, count($this->partitions));
+        $output->writeListBegin(TType::STRUCT, count($this->partitions));
         {
-          foreach ($this->partitions as $iter233 => $iter234)
+          foreach ($this->partitions as $iter233)
           {
-            if (is_scalar($iter234)) {
             $xfer += $iter233->write($output);
-            } else {
-            $xfer += $iter234->write($output);
-            }
           }
         }
-        $output->writeSetEnd();
+        $output->writeListEnd();
       }
       $xfer += $output->writeFieldEnd();
     }
@@ -5213,15 +5205,15 @@ class AddPartitionsResult {
         case 1:
           if ($ftype == TType::LST) {
             $this->partitions = array();
-            $_size235 = 0;
-            $_etype238 = 0;
-            $xfer += $input->readListBegin($_etype238, $_size235);
-            for ($_i239 = 0; $_i239 < $_size235; ++$_i239)
+            $_size234 = 0;
+            $_etype237 = 0;
+            $xfer += $input->readListBegin($_etype237, $_size234);
+            for ($_i238 = 0; $_i238 < $_size234; ++$_i238)
             {
-              $elem240 = null;
-              $elem240 = new \metastore\Partition();
-              $xfer += $elem240->read($input);
-              $this->partitions []= $elem240;
+              $elem239 = null;
+              $elem239 = new \metastore\Partition();
+              $xfer += $elem239->read($input);
+              $this->partitions []= $elem239;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -5249,9 +5241,9 @@ class AddPartitionsResult {
       {
         $output->writeListBegin(TType::STRUCT, count($this->partitions));
         {
-          foreach ($this->partitions as $iter241)
+          foreach ($this->partitions as $iter240)
           {
-            $xfer += $iter241->write($output);
+            $xfer += $iter240->write($output);
           }
         }
         $output->writeListEnd();
@@ -5359,15 +5351,15 @@ class AddPartitionsRequest {
         case 3:
           if ($ftype == TType::LST) {
             $this->parts = array();
-            $_size242 = 0;
-            $_etype245 = 0;
-            $xfer += $input->readListBegin($_etype245, $_size242);
-            for ($_i246 = 0; $_i246 < $_size242; ++$_i246)
+            $_size241 = 0;
+            $_etype244 = 0;
+            $xfer += $input->readListBegin($_etype244, $_size241);
+            for ($_i245 = 0; $_i245 < $_size241; ++$_i245)
             {
-              $elem247 = null;
-              $elem247 = new \metastore\Partition();
-              $xfer += $elem247->read($input);
-              $this->parts []= $elem247;
+              $elem246 = null;
+              $elem246 = new \metastore\Partition();
+              $xfer += $elem246->read($input);
+              $this->parts []= $elem246;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -5419,9 +5411,9 @@ class AddPartitionsRequest {
       {
         $output->writeListBegin(TType::STRUCT, count($this->parts));
         {
-          foreach ($this->parts as $iter248)
+          foreach ($this->parts as $iter247)
           {
-            $xfer += $iter248->write($output);
+            $xfer += $iter247->write($output);
           }
         }
         $output->writeListEnd();

@@ -307,7 +307,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
       if (addPartitionDesc != null) {
-        return addPartitions(db, addPartitionDesc); // TODO#: here
+        return addPartitions(db, addPartitionDesc);
       }
 
       RenamePartitionDesc renamePartitionDesc = work.getRenamePartitionDesc();
@@ -1103,7 +1103,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    */
   private int addPartitions(Hive db, AddPartitionDesc addPartitionDesc) throws HiveException {
-    List<Partition> parts = db.createPartitions(addPartitionDesc); // TODO#: here
+    List<Partition> parts = db.createPartitions(addPartitionDesc);
     for (Partition part : parts) {
       work.getOutputs().add(new WriteEntity(part));
     }

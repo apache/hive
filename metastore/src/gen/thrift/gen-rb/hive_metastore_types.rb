@@ -732,7 +732,7 @@ class PartitionsByExprResult
   HASUNKNOWNPARTITIONS = 2
 
   FIELDS = {
-    PARTITIONS => {:type => ::Thrift::Types::SET, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
+    PARTITIONS => {:type => ::Thrift::Types::LIST, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
     HASUNKNOWNPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'hasUnknownPartitions'}
   }
 

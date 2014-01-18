@@ -209,7 +209,7 @@ public interface RawStore extends Configurable {
       throws MetaException, NoSuchObjectException;
 
   public abstract boolean getPartitionsByExpr(String dbName, String tblName,
-      byte[] expr, String defaultPartitionName, short maxParts, Set<Partition> result)
+      byte[] expr, String defaultPartitionName, short maxParts, List<Partition> result)
       throws TException;
 
   public abstract List<Partition> getPartitionsByNames(

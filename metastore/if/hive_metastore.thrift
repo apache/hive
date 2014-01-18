@@ -273,7 +273,7 @@ struct EnvironmentContext {
 
 // Return type for get_partitions_by_expr
 struct PartitionsByExprResult {
-  1: required set<Partition> partitions,
+  1: required list<Partition> partitions,
   // Whether the results has any (currently, all) partitions which may or may not match
   2: required bool hasUnknownPartitions
 }

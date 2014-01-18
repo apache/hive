@@ -325,7 +325,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, Set<Partition> result) throws TException {
+      String defaultPartitionName, short maxParts, List<Partition> result) throws TException {
     return false;
   }
 

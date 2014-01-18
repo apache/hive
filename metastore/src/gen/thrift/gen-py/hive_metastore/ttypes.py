@@ -3222,7 +3222,7 @@ class PartitionsByExprResult:
 
   thrift_spec = (
     None, # 0
-    (1, TType.SET, 'partitions', (TType.STRUCT,(Partition, Partition.thrift_spec)), None, ), # 1
+    (1, TType.LIST, 'partitions', (TType.STRUCT,(Partition, Partition.thrift_spec)), None, ), # 1
     (2, TType.BOOL, 'hasUnknownPartitions', None, None, ), # 2
   )
 
@@ -3240,14 +3240,14 @@ class PartitionsByExprResult:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.SET:
-          self.partitions = set()
-          (_etype230, _size227) = iprot.readSetBegin()
+        if ftype == TType.LIST:
+          self.partitions = []
+          (_etype230, _size227) = iprot.readListBegin()
           for _i231 in xrange(_size227):
             _elem232 = Partition()
             _elem232.read(iprot)
-            self.partitions.add(_elem232)
-          iprot.readSetEnd()
+            self.partitions.append(_elem232)
+          iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
@@ -3266,11 +3266,11 @@ class PartitionsByExprResult:
       return
     oprot.writeStructBegin('PartitionsByExprResult')
     if self.partitions is not None:
-      oprot.writeFieldBegin('partitions', TType.SET, 1)
-      oprot.writeSetBegin(TType.STRUCT, len(self.partitions))
+      oprot.writeFieldBegin('partitions', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRUCT, len(self.partitions))
       for iter233 in self.partitions:
         iter233.write(oprot)
-      oprot.writeSetEnd()
+      oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.hasUnknownPartitions is not None:
       oprot.writeFieldBegin('hasUnknownPartitions', TType.BOOL, 2)
