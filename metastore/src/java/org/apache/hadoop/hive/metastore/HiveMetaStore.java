@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -3378,7 +3379,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       PartitionsByExprResult ret = null;
       Exception ex = null;
       try {
-        Set<Partition> partitions = new LinkedHashSet<Partition>();
+        List<Partition> partitions = new LinkedList<Partition>();
         boolean hasUnknownPartitions = getMS().getPartitionsByExpr(dbName, tblName,
             req.getExpr(), req.getDefaultPartitionName(), req.getMaxParts(), partitions);
         ret = new PartitionsByExprResult(partitions, hasUnknownPartitions);

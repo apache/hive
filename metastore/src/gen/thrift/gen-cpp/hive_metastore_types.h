@@ -1976,18 +1976,18 @@ void swap(EnvironmentContext &a, EnvironmentContext &b);
 class PartitionsByExprResult {
  public:
 
-  static const char* ascii_fingerprint; // = "1B91CF0D2FC339DC29ABBD79CC9700E4";
-  static const uint8_t binary_fingerprint[16]; // = {0x1B,0x91,0xCF,0x0D,0x2F,0xC3,0x39,0xDC,0x29,0xAB,0xBD,0x79,0xCC,0x97,0x00,0xE4};
+  static const char* ascii_fingerprint; // = "40B789CC91B508FE36600A14E3F80425";
+  static const uint8_t binary_fingerprint[16]; // = {0x40,0xB7,0x89,0xCC,0x91,0xB5,0x08,0xFE,0x36,0x60,0x0A,0x14,0xE3,0xF8,0x04,0x25};
 
   PartitionsByExprResult() : hasUnknownPartitions(0) {
   }
 
   virtual ~PartitionsByExprResult() throw() {}
 
-  std::set<Partition>  partitions;
+  std::vector<Partition>  partitions;
   bool hasUnknownPartitions;
 
-  void __set_partitions(const std::set<Partition> & val) {
+  void __set_partitions(const std::vector<Partition> & val) {
     partitions = val;
   }
 

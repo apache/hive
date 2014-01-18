@@ -1815,13 +1815,13 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, Set<Partition> result) throws TException {
+      String defaultPartitionName, short maxParts, List<Partition> result) throws TException {
     return getPartitionsByExprInternal(
         dbName, tblName, expr, defaultPartitionName, maxParts, result, true, true);
   }
 
   protected boolean getPartitionsByExprInternal(String dbName, String tblName,
-      byte[] expr, String defaultPartitionName, short maxParts, Set<Partition> result,
+      byte[] expr, String defaultPartitionName, short maxParts, List<Partition> result,
       boolean allowSql, boolean allowJdo) throws TException {
     assert result != null;
 

@@ -3719,8 +3719,8 @@ void swap(EnvironmentContext &a, EnvironmentContext &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* PartitionsByExprResult::ascii_fingerprint = "1B91CF0D2FC339DC29ABBD79CC9700E4";
-const uint8_t PartitionsByExprResult::binary_fingerprint[16] = {0x1B,0x91,0xCF,0x0D,0x2F,0xC3,0x39,0xDC,0x29,0xAB,0xBD,0x79,0xCC,0x97,0x00,0xE4};
+const char* PartitionsByExprResult::ascii_fingerprint = "40B789CC91B508FE36600A14E3F80425";
+const uint8_t PartitionsByExprResult::binary_fingerprint[16] = {0x40,0xB7,0x89,0xCC,0x91,0xB5,0x08,0xFE,0x36,0x60,0x0A,0x14,0xE3,0xF8,0x04,0x25};
 
 uint32_t PartitionsByExprResult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -3745,20 +3745,19 @@ uint32_t PartitionsByExprResult::read(::apache::thrift::protocol::TProtocol* ipr
     switch (fid)
     {
       case 1:
-        if (ftype == ::apache::thrift::protocol::T_SET) {
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitions.clear();
             uint32_t _size201;
             ::apache::thrift::protocol::TType _etype204;
-            xfer += iprot->readSetBegin(_etype204, _size201);
+            xfer += iprot->readListBegin(_etype204, _size201);
+            this->partitions.resize(_size201);
             uint32_t _i205;
             for (_i205 = 0; _i205 < _size201; ++_i205)
             {
-              Partition _elem206;
-              xfer += _elem206.read(iprot);
-              this->partitions.insert(_elem206);
+              xfer += this->partitions[_i205].read(iprot);
             }
-            xfer += iprot->readSetEnd();
+            xfer += iprot->readListEnd();
           }
           isset_partitions = true;
         } else {
@@ -3793,15 +3792,15 @@ uint32_t PartitionsByExprResult::write(::apache::thrift::protocol::TProtocol* op
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("PartitionsByExprResult");
 
-  xfer += oprot->writeFieldBegin("partitions", ::apache::thrift::protocol::T_SET, 1);
+  xfer += oprot->writeFieldBegin("partitions", ::apache::thrift::protocol::T_LIST, 1);
   {
-    xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->partitions.size()));
-    std::set<Partition> ::const_iterator _iter207;
-    for (_iter207 = this->partitions.begin(); _iter207 != this->partitions.end(); ++_iter207)
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->partitions.size()));
+    std::vector<Partition> ::const_iterator _iter206;
+    for (_iter206 = this->partitions.begin(); _iter206 != this->partitions.end(); ++_iter206)
     {
-      xfer += (*_iter207).write(oprot);
+      xfer += (*_iter206).write(oprot);
     }
-    xfer += oprot->writeSetEnd();
+    xfer += oprot->writeListEnd();
   }
   xfer += oprot->writeFieldEnd();
 
@@ -3972,14 +3971,14 @@ uint32_t AddPartitionsResult::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitions.clear();
-            uint32_t _size208;
-            ::apache::thrift::protocol::TType _etype211;
-            xfer += iprot->readListBegin(_etype211, _size208);
-            this->partitions.resize(_size208);
-            uint32_t _i212;
-            for (_i212 = 0; _i212 < _size208; ++_i212)
+            uint32_t _size207;
+            ::apache::thrift::protocol::TType _etype210;
+            xfer += iprot->readListBegin(_etype210, _size207);
+            this->partitions.resize(_size207);
+            uint32_t _i211;
+            for (_i211 = 0; _i211 < _size207; ++_i211)
             {
-              xfer += this->partitions[_i212].read(iprot);
+              xfer += this->partitions[_i211].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4008,10 +4007,10 @@ uint32_t AddPartitionsResult::write(::apache::thrift::protocol::TProtocol* oprot
     xfer += oprot->writeFieldBegin("partitions", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->partitions.size()));
-      std::vector<Partition> ::const_iterator _iter213;
-      for (_iter213 = this->partitions.begin(); _iter213 != this->partitions.end(); ++_iter213)
+      std::vector<Partition> ::const_iterator _iter212;
+      for (_iter212 = this->partitions.begin(); _iter212 != this->partitions.end(); ++_iter212)
       {
-        xfer += (*_iter213).write(oprot);
+        xfer += (*_iter212).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -4075,14 +4074,14 @@ uint32_t AddPartitionsRequest::read(::apache::thrift::protocol::TProtocol* iprot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->parts.clear();
-            uint32_t _size214;
-            ::apache::thrift::protocol::TType _etype217;
-            xfer += iprot->readListBegin(_etype217, _size214);
-            this->parts.resize(_size214);
-            uint32_t _i218;
-            for (_i218 = 0; _i218 < _size214; ++_i218)
+            uint32_t _size213;
+            ::apache::thrift::protocol::TType _etype216;
+            xfer += iprot->readListBegin(_etype216, _size213);
+            this->parts.resize(_size213);
+            uint32_t _i217;
+            for (_i217 = 0; _i217 < _size213; ++_i217)
             {
-              xfer += this->parts[_i218].read(iprot);
+              xfer += this->parts[_i217].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4142,10 +4141,10 @@ uint32_t AddPartitionsRequest::write(::apache::thrift::protocol::TProtocol* opro
   xfer += oprot->writeFieldBegin("parts", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->parts.size()));
-    std::vector<Partition> ::const_iterator _iter219;
-    for (_iter219 = this->parts.begin(); _iter219 != this->parts.end(); ++_iter219)
+    std::vector<Partition> ::const_iterator _iter218;
+    for (_iter218 = this->parts.begin(); _iter218 != this->parts.end(); ++_iter218)
     {
-      xfer += (*_iter219).write(oprot);
+      xfer += (*_iter218).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
