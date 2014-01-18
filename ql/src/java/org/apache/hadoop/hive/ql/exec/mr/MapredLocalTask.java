@@ -427,15 +427,14 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     byte tag = (byte) childOp.getParentOperators().indexOf(parentOp);
 
     // generate empty hashtable for this (byte)tag
-    String tmpURI = this.getWork().getTmpFileURI();
+    Path tmpPath = this.getWork().getTmpPath();
 
     String fileName = work.getBucketFileName(bigBucketFileName);
 
     HashTableSinkOperator htso = (HashTableSinkOperator)childOp;
-    String tmpURIPath = Utilities.generatePath(tmpURI, htso.getConf().getDumpFilePrefix(),
+    Path path = Utilities.generatePath(tmpPath, htso.getConf().getDumpFilePrefix(),
         tag, fileName);
-    console.printInfo(Utilities.now() + "\tDump the hashtable into file: " + tmpURIPath);
-    Path path = new Path(tmpURIPath);
+    console.printInfo(Utilities.now() + "\tDump the hashtable into file: " + path);
     FileSystem fs = path.getFileSystem(job);
     ObjectOutputStream out = new ObjectOutputStream(fs.create(path));
     try {
@@ -443,7 +442,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     } finally {
       out.close();
     }
-    console.printInfo(Utilities.now() + "\tUpload 1 File to: " + tmpURIPath + " File size: "
+    console.printInfo(Utilities.now() + "\tUpload 1 File to: " + path + " File size: "
         + fs.getFileStatus(path).getLen());
   }
 

@@ -123,7 +123,7 @@ public final class GenMRSkewJoinProcessor {
     Task<? extends Serializable> child =
         children != null && children.size() == 1 ? children.get(0) : null;
 
-    String baseTmpDir = parseCtx.getContext().getMRTmpFileURI();
+    String baseTmpDir = parseCtx.getContext().getMRTmpPath().toUri().toString();
 
     JoinDesc joinDescriptor = joinOp.getConf();
     Map<Byte, List<ExprNodeDesc>> joinValues = joinDescriptor.getExprs();

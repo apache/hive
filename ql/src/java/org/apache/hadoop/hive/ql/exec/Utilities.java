@@ -557,22 +557,22 @@ public final class Utilities {
     }
   }
 
-  public static void setMapRedWork(Configuration conf, MapredWork w, String hiveScratchDir) {
+  public static void setMapRedWork(Configuration conf, MapredWork w, Path hiveScratchDir) {
     setMapWork(conf, w.getMapWork(), hiveScratchDir, true);
     if (w.getReduceWork() != null) {
       setReduceWork(conf, w.getReduceWork(), hiveScratchDir, true);
     }
   }
 
-  public static Path setMapWork(Configuration conf, MapWork w, String hiveScratchDir, boolean useCache) {
+  public static Path setMapWork(Configuration conf, MapWork w, Path hiveScratchDir, boolean useCache) {
     return setBaseWork(conf, w, hiveScratchDir, MAP_PLAN_NAME, useCache);
   }
 
-  public static Path setReduceWork(Configuration conf, ReduceWork w, String hiveScratchDir, boolean useCache) {
+  public static Path setReduceWork(Configuration conf, ReduceWork w, Path hiveScratchDir, boolean useCache) {
     return setBaseWork(conf, w, hiveScratchDir, REDUCE_PLAN_NAME, useCache);
   }
 
-  private static Path setBaseWork(Configuration conf, BaseWork w, String hiveScratchDir, String name, boolean useCache) {
+  private static Path setBaseWork(Configuration conf, BaseWork w, Path hiveScratchDir, String name, boolean useCache) {
     try {
       setPlanPath(conf, hiveScratchDir);
 
@@ -629,7 +629,7 @@ public final class Utilities {
     return new Path(planPath, name);
   }
 
-  private static void setPlanPath(Configuration conf, String hiveScratchDir) throws IOException {
+  private static void setPlanPath(Configuration conf, Path hiveScratchDir) throws IOException {
     if (getPlanPath(conf) == null) {
       // this is the unique conf ID, which is kept in JobConf as part of the plan file name
       String jobID = UUID.randomUUID().toString();
@@ -2485,11 +2485,10 @@ public final class Utilities {
 
   public static String suffix = ".hashtable";
 
-  public static String generatePath(String baseURI, String dumpFilePrefix,
+  public static Path generatePath(Path basePath, String dumpFilePrefix,
       Byte tag, String bigBucketFileName) {
-    String path = new String(baseURI + Path.SEPARATOR + "MapJoin-" + dumpFilePrefix + tag +
+    return new Path(basePath, "MapJoin-" + dumpFilePrefix + tag +
       "-" + bigBucketFileName + suffix);
-    return path;
   }
 
   public static String generateFileName(Byte tag, String bigBucketFileName) {
@@ -2497,24 +2496,16 @@ public final class Utilities {
     return fileName;
   }
 
-  public static String generateTmpURI(String baseURI, String id) {
-    String tmpFileURI = new String(baseURI + Path.SEPARATOR + "HashTable-" + id);
-    return tmpFileURI;
+  public static Path generateTmpPath(Path basePath, String id) {
+    return new Path(basePath, "HashTable-" + id);
   }
 
-  public static String generateTarURI(String baseURI, String filename) {
-    String tmpFileURI = new String(baseURI + Path.SEPARATOR + filename + ".tar.gz");
-    return tmpFileURI;
-  }
-
-  public static String generateTarURI(Path baseURI, String filename) {
-    String tmpFileURI = new String(baseURI + Path.SEPARATOR + filename + ".tar.gz");
-    return tmpFileURI;
+  public static Path generateTarPath(Path basePath, String filename) {
+    return new Path(basePath, filename + ".tar.gz");
   }
 
   public static String generateTarFileName(String name) {
-    String tmpFileURI = new String(name + ".tar.gz");
-    return tmpFileURI;
+    return name + ".tar.gz";
   }
 
   public static String generatePath(Path baseURI, String filename) {
@@ -2938,7 +2929,7 @@ public final class Utilities {
    * @return List of paths to process for the given MapWork
    * @throws Exception
    */
-  public static List<Path> getInputPaths(JobConf job, MapWork work, String hiveScratchDir, Context ctx)
+  public static List<Path> getInputPaths(JobConf job, MapWork work, Path hiveScratchDir, Context ctx)
       throws Exception {
     int sequenceNumber = 0;
 
@@ -2993,7 +2984,7 @@ public final class Utilities {
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private static Path createEmptyFile(String hiveScratchDir,
+  private static Path createEmptyFile(Path hiveScratchDir,
       Class<? extends HiveOutputFormat> outFileFormat, JobConf job,
       int sequenceNumber, Properties props, boolean dummyRow)
           throws IOException, InstantiationException, IllegalAccessException {
@@ -3010,7 +3001,6 @@ public final class Utilities {
     String newFile = newDir + File.separator + "emptyFile";
     Path newFilePath = new Path(newFile);
 
-    String onefile = newPath.toString();
     FSRecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newFilePath,
         Text.class, false, props, null);
     if (dummyRow) {
@@ -3026,7 +3016,7 @@ public final class Utilities {
 
   @SuppressWarnings("rawtypes")
   private static Path createDummyFileForEmptyPartition(Path path, JobConf job, MapWork work,
-      String hiveScratchDir, String alias, int sequenceNumber)
+      Path hiveScratchDir, String alias, int sequenceNumber)
           throws IOException, InstantiationException, IllegalAccessException {
 
     String strPath = path.toString();
@@ -3068,7 +3058,7 @@ public final class Utilities {
 
   @SuppressWarnings("rawtypes")
   private static Path createDummyFileForEmptyTable(JobConf job, MapWork work,
-      String hiveScratchDir, String alias, int sequenceNumber)
+      Path hiveScratchDir, String alias, int sequenceNumber)
           throws IOException, InstantiationException, IllegalAccessException {
 
     TableDesc tableDesc = work.getAliasToPartnInfo().get(alias).getTableDesc();

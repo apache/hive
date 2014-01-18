@@ -311,9 +311,9 @@ public class Context {
    *
    * @return next available path for map-red intermediate data
    */
-  public String getMRTmpFileURI() {
-    return getMRScratchDir() + Path.SEPARATOR + MR_PREFIX +
-      nextPathId();
+  public Path getMRTmpPath() {
+    return new Path(getMRScratchDir(), MR_PREFIX +
+      nextPathId());
   }
 
 
