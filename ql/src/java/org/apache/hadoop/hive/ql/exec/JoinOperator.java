@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -150,7 +149,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
     if (conf.getHandleSkewJoin()) {
       try {
         for (int i = 0; i < numAliases; i++) {
-          String specPath = conf.getBigKeysDirMap().get((byte) i);
+          Path specPath = conf.getBigKeysDirMap().get((byte) i);
           mvFileToFinalPath(specPath, hconf, success, LOG);
           for (int j = 0; j < numAliases; j++) {
             if (j == i) {
@@ -165,7 +164,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
         if (success) {
           // move up files
           for (int i = 0; i < numAliases; i++) {
-            String specPath = conf.getBigKeysDirMap().get((byte) i);
+            Path specPath = conf.getBigKeysDirMap().get((byte) i);
             moveUpFiles(specPath, hconf, LOG);
             for (int j = 0; j < numAliases; j++) {
               if (j == i) {
@@ -184,16 +183,15 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
     super.jobCloseOp(hconf, success);
   }
 
-  private void moveUpFiles(String specPath, Configuration hconf, Log log)
+  private void moveUpFiles(Path specPath, Configuration hconf, Log log)
       throws IOException, HiveException {
-    FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
-    Path finalPath = new Path(specPath);
+    FileSystem fs = specPath.getFileSystem(hconf);
 
-    if (fs.exists(finalPath)) {
-      FileStatus[] taskOutputDirs = fs.listStatus(finalPath);
+    if (fs.exists(specPath)) {
+      FileStatus[] taskOutputDirs = fs.listStatus(specPath);
       if (taskOutputDirs != null) {
         for (FileStatus dir : taskOutputDirs) {
-          Utilities.renameOrMoveFiles(fs, dir.getPath(), finalPath);
+          Utilities.renameOrMoveFiles(fs, dir.getPath(), specPath);
           fs.delete(dir.getPath(), true);
         }
       }
@@ -210,15 +208,13 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
    * @throws IOException
    * @throws HiveException
    */
-  private void  mvFileToFinalPath(String specPath, Configuration hconf,
+  private void  mvFileToFinalPath(Path specPath, Configuration hconf,
       boolean success, Log log) throws IOException, HiveException {
 
-    FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
+    FileSystem fs = specPath.getFileSystem(hconf);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path intermediatePath = new Path(tmpPath.getParent(), tmpPath.getName()
         + ".intermediate");
-    Path finalPath = new Path(specPath);
-    ArrayList<String> emptyBuckets = null;
     if (success) {
       if (fs.exists(tmpPath)) {
         // Step1: rename tmp output folder to intermediate path. After this
@@ -229,8 +225,8 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
         // Step2: remove any tmp file or double-committed output files
         Utilities.removeTempOrDuplicateFiles(fs, intermediatePath);
         // Step3: move to the file destination
-        log.info("Moving tmp dir: " + intermediatePath + " to: " + finalPath);
-        Utilities.renameOrMoveFiles(fs, intermediatePath, finalPath);
+        log.info("Moving tmp dir: " + intermediatePath + " to: " + specPath);
+        Utilities.renameOrMoveFiles(fs, intermediatePath, specPath);
       }
     } else {
       fs.delete(tmpPath, true);

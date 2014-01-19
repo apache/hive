@@ -102,7 +102,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
       if (localwork != null) {
         // get the context info and set up the shared tmp URI
         Context ctx = physicalContext.getContext();
-        Path tmpPath = Utilities.generateTmpPath(new Path(ctx.getLocalTmpFileURI()), currTask.getId());
+        Path tmpPath = Utilities.generateTmpPath(ctx.getLocalTmpPath(), currTask.getId());
         localwork.setTmpPath(tmpPath);
         mapredWork.getMapWork().setTmpHDFSPath(Utilities.generateTmpPath(
           ctx.getMRTmpPath(), currTask.getId()));
@@ -167,15 +167,15 @@ public class MapJoinResolver implements PhysicalPlanResolver {
               // get bigKeysDirToTaskMap
               ConditionalResolverSkewJoinCtx context = (ConditionalResolverSkewJoinCtx) conditionalTask
                   .getResolverCtx();
-              HashMap<String, Task<? extends Serializable>> bigKeysDirToTaskMap = context
+              HashMap<Path, Task<? extends Serializable>> bigKeysDirToTaskMap = context
                   .getDirToTaskMap();
               // to avoid concurrent modify the hashmap
-              HashMap<String, Task<? extends Serializable>> newbigKeysDirToTaskMap = new HashMap<String, Task<? extends Serializable>>();
+              HashMap<Path, Task<? extends Serializable>> newbigKeysDirToTaskMap = new HashMap<Path, Task<? extends Serializable>>();
               // reset the resolver
-              for (Map.Entry<String, Task<? extends Serializable>> entry : bigKeysDirToTaskMap
+              for (Map.Entry<Path, Task<? extends Serializable>> entry : bigKeysDirToTaskMap
                   .entrySet()) {
                 Task<? extends Serializable> task = entry.getValue();
-                String key = entry.getKey();
+                Path key = entry.getKey();
                 if (task.equals(currTask)) {
                   newbigKeysDirToTaskMap.put(key, localTask);
                 } else {

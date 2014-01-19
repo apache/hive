@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -63,7 +62,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SubStructObjectInspector;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
@@ -816,10 +814,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       throws HiveException {
     try {
       if ((conf != null) && isNativeTable) {
-        String specPath = conf.getDirName().toString();
+        Path specPath = conf.getDirName();
         DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
         if (conf.isLinkedFileSink() && (dpCtx != null)) {
-          specPath = conf.getParentDir().toString();
+          specPath = conf.getParentDir();
         }
         Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf,
           reporter);

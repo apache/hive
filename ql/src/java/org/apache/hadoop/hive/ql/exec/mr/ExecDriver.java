@@ -739,7 +739,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public static String generateCmdLine(HiveConf hconf, Context ctx)
       throws IOException {
     HiveConf tempConf = new HiveConf();
-    Path hConfFilePath = new Path(ctx.getLocalTmpFileURI(), JOBCONF_FILENAME);
+    Path hConfFilePath = new Path(ctx.getLocalTmpPath(), JOBCONF_FILENAME);
     OutputStream out = null;
 
     Properties deltaP = hconf.getChangedProperties();
