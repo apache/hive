@@ -136,7 +136,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
 
       // write out the plan to a local file
-      Path planPath = new Path(ctx.getLocalTmpFileURI(), "plan.xml");
+      Path planPath = new Path(ctx.getLocalTmpPath(), "plan.xml");
       OutputStream out = FileSystem.getLocal(conf).create(planPath);
       MapredLocalWork plan = getWork();
       LOG.info("Generating plan file " + planPath.toString());
@@ -157,7 +157,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       if (!files.isEmpty()) {
         cmdLine = cmdLine + " -files " + files;
 
-        workDir = (new Path(ctx.getLocalTmpFileURI())).toUri().getPath();
+        workDir = ctx.getLocalTmpPath().toUri().getPath();
 
         if (!(new File(workDir)).mkdir()) {
           throw new IOException("Cannot create tmp working dir: " + workDir);

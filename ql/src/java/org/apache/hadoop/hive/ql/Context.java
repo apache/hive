@@ -23,10 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -316,40 +314,13 @@ public class Context {
       nextPathId());
   }
 
-
-  /**
-   * Given a URI for mapreduce intermediate output, swizzle the
-   * it to point to the local file system. This can be called in
-   * case the caller decides to run in local mode (in which case
-   * all intermediate data can be stored locally)
-   *
-   * @param originalURI uri to localize
-   * @return localized path for map-red intermediate data
-   */
-  public String localizeMRTmpFileURI(String originalURI) {
-    Path o = new Path(originalURI);
-    Path mrbase = getMRScratchDir();
-
-    URI relURI = mrbase.toUri().relativize(o.toUri());
-    if (relURI.equals(o.toUri())) {
-      throw new RuntimeException
-        ("Invalid URI: " + originalURI + ", cannot relativize against" +
-         mrbase.toString());
-    }
-
-    return getLocalScratchDir(!explain) + Path.SEPARATOR +
-      relURI.getPath();
-  }
-
-
   /**
    * Get a tmp path on local host to store intermediate data.
    *
    * @return next available tmp path on local fs
    */
-  public String getLocalTmpFileURI() {
-    return getLocalScratchDir(true) + Path.SEPARATOR + LOCAL_PREFIX +
-      nextPathId();
+  public Path getLocalTmpPath() {
+    return new Path(getLocalScratchDir(true), LOCAL_PREFIX + nextPathId());
   }
 
   /**
@@ -592,38 +563,6 @@ public class Context {
 
   public Configuration getConf() {
     return conf;
-  }
-
-  /**
-   * Given a mapping from paths to objects, localize any MR tmp paths
-   * @param map mapping from paths to objects
-   */
-  public void localizeKeys(Map<String, Object> map) {
-    for (Map.Entry<String, Object> entry: map.entrySet()) {
-      String path = entry.getKey();
-      if (isMRTmpFileURI(path)) {
-        Object val = entry.getValue();
-        map.remove(path);
-        map.put(localizeMRTmpFileURI(path), val);
-      }
-    }
-  }
-
-  /**
-   * Given a list of paths, localize any MR tmp paths contained therein
-   * @param paths list of paths to be localized
-   */
-  public void localizePaths(List<String> paths) {
-    Iterator<String> iter = paths.iterator();
-    List<String> toAdd = new ArrayList<String> ();
-    while(iter.hasNext()) {
-      String path = iter.next();
-      if (isMRTmpFileURI(path)) {
-        iter.remove();
-        toAdd.add(localizeMRTmpFileURI(path));
-      }
-    }
-    paths.addAll(toAdd);
   }
 
   /**

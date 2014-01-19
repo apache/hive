@@ -267,51 +267,51 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeDropIndex(ast);
       break;
     case HiveParser.TOK_DESCTABLE:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeDescribeTable(ast);
       break;
     case HiveParser.TOK_SHOWDATABASES:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowDatabases(ast);
       break;
     case HiveParser.TOK_SHOWTABLES:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowTables(ast);
       break;
     case HiveParser.TOK_SHOWCOLUMNS:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowColumns(ast);
       break;
     case HiveParser.TOK_SHOW_TABLESTATUS:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowTableStatus(ast);
       break;
     case HiveParser.TOK_SHOW_TBLPROPERTIES:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowTableProperties(ast);
       break;
     case HiveParser.TOK_SHOWFUNCTIONS:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowFunctions(ast);
       break;
     case HiveParser.TOK_SHOWLOCKS:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowLocks(ast);
       break;
     case HiveParser.TOK_SHOWDBLOCKS:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowDbLocks(ast);
       break;
     case HiveParser.TOK_DESCFUNCTION:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeDescFunction(ast);
       break;
     case HiveParser.TOK_DESCDATABASE:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeDescDatabase(ast);
       break;
     case HiveParser.TOK_MSCK:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeMetastoreCheck(ast);
       break;
     case HiveParser.TOK_DROPVIEW:
@@ -381,15 +381,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterIndexProps(ast);
       break;
     case HiveParser.TOK_SHOWPARTITIONS:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowPartitions(ast);
       break;
     case HiveParser.TOK_SHOW_CREATETABLE:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowCreateTable(ast);
       break;
     case HiveParser.TOK_SHOWINDEXES:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowIndexes(ast);
       break;
     case HiveParser.TOK_LOCKTABLE:
@@ -423,11 +423,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeDropRole(ast);
       break;
     case HiveParser.TOK_SHOW_ROLE_GRANT:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowRoleGrant(ast);
       break;
     case HiveParser.TOK_SHOW_ROLES:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowRoles(ast);
       break;
     case HiveParser.TOK_GRANT_ROLE:
@@ -440,7 +440,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeGrant(ast);
       break;
     case HiveParser.TOK_SHOW_GRANT:
-      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowGrant(ast);
       break;
     case HiveParser.TOK_REVOKE:

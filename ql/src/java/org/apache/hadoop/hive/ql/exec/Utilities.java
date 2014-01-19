@@ -1424,10 +1424,6 @@ public final class Utilities {
     return new Path(orig.getParent(), taskTmpPrefix + orig.getName());
   }
 
-  public static Path toTaskTempPath(String orig) {
-    return toTaskTempPath(new Path(orig));
-  }
-
   public static Path toTempPath(Path orig) {
     if (orig.getName().indexOf(tmpPrefix) == 0) {
       return orig;
@@ -1686,15 +1682,14 @@ public final class Utilities {
     }
   }
 
-  public static void mvFileToFinalPath(String specPath, Configuration hconf,
+  public static void mvFileToFinalPath(Path specPath, Configuration hconf,
       boolean success, Log log, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
       Reporter reporter) throws IOException,
       HiveException {
 
-    FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
+    FileSystem fs = specPath.getFileSystem(hconf);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
-    Path finalPath = new Path(specPath);
     if (success) {
       if (fs.exists(tmpPath)) {
         // remove any tmp file or double-committed output files
@@ -1706,8 +1701,8 @@ public final class Utilities {
         }
 
         // move to the file destination
-        log.info("Moving tmp dir: " + tmpPath + " to: " + finalPath);
-        Utilities.renameOrMoveFiles(fs, tmpPath, finalPath);
+        log.info("Moving tmp dir: " + tmpPath + " to: " + specPath);
+        Utilities.renameOrMoveFiles(fs, tmpPath, specPath);
       }
     } else {
       fs.delete(tmpPath, true);

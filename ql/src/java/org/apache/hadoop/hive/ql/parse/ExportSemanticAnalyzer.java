@@ -87,8 +87,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (ts.tableHandle.isPartitioned()) {
         partitions = (ts.partitions != null) ? ts.partitions : db.getPartitions(ts.tableHandle);
       }
-      String tmpfile = ctx.getLocalTmpFileURI();
-      Path path = new Path(tmpfile, "_metadata");
+      Path path = new Path(ctx.getLocalTmpPath(), "_metadata");
       EximUtil.createExportDump(FileSystem.getLocal(conf), path, ts.tableHandle, partitions);
       Task<? extends Serializable> rTask = TaskFactory.get(new CopyWork(
           path, new Path(toURI), false), conf);
