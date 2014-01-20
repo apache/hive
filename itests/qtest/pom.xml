@@ -354,18 +354,6 @@
           <version>${tez.version}</version>
           <scope>test</scope>
         </dependency>
-        <dependency >
-           <groupId>org.apache.tez</groupId>
-           <artifactId>tez-common</artifactId>
-           <version>${tez.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-           <groupId>org.apache.tez</groupId>
-           <artifactId>tez-runtime-internals</artifactId>
-           <version>${tez.version}</version>
-          <scope>test</scope>
-        </dependency>
       </dependencies>
     </profile>
   </profiles>
