@@ -97,18 +97,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
-      <artifactId>tez-dag</artifactId>
-      <version>${tez.version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency >
-       <groupId>org.apache.tez</groupId>
-       <artifactId>tez-common</artifactId>
-       <version>${tez.version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tez</groupId>
       <artifactId>tez-runtime-library</artifactId>
       <version>${tez.version}</version>
       <optional>true</optional>
@@ -118,12 +106,6 @@
       <artifactId>tez-mapreduce</artifactId>
       <version>${tez.version}</version>
       <optional>true</optional>
-    </dependency>
-    <dependency>
-       <groupId>org.apache.tez</groupId>
-       <artifactId>tez-runtime-internals</artifactId>
-       <version>${tez.version}</version>
-       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
