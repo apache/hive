@@ -114,7 +114,8 @@ public class TezTask extends Task<TezWork> {
 
       // if we don't have one yet create it.
       if (session == null) {
-        ss.setTezSession(new TezSessionState());
+        session = new TezSessionState();
+        ss.setTezSession(session);
       }
 
       // if it's not running start it.
