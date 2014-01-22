@@ -1377,6 +1377,7 @@ privObjectType
 @init {msgs.push("privilege object type type");}
 @after {msgs.pop();}
     : KW_DATABASE -> ^(TOK_DB_TYPE)
+    | KW_VIEW -> ^(TOK_TABLE_TYPE)
     | KW_TABLE? -> ^(TOK_TABLE_TYPE)
     ;
 
