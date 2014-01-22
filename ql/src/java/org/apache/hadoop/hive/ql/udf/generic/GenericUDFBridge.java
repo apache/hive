@@ -87,7 +87,7 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
    *
    * @param udfName
    *          The name of the corresponding udf.
-   * @param isOperator
+   * @param isOperator true for operators
    * @param udfClassName java class name of UDF
    */
   public GenericUDFBridge(String udfName, boolean isOperator,
@@ -105,6 +105,7 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
     this.udfName = udfName;
   }
 
+  @Override
   public String getUdfName() {
     return udfName;
   }
