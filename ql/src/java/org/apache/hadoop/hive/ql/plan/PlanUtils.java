@@ -85,7 +85,7 @@ public final class PlanUtils {
     FIELD, JEXL
   };
 
-  public static long getCountForMapJoinDumpFilePrefix() {
+  public static synchronized long getCountForMapJoinDumpFilePrefix() {
     return countForMapJoinDumpFilePrefix++;
   }
 
@@ -103,45 +103,50 @@ public final class PlanUtils {
 
   public static TableDesc getDefaultTableDesc(CreateTableDesc localDirectoryDesc,
       String cols, String colTypes ) {
-    TableDesc tableDesc = getDefaultTableDesc(Integer.toString(Utilities.ctrlaCode), cols,
+    TableDesc ret = getDefaultTableDesc(Integer.toString(Utilities.ctrlaCode), cols,
         colTypes, false);;
     if (localDirectoryDesc == null) {
-      return tableDesc;
+      return ret;
     }
 
     try {
+      Properties properties = ret.getProperties();
+
       if (localDirectoryDesc.getFieldDelim() != null) {
-        tableDesc.getProperties().setProperty(
+        properties.setProperty(
             serdeConstants.FIELD_DELIM, localDirectoryDesc.getFieldDelim());
-        tableDesc.getProperties().setProperty(
+        properties.setProperty(
             serdeConstants.SERIALIZATION_FORMAT, localDirectoryDesc.getFieldDelim());
       }
       if (localDirectoryDesc.getLineDelim() != null) {
-        tableDesc.getProperties().setProperty(
+        properties.setProperty(
             serdeConstants.LINE_DELIM, localDirectoryDesc.getLineDelim());
       }
       if (localDirectoryDesc.getCollItemDelim() != null) {
-        tableDesc.getProperties().setProperty(
+        properties.setProperty(
             serdeConstants.COLLECTION_DELIM, localDirectoryDesc.getCollItemDelim());
       }
       if (localDirectoryDesc.getMapKeyDelim() != null) {
-        tableDesc.getProperties().setProperty(
+        properties.setProperty(
             serdeConstants.MAPKEY_DELIM, localDirectoryDesc.getMapKeyDelim());
       }
       if (localDirectoryDesc.getFieldEscape() !=null) {
-        tableDesc.getProperties().setProperty(
+        properties.setProperty(
             serdeConstants.ESCAPE_CHAR, localDirectoryDesc.getFieldEscape());
       }
       if (localDirectoryDesc.getSerName() != null) {
-        tableDesc.getProperties().setProperty(
+        properties.setProperty(
             serdeConstants.SERIALIZATION_LIB, localDirectoryDesc.getSerName());
       }
       if (localDirectoryDesc.getOutputFormat() != null){
-          tableDesc.setOutputFileFormatClass(Class.forName(localDirectoryDesc.getOutputFormat()));
+          ret.setOutputFileFormatClass(Class.forName(localDirectoryDesc.getOutputFormat()));
       }
       if (localDirectoryDesc.getNullFormat() != null) {
-        tableDesc.getProperties().setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT,
+        properties.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT,
               localDirectoryDesc.getNullFormat());
+      }
+      if (localDirectoryDesc.getTblProps() != null) {
+        properties.putAll(localDirectoryDesc.getTblProps());
       }
 
     } catch (ClassNotFoundException e) {
@@ -150,7 +155,7 @@ public final class PlanUtils {
       e.printStackTrace();
       return null;
     }
-    return tableDesc;
+    return ret;
   }
 
   /**
@@ -245,7 +250,7 @@ public final class PlanUtils {
     }
 
     // It is not a very clean way, and should be modified later - due to
-    // compatiblity reasons,
+    // compatibility reasons,
     // user sees the results as json for custom scripts and has no way for
     // specifying that.
     // Right now, it is hard-coded in the code
@@ -338,6 +343,10 @@ public final class PlanUtils {
       if (crtTblDesc.getTableName() != null && crtTblDesc.getDatabaseName() != null) {
         properties.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
             crtTblDesc.getDatabaseName() + "." + crtTblDesc.getTableName());
+      }
+
+      if (crtTblDesc.getTblProps() != null) {
+        properties.putAll(crtTblDesc.getTblProps());
       }
 
       // replace the default input & output file format with those found in
@@ -465,7 +474,7 @@ public final class PlanUtils {
   /**
    * Convert the ColumnList to FieldSchema list.
    *
-   * Adds uniontype for distinctColIndices.
+   * Adds union type for distinctColIndices.
    */
   public static List<FieldSchema> getFieldSchemasFromColumnListWithLength(
       List<ExprNodeDesc> cols, List<List<Integer>> distinctColIndices,
