@@ -817,8 +817,9 @@ public final class Utilities {
   /**
    * Deserializes the plan.
    * @param in The stream to read from.
+   * @param planClass class of plan
+   * @param conf configuration
    * @return The plan, such as QueryPlan, MapredWork, etc.
-   * @param To know what serialization format plan is in
    */
   public static <T> T deserializePlan(InputStream in, Class<T> planClass, Configuration conf) {
     return deserializePlan(in, planClass, conf, false);
@@ -2397,16 +2398,15 @@ public final class Utilities {
    * then it returns an MD5 hash of statsPrefix followed by path separator, otherwise
    * it returns statsPrefix
    *
-   * @param statsPrefix
-   * @param maxPrefixLength
-   * @return
+   * @param statsPrefix prefix of stats key
+   * @param maxPrefixLength max length of stats key
+   * @return if the length of prefix is longer than max, return MD5 hashed value of the prefix
    */
-  public static String getHashedStatsPrefix(String statsPrefix,
-      int maxPrefixLength, int postfixLength) {
+  public static String getHashedStatsPrefix(String statsPrefix, int maxPrefixLength) {
     // todo: this might return possibly longer prefix than
     // maxPrefixLength (if set) when maxPrefixLength - postfixLength < 17,
     // which would make stat values invalid (especially for 'counter' type)
-    if (maxPrefixLength >= 0 && statsPrefix.length() > maxPrefixLength - postfixLength) {
+    if (maxPrefixLength >= 0 && statsPrefix.length() > maxPrefixLength) {
       try {
         MessageDigest digester = MessageDigest.getInstance("MD5");
         digester.update(statsPrefix.getBytes());

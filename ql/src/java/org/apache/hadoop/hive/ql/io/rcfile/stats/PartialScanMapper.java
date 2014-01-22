@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.io.RCFile.KeyBuffer;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileKeyBufferWrapper;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileValueBufferWrapper;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.stats.CounterStatsPublisher;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
@@ -139,11 +140,13 @@ public class PartialScanMapper extends MapReduceBase implements
       throw new HiveException(ErrorMsg.STATSPUBLISHER_CONNECTION_ERROR.getErrorCodedMsg());
     }
 
+    int maxPrefixLength = StatsFactory.getMaxPrefixLength(jc);
     // construct key used to store stats in intermediate db
-    String taskID = Utilities.getTaskIdFromFilename(Utilities.getTaskId(jc));
-    String keyPrefix = Utilities.getHashedStatsPrefix(
-        statsAggKeyPrefix, StatsFactory.getMaxPrefixLength(jc), taskID.length());
-    String key = keyPrefix + taskID;
+    String key = Utilities.getHashedStatsPrefix(statsAggKeyPrefix, maxPrefixLength);
+    if (!(statsPublisher instanceof CounterStatsPublisher)) {
+      String taskID = Utilities.getTaskIdFromFilename(Utilities.getTaskId(jc));
+      key = Utilities.join(key, taskID);
+    }
 
     // construct statistics to be stored
     Map<String, String> statsToPublish = new HashMap<String, String>();

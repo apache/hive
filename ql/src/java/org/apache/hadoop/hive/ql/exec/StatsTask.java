@@ -171,9 +171,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
         if (statsAggregator != null) {
           String prefix = getAggregationPrefix(counterStat, table, null);
-          String aggKey = Utilities.getHashedStatsPrefix(prefix, maxPrefixLength, 0);
-          updateStats(statsAggregator, parameters, aggKey, atomic);
-          statsAggregator.cleanUp(aggKey);
+          updateStats(statsAggregator, parameters, prefix, maxPrefixLength, atomic);
         }
 
         updateQuickStats(wh, parameters, tTable.getSd());
@@ -207,9 +205,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
           if (statsAggregator != null) {
             String prefix = getAggregationPrefix(counterStat, table, partn);
-            String aggKey = Utilities.getHashedStatsPrefix(prefix, maxPrefixLength, 0);
-            updateStats(statsAggregator, parameters, aggKey, atomic);
-            statsAggregator.cleanUp(aggKey);
+            updateStats(statsAggregator, parameters, prefix, maxPrefixLength, atomic);
           }
 
           updateQuickStats(wh, parameters, tPart.getSd());
@@ -296,7 +292,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   }
 
   private void updateStats(StatsAggregator statsAggregator,
-      Map<String, String> parameters, String aggKey, boolean atomic) throws HiveException {
+      Map<String, String> parameters, String prefix, int maxPrefixLength, boolean atomic)
+      throws HiveException {
+
+    String aggKey = Utilities.getHashedStatsPrefix(prefix, maxPrefixLength);
 
     for (String statType : StatsSetupConst.statsRequireCompute) {
       String value = statsAggregator.aggregateStats(aggKey, statType);
@@ -317,6 +316,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         }
       }
     }
+    statsAggregator.cleanUp(aggKey);
   }
 
   private void updateQuickStats(Warehouse wh, Map<String, String> parameters,
