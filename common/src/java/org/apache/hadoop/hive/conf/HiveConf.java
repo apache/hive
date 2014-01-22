@@ -517,8 +517,19 @@ public class HiveConf extends Configuration {
     // Define the default ORC stripe size
     HIVE_ORC_DEFAULT_STRIPE_SIZE("hive.exec.orc.default.stripe.size",
         256L * 1024 * 1024),
+    // Define the default ORC index stripe
+    HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE("hive.exec.orc.default.row.index.stride"
+        , null),
+    // Define the default ORC buffer size
+    HIVE_ORC_DEFAULT_BUFFER_SIZE("hive.exec.orc.default.buffer.size", null),
+    // Define the default block padding
+    HIVE_ORC_DEFAULT_BLOCK_PADDING("hive.exec.orc.default.block.padding",
+        null),
+    // Define the default orc compress
+    HIVE_ORC_DEFAULT_COMPRESS("hive.exec.orc.default.compress", null),
 
-    HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD("hive.exec.orc.dictionary.key.size.threshold", 0.8f),
+    HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD(
+        "hive.exec.orc.dictionary.key.size.threshold", 0.8f),
 
     HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS("hive.orc.splits.include.file.footer", false),
     HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE("hive.orc.cache.stripe.details.size", 10000),

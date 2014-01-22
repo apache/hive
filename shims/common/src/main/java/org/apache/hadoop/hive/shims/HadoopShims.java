@@ -520,4 +520,10 @@ public interface HadoopShims {
   public FileSystem createProxyFileSystem(FileSystem fs, URI uri);
 
   public Map<String, String> getHadoopConfNames();
+
+  
+  /**
+   * Get configuration from JobContext
+   */
+  public Configuration getConfiguration(JobContext context);
 }
