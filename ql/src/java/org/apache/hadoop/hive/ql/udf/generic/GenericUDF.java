@@ -187,4 +187,15 @@ public abstract class GenericUDF implements Closeable {
    */
   public void close() throws IOException {
   }
+
+  /**
+   * Some functions are affected by appearing order of arguments (comparisons, for example)
+   */
+  public GenericUDF flip() {
+    return this;
+  }
+
+  public String getUdfName() {
+    return getClass().getName();
+  }
 }
