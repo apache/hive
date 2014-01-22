@@ -924,7 +924,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         postfix = Utilities.join(lbSpec, taskID);
       }
       prefix = Utilities.join(prefix, spSpec, dpSpec);
-      prefix = Utilities.getHashedStatsPrefix(prefix, maxKeyLength, postfix.length());
+      prefix = Utilities.getHashedStatsPrefix(prefix, maxKeyLength);
 
       String key = Utilities.join(prefix, postfix);
 

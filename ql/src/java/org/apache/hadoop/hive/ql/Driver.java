@@ -1289,6 +1289,8 @@ public class Driver implements CommandProcessor {
       Map<TaskResult, TaskRunner> running = new HashMap<TaskResult, TaskRunner>();
 
       DriverContext driverCxt = new DriverContext(runnable, ctx);
+      driverCxt.prepare(plan);
+
       ctx.setHDFSCleanup(true);
 
       SessionState.get().setLastMapRedStatsList(new ArrayList<MapRedStats>());
@@ -1367,6 +1369,8 @@ public class Driver implements CommandProcessor {
             return exitVal;
           }
         }
+
+        driverCxt.finished(tskRun);
 
         if (SessionState.get() != null) {
           SessionState.get().getHiveHistory().setTaskProperty(queryId, tsk.getId(),
@@ -1528,6 +1532,8 @@ public class Driver implements CommandProcessor {
     tsk.initialize(conf, plan, cxt);
     TaskResult tskRes = new TaskResult();
     TaskRunner tskRun = new TaskRunner(tsk, tskRes);
+
+    cxt.prepare(tskRun);
 
     // Launch Task
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.EXECPARALLEL) && tsk.isMapRedTask()) {
