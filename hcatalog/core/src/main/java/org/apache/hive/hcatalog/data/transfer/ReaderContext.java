@@ -20,70 +20,22 @@
 package org.apache.hive.hcatalog.data.transfer;
 
 import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hive.hcatalog.mapreduce.HCatSplit;
 
 /**
- * This class will contain information of different {@link InputSplit} obtained
- * at master node and configuration. This class implements
- * {@link Externalizable} so it can be serialized using standard java
- * mechanisms.
+ * This read context is obtained by the master node and should be distributed
+ * to the slaves.  The contents of the class are opaque to the client.  This
+ * interface extends {@link java.io.Externalizable} so that implementing
+ * classes can be serialized using standard Java mechanisms.
  */
-public class ReaderContext implements Externalizable, Configurable {
+public interface ReaderContext extends Externalizable {
 
-  private static final long serialVersionUID = -2656468331739574367L;
-  private List<InputSplit> splits;
-  private Configuration conf;
+  /**
+   * Determine the number of splits available in this {@link ReaderContext}.
+   * The client is not required to have this many slave nodes,
+   * as one slave can be used to read multiple splits.
+   * @return number of splits
+   */
+  public int numSplits();
 
-  public ReaderContext() {
-    this.splits = new ArrayList<InputSplit>();
-    this.conf = new Configuration();
-  }
-
-  public void setInputSplits(final List<InputSplit> splits) {
-    this.splits = splits;
-  }
-
-  public List<InputSplit> getSplits() {
-    return splits;
-  }
-
-  @Override
-  public Configuration getConf() {
-    return conf;
-  }
-
-  @Override
-  public void setConf(final Configuration config) {
-    conf = config;
-  }
-
-  @Override
-  public void writeExternal(ObjectOutput out) throws IOException {
-    conf.write(out);
-    out.writeInt(splits.size());
-    for (InputSplit split : splits) {
-      ((HCatSplit) split).write(out);
-    }
-  }
-
-  @Override
-  public void readExternal(ObjectInput in) throws IOException,
-    ClassNotFoundException {
-    conf.readFields(in);
-    int numOfSplits = in.readInt();
-    for (int i = 0; i < numOfSplits; i++) {
-      HCatSplit split = new HCatSplit();
-      split.readFields(in);
-      splits.add(split);
-    }
-  }
 }
