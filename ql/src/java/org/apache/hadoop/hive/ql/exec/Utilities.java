@@ -70,6 +70,10 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -318,6 +322,7 @@ public final class Utilities {
           }
           byte[] planBytes = Base64.decodeBase64(planString);
           in = new ByteArrayInputStream(planBytes);
+          in = new InflaterInputStream(in);
         } else {
           in = new FileInputStream(localPath.toUri().getPath());
         }
@@ -582,11 +587,12 @@ public final class Utilities {
 
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
         // add it to the conf
-        out = new ByteArrayOutputStream();
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        out = new DeflaterOutputStream(byteOut, new Deflater(Deflater.BEST_SPEED));
         serializePlan(w, out, conf);
         LOG.info("Setting plan: "+planPath.toUri().getPath());
         conf.set(planPath.toUri().getPath(),
-            Base64.encodeBase64String(((ByteArrayOutputStream)out).toByteArray()));
+            Base64.encodeBase64String(byteOut.toByteArray()));
       } else {
         // use the default file system of the conf
         FileSystem fs = planPath.getFileSystem(conf);
