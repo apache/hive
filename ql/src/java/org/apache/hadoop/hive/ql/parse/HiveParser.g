@@ -138,8 +138,9 @@ TOK_ALTERTABLE_RENAMEPART;
 TOK_ALTERTABLE_REPLACECOLS;
 TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
-TOK_ALTERTABLE_ALTERPARTS;
-TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE;
+TOK_ALTERTABLE_PARTCOLTYPE;
+TOK_ALTERTABLE_PROTECTMODE;
+TOK_ALTERTABLE_MERGEFILES;
 TOK_ALTERTABLE_TOUCH;
 TOK_ALTERTABLE_ARCHIVE;
 TOK_ALTERTABLE_UNARCHIVE;
@@ -285,7 +286,6 @@ TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
 TOK_DBPROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
-TOK_ALTERTABLE_ALTERPARTS_MERGEFILES;
 TOK_TABNAME;
 TOK_TABSRC;
 TOK_RESTRICT;
@@ -900,7 +900,15 @@ alterTableStatementSuffix
     | alterTblPartitionStatement
     | alterStatementSuffixSkewedby
     | alterStatementSuffixExchangePartition
+    | alterStatementPartitionKeyType
     ;
+
+alterStatementPartitionKeyType
+@init {msgs.push("alter partition key type"); }
+@after {msgs.pop();}
+	: identifier KW_PARTITION KW_COLUMN LPAREN columnNameType RPAREN
+	-> ^(TOK_ALTERTABLE_PARTCOLTYPE identifier columnNameType)
+	;
 
 alterViewStatementSuffix
 @init { msgs.push("alter view statement"); }
@@ -1058,8 +1066,6 @@ alterTblPartitionStatement
 @after {msgs.pop();}
   : tablePartitionPrefix alterTblPartitionStatementSuffix
   -> ^(TOK_ALTERTABLE_PARTITION tablePartitionPrefix alterTblPartitionStatementSuffix)
-  |Identifier KW_PARTITION KW_COLUMN LPAREN columnNameType RPAREN
-  -> ^(TOK_ALTERTABLE_ALTERPARTS Identifier columnNameType)
   ;
 
 alterTblPartitionStatementSuffix
@@ -1151,7 +1157,7 @@ alterStatementSuffixProtectMode
 @init { msgs.push("alter partition protect mode statement"); }
 @after { msgs.pop(); }
     : alterProtectMode
-    -> ^(TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE alterProtectMode)
+    -> ^(TOK_ALTERTABLE_PROTECTMODE alterProtectMode)
     ;
 
 alterStatementSuffixRenamePart
@@ -1165,7 +1171,7 @@ alterStatementSuffixMergeFiles
 @init { msgs.push(""); }
 @after { msgs.pop(); }
     : KW_CONCATENATE
-    -> ^(TOK_ALTERTABLE_ALTERPARTS_MERGEFILES)
+    -> ^(TOK_ALTERTABLE_MERGEFILES)
     ;
 
 alterProtectMode
