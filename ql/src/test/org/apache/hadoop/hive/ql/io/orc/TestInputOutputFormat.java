@@ -428,7 +428,7 @@ public class TestInputOutputFormat {
         new OrcInputFormat.SplitGenerator(context, fs,
             fs.getFileStatus(new Path("/a/file")), null);
     splitter.createSplit(0, 200, null);
-    OrcInputFormat.Context.FileSplitInfo result = context.getResult(-1);
+    FileSplit result = context.getResult(-1);
     assertEquals(0, result.getStart());
     assertEquals(200, result.getLength());
     assertEquals("/a/file", result.getPath().toString());
@@ -477,7 +477,7 @@ public class TestInputOutputFormat {
       }
       throw new IOException("Errors during splitting");
     }
-    OrcInputFormat.Context.FileSplitInfo result = context.getResult(0);
+    FileSplit result = context.getResult(0);
     assertEquals(3, result.getStart());
     assertEquals(497, result.getLength());
     result = context.getResult(1);
