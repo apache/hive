@@ -527,55 +527,54 @@ public class Driver implements CommandProcessor {
     SessionState ss = SessionState.get();
     HiveOperation op = ss.getHiveOperation();
     Hive db = sem.getDb();
-    if(ss.isAuthorizationModeV2()){
+    if (ss.isAuthorizationModeV2()) {
       doAuthorizationV2(ss, op, inputs, outputs);
       return;
     }
 
-    if (op != null) {
-      if (op.equals(HiveOperation.CREATEDATABASE)) {
-        ss.getAuthorizer().authorize(
-            op.getInputRequiredPrivileges(), op.getOutputRequiredPrivileges());
-      } else if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
-          || op.equals(HiveOperation.CREATETABLE)) {
-        ss.getAuthorizer().authorize(
-            db.getDatabase(SessionState.get().getCurrentDatabase()), null,
-            HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
-      } else {
-        if (op.equals(HiveOperation.IMPORT)) {
-          ImportSemanticAnalyzer isa = (ImportSemanticAnalyzer) sem;
-          if (!isa.existsTable()) {
-            ss.getAuthorizer().authorize(
-                db.getDatabase(SessionState.get().getCurrentDatabase()), null,
-                HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
-          }
+    if (op == null) {
+      throw new HiveException("Operation should not be null");
+    }
+    if (op.equals(HiveOperation.CREATEDATABASE)) {
+      ss.getAuthorizer().authorize(
+          op.getInputRequiredPrivileges(), op.getOutputRequiredPrivileges());
+    } else if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
+        || op.equals(HiveOperation.CREATETABLE)) {
+      ss.getAuthorizer().authorize(
+          db.getDatabase(SessionState.get().getCurrentDatabase()), null,
+          HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
+    } else {
+      if (op.equals(HiveOperation.IMPORT)) {
+        ImportSemanticAnalyzer isa = (ImportSemanticAnalyzer) sem;
+        if (!isa.existsTable()) {
+          ss.getAuthorizer().authorize(
+              db.getDatabase(SessionState.get().getCurrentDatabase()), null,
+              HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
         }
       }
-      if (outputs != null && outputs.size() > 0) {
-        //do authorization for each output
-        for (WriteEntity write : outputs) {
-          if (write.getType() == Entity.Type.DATABASE) {
-            ss.getAuthorizer().authorize(write.getDatabase(),
-                null, op.getOutputRequiredPrivileges());
-            continue;
-          }
+    }
+    if (outputs != null && outputs.size() > 0) {
+      for (WriteEntity write : outputs) {
+        if (write.getType() == Entity.Type.DATABASE) {
+          ss.getAuthorizer().authorize(write.getDatabase(),
+              null, op.getOutputRequiredPrivileges());
+          continue;
+        }
 
-          if (write.getType() == WriteEntity.Type.PARTITION) {
-            Partition part = db.getPartition(write.getTable(), write
-                .getPartition().getSpec(), false);
-            if (part != null) {
-              ss.getAuthorizer().authorize(write.getPartition(), null,
-                      op.getOutputRequiredPrivileges());
-              continue;
-            }
-          }
-
-          if (write.getTable() != null) {
-            ss.getAuthorizer().authorize(write.getTable(), null,
+        if (write.getType() == WriteEntity.Type.PARTITION) {
+          Partition part = db.getPartition(write.getTable(), write
+              .getPartition().getSpec(), false);
+          if (part != null) {
+            ss.getAuthorizer().authorize(write.getPartition(), null,
                     op.getOutputRequiredPrivileges());
+            continue;
           }
         }
 
+        if (write.getTable() != null) {
+          ss.getAuthorizer().authorize(write.getTable(), null,
+                  op.getOutputRequiredPrivileges());
+        }
       }
     }
 

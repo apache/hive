@@ -75,7 +75,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
     case HiveParser.TOK_ALTERTABLE_PARTITION:
       if (((ASTNode) ast.getChild(1)).getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT) {
         return ast;
-      } else if (((ASTNode) ast.getChild(1)).getToken().getType() == HiveParser.TOK_ALTERTABLE_ALTERPARTS_MERGEFILES) {
+      } else if (((ASTNode) ast.getChild(1)).getToken().getType() == HiveParser.TOK_ALTERTABLE_MERGEFILES) {
         // unsupported
         throw new SemanticException("Operation not supported.");
       } else {

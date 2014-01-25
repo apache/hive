@@ -233,11 +233,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ast = (ASTNode) ast.getChild(1);
       if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT) {
         analyzeAlterTableFileFormat(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE) {
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_PROTECTMODE) {
         analyzeAlterTableProtectMode(ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_LOCATION) {
         analyzeAlterTableLocation(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ALTERPARTS_MERGEFILES) {
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_MERGEFILES) {
         analyzeAlterTablePartMergeFiles(tablePart, ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERIALIZER) {
         analyzeAlterTableSerde(ast, tableName, partSpec);
@@ -365,8 +365,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_ALTERTABLE_DROPPARTS:
       analyzeAlterTableDropParts(ast, false);
       break;
-    case HiveParser.TOK_ALTERTABLE_ALTERPARTS:
-      analyzeAlterTableAlterParts(ast);
+    case HiveParser.TOK_ALTERTABLE_PARTCOLTYPE:
+      analyzeAlterTablePartColType(ast);
       break;
     case HiveParser.TOK_ALTERTABLE_PROPERTIES:
       analyzeAlterTableProps(ast, false, false);
@@ -2433,7 +2433,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         dropTblDesc), conf));
   }
 
-  private void analyzeAlterTableAlterParts(ASTNode ast)
+  private void analyzeAlterTablePartColType(ASTNode ast)
       throws SemanticException {
     // get table name
     String tblName = getUnescapedName((ASTNode)ast.getChild(0));
