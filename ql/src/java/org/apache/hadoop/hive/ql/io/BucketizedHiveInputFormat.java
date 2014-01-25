@@ -28,7 +28,9 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -114,8 +116,23 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
 
     Path[] dirs = FileInputFormat.getInputPaths(job);
     if (dirs.length == 0) {
-      throw new IOException("No input paths specified in job");
+      // on tez we're avoiding to duplicate the file info in FileInputFormat.
+      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        try {
+          List<Path> paths = Utilities.getInputPathsTez(job, mrwork);
+          dirs = paths.toArray(new Path[paths.size()]);
+          if (dirs.length == 0) {
+            // if we still don't have any files it's time to fail.
+            throw new IOException("No input paths specified in job");
+          }
+        } catch (Exception e) {
+          throw new IOException("Could not create input paths", e);
+        }
+      } else {
+        throw new IOException("No input paths specified in job");
+      }
     }
+
     JobConf newjob = new JobConf(job);
     ArrayList<InputSplit> result = new ArrayList<InputSplit>();
 

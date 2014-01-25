@@ -2917,6 +2917,16 @@ public final class Utilities {
   }
 
   /**
+   * On Tez we're not creating dummy files when getting/setting input paths.
+   * We let Tez handle the situation. We're also setting the paths in the AM
+   * so we don't want to depend on scratch dir and context.
+   */
+  public static List<Path> getInputPathsTez(JobConf job, MapWork work) throws Exception {
+    List<Path> paths = getInputPaths(job, work, null, null);
+    return paths;
+  }
+
+  /**
    * Computes a list of all input paths needed to compute the given MapWork. All aliases
    * are considered and a merged list of input paths is returned. If any input path points
    * to an empty table or partition a dummy file in the scratch dir is instead created and

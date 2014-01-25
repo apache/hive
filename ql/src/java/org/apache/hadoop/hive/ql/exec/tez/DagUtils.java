@@ -209,11 +209,6 @@ public class DagUtils {
     // set up the operator plan
     Utilities.setMapWork(conf, mapWork, mrScratchDir, false);
 
-    // setup input paths and split info
-    List<Path> inputPaths = Utilities.getInputPaths(conf, mapWork,
-        mrScratchDir, ctx);
-    Utilities.setInputPaths(conf, inputPaths);
-
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, mapWork);
 
