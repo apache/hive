@@ -773,8 +773,4 @@ public class Hadoop20Shims implements HadoopShims {
     ret.put("MAPREDTASKCLEANUPNEEDED", "mapreduce.job.committer.task.cleanup.needed");
     return ret;
   }
-  @Override
-  public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
-    return context.getConfiguration();
-  }
 }

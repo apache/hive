@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Writable;
 
-final public class OrcStruct implements Writable {
+final class OrcStruct implements Writable {
 
   private Object[] fields;
 
@@ -461,7 +461,7 @@ final public class OrcStruct implements Writable {
     }
   }
 
-  static public ObjectInspector createObjectInspector(TypeInfo info) {
+  static ObjectInspector createObjectInspector(TypeInfo info) {
     switch (info.getCategory()) {
       case PRIMITIVE:
         switch (((PrimitiveTypeInfo) info).getPrimitiveCategory()) {
