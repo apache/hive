@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -271,6 +272,17 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       mrwork.getAliasToWork();
     CombineFileInputFormatShim combine = ShimLoader.getHadoopShims()
         .getCombineFileInputFormat();
+    
+    // on tez we're avoiding duplicating path info since the info will go over
+    // rpc
+    if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+      try {
+        List<Path> dirs = Utilities.getInputPathsTez(job, mrwork);
+        Utilities.setInputPaths(job, dirs);
+      } catch (Exception e) {
+        throw new IOException("Could not create input paths", e);
+      }
+    }
 
     InputSplit[] splits = null;
     if (combine == null) {
