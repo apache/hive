@@ -63,26 +63,10 @@ public class DecimalUtil {
   }
 
   // Division with overflow/zero-divide check. Error produces NULL output.
-  // Remainder argument is necessary to match up with the Decimal128.divide() interface.
-  // It will be discarded so just pass in a dummy argument.
   public static void divideChecked(int i, Decimal128 left, Decimal128 right,
-      DecimalColumnVector outputColVector, Decimal128 remainder) {
+      DecimalColumnVector outputColVector) {
     try {
-      Decimal128.divide(left, right, outputColVector.vector[i], remainder, outputColVector.scale);
-      outputColVector.vector[i].checkPrecisionOverflow(outputColVector.precision);
-    } catch (ArithmeticException e) {  // catch on error
-      outputColVector.noNulls = false;
-      outputColVector.isNull[i] = true;
-    }
-  }
-
-  // Modulo operator with overflow/zero-divide check.
-  // Quotient argument is necessary to match up with Decimal128.divide() interface.
-  // It will be discarded so just pass in a dummy argument.
-  public static void moduloChecked(int i, Decimal128 left, Decimal128 right,
-      DecimalColumnVector outputColVector, Decimal128 quotient) {
-    try {
-      Decimal128.divide(left, right, quotient, outputColVector.vector[i], outputColVector.scale);
+      Decimal128.divide(left, right, outputColVector.vector[i], outputColVector.scale);
       outputColVector.vector[i].checkPrecisionOverflow(outputColVector.precision);
     } catch (ArithmeticException e) {  // catch on error
       outputColVector.noNulls = false;
