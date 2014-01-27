@@ -17,6 +17,8 @@ package org.apache.hadoop.hive.common.type;
 
 import static org.junit.Assert.*;
 
+import java.util.Random;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,11 +49,38 @@ public class TestDecimal128 {
 
   @Test
   public void testCalculateTenThirtyEight() {
+
+    // find 10^38
     Decimal128 ten = new Decimal128(10, (short) 0);
     Decimal128 val = new Decimal128(1, (short) 0);
     for (int i = 0; i < 38; ++i) {
       val.multiplyDestructive(ten, (short) 0);
     }
+
+    // verify it
+    String s = val.toFormalString();
+    assertEquals("100000000000000000000000000000000000000", s);
+    boolean overflow = false;
+
+    // show that it is is an overflow for precision 38
+    try {
+      val.checkPrecisionOverflow(38);
+    } catch (Exception e) {
+      overflow = true;
+    }
+    assertTrue(overflow);
+
+    // subtract one
+    val.subtractDestructive(one, (short) 0);
+    overflow = false;
+
+    // show that it does not overflow for precision 38
+    try {
+      val.checkPrecisionOverflow(38);
+    } catch (Exception e) {
+      overflow = true;
+    }
+    assertFalse(overflow);
   }
 
   @Test
@@ -247,28 +276,104 @@ public class TestDecimal128 {
   @Test
   public void testDivide() {
     Decimal128 quotient = new Decimal128();
-    Decimal128 remainder = new Decimal128();
-    Decimal128.divide(two, one, quotient, remainder, (short) 2);
+    Decimal128.divide(two, one, quotient, (short) 2);
     assertEquals(0, quotient.compareTo(two));
-    assertTrue(remainder.isZero());
 
-    Decimal128.divide(two, two, quotient, remainder, (short) 2);
+    Decimal128.divide(two, two, quotient, (short) 2);
     assertEquals(0, quotient.compareTo(one));
-    assertTrue(remainder.isZero());
 
     Decimal128 three = new Decimal128(3);
     Decimal128 four = new Decimal128(4);
-    Decimal128.divide(three, four, quotient, remainder, (short) 2);
+    Decimal128.divide(three, four, quotient, (short) 2);
     assertEquals("0.75", quotient.toFormalString());
-    assertEquals("0", remainder.toFormalString());
 
-    Decimal128.divide(three, four, quotient, remainder, (short) 1);
-    assertEquals("0.7", quotient.toFormalString());
-    assertEquals("0.2", remainder.toFormalString());
+    Decimal128.divide(three, four, quotient, (short) 1);
+    assertEquals("0.8", quotient.toFormalString());
 
-    Decimal128.divide(three, four, quotient, remainder, (short) 0);
-    assertEquals("0", quotient.toFormalString());
-    assertEquals("3", remainder.toFormalString());
+    Decimal128.divide(three, four, quotient, (short) 0);
+    assertEquals("1", quotient.toFormalString());
+
+    Decimal128 two = new Decimal128(2);
+    Decimal128.divide(two, three, quotient, (short) 4);
+    assertEquals("0.6667", quotient.toFormalString());
+  }
+
+  @Test
+  public void testRandomMultiplyDivideInverse() {
+    final int N = 100000;
+    final long MASK56 = 0x00FFFFFFFFFFFFL; // 56 bit mask to generate positive 56 bit longs
+                                           // from random signed longs
+    int seed = 897089790;
+    Random rand = new Random(seed);
+    long l1, l2;
+    for (int i = 1; i <= N; i++) {
+      l1 = rand.nextLong() & MASK56;
+      l2 = rand.nextLong() & MASK56;
+      verifyMultiplyDivideInverse(l1, l2);
+    }
+  }
+
+  /**
+   * Verify that a * b / b == a
+   * for decimal division for scale 0 with integer inputs.
+   *
+   * Not valid if abs(a * b) >= 10**38.
+   */
+  private void verifyMultiplyDivideInverse(long a, long b) {
+    final short scale = 0;
+
+    // ignore zero-divide cases
+    if (b == 0) {
+      return;
+    }
+    Decimal128 decA = new Decimal128(a, scale);
+    Decimal128 decB = new Decimal128(b, scale);
+    decA.multiplyDestructive(decB, scale);
+    decA.checkPrecisionOverflow(38); // caller must make sure product of inputs is not too big
+    decA.divideDestructive(decB, scale);
+    assertEquals("Error for a = " + Long.toString(a) + ", b = " + Long.toString(b),
+        new Decimal128(a, scale), decA);
+  }
+
+
+  @Test
+  public void testRandomAddSubtractInverse() {
+    final int N = 1000000;
+    int seed = 1427480960;
+    Random rand = new Random(seed);
+    long l1, l2;
+    for (int i = 1; i <= N; i++) {
+      l1 = rand.nextLong();
+      l2 = rand.nextLong();
+      verifyAddSubtractInverse(l1, l2);
+    }
+  }
+
+  /**
+   * Verify that (a + b) - b == a
+   * for decimal add and subtract for scale 0 with long integer inputs.
+   */
+  private void verifyAddSubtractInverse(long a, long b) {
+    final short scale = 0;
+    Decimal128 decA = new Decimal128(a, scale);
+    Decimal128 decB = new Decimal128(b, scale);
+    decA.addDestructive(decB, scale);
+
+    decA.subtractDestructive(decB, scale);
+    assertEquals("Error for a = " + Long.toString(a) + ", b = " + Long.toString(b),
+        new Decimal128(a, scale), decA);
+  }
+
+  /**
+   * During earlier code testing, if we found errors, test them here as regression tests.
+   */
+  @Test
+  public void testKnownPriorErrors() {
+
+    // Regression test for defect reported in HIVE-6243
+    long a = 213474114411690L;
+    long b = 5062120663L;
+    verifyMultiplyDivideInverse(a, b);
   }
 
   @Test
@@ -281,13 +386,12 @@ public class TestDecimal128 {
     Decimal128 current = new Decimal128(1, SCALE);
     Decimal128 multiplier = new Decimal128();
     Decimal128 dividor = new Decimal128();
-    Decimal128 remainder = new Decimal128();
     Decimal128 one = new Decimal128(1);
     for (int i = LOOPS; i > 0; --i) {
       multiplier.update(i, SCALE);
       current.multiplyDestructive(multiplier, SCALE);
       dividor.update(1 + 2 * i, SCALE);
-      current.divideDestructive(dividor, SCALE, remainder);
+      current.divideDestructive(dividor, SCALE);
       current.addDestructive(one, SCALE);
     }
     current.multiplyDestructive(new Decimal128(2), SCALE);
@@ -307,17 +411,16 @@ public class TestDecimal128 {
     Decimal128 total = new Decimal128(0);
     Decimal128 multiplier = new Decimal128();
     Decimal128 dividor = new Decimal128();
-    Decimal128 remainder = new Decimal128();
     Decimal128 current = new Decimal128();
     for (int i = 0; i < LOOPS; ++i) {
       current.update(3, SCALE);
       dividor.update(2 * i + 1, SCALE);
-      current.divideDestructive(dividor, SCALE, remainder);
+      current.divideDestructive(dividor, SCALE);
       for (int j = 1; j <= i; ++j) {
         multiplier.update(i + j, SCALE);
         dividor.update(16 * j, SCALE);
         current.multiplyDestructive(multiplier, SCALE);
-        current.divideDestructive(dividor, SCALE, remainder);
+        current.divideDestructive(dividor, SCALE);
       }
 
       total.addDestructive(current, SCALE);
@@ -329,16 +432,15 @@ public class TestDecimal128 {
   @Test
   public void testDoubleValue() {
     Decimal128 quotient = new Decimal128();
-    Decimal128 remainder = new Decimal128();
 
     Decimal128 three = new Decimal128(3);
     Decimal128 four = new Decimal128(9);
-    Decimal128.divide(three, four, quotient, remainder, (short) 38);
+    Decimal128.divide(three, four, quotient, (short) 38);
     assertEquals(0.33333333333333333333333333d, quotient.doubleValue(),
         0.0000000000000000000000001d);
 
     Decimal128 minusThree = new Decimal128(-3);
-    Decimal128.divide(minusThree, four, quotient, remainder, (short) 38);
+    Decimal128.divide(minusThree, four, quotient, (short) 38);
     assertEquals(-0.33333333333333333333333333d, quotient.doubleValue(),
         0.0000000000000000000000001d);
   }
@@ -346,15 +448,14 @@ public class TestDecimal128 {
   @Test
   public void testFloatValue() {
     Decimal128 quotient = new Decimal128();
-    Decimal128 remainder = new Decimal128();
 
     Decimal128 three = new Decimal128(3);
     Decimal128 four = new Decimal128(9);
-    Decimal128.divide(three, four, quotient, remainder, (short) 38);
+    Decimal128.divide(three, four, quotient, (short) 38);
     assertEquals(0.3333333333333333f, quotient.floatValue(), 0.00000000001f);
 
     Decimal128 minusThree = new Decimal128(-3);
-    Decimal128.divide(minusThree, four, quotient, remainder, (short) 38);
+    Decimal128.divide(minusThree, four, quotient, (short) 38);
     assertEquals(-0.333333333333333f, quotient.floatValue(), 0.00000000001f);
   }
 
@@ -407,6 +508,30 @@ public class TestDecimal128 {
     new Decimal128("-3322", (short) 1).checkPrecisionOverflow(5);
     try {
       new Decimal128("-3322", (short) 1).checkPrecisionOverflow(4);
+      fail();
+    } catch (ArithmeticException ex) {
+    }
+
+    // Try the extremes of precision and scale.
+
+    // digit  measuring stick:
+    //                12345678901234567890123456789012345678
+    new Decimal128("0.99999999999999999999999999999999999999", (short) 38)
+      .checkPrecisionOverflow(38);
+
+    try {
+      new Decimal128("0.99999999999999999999999999999999999999", (short) 38)
+        .checkPrecisionOverflow(37);
+      fail();
+    } catch (ArithmeticException ex) {
+    }
+
+    new Decimal128("99999999999999999999999999999999999999", (short) 0)
+      .checkPrecisionOverflow(38);
+
+    try {
+      new Decimal128("99999999999999999999999999999999999999", (short) 0)
+        .checkPrecisionOverflow(37);
       fail();
     } catch (ArithmeticException ex) {
     }
