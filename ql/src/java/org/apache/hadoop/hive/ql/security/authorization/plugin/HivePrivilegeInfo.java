@@ -17,26 +17,50 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-import java.util.List;
-
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 
 /**
- * Interface used to check if user has privileges to perform certain action.
- * Methods here have corresponding methods in HiveAuthorizer, check method documentation there.
+ * Represents a privilege granted for an object to a principal
  */
 @Public
 @Evolving
-public interface HiveAuthorizationValidator {
-  /**
-   * Check if current user has privileges to perform given operation type hiveOpType on the given
-   * input and output objects
-   * @param hiveOpType
-   * @param inputHObjs
-   * @param outputHObjs
-   */
-  void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs) throws HiveAuthorizationPluginException;
+
+public class HivePrivilegeInfo{
+  private final HivePrincipal principal;
+  private final HivePrivilege privilege;
+  private final HivePrivilegeObject object;
+  private final HivePrincipal grantorPrincipal;
+  private final boolean grantOption;
+
+  public HivePrivilegeInfo(HivePrincipal principal, HivePrivilege privilege,
+      HivePrivilegeObject object, HivePrincipal grantorPrincipal, boolean grantOption){
+    this.principal = principal;
+    this.privilege = privilege;
+    this.object = object;
+    this.grantorPrincipal = grantorPrincipal;
+    this.grantOption = grantOption;
+  }
+
+  public HivePrincipal getPrincipal() {
+    return principal;
+  }
+
+  public HivePrivilege getPrivilege() {
+    return privilege;
+  }
+
+  public HivePrivilegeObject getObject() {
+    return object;
+  }
+
+  public HivePrincipal getGrantorPrincipal() {
+    return grantorPrincipal;
+  }
+
+  public boolean isGrantOption() {
+    return grantOption;
+  }
+
 
 }

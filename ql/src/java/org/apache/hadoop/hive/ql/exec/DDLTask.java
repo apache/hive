@@ -155,11 +155,13 @@ import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -541,6 +543,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int showGrants(ShowGrantDesc showGrantDesc) throws HiveException {
+
+    if(SessionState.get().isAuthorizationModeV2()){
+      return showGrantsV2(showGrantDesc);
+    }
     StringBuilder builder = new StringBuilder();
     try {
       PrincipalDesc principalDesc = showGrantDesc.getPrincipalDesc();
@@ -635,6 +641,44 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);
+    }
+    return 0;
+  }
+
+  private int showGrantsV2(ShowGrantDesc showGrantDesc) throws HiveException {
+    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
+    StringBuilder builder = new StringBuilder();
+    try {
+      List<HivePrivilegeInfo> privInfos = authorizer.showPrivileges(
+          getHivePrincipal(showGrantDesc.getPrincipalDesc()),
+          getHivePrivilegeObject(showGrantDesc.getHiveObj())
+          );
+      for(HivePrivilegeInfo privInfo : privInfos){
+        HivePrincipal principal = privInfo.getPrincipal();
+        HivePrivilegeObject privObj = privInfo.getObject();
+        HivePrivilege priv = privInfo.getPrivilege();
+
+        PrivilegeGrantInfo grantInfo =
+            AuthorizationUtils.getThriftPrivilegeGrantInfo(priv, privInfo.getGrantorPrincipal(),
+                privInfo.isGrantOption());
+
+        //only grantInfo is used
+        HiveObjectPrivilege thriftObjectPriv = new HiveObjectPrivilege(null, null, null, grantInfo);
+        List<HiveObjectPrivilege> privList = new ArrayList<HiveObjectPrivilege>();
+        privList.add(thriftObjectPriv);
+        writeGrantInfo(builder,
+            AuthorizationUtils.getThriftPrincipalType(principal.getType()),
+            principal.getName(),
+            privObj.getDbname(),
+            privObj.getTableviewname(),
+            null,
+            null,
+            privList
+            );
+      }
+      writeToFile(builder.toString(), showGrantDesc.getResFile());
+    } catch (IOException e) {
+      throw new HiveException("Error in show grant statement", e);
     }
     return 0;
   }
@@ -823,6 +867,24 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return new HivePrivilegeObject(getPrivObjectType(privSubjectDesc), dbTable[0], dbTable[1]);
   }
 
+  private HivePrincipalType getHivePrincipalType(PrincipalType type) throws HiveException {
+    if(type == null){
+      return null;
+    }
+
+    switch(type){
+    case USER:
+      return HivePrincipalType.USER;
+    case ROLE:
+      return HivePrincipalType.ROLE;
+    case GROUP:
+      throw new HiveException(ErrorMsg.UNNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP);
+    default:
+      //should not happen as we take care of all existing types
+      throw new AssertionError("Unsupported authorization type specified");
+    }
+  }
+
   private HivePrivilegeObjectType getPrivObjectType(PrivilegeObjectDesc privSubjectDesc) {
     //TODO: This needs to change to support view once view grant/revoke is supported as
     // part of HIVE-6181
@@ -841,24 +903,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals) throws HiveException {
     ArrayList<HivePrincipal> hivePrincipals = new ArrayList<HivePrincipal>();
     for(PrincipalDesc principal : principals){
-      hivePrincipals.add(
-          new HivePrincipal(principal.getName(), getHivePrincipalType(principal.getType())));
+      hivePrincipals.add(getHivePrincipal(principal));
     }
     return hivePrincipals;
   }
 
-  private HivePrincipalType getHivePrincipalType(PrincipalType type) throws HiveException {
-    switch(type){
-    case USER:
-      return HivePrincipalType.USER;
-    case ROLE:
-      return HivePrincipalType.ROLE;
-    case GROUP:
-      throw new HiveException(ErrorMsg.UNNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP);
-    default:
-      //should not happen as we take care of all existing types
-      throw new HiveException("Unsupported authorization type specified");
-    }
+  private HivePrincipal getHivePrincipal(PrincipalDesc principal) throws HiveException {
+    return new HivePrincipal(principal.getName(),
+        AuthorizationUtils.getHivePrincipalType(principal.getType()));
   }
 
   private void throwNotFound(String objType, String objName) throws HiveException {
@@ -915,7 +967,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.info("role ddl exception: " + stringifyException(e));
       return 1;
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
 
     return 0;
@@ -945,6 +997,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException("Unkown role operation "
           + operation.getOperationName());
     }
+
     return 0;
   }
 
@@ -955,10 +1008,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws IOException
    */
   private void writeListToFile(List<String> entries, String resFile) throws IOException {
-    StringBuilder sb = new StringBuilder(entries.size()*2);
+    StringBuilder sb = new StringBuilder();
     for(String entry : entries){
       sb.append(entry);
-      sb.append(terminator);
+      sb.append((char)terminator);
     }
     writeToFile(sb.toString(), resFile);
   }
@@ -2191,7 +2244,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
 
     return 0;
@@ -2249,7 +2302,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e.toString());
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
 
     return 0;
@@ -2368,7 +2421,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (IOException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }
@@ -2420,7 +2473,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }
@@ -2512,7 +2565,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e.toString());
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }
@@ -2753,7 +2806,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }

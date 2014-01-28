@@ -15,16 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-@Private
-public class DefaultHiveAuthorizerFactory implements HiveAuthorizerFactory{
-  @Override
-  public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
-      HiveConf conf, String hiveCurrentUser) {
-    return null;
+/**
+ * Exception thrown by the Authorization plugin api (v2)
+ */
+@Public
+public class HiveAuthorizationPluginException extends HiveException{
+
+  private static final long serialVersionUID = 1L;
+
+  public HiveAuthorizationPluginException(){
   }
+
+  public HiveAuthorizationPluginException(String msg){
+    super(msg);
+  }
+
+  public HiveAuthorizationPluginException(String msg, Throwable cause){
+    super(msg, cause);
+  }
+
+  public HiveAuthorizationPluginException(Throwable cause){
+    super(cause);
+  }
+
 }

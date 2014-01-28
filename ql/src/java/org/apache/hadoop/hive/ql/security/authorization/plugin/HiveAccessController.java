@@ -27,23 +27,34 @@ import java.util.List;
 public interface HiveAccessController {
 
   void grantPrivileges(List<HivePrincipal> hivePrincipals, List<HivePrivilege> hivePrivileges,
-      HivePrivilegeObject hivePrivObject, HivePrincipal grantorPrincipal, boolean grantOption);
+      HivePrivilegeObject hivePrivObject, HivePrincipal grantorPrincipal, boolean grantOption)
+          throws HiveAuthorizationPluginException;;
 
   void revokePrivileges(List<HivePrincipal> hivePrincipals, List<HivePrivilege> hivePrivileges,
-      HivePrivilegeObject hivePrivObject, HivePrincipal grantorPrincipal, boolean grantOption);
+      HivePrivilegeObject hivePrivObject, HivePrincipal grantorPrincipal, boolean grantOption)
+          throws HiveAuthorizationPluginException;;
 
-  void createRole(String roleName, HivePrincipal adminGrantor);
+  void createRole(String roleName, HivePrincipal adminGrantor)
+      throws HiveAuthorizationPluginException;
 
-  void dropRole(String roleName);
+  void dropRole(String roleName)
+      throws HiveAuthorizationPluginException;
 
-  List<String> getRoles(HivePrincipal hivePrincipal);
+  List<String> getRoles(HivePrincipal hivePrincipal)
+      throws HiveAuthorizationPluginException;
 
   void grantRole(List<HivePrincipal> hivePrincipals, List<String> roles, boolean grantOption,
-      HivePrincipal grantorPrinc);
+      HivePrincipal grantorPrinc)
+          throws HiveAuthorizationPluginException;
 
   void revokeRole(List<HivePrincipal> hivePrincipals, List<String> roles, boolean grantOption,
-      HivePrincipal grantorPrinc);
+      HivePrincipal grantorPrinc)
+          throws HiveAuthorizationPluginException;
 
-  List<String> getAllRoles();
+  List<String> getAllRoles()
+      throws HiveAuthorizationPluginException;
+
+  List<HivePrivilegeInfo> showPrivileges(HivePrincipal principal, HivePrivilegeObject privObj)
+      throws HiveAuthorizationPluginException;
 
 }
