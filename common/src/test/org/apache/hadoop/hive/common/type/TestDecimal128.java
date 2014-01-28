@@ -536,4 +536,22 @@ public class TestDecimal128 {
     } catch (ArithmeticException ex) {
     }
   }
+
+  @Test
+  public void testToLong() {
+    Decimal128 d = new Decimal128("1.25", (short) 2);
+    assertEquals(1, d.longValue());
+    d.update("4294967295", (short) 0); // 2^32-1
+    assertEquals(4294967295L, d.longValue());
+    d.update("4294967296", (short) 0); // 2^32 -- needs 2 32 bit words
+    assertEquals(4294967296L, d.longValue());
+    d.update("-4294967295", (short) 0); // -(2^32-1)
+    assertEquals(-4294967295L, d.longValue());
+    d.update("-4294967296", (short) 0); // -(2^32)
+    assertEquals(-4294967296L, d.longValue());
+    d.update("4294967295.01", (short) 2); // 2^32-1 + .01
+    assertEquals(4294967295L, d.longValue());
+    d.update("4294967296.01", (short) 2); // 2^32 + .01
+    assertEquals(4294967296L, d.longValue());
+  }
 }
