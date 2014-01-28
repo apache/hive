@@ -522,65 +522,6 @@ class TStringValue
   ::Thrift::Struct.generate_accessors self
 end
 
-class TColumn < ::Thrift::Union
-  include ::Thrift::Struct_Union
-  class << self
-    def boolColumn(val)
-      TColumn.new(:boolColumn, val)
-    end
-
-    def byteColumn(val)
-      TColumn.new(:byteColumn, val)
-    end
-
-    def i16Column(val)
-      TColumn.new(:i16Column, val)
-    end
-
-    def i32Column(val)
-      TColumn.new(:i32Column, val)
-    end
-
-    def i64Column(val)
-      TColumn.new(:i64Column, val)
-    end
-
-    def doubleColumn(val)
-      TColumn.new(:doubleColumn, val)
-    end
-
-    def stringColumn(val)
-      TColumn.new(:stringColumn, val)
-    end
-  end
-
-  BOOLCOLUMN = 1
-  BYTECOLUMN = 2
-  I16COLUMN = 3
-  I32COLUMN = 4
-  I64COLUMN = 5
-  DOUBLECOLUMN = 6
-  STRINGCOLUMN = 7
-
-  FIELDS = {
-    BOOLCOLUMN => {:type => ::Thrift::Types::LIST, :name => 'boolColumn', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TBoolValue}},
-    BYTECOLUMN => {:type => ::Thrift::Types::LIST, :name => 'byteColumn', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TByteValue}},
-    I16COLUMN => {:type => ::Thrift::Types::LIST, :name => 'i16Column', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TI16Value}},
-    I32COLUMN => {:type => ::Thrift::Types::LIST, :name => 'i32Column', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TI32Value}},
-    I64COLUMN => {:type => ::Thrift::Types::LIST, :name => 'i64Column', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TI64Value}},
-    DOUBLECOLUMN => {:type => ::Thrift::Types::LIST, :name => 'doubleColumn', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TDoubleValue}},
-    STRINGCOLUMN => {:type => ::Thrift::Types::LIST, :name => 'stringColumn', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TStringValue}}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise(StandardError, 'Union fields are not set.') if get_set_field.nil? || get_value.nil?
-  end
-
-  ::Thrift::Union.generate_accessors self
-end
-
 class TColumnValue < ::Thrift::Union
   include ::Thrift::Struct_Union
   class << self

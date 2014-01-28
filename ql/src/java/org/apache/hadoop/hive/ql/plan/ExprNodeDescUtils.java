@@ -22,10 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.util.ReflectionUtils;
 
 public class ExprNodeDescUtils {
 
@@ -243,5 +251,71 @@ public class ExprNodeDescUtils {
       return terminal;
     }
     throw new SemanticException("Met multiple parent operators");
+  }
+
+  public static ExprNodeDesc[] extractComparePair(ExprNodeDesc expr1, ExprNodeDesc expr2) {
+    expr1 = extractConstant(expr1);
+    expr2 = extractConstant(expr2);
+    if (expr1 instanceof ExprNodeColumnDesc && expr2 instanceof ExprNodeConstantDesc) {
+      return new ExprNodeDesc[] {expr1, expr2};
+    }
+    if (expr1 instanceof ExprNodeConstantDesc && expr2 instanceof ExprNodeColumnDesc) {
+      return new ExprNodeDesc[] {expr2, expr1, null}; // add null as a marker (inverted order)
+    }
+    // todo: constant op constant
+    return null;
+  }
+
+  // from IndexPredicateAnalyzer
+  private static ExprNodeDesc extractConstant(ExprNodeDesc expr) {
+    if (!(expr instanceof ExprNodeGenericFuncDesc)) {
+      return expr;
+    }
+    ExprNodeConstantDesc folded = foldConstant(((ExprNodeGenericFuncDesc) expr));
+    return folded == null ? expr : folded;
+  }
+
+  private static ExprNodeConstantDesc foldConstant(ExprNodeGenericFuncDesc func) {
+    GenericUDF udf = func.getGenericUDF();
+    if (!FunctionRegistry.isDeterministic(udf) || FunctionRegistry.isStateful(udf)) {
+      return null;
+    }
+    try {
+      // If the UDF depends on any external resources, we can't fold because the
+      // resources may not be available at compile time.
+      if (udf instanceof GenericUDFBridge) {
+        UDF internal = ReflectionUtils.newInstance(((GenericUDFBridge) udf).getUdfClass(), null);
+        if (internal.getRequiredFiles() != null || internal.getRequiredJars() != null) {
+          return null;
+        }
+      } else {
+        if (udf.getRequiredFiles() != null || udf.getRequiredJars() != null) {
+          return null;
+        }
+      }
+
+      if (func.getChildren() != null) {
+        for (ExprNodeDesc child : func.getChildren()) {
+          if (child instanceof ExprNodeConstantDesc) {
+            continue;
+          }
+          if (child instanceof ExprNodeGenericFuncDesc) {
+            if (foldConstant((ExprNodeGenericFuncDesc) child) != null) {
+              continue;
+            }
+          }
+          return null;
+        }
+      }
+      ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(func);
+      ObjectInspector output = evaluator.initialize(null);
+
+      Object constant = evaluator.evaluate(null);
+      Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);
+
+      return new ExprNodeConstantDesc(java);
+    } catch (Exception e) {
+      return null;
+    }
   }
 }

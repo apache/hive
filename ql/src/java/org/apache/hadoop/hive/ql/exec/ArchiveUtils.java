@@ -108,11 +108,11 @@ public final class ArchiveUtils {
       } catch (MetaException e) {
         throw new HiveException("Unable to get partitions directories prefix", e);
       }
-      URI tableDir = tbl.getDataLocation();
+      Path tableDir = tbl.getDataLocation();
       if(tableDir == null) {
         throw new HiveException("Table has no location set");
       }
-      return new Path(tableDir.toString(), prefixSubdir);
+      return new Path(tableDir, prefixSubdir);
     }
     /**
      * Generates name for prefix partial partition specification.

@@ -20,7 +20,8 @@ stored as
 inputformat
 'org.apache.hadoop.mapred.TextInputFormat'
 outputformat
-'org.apache.hadoop.hive.ql.io.HiveNullValueSequenceFileOutputFormat';
+'org.apache.hadoop.hive.ql.io.HiveNullValueSequenceFileOutputFormat'
+location '/tmp/data/hbpartition';
 
 -- this should produce one file, but we do not
 -- know what it will be called, so we will copy it to a well known
@@ -30,13 +31,15 @@ select distinct value
 from src
 where value='val_100' or value='val_200';
 
-dfs -count /build/ql/test/data/warehouse/hbpartition;
-dfs -cp /build/ql/test/data/warehouse/hbpartition/* /tmp/hbpartition.lst;
+dfs -count /tmp/data/hbpartition;
+dfs -cp /tmp/data/hbpartition/* /tmp/hbpartition.lst;
 
 set mapred.reduce.tasks=3;
 set hive.mapred.partitioner=org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 set total.order.partitioner.natural.order=false;
 set total.order.partitioner.path=/tmp/hbpartition.lst;
+set mapreduce.totalorderpartitioner.naturalorder=false;
+set mapreduce.totalorderpartitioner.path=/tmp/hbpartition.lst;
 
 -- this should produce three files in /tmp/hbsort/cf
 -- include some trailing blanks and nulls to make sure we handle them correctly

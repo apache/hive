@@ -138,8 +138,9 @@ TOK_ALTERTABLE_RENAMEPART;
 TOK_ALTERTABLE_REPLACECOLS;
 TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
-TOK_ALTERTABLE_ALTERPARTS;
-TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE;
+TOK_ALTERTABLE_PARTCOLTYPE;
+TOK_ALTERTABLE_PROTECTMODE;
+TOK_ALTERTABLE_MERGEFILES;
 TOK_ALTERTABLE_TOUCH;
 TOK_ALTERTABLE_ARCHIVE;
 TOK_ALTERTABLE_UNARCHIVE;
@@ -276,6 +277,7 @@ TOK_PRIV_OBJECT_COL;
 TOK_GRANT_ROLE;
 TOK_REVOKE_ROLE;
 TOK_SHOW_ROLE_GRANT;
+TOK_SHOW_ROLES;
 TOK_SHOWINDEXES;
 TOK_SHOWDBLOCKS;
 TOK_INDEXCOMMENT;
@@ -284,7 +286,6 @@ TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
 TOK_DBPROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
-TOK_ALTERTABLE_ALTERPARTS_MERGEFILES;
 TOK_TABNAME;
 TOK_TABSRC;
 TOK_RESTRICT;
@@ -385,7 +386,7 @@ import java.util.HashMap;
     xlateMap.put("KW_ALTER", "ALTER");
     xlateMap.put("KW_DESCRIBE", "DESCRIBE");
     xlateMap.put("KW_DROP", "DROP");
-    xlateMap.put("KW_REANME", "REANME");
+    xlateMap.put("KW_RENAME", "RENAME");
     xlateMap.put("KW_TO", "TO");
     xlateMap.put("KW_COMMENT", "COMMENT");
     xlateMap.put("KW_BOOLEAN", "BOOLEAN");
@@ -555,6 +556,13 @@ import java.util.HashMap;
     }
     return msg;
   }
+  
+  // counter to generate unique union aliases
+  private int aliasCounter;
+  
+  private String generateUnionAlias() {
+    return "_u" + (++aliasCounter);
+  }
 }
 
 @rulecatch {
@@ -580,7 +588,7 @@ explainStatement
 execStatement
 @init { msgs.push("statement"); }
 @after { msgs.pop(); }
-    : queryStatementExpression
+    : queryStatementExpression[true]
     | loadStatement
     | exportStatement
     | importStatement
@@ -640,6 +648,7 @@ ddlStatement
     | revokePrivileges
     | showGrants
     | showRoleGrants
+    | showRoles
     | grantRole
     | revokeRole
     ;
@@ -759,7 +768,7 @@ createTableStatement
          tableFileFormat?
          tableLocation?
          tablePropertiesPrefixed?
-         (KW_AS selectStatement)?
+         (KW_AS selectStatement[true])?
       )
     -> ^(TOK_CREATETABLE $name $ext? ifNotExists?
          ^(TOK_LIKETABLE $likeName?)
@@ -891,7 +900,15 @@ alterTableStatementSuffix
     | alterTblPartitionStatement
     | alterStatementSuffixSkewedby
     | alterStatementSuffixExchangePartition
+    | alterStatementPartitionKeyType
     ;
+
+alterStatementPartitionKeyType
+@init {msgs.push("alter partition key type"); }
+@after {msgs.pop();}
+	: identifier KW_PARTITION KW_COLUMN LPAREN columnNameType RPAREN
+	-> ^(TOK_ALTERTABLE_PARTCOLTYPE identifier columnNameType)
+	;
 
 alterViewStatementSuffix
 @init { msgs.push("alter view statement"); }
@@ -903,7 +920,7 @@ alterViewStatementSuffix
         -> ^(TOK_ALTERVIEW_ADDPARTS alterStatementSuffixAddPartitions)
     | alterStatementSuffixDropPartitions
         -> ^(TOK_ALTERVIEW_DROPPARTS alterStatementSuffixDropPartitions)
-    | name=tableName KW_AS selectStatement
+    | name=tableName KW_AS selectStatement[true]
         -> ^(TOK_ALTERVIEW_AS $name selectStatement)
     ;
 
@@ -1049,8 +1066,6 @@ alterTblPartitionStatement
 @after {msgs.pop();}
   : tablePartitionPrefix alterTblPartitionStatementSuffix
   -> ^(TOK_ALTERTABLE_PARTITION tablePartitionPrefix alterTblPartitionStatementSuffix)
-  |Identifier KW_PARTITION KW_COLUMN LPAREN columnNameType RPAREN
-  -> ^(TOK_ALTERTABLE_ALTERPARTS Identifier columnNameType)
   ;
 
 alterTblPartitionStatementSuffix
@@ -1142,7 +1157,7 @@ alterStatementSuffixProtectMode
 @init { msgs.push("alter partition protect mode statement"); }
 @after { msgs.pop(); }
     : alterProtectMode
-    -> ^(TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE alterProtectMode)
+    -> ^(TOK_ALTERTABLE_PROTECTMODE alterProtectMode)
     ;
 
 alterStatementSuffixRenamePart
@@ -1156,7 +1171,7 @@ alterStatementSuffixMergeFiles
 @init { msgs.push(""); }
 @after { msgs.pop(); }
     : KW_CONCATENATE
-    -> ^(TOK_ALTERTABLE_ALTERPARTS_MERGEFILES)
+    -> ^(TOK_ALTERTABLE_MERGEFILES)
     ;
 
 alterProtectMode
@@ -1334,6 +1349,13 @@ showRoleGrants
     -> ^(TOK_SHOW_ROLE_GRANT principalName)
     ;
 
+showRoles
+@init {msgs.push("show roles");}
+@after {msgs.pop();}
+    : KW_SHOW KW_ROLES
+    -> ^(TOK_SHOW_ROLES)
+    ;
+
 showGrants
 @init {msgs.push("show grants");}
 @after {msgs.pop();}
@@ -1361,6 +1383,7 @@ privObjectType
 @init {msgs.push("privilege object type type");}
 @after {msgs.pop();}
     : KW_DATABASE -> ^(TOK_DB_TYPE)
+    | KW_VIEW -> ^(TOK_TABLE_TYPE)
     | KW_TABLE? -> ^(TOK_TABLE_TYPE)
     ;
 
@@ -1466,7 +1489,7 @@ createViewStatement
         (LPAREN columnNameCommentList RPAREN)? tableComment? viewPartition?
         tablePropertiesPrefixed?
         KW_AS
-        selectStatement
+        selectStatement[true]
     -> ^(TOK_CREATEVIEW $name orReplace?
          ifNotExists?
          columnNameCommentList?
@@ -1857,45 +1880,75 @@ unionType
     : KW_UNIONTYPE LESSTHAN colTypeList GREATERTHAN -> ^(TOK_UNIONTYPE colTypeList)
     ;
 
-queryOperator
-@init { msgs.push("query operator"); }
+setOperator
+@init { msgs.push("set operator"); }
 @after { msgs.pop(); }
     : KW_UNION KW_ALL -> ^(TOK_UNION)
     ;
 
-// select statement select ... from ... where ... group by ... order by ...
-queryStatementExpression
-    : queryStatement (queryOperator^ queryStatement)*
+queryStatementExpression[boolean topLevel]
+    :
+    fromStatement[topLevel]
+    | regularBody[topLevel]
     ;
+    
+fromStatement[boolean topLevel]
+: (singleFromStatement  -> singleFromStatement)
+	(u=setOperator r=singleFromStatement
+	  -> ^($u {$fromStatement.tree} $r)
+	)*
+	 -> {u != null && topLevel}? ^(TOK_QUERY
+	       ^(TOK_FROM
+	         ^(TOK_SUBQUERY
+	           {$fromStatement.tree}
+	            {adaptor.create(Identifier, generateUnionAlias())}
+	           )
+	        )
+	       ^(TOK_INSERT 
+	          ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+	          ^(TOK_SELECT ^(TOK_SELEXPR TOK_ALLCOLREF))
+	        )
+	      )
+    -> {$fromStatement.tree}
+	;
 
-queryStatement
+
+singleFromStatement
     :
     fromClause
     ( b+=body )+ -> ^(TOK_QUERY fromClause body+)
-    | regular_body
     ;
 
-regular_body
+regularBody[boolean topLevel]
    :
-   insertClause
-   selectClause
-   fromClause
-   whereClause?
-   groupByClause?
-   havingClause?
-   orderByClause?
-   clusterByClause?
-   distributeByClause?
-   sortByClause?
-   window_clause?
-   limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT insertClause
-                     selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? window_clause? limitClause?))
+   i=insertClause
+   s=selectStatement[topLevel]
+     {$s.tree.getChild(1).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
    |
-   selectStatement
+   selectStatement[topLevel]
    ;
 
-selectStatement
+ selectStatement[boolean topLevel]
+ : (singleSelectStatement -> singleSelectStatement)
+   (u=setOperator b=singleSelectStatement
+       -> ^($u {$selectStatement.tree} $b)
+   )*
+   -> {u != null && topLevel}? ^(TOK_QUERY
+         ^(TOK_FROM
+           ^(TOK_SUBQUERY
+             {$selectStatement.tree}
+              {adaptor.create(Identifier, generateUnionAlias())}
+             )
+          )
+         ^(TOK_INSERT 
+            ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+            ^(TOK_SELECT ^(TOK_SELEXPR TOK_ALLCOLREF))
+          )
+        )
+    -> {$selectStatement.tree}
+ ;
+
+singleSelectStatement
    :
    selectClause
    fromClause
@@ -1911,7 +1964,6 @@ selectStatement
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? window_clause? limitClause?))
    ;
-
 
 body
    :

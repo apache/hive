@@ -447,13 +447,13 @@ public class TBinaryColumn implements org.apache.thrift.TBase<TBinaryColumn, TBi
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list166 = iprot.readListBegin();
-                struct.values = new ArrayList<ByteBuffer>(_list166.size);
-                for (int _i167 = 0; _i167 < _list166.size; ++_i167)
+                org.apache.thrift.protocol.TList _list110 = iprot.readListBegin();
+                struct.values = new ArrayList<ByteBuffer>(_list110.size);
+                for (int _i111 = 0; _i111 < _list110.size; ++_i111)
                 {
-                  ByteBuffer _elem168; // required
-                  _elem168 = iprot.readBinary();
-                  struct.values.add(_elem168);
+                  ByteBuffer _elem112; // required
+                  _elem112 = iprot.readBinary();
+                  struct.values.add(_elem112);
                 }
                 iprot.readListEnd();
               }
@@ -487,9 +487,9 @@ public class TBinaryColumn implements org.apache.thrift.TBase<TBinaryColumn, TBi
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.values.size()));
-          for (ByteBuffer _iter169 : struct.values)
+          for (ByteBuffer _iter113 : struct.values)
           {
-            oprot.writeBinary(_iter169);
+            oprot.writeBinary(_iter113);
           }
           oprot.writeListEnd();
         }
@@ -519,9 +519,9 @@ public class TBinaryColumn implements org.apache.thrift.TBase<TBinaryColumn, TBi
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.values.size());
-        for (ByteBuffer _iter170 : struct.values)
+        for (ByteBuffer _iter114 : struct.values)
         {
-          oprot.writeBinary(_iter170);
+          oprot.writeBinary(_iter114);
         }
       }
       oprot.writeBinary(struct.nulls);
@@ -531,13 +531,13 @@ public class TBinaryColumn implements org.apache.thrift.TBase<TBinaryColumn, TBi
     public void read(org.apache.thrift.protocol.TProtocol prot, TBinaryColumn struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list171 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.values = new ArrayList<ByteBuffer>(_list171.size);
-        for (int _i172 = 0; _i172 < _list171.size; ++_i172)
+        org.apache.thrift.protocol.TList _list115 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.values = new ArrayList<ByteBuffer>(_list115.size);
+        for (int _i116 = 0; _i116 < _list115.size; ++_i116)
         {
-          ByteBuffer _elem173; // required
-          _elem173 = iprot.readBinary();
-          struct.values.add(_elem173);
+          ByteBuffer _elem117; // required
+          _elem117 = iprot.readBinary();
+          struct.values.add(_elem117);
         }
       }
       struct.setValuesIsSet(true);

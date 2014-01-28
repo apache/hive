@@ -1,0 +1,21 @@
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@roottable
+PREHOOK: query: select count(*) from roottable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@roottable
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from roottable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@roottable
+#### A masked pattern was here ####
+20
+#### A masked pattern was here ####

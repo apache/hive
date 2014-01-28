@@ -262,7 +262,7 @@ POSTHOOK: Input: default@src
 PREHOOK: query: EXPLAIN 
 SELECT Y.*
 FROM 
-(SELECT hbase_table_1.* FROM hbase_table_1 WHERE hbase_table_1.key > 100) x
+(SELECT hbase_table_1.* FROM hbase_table_1 WHERE 100 < hbase_table_1.key) x
 JOIN 
 (SELECT hbase_table_2.* FROM hbase_table_2 WHERE hbase_table_2.key < 120) Y
 ON (x.key = Y.key)
@@ -271,14 +271,14 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN 
 SELECT Y.*
 FROM 
-(SELECT hbase_table_1.* FROM hbase_table_1 WHERE hbase_table_1.key > 100) x
+(SELECT hbase_table_1.* FROM hbase_table_1 WHERE 100 < hbase_table_1.key) x
 JOIN 
 (SELECT hbase_table_2.* FROM hbase_table_2 WHERE hbase_table_2.key < 120) Y
 ON (x.key = Y.key)
 ORDER BY key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_table_1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME hbase_table_1)))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL hbase_table_1) key) 100)))) x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_table_2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME hbase_table_2)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL hbase_table_2) key) 120)))) Y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL Y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME Y)))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_table_1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME hbase_table_1)))) (TOK_WHERE (< 100 (. (TOK_TABLE_OR_COL hbase_table_1) key))))) x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_table_2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME hbase_table_2)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL hbase_table_2) key) 120)))) Y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL Y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME Y)))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -294,7 +294,7 @@ STAGE PLANS:
             alias: hbase_table_1
             Filter Operator
               predicate:
-                  expr: (key > 100)
+                  expr: (100 < key)
                   type: boolean
               Select Operator
                 expressions:
@@ -396,7 +396,7 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT Y.*
 FROM 
-(SELECT hbase_table_1.* FROM hbase_table_1 WHERE hbase_table_1.key > 100) x
+(SELECT hbase_table_1.* FROM hbase_table_1 WHERE 100 < hbase_table_1.key) x
 JOIN 
 (SELECT hbase_table_2.* FROM hbase_table_2 WHERE hbase_table_2.key < 120) Y
 ON (x.key = Y.key)
@@ -407,7 +407,7 @@ PREHOOK: Input: default@hbase_table_2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT Y.*
 FROM 
-(SELECT hbase_table_1.* FROM hbase_table_1 WHERE hbase_table_1.key > 100) x
+(SELECT hbase_table_1.* FROM hbase_table_1 WHERE 100 < hbase_table_1.key) x
 JOIN 
 (SELECT hbase_table_2.* FROM hbase_table_2 WHERE hbase_table_2.key < 120) Y
 ON (x.key = Y.key)

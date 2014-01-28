@@ -95,17 +95,19 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOW_GRANT, HiveOperation.SHOW_GRANT);
     commandType.put(HiveParser.TOK_GRANT_ROLE, HiveOperation.GRANT_ROLE);
     commandType.put(HiveParser.TOK_REVOKE_ROLE, HiveOperation.REVOKE_ROLE);
+    commandType.put(HiveParser.TOK_SHOW_ROLES, HiveOperation.SHOW_ROLES);
     commandType.put(HiveParser.TOK_SHOW_ROLE_GRANT, HiveOperation.SHOW_ROLE_GRANT);
     commandType.put(HiveParser.TOK_ALTERDATABASE_PROPERTIES, HiveOperation.ALTERDATABASE);
     commandType.put(HiveParser.TOK_DESCDATABASE, HiveOperation.DESCDATABASE);
     commandType.put(HiveParser.TOK_ALTERTABLE_SKEWED, HiveOperation.ALTERTABLE_SKEWED);
     commandType.put(HiveParser.TOK_ANALYZE, HiveOperation.ANALYZE_TABLE);
     commandType.put(HiveParser.TOK_ALTERVIEW_RENAME, HiveOperation.ALTERVIEW_RENAME);
+    commandType.put(HiveParser.TOK_ALTERTABLE_PARTCOLTYPE, HiveOperation.ALTERTABLE_PARTCOLTYPE);
   }
 
   static {
     tablePartitionCommandType.put(
-        HiveParser.TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE,
+        HiveParser.TOK_ALTERTABLE_PROTECTMODE,
         new HiveOperation[] { HiveOperation.ALTERTABLE_PROTECTMODE,
             HiveOperation.ALTERPARTITION_PROTECTMODE });
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_FILEFORMAT,
@@ -114,7 +116,7 @@ public final class SemanticAnalyzerFactory {
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_LOCATION,
         new HiveOperation[] { HiveOperation.ALTERTABLE_LOCATION,
             HiveOperation.ALTERPARTITION_LOCATION });
-    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_ALTERPARTS_MERGEFILES,
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_MERGEFILES,
         new HiveOperation[] {HiveOperation.ALTERTABLE_MERGEFILES,
             HiveOperation.ALTERPARTITION_MERGEFILES });
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER,
@@ -171,6 +173,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_DROPTABLE_PROPERTIES:
       case HiveParser.TOK_ALTERTABLE_SERIALIZER:
       case HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES:
+      case HiveParser.TOK_ALTERTABLE_PARTCOLTYPE:
       case HiveParser.TOK_ALTERINDEX_REBUILD:
       case HiveParser.TOK_ALTERINDEX_PROPERTIES:
       case HiveParser.TOK_ALTERVIEW_PROPERTIES:
@@ -195,7 +198,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERTABLE_TOUCH:
       case HiveParser.TOK_ALTERTABLE_ARCHIVE:
       case HiveParser.TOK_ALTERTABLE_UNARCHIVE:
-      case HiveParser.TOK_ALTERTABLE_ALTERPARTS:
       case HiveParser.TOK_LOCKTABLE:
       case HiveParser.TOK_UNLOCKTABLE:
       case HiveParser.TOK_LOCKDB:
@@ -208,6 +210,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_GRANT_ROLE:
       case HiveParser.TOK_REVOKE_ROLE:
       case HiveParser.TOK_SHOW_ROLE_GRANT:
+      case HiveParser.TOK_SHOW_ROLES:
       case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
       case HiveParser.TOK_ALTERTABLE_SKEWED:
       case HiveParser.TOK_TRUNCATETABLE:

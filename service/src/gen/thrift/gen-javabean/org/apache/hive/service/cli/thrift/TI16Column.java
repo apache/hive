@@ -445,13 +445,13 @@ public class TI16Column implements org.apache.thrift.TBase<TI16Column, TI16Colum
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list126 = iprot.readListBegin();
-                struct.values = new ArrayList<Short>(_list126.size);
-                for (int _i127 = 0; _i127 < _list126.size; ++_i127)
+                org.apache.thrift.protocol.TList _list70 = iprot.readListBegin();
+                struct.values = new ArrayList<Short>(_list70.size);
+                for (int _i71 = 0; _i71 < _list70.size; ++_i71)
                 {
-                  short _elem128; // required
-                  _elem128 = iprot.readI16();
-                  struct.values.add(_elem128);
+                  short _elem72; // required
+                  _elem72 = iprot.readI16();
+                  struct.values.add(_elem72);
                 }
                 iprot.readListEnd();
               }
@@ -485,9 +485,9 @@ public class TI16Column implements org.apache.thrift.TBase<TI16Column, TI16Colum
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I16, struct.values.size()));
-          for (short _iter129 : struct.values)
+          for (short _iter73 : struct.values)
           {
-            oprot.writeI16(_iter129);
+            oprot.writeI16(_iter73);
           }
           oprot.writeListEnd();
         }
@@ -517,9 +517,9 @@ public class TI16Column implements org.apache.thrift.TBase<TI16Column, TI16Colum
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.values.size());
-        for (short _iter130 : struct.values)
+        for (short _iter74 : struct.values)
         {
-          oprot.writeI16(_iter130);
+          oprot.writeI16(_iter74);
         }
       }
       oprot.writeBinary(struct.nulls);
@@ -529,13 +529,13 @@ public class TI16Column implements org.apache.thrift.TBase<TI16Column, TI16Colum
     public void read(org.apache.thrift.protocol.TProtocol prot, TI16Column struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list131 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I16, iprot.readI32());
-        struct.values = new ArrayList<Short>(_list131.size);
-        for (int _i132 = 0; _i132 < _list131.size; ++_i132)
+        org.apache.thrift.protocol.TList _list75 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I16, iprot.readI32());
+        struct.values = new ArrayList<Short>(_list75.size);
+        for (int _i76 = 0; _i76 < _list75.size; ++_i76)
         {
-          short _elem133; // required
-          _elem133 = iprot.readI16();
-          struct.values.add(_elem133);
+          short _elem77; // required
+          _elem77 = iprot.readI16();
+          struct.values.add(_elem77);
         }
       }
       struct.setValuesIsSet(true);

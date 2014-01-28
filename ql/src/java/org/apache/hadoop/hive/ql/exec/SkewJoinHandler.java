@@ -177,7 +177,7 @@ public class SkewJoinHandler {
   void endGroup() throws IOException, HiveException {
     if (skewKeyInCurrentGroup) {
 
-      String specPath = conf.getBigKeysDirMap().get((byte) currBigKeyTag);
+      Path specPath = conf.getBigKeysDirMap().get((byte) currBigKeyTag);
       RowContainer<ArrayList<Object>> bigKey = (RowContainer)joinOp.storage[currBigKeyTag];
       Path outputPath = getOperatorOutputPath(specPath);
       FileSystem destFs = outputPath.getFileSystem(hconf);
@@ -258,7 +258,7 @@ public class SkewJoinHandler {
         }
 
         try {
-          String specPath = conf.getBigKeysDirMap().get((byte) bigKeyTbl);
+          Path specPath = conf.getBigKeysDirMap().get((byte) bigKeyTbl);
           Path bigKeyPath = getOperatorOutputPath(specPath);
           FileSystem fs = bigKeyPath.getFileSystem(hconf);
           delete(bigKeyPath, fs);
@@ -295,7 +295,7 @@ public class SkewJoinHandler {
         continue;
       }
 
-      String specPath = conf.getBigKeysDirMap().get(
+      Path specPath = conf.getBigKeysDirMap().get(
           Byte.valueOf((byte) bigKeyTbl));
       commitOutputPathToFinalPath(specPath, false);
       for (int smallKeyTbl = 0; smallKeyTbl < numAliases; smallKeyTbl++) {
@@ -311,7 +311,7 @@ public class SkewJoinHandler {
     }
   }
 
-  private void commitOutputPathToFinalPath(String specPath,
+  private void commitOutputPathToFinalPath(Path specPath,
       boolean ignoreNonExisting) throws IOException {
     Path outPath = getOperatorOutputPath(specPath);
     Path finalPath = getOperatorFinalPath(specPath);
@@ -334,14 +334,12 @@ public class SkewJoinHandler {
     }
   }
 
-  private Path getOperatorOutputPath(String specPath) throws IOException {
-    Path tmpPath = Utilities.toTempPath(specPath);
-    return new Path(tmpPath, Utilities.toTempPath(taskId));
+  private Path getOperatorOutputPath(Path specPath) throws IOException {
+    return new Path(Utilities.toTempPath(specPath), Utilities.toTempPath(taskId));
   }
 
-  private Path getOperatorFinalPath(String specPath) throws IOException {
-    Path tmpPath = Utilities.toTempPath(specPath);
-    return new Path(tmpPath, taskId);
+  private Path getOperatorFinalPath(Path specPath) throws IOException {
+    return new Path(Utilities.toTempPath(specPath), taskId);
   }
 
   public void setSkewJoinJobCounter(LongWritable skewjoinFollowupJobs) {

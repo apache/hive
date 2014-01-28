@@ -222,6 +222,7 @@
           <api>JDO</api>
           <verbose>true</verbose>
           <metadataIncludes>**/*.jdo</metadataIncludes>
+          <fork>false</fork>
         </configuration>
         <executions>
           <execution>

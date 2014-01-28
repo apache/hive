@@ -99,6 +99,7 @@ public class SetProcessor implements CommandProcessor {
     }
   }
 
+  @Override
   public void init() {
   }
 
@@ -181,18 +182,18 @@ public class SetProcessor implements CommandProcessor {
   }
 
 
-  private CommandProcessorResponse getVariable(String varname){
+  private CommandProcessorResponse getVariable(String varname) {
     SessionState ss = SessionState.get();
     if (varname.equals("silent")){
       ss.out.println("silent" + "=" + ss.getIsSilent());
-      return new CommandProcessorResponse(0);
+      return createProcessorSuccessResponse();
     }
     if (varname.startsWith(SetProcessor.SYSTEM_PREFIX)){
       String propName = varname.substring(SetProcessor.SYSTEM_PREFIX.length());
       String result = System.getProperty(propName);
       if (result != null){
         ss.out.println(SetProcessor.SYSTEM_PREFIX+propName + "=" + result);
-        return new CommandProcessorResponse(0);
+        return createProcessorSuccessResponse();
       } else {
         ss.out.println( propName + " is undefined as a system property");
         return new CommandProcessorResponse(1);
@@ -201,7 +202,7 @@ public class SetProcessor implements CommandProcessor {
       String var = varname.substring(ENV_PREFIX.length());
       if (System.getenv(var)!=null){
         ss.out.println(SetProcessor.ENV_PREFIX+var + "=" + System.getenv(var));
-        return new CommandProcessorResponse(0);
+        return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as an environmental variable");
         return new CommandProcessorResponse(1);
@@ -210,7 +211,7 @@ public class SetProcessor implements CommandProcessor {
       String var = varname.substring(SetProcessor.HIVECONF_PREFIX.length());
       if (ss.getConf().get(var)!=null){
         ss.out.println(SetProcessor.HIVECONF_PREFIX+var + "=" + ss.getConf().get(var));
-        return new CommandProcessorResponse(0);
+        return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as a hive configuration variable");
         return new CommandProcessorResponse(1);
@@ -219,30 +220,34 @@ public class SetProcessor implements CommandProcessor {
       String var = varname.substring(SetProcessor.HIVEVAR_PREFIX.length());
       if (ss.getHiveVariables().get(var)!=null){
         ss.out.println(SetProcessor.HIVEVAR_PREFIX+var + "=" + ss.getHiveVariables().get(var));
-        return new CommandProcessorResponse(0);
+        return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as a hive variable");
         return new CommandProcessorResponse(1);
       }
     } else {
       dumpOption(varname);
-      return new CommandProcessorResponse(0, null, null, getSchema());
+      return createProcessorSuccessResponse();
     }
   }
 
+  private CommandProcessorResponse createProcessorSuccessResponse() {
+    return new CommandProcessorResponse(0, null, null, getSchema());
+  }
+
+  @Override
   public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
-    Schema sch = getSchema();
 
     String nwcmd = command.trim();
     if (nwcmd.equals("")) {
       dumpOptions(ss.getConf().getChangedProperties());
-      return new CommandProcessorResponse(0, null, null, sch);
+      return createProcessorSuccessResponse();
     }
 
     if (nwcmd.equals("-v")) {
       dumpOptions(ss.getConf().getAllProperties());
-      return new CommandProcessorResponse(0, null, null, sch);
+      return createProcessorSuccessResponse();
     }
 
     String[] part = new String[2];

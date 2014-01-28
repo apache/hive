@@ -39,6 +39,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -785,7 +786,7 @@ public abstract class BaseSemanticAnalyzer {
         }
 
         // check if the columns, as well as value types in the partition() clause are valid
-        validatePartSpec(tableHandle, tmpPartSpec, ast, conf);
+        validatePartSpec(tableHandle, tmpPartSpec, ast, conf, false);
 
         List<FieldSchema> parts = tableHandle.getPartitionKeys();
         partSpec = new LinkedHashMap<String, String>(partspec.getChildCount());
@@ -1187,8 +1188,8 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
-      ASTNode astNode, HiveConf conf) throws SemanticException {
-    Utilities.validatePartSpecColumnNames(tbl, partSpec);
+      ASTNode astNode, HiveConf conf, boolean shouldBeFull) throws SemanticException {
+    tbl.validatePartColumnNames(partSpec, shouldBeFull);
 
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TYPE_CHECK_ON_INSERT)) {
       return;
@@ -1256,9 +1257,6 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  /** A fixed date format to be used for hive partition column values. */
-  private static final DateFormat partitionDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
   private static String normalizeDateCol(
       Object colValue, String originalColSpec) throws SemanticException {
     Date value;
@@ -1269,7 +1267,7 @@ public abstract class BaseSemanticAnalyzer {
     } else {
       throw new SemanticException("Unexpected date type " + colValue.getClass());
     }
-    return partitionDateFormat.format(value);
+    return HiveMetaStore.PARTITION_DATE_FORMAT.format(value);
   }
 
   protected Database getDatabase(String dbName) throws SemanticException {

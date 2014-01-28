@@ -24,6 +24,8 @@ import java.net.URL;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -389,5 +391,23 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   @Override
   public FileSystem createProxyFileSystem(FileSystem fs, URI uri) {
     return new ProxyFileSystem(fs, uri);
+  }
+  @Override
+  public Map<String, String> getHadoopConfNames() {
+    Map<String, String> ret = new HashMap<String, String>();
+    ret.put("HADOOPFS", "fs.default.name");
+    ret.put("HADOOPMAPFILENAME", "map.input.file");
+    ret.put("HADOOPMAPREDINPUTDIR", "mapred.input.dir");
+    ret.put("HADOOPMAPREDINPUTDIRRECURSIVE", "mapred.input.dir.recursive");
+    ret.put("MAPREDMAXSPLITSIZE", "mapred.max.split.size");
+    ret.put("MAPREDMINSPLITSIZE", "mapred.min.split.size");
+    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapred.min.split.size.per.rack");
+    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapred.min.split.size.per.node");
+    ret.put("HADOOPNUMREDUCERS", "mapred.reduce.tasks");
+    ret.put("HADOOPJOBNAME", "mapred.job.name");
+    ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapred.reduce.tasks.speculative.execution");
+    ret.put("MAPREDSETUPCLEANUPNEEDED", "mapred.committer.job.setup.cleanup.needed");
+    ret.put("MAPREDTASKCLEANUPNEEDED", "mapreduce.job.committer.task.cleanup.needed");
+    return ret;
   }
 }

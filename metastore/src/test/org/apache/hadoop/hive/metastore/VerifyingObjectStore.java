@@ -26,7 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,8 +72,8 @@ class VerifyingObjectStore extends ObjectStore {
 
   @Override
   public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, Set<Partition> result) throws TException {
-    Set<Partition> ormParts = new LinkedHashSet<Partition>();
+      String defaultPartitionName, short maxParts, List<Partition> result) throws TException {
+    List<Partition> ormParts = new LinkedList<Partition>();
     boolean sqlResult = getPartitionsByExprInternal(
         dbName, tblName, expr, defaultPartitionName, maxParts, result, true, false);
     boolean ormResult = getPartitionsByExprInternal(

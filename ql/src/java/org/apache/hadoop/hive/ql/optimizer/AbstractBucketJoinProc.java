@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -77,10 +76,10 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
       Object... nodeOutputs) throws SemanticException;
 
   private static List<String> getBucketFilePathsOfPartition(
-      URI location, ParseContext pGraphContext) throws SemanticException {
+      Path location, ParseContext pGraphContext) throws SemanticException {
     List<String> fileNames = new ArrayList<String>();
     try {
-      FileSystem fs = FileSystem.get(location, pGraphContext.getConf());
+      FileSystem fs = location.getFileSystem(pGraphContext.getConf());
       FileStatus[] files = fs.listStatus(new Path(location.toString()));
       if (files != null) {
         for (FileStatus file : files) {

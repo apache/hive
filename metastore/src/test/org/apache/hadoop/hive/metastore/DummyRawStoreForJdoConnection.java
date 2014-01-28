@@ -325,7 +325,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, Set<Partition> result) throws TException {
+      String defaultPartitionName, short maxParts, List<Partition> result) throws TException {
     return false;
   }
 
@@ -613,6 +613,18 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void setMetaStoreSchemaVersion(String version, String comment) throws MetaException {
+  }
+
+  @Override
+  public boolean doesPartitionExist(String dbName, String tableName,
+      List<String> partVals) throws MetaException, NoSuchObjectException {
+    return false;
+  }
+
+  @Override
+  public boolean addPartitions(String dbName, String tblName, List<Partition> parts)
+      throws InvalidObjectException, MetaException {
+    return false;
   }
 }
 

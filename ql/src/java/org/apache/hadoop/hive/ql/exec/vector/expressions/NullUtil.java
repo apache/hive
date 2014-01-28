@@ -18,12 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-
 
 /**
  * Utility functions to handle null propagation.
@@ -316,5 +317,58 @@ public class NullUtil {
         }
       }
     }
+  }
+
+  // Initialize any entries that could be used in an output vector to have false for null value.
+  public static void initOutputNullsToFalse(ColumnVector v, boolean isRepeating, boolean selectedInUse,
+      int[] sel, int n) {
+    if (v.isRepeating) {
+      v.isNull[0] = false;
+      return;
+    }
+
+    if (selectedInUse) {
+      for (int j = 0; j != n; j++) {
+        int i = sel[j];
+        v.isNull[i] = false;
+      }
+    } else {
+      Arrays.fill(v.isNull, 0, n, false);
+    }
+  }
+
+  /**
+   * Filter out rows with null values. Return the number of rows in the batch.
+   */
+  public static int filterNulls(ColumnVector v, boolean selectedInUse, int[] sel, int n) {
+    int newSize = 0;
+
+    if (v.noNulls) {
+
+      // no rows will be filtered
+      return n;
+    }
+
+    if (v.isRepeating) {
+
+      // all rows are filtered if repeating null, otherwise no rows are filtered
+      return v.isNull[0] ? 0 : n;
+    }
+
+    if (selectedInUse) {
+      for (int j = 0; j != n; j++) {
+        int i = sel[j];
+        if (!v.isNull[i]) {
+          sel[newSize++] = i;
+        }
+      }
+    } else {
+      for (int i = 0; i != n; i++) {
+        if (!v.isNull[i]) {
+          sel[newSize++] = i;
+        }
+      }
+    }
+    return newSize;
   }
 }

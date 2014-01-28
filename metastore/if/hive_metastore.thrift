@@ -273,7 +273,7 @@ struct EnvironmentContext {
 
 // Return type for get_partitions_by_expr
 struct PartitionsByExprResult {
-  1: required set<Partition> partitions,
+  1: required list<Partition> partitions,
   // Whether the results has any (currently, all) partitions which may or may not match
   2: required bool hasUnknownPartitions
 }
@@ -284,6 +284,20 @@ struct PartitionsByExprRequest {
   3: required binary expr,
   4: optional string defaultPartitionName,
   5: optional i16 maxParts=-1
+}
+
+// Return type for add_partitions_req
+struct AddPartitionsResult {
+  1: optional list<Partition> partitions,
+}
+
+// Request type for add_partitions_req
+struct AddPartitionsRequest {
+  1: required string dbName,
+  2: required string tblName,
+  3: required list<Partition> parts,
+  4: required bool ifNotExists,
+  5: optional bool needResult=true
 }
 
 exception MetaException {
@@ -445,6 +459,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
+  AddPartitionsResult add_partitions_req(1:AddPartitionsRequest request)
+                       throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition_with_environment_context(1:string db_name, 2:string tbl_name,
       3:list<string> part_vals, 4:EnvironmentContext environment_context)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)

@@ -70,7 +70,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
       DirContext ctx = new InitialDirContext(env);
       ctx.close();
     } catch (NamingException e) {
-      throw new AuthenticationException("Error validating LDAP user");
+      throw new AuthenticationException("Error validating LDAP user", e);
     }
   return;
   }

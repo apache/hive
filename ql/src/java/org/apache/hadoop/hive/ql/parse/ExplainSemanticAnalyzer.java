@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -65,7 +64,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     sem.analyze(input, ctx);
     sem.validate();
 
-    ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+    ctx.setResFile(ctx.getLocalTmpPath());
     List<Task<? extends Serializable>> tasks = sem.getRootTasks();
     Task<? extends Serializable> fetchTask = sem.getFetchTask();
     if (tasks == null) {

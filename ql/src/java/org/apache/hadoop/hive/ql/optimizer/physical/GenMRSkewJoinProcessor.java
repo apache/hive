@@ -123,21 +123,20 @@ public final class GenMRSkewJoinProcessor {
     Task<? extends Serializable> child =
         children != null && children.size() == 1 ? children.get(0) : null;
 
-    String baseTmpDir = parseCtx.getContext().getMRTmpFileURI();
+    Path baseTmpDir = parseCtx.getContext().getMRTmpPath();
 
     JoinDesc joinDescriptor = joinOp.getConf();
     Map<Byte, List<ExprNodeDesc>> joinValues = joinDescriptor.getExprs();
     int numAliases = joinValues.size();
 
-    Map<Byte, String> bigKeysDirMap = new HashMap<Byte, String>();
-    Map<Byte, Map<Byte, String>> smallKeysDirMap = new HashMap<Byte, Map<Byte, String>>();
-    Map<Byte, String> skewJoinJobResultsDir = new HashMap<Byte, String>();
+    Map<Byte, Path> bigKeysDirMap = new HashMap<Byte, Path>();
+    Map<Byte, Map<Byte, Path>> smallKeysDirMap = new HashMap<Byte, Map<Byte, Path>>();
+    Map<Byte, Path> skewJoinJobResultsDir = new HashMap<Byte, Path>();
     Byte[] tags = joinDescriptor.getTagOrder();
     for (int i = 0; i < numAliases; i++) {
       Byte alias = tags[i];
-      String bigKeysDir = getBigKeysDir(baseTmpDir, alias);
-      bigKeysDirMap.put(alias, bigKeysDir);
-      Map<Byte, String> smallKeysMap = new HashMap<Byte, String>();
+      bigKeysDirMap.put(alias, getBigKeysDir(baseTmpDir, alias));
+      Map<Byte, Path> smallKeysMap = new HashMap<Byte, Path>();
       smallKeysDirMap.put(alias, smallKeysMap);
       for (Byte src2 : tags) {
         if (!src2.equals(alias)) {
@@ -154,8 +153,8 @@ public final class GenMRSkewJoinProcessor {
     joinDescriptor.setSkewKeyDefinition(HiveConf.getIntVar(parseCtx.getConf(),
         HiveConf.ConfVars.HIVESKEWJOINKEY));
 
-    HashMap<String, Task<? extends Serializable>> bigKeysDirToTaskMap =
-      new HashMap<String, Task<? extends Serializable>>();
+    HashMap<Path, Task<? extends Serializable>> bigKeysDirToTaskMap =
+      new HashMap<Path, Task<? extends Serializable>>();
     List<Serializable> listWorks = new ArrayList<Serializable>();
     List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
     MapredWork currPlan = (MapredWork) currTask.getWork();
@@ -272,13 +271,13 @@ public final class GenMRSkewJoinProcessor {
       ArrayList<String> aliases = new ArrayList<String>();
       String alias = src.toString();
       aliases.add(alias);
-      String bigKeyDirPath = bigKeysDirMap.get(src);
-      newPlan.getPathToAliases().put(bigKeyDirPath, aliases);
+      Path bigKeyDirPath = bigKeysDirMap.get(src);
+      newPlan.getPathToAliases().put(bigKeyDirPath.toString(), aliases);
 
       newPlan.getAliasToWork().put(alias, tblScan_op);
       PartitionDesc part = new PartitionDesc(tableDescList.get(src), null);
 
-      newPlan.getPathToPartitionInfo().put(bigKeyDirPath, part);
+      newPlan.getPathToPartitionInfo().put(bigKeyDirPath.toString(), part);
       newPlan.getAliasToPartnInfo().put(alias, part);
 
       Operator<? extends OperatorDesc> reducer = clonePlan.getReduceWork().getReducer();
@@ -297,7 +296,7 @@ public final class GenMRSkewJoinProcessor {
       MapredLocalWork localPlan = new MapredLocalWork(
           new LinkedHashMap<String, Operator<? extends OperatorDesc>>(),
           new LinkedHashMap<String, FetchWork>());
-      Map<Byte, String> smallTblDirs = smallKeysDirMap.get(src);
+      Map<Byte, Path> smallTblDirs = smallKeysDirMap.get(src);
 
       for (int j = 0; j < numAliases; j++) {
         if (j == i) {
@@ -306,7 +305,7 @@ public final class GenMRSkewJoinProcessor {
         Byte small_alias = tags[j];
         Operator<? extends OperatorDesc> tblScan_op2 = parentOps[j];
         localPlan.getAliasToWork().put(small_alias.toString(), tblScan_op2);
-        Path tblDir = new Path(smallTblDirs.get(small_alias));
+        Path tblDir = smallTblDirs.get(small_alias);
         localPlan.getAliasToFetchWork().put(small_alias.toString(),
             new FetchWork(tblDir, tableDescList.get(small_alias)));
       }
@@ -393,20 +392,19 @@ public final class GenMRSkewJoinProcessor {
   private static String SMALLKEYS = "smallkeys";
   private static String RESULTS = "results";
 
-  static String getBigKeysDir(String baseDir, Byte srcTbl) {
-    return baseDir + Path.SEPARATOR + skewJoinPrefix + UNDERLINE + BIGKEYS
-        + UNDERLINE + srcTbl;
+  static Path getBigKeysDir(Path baseDir, Byte srcTbl) {
+    return new Path(baseDir, skewJoinPrefix + UNDERLINE + BIGKEYS + UNDERLINE + srcTbl);
   }
 
-  static String getBigKeysSkewJoinResultDir(String baseDir, Byte srcTbl) {
-    return baseDir + Path.SEPARATOR + skewJoinPrefix + UNDERLINE + BIGKEYS
-        + UNDERLINE + RESULTS + UNDERLINE + srcTbl;
+  static Path getBigKeysSkewJoinResultDir(Path baseDir, Byte srcTbl) {
+    return new Path(baseDir, skewJoinPrefix + UNDERLINE + BIGKEYS
+        + UNDERLINE + RESULTS + UNDERLINE + srcTbl);
   }
 
-  static String getSmallKeysDir(String baseDir, Byte srcTblBigTbl,
+  static Path getSmallKeysDir(Path baseDir, Byte srcTblBigTbl,
       Byte srcTblSmallTbl) {
-    return baseDir + Path.SEPARATOR + skewJoinPrefix + UNDERLINE + SMALLKEYS
-        + UNDERLINE + srcTblBigTbl + UNDERLINE + srcTblSmallTbl;
+    return new Path(baseDir, skewJoinPrefix + UNDERLINE + SMALLKEYS
+        + UNDERLINE + srcTblBigTbl + UNDERLINE + srcTblSmallTbl);
   }
 
 }

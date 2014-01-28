@@ -74,6 +74,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatMultiOutputFormat} instead
  */
+@Deprecated
 public class TestHCatMultiOutputFormat {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatMultiOutputFormat.class);
@@ -377,13 +378,13 @@ public class TestHCatMultiOutputFormat {
     org.apache.hadoop.hive.ql.metadata.Table tbl = hive.getTable(database, table);
     FetchWork work;
     if (tbl.getPartCols().isEmpty()) {
-      work = new FetchWork(new Path(tbl.getDataLocation()), Utilities.getTableDesc(tbl));
+      work = new FetchWork(tbl.getDataLocation(), Utilities.getTableDesc(tbl));
     } else {
       List<Partition> partitions = hive.getPartitions(tbl);
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
       List<Path> partLocs = new ArrayList<Path>();
       for (Partition part : partitions) {
-        partLocs.add(part.getPartitionPath());
+        partLocs.add(part.getDataLocation());
         partDesc.add(Utilities.getPartitionDesc(part));
       }
       work = new FetchWork(partLocs, partDesc, Utilities.getTableDesc(tbl));

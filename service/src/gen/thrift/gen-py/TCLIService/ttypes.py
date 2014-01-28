@@ -1731,201 +1731,6 @@ class TStringValue:
   def __ne__(self, other):
     return not (self == other)
 
-class TColumn:
-  """
-  Attributes:
-   - boolColumn
-   - byteColumn
-   - i16Column
-   - i32Column
-   - i64Column
-   - doubleColumn
-   - stringColumn
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.LIST, 'boolColumn', (TType.STRUCT,(TBoolValue, TBoolValue.thrift_spec)), None, ), # 1
-    (2, TType.LIST, 'byteColumn', (TType.STRUCT,(TByteValue, TByteValue.thrift_spec)), None, ), # 2
-    (3, TType.LIST, 'i16Column', (TType.STRUCT,(TI16Value, TI16Value.thrift_spec)), None, ), # 3
-    (4, TType.LIST, 'i32Column', (TType.STRUCT,(TI32Value, TI32Value.thrift_spec)), None, ), # 4
-    (5, TType.LIST, 'i64Column', (TType.STRUCT,(TI64Value, TI64Value.thrift_spec)), None, ), # 5
-    (6, TType.LIST, 'doubleColumn', (TType.STRUCT,(TDoubleValue, TDoubleValue.thrift_spec)), None, ), # 6
-    (7, TType.LIST, 'stringColumn', (TType.STRUCT,(TStringValue, TStringValue.thrift_spec)), None, ), # 7
-  )
-
-  def __init__(self, boolColumn=None, byteColumn=None, i16Column=None, i32Column=None, i64Column=None, doubleColumn=None, stringColumn=None,):
-    self.boolColumn = boolColumn
-    self.byteColumn = byteColumn
-    self.i16Column = i16Column
-    self.i32Column = i32Column
-    self.i64Column = i64Column
-    self.doubleColumn = doubleColumn
-    self.stringColumn = stringColumn
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.LIST:
-          self.boolColumn = []
-          (_etype44, _size41) = iprot.readListBegin()
-          for _i45 in xrange(_size41):
-            _elem46 = TBoolValue()
-            _elem46.read(iprot)
-            self.boolColumn.append(_elem46)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.LIST:
-          self.byteColumn = []
-          (_etype50, _size47) = iprot.readListBegin()
-          for _i51 in xrange(_size47):
-            _elem52 = TByteValue()
-            _elem52.read(iprot)
-            self.byteColumn.append(_elem52)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.LIST:
-          self.i16Column = []
-          (_etype56, _size53) = iprot.readListBegin()
-          for _i57 in xrange(_size53):
-            _elem58 = TI16Value()
-            _elem58.read(iprot)
-            self.i16Column.append(_elem58)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.LIST:
-          self.i32Column = []
-          (_etype62, _size59) = iprot.readListBegin()
-          for _i63 in xrange(_size59):
-            _elem64 = TI32Value()
-            _elem64.read(iprot)
-            self.i32Column.append(_elem64)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 5:
-        if ftype == TType.LIST:
-          self.i64Column = []
-          (_etype68, _size65) = iprot.readListBegin()
-          for _i69 in xrange(_size65):
-            _elem70 = TI64Value()
-            _elem70.read(iprot)
-            self.i64Column.append(_elem70)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 6:
-        if ftype == TType.LIST:
-          self.doubleColumn = []
-          (_etype74, _size71) = iprot.readListBegin()
-          for _i75 in xrange(_size71):
-            _elem76 = TDoubleValue()
-            _elem76.read(iprot)
-            self.doubleColumn.append(_elem76)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 7:
-        if ftype == TType.LIST:
-          self.stringColumn = []
-          (_etype80, _size77) = iprot.readListBegin()
-          for _i81 in xrange(_size77):
-            _elem82 = TStringValue()
-            _elem82.read(iprot)
-            self.stringColumn.append(_elem82)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('TColumn')
-    if self.boolColumn is not None:
-      oprot.writeFieldBegin('boolColumn', TType.LIST, 1)
-      oprot.writeListBegin(TType.STRUCT, len(self.boolColumn))
-      for iter83 in self.boolColumn:
-        iter83.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.byteColumn is not None:
-      oprot.writeFieldBegin('byteColumn', TType.LIST, 2)
-      oprot.writeListBegin(TType.STRUCT, len(self.byteColumn))
-      for iter84 in self.byteColumn:
-        iter84.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.i16Column is not None:
-      oprot.writeFieldBegin('i16Column', TType.LIST, 3)
-      oprot.writeListBegin(TType.STRUCT, len(self.i16Column))
-      for iter85 in self.i16Column:
-        iter85.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.i32Column is not None:
-      oprot.writeFieldBegin('i32Column', TType.LIST, 4)
-      oprot.writeListBegin(TType.STRUCT, len(self.i32Column))
-      for iter86 in self.i32Column:
-        iter86.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.i64Column is not None:
-      oprot.writeFieldBegin('i64Column', TType.LIST, 5)
-      oprot.writeListBegin(TType.STRUCT, len(self.i64Column))
-      for iter87 in self.i64Column:
-        iter87.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.doubleColumn is not None:
-      oprot.writeFieldBegin('doubleColumn', TType.LIST, 6)
-      oprot.writeListBegin(TType.STRUCT, len(self.doubleColumn))
-      for iter88 in self.doubleColumn:
-        iter88.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.stringColumn is not None:
-      oprot.writeFieldBegin('stringColumn', TType.LIST, 7)
-      oprot.writeListBegin(TType.STRUCT, len(self.stringColumn))
-      for iter89 in self.stringColumn:
-        iter89.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
 class TColumnValue:
   """
   Attributes:
@@ -2091,11 +1896,11 @@ class TRow:
       if fid == 1:
         if ftype == TType.LIST:
           self.colVals = []
-          (_etype93, _size90) = iprot.readListBegin()
-          for _i94 in xrange(_size90):
-            _elem95 = TColumnValue()
-            _elem95.read(iprot)
-            self.colVals.append(_elem95)
+          (_etype44, _size41) = iprot.readListBegin()
+          for _i45 in xrange(_size41):
+            _elem46 = TColumnValue()
+            _elem46.read(iprot)
+            self.colVals.append(_elem46)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2112,8 +1917,8 @@ class TRow:
     if self.colVals is not None:
       oprot.writeFieldBegin('colVals', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.colVals))
-      for iter96 in self.colVals:
-        iter96.write(oprot)
+      for iter47 in self.colVals:
+        iter47.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -2165,10 +1970,10 @@ class TBoolColumn:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
-          (_etype100, _size97) = iprot.readListBegin()
-          for _i101 in xrange(_size97):
-            _elem102 = iprot.readBool();
-            self.values.append(_elem102)
+          (_etype51, _size48) = iprot.readListBegin()
+          for _i52 in xrange(_size48):
+            _elem53 = iprot.readBool();
+            self.values.append(_elem53)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2190,8 +1995,8 @@ class TBoolColumn:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.BOOL, len(self.values))
-      for iter103 in self.values:
-        oprot.writeBool(iter103)
+      for iter54 in self.values:
+        oprot.writeBool(iter54)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.nulls is not None:
@@ -2249,10 +2054,10 @@ class TByteColumn:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
-          (_etype107, _size104) = iprot.readListBegin()
-          for _i108 in xrange(_size104):
-            _elem109 = iprot.readByte();
-            self.values.append(_elem109)
+          (_etype58, _size55) = iprot.readListBegin()
+          for _i59 in xrange(_size55):
+            _elem60 = iprot.readByte();
+            self.values.append(_elem60)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2274,8 +2079,8 @@ class TByteColumn:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.BYTE, len(self.values))
-      for iter110 in self.values:
-        oprot.writeByte(iter110)
+      for iter61 in self.values:
+        oprot.writeByte(iter61)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.nulls is not None:
@@ -2333,10 +2138,10 @@ class TI16Column:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
-          (_etype114, _size111) = iprot.readListBegin()
-          for _i115 in xrange(_size111):
-            _elem116 = iprot.readI16();
-            self.values.append(_elem116)
+          (_etype65, _size62) = iprot.readListBegin()
+          for _i66 in xrange(_size62):
+            _elem67 = iprot.readI16();
+            self.values.append(_elem67)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2358,8 +2163,8 @@ class TI16Column:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.I16, len(self.values))
-      for iter117 in self.values:
-        oprot.writeI16(iter117)
+      for iter68 in self.values:
+        oprot.writeI16(iter68)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.nulls is not None:
@@ -2417,10 +2222,10 @@ class TI32Column:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
-          (_etype121, _size118) = iprot.readListBegin()
-          for _i122 in xrange(_size118):
-            _elem123 = iprot.readI32();
-            self.values.append(_elem123)
+          (_etype72, _size69) = iprot.readListBegin()
+          for _i73 in xrange(_size69):
+            _elem74 = iprot.readI32();
+            self.values.append(_elem74)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2442,8 +2247,8 @@ class TI32Column:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.I32, len(self.values))
-      for iter124 in self.values:
-        oprot.writeI32(iter124)
+      for iter75 in self.values:
+        oprot.writeI32(iter75)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.nulls is not None:
@@ -2501,10 +2306,10 @@ class TI64Column:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
-          (_etype128, _size125) = iprot.readListBegin()
-          for _i129 in xrange(_size125):
-            _elem130 = iprot.readI64();
-            self.values.append(_elem130)
+          (_etype79, _size76) = iprot.readListBegin()
+          for _i80 in xrange(_size76):
+            _elem81 = iprot.readI64();
+            self.values.append(_elem81)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2526,8 +2331,8 @@ class TI64Column:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.values))
-      for iter131 in self.values:
-        oprot.writeI64(iter131)
+      for iter82 in self.values:
+        oprot.writeI64(iter82)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.nulls is not None:
@@ -2585,10 +2390,10 @@ class TDoubleColumn:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
-          (_etype135, _size132) = iprot.readListBegin()
-          for _i136 in xrange(_size132):
-            _elem137 = iprot.readDouble();
-            self.values.append(_elem137)
+          (_etype86, _size83) = iprot.readListBegin()
+          for _i87 in xrange(_size83):
+            _elem88 = iprot.readDouble();
+            self.values.append(_elem88)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2610,8 +2415,8 @@ class TDoubleColumn:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.DOUBLE, len(self.values))
-      for iter138 in self.values:
-        oprot.writeDouble(iter138)
+      for iter89 in self.values:
+        oprot.writeDouble(iter89)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.nulls is not None:
@@ -2669,10 +2474,10 @@ class TStringColumn:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
-          (_etype142, _size139) = iprot.readListBegin()
-          for _i143 in xrange(_size139):
-            _elem144 = iprot.readString();
-            self.values.append(_elem144)
+          (_etype93, _size90) = iprot.readListBegin()
+          for _i94 in xrange(_size90):
+            _elem95 = iprot.readString();
+            self.values.append(_elem95)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2694,8 +2499,8 @@ class TStringColumn:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.values))
-      for iter145 in self.values:
-        oprot.writeString(iter145)
+      for iter96 in self.values:
+        oprot.writeString(iter96)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.nulls is not None:
@@ -2753,10 +2558,10 @@ class TBinaryColumn:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
-          (_etype149, _size146) = iprot.readListBegin()
-          for _i150 in xrange(_size146):
-            _elem151 = iprot.readString();
-            self.values.append(_elem151)
+          (_etype100, _size97) = iprot.readListBegin()
+          for _i101 in xrange(_size97):
+            _elem102 = iprot.readString();
+            self.values.append(_elem102)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2778,8 +2583,8 @@ class TBinaryColumn:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.values))
-      for iter152 in self.values:
-        oprot.writeString(iter152)
+      for iter103 in self.values:
+        oprot.writeString(iter103)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.nulls is not None:
@@ -2997,22 +2802,22 @@ class TRowSet:
       elif fid == 2:
         if ftype == TType.LIST:
           self.rows = []
-          (_etype156, _size153) = iprot.readListBegin()
-          for _i157 in xrange(_size153):
-            _elem158 = TRow()
-            _elem158.read(iprot)
-            self.rows.append(_elem158)
+          (_etype107, _size104) = iprot.readListBegin()
+          for _i108 in xrange(_size104):
+            _elem109 = TRow()
+            _elem109.read(iprot)
+            self.rows.append(_elem109)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.LIST:
           self.columns = []
-          (_etype162, _size159) = iprot.readListBegin()
-          for _i163 in xrange(_size159):
-            _elem164 = TColumn()
-            _elem164.read(iprot)
-            self.columns.append(_elem164)
+          (_etype113, _size110) = iprot.readListBegin()
+          for _i114 in xrange(_size110):
+            _elem115 = TColumn()
+            _elem115.read(iprot)
+            self.columns.append(_elem115)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -3033,15 +2838,15 @@ class TRowSet:
     if self.rows is not None:
       oprot.writeFieldBegin('rows', TType.LIST, 2)
       oprot.writeListBegin(TType.STRUCT, len(self.rows))
-      for iter165 in self.rows:
-        iter165.write(oprot)
+      for iter116 in self.rows:
+        iter116.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.columns is not None:
       oprot.writeFieldBegin('columns', TType.LIST, 3)
       oprot.writeListBegin(TType.STRUCT, len(self.columns))
-      for iter166 in self.columns:
-        iter166.write(oprot)
+      for iter117 in self.columns:
+        iter117.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -3109,10 +2914,10 @@ class TStatus:
       elif fid == 2:
         if ftype == TType.LIST:
           self.infoMessages = []
-          (_etype170, _size167) = iprot.readListBegin()
-          for _i171 in xrange(_size167):
-            _elem172 = iprot.readString();
-            self.infoMessages.append(_elem172)
+          (_etype121, _size118) = iprot.readListBegin()
+          for _i122 in xrange(_size118):
+            _elem123 = iprot.readString();
+            self.infoMessages.append(_elem123)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -3148,8 +2953,8 @@ class TStatus:
     if self.infoMessages is not None:
       oprot.writeFieldBegin('infoMessages', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.infoMessages))
-      for iter173 in self.infoMessages:
-        oprot.writeString(iter173)
+      for iter124 in self.infoMessages:
+        oprot.writeString(iter124)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.sqlState is not None:
@@ -3476,11 +3281,11 @@ class TOpenSessionReq:
       elif fid == 4:
         if ftype == TType.MAP:
           self.configuration = {}
-          (_ktype175, _vtype176, _size174 ) = iprot.readMapBegin() 
-          for _i178 in xrange(_size174):
-            _key179 = iprot.readString();
-            _val180 = iprot.readString();
-            self.configuration[_key179] = _val180
+          (_ktype126, _vtype127, _size125 ) = iprot.readMapBegin() 
+          for _i129 in xrange(_size125):
+            _key130 = iprot.readString();
+            _val131 = iprot.readString();
+            self.configuration[_key130] = _val131
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -3509,9 +3314,9 @@ class TOpenSessionReq:
     if self.configuration is not None:
       oprot.writeFieldBegin('configuration', TType.MAP, 4)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.configuration))
-      for kiter181,viter182 in self.configuration.items():
-        oprot.writeString(kiter181)
-        oprot.writeString(viter182)
+      for kiter132,viter133 in self.configuration.items():
+        oprot.writeString(kiter132)
+        oprot.writeString(viter133)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -3586,11 +3391,11 @@ class TOpenSessionResp:
       elif fid == 4:
         if ftype == TType.MAP:
           self.configuration = {}
-          (_ktype184, _vtype185, _size183 ) = iprot.readMapBegin() 
-          for _i187 in xrange(_size183):
-            _key188 = iprot.readString();
-            _val189 = iprot.readString();
-            self.configuration[_key188] = _val189
+          (_ktype135, _vtype136, _size134 ) = iprot.readMapBegin() 
+          for _i138 in xrange(_size134):
+            _key139 = iprot.readString();
+            _val140 = iprot.readString();
+            self.configuration[_key139] = _val140
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -3619,9 +3424,9 @@ class TOpenSessionResp:
     if self.configuration is not None:
       oprot.writeFieldBegin('configuration', TType.MAP, 4)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.configuration))
-      for kiter190,viter191 in self.configuration.items():
-        oprot.writeString(kiter190)
-        oprot.writeString(viter191)
+      for kiter141,viter142 in self.configuration.items():
+        oprot.writeString(kiter141)
+        oprot.writeString(viter142)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -4093,11 +3898,11 @@ class TExecuteStatementReq:
       elif fid == 3:
         if ftype == TType.MAP:
           self.confOverlay = {}
-          (_ktype193, _vtype194, _size192 ) = iprot.readMapBegin() 
-          for _i196 in xrange(_size192):
-            _key197 = iprot.readString();
-            _val198 = iprot.readString();
-            self.confOverlay[_key197] = _val198
+          (_ktype144, _vtype145, _size143 ) = iprot.readMapBegin() 
+          for _i147 in xrange(_size143):
+            _key148 = iprot.readString();
+            _val149 = iprot.readString();
+            self.confOverlay[_key148] = _val149
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -4127,9 +3932,9 @@ class TExecuteStatementReq:
     if self.confOverlay is not None:
       oprot.writeFieldBegin('confOverlay', TType.MAP, 3)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.confOverlay))
-      for kiter199,viter200 in self.confOverlay.items():
-        oprot.writeString(kiter199)
-        oprot.writeString(viter200)
+      for kiter150,viter151 in self.confOverlay.items():
+        oprot.writeString(kiter150)
+        oprot.writeString(viter151)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.runAsync is not None:
@@ -4734,10 +4539,10 @@ class TGetTablesReq:
       elif fid == 5:
         if ftype == TType.LIST:
           self.tableTypes = []
-          (_etype204, _size201) = iprot.readListBegin()
-          for _i205 in xrange(_size201):
-            _elem206 = iprot.readString();
-            self.tableTypes.append(_elem206)
+          (_etype155, _size152) = iprot.readListBegin()
+          for _i156 in xrange(_size152):
+            _elem157 = iprot.readString();
+            self.tableTypes.append(_elem157)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -4770,8 +4575,8 @@ class TGetTablesReq:
     if self.tableTypes is not None:
       oprot.writeFieldBegin('tableTypes', TType.LIST, 5)
       oprot.writeListBegin(TType.STRING, len(self.tableTypes))
-      for iter207 in self.tableTypes:
-        oprot.writeString(iter207)
+      for iter158 in self.tableTypes:
+        oprot.writeString(iter158)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

@@ -146,39 +146,63 @@ public class TestVectorizer {
     Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, VectorExpressionDescriptor.Mode.FILTER));
     Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, VectorExpressionDescriptor.Mode.PROJECTION));
   }
+ 
+  /**
+  * prepareAbstractMapJoin prepares a join operator descriptor, used as helper by SMB and Map join tests. 
+  */
+  private void prepareAbstractMapJoin(AbstractMapJoinOperator<? extends MapJoinDesc> mop, MapJoinDesc mjdesc) {
+      mjdesc.setPosBigTable(0);
+      List<ExprNodeDesc> expr = new ArrayList<ExprNodeDesc>();
+      expr.add(new ExprNodeColumnDesc(Integer.class, "col1", "T", false));
+      Map<Byte, List<ExprNodeDesc>> keyMap = new HashMap<Byte, List<ExprNodeDesc>>();
+      keyMap.put((byte)0, expr);
+      mjdesc.setKeys(keyMap);
+      mjdesc.setExprs(keyMap);
 
+      //Set filter expression
+      GenericUDFOPEqual udf = new GenericUDFOPEqual();
+      ExprNodeGenericFuncDesc equalExprDesc = new ExprNodeGenericFuncDesc();
+      equalExprDesc.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
+      equalExprDesc.setGenericUDF(udf);
+      List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
+      children1.add(new ExprNodeColumnDesc(Integer.class, "col2", "T1", false));
+      children1.add(new ExprNodeColumnDesc(Integer.class, "col3", "T2", false));
+      equalExprDesc.setChildren(children1);
+      List<ExprNodeDesc> filterExpr = new ArrayList<ExprNodeDesc>();
+      filterExpr.add(equalExprDesc);
+      Map<Byte, List<ExprNodeDesc>> filterMap = new HashMap<Byte, List<ExprNodeDesc>>();
+      filterMap.put((byte) 0, expr);
+      mjdesc.setFilters(filterMap);
+ }
+
+  /**
+  * testValidateMapJoinOperator validates that the Map join operator can be vectorized.
+  */
   @Test
   public void testValidateMapJoinOperator() {
     MapJoinOperator mop = new MapJoinOperator();
     MapJoinDesc mjdesc = new MapJoinDesc();
-    mjdesc.setPosBigTable(0);
-    List<ExprNodeDesc> expr = new ArrayList<ExprNodeDesc>();
-    expr.add(new ExprNodeColumnDesc(Integer.class, "col1", "T", false));
-    Map<Byte, List<ExprNodeDesc>> keyMap = new HashMap<Byte, List<ExprNodeDesc>>();
-    keyMap.put((byte)0, expr);
-    mjdesc.setKeys(keyMap);
-    mjdesc.setExprs(keyMap);
-
-    //Set filter expression
-    GenericUDFOPEqual udf = new GenericUDFOPEqual();
-    ExprNodeGenericFuncDesc equalExprDesc = new ExprNodeGenericFuncDesc();
-    equalExprDesc.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
-    equalExprDesc.setGenericUDF(udf);
-    List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
-    children1.add(new ExprNodeColumnDesc(Integer.class, "col2", "T1", false));
-    children1.add(new ExprNodeColumnDesc(Integer.class, "col3", "T2", false));
-    equalExprDesc.setChildren(children1);
-    List<ExprNodeDesc> filterExpr = new ArrayList<ExprNodeDesc>();
-    filterExpr.add(equalExprDesc);
-    Map<Byte, List<ExprNodeDesc>> filterMap = new HashMap<Byte, List<ExprNodeDesc>>();
-    filterMap.put((byte) 0, expr);
-    mjdesc.setFilters(filterMap);
+    
+    prepareAbstractMapJoin(mop, mjdesc);
     mop.setConf(mjdesc);
-
+ 
     Vectorizer vectorizer = new Vectorizer();
-
     Assert.assertTrue(vectorizer.validateOperator(mop));
-    SMBMapJoinOperator smbmop = new SMBMapJoinOperator(mop);
-    Assert.assertFalse(vectorizer.validateOperator(smbmop));
+  }
+
+  
+  /**
+  * testValidateSMBJoinOperator validates that the SMB join operator can be vectorized.
+  */
+  @Test
+  public void testValidateSMBJoinOperator() {
+      SMBMapJoinOperator mop = new SMBMapJoinOperator();
+      SMBJoinDesc mjdesc = new SMBJoinDesc();
+      
+      prepareAbstractMapJoin(mop, mjdesc);
+      mop.setConf(mjdesc);
+    
+      Vectorizer vectorizer = new Vectorizer();
+      Assert.assertTrue(vectorizer.validateOperator(mop)); 
   }
 }

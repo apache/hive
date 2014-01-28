@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -74,7 +73,6 @@ public class Partition implements Serializable {
   private Deserializer deserializer;
   private Class<? extends HiveOutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
-  private URI uri;
 
   /**
    * @return The values of the partition
@@ -120,50 +118,53 @@ public class Partition implements Serializable {
    * @throws HiveException
    *           Thrown if we could not create the partition.
    */
-  public Partition(Table tbl, Map<String, String> partSpec, Path location)
-      throws HiveException {
+  public Partition(Table tbl, Map<String, String> partSpec, Path location) throws HiveException {
+    initialize(tbl, createMetaPartitionObject(tbl, partSpec, location));
+  }
 
+  public static org.apache.hadoop.hive.metastore.api.Partition createMetaPartitionObject(
+      Table tbl, Map<String, String> partSpec, Path location) throws HiveException {
     List<String> pvals = new ArrayList<String>();
     for (FieldSchema field : tbl.getPartCols()) {
       String val = partSpec.get(field.getName());
-      if (val == null) {
-        throw new HiveException(
-            "partition spec is invalid. field.getName() does not exist in input.");
+      if (val == null || val.isEmpty()) {
+        throw new HiveException("partition spec is invalid; field "
+            + field.getName() + " does not exist or is empty");
       }
       pvals.add(val);
     }
 
-    org.apache.hadoop.hive.metastore.api.Partition tpart = new org.apache.hadoop.hive.metastore.api.Partition();
+    org.apache.hadoop.hive.metastore.api.Partition tpart =
+        new org.apache.hadoop.hive.metastore.api.Partition();
     tpart.setDbName(tbl.getDbName());
     tpart.setTableName(tbl.getTableName());
     tpart.setValues(pvals);
 
-    if (tbl.isView()) {
-      initialize(tbl, tpart);
-      return;
+    if (!tbl.isView()) {
+      tpart.setSd(cloneSd(tbl));
+      tpart.getSd().setLocation((location != null) ? location.toString() : null);
     }
+    return tpart;
+  }
 
+  /**
+   * We already have methods that clone stuff using XML or Kryo.
+   * And now for something completely different - let's clone SD using Thrift!
+   * Refactored into a method.
+   */
+  public static StorageDescriptor cloneSd(Table tbl) throws HiveException {
     StorageDescriptor sd = new StorageDescriptor();
     try {
       // replace with THRIFT-138
       TMemoryBuffer buffer = new TMemoryBuffer(1024);
       TBinaryProtocol prot = new TBinaryProtocol(buffer);
       tbl.getTTable().getSd().write(prot);
-
       sd.read(prot);
     } catch (TException e) {
       LOG.error("Could not create a copy of StorageDescription");
       throw new HiveException("Could not create a copy of StorageDescription",e);
     }
-
-    tpart.setSd(sd);
-    if (location != null) {
-      tpart.getSd().setLocation(location.toString());
-    } else {
-      tpart.getSd().setLocation(null);
-    }
-
-    initialize(tbl, tpart);
+    return sd;
   }
 
   /**
@@ -227,23 +228,16 @@ public class Partition implements Serializable {
   }
 
   public Path[] getPath() {
-    Path[] ret = new Path[]{getPartitionPath()};
+    Path[] ret = new Path[]{getDataLocation()};
     return ret;
   }
 
-  public Path getPartitionPath() {
+  public Path getDataLocation() {
     if (table.isPartitioned()) {
       return new Path(tPartition.getSd().getLocation());
     } else {
       return new Path(table.getTTable().getSd().getLocation());
     }
-  }
-
-  final public URI getDataLocation() {
-    if (uri == null) {
-      uri = getPartitionPath().toUri();
-    }
-    return uri;
   }
 
   final public Deserializer getDeserializer() {
@@ -379,9 +373,8 @@ public class Partition implements Serializable {
     try {
       // Previously, this got the filesystem of the Table, which could be
       // different from the filesystem of the partition.
-      FileSystem fs = FileSystem.get(getPartitionPath().toUri(), Hive.get()
-          .getConf());
-      String pathPattern = getPartitionPath().toString();
+      FileSystem fs = getDataLocation().getFileSystem(Hive.get().getConf());
+      String pathPattern = getDataLocation().toString();
       if (getBucketCount() > 0) {
         pathPattern = pathPattern + "/*";
       }

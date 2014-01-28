@@ -170,7 +170,7 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     // Build reentrant QL for index query
     StringBuilder qlCommand = new StringBuilder("INSERT OVERWRITE DIRECTORY ");
 
-    String tmpFile = pctx.getContext().getMRTmpFileURI();
+    String tmpFile = pctx.getContext().getMRTmpPath().toUri().toString();
     queryContext.setIndexIntermediateFile(tmpFile);
     qlCommand.append( "\"" + tmpFile + "\" ");            // QL includes " around file name
     qlCommand.append("SELECT `_bucketname` ,  `_offsets` FROM ");

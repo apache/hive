@@ -120,21 +120,17 @@ public class $className extends TestCase {
       qt.clearTestSideEffects();
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
-        fail("Client Execution failed with error code = " + ecode);
+        qt.failed(ecode, fname, null);
       }
 
       ecode = qt.checkCliDriverResults(fname);
       if (ecode != 0) {
-        fail("Client execution results failed with error code = " + ecode);
+        qt.failedDiff(ecode, fname, null);
       }
       qt.clearPostTestEffects();
 
     } catch (Throwable e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.println("Failed query: " + fname);
-      System.err.flush();
-      fail("Unexpected exception");
+      qt.failed(e, fname, null);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

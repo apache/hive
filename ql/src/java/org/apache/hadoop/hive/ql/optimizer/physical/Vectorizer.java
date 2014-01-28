@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -78,6 +79,7 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -555,6 +557,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       case MAPJOIN:
         if (op instanceof MapJoinOperator) {
           ret = validateMapJoinOperator((MapJoinOperator) op);
+        } else if (op instanceof SMBMapJoinOperator) {
+          ret = validateSMBMapJoinOperator((SMBMapJoinOperator) op);
         }
         break;
       case GROUPBY:
@@ -583,6 +587,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     return ret;
   }
 
+  private boolean validateSMBMapJoinOperator(SMBMapJoinOperator op) {
+    SMBJoinDesc desc = op.getConf();
+    // Validation is the same as for map join, since the 'small' tables are not vectorized
+    return validateMapJoinDesc(desc);
+  }
+
   private boolean validateTableScanOperator(TableScanOperator op) {
     TableScanDesc desc = op.getConf();
     return !desc.isGatherStats();
@@ -590,6 +600,10 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private boolean validateMapJoinOperator(MapJoinOperator op) {
     MapJoinDesc desc = op.getConf();
+    return validateMapJoinDesc(desc);
+  }
+  
+  private boolean validateMapJoinDesc(MapJoinDesc desc) {
     byte posBigTable = (byte) desc.getPosBigTable();
     List<ExprNodeDesc> filterExprs = desc.getFilters().get(posBigTable);
     List<ExprNodeDesc> keyExprs = desc.getKeys().get(posBigTable);

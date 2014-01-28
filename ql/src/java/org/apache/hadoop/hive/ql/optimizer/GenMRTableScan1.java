@@ -185,9 +185,9 @@ public class GenMRTableScan1 implements NodeProcessor {
         aggregationKey += Warehouse.makePartPath(part.getSpec());
       } catch (MetaException e) {
         throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_AGGKEY.getMsg(
-            part.getPartitionPath().toString() + e.getMessage()));
+            part.getDataLocation().toString() + e.getMessage()));
       }
-      inputPaths.add(part.getPartitionPath());
+      inputPaths.add(part.getDataLocation());
       break;
     default:
       assert false;

@@ -212,7 +212,7 @@ public final class UnionProcFactory {
         // for each sub-query. Also, these different filesinks need to be linked to each other
         FileSinkOperator fileSinkOp = (FileSinkOperator)stack.get(pos);
         // For file sink operator, change the directory name
-        String parentDirName = fileSinkOp.getConf().getDirName();
+        Path parentDirName = fileSinkOp.getConf().getDirName();
 
         // Clone the fileSinkDesc of the final fileSink and create similar fileSinks at
         // each parent
@@ -220,9 +220,7 @@ public final class UnionProcFactory {
 
         for (Operator<? extends OperatorDesc> parent : parents) {
           FileSinkDesc fileSinkDesc = (FileSinkDesc) fileSinkOp.getConf().clone();
-
-          String dirName = parentDirName + Path.SEPARATOR + parent.getIdentifier() ;
-          fileSinkDesc.setDirName(dirName);
+          fileSinkDesc.setDirName(new Path(parentDirName, parent.getIdentifier()));
           fileSinkDesc.setLinkedFileSink(true);
           fileSinkDesc.setParentDir(parentDirName);
           parent.setChildOperators(null);

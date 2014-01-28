@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 // not a subdirectory.
 public class VerifyPartitionIsNotSubdirectoryOfTableHook implements ExecuteWithHookContext {
 
+  @Override
   public void run(HookContext hookContext) {
     for (WriteEntity output : hookContext.getOutputs()) {
       if (output.getType() == WriteEntity.Type.PARTITION) {
@@ -44,6 +45,6 @@ public class VerifyPartitionIsNotSubdirectoryOfTableHook implements ExecuteWithH
   private void verify(Partition partition, Table table) {
     Assert.assertFalse("The location of the partition: " + partition.getName() + " was a " +
         "subdirectory of the location of the table: " + table.getTableName(),
-        partition.getPartitionPath().toString().startsWith(table.getPath().toString()));
+        partition.getDataLocation().toString().startsWith(table.getPath().toString()));
   }
 }

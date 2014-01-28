@@ -50,11 +50,11 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src
 25
 PREHOOK: query: -- alter partition key column data type for dt column.
 alter table alter_coltype partition column (dt int)
-PREHOOK: type: null
+PREHOOK: type: ALTERTABLE_PARTCOLTYPE
 PREHOOK: Input: default@alter_coltype
 POSTHOOK: query: -- alter partition key column data type for dt column.
 alter table alter_coltype partition column (dt int)
-POSTHOOK: type: null
+POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Output: default@alter_coltype
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -240,11 +240,11 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src
 0
 PREHOOK: query: -- alter partition key column data type for ts column.
 alter table alter_coltype partition column (ts double)
-PREHOOK: type: null
+PREHOOK: type: ALTERTABLE_PARTCOLTYPE
 PREHOOK: Input: default@alter_coltype
 POSTHOOK: query: -- alter partition key column data type for ts column.
 alter table alter_coltype partition column (ts double)
-POSTHOOK: type: null
+POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Output: default@alter_coltype
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -252,10 +252,10 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).value SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: alter table alter_coltype partition column (dt string)
-PREHOOK: type: null
+PREHOOK: type: ALTERTABLE_PARTCOLTYPE
 PREHOOK: Input: default@alter_coltype
 POSTHOOK: query: alter table alter_coltype partition column (dt string)
-POSTHOOK: type: null
+POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Output: default@alter_coltype
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]

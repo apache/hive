@@ -218,10 +218,13 @@ class UnparseTranslator {
    */
   void applyTranslations(TokenRewriteStream tokenRewriteStream) {
     for (Map.Entry<Integer, Translation> entry : translations.entrySet()) {
-      tokenRewriteStream.replace(
-        entry.getKey(),
-        entry.getValue().tokenStopIndex,
-        entry.getValue().replacementText);
+      if (entry.getKey() > 0) { // negative means the key didn't exist in the original 
+                                // stream (i.e.: we changed the tree)
+        tokenRewriteStream.replace(
+           entry.getKey(),
+           entry.getValue().tokenStopIndex,
+           entry.getValue().replacementText);
+      }
     }
     for (CopyTranslation copyTranslation : copyTranslations) {
       String replacementText = tokenRewriteStream.toString(

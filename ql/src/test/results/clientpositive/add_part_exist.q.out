@@ -22,11 +22,9 @@ ds=2010-01-01
 PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@add_part_test
-PREHOOK: Output: default@add_part_test@ds=2010-01-01
 POSTHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@add_part_test
-POSTHOOK: Output: default@add_part_test@ds=2010-01-01
 PREHOOK: query: SHOW PARTITIONS add_part_test
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS add_part_test
@@ -48,13 +46,9 @@ ds=2010-01-02
 PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01') PARTITION (ds='2010-01-02') PARTITION (ds='2010-01-03')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@add_part_test
-PREHOOK: Output: default@add_part_test@ds=2010-01-01
-PREHOOK: Output: default@add_part_test@ds=2010-01-02
 POSTHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01') PARTITION (ds='2010-01-02') PARTITION (ds='2010-01-03')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@add_part_test
-POSTHOOK: Output: default@add_part_test@ds=2010-01-01
-POSTHOOK: Output: default@add_part_test@ds=2010-01-02
 POSTHOOK: Output: default@add_part_test@ds=2010-01-03
 PREHOOK: query: SHOW PARTITIONS add_part_test
 PREHOOK: type: SHOWPARTITIONS
@@ -122,11 +116,9 @@ ds=2010-01-01
 PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: add_part_test_db@add_part_test
-PREHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-01
 POSTHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: add_part_test_db@add_part_test
-POSTHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-01
 PREHOOK: query: SHOW PARTITIONS add_part_test
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS add_part_test
@@ -148,13 +140,9 @@ ds=2010-01-02
 PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01') PARTITION (ds='2010-01-02') PARTITION (ds='2010-01-03')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: add_part_test_db@add_part_test
-PREHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-01
-PREHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-02
 POSTHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01') PARTITION (ds='2010-01-02') PARTITION (ds='2010-01-03')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: add_part_test_db@add_part_test
-POSTHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-01
-POSTHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-02
 POSTHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-03
 PREHOOK: query: SHOW PARTITIONS add_part_test
 PREHOOK: type: SHOWPARTITIONS

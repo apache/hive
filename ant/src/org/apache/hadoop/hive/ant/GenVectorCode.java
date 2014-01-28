@@ -107,6 +107,18 @@ public class GenVectorCode extends Task {
       {"ColumnDivideColumn", "Modulo", "double", "long", "%"},
       {"ColumnDivideColumn", "Modulo", "double", "double", "%"},
 
+      {"ColumnArithmeticScalarDecimal", "Add"},
+      {"ColumnArithmeticScalarDecimal", "Subtract"},
+      {"ColumnArithmeticScalarDecimal", "Multiply"},
+
+      {"ScalarArithmeticColumnDecimal", "Add"},
+      {"ScalarArithmeticColumnDecimal", "Subtract"},
+      {"ScalarArithmeticColumnDecimal", "Multiply"},
+
+      {"ColumnArithmeticColumnDecimal", "Add"},
+      {"ColumnArithmeticColumnDecimal", "Subtract"},
+      {"ColumnArithmeticColumnDecimal", "Multiply"},
+
       {"ColumnCompareScalar", "Equal", "long", "double", "=="},
       {"ColumnCompareScalar", "Equal", "double", "double", "=="},
       {"ColumnCompareScalar", "NotEqual", "long", "double", "!="},
@@ -234,6 +246,27 @@ public class GenVectorCode extends Task {
       {"FilterStringScalarCompareColumn", "LessEqual", "<="},
       {"FilterStringScalarCompareColumn", "Greater", ">"},
       {"FilterStringScalarCompareColumn", "GreaterEqual", ">="},
+
+      {"FilterDecimalColumnCompareScalar", "Equal", "=="},
+      {"FilterDecimalColumnCompareScalar", "NotEqual", "!="},
+      {"FilterDecimalColumnCompareScalar", "Less", "<"},
+      {"FilterDecimalColumnCompareScalar", "LessEqual", "<="},
+      {"FilterDecimalColumnCompareScalar", "Greater", ">"},
+      {"FilterDecimalColumnCompareScalar", "GreaterEqual", ">="},
+
+      {"FilterDecimalScalarCompareColumn", "Equal", "=="},
+      {"FilterDecimalScalarCompareColumn", "NotEqual", "!="},
+      {"FilterDecimalScalarCompareColumn", "Less", "<"},
+      {"FilterDecimalScalarCompareColumn", "LessEqual", "<="},
+      {"FilterDecimalScalarCompareColumn", "Greater", ">"},
+      {"FilterDecimalScalarCompareColumn", "GreaterEqual", ">="},
+
+      {"FilterDecimalColumnCompareColumn", "Equal", "=="},
+      {"FilterDecimalColumnCompareColumn", "NotEqual", "!="},
+      {"FilterDecimalColumnCompareColumn", "Less", "<"},
+      {"FilterDecimalColumnCompareColumn", "LessEqual", "<="},
+      {"FilterDecimalColumnCompareColumn", "Greater", ">"},
+      {"FilterDecimalColumnCompareColumn", "GreaterEqual", ">="},
 
       {"StringScalarCompareColumn", "Equal", "=="},
       {"StringScalarCompareColumn", "NotEqual", "!="},
@@ -539,6 +572,12 @@ public class GenVectorCode extends Task {
     for (String [] tdesc : templateExpansions) {
       if (tdesc[0].equals("ColumnArithmeticScalar") || tdesc[0].equals("ColumnDivideScalar")) {
         generateColumnArithmeticScalar(tdesc);
+      } else if (tdesc[0].equals("ColumnArithmeticScalarDecimal")) {
+        generateColumnArithmeticScalarDecimal(tdesc);
+      } else if (tdesc[0].equals("ScalarArithmeticColumnDecimal")) {
+        generateScalarArithmeticColumnDecimal(tdesc);
+      } else if (tdesc[0].equals("ColumnArithmeticColumnDecimal")) {
+        generateColumnArithmeticColumnDecimal(tdesc);
       } else if (tdesc[0].equals("ColumnCompareScalar")) {
         generateColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("ScalarCompareColumn")) {
@@ -593,6 +632,12 @@ public class GenVectorCode extends Task {
         generateIfExprScalarColumn(tdesc);
       } else if (tdesc[0].equals("IfExprScalarScalar")) {
         generateIfExprScalarScalar(tdesc);
+      } else if (tdesc[0].equals("FilterDecimalColumnCompareScalar")) {
+        generateFilterDecimalColumnCompareScalar(tdesc);
+      } else if (tdesc[0].equals("FilterDecimalScalarCompareColumn")) {
+        generateFilterDecimalScalarCompareColumn(tdesc);
+      } else if (tdesc[0].equals("FilterDecimalColumnCompareColumn")) {
+        generateFilterDecimalColumnCompareColumn(tdesc);
       } else {
         continue;
       }
@@ -1116,6 +1161,48 @@ public class GenVectorCode extends Task {
     generateColumnBinaryOperatorScalar(tdesc, returnType, className);
   }
 
+  private void generateColumnArithmeticScalarDecimal(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "DecimalCol" + operatorName + "DecimalScalar";
+
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+       className, templateString);
+  }
+
+  private void generateScalarArithmeticColumnDecimal(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "DecimalScalar" + operatorName + "DecimalColumn";
+
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+       className, templateString);
+  }
+
+  private void generateColumnArithmeticColumnDecimal(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "DecimalCol" + operatorName + "DecimalColumn";
+
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+       className, templateString);
+  }
+
   private void generateScalarArithmeticColumn(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
@@ -1124,6 +1211,39 @@ public class GenVectorCode extends Task {
         + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column";
     String returnType = getArithmeticReturnType(operandType1, operandType2);
     generateScalarBinaryOperatorColumn(tdesc, returnType, className);
+  }
+
+  private void generateFilterDecimalColumnCompareScalar(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "FilterDecimalCol" + operatorName + "DecimalScalar";
+    generateDecimalColumnCompare(tdesc, className);
+  }
+
+  private void generateFilterDecimalScalarCompareColumn(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "FilterDecimalScalar" + operatorName + "DecimalColumn";
+    generateDecimalColumnCompare(tdesc, className);
+  }
+
+  private void generateFilterDecimalColumnCompareColumn(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "FilterDecimalCol" + operatorName + "DecimalColumn";
+    generateDecimalColumnCompare(tdesc, className);
+  }
+
+  private void generateDecimalColumnCompare(String[] tdesc, String className)
+      throws IOException {
+    String operatorSymbol = tdesc[2];
+
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
   }
 
   static void writeFile(long templateTime, String outputDir, String classesDir,

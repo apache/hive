@@ -140,7 +140,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     pt.put("/tmp/testfolder", partDesc);
     MapredWork mrwork = new MapredWork();
     mrwork.getMapWork().setPathToPartitionInfo(pt);
-    Utilities.setMapRedWork(conf, mrwork,"/tmp/" + System.getProperty("user.name") + "/hive");
+    Utilities.setMapRedWork(conf, mrwork,new Path("/tmp/" + System.getProperty("user.name"), "hive"));
 
     hiveSplit = new TestHiveInputSplit();
     hbsReader = new TestHiveRecordReader(rcfReader, conf);

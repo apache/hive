@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -101,10 +102,10 @@ public class MapJoinResolver implements PhysicalPlanResolver {
       if (localwork != null) {
         // get the context info and set up the shared tmp URI
         Context ctx = physicalContext.getContext();
-        String tmpFileURI = Utilities.generateTmpURI(ctx.getLocalTmpFileURI(), currTask.getId());
-        localwork.setTmpFileURI(tmpFileURI);
-        String hdfsTmpURI = Utilities.generateTmpURI(ctx.getMRTmpFileURI(), currTask.getId());
-        mapredWork.getMapWork().setTmpHDFSFileURI(hdfsTmpURI);
+        Path tmpPath = Utilities.generateTmpPath(ctx.getLocalTmpPath(), currTask.getId());
+        localwork.setTmpPath(tmpPath);
+        mapredWork.getMapWork().setTmpHDFSPath(Utilities.generateTmpPath(
+          ctx.getMRTmpPath(), currTask.getId()));
         // create a task for this local work; right now, this local work is shared
         // by the original MapredTask and this new generated MapredLocalTask.
         MapredLocalTask localTask = (MapredLocalTask) TaskFactory.get(localwork, physicalContext
@@ -130,7 +131,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         // create new local work and setup the dummy ops
         MapredLocalWork newLocalWork = new MapredLocalWork();
         newLocalWork.setDummyParentOp(dummyOps);
-        newLocalWork.setTmpFileURI(tmpFileURI);
+        newLocalWork.setTmpPath(tmpPath);
         newLocalWork.setInputFileChangeSensitive(localwork.getInputFileChangeSensitive());
         newLocalWork.setBucketMapjoinContext(localwork.copyPartSpecMappingOnly());
         mapredWork.getMapWork().setMapLocalWork(newLocalWork);
@@ -166,15 +167,15 @@ public class MapJoinResolver implements PhysicalPlanResolver {
               // get bigKeysDirToTaskMap
               ConditionalResolverSkewJoinCtx context = (ConditionalResolverSkewJoinCtx) conditionalTask
                   .getResolverCtx();
-              HashMap<String, Task<? extends Serializable>> bigKeysDirToTaskMap = context
+              HashMap<Path, Task<? extends Serializable>> bigKeysDirToTaskMap = context
                   .getDirToTaskMap();
               // to avoid concurrent modify the hashmap
-              HashMap<String, Task<? extends Serializable>> newbigKeysDirToTaskMap = new HashMap<String, Task<? extends Serializable>>();
+              HashMap<Path, Task<? extends Serializable>> newbigKeysDirToTaskMap = new HashMap<Path, Task<? extends Serializable>>();
               // reset the resolver
-              for (Map.Entry<String, Task<? extends Serializable>> entry : bigKeysDirToTaskMap
+              for (Map.Entry<Path, Task<? extends Serializable>> entry : bigKeysDirToTaskMap
                   .entrySet()) {
                 Task<? extends Serializable> task = entry.getValue();
-                String key = entry.getKey();
+                Path key = entry.getKey();
                 if (task.equals(currTask)) {
                   newbigKeysDirToTaskMap.put(key, localTask);
                 } else {

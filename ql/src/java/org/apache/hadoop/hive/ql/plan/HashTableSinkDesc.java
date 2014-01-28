@@ -20,14 +20,14 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import org.apache.hadoop.fs.Path;
 
 /**
  * Map Join operator Descriptor implementation.
@@ -41,8 +41,8 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   // used to handle skew join
   private boolean handleSkewJoin = false;
   private int skewKeyDefinition = -1;
-  private Map<Byte, String> bigKeysDirMap;
-  private Map<Byte, Map<Byte, String>> smallKeysDirMap;
+  private Map<Byte, Path> bigKeysDirMap;
+  private Map<Byte, Map<Byte, Path>> smallKeysDirMap;
   private Map<Byte, TableDesc> skewKeysValuesTables;
 
   // alias to key mapping
@@ -173,22 +173,22 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   }
 
   @Override
-  public Map<Byte, String> getBigKeysDirMap() {
+  public Map<Byte, Path> getBigKeysDirMap() {
     return bigKeysDirMap;
   }
 
   @Override
-  public void setBigKeysDirMap(Map<Byte, String> bigKeysDirMap) {
+  public void setBigKeysDirMap(Map<Byte, Path> bigKeysDirMap) {
     this.bigKeysDirMap = bigKeysDirMap;
   }
 
   @Override
-  public Map<Byte, Map<Byte, String>> getSmallKeysDirMap() {
+  public Map<Byte, Map<Byte, Path>> getSmallKeysDirMap() {
     return smallKeysDirMap;
   }
 
   @Override
-  public void setSmallKeysDirMap(Map<Byte, Map<Byte, String>> smallKeysDirMap) {
+  public void setSmallKeysDirMap(Map<Byte, Map<Byte, Path>> smallKeysDirMap) {
     this.smallKeysDirMap = smallKeysDirMap;
   }
 

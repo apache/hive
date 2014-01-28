@@ -946,7 +946,7 @@ public final class GenMapRedUtils {
    */
   protected static TableScanOperator createTemporaryFile(
       Operator<? extends OperatorDesc> parent, Operator<? extends OperatorDesc> child,
-      String taskTmpDir, TableDesc tt_desc, ParseContext parseCtx) {
+      Path taskTmpDir, TableDesc tt_desc, ParseContext parseCtx) {
 
     // Create a FileSinkOperator for the file name of taskTmpDir
     boolean compressIntermediate =
@@ -1008,7 +1008,7 @@ public final class GenMapRedUtils {
 
     // Generate the temporary file name
     Context baseCtx = parseCtx.getContext();
-    String taskTmpDir = baseCtx.getMRTmpFileURI();
+    Path taskTmpDir = baseCtx.getMRTmpPath();
 
     Operator<? extends OperatorDesc> parent = op.getParentOperators().get(0);
     TableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(PlanUtils
@@ -1023,7 +1023,7 @@ public final class GenMapRedUtils {
         opProcCtx.getMapCurrCtx();
     mapCurrCtx.put(tableScanOp, new GenMapRedCtx(childTask, null));
 
-    String streamDesc = taskTmpDir;
+    String streamDesc = taskTmpDir.toUri().toString();
     MapredWork cplan = (MapredWork) childTask.getWork();
 
     if (needsTagging(cplan.getReduceWork())) {
@@ -1055,7 +1055,7 @@ public final class GenMapRedUtils {
     }
 
     // Add the path to alias mapping
-    setTaskPlan(taskTmpDir, streamDesc, tableScanOp, cplan.getMapWork(), false, tt_desc);
+    setTaskPlan(taskTmpDir.toUri().toString(), streamDesc, tableScanOp, cplan.getMapWork(), false, tt_desc);
     opProcCtx.setCurrTopOp(null);
     opProcCtx.setCurrAliasId(null);
     opProcCtx.setCurrTask(childTask);
@@ -1195,7 +1195,7 @@ public final class GenMapRedUtils {
 
     // Create a FileSink operator
     TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
-    FileSinkDesc fsOutputDesc = new FileSinkDesc(finalName.toUri().toString(), ts,
+    FileSinkDesc fsOutputDesc = new FileSinkDesc(finalName, ts,
       conf.getBoolVar(ConfVars.COMPRESSRESULT));
     FileSinkOperator fsOutput = (FileSinkOperator) OperatorFactory.getAndMakeChild(
       fsOutputDesc, inputRS, tsMerge);
@@ -1240,7 +1240,7 @@ public final class GenMapRedUtils {
     // 2. Constructing a conditional task consisting of a move task and a map reduce task
     //
     MoveWork dummyMv = new MoveWork(null, null, null,
-         new LoadFileDesc(new Path(fsInputDesc.getFinalDirName()), finalName, true, null, null), false);
+         new LoadFileDesc(fsInputDesc.getFinalDirName(), finalName, true, null, null), false);
     MapWork cplan;
     Serializable work;
 
@@ -1277,7 +1277,7 @@ public final class GenMapRedUtils {
     // NOTE: we should gather stats in MR1 rather than MR2 at merge job since we don't
     // know if merge MR2 will be triggered at execution time
     ConditionalTask cndTsk = GenMapRedUtils.createCondTask(conf, currTask, dummyMv, work,
-        fsInputDesc.getFinalDirName());
+        fsInputDesc.getFinalDirName().toString());
 
     // keep the dynamic partition context in conditional task resolver context
     ConditionalResolverMergeFilesCtx mrCtx =
@@ -1457,7 +1457,7 @@ public final class GenMapRedUtils {
     Operator<? extends OperatorDesc> topOp,  FileSinkDesc fsDesc) {
 
     ArrayList<String> aliases = new ArrayList<String>();
-    String inputDir = fsDesc.getFinalDirName();
+    String inputDir = fsDesc.getFinalDirName().toString();
     TableDesc tblDesc = fsDesc.getTableInfo();
     aliases.add(inputDir); // dummy alias: just use the input path
 
@@ -1483,7 +1483,7 @@ public final class GenMapRedUtils {
   public static MapWork createRCFileMergeTask(FileSinkDesc fsInputDesc,
       Path finalName, boolean hasDynamicPartitions) throws SemanticException {
 
-    String inputDir = fsInputDesc.getFinalDirName();
+    Path inputDir = fsInputDesc.getFinalDirName();
     TableDesc tblDesc = fsInputDesc.getTableInfo();
 
     if (tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class)) {
@@ -1491,22 +1491,22 @@ public final class GenMapRedUtils {
       ArrayList<String> inputDirstr = new ArrayList<String>(1);
       if (!hasDynamicPartitions
           && !GenMapRedUtils.isSkewedStoredAsDirs(fsInputDesc)) {
-        inputDirs.add(new Path(inputDir));
-        inputDirstr.add(inputDir);
+        inputDirs.add(inputDir);
+        inputDirstr.add(inputDir.toString());
       }
 
       MergeWork work = new MergeWork(inputDirs, finalName,
           hasDynamicPartitions, fsInputDesc.getDynPartCtx());
       LinkedHashMap<String, ArrayList<String>> pathToAliases =
           new LinkedHashMap<String, ArrayList<String>>();
-      pathToAliases.put(inputDir, (ArrayList<String>) inputDirstr.clone());
+      pathToAliases.put(inputDir.toString(), (ArrayList<String>) inputDirstr.clone());
       work.setMapperCannotSpanPartns(true);
       work.setPathToAliases(pathToAliases);
       work.setAliasToWork(
           new LinkedHashMap<String, Operator<? extends OperatorDesc>>());
       if (hasDynamicPartitions
           || GenMapRedUtils.isSkewedStoredAsDirs(fsInputDesc)) {
-        work.getPathToPartitionInfo().put(inputDir,
+        work.getPathToPartitionInfo().put(inputDir.toString(),
             new PartitionDesc(tblDesc, null));
       }
       work.setListBucketingCtx(fsInputDesc.getLbCtx());
@@ -1603,7 +1603,7 @@ public final class GenMapRedUtils {
       }
 
       if ((srcDir != null)
-          && (srcDir.equals(new Path(fsOp.getConf().getFinalDirName())))) {
+          && (srcDir.equals(fsOp.getConf().getFinalDirName()))) {
         return mvTsk;
       }
     }
@@ -1687,20 +1687,19 @@ public final class GenMapRedUtils {
     Path dest = null;
 
     if (chDir) {
-      dest = new Path(fsOp.getConf().getFinalDirName());
+      dest = fsOp.getConf().getFinalDirName();
 
       // generate the temporary file
       // it must be on the same file system as the current destination
       Context baseCtx = parseCtx.getContext();
-      String tmpDir = baseCtx.getExternalTmpFileURI(dest.toUri());
+      Path tmpDir = baseCtx.getExternalTmpPath(dest.toUri());
 
       FileSinkDesc fileSinkDesc = fsOp.getConf();
       // Change all the linked file sink descriptors
       if (fileSinkDesc.isLinkedFileSink()) {
         for (FileSinkDesc fsConf:fileSinkDesc.getLinkedFileSinkDesc()) {
-          String fileName = Utilities.getFileNameFromDirName(fsConf.getDirName());
           fsConf.setParentDir(tmpDir);
-          fsConf.setDirName(tmpDir + Path.SEPARATOR + fileName);
+          fsConf.setDirName(new Path(tmpDir, fsConf.getDirName().getName()));
         }
       } else {
         fileSinkDesc.setDirName(tmpDir);

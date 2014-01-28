@@ -18,8 +18,10 @@
 
 package org.apache.hive.jdbc;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.net.URL;
@@ -134,11 +136,31 @@ public abstract class HiveBaseResultSet implements ResultSet {
   }
 
   public InputStream getBinaryStream(int columnIndex) throws SQLException {
-    throw new SQLException("Method not supported");
+    Object obj = getObject(columnIndex);
+    if (obj == null) {
+      return null;
+    } else if (obj instanceof InputStream) {
+      return (InputStream)obj;
+    } else if (obj instanceof byte[]) {
+      byte[] byteArray = (byte[])obj;
+      InputStream is = new ByteArrayInputStream(byteArray);
+      return is;
+    } else if (obj instanceof String) {
+      String str = (String)obj;
+      InputStream is = null;
+      try {
+        is = new ByteArrayInputStream(str.getBytes("UTF-8"));
+      } catch (UnsupportedEncodingException e) {
+        throw new SQLException("Illegal conversion to binary stream from column " +
+            columnIndex + " - Unsupported encoding exception");
+      }
+      return is;
+    }
+    throw new SQLException("Illegal conversion to binary stream from column " + columnIndex);
   }
 
   public InputStream getBinaryStream(String columnName) throws SQLException {
-    throw new SQLException("Method not supported");
+	return getBinaryStream(findColumn(columnName));
   }
 
   public Blob getBlob(int i) throws SQLException {
@@ -410,6 +432,11 @@ public abstract class HiveBaseResultSet implements ResultSet {
         return new BigDecimal((String)value);
       case DATE_TYPE:
         return Date.valueOf((String) value);
+      case ARRAY_TYPE:
+      case MAP_TYPE:
+      case STRUCT_TYPE:
+        // todo: returns json string. should recreate object from it?
+        return value;
       default:
         return value;
     }

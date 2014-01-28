@@ -54,7 +54,11 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
 import org.apache.hadoop.hive.ql.util.DosToUnix;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -116,7 +120,13 @@ public class SessionState {
    */
   private HiveOperation commandType;
 
+  private String lastCommand;
+
   private HiveAuthorizationProvider authorizer;
+
+  private HiveAuthorizer authorizerV2;
+
+  public enum AuthorizationMode{V1, V2};
 
   private HiveAuthenticationProvider authenticator;
 
@@ -297,15 +307,33 @@ public class SessionState {
       // that would cause ClassNoFoundException otherwise
       throw new RuntimeException(e);
     }
+    setupAuth(startSs);
+    return startSs;
+  }
 
+  /**
+   * Setup authentication and authorization plugins for this session.
+   * @param startSs
+   */
+  private static void setupAuth(SessionState startSs) {
     try {
       startSs.authenticator = HiveUtils.getAuthenticator(
           startSs.getConf(),HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
       startSs.authorizer = HiveUtils.getAuthorizeProviderManager(
           startSs.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-          startSs.authenticator);
-      startSs.createTableGrants = CreateTableAutomaticGrant.create(startSs
-          .getConf());
+          startSs.authenticator, true);
+
+      if(startSs.authorizer == null){
+        //if it was null, the new authorization plugin must be specified in config
+        HiveAuthorizerFactory authorizerFactory =
+            HiveUtils.getAuthorizerFactory(startSs.getConf(), HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
+        startSs.authorizerV2 = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(),
+            startSs.getConf(), startSs.authenticator.getUserName());
+      }
+      else{
+        startSs.createTableGrants = CreateTableAutomaticGrant.create(startSs
+            .getConf());
+      }
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }
@@ -323,8 +351,7 @@ public class SessionState {
     } else {
        LOG.info("No Tez session required at this point. hive.execution.engine=mr.");
     }
-
-    return startSs;
+    return;
   }
 
   /**
@@ -377,6 +404,14 @@ public class SessionState {
    */
   private static String makeSessionId() {
     return UUID.randomUUID().toString();
+  }
+
+  public String getLastCommand() {
+    return lastCommand;
+  }
+
+  public void setLastCommand(String lastCommand) {
+    this.lastCommand = lastCommand;
   }
 
   /**
@@ -749,6 +784,10 @@ public class SessionState {
     this.authorizer = authorizer;
   }
 
+  public HiveAuthorizer getAuthorizerV2() {
+    return authorizerV2;
+  }
+
   public HiveAuthenticationProvider getAuthenticator() {
     return authenticator;
   }
@@ -840,6 +879,20 @@ public class SessionState {
     } finally {
       tezSessionState = null;
     }
+  }
+
+  public AuthorizationMode getAuthorizationMode(){
+    if(authorizer != null){
+      return AuthorizationMode.V1;
+    }else if(authorizerV2 != null){
+      return AuthorizationMode.V2;
+    }
+    //should not happen - this should not get called before this.start() is called
+    throw new AssertionError("Authorization plugins not initialized!");
+  }
+
+  public boolean isAuthorizationModeV2(){
+    return getAuthorizationMode() == AuthorizationMode.V2;
   }
 
   /**

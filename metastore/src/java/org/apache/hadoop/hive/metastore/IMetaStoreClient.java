@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -330,8 +331,19 @@ public interface IMetaStoreClient {
    *           Thrift exception
    */
   public int add_partitions(List<Partition> partitions)
-      throws InvalidObjectException, AlreadyExistsException, MetaException,
-      TException;
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+
+  /**
+   * Add partitions to the table.
+   *
+   * @param partitions The partitions to add
+   * @param ifNotExists only add partitions if they don't exist
+   * @param needResults Whether the results are needed
+   * @return the partitions that were added, or null if !needResults
+   */
+  public List<Partition> add_partitions(
+      List<Partition> partitions, boolean ifNotExists, boolean needResults)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
   /**
    * @param tblName

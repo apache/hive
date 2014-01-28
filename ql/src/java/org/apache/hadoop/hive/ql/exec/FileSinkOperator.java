@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -63,7 +62,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SubStructObjectInspector;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
@@ -253,13 +251,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     // The movetask that follows subQ1 and subQ2 tasks still moves the directory
     // 'Parent'
     if ((!conf.isLinkedFileSink()) || (dpCtx == null)) {
-      specPath = new Path(conf.getDirName());
+      specPath = conf.getDirName();
       childSpecPathDynLinkedPartitions = null;
       return;
     }
 
-    specPath = new Path(conf.getParentDir());
-    childSpecPathDynLinkedPartitions = Utilities.getFileNameFromDirName(conf.getDirName());
+    specPath = conf.getParentDir();
+    childSpecPathDynLinkedPartitions = conf.getDirName().getName();
   }
 
   @Override
@@ -816,7 +814,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       throws HiveException {
     try {
       if ((conf != null) && isNativeTable) {
-        String specPath = conf.getDirName();
+        Path specPath = conf.getDirName();
         DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
         if (conf.isLinkedFileSink() && (dpCtx != null)) {
           specPath = conf.getParentDir();
@@ -926,7 +924,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         postfix = Utilities.join(lbSpec, taskID);
       }
       prefix = Utilities.join(prefix, spSpec, dpSpec);
-      prefix = Utilities.getHashedStatsPrefix(prefix, maxKeyLength, postfix.length());
+      prefix = Utilities.getHashedStatsPrefix(prefix, maxKeyLength);
 
       String key = Utilities.join(prefix, postfix);
 

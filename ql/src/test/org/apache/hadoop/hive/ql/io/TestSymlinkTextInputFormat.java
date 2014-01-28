@@ -81,7 +81,7 @@ public class TestSymlinkTextInputFormat extends TestCase {
     pt.put("/tmp/testfolder", partDesc);
     MapredWork mrwork = new MapredWork();
     mrwork.getMapWork().setPathToPartitionInfo(pt);
-    Utilities.setMapRedWork(job, mrwork,"/tmp/" + System.getProperty("user.name") + "/hive");
+    Utilities.setMapRedWork(job, mrwork,new Path("/tmp/" + System.getProperty("user.name"), "hive"));
 
     fileSystem = FileSystem.getLocal(conf);
     testDir = new Path(System.getProperty("test.tmp.dir", System.getProperty(
@@ -169,21 +169,18 @@ public class TestSymlinkTextInputFormat extends TestCase {
       drv.compile(cmd);
 
       //create scratch dir
-      String emptyScratchDirStr;
-      Path emptyScratchDir;
       Context ctx = new Context(newJob);
-      emptyScratchDirStr = ctx.getMRTmpFileURI();
-      emptyScratchDir = new Path(emptyScratchDirStr);
+      Path emptyScratchDir = ctx.getMRTmpPath();
       FileSystem fileSys = emptyScratchDir.getFileSystem(newJob);
       fileSys.mkdirs(emptyScratchDir);
 
       QueryPlan plan = drv.getPlan();
       MapRedTask selectTask = (MapRedTask)plan.getRootTasks().get(0);
 
-      List<Path> inputPaths = Utilities.getInputPaths(newJob, selectTask.getWork().getMapWork(), emptyScratchDir.toString(), ctx);
+      List<Path> inputPaths = Utilities.getInputPaths(newJob, selectTask.getWork().getMapWork(), emptyScratchDir, ctx);
       Utilities.setInputPaths(newJob, inputPaths);
 
-      Utilities.setMapRedWork(newJob, selectTask.getWork(), ctx.getMRTmpFileURI());
+      Utilities.setMapRedWork(newJob, selectTask.getWork(), ctx.getMRTmpPath());
 
       CombineHiveInputFormat combineInputFormat = ReflectionUtils.newInstance(
           CombineHiveInputFormat.class, newJob);
