@@ -1444,15 +1444,24 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     }
 
     long ret;
+    UnsignedInt128 tmp;
     if (scale == 0) {
-      ret = (this.unscaledValue.getV1()) << 32L | this.unscaledValue.getV0();
+      ret = this.unscaledValue.getV1();
+      ret <<= 32L;
+      ret |= SqlMathUtil.LONG_MASK & this.unscaledValue.getV0();
     } else {
-      UnsignedInt128 tmp = new UnsignedInt128(this.unscaledValue);
+      tmp = new UnsignedInt128(this.unscaledValue);
       tmp.scaleDownTenDestructive(scale);
-      ret = (tmp.getV1()) << 32L | tmp.getV0();
+      ret = tmp.getV1();
+      ret <<= 32L;
+      ret |= SqlMathUtil.LONG_MASK & tmp.getV0();
     }
 
-    return SqlMathUtil.setSignBitLong(ret, signum > 0);
+    if (signum >= 0) {
+      return ret;
+    } else {
+      return -ret;
+    }
   }
 
   /**
@@ -1634,5 +1643,26 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    */
   public void setNullDataValue() {
     unscaledValue.update(1, 0, 0, 0);
+  }
+
+  /**
+   * Update the value to a decimal value with the decimal point equal to
+   * val but with the decimal point inserted scale
+   * digits from the right. Behavior is undefined if scale is > 38 or < 0.
+   *
+   * For example, updateFixedPoint(123456789L, (short) 3) changes the target
+   * to the value 123456.789 with scale 3.
+   */
+  public void updateFixedPoint(long val, short scale) {
+    this.scale = scale;
+    if (val < 0L) {
+      this.unscaledValue.update(-val);
+      this.signum = -1;
+    } else if (val == 0L) {
+      zeroClear();
+    } else {
+      this.unscaledValue.update(val);
+      this.signum = 1;
+    }
   }
 }

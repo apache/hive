@@ -58,4 +58,19 @@ public class DecimalColumnVector extends ColumnVector {
   public void flatten(boolean selectedInUse, int[] sel, int size) {
     // TODO Auto-generated method stub
   }
+
+  /**
+   * Check if the value at position i fits in the available precision,
+   * and convert the value to NULL if it does not.
+   */
+  public void checkPrecisionOverflow(int i) {
+    try {
+      vector[i].checkPrecisionOverflow(precision);
+    } catch (ArithmeticException e) {
+
+      // If the value won't fit in the available precision, the result is NULL
+      noNulls = false;
+      isNull[i] = true;
+    }
+  }
 }
