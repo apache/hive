@@ -131,6 +131,8 @@ public class HiveConnection implements java.sql.Connection {
       }
       // open the client transport
       openTransport();
+      // set up the client
+      client = new TCLIService.Client(new TBinaryProtocol(transport));
     }
 
     // add supported protocols
@@ -149,10 +151,10 @@ public class HiveConnection implements java.sql.Connection {
 
   private void openTransport() throws SQLException {
     transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
-    TProtocol protocol = new TBinaryProtocol(transport);
-    client = new TCLIService.Client(protocol);
     try {
-      transport.open();
+      if (!transport.isOpen()) {
+        transport.open(); 
+      }
     } catch (TTransportException e) {
       throw new SQLException("Could not open connection to "
           + jdbcURI + ": " + e.getMessage(), " 08S01", e);
