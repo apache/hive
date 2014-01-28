@@ -165,7 +165,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
     Path fakeTable = table.getPath().getParent().suffix(
         Path.SEPARATOR + "faketable");
     fs.mkdirs(fakeTable);
-    fs.deleteOnExit(fakeTable);    
+    fs.deleteOnExit(fakeTable);
 
     // find the extra table
     result = new CheckResult();
@@ -221,7 +221,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
     List<Partition> partitions = hive.getPartitions(table);
     assertEquals(2, partitions.size());
     Partition partToRemove = partitions.get(0);
-    Path partToRemovePath = new Path(partToRemove.getDataLocation().toString());
+    Path partToRemovePath = partToRemove.getDataLocation();
     fs = partToRemovePath.getFileSystem(hive.getConf());
     fs.delete(partToRemovePath, true);
 
@@ -298,8 +298,8 @@ public class TestHiveMetaStoreChecker extends TestCase {
         Path.SEPARATOR + "faketable");
     fs = fakeTable.getFileSystem(hive.getConf());
     fs.mkdirs(fakeTable);
-    fs.deleteOnExit(fakeTable);    
-    
+    fs.deleteOnExit(fakeTable);
+
     Path fakePart = new Path(table.getDataLocation().toString(),
         "fakepartition=fakevalue");
     fs.mkdirs(fakePart);

@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -89,8 +90,8 @@ public class TestPlan extends TestCase {
       // store into configuration
 
       job.set("fs.default.name", "file:///");
-      Utilities.setMapRedWork(job, mrwork, System.getProperty("java.io.tmpdir") + File.separator +
-        System.getProperty("user.name") + File.separator + "hive");
+      Utilities.setMapRedWork(job, mrwork, new Path(System.getProperty("java.io.tmpdir") + File.separator +
+        System.getProperty("user.name") + File.separator + "hive"));
       MapredWork mrwork2 = Utilities.getMapRedWork(job);
       Utilities.clearWork(job);
 

@@ -1,0 +1,2 @@
+FAILED: SemanticException Failed to breakup Windowing invocations into Groups. At least 1 group must only depend on input columns. Also check for circular dependencies.
+Underlying error: Invalid function nonexistfunc

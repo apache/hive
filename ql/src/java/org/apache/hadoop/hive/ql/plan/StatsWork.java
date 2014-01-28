@@ -50,6 +50,9 @@ public class StatsWork implements Serializable {
 
   private boolean isPartialScanAnalyzeCommand = false;
 
+  // sourceTask for TS is not changed (currently) but that of FS might be changed
+  // by various optimizers (auto.convert.join, for example)
+  // so this is set by DriverContext in runtime
   private transient Task sourceTask;
 
   public StatsWork() {

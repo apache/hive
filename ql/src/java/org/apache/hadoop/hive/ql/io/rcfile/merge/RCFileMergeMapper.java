@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.JobConf;
@@ -84,13 +83,12 @@ public class RCFileMergeMapper extends MapReduceBase implements
     listBucketingDepth = HiveConf.getIntVar(job,
         HiveConf.ConfVars.HIVEMERGECURRENTJOBCONCATENATELISTBUCKETINGDEPTH);
 
-    String specPath = RCFileBlockMergeOutputFormat.getMergeOutputPath(job)
-        .toString();
+    Path specPath = RCFileBlockMergeOutputFormat.getMergeOutputPath(job);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
     updatePaths(tmpPath, taskTmpPath);
     try {
-      fs = (new Path(specPath)).getFileSystem(job);
+      fs = specPath.getFileSystem(job);
       autoDelete = fs.deleteOnExit(outPath);
     } catch (IOException e) {
       this.exception = true;
@@ -316,7 +314,7 @@ public class RCFileMergeMapper extends MapReduceBase implements
       ) throws HiveException, IOException {
     FileSystem fs = outputPath.getFileSystem(job);
     Path backupPath = backupOutputPath(fs, outputPath, job);
-    Utilities.mvFileToFinalPath(outputPath.toUri().toString(), job, success, LOG, dynPartCtx, null,
+    Utilities.mvFileToFinalPath(outputPath, job, success, LOG, dynPartCtx, null,
       reporter);
     fs.delete(backupPath, true);
   }

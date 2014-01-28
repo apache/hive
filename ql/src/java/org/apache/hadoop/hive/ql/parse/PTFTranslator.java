@@ -345,6 +345,9 @@ public class PTFTranslator {
   private WindowFunctionDef translate(WindowTableFunctionDef wdwTFnDef,
       WindowFunctionSpec spec) throws SemanticException {
     WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(spec.getName());
+    if (wFnInfo == null) {
+      throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(spec.getName()));
+    }
     WindowFunctionDef def = new WindowFunctionDef();
     def.setName(spec.getName());
     def.setAlias(spec.getAlias());

@@ -306,7 +306,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, Set<Partition> result) throws TException {
+      String defaultPartitionName, short maxParts, List<Partition> result) throws TException {
     return objectStore.getPartitionsByExpr(
         dbName, tblName, expr, defaultPartitionName, maxParts, result);
   }
@@ -582,6 +582,18 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public void setMetaStoreSchemaVersion(String schemaVersion, String comment) throws MetaException {
     objectStore.setMetaStoreSchemaVersion(schemaVersion, comment);
 
+  }
+
+  @Override
+  public boolean doesPartitionExist(String dbName, String tableName,
+      List<String> partVals) throws MetaException, NoSuchObjectException {
+    return objectStore.doesPartitionExist(dbName, tableName, partVals);
+  }
+
+  @Override
+  public boolean addPartitions(String dbName, String tblName, List<Partition> parts)
+      throws InvalidObjectException, MetaException {
+    return objectStore.addPartitions(dbName, tblName, parts);
   }
 
 }

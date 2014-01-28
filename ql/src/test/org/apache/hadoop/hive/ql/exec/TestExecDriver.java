@@ -196,8 +196,8 @@ public class TestExecDriver extends TestCase {
   @SuppressWarnings("unchecked")
   private void populateMapPlan1(Table src) {
 
-    Operator<FileSinkDesc> op2 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
-        + "mapplan1.out", Utilities.defaultTd, true));
+    Operator<FileSinkDesc> op2 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
+        + "mapplan1.out"), Utilities.defaultTd, true));
     Operator<FilterDesc> op1 = OperatorFactory.get(getTestFilterDesc("key"),
         op2);
 
@@ -207,8 +207,8 @@ public class TestExecDriver extends TestCase {
   @SuppressWarnings("unchecked")
   private void populateMapPlan2(Table src) {
 
-    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
-        + "mapplan2.out", Utilities.defaultTd, false));
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
+        + "mapplan2.out"), Utilities.defaultTd, false));
 
     Operator<ScriptDesc> op2 = OperatorFactory.get(new ScriptDesc("cat",
         PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
@@ -243,8 +243,8 @@ public class TestExecDriver extends TestCase {
     mr.setReduceWork(rWork);
 
     // reduce side work
-    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
-        + "mapredplan1.out", Utilities.defaultTd, false));
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
+        + "mapredplan1.out"), Utilities.defaultTd, false));
 
     Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
         getStringColumn(Utilities.ReduceField.VALUE.toString())), op3);
@@ -273,8 +273,8 @@ public class TestExecDriver extends TestCase {
     mr.setReduceWork(rWork);
 
     // reduce side work
-    Operator<FileSinkDesc> op4 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
-        + "mapredplan2.out", Utilities.defaultTd, false));
+    Operator<FileSinkDesc> op4 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
+        + "mapredplan2.out"), Utilities.defaultTd, false));
 
     Operator<FilterDesc> op3 = OperatorFactory.get(getTestFilterDesc("0"), op4);
 
@@ -317,8 +317,8 @@ public class TestExecDriver extends TestCase {
     rWork.getTagToValueDesc().add(op2.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<FileSinkDesc> op4 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
-        + "mapredplan3.out", Utilities.defaultTd, false));
+    Operator<FileSinkDesc> op4 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
+        + "mapredplan3.out"), Utilities.defaultTd, false));
 
     Operator<SelectDesc> op5 = OperatorFactory.get(new SelectDesc(Utilities
         .makeList(new ExprNodeFieldDesc(TypeInfoFactory.stringTypeInfo,
@@ -360,8 +360,8 @@ public class TestExecDriver extends TestCase {
     mr.setReduceWork(rWork);
 
     // reduce side work
-    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
-        + "mapredplan4.out", Utilities.defaultTd, false));
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
+        + "mapredplan4.out"), Utilities.defaultTd, false));
 
     Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
         getStringColumn(Utilities.ReduceField.VALUE.toString())), op3);
@@ -399,8 +399,8 @@ public class TestExecDriver extends TestCase {
     rWork.getTagToValueDesc().add(op0.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
-        + "mapredplan5.out", Utilities.defaultTd, false));
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
+        + "mapredplan5.out"), Utilities.defaultTd, false));
 
     Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
         getStringColumn(Utilities.ReduceField.VALUE.toString())), op3);
@@ -440,8 +440,8 @@ public class TestExecDriver extends TestCase {
     rWork.getTagToValueDesc().add(op1.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
-        + "mapredplan6.out", Utilities.defaultTd, false));
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
+        + "mapredplan6.out"), Utilities.defaultTd, false));
 
     Operator<FilterDesc> op2 = OperatorFactory.get(getTestFilterDesc("0"), op3);
 

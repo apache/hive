@@ -26,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
+
 
 /**
  * Join operator Descriptor implementation.
@@ -44,8 +46,8 @@ public class JoinDesc extends AbstractOperatorDesc {
   // used to handle skew join
   private boolean handleSkewJoin = false;
   private int skewKeyDefinition = -1;
-  private Map<Byte, String> bigKeysDirMap;
-  private Map<Byte, Map<Byte, String>> smallKeysDirMap;
+  private Map<Byte, Path> bigKeysDirMap;
+  private Map<Byte, Map<Byte, Path>> smallKeysDirMap;
   private Map<Byte, TableDesc> skewKeysValuesTables;
 
   // alias to key mapping
@@ -128,12 +130,12 @@ public class JoinDesc extends AbstractOperatorDesc {
     }
 
     if (getBigKeysDirMap() != null) {
-      Map<Byte, String> cloneBigKeysDirMap = new HashMap<Byte, String>();
+      Map<Byte, Path> cloneBigKeysDirMap = new HashMap<Byte, Path>();
       cloneBigKeysDirMap.putAll(getBigKeysDirMap());
       ret.setBigKeysDirMap(cloneBigKeysDirMap);
     }
     if (getSmallKeysDirMap() != null) {
-      Map<Byte, Map<Byte, String>> cloneSmallKeysDirMap = new HashMap<Byte, Map<Byte,String>> ();
+      Map<Byte, Map<Byte, Path>> cloneSmallKeysDirMap = new HashMap<Byte, Map<Byte,Path>> ();
       cloneSmallKeysDirMap.putAll(getSmallKeysDirMap());
       ret.setSmallKeysDirMap(cloneSmallKeysDirMap);
     }
@@ -364,7 +366,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   /**
    * @return mapping from tbl to dir for big keys.
    */
-  public Map<Byte, String> getBigKeysDirMap() {
+  public Map<Byte, Path> getBigKeysDirMap() {
     return bigKeysDirMap;
   }
 
@@ -373,14 +375,14 @@ public class JoinDesc extends AbstractOperatorDesc {
    *
    * @param bigKeysDirMap
    */
-  public void setBigKeysDirMap(Map<Byte, String> bigKeysDirMap) {
+  public void setBigKeysDirMap(Map<Byte, Path> bigKeysDirMap) {
     this.bigKeysDirMap = bigKeysDirMap;
   }
 
   /**
    * @return mapping from tbl to dir for small keys
    */
-  public Map<Byte, Map<Byte, String>> getSmallKeysDirMap() {
+  public Map<Byte, Map<Byte, Path>> getSmallKeysDirMap() {
     return smallKeysDirMap;
   }
 
@@ -389,7 +391,7 @@ public class JoinDesc extends AbstractOperatorDesc {
    *
    * @param smallKeysDirMap
    */
-  public void setSmallKeysDirMap(Map<Byte, Map<Byte, String>> smallKeysDirMap) {
+  public void setSmallKeysDirMap(Map<Byte, Map<Byte, Path>> smallKeysDirMap) {
     this.smallKeysDirMap = smallKeysDirMap;
   }
 

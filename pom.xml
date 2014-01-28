@@ -80,7 +80,7 @@
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.4</antlr.version>
     <avro.version>1.7.5</avro.version>
-    <bonecp.version>0.7.1.RELEASE</bonecp.version>
+    <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <datanucleus-api-jdo.version>3.2.1</datanucleus-api-jdo.version>
     <datanucleus-core.version>3.2.2</datanucleus-core.version>
     <datanucleus-rdbms.version>3.2.1</datanucleus-rdbms.version>

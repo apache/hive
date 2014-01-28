@@ -31,6 +31,15 @@ import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColAddDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColAddDecimalScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyDecimalScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarAddDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarSubtractDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarMultiplyDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.junit.Test;
 
@@ -324,6 +333,336 @@ public class TestVectorArithmeticExpressions {
     assertTrue(r.vector[0].equals(new Decimal128("0.01", (short) 2)));
   }
 
+  // Test decimal column-column addition
+  @Test
+  public void testDecimalColumnAddDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    VectorExpression expr = new DecimalColAddDecimalColumn(0, 1, 2);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+
+    // test without nulls
+    expr.evaluate(b);
+    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-2.30", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("1.00", (short) 2)));
+
+    // test nulls propagation
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector c0 = (DecimalColumnVector) b.cols[0];
+    c0.noNulls = false;
+    c0.isNull[0] = true;
+    r = (DecimalColumnVector) b.cols[2];
+    expr.evaluate(b);
+    assertTrue(!r.noNulls && r.isNull[0]);
+
+    // Verify null output data entry is not 0, but rather the value specified by design,
+    // which is the minimum non-0 value, 0.01 in this case.
+    assertTrue(r.vector[0].equals(new Decimal128("0.01", (short) 2)));
+
+    // test that overflow produces NULL
+    b = getVectorizedRowBatch3DecimalCols();
+    c0 = (DecimalColumnVector) b.cols[0];
+    c0.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    r = (DecimalColumnVector) b.cols[2];
+    expr.evaluate(b); // will cause overflow for result at position 0, must yield NULL
+    assertTrue(!r.noNulls && r.isNull[0]);
+
+    // verify proper null output data value
+    assertTrue(r.vector[0].equals(new Decimal128("0.01", (short) 2)));
+
+    // test left input repeating
+    b = getVectorizedRowBatch3DecimalCols();
+    c0 = (DecimalColumnVector) b.cols[0];
+    c0.isRepeating = true;
+    r = (DecimalColumnVector) b.cols[2];
+    expr.evaluate(b);
+    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("2.20", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("2.20", (short) 2)));
+
+    // test both inputs repeating
+    DecimalColumnVector c1 = (DecimalColumnVector) b.cols[1];
+    c1.isRepeating = true;
+    expr.evaluate(b);
+    assertTrue(r.isRepeating);
+    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
+
+    // test right input repeating
+    b = getVectorizedRowBatch3DecimalCols();
+    c1 = (DecimalColumnVector) b.cols[1];
+    c1.isRepeating = true;
+    c1.vector[0].update("2", (short) 2);
+    r = (DecimalColumnVector) b.cols[2];
+    expr.evaluate(b);
+    assertTrue(r.vector[2].equals(new Decimal128("2", (short) 2)));
+  }
+
+  // Spot check decimal column-column subtract
+  @Test
+  public void testDecimalColumnSubtractDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    VectorExpression expr = new DecimalColSubtractDecimalColumn(0, 1, 2);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+
+    // test without nulls
+    expr.evaluate(b);
+    assertTrue(r.vector[0].equals(new Decimal128("0.20", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-4.30", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("-1.00", (short) 2)));
+
+    // test that underflow produces NULL
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector c0 = (DecimalColumnVector) b.cols[0];
+    c0.vector[0].update("-9999999999999999.99", (short) 2); // set to min possible value
+    r = (DecimalColumnVector) b.cols[2];
+    expr.evaluate(b); // will cause underflow for result at position 0, must yield NULL
+    assertTrue(!r.noNulls && r.isNull[0]);
+  }
+
+  // Spot check decimal column-column multiply
+  @Test
+  public void testDecimalColumnMultiplyDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    VectorExpression expr = new DecimalColMultiplyDecimalColumn(0, 1, 2);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+
+    // test without nulls
+    expr.evaluate(b);
+    assertTrue(r.vector[0].equals(new Decimal128("1.20", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-3.30", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("0.00", (short) 2)));
+
+    // test that underflow produces NULL
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector c0 = (DecimalColumnVector) b.cols[0];
+    c0.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    DecimalColumnVector c1 = (DecimalColumnVector) b.cols[1];
+    c1.vector[0].update("2", (short) 2);
+    r = (DecimalColumnVector) b.cols[2];
+    expr.evaluate(b); // will cause overflow for result at position 0, must yield NULL
+    assertTrue(!r.noNulls && r.isNull[0]);
+  }
+
+  /* Test decimal column to decimal scalar addition. This is used to cover all the
+   * cases used in the source code template ColumnArithmeticScalarDecimal.txt.
+   */
+  @Test
+  public void testDecimalColAddDecimalScalar() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    Decimal128 d = new Decimal128(1);
+    VectorExpression expr = new DecimalColAddDecimalScalar(0, d, 2);
+
+    // test without nulls
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-2.30", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("1.00", (short) 2)));
+
+    // test null propagation
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
+    r = (DecimalColumnVector) b.cols[2];
+    in.noNulls = false;
+    in.isNull[0] = true;
+    expr.evaluate(b);
+    assertTrue(!r.noNulls);
+    assertTrue(r.isNull[0]);
+
+    // test repeating case, no nulls
+    b = getVectorizedRowBatch3DecimalCols();
+    in = (DecimalColumnVector) b.cols[0];
+    in.isRepeating = true;
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.isRepeating);
+    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
+
+    // test repeating case for null value
+    b = getVectorizedRowBatch3DecimalCols();
+    in = (DecimalColumnVector) b.cols[0];
+    in.isRepeating = true;
+    in.isNull[0] = true;
+    in.noNulls = false;
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.isRepeating);
+    assertTrue(!r.noNulls);
+    assertTrue(r.isNull[0]);
+
+    // test that overflow produces null
+    b = getVectorizedRowBatch3DecimalCols();
+    in = (DecimalColumnVector) b.cols[0];
+    in.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+  }
+
+  /* Spot check correctness of decimal column subtract decimal scalar. The case for
+   * addition checks all the cases for the template, so don't do that redundantly here.
+   */
+  @Test
+  public void testDecimalColSubtractDecimalScalar() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    Decimal128 d = new Decimal128(1);
+    VectorExpression expr = new DecimalColSubtractDecimalScalar(0, d, 2);
+
+    // test without nulls
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[0].equals(new Decimal128("0.20", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-4.30", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("-1.00", (short) 2)));
+
+    // test that underflow produces null
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
+    in.vector[0].update("-9999999999999999.99", (short) 2); // set to min possible value
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+  }
+
+  /* Spot check correctness of decimal column multiply decimal scalar. The case for
+   * addition checks all the cases for the template, so don't do that redundantly here.
+   */
+  @Test
+  public void testDecimalColMultiplyDecimalScalar() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    Decimal128 d = new Decimal128(2);
+    VectorExpression expr = new DecimalColMultiplyDecimalScalar(0, d, 2);
+
+    // test without nulls
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[0].equals(new Decimal128("2.40", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-6.60", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+
+    // test that overflow produces null
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
+    in.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+  }
+
+  /* Test decimal scalar to decimal column addition. This is used to cover all the
+   * cases used in the source code template ScalarArithmeticColumnDecimal.txt.
+   */
+  @Test
+  public void testDecimalScalarAddDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    Decimal128 d = new Decimal128(1);
+    VectorExpression expr = new DecimalScalarAddDecimalColumn(d, 0, 2);
+
+    // test without nulls
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-2.30", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("1.00", (short) 2)));
+
+    // test null propagation
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
+    r = (DecimalColumnVector) b.cols[2];
+    in.noNulls = false;
+    in.isNull[0] = true;
+    expr.evaluate(b);
+    assertTrue(!r.noNulls);
+    assertTrue(r.isNull[0]);
+
+    // test repeating case, no nulls
+    b = getVectorizedRowBatch3DecimalCols();
+    in = (DecimalColumnVector) b.cols[0];
+    in.isRepeating = true;
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.isRepeating);
+    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
+
+    // test repeating case for null value
+    b = getVectorizedRowBatch3DecimalCols();
+    in = (DecimalColumnVector) b.cols[0];
+    in.isRepeating = true;
+    in.isNull[0] = true;
+    in.noNulls = false;
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.isRepeating);
+    assertTrue(!r.noNulls);
+    assertTrue(r.isNull[0]);
+
+    // test that overflow produces null
+    b = getVectorizedRowBatch3DecimalCols();
+    in = (DecimalColumnVector) b.cols[0];
+    in.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+  }
+
+  /* Spot check correctness of decimal scalar subtract decimal column. The case for
+   * addition checks all the cases for the template, so don't do that redundantly here.
+   */
+  @Test
+  public void testDecimalScalarSubtractDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    Decimal128 d = new Decimal128(1);
+    VectorExpression expr = new DecimalScalarSubtractDecimalColumn(d, 0, 2);
+
+    // test without nulls
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[0].equals(new Decimal128("-0.20", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("4.30", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("1.00", (short) 2)));
+
+    // test that overflow produces null
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
+    in.vector[0].update("-9999999999999999.99", (short) 2); // set to min possible value
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+  }
+
+  /* Spot check correctness of decimal scalar multiply decimal column. The case for
+   * addition checks all the cases for the template, so don't do that redundantly here.
+   */
+
+  @Test
+  public void testDecimalScalarMultiplyDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    Decimal128 d = new Decimal128(2);
+    VectorExpression expr = new DecimalScalarMultiplyDecimalColumn(d, 0, 2);
+
+    // test without nulls
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[0].equals(new Decimal128("2.40", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-6.60", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+
+    // test that overflow produces null
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
+    in.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+  }
+
+  // Make a decimal batch with three columns, including two for inputs and one for the result.
   private VectorizedRowBatch getVectorizedRowBatch3DecimalCols() {
     VectorizedRowBatch b = new VectorizedRowBatch(3);
     DecimalColumnVector v0, v1;

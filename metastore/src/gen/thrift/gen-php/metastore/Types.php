@@ -4896,7 +4896,7 @@ class PartitionsByExprResult {
       self::$_TSPEC = array(
         1 => array(
           'var' => 'partitions',
-          'type' => TType::SET,
+          'type' => TType::LST,
           'etype' => TType::STRUCT,
           'elem' => array(
             'type' => TType::STRUCT,
@@ -4939,23 +4939,19 @@ class PartitionsByExprResult {
       switch ($fid)
       {
         case 1:
-          if ($ftype == TType::SET) {
+          if ($ftype == TType::LST) {
             $this->partitions = array();
             $_size227 = 0;
             $_etype230 = 0;
-            $xfer += $input->readSetBegin($_etype230, $_size227);
+            $xfer += $input->readListBegin($_etype230, $_size227);
             for ($_i231 = 0; $_i231 < $_size227; ++$_i231)
             {
               $elem232 = null;
               $elem232 = new \metastore\Partition();
               $xfer += $elem232->read($input);
-              if (is_scalar($elem232)) {
-                $this->partitions[$elem232] = true;
-              } else {
-                $this->partitions []= $elem232;
-              }
+              $this->partitions []= $elem232;
             }
-            $xfer += $input->readSetEnd();
+            $xfer += $input->readListEnd();
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -4984,20 +4980,16 @@ class PartitionsByExprResult {
       if (!is_array($this->partitions)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('partitions', TType::SET, 1);
+      $xfer += $output->writeFieldBegin('partitions', TType::LST, 1);
       {
-        $output->writeSetBegin(TType::STRUCT, count($this->partitions));
+        $output->writeListBegin(TType::STRUCT, count($this->partitions));
         {
-          foreach ($this->partitions as $iter233 => $iter234)
+          foreach ($this->partitions as $iter233)
           {
-            if (is_scalar($iter234)) {
             $xfer += $iter233->write($output);
-            } else {
-            $xfer += $iter234->write($output);
-            }
           }
         }
-        $output->writeSetEnd();
+        $output->writeListEnd();
       }
       $xfer += $output->writeFieldEnd();
     }
@@ -5156,6 +5148,286 @@ class PartitionsByExprRequest {
     if ($this->maxParts !== null) {
       $xfer += $output->writeFieldBegin('maxParts', TType::I16, 5);
       $xfer += $output->writeI16($this->maxParts);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class AddPartitionsResult {
+  static $_TSPEC;
+
+  public $partitions = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'partitions',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\Partition',
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['partitions'])) {
+        $this->partitions = $vals['partitions'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'AddPartitionsResult';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::LST) {
+            $this->partitions = array();
+            $_size234 = 0;
+            $_etype237 = 0;
+            $xfer += $input->readListBegin($_etype237, $_size234);
+            for ($_i238 = 0; $_i238 < $_size234; ++$_i238)
+            {
+              $elem239 = null;
+              $elem239 = new \metastore\Partition();
+              $xfer += $elem239->read($input);
+              $this->partitions []= $elem239;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('AddPartitionsResult');
+    if ($this->partitions !== null) {
+      if (!is_array($this->partitions)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('partitions', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->partitions));
+        {
+          foreach ($this->partitions as $iter240)
+          {
+            $xfer += $iter240->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class AddPartitionsRequest {
+  static $_TSPEC;
+
+  public $dbName = null;
+  public $tblName = null;
+  public $parts = null;
+  public $ifNotExists = null;
+  public $needResult = true;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'dbName',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'tblName',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'parts',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\Partition',
+            ),
+          ),
+        4 => array(
+          'var' => 'ifNotExists',
+          'type' => TType::BOOL,
+          ),
+        5 => array(
+          'var' => 'needResult',
+          'type' => TType::BOOL,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['dbName'])) {
+        $this->dbName = $vals['dbName'];
+      }
+      if (isset($vals['tblName'])) {
+        $this->tblName = $vals['tblName'];
+      }
+      if (isset($vals['parts'])) {
+        $this->parts = $vals['parts'];
+      }
+      if (isset($vals['ifNotExists'])) {
+        $this->ifNotExists = $vals['ifNotExists'];
+      }
+      if (isset($vals['needResult'])) {
+        $this->needResult = $vals['needResult'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'AddPartitionsRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tblName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::LST) {
+            $this->parts = array();
+            $_size241 = 0;
+            $_etype244 = 0;
+            $xfer += $input->readListBegin($_etype244, $_size241);
+            for ($_i245 = 0; $_i245 < $_size241; ++$_i245)
+            {
+              $elem246 = null;
+              $elem246 = new \metastore\Partition();
+              $xfer += $elem246->read($input);
+              $this->parts []= $elem246;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->ifNotExists);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->needResult);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('AddPartitionsRequest');
+    if ($this->dbName !== null) {
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 1);
+      $xfer += $output->writeString($this->dbName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tblName !== null) {
+      $xfer += $output->writeFieldBegin('tblName', TType::STRING, 2);
+      $xfer += $output->writeString($this->tblName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->parts !== null) {
+      if (!is_array($this->parts)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('parts', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->parts));
+        {
+          foreach ($this->parts as $iter247)
+          {
+            $xfer += $iter247->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ifNotExists !== null) {
+      $xfer += $output->writeFieldBegin('ifNotExists', TType::BOOL, 4);
+      $xfer += $output->writeBool($this->ifNotExists);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->needResult !== null) {
+      $xfer += $output->writeFieldBegin('needResult', TType::BOOL, 5);
+      $xfer += $output->writeBool($this->needResult);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

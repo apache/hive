@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -1195,13 +1196,13 @@ public class Hive {
       Partition oldPart = getPartition(tbl, partSpec, false);
       Path oldPartPath = null;
       if(oldPart != null) {
-        oldPartPath = oldPart.getPartitionPath();
+        oldPartPath = oldPart.getDataLocation();
       }
 
       Path newPartPath = null;
 
       if (inheritTableSpecs) {
-        Path partPath = new Path(tbl.getDataLocation().getPath(),
+        Path partPath = new Path(tbl.getDataLocation(),
             Warehouse.makePartPath(partSpec));
         newPartPath = new Path(loadPath.toUri().getScheme(), loadPath.toUri().getAuthority(),
             partPath.toUri().getPath());
@@ -1227,7 +1228,7 @@ public class Hive {
       if (replace) {
         Hive.replaceFiles(loadPath, newPartPath, oldPartPath, getConf());
       } else {
-        FileSystem fs = FileSystem.get(tbl.getDataLocation(), getConf());
+        FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
         Hive.copyFiles(conf, loadPath, newPartPath, fs);
       }
 
@@ -1469,92 +1470,72 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    *           if table doesn't exist or partition already exists
    */
-  public Partition createPartition(Table tbl, Map<String, String> partSpec)
-      throws HiveException {
-    return createPartition(tbl, partSpec, null, null, null, null, -1,
-        null, null, null, null, null);
-  }
-
-  /**
-   * Creates a partition
-   *
-   * @param tbl
-   *          table for which partition needs to be created
-   * @param partSpec
-   *          partition keys and their values
-   * @param location
-   *          location of this partition
-   * @param partParams
-   *          partition parameters
-   * @param inputFormat the inputformat class
-   * @param outputFormat the outputformat class
-   * @param numBuckets the number of buckets
-   * @param cols the column schema
-   * @param serializationLib the serde class
-   * @param serdeParams the serde parameters
-   * @param bucketCols the bucketing columns
-   * @param sortCols sort columns and order
-   *
-   * @return created partition object
-   * @throws HiveException
-   *           if table doesn't exist or partition already exists
-   */
-  public Partition createPartition(Table tbl, Map<String, String> partSpec,
-      Path location, Map<String, String> partParams, String inputFormat, String outputFormat,
-      int numBuckets, List<FieldSchema> cols,
-      String serializationLib, Map<String, String> serdeParams,
-      List<String> bucketCols, List<Order> sortCols) throws HiveException {
-
-    org.apache.hadoop.hive.metastore.api.Partition partition = null;
-
-    for (FieldSchema field : tbl.getPartCols()) {
-      String val = partSpec.get(field.getName());
-      if (val == null || val.length() == 0) {
-        throw new HiveException("add partition: Value for key "
-            + field.getName() + " is null or empty");
-      }
-    }
-
+  public Partition createPartition(Table tbl, Map<String, String> partSpec) throws HiveException {
     try {
-      Partition tmpPart = new Partition(tbl, partSpec, location);
-      // No need to clear DDL_TIME in parameters since we know it's
-      // not populated on construction.
-      org.apache.hadoop.hive.metastore.api.Partition inPart
-        = tmpPart.getTPartition();
-      if (partParams != null) {
-        inPart.setParameters(partParams);
-      }
-      if (inputFormat != null) {
-        inPart.getSd().setInputFormat(inputFormat);
-      }
-      if (outputFormat != null) {
-        inPart.getSd().setOutputFormat(outputFormat);
-      }
-      if (numBuckets != -1) {
-        inPart.getSd().setNumBuckets(numBuckets);
-      }
-      if (cols != null) {
-        inPart.getSd().setCols(cols);
-      }
-      if (serializationLib != null) {
-          inPart.getSd().getSerdeInfo().setSerializationLib(serializationLib);
-      }
-      if (serdeParams != null) {
-        inPart.getSd().getSerdeInfo().setParameters(serdeParams);
-      }
-      if (bucketCols != null) {
-        inPart.getSd().setBucketCols(bucketCols);
-      }
-      if (sortCols != null) {
-        inPart.getSd().setSortCols(sortCols);
-      }
-      partition = getMSC().add_partition(inPart);
+      return new Partition(tbl, getMSC().add_partition(
+          Partition.createMetaPartitionObject(tbl, partSpec, null)));
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
+  }
 
-    return new Partition(tbl, partition);
+  public List<Partition> createPartitions(AddPartitionDesc addPartitionDesc) throws HiveException {
+    Table tbl = getTable(addPartitionDesc.getDbName(), addPartitionDesc.getTableName());
+    int size = addPartitionDesc.getPartitionCount();
+    List<org.apache.hadoop.hive.metastore.api.Partition> in =
+        new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>(size);
+    for (int i = 0; i < size; ++i) {
+      in.add(convertAddSpecToMetaPartition(tbl, addPartitionDesc.getPartition(i)));
+    }
+    List<Partition> out = new ArrayList<Partition>();
+    try {
+      // TODO: normally, the result is not necessary; might make sense to pass false
+      for (org.apache.hadoop.hive.metastore.api.Partition outPart
+          : getMSC().add_partitions(in, addPartitionDesc.isIfNotExists(), true)) {
+        out.add(new Partition(tbl, outPart));
+      }
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+    return out;
+  }
+
+  private static org.apache.hadoop.hive.metastore.api.Partition convertAddSpecToMetaPartition(
+      Table tbl, AddPartitionDesc.OnePartitionDesc addSpec) throws HiveException {
+    Path location = addSpec.getLocation() != null
+        ? new Path(tbl.getPath(), addSpec.getLocation()) : null;
+    org.apache.hadoop.hive.metastore.api.Partition part =
+        Partition.createMetaPartitionObject(tbl, addSpec.getPartSpec(), location);
+    if (addSpec.getPartParams() != null) {
+      part.setParameters(addSpec.getPartParams());
+    }
+    if (addSpec.getInputFormat() != null) {
+      part.getSd().setInputFormat(addSpec.getInputFormat());
+    }
+    if (addSpec.getOutputFormat() != null) {
+      part.getSd().setOutputFormat(addSpec.getOutputFormat());
+    }
+    if (addSpec.getNumBuckets() != -1) {
+      part.getSd().setNumBuckets(addSpec.getNumBuckets());
+    }
+    if (addSpec.getCols() != null) {
+      part.getSd().setCols(addSpec.getCols());
+    }
+    if (addSpec.getSerializationLib() != null) {
+        part.getSd().getSerdeInfo().setSerializationLib(addSpec.getSerializationLib());
+    }
+    if (addSpec.getSerdeParams() != null) {
+      part.getSd().getSerdeInfo().setParameters(addSpec.getSerdeParams());
+    }
+    if (addSpec.getBucketCols() != null) {
+      part.getSd().setBucketCols(addSpec.getBucketCols());
+    }
+    if (addSpec.getSortCols() != null) {
+      part.getSd().setSortCols(addSpec.getSortCols());
+    }
+    return part;
   }
 
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
@@ -1590,15 +1571,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
       boolean forceCreate, String partPath, boolean inheritTableSpecs) throws HiveException {
-    if (!tbl.isValidSpec(partSpec)) {
-      throw new HiveException("Invalid partition: " + partSpec);
-    }
+    tbl.validatePartColumnNames(partSpec, true);
     List<String> pvals = new ArrayList<String>();
     for (FieldSchema field : tbl.getPartCols()) {
       String val = partSpec.get(field.getName());
       // enable dynamic partitioning
-      if (val == null && !HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)
-          || val.length() == 0) {
+      if ((val == null && !HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING))
+          || (val != null && val.length() == 0)) {
         throw new HiveException("get partition: Value for key "
             + field.getName() + " is null or empty");
       } else if (val != null){
@@ -2395,6 +2374,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private IMetaStoreClient createMetaStoreClient() throws MetaException {
 
     HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
+        @Override
         public HiveMetaHook getHook(
           org.apache.hadoop.hive.metastore.api.Table tbl)
           throws MetaException {
@@ -2534,20 +2514,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
   public Table newTable(String tableName) throws HiveException {
-    String[] names = getQualifiedNames(tableName);
-    switch (names.length) {
-    case 2:
-      return new Table(names[0], names[1]);
-    case 1:
-      return new Table(SessionState.get().getCurrentDatabase(), names[0]);
-    default:
-      try{
-        throw new HiveException("Invalid table name: " + tableName);
-      }catch(Exception e) {
-        e.printStackTrace();
-      }
-      throw new HiveException("Invalid table name: " + tableName);
-    }
+    String[] names = Utilities.getDbTableName(tableName);
+    return new Table(names[0], names[1]);
   }
 
   public String getDelegationToken(String owner, String renewer)

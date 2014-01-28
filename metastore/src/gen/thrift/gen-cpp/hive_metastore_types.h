@@ -1976,18 +1976,18 @@ void swap(EnvironmentContext &a, EnvironmentContext &b);
 class PartitionsByExprResult {
  public:
 
-  static const char* ascii_fingerprint; // = "1B91CF0D2FC339DC29ABBD79CC9700E4";
-  static const uint8_t binary_fingerprint[16]; // = {0x1B,0x91,0xCF,0x0D,0x2F,0xC3,0x39,0xDC,0x29,0xAB,0xBD,0x79,0xCC,0x97,0x00,0xE4};
+  static const char* ascii_fingerprint; // = "40B789CC91B508FE36600A14E3F80425";
+  static const uint8_t binary_fingerprint[16]; // = {0x40,0xB7,0x89,0xCC,0x91,0xB5,0x08,0xFE,0x36,0x60,0x0A,0x14,0xE3,0xF8,0x04,0x25};
 
   PartitionsByExprResult() : hasUnknownPartitions(0) {
   }
 
   virtual ~PartitionsByExprResult() throw() {}
 
-  std::set<Partition>  partitions;
+  std::vector<Partition>  partitions;
   bool hasUnknownPartitions;
 
-  void __set_partitions(const std::set<Partition> & val) {
+  void __set_partitions(const std::vector<Partition> & val) {
     partitions = val;
   }
 
@@ -2093,6 +2093,126 @@ class PartitionsByExprRequest {
 };
 
 void swap(PartitionsByExprRequest &a, PartitionsByExprRequest &b);
+
+typedef struct _AddPartitionsResult__isset {
+  _AddPartitionsResult__isset() : partitions(false) {}
+  bool partitions;
+} _AddPartitionsResult__isset;
+
+class AddPartitionsResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "5A689D0823E7BFBB60C799BA60065C31";
+  static const uint8_t binary_fingerprint[16]; // = {0x5A,0x68,0x9D,0x08,0x23,0xE7,0xBF,0xBB,0x60,0xC7,0x99,0xBA,0x60,0x06,0x5C,0x31};
+
+  AddPartitionsResult() {
+  }
+
+  virtual ~AddPartitionsResult() throw() {}
+
+  std::vector<Partition>  partitions;
+
+  _AddPartitionsResult__isset __isset;
+
+  void __set_partitions(const std::vector<Partition> & val) {
+    partitions = val;
+    __isset.partitions = true;
+  }
+
+  bool operator == (const AddPartitionsResult & rhs) const
+  {
+    if (__isset.partitions != rhs.__isset.partitions)
+      return false;
+    else if (__isset.partitions && !(partitions == rhs.partitions))
+      return false;
+    return true;
+  }
+  bool operator != (const AddPartitionsResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AddPartitionsResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(AddPartitionsResult &a, AddPartitionsResult &b);
+
+typedef struct _AddPartitionsRequest__isset {
+  _AddPartitionsRequest__isset() : needResult(true) {}
+  bool needResult;
+} _AddPartitionsRequest__isset;
+
+class AddPartitionsRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "94F938D035892CF6873DEDB99358F069";
+  static const uint8_t binary_fingerprint[16]; // = {0x94,0xF9,0x38,0xD0,0x35,0x89,0x2C,0xF6,0x87,0x3D,0xED,0xB9,0x93,0x58,0xF0,0x69};
+
+  AddPartitionsRequest() : dbName(), tblName(), ifNotExists(0), needResult(true) {
+  }
+
+  virtual ~AddPartitionsRequest() throw() {}
+
+  std::string dbName;
+  std::string tblName;
+  std::vector<Partition>  parts;
+  bool ifNotExists;
+  bool needResult;
+
+  _AddPartitionsRequest__isset __isset;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_tblName(const std::string& val) {
+    tblName = val;
+  }
+
+  void __set_parts(const std::vector<Partition> & val) {
+    parts = val;
+  }
+
+  void __set_ifNotExists(const bool val) {
+    ifNotExists = val;
+  }
+
+  void __set_needResult(const bool val) {
+    needResult = val;
+    __isset.needResult = true;
+  }
+
+  bool operator == (const AddPartitionsRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(parts == rhs.parts))
+      return false;
+    if (!(ifNotExists == rhs.ifNotExists))
+      return false;
+    if (__isset.needResult != rhs.__isset.needResult)
+      return false;
+    else if (__isset.needResult && !(needResult == rhs.needResult))
+      return false;
+    return true;
+  }
+  bool operator != (const AddPartitionsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AddPartitionsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(AddPartitionsRequest &a, AddPartitionsRequest &b);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

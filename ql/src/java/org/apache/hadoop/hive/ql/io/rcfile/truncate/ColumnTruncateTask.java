@@ -168,7 +168,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
       MapredWork mrWork = new MapredWork();
       mrWork.setMapWork(work);
-      Utilities.setMapRedWork(job, mrWork, ctx.getMRTmpFileURI());
+      Utilities.setMapRedWork(job, mrWork, ctx.getMRTmpPath());
 
       // remove the pwd from conf file so that job tracker doesn't show this
       // logs

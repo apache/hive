@@ -1018,6 +1018,23 @@ class RecordReaderImpl implements RecordReader {
     }
 
     @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      LongColumnVector result = null;
+      if (previousVector == null) {
+        result = new LongColumnVector();
+      } else {
+        result = (LongColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      // Read value entries based on isNull entries
+      reader.nextVector(result, batchSize);
+      return result;
+    }
+
+    @Override
     void skipRows(long items) throws IOException {
       reader.skip(countNonNulls(items));
     }
@@ -2174,7 +2191,7 @@ class RecordReaderImpl implements RecordReader {
     if (sarg == null || rowIndexStride == 0) {
       return null;
     }
-    readRowIndex();
+    readRowIndex(currentStripe);
     long rowsInStripe = stripes.get(currentStripe).getNumberOfRows();
     int groupsInStripe = (int) ((rowsInStripe + rowIndexStride - 1) /
         rowIndexStride);
@@ -2768,8 +2785,18 @@ class RecordReaderImpl implements RecordReader {
     throw new IllegalArgumentException("Seek after the end of reader range");
   }
 
-  private void readRowIndex() throws IOException {
-    long offset = stripes.get(currentStripe).getOffset();
+  OrcProto.RowIndex[] readRowIndex(int stripeIndex) throws IOException {
+    long offset = stripes.get(stripeIndex).getOffset();
+    OrcProto.StripeFooter stripeFooter;
+    OrcProto.RowIndex[] indexes;
+    // if this is the current stripe, use the cached objects.
+    if (stripeIndex == currentStripe) {
+      stripeFooter = this.stripeFooter;
+      indexes = this.indexes;
+    } else {
+      stripeFooter = readStripeFooter(stripes.get(stripeIndex));
+      indexes = new OrcProto.RowIndex[this.indexes.length];
+    }
     for(OrcProto.Stream stream: stripeFooter.getStreamsList()) {
       if (stream.getKind() == OrcProto.Stream.Kind.ROW_INDEX) {
         int col = stream.getColumn();
@@ -2784,6 +2811,7 @@ class RecordReaderImpl implements RecordReader {
       }
       offset += stream.getLength();
     }
+    return indexes;
   }
 
   private void seekToRowEntry(int rowEntry) throws IOException {
@@ -2815,7 +2843,7 @@ class RecordReaderImpl implements RecordReader {
       currentStripe = rightStripe;
       readStripe();
     }
-    readRowIndex();
+    readRowIndex(currentStripe);
 
     // if we aren't to the right row yet, advanance in the stripe.
     advanceToNextRow(rowNumber);

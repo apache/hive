@@ -1,1 +1,0 @@
-FAILED: SemanticException 2:45 Top level UNION is not supported currently; use a subquery for the UNION. Error encountered near token 'value'

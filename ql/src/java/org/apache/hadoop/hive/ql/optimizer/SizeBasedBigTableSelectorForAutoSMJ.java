@@ -78,7 +78,7 @@ public abstract class SizeBasedBigTableSelectorForAutoSMJ {
   }
 
   protected long getSize(HiveConf conf, Partition partition) {
-    Path path = partition.getPartitionPath();
+    Path path = partition.getDataLocation();
     String size = partition.getParameters().get("totalSize");
 
     return getSize(conf, size, path);

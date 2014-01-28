@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table mp (a int) partitioned by (b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@mp
-FAILED: SemanticException [Error 10098]: Non-Partition column appears in the partition specification:  c
+FAILED: SemanticException Partition spec {b=1, c=1} contains non-partition columns

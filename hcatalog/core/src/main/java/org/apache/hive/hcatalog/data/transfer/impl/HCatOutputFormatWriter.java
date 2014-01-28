@@ -52,8 +52,8 @@ public class HCatOutputFormatWriter extends HCatWriter {
     super(we, config);
   }
 
-  public HCatOutputFormatWriter(Configuration config, StateProvider sp) {
-    super(config, sp);
+  public HCatOutputFormatWriter(WriterContext cntxt, StateProvider sp) {
+    super(((WriterContextImpl)cntxt).getConf(), sp);
   }
 
   @Override
@@ -74,7 +74,7 @@ public class HCatOutputFormatWriter extends HCatWriter {
     } catch (InterruptedException e) {
       throw new HCatException(ErrorType.ERROR_NOT_INITIALIZED, e);
     }
-    WriterContext cntxt = new WriterContext();
+    WriterContextImpl cntxt = new WriterContextImpl();
     cntxt.setConf(job.getConfiguration());
     return cntxt;
   }
@@ -124,10 +124,14 @@ public class HCatOutputFormatWriter extends HCatWriter {
 
   @Override
   public void commit(WriterContext context) throws HCatException {
+    WriterContextImpl cntxtImpl = (WriterContextImpl)context;
     try {
-      new HCatOutputFormat().getOutputCommitter(ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(
-          context.getConf(), ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptID()))
-        .commitJob(ShimLoader.getHadoopShims().getHCatShim().createJobContext(context.getConf(), null));
+      new HCatOutputFormat().getOutputCommitter(
+          ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(
+              cntxtImpl.getConf(),
+              ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptID()))
+          .commitJob(ShimLoader.getHadoopShims().getHCatShim().createJobContext(
+              cntxtImpl.getConf(), null));
     } catch (IOException e) {
       throw new HCatException(ErrorType.ERROR_NOT_INITIALIZED, e);
     } catch (InterruptedException e) {
@@ -137,11 +141,14 @@ public class HCatOutputFormatWriter extends HCatWriter {
 
   @Override
   public void abort(WriterContext context) throws HCatException {
+    WriterContextImpl cntxtImpl = (WriterContextImpl)context;
     try {
-      new HCatOutputFormat().getOutputCommitter(ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(
-        context.getConf(), ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptID()))
-        .abortJob(ShimLoader.getHadoopShims().getHCatShim().createJobContext(
-            context.getConf(), null), State.FAILED);
+      new HCatOutputFormat().getOutputCommitter(
+          ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(
+            cntxtImpl.getConf(),
+            ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptID()))
+          .abortJob(ShimLoader.getHadoopShims().getHCatShim().createJobContext(
+            cntxtImpl.getConf(), null), State.FAILED);
     } catch (IOException e) {
       throw new HCatException(ErrorType.ERROR_NOT_INITIALIZED, e);
     } catch (InterruptedException e) {

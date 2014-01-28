@@ -16,6 +16,7 @@
 package org.apache.hadoop.hive.common.type;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.nio.IntBuffer;
 
 /**
@@ -1097,23 +1098,27 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    *          right operand
    * @param quotient
    *          result object to receive the calculation result
-   * @param remainder
-   *          result object to receive the calculation result
    * @param scale
    *          scale of the result. must be 0 or positive.
    */
   public static void divide(Decimal128 left, Decimal128 right,
-      Decimal128 quotient, Decimal128 remainder, short scale) {
+      Decimal128 quotient, short scale) {
     if (quotient == left || quotient == right) {
       throw new IllegalArgumentException(
           "result object cannot be left or right operand");
     }
 
     quotient.update(left);
-    quotient.divideDestructive(right, scale, remainder);
+    quotient.divideDestructive(right, scale);
   }
 
   /**
+   * As of 1/20/2014 this has a known bug in division. See
+   * TestDecimal128.testKnownPriorErrors(). Keeping this source
+   * code available since eventually it is better to fix this.
+   * The fix employed now is to replace this code with code that
+   * uses Java BigDecimal divide.
+   *
    * Performs division, changing the scale of this object to the specified
    * value.
    * <p>
@@ -1128,7 +1133,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    * @param remainder
    *          object to receive remainder
    */
-  public void divideDestructive(Decimal128 right, short newScale,
+  public void divideDestructiveNativeDecimal128(Decimal128 right, short newScale,
       Decimal128 remainder) {
     if (right.signum == 0) {
       SqlMathUtil.throwZeroDivisionException();
@@ -1172,6 +1177,23 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
 
     this.unscaledValue.throwIfExceedsTenToThirtyEight();
   }
+
+  /**
+   * Divide the target object by right, and scale the result to newScale.
+   *
+   * This uses HiveDecimal to get a correct answer with the same rounding
+   * behavior as HiveDecimal, but it is expensive.
+   *
+   * In the future, a native implementation could be faster.
+   */
+  public void divideDestructive(Decimal128 right, short newScale) {
+    HiveDecimal rightHD = HiveDecimal.create(right.toBigDecimal());
+    HiveDecimal thisHD = HiveDecimal.create(this.toBigDecimal());
+    HiveDecimal result = thisHD.divide(rightHD);
+    this.update(result.bigDecimalValue().toPlainString(), newScale);
+    this.unscaledValue.throwIfExceedsTenToThirtyEight();
+  }
+
 
   /**
    * Makes this {@code Decimal128} a positive number. Unlike

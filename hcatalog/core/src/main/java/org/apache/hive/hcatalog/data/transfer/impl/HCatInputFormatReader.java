@@ -48,10 +48,10 @@ public class HCatInputFormatReader extends HCatReader {
 
   private InputSplit split;
 
-  public HCatInputFormatReader(InputSplit split, Configuration config,
-                 StateProvider sp) {
-    super(config, sp);
-    this.split = split;
+  public HCatInputFormatReader(ReaderContext context, int slaveNumber,
+                               StateProvider sp) {
+    super(((ReaderContextImpl)context).getConf(), sp);
+    this.split = ((ReaderContextImpl)context).getSplits().get(slaveNumber);
   }
 
   public HCatInputFormatReader(ReadEntity info, Map<String, String> config) {
@@ -64,7 +64,7 @@ public class HCatInputFormatReader extends HCatReader {
       Job job = new Job(conf);
       HCatInputFormat hcif = HCatInputFormat.setInput(
         job, re.getDbName(), re.getTableName(), re.getFilterString());
-      ReaderContext cntxt = new ReaderContext();
+      ReaderContextImpl cntxt = new ReaderContextImpl();
       cntxt.setInputSplits(hcif.getSplits(
           ShimLoader.getHadoopShims().getHCatShim().createJobContext(job.getConfiguration(), null)));
       cntxt.setConf(job.getConfiguration());

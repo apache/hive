@@ -22,7 +22,6 @@ import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.util.StringUtils.stringifyException;
 
 import java.io.BufferedWriter;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -157,6 +156,12 @@ import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -302,7 +307,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
       if (addPartitionDesc != null) {
-        return addPartition(db, addPartitionDesc);
+        return addPartitions(db, addPartitionDesc);
       }
 
       RenamePartitionDesc renamePartitionDesc = work.getRenamePartitionDesc();
@@ -399,7 +404,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       GrantDesc grantDesc = work.getGrantDesc();
       if (grantDesc != null) {
         return grantOrRevokePrivileges(grantDesc.getPrincipals(), grantDesc
-            .getPrivileges(), grantDesc.getPrivilegeSubjectDesc(), grantDesc.getGrantor(), grantDesc.getGrantorType(), grantDesc.isGrantOption(), true);
+            .getPrivileges(), grantDesc.getPrivilegeSubjectDesc(), grantDesc.getGrantor(),
+            grantDesc.getGrantorType(), grantDesc.isGrantOption(), true);
       }
 
       RevokeDesc revokeDesc = work.getRevokeDesc();
@@ -489,6 +495,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       boolean grantRole = grantOrRevokeRoleDDL.getGrant();
       List<PrincipalDesc> principals = grantOrRevokeRoleDDL.getPrincipalDesc();
       List<String> roles = grantOrRevokeRoleDDL.getRoles();
+
+      if(SessionState.get().isAuthorizationModeV2()){
+        return grantOrRevokeRoleV2(grantOrRevokeRoleDDL);
+      }
+
       for (PrincipalDesc principal : principals) {
         String userName = principal.getName();
         for (String roleName : roles) {
@@ -507,6 +518,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  private int grantOrRevokeRoleV2(GrantRevokeRoleDDL grantOrRevokeRoleDDL) throws HiveException {
+    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
+    //convert to the types needed for plugin api
+    HivePrincipal grantorPrinc = null;
+    if(grantOrRevokeRoleDDL.getGrantor() != null){
+      grantorPrinc = new HivePrincipal(grantOrRevokeRoleDDL.getGrantor(),
+          getHivePrincipalType(grantOrRevokeRoleDDL.getGrantorType()));
+    }
+    List<HivePrincipal> hivePrincipals = getHivePrincipals(grantOrRevokeRoleDDL.getPrincipalDesc());
+    List<String> roles = grantOrRevokeRoleDDL.getRoles();
+
+    if(grantOrRevokeRoleDDL.getGrant()){
+      authorizer.grantRole(hivePrincipals, roles,
+          grantOrRevokeRoleDDL.isGrantOption(), grantorPrinc);
+    }
+    else{
+      authorizer.revokeRole(hivePrincipals, roles,
+          grantOrRevokeRoleDDL.isGrantOption(), grantorPrinc);
+    }
+    return 0;
+  }
+
   private int showGrants(ShowGrantDesc showGrantDesc) throws HiveException {
     StringBuilder builder = new StringBuilder();
     try {
@@ -514,6 +547,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       PrivilegeObjectDesc hiveObjectDesc = showGrantDesc.getHiveObj();
       String principalName = principalDesc.getName();
       if (hiveObjectDesc == null) {
+        //show all privileges for this user
         List<HiveObjectPrivilege> users = db.showPrivilegeGrant(
             HiveObjectType.GLOBAL, principalName, principalDesc.getType(),
             null, null, null, null);
@@ -619,7 +653,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int grantOrRevokePrivileges(List<PrincipalDesc> principals,
       List<PrivilegeDesc> privileges, PrivilegeObjectDesc privSubjectDesc,
-      String grantor, PrincipalType grantorType, boolean grantOption, boolean isGrant) {
+      String grantor, PrincipalType grantorType, boolean grantOption, boolean isGrant)
+          throws HiveException {
+
+    if(SessionState.get().isAuthorizationModeV2()){
+      return grantOrRevokePrivilegesV2(principals, privileges, privSubjectDesc, grantor,
+          grantorType, grantOption, isGrant);
+    }
+
     if (privileges == null || privileges.size() == 0) {
       console.printError("No privilege found.");
       return 1;
@@ -638,15 +679,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         String obj = privSubjectDesc.getObject();
 
+        //get the db, table objects
         if (privSubjectDesc.getTable()) {
-          String[] dbTab = obj.split("\\.");
-          if (dbTab.length == 2) {
-            dbName = dbTab[0];
-            tableName = dbTab[1];
-          } else {
-            dbName = SessionState.get().getCurrentDatabase();
-            tableName = obj;
-          }
+          String[] dbTable = Utilities.getDbTableName(obj);
+          dbName = dbTable[0];
+          tableName = dbTable[1];
+
           dbObj = db.getDatabase(dbName);
           if (dbObj == null) {
             throwNotFound("Database", dbName);
@@ -757,13 +795,83 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  private int grantOrRevokePrivilegesV2(List<PrincipalDesc> principals,
+      List<PrivilegeDesc> privileges, PrivilegeObjectDesc privSubjectDesc, String grantor,
+      PrincipalType grantorType, boolean grantOption, boolean isGrant) throws HiveException {
+    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
+
+    //Convert to object types used by the authorization plugin interface
+    List<HivePrincipal> hivePrincipals = getHivePrincipals(principals);
+    List<HivePrivilege> hivePrivileges = getHivePrivileges(privileges);
+    HivePrivilegeObject hivePrivObject = getHivePrivilegeObject(privSubjectDesc);
+    HivePrincipal grantorPrincipal = new HivePrincipal(grantor, getHivePrincipalType(grantorType));
+
+    if(isGrant){
+      authorizer.grantPrivileges(hivePrincipals, hivePrivileges, hivePrivObject,
+          grantorPrincipal, grantOption);
+    }else {
+      authorizer.revokePrivileges(hivePrincipals, hivePrivileges,
+          hivePrivObject, grantorPrincipal, grantOption);
+    }
+    //no exception thrown, so looks good
+    return 0;
+  }
+
+  private HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
+      throws HiveException {
+    String [] dbTable = Utilities.getDbTableName(privSubjectDesc.getObject());
+    return new HivePrivilegeObject(getPrivObjectType(privSubjectDesc), dbTable[0], dbTable[1]);
+  }
+
+  private HivePrivilegeObjectType getPrivObjectType(PrivilegeObjectDesc privSubjectDesc) {
+    //TODO: This needs to change to support view once view grant/revoke is supported as
+    // part of HIVE-6181
+    return privSubjectDesc.getTable() ? HivePrivilegeObjectType.TABLE : HivePrivilegeObjectType.DATABASE;
+  }
+
+  private List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges) {
+    List<HivePrivilege> hivePrivileges = new ArrayList<HivePrivilege>();
+    for(PrivilegeDesc privilege : privileges){
+      hivePrivileges.add(
+          new HivePrivilege(privilege.getPrivilege().toString(), privilege.getColumns()));
+    }
+    return hivePrivileges;
+  }
+
+  private List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals) throws HiveException {
+    ArrayList<HivePrincipal> hivePrincipals = new ArrayList<HivePrincipal>();
+    for(PrincipalDesc principal : principals){
+      hivePrincipals.add(
+          new HivePrincipal(principal.getName(), getHivePrincipalType(principal.getType())));
+    }
+    return hivePrincipals;
+  }
+
+  private HivePrincipalType getHivePrincipalType(PrincipalType type) throws HiveException {
+    switch(type){
+    case USER:
+      return HivePrincipalType.USER;
+    case ROLE:
+      return HivePrincipalType.ROLE;
+    case GROUP:
+      throw new HiveException(ErrorMsg.UNNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP);
+    default:
+      //should not happen as we take care of all existing types
+      throw new HiveException("Unsupported authorization type specified");
+    }
+  }
+
   private void throwNotFound(String objType, String objName) throws HiveException {
     throw new HiveException(objType + " " + objName + " not found");
   }
 
-  private int roleDDL(RoleDDLDesc roleDDLDesc) {
+  private int roleDDL(RoleDDLDesc roleDDLDesc) throws HiveException, IOException {
+    if(SessionState.get().isAuthorizationModeV2()){
+      return roleDDLV2(roleDDLDesc);
+    }
+
+    DataOutputStream outStream = null;
     RoleDDLDesc.RoleOperation operation = roleDDLDesc.getOperation();
-    DataOutput outStream = null;
     try {
       if (operation.equals(RoleDDLDesc.RoleOperation.CREATE_ROLE)) {
         db.createRole(roleDDLDesc.getName(), roleDDLDesc.getRoleOwnerName());
@@ -780,9 +888,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             outStream.writeBytes(role.getRoleName());
             outStream.write(terminator);
           }
-          ((FSDataOutputStream) outStream).close();
+          outStream.close();
           outStream = null;
         }
+      } else if (operation.equals(RoleDDLDesc.RoleOperation.SHOW_ROLES)) {
+        List<String> roleNames = db.getAllRoleNames();
+        Path resFile = new Path(roleDDLDesc.getResFile());
+        FileSystem fs = resFile.getFileSystem(conf);
+        outStream = fs.create(resFile);
+        for (String roleName : roleNames) {
+          outStream.writeBytes(roleName);
+          outStream.write(terminator);
+        }
+        outStream.close();
+        outStream = null;
       } else {
         throw new HiveException("Unkown role operation "
             + operation.getOperationName());
@@ -800,6 +919,48 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
+  }
+
+  private int roleDDLV2(RoleDDLDesc roleDDLDesc) throws HiveException, IOException {
+    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
+    RoleDDLDesc.RoleOperation operation = roleDDLDesc.getOperation();
+    //call the appropriate hive authorizer function
+    switch(operation){
+    case CREATE_ROLE:
+      authorizer.createRole(roleDDLDesc.getName(), null);
+      break;
+    case DROP_ROLE:
+      authorizer.dropRole(roleDDLDesc.getName());
+      break;
+    case SHOW_ROLE_GRANT:
+      List<String> roles = authorizer.getRoles(new HivePrincipal(roleDDLDesc.getName(),
+          getHivePrincipalType(roleDDLDesc.getPrincipalType())));
+      writeListToFile(roles, roleDDLDesc.getResFile());
+      break;
+    case SHOW_ROLES:
+      List<String> allRoles = authorizer.getAllRoles();
+      writeListToFile(allRoles, roleDDLDesc.getResFile());
+      break;
+    default:
+      throw new HiveException("Unkown role operation "
+          + operation.getOperationName());
+    }
+    return 0;
+  }
+
+  /**
+   * Write list of string entries into given file
+   * @param entries
+   * @param resFile
+   * @throws IOException
+   */
+  private void writeListToFile(List<String> entries, String resFile) throws IOException {
+    StringBuilder sb = new StringBuilder(entries.size()*2);
+    for(String entry : entries){
+      sb.append(entry);
+      sb.append(terminator);
+    }
+    writeToFile(sb.toString(), resFile);
   }
 
   private int alterDatabase(AlterDatabaseDesc alterDbDesc) throws HiveException {
@@ -883,8 +1044,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             }
             if (baseParts != null) {
               for (Partition p : baseParts) {
-                FileSystem fs = p.getPartitionPath().getFileSystem(db.getConf());
-                FileStatus fss = fs.getFileStatus(p.getPartitionPath());
+                FileSystem fs = p.getDataLocation().getFileSystem(db.getConf());
+                FileStatus fss = fs.getFileStatus(p.getDataLocation());
                 basePartTs.put(p.getSpec(), fss.getModificationTime());
               }
             }
@@ -932,61 +1093,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Add a partition to a table.
+   * Add a partitions to a table.
    *
    * @param db
    *          Database to add the partition to.
    * @param addPartitionDesc
-   *          Add this partition.
+   *          Add these partitions.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException
    */
-  private int addPartition(Hive db, AddPartitionDesc addPartitionDesc) throws HiveException {
-
-    Table tbl = db.getTable(addPartitionDesc.getDbName(), addPartitionDesc.getTableName());
-
-    // If the add partition was created with IF NOT EXISTS, then we should
-    // not throw an error if the specified part does exist.
-    Partition checkPart = db.getPartition(tbl, addPartitionDesc.getPartSpec(), false);
-    if (checkPart != null && addPartitionDesc.getIfNotExists()) {
-      return 0;
+  private int addPartitions(Hive db, AddPartitionDesc addPartitionDesc) throws HiveException {
+    List<Partition> parts = db.createPartitions(addPartitionDesc);
+    for (Partition part : parts) {
+      work.getOutputs().add(new WriteEntity(part));
     }
-
-
-
-    if (addPartitionDesc.getLocation() == null) {
-      db.createPartition(tbl, addPartitionDesc.getPartSpec(), null,
-          addPartitionDesc.getPartParams(),
-                    addPartitionDesc.getInputFormat(),
-                    addPartitionDesc.getOutputFormat(),
-                    addPartitionDesc.getNumBuckets(),
-                    addPartitionDesc.getCols(),
-                    addPartitionDesc.getSerializationLib(),
-                    addPartitionDesc.getSerdeParams(),
-                    addPartitionDesc.getBucketCols(),
-                    addPartitionDesc.getSortCols());
-
-    } else {
-      if (tbl.isView()) {
-        throw new HiveException("LOCATION clause illegal for view partition");
-      }
-      // set partition path relative to table
-      db.createPartition(tbl, addPartitionDesc.getPartSpec(), new Path(tbl
-                    .getPath(), addPartitionDesc.getLocation()), addPartitionDesc.getPartParams(),
-                    addPartitionDesc.getInputFormat(),
-                    addPartitionDesc.getOutputFormat(),
-                    addPartitionDesc.getNumBuckets(),
-                    addPartitionDesc.getCols(),
-                    addPartitionDesc.getSerializationLib(),
-                    addPartitionDesc.getSerdeParams(),
-                    addPartitionDesc.getBucketCols(),
-                    addPartitionDesc.getSortCols());
-    }
-
-    Partition part = db
-        .getPartition(tbl, addPartitionDesc.getPartSpec(), false);
-    work.getOutputs().add(new WriteEntity(part));
-
     return 0;
   }
 
@@ -1212,12 +1332,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (MetaException e) {
       throw new HiveException("Unable to get partition's directory", e);
     }
-    URI tableDir = tbl.getDataLocation();
+    Path tableDir = tbl.getDataLocation();
     if(tableDir == null) {
       throw new HiveException("Table has no location set");
     }
 
-    String standardLocation = (new Path(tableDir.toString(), subdir)).toString();
+    String standardLocation = (new Path(tableDir, subdir)).toString();
     if(ArchiveUtils.isArchived(p)) {
       return !getOriginalLocation(p).equals(standardLocation);
     } else {
@@ -1266,7 +1386,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if(ArchiveUtils.isArchived(p)) {
         originalDir = new Path(getOriginalLocation(p));
       } else {
-        originalDir = p.getPartitionPath();
+        originalDir = p.getDataLocation();
       }
     }
 
@@ -1343,7 +1463,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // First create the archive in a tmp dir so that if the job fails, the
       // bad files don't pollute the filesystem
       Path tmpPath = new Path(driverContext.getCtx()
-                    .getExternalTmpFileURI(originalDir.toUri()), "partlevel");
+                    .getExternalTmpPath(originalDir.toUri()), "partlevel");
 
       console.printInfo("Creating " + archiveName +
                         " for " + originalDir.toString());
@@ -1418,8 +1538,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Record this change in the metastore
     try {
       for(Partition p: partitions) {
-        URI originalPartitionUri = ArchiveUtils.addSlash(p.getPartitionPath().toUri());
-        URI test = p.getPartitionPath().toUri();
+        URI originalPartitionUri = ArchiveUtils.addSlash(p.getDataLocation().toUri());
+        URI test = p.getDataLocation().toUri();
         URI harPartitionDir = harHelper.getHarUri(originalPartitionUri, shim);
         StringBuilder authority = new StringBuilder();
         if(harPartitionDir.getUserInfo() != null) {
@@ -1538,19 +1658,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException("Haven't found any archive where it should be");
     }
 
-    Path tmpPath = new Path(driverContext
-          .getCtx()
-          .getExternalTmpFileURI(originalDir.toUri()));
+    Path tmpPath = driverContext.getCtx().getExternalTmpPath(originalDir.toUri());
 
     try {
       fs = tmpPath.getFileSystem(conf);
     } catch (IOException e) {
       throw new HiveException(e);
-    }
-
-    // Some sanity checks
-    if (originalDir == null) {
-      throw new HiveException("Missing archive data in the partition");
     }
 
     // Clarification of terms:
@@ -1870,7 +1983,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     String tableName = showCreateTbl.getTableName();
     Table tbl = db.getTable(tableName, false);
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     List<String> duplicateProps = new ArrayList<String>();
     try {
       Path resFile = new Path(showCreateTbl.getResFile());
@@ -1880,7 +1993,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (tbl.isView()) {
         String createTab_stmt = "CREATE VIEW `" + tableName + "` AS " + tbl.getViewExpandedText();
         outStream.writeBytes(createTab_stmt.toString());
-        ((FSDataOutputStream) outStream).close();
+        outStream.close();
         outStream = null;
         return 0;
       }
@@ -2067,7 +2180,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       createTab_stmt.add(TBL_PROPERTIES, tbl_properties);
 
       outStream.writeBytes(createTab_stmt.render());
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
     } catch (FileNotFoundException e) {
       LOG.info("show create table: " + stringifyException(e));
@@ -2106,7 +2219,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     indexes = db.getIndexes(tbl.getDbName(), tbl.getTableName(), (short) -1);
 
     // write the results in the file
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     try {
       Path resFile = new Path(showIndexes.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
@@ -2124,7 +2237,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(index));
       }
 
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
 
     } catch (FileNotFoundException e) {
@@ -2240,7 +2353,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // write the results in the file
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     try {
       Path resFile = new Path(showCols.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
@@ -2250,7 +2363,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       cols.addAll(table.getPartCols());
       outStream.writeBytes(
           MetaDataFormatUtils.getAllColumnsInformation(cols, false));
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
     } catch (IOException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
@@ -2281,7 +2394,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // write the results in the file
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     try {
       Path resFile = new Path(showFuncs.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
@@ -2296,7 +2409,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.writeBytes(iterFuncs.next());
         outStream.write(terminator);
       }
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
     } catch (FileNotFoundException e) {
       LOG.warn("show function: " + stringifyException(e));
@@ -2330,7 +2443,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // write the results in the file
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     try {
       Path resFile = new Path(showLocks.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
@@ -2388,7 +2501,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         outStream.write(terminator);
       }
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
     } catch (FileNotFoundException e) {
       LOG.warn("show function: " + stringifyException(e));
@@ -2590,7 +2703,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String funcName = descFunc.getName();
 
     // write the results in the file
-    DataOutput outStream = null;
+    DataOutputStream outStream = null;
     try {
       Path resFile = new Path(descFunc.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
@@ -2629,7 +2742,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       outStream.write(terminator);
 
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
     } catch (FileNotFoundException e) {
       LOG.warn("describe function: " + stringifyException(e));
@@ -3211,7 +3324,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (part != null) {
           part.setLocation(newLocation);
         } else {
-          tbl.setDataLocation(locUri);
+          tbl.setDataLocation(new Path(locUri));
         }
       } catch (URISyntaxException e) {
         throw new HiveException(e);
@@ -3668,7 +3781,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setProperty("comment", crtTbl.getComment());
     }
     if (crtTbl.getLocation() != null) {
-      tbl.setDataLocation(new Path(crtTbl.getLocation()).toUri());
+      tbl.setDataLocation(new Path(crtTbl.getLocation()));
     }
 
     if (crtTbl.getSkewedColNames() != null) {
@@ -3806,7 +3919,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setTableName(newTable.getTableName());
 
       if (crtTbl.getLocation() != null) {
-        tbl.setDataLocation(new Path(crtTbl.getLocation()).toUri());
+        tbl.setDataLocation(new Path(crtTbl.getLocation()));
       } else {
         tbl.unsetDataLocation();
       }
@@ -3960,14 +4073,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (partSpec == null) {
       if (table.isPartitioned()) {
         for (Partition partition : db.getPartitions(table)) {
-          locations.add(partition.getPartitionPath());
+          locations.add(partition.getDataLocation());
         }
       } else {
         locations.add(table.getPath());
       }
     } else {
       for (Partition partition : db.getPartitionsByNames(table, partSpec)) {
-        locations.add(partition.getPartitionPath());
+        locations.add(partition.getDataLocation());
       }
     }
     return locations;

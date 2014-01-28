@@ -33,4 +33,4 @@ ts                  	string              	None
 	 	 
 dt                  	string              	None                
 ts                  	string              	None                
-FAILED: ParseException line 4:50 mismatched input ',' expecting ) near 'int' in alter table partition statement
+FAILED: ParseException line 4:50 mismatched input ',' expecting ) near 'int' in alter partition key type

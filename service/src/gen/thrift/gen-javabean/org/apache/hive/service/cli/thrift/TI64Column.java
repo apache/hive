@@ -445,13 +445,13 @@ public class TI64Column implements org.apache.thrift.TBase<TI64Column, TI64Colum
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list142 = iprot.readListBegin();
-                struct.values = new ArrayList<Long>(_list142.size);
-                for (int _i143 = 0; _i143 < _list142.size; ++_i143)
+                org.apache.thrift.protocol.TList _list86 = iprot.readListBegin();
+                struct.values = new ArrayList<Long>(_list86.size);
+                for (int _i87 = 0; _i87 < _list86.size; ++_i87)
                 {
-                  long _elem144; // required
-                  _elem144 = iprot.readI64();
-                  struct.values.add(_elem144);
+                  long _elem88; // required
+                  _elem88 = iprot.readI64();
+                  struct.values.add(_elem88);
                 }
                 iprot.readListEnd();
               }
@@ -485,9 +485,9 @@ public class TI64Column implements org.apache.thrift.TBase<TI64Column, TI64Colum
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.values.size()));
-          for (long _iter145 : struct.values)
+          for (long _iter89 : struct.values)
           {
-            oprot.writeI64(_iter145);
+            oprot.writeI64(_iter89);
           }
           oprot.writeListEnd();
         }
@@ -517,9 +517,9 @@ public class TI64Column implements org.apache.thrift.TBase<TI64Column, TI64Colum
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.values.size());
-        for (long _iter146 : struct.values)
+        for (long _iter90 : struct.values)
         {
-          oprot.writeI64(_iter146);
+          oprot.writeI64(_iter90);
         }
       }
       oprot.writeBinary(struct.nulls);
@@ -529,13 +529,13 @@ public class TI64Column implements org.apache.thrift.TBase<TI64Column, TI64Colum
     public void read(org.apache.thrift.protocol.TProtocol prot, TI64Column struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list147 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.values = new ArrayList<Long>(_list147.size);
-        for (int _i148 = 0; _i148 < _list147.size; ++_i148)
+        org.apache.thrift.protocol.TList _list91 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.values = new ArrayList<Long>(_list91.size);
+        for (int _i92 = 0; _i92 < _list91.size; ++_i92)
         {
-          long _elem149; // required
-          _elem149 = iprot.readI64();
-          struct.values.add(_elem149);
+          long _elem93; // required
+          _elem93 = iprot.readI64();
+          struct.values.add(_elem93);
         }
       }
       struct.setValuesIsSet(true);

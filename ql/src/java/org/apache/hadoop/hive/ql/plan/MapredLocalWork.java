@@ -37,7 +37,7 @@ public class MapredLocalWork implements Serializable {
   private LinkedHashMap<String, FetchWork> aliasToFetchWork;
   private boolean inputFileChangeSensitive;
   private BucketMapJoinContext bucketMapjoinContext;
-  private String tmpFileURI;
+  private Path tmpPath;
   private String stageID;
 
   private List<Operator<? extends OperatorDesc>> dummyParentOp ;
@@ -55,7 +55,7 @@ public class MapredLocalWork implements Serializable {
   }
 
   public MapredLocalWork(MapredLocalWork clone){
-    this.tmpFileURI = clone.tmpFileURI;
+    this.tmpPath = clone.tmpPath;
     this.inputFileChangeSensitive=clone.inputFileChangeSensitive;
 
   }
@@ -151,12 +151,12 @@ public class MapredLocalWork implements Serializable {
     return null;
   }
 
-  public void setTmpFileURI(String tmpFileURI) {
-    this.tmpFileURI = tmpFileURI;
+  public void setTmpPath(Path tmpPath) {
+    this.tmpPath = tmpPath;
   }
 
-  public String getTmpFileURI() {
-    return tmpFileURI;
+  public Path getTmpPath() {
+    return tmpPath;
   }
 
   public String getBucketFileName(String bigFileName) {

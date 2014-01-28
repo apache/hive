@@ -21,8 +21,6 @@ package org.apache.hive.hcatalog.data.transfer;
 
 import java.util.Map;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hive.hcatalog.data.transfer.impl.HCatInputFormatReader;
 import org.apache.hive.hcatalog.data.transfer.impl.HCatOutputFormatWriter;
 import org.apache.hive.hcatalog.data.transfer.state.DefaultStateProvider;
@@ -56,16 +54,16 @@ public class DataTransferFactory {
    * This should only be called once from every slave node to obtain an instance
    * of {@link HCatReader}.
    *
-   * @param split
-   *          input split obtained at master node
-   * @param config
-   *          configuration obtained at master node
+   * @param context
+   *          reader context obtained at the master node
+   * @param slaveNumber
+   *          which slave this is, determines which part of the read is done
    * @return {@link HCatReader}
    */
-  public static HCatReader getHCatReader(final InputSplit split,
-                       final Configuration config) {
+  public static HCatReader getHCatReader(final ReaderContext context,
+                                         int slaveNumber) {
     // In future, this may examine config to return appropriate HCatReader
-    return getHCatReader(split, config, DefaultStateProvider.get());
+    return getHCatReader(context, slaveNumber, DefaultStateProvider.get());
   }
 
   /**
@@ -73,18 +71,19 @@ public class DataTransferFactory {
    * of {@link HCatReader}. This should be called if an external system has some
    * state to provide to HCatalog.
    *
-   * @param split
-   *          input split obtained at master node
-   * @param config
-   *          configuration obtained at master node
+   * @param context
+   *          reader context obtained at the master node
+   * @param slaveNumber
+   *          which slave this is, determines which part of the read is done
    * @param sp
    *          {@link StateProvider}
    * @return {@link HCatReader}
    */
-  public static HCatReader getHCatReader(final InputSplit split,
-                       final Configuration config, StateProvider sp) {
+  public static HCatReader getHCatReader(final ReaderContext context,
+                                         int slaveNumber,
+                                         StateProvider sp) {
     // In future, this may examine config to return appropriate HCatReader
-    return new HCatInputFormatReader(split, config, sp);
+    return new HCatInputFormatReader(context, slaveNumber, sp);
   }
 
   /**
@@ -131,6 +130,6 @@ public class DataTransferFactory {
   public static HCatWriter getHCatWriter(final WriterContext cntxt,
                        final StateProvider sp) {
     // In future, this may examine context to return appropriate HCatWriter
-    return new HCatOutputFormatWriter(cntxt.getConf(), sp);
+    return new HCatOutputFormatWriter(cntxt, sp);
   }
 }

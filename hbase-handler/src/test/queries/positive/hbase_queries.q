@@ -37,7 +37,7 @@ ORDER BY key, value LIMIT 20;
 EXPLAIN 
 SELECT Y.*
 FROM 
-(SELECT hbase_table_1.* FROM hbase_table_1 WHERE hbase_table_1.key > 100) x
+(SELECT hbase_table_1.* FROM hbase_table_1 WHERE 100 < hbase_table_1.key) x
 JOIN 
 (SELECT hbase_table_2.* FROM hbase_table_2 WHERE hbase_table_2.key < 120) Y
 ON (x.key = Y.key)
@@ -45,7 +45,7 @@ ORDER BY key, value;
 
 SELECT Y.*
 FROM 
-(SELECT hbase_table_1.* FROM hbase_table_1 WHERE hbase_table_1.key > 100) x
+(SELECT hbase_table_1.* FROM hbase_table_1 WHERE 100 < hbase_table_1.key) x
 JOIN 
 (SELECT hbase_table_2.* FROM hbase_table_2 WHERE hbase_table_2.key < 120) Y
 ON (x.key = Y.key)

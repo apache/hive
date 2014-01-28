@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColGreaterStr
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringScalarGreaterStringColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -137,6 +136,11 @@ public class GenericUDFOPGreaterThan extends GenericUDFBaseCompare {
           converted_o1, compareOI) > 0);
     }
     return result;
+  }
+
+  @Override
+  public GenericUDF flip() {
+    return new GenericUDFOPLessThan();
   }
 
 }

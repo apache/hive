@@ -181,7 +181,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
 
 /**
- * Implementation of the semantic analyzer.
+ * Implementation of the semantic analyzer. It generates the query plan.
+ * There are other specific semantic analyzers for some hive operations such as
+ * DDLSemanticAnalyzer for ddl operations.
  */
 
 public class SemanticAnalyzer extends BaseSemanticAnalyzer {
@@ -967,10 +969,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_UNION:
-        // currently, we dont support subq1 union subq2 - the user has to
-        // explicitly say:
-        // select * from (subq1 union subq2) subqalias
         if (!qbp.getIsSubQ()) {
+          // this shouldn't happen. The parser should have converted the union to be
+          // contained in a subquery. Just in case, we keep the error as a fallback.
           throw new SemanticException(generateErrorMessage(ast,
               ErrorMsg.UNION_NOTIN_SUBQ.getMsg()));
         }
@@ -1021,7 +1022,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           } catch (HiveException e) {
             LOG.info("Error while getting metadata : ", e);
           }
-          validatePartSpec(table, partition, (ASTNode)tab, conf);
+          validatePartSpec(table, partition, (ASTNode)tab, conf, false);
         }
         skipRecursion = false;
         break;
@@ -1263,8 +1264,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 throw new SemanticException(e);
               }
               try {
-                fname = ctx.getExternalTmpFileURI(
-                    FileUtils.makeQualified(location, conf).toUri());
+                fname = ctx.getExternalTmpPath(
+                    FileUtils.makeQualified(location, conf).toUri()).toString();
               } catch (Exception e) {
                 throw new SemanticException(generateErrorMessage(ast,
                     "Error creating temporary folder on: " + location.toString()), e);
@@ -1278,7 +1279,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               }
             } else {
               qb.setIsQuery(true);
-              fname = ctx.getMRTmpFileURI();
+              fname = ctx.getMRTmpPath().toString();
               ctx.setResDir(new Path(fname));
             }
           }
@@ -5264,7 +5265,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Table dest_tab = null; // destination table if any
     Partition dest_part = null;// destination partition if any
-    String queryTmpdir = null; // the intermediate destination directory
+    Path queryTmpdir = null; // the intermediate destination directory
     Path dest_path = null; // the final destination directory
     TableDesc table_desc = null;
     int currentTableId = 0;
@@ -5307,7 +5308,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         dpCtx = qbm.getDPCtx(dest);
         if (dpCtx == null) {
-          Utilities.validatePartSpecColumnNames(dest_tab, partSpec);
+          dest_tab.validatePartColumnNames(partSpec, false);
           dpCtx = new DynamicPartitionCtx(dest_tab, partSpec,
               conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
               conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
@@ -5330,9 +5331,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       boolean isNonNativeTable = dest_tab.isNonNative();
       if (isNonNativeTable) {
-        queryTmpdir = dest_path.toUri().getPath();
+        queryTmpdir = dest_path;
       } else {
-        queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
+        queryTmpdir = ctx.getExternalTmpPath(dest_path.toUri());
       }
       if (dpCtx != null) {
         // set the root of the temporay path where dynamic partition columns will populate
@@ -5355,7 +5356,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Create the work for moving the table
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
       if (!isNonNativeTable) {
-        ltd = new LoadTableDesc(new Path(queryTmpdir),table_desc, dpCtx);
+        ltd = new LoadTableDesc(queryTmpdir,table_desc, dpCtx);
         ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
             dest_tab.getTableName()));
         ltd.setLbCtx(lbCtx);
@@ -5418,14 +5419,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       Path tabPath = dest_tab.getPath();
-      Path partPath = dest_part.getPartitionPath();
+      Path partPath = dest_part.getDataLocation();
 
       // if the table is in a different dfs than the partition,
       // replace the partition's dfs with the table's dfs.
       dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
           .getAuthority(), partPath.toUri().getPath());
 
-      queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
+      queryTmpdir = ctx.getExternalTmpPath(dest_path.toUri());
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add sorting/bucketing if needed
@@ -5438,7 +5439,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       lbCtx = constructListBucketingCtx(dest_part.getSkewedColNames(),
           dest_part.getSkewedColValues(), dest_part.getSkewedColValueLocationMaps(),
           dest_part.isStoredAsSubDirectories(), conf);
-      ltd = new LoadTableDesc(new Path(queryTmpdir), table_desc, dest_part.getSpec());
+      ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec());
       ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
           dest_tab.getTableName()));
       ltd.setLbCtx(lbCtx);
@@ -5469,18 +5470,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // fall through
     case QBMetaData.DEST_DFS_FILE: {
       dest_path = new Path(qbm.getDestFileForAlias(dest));
-      
+
       if (isLocal) {
         // for local directory - we always write to map-red intermediate
         // store and then copy to local fs
-        queryTmpdir = ctx.getMRTmpFileURI();
+        queryTmpdir = ctx.getMRTmpPath();
       } else {
         // otherwise write to the file system implied by the directory
         // no copy is required. we may want to revisit this policy in future
 
         try {
           Path qPath = FileUtils.makeQualified(dest_path, conf);
-          queryTmpdir = ctx.getExternalTmpFileURI(qPath.toUri());
+          queryTmpdir = ctx.getExternalTmpPath(qPath.toUri());
         } catch (Exception e) {
           throw new SemanticException("Error creating temporary folder on: "
               + dest_path, e);
@@ -5558,7 +5559,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
-      loadFileWork.add(new LoadFileDesc(tblDesc, new Path(queryTmpdir), dest_path, isDfsDir, cols,
+      loadFileWork.add(new LoadFileDesc(tblDesc, queryTmpdir, dest_path, isDfsDir, cols,
           colTypes));
 
       if (tblDesc == null) {
@@ -5638,7 +5639,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // the same as directory name. The directory name
     // can be changed in the optimizer but the key should not be changed
     // it should be the same as the MoveWork's sourceDir.
-    fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName());
+    fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
 
     if (dest_part != null) {
       try {

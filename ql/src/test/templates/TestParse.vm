@@ -138,11 +138,7 @@ public class $className extends TestCase {
       qt.getQMap().clear();
     }
     catch (Throwable e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.println("Failed query: " + fname);
-      System.err.flush();
-      fail("Unexpected exception" + debugHint);
+      qt.failed(e, fname, debugHint);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

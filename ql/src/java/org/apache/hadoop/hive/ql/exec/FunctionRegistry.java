@@ -420,7 +420,6 @@ public final class FunctionRegistry {
     registerGenericUDF(true, LEAD_FUNC_NAME, GenericUDFLead.class);
     registerGenericUDF(true, LAG_FUNC_NAME, GenericUDFLag.class);
 
-    registerHiveUDAFsAsWindowFunctions();
     registerWindowFunction("row_number", new GenericUDAFRowNumber());
     registerWindowFunction("rank", new GenericUDAFRank());
     registerWindowFunction("dense_rank", new GenericUDAFDenseRank());
@@ -1003,6 +1002,10 @@ public final class FunctionRegistry {
       GenericUDAFResolver genericUDAFResolver) {
     FunctionInfo fi = new FunctionInfo(isNative, functionName.toLowerCase(), genericUDAFResolver);
     mFunctions.put(functionName.toLowerCase(), fi);
+
+    // All aggregate functions should also be usable as window functions
+    addFunctionInfoToWindowFunctions(functionName, fi);
+
     registerNativeStatus(fi);
   }
 
@@ -1021,6 +1024,10 @@ public final class FunctionRegistry {
         functionName.toLowerCase(), new GenericUDAFBridge(
         (UDAF) ReflectionUtils.newInstance(udafClass, null)));
     mFunctions.put(functionName.toLowerCase(), fi);
+
+    // All aggregate functions should also be usable as window functions
+    addFunctionInfoToWindowFunctions(functionName, fi);
+
     registerNativeStatus(fi);
   }
 
@@ -1676,16 +1683,14 @@ public final class FunctionRegistry {
   {
     FunctionInfo fInfo = null;
     if (registerAsUDAF) {
+      // Just register the function normally, will also get added to window functions.
       registerGenericUDAF(true, name, wFn);
-      fInfo = getFunctionInfo(name);
     }
     else {
-      fInfo = new FunctionInfo(true,
-          name.toLowerCase(), wFn);
+      name = name.toLowerCase();
+      fInfo = new FunctionInfo(true, name, wFn);
+      addFunctionInfoToWindowFunctions(name, fInfo);
     }
-
-    WindowFunctionInfo wInfo = new WindowFunctionInfo(fInfo);
-    windowFunctions.put(name.toLowerCase(), wInfo);
   }
 
   public static WindowFunctionInfo getWindowFunctionInfo(String name)
@@ -1719,18 +1724,11 @@ public final class FunctionRegistry {
     return false;
   }
 
-  static void registerHiveUDAFsAsWindowFunctions()
-  {
-    Set<String> fNames = getFunctionNames();
-    for(String fName : fNames)
-    {
-      FunctionInfo fInfo = getFunctionInfo(fName);
-      if ( fInfo.isGenericUDAF())
-      {
-        WindowFunctionInfo wInfo = new WindowFunctionInfo(fInfo);
-        windowFunctions.put(fName, wInfo);
-      }
-    }
+  static private void addFunctionInfoToWindowFunctions(String functionName,
+      FunctionInfo functionInfo) {
+    // Assumes that the caller has already verified that functionInfo is for an aggregate function
+    WindowFunctionInfo wInfo = new WindowFunctionInfo(functionInfo);
+    windowFunctions.put(functionName.toLowerCase(), wInfo);
   }
 
   public static boolean isTableFunction(String name)

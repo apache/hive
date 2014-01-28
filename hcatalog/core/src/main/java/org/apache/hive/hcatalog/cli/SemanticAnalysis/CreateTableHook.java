@@ -202,7 +202,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
             desc.getSerName(),
             desc.getInputFormat(),
             desc.getOutputFormat());
-        //Authorization checks are performed by the storageHandler.getAuthorizationProvider(), if  
+        //Authorization checks are performed by the storageHandler.getAuthorizationProvider(), if
         //StorageDelegationAuthorizationProvider is used.
       } catch (IOException e) {
         throw new SemanticException(e);
@@ -213,7 +213,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
       try {
         Table table = context.getHive().newTable(desc.getTableName());
         if (desc.getLocation() != null) {
-          table.setDataLocation(new Path(desc.getLocation()).toUri());
+          table.setDataLocation(new Path(desc.getLocation()));
         }
         if (desc.getStorageHandler() != null) {
           table.setProperty(

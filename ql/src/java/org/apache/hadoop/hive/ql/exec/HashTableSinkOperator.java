@@ -265,9 +265,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   public void closeOp(boolean abort) throws HiveException {
     try {
       if (mapJoinTables != null) {
-        // get tmp file URI
-        String tmpURI = this.getExecContext().getLocalWork().getTmpFileURI();
-        LOG.info("Temp URI for side table: " + tmpURI);
+        // get tmp path
+        Path tmpPath = this.getExecContext().getLocalWork().getTmpPath();
+        LOG.info("Temp URI for side table: " + tmpPath);
         for (byte tag = 0; tag < mapJoinTables.length; tag++) {
           // get the key and value
           MapJoinTableContainer tableContainer = mapJoinTables[tag];
@@ -279,10 +279,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
           String fileName = getExecContext().getLocalWork().getBucketFileName(bigBucketFileName);
           // get the tmp URI path; it will be a hdfs path if not local mode
           String dumpFilePrefix = conf.getDumpFilePrefix();
-          String tmpURIPath = Utilities.generatePath(tmpURI, dumpFilePrefix, tag, fileName);
-          console.printInfo(Utilities.now() + "\tDump the side-table into file: " + tmpURIPath);
+          Path path = Utilities.generatePath(tmpPath, dumpFilePrefix, tag, fileName);
+          console.printInfo(Utilities.now() + "\tDump the side-table into file: " + path);
           // get the hashtable file and path
-          Path path = new Path(tmpURIPath);
           FileSystem fs = path.getFileSystem(hconf);
           ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(fs.create(path), 4096));
           try {
@@ -291,7 +290,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
             out.close();
           }
           tableContainer.clear();
-          console.printInfo(Utilities.now() + "\tUpload 1 File to: " + tmpURIPath);
+          console.printInfo(Utilities.now() + "\tUpload 1 File to: " + path);
         }
       }
       super.closeOp(abort);

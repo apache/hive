@@ -123,7 +123,13 @@ public interface RawStore extends Configurable {
   public abstract boolean addPartition(Partition part)
       throws InvalidObjectException, MetaException;
 
+  public abstract boolean addPartitions(String dbName, String tblName, List<Partition> parts)
+      throws InvalidObjectException, MetaException;
+
   public abstract Partition getPartition(String dbName, String tableName,
+      List<String> part_vals) throws MetaException, NoSuchObjectException;
+
+  public abstract boolean doesPartitionExist(String dbName, String tableName,
       List<String> part_vals) throws MetaException, NoSuchObjectException;
 
   public abstract boolean dropPartition(String dbName, String tableName,
@@ -203,7 +209,7 @@ public interface RawStore extends Configurable {
       throws MetaException, NoSuchObjectException;
 
   public abstract boolean getPartitionsByExpr(String dbName, String tblName,
-      byte[] expr, String defaultPartitionName, short maxParts, Set<Partition> result)
+      byte[] expr, String defaultPartitionName, short maxParts, List<Partition> result)
       throws TException;
 
   public abstract List<Partition> getPartitionsByNames(

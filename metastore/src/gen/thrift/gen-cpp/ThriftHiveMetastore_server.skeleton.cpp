@@ -157,6 +157,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("append_partition\n");
   }
 
+  void add_partitions_req(AddPartitionsResult& _return, const AddPartitionsRequest& request) {
+    // Your implementation goes here
+    printf("add_partitions_req\n");
+  }
+
   void append_partition_with_environment_context(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const EnvironmentContext& environment_context) {
     // Your implementation goes here
     printf("append_partition_with_environment_context\n");

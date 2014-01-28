@@ -177,8 +177,8 @@
 
 <property>
   <name>datanucleus.connectionPoolingType</name>
-  <value>DBCP</value>
-  <description>Uses a DBCP connection pool for JDBC metastore</description>
+  <value>BoneCP</value>
+  <description>Uses a BoneCP connection pool for JDBC metastore</description>
 </property>
 
 <property>
@@ -1307,6 +1307,17 @@
     exceeds a certain length, a hash of the key is used instead.  If the value &lt; 0 then hashing
     is never used, if the value >= 0 then hashing is used only when the key prefixes length
     exceeds that value.  The key prefix is defined as everything preceding the task ID in the key.
+    For counter type stats, it's maxed by mapreduce.job.counters.group.name.max, which is by default 128.
+  </description>
+</property>
+
+<property>
+  <name>hive.stats.key.prefix.reserve.length</name>
+  <value>24</value>
+  <description>
+    Reserved length for postfix of stats key. Currently only meaningful for counter type which should
+    keep length of full stats key smaller than max length configured by hive.stats.key.prefix.max.length.
+    For counter type, it should be bigger than the length of LB spec if exists.
   </description>
 </property>
 
@@ -2127,7 +2138,7 @@
 
 <property>
   <name>hive.metastore.integral.jdo.pushdown</name>
-  <value>false</false>
+  <value>false</value>
   <description>
    Allow JDO query pushdown for integral partition columns in metastore. Off by default. This
    improves metastore perf for integral columns, especially if there's a large number of partitions.

@@ -299,11 +299,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   }
 
   private boolean isVectorMode(Configuration conf) {
-    if (Utilities.getPlanPath(conf) != null && Utilities
-        .getMapRedWork(conf).getMapWork().getVectorMode()) {
-      return true;
-    }
-    return false;
+    return Utilities.isVectorMode(conf);
   }
 
   /**

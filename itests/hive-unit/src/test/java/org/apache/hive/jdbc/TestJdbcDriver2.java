@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -187,7 +188,8 @@ public class TestJdbcDriver2 {
         + " c19 binary, "
         + " c20 date,"
         + " c21 varchar(20),"
-        + " c22 char(15)"
+        + " c22 char(15),"
+        + " c23 binary"
         + ") comment'" + dataTypeTableComment
         +"' partitioned by (dt STRING)");
 
@@ -443,7 +445,7 @@ public class TestJdbcDriver2 {
 
     ResultSet res = stmt.executeQuery(
         "explain select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-            "c1*2, sentences(null, null, null) as b from " + dataTypeTableName + " limit 1");
+            "c1*2, sentences(null, null, null) as b, c23 from " + dataTypeTableName + " limit 1");
 
     ResultSetMetaData md = res.getMetaData();
     // only one result column
@@ -821,6 +823,7 @@ public class TestJdbcDriver2 {
     assertEquals(null, res.getDate(20));
     assertEquals(null, res.getString(21));
     assertEquals(null, res.getString(22));
+    assertEquals(null, res.getString(23));
 
     // row 3
     assertTrue(res.next());
@@ -848,6 +851,15 @@ public class TestJdbcDriver2 {
     assertEquals("2013-01-01", res.getDate(20).toString());
     assertEquals("abc123", res.getString(21));
     assertEquals("abc123         ", res.getString(22));
+
+    byte[] bytes = "X'01FF'".getBytes("UTF-8");
+    InputStream resultSetInputStream = res.getBinaryStream(23);
+    int len = bytes.length;
+    byte[] b = new byte[len];
+    resultSetInputStream.read(b, 0, len);
+    for ( int i = 0; i< len; i++) {
+      assertEquals(bytes[i], b[i]);
+    }
 
     // test getBoolean rules on non-boolean columns
     assertEquals(true, res.getBoolean(1));
@@ -1329,14 +1341,14 @@ public class TestJdbcDriver2 {
 
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-            "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21, c22 from " + dataTypeTableName +
+            "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21, c22, c23 from " + dataTypeTableName +
         " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
     ResultSet colRS = con.getMetaData().getColumns(null, null,
         dataTypeTableName.toLowerCase(), null);
 
-    assertEquals(19, meta.getColumnCount());
+    assertEquals(20, meta.getColumnCount());
 
     assertTrue(colRS.next());
 
@@ -1400,53 +1412,53 @@ public class TestJdbcDriver2 {
     assertTrue(colRS.next());
 
     assertEquals("a", meta.getColumnName(5));
-    assertEquals(Types.VARCHAR, meta.getColumnType(5));
-    assertEquals("string", meta.getColumnTypeName(5));
+    assertEquals(Types.ARRAY, meta.getColumnType(5));
+    assertEquals("array", meta.getColumnTypeName(5));
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(5));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(5));
     assertEquals(0, meta.getScale(5));
 
     assertEquals("c5", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals(Types.ARRAY, colRS.getInt("DATA_TYPE"));
     assertEquals("array<int>", colRS.getString("TYPE_NAME").toLowerCase());
 
     assertTrue(colRS.next());
 
     assertEquals("c6", meta.getColumnName(6));
-    assertEquals(Types.VARCHAR, meta.getColumnType(6));
-    assertEquals("string", meta.getColumnTypeName(6));
+    assertEquals(Types.JAVA_OBJECT, meta.getColumnType(6));
+    assertEquals("map", meta.getColumnTypeName(6));
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(6));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(6));
     assertEquals(0, meta.getScale(6));
 
     assertEquals("c6", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals(Types.JAVA_OBJECT, colRS.getInt("DATA_TYPE"));
     assertEquals("map<int,string>", colRS.getString("TYPE_NAME").toLowerCase());
 
     assertTrue(colRS.next());
 
     assertEquals("c7", meta.getColumnName(7));
-    assertEquals(Types.VARCHAR, meta.getColumnType(7));
-    assertEquals("string", meta.getColumnTypeName(7));
+    assertEquals(Types.JAVA_OBJECT, meta.getColumnType(7));
+    assertEquals("map", meta.getColumnTypeName(7));
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(7));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(7));
     assertEquals(0, meta.getScale(7));
 
     assertEquals("c7", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals(Types.JAVA_OBJECT, colRS.getInt("DATA_TYPE"));
     assertEquals("map<string,string>", colRS.getString("TYPE_NAME").toLowerCase());
 
     assertTrue(colRS.next());
 
     assertEquals("c8", meta.getColumnName(8));
-    assertEquals(Types.VARCHAR, meta.getColumnType(8));
-    assertEquals("string", meta.getColumnTypeName(8));
+    assertEquals(Types.STRUCT, meta.getColumnType(8));
+    assertEquals("struct", meta.getColumnTypeName(8));
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(8));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(8));
     assertEquals(0, meta.getScale(8));
 
     assertEquals("c8", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals(Types.STRUCT, colRS.getInt("DATA_TYPE"));
     assertEquals("struct<r:string,s:int,t:double>", colRS.getString("TYPE_NAME").toLowerCase());
 
     assertTrue(colRS.next());
@@ -1517,8 +1529,8 @@ public class TestJdbcDriver2 {
     assertEquals(0, meta.getScale(13));
 
     assertEquals("b", meta.getColumnName(14));
-    assertEquals(Types.VARCHAR, meta.getColumnType(14));
-    assertEquals("string", meta.getColumnTypeName(14));
+    assertEquals(Types.ARRAY, meta.getColumnType(14));
+    assertEquals("array", meta.getColumnTypeName(14));
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(14));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(14));
     assertEquals(0, meta.getScale(14));
@@ -1559,6 +1571,13 @@ public class TestJdbcDriver2 {
     assertEquals(15, meta.getColumnDisplaySize(19));
     assertEquals(15, meta.getPrecision(19));
     assertEquals(0, meta.getScale(19));
+
+    assertEquals("c23", meta.getColumnName(20));
+    assertEquals(Types.BINARY, meta.getColumnType(20));
+    assertEquals("binary", meta.getColumnTypeName(20));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(20));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(20));
+    assertEquals(0, meta.getScale(20));
 
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));

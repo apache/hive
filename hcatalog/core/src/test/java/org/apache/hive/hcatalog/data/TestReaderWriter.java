@@ -95,8 +95,8 @@ public class TestReaderWriter extends HCatBaseTest {
     readCntxt = (ReaderContext) ois.readObject();
     ois.close();
 
-    for (InputSplit split : readCntxt.getSplits()) {
-      runsInSlave(split, readCntxt.getConf());
+    for (int i = 0; i < readCntxt.numSplits(); i++) {
+      runsInSlave(readCntxt, i);
     }
   }
 
@@ -117,9 +117,9 @@ public class TestReaderWriter extends HCatBaseTest {
     return cntxt;
   }
 
-  private void runsInSlave(InputSplit split, Configuration config) throws HCatException {
+  private void runsInSlave(ReaderContext cntxt, int slaveNum) throws  HCatException {
 
-    HCatReader reader = DataTransferFactory.getHCatReader(split, config);
+    HCatReader reader = DataTransferFactory.getHCatReader(cntxt, slaveNum);
     Iterator<HCatRecord> itr = reader.read();
     int i = 1;
     while (itr.hasNext()) {

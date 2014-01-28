@@ -86,6 +86,7 @@ public enum HiveOperation {
   SHOW_GRANT("SHOW_GRANT", null, null),
   GRANT_ROLE("GRANT_ROLE", null, null),
   REVOKE_ROLE("REVOKE_ROLE", null, null),
+  SHOW_ROLES("SHOW_ROLES", null, null),
   SHOW_ROLE_GRANT("SHOW_ROLE_GRANT", null, null),
   ALTERTABLE_PROTECTMODE("ALTERTABLE_PROTECTMODE", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERPARTITION_PROTECTMODE("ALTERPARTITION_PROTECTMODE", new Privilege[]{Privilege.ALTER_METADATA}, null),
@@ -105,6 +106,7 @@ public enum HiveOperation {
   ALTERTABLE_SKEWED("ALTERTABLE_SKEWED", new Privilege[] {Privilege.ALTER_METADATA}, null),
   ALTERTBLPART_SKEWED_LOCATION("ALTERTBLPART_SKEWED_LOCATION",
       new Privilege[] {Privilege.ALTER_DATA}, null),
+  ALTERTABLE_PARTCOLTYPE("ALTERTABLE_PARTCOLTYPE", new Privilege[] { Privilege.SELECT }, new Privilege[] { Privilege.ALTER_DATA }),
   ALTERVIEW_RENAME("ALTERVIEW_RENAME", new Privilege[] {Privilege.ALTER_METADATA}, null),
   ;
 

@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
@@ -10,6 +27,7 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -30,6 +48,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -42,12 +61,15 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /** There is a set of queries which can be answered entirely from statistics stored in metastore.
  * Examples of such queries are count(*), count(a), max(a), min(b) etc. Hive already collects
@@ -181,30 +203,29 @@ public class StatsOptimizer implements Transform {
         Hive hive = Hive.get(pctx.getConf());
 
         for (AggregationDesc aggr : aggrs) {
-          if (aggr.getGenericUDAFName().equals(GenericUDAFCount.class.getAnnotation(
+          if (aggr.getGenericUDAFName().equals(GenericUDAFSum.class.getAnnotation(
               Description.class).name())) {
-            long rowCnt = 0;
+              if(!(aggr.getParameters().get(0) instanceof ExprNodeConstantDesc)){
+                return null;
+              }
+              Long rowCnt = getRowCnt(pctx, tsOp, tbl);
+              if(rowCnt == null) {
+                return null;
+              }
+              oneRow.add(HiveDecimal.create(((ExprNodeConstantDesc) aggr.getParameters().get(0))
+                .getValue().toString()).multiply(HiveDecimal.create(rowCnt)));
+              ois.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+                PrimitiveCategory.DECIMAL));
+          }
+          else if (aggr.getGenericUDAFName().equals(GenericUDAFCount.class.getAnnotation(
+              Description.class).name())) {
+            Long rowCnt = 0L;
             if ((aggr.getParameters().isEmpty() || aggr.getParameters().get(0) instanceof
                 ExprNodeConstantDesc)) {
               // Its either count (*) or count(1) case
-              if(tbl.isPartitioned()) {
-                for (Partition part : hive.getAllPartitionsOf(tbl)) {
-                  long partRowCnt = Long.parseLong(part.getParameters()
-                    .get(StatsSetupConst.ROW_COUNT));
-                  if (partRowCnt < 1) {
-                    Log.debug("Partition doesn't have upto date stats " + part.getSpec());
-                    return null;
-                  }
-                  rowCnt += partRowCnt;
-                }
-              } else { // unpartitioned table
-                rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
-                if (rowCnt < 1) {
-                  // if rowCnt < 1 than its either empty table or table on which stats are not
-                  //  computed We assume the worse and don't attempt to optimize.
-                  Log.debug("Table doesn't have upto date stats " + tbl.getTableName());
-                  return null;
-                }
+              rowCnt = getRowCnt(pctx, tsOp, tbl);
+              if(rowCnt == null) {
+                return null;
               }
             } else {
               // Its count(col) case
@@ -221,7 +242,7 @@ public class StatsOptimizer implements Transform {
                   Log.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
                   return null;
                   }
-            	rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
+                  rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
                 if (rowCnt < 1) {
                   Log.debug("Table doesn't have upto date stats " + tbl.getTableName());
                   return null;
@@ -238,13 +259,13 @@ public class StatsOptimizer implements Transform {
                   rowCnt -= nullCnt;
                 }
               } else {
-                for (Partition part : hive.getAllPartitionsOf(tbl)) {
+                for (Partition part : pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp).getPartitions()) {
                   if (!StatsSetupConst.areStatsUptoDate(part.getParameters())) {
                     Log.debug("Stats for part : " + part.getSpec() + " are not upto date.");
                     return null;
                     }
-                	Long partRowCnt = Long.parseLong(part.getParameters()
-                    .get(StatsSetupConst.ROW_COUNT));
+                    Long partRowCnt = Long.parseLong(part.getParameters()
+                      .get(StatsSetupConst.ROW_COUNT));
                   if (partRowCnt < 1) {
                     Log.debug("Partition doesn't have upto date stats " + part.getSpec());
                     return null;
@@ -298,7 +319,7 @@ public class StatsOptimizer implements Transform {
                 return null;
               }
             } else {
-              Set<Partition> parts = hive.getAllPartitionsOf(tbl);
+              Set<Partition> parts = pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp).getPartitions();
               switch(type) {
               case Integeral: {
                 long maxVal = Long.MIN_VALUE;
@@ -370,7 +391,7 @@ public class StatsOptimizer implements Transform {
                 return null;
               }
             } else {
-              Set<Partition> parts = hive.getAllPartitionsOf(tbl);
+              Set<Partition> parts = pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp).getPartitions();
               switch(type) {
               case Integeral: {
                 long minVal = Long.MAX_VALUE;
@@ -441,6 +462,29 @@ public class StatsOptimizer implements Transform {
       pctx.setFetchTask(fTask);
 
       return null;
+    }
+
+    private Long getRowCnt (ParseContext pCtx, TableScanOperator tsOp, Table tbl) throws HiveException {
+        Long rowCnt = 0L;
+      if(tbl.isPartitioned()) {
+        for (Partition part : pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp).getPartitions()) {
+          long partRowCnt = Long.parseLong(part.getParameters().get(StatsSetupConst.ROW_COUNT));
+          if (partRowCnt < 1) {
+            Log.debug("Partition doesn't have upto date stats " + part.getSpec());
+            return null;
+          }
+          rowCnt += partRowCnt;
+        }
+      } else { // unpartitioned table
+        rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
+        if (rowCnt < 1) {
+          // if rowCnt < 1 than its either empty table or table on which stats are not
+          //  computed We assume the worse and don't attempt to optimize.
+          Log.debug("Table doesn't have upto date stats " + tbl.getTableName());
+          rowCnt = null;
+        }
+      }
+      return rowCnt;
     }
   }
 }

@@ -226,6 +226,11 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   public void cleanUpInputFileChangedOp() throws HiveException {
     inputFileChanged = true;
   }
+  
+  protected List<Object> smbJoinComputeKeys(Object row, byte alias) throws HiveException {
+    return JoinUtil.computeKeys(row, joinKeys[alias],
+          joinKeysObjectInspectors[alias]);
+  }
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
@@ -260,8 +265,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     byte alias = (byte) tag;
 
     // compute keys and values as StandardObjects
-    ArrayList<Object> key = JoinUtil.computeKeys(row, joinKeys[alias],
-        joinKeysObjectInspectors[alias]);
+    List<Object> key = smbJoinComputeKeys(row, alias); 
+        
     List<Object> value = getFilteredValue(alias, row);
 
 
@@ -495,7 +500,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     return smallestOne == null ? null : result;
   }
 
-  private boolean processKey(byte alias, ArrayList<Object> key)
+  private boolean processKey(byte alias, List<Object> key)
       throws HiveException {
     List<Object> keyWritable = keyWritables[alias];
     if (keyWritable == null) {

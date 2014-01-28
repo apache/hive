@@ -87,8 +87,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (ts.tableHandle.isPartitioned()) {
         partitions = (ts.partitions != null) ? ts.partitions : db.getPartitions(ts.tableHandle);
       }
-      String tmpfile = ctx.getLocalTmpFileURI();
-      Path path = new Path(tmpfile, "_metadata");
+      Path path = new Path(ctx.getLocalTmpPath(), "_metadata");
       EximUtil.createExportDump(FileSystem.getLocal(conf), path, ts.tableHandle, partitions);
       Task<? extends Serializable> rTask = TaskFactory.get(new CopyWork(
           path, new Path(toURI), false), conf);
@@ -105,19 +104,19 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (ts.tableHandle.isPartitioned()) {
       for (Partition partition : partitions) {
-        URI fromURI = partition.getDataLocation();
+        Path fromPath = partition.getDataLocation();
         Path toPartPath = new Path(parentPath, partition.getName());
         Task<? extends Serializable> rTask = TaskFactory.get(
-            new CopyWork(new Path(fromURI), toPartPath, false),
+            new CopyWork(fromPath, toPartPath, false),
             conf);
         rootTasks.add(rTask);
         inputs.add(new ReadEntity(partition));
       }
     } else {
-      URI fromURI = ts.tableHandle.getDataLocation();
+      Path fromPath = ts.tableHandle.getDataLocation();
       Path toDataPath = new Path(parentPath, "data");
       Task<? extends Serializable> rTask = TaskFactory.get(new CopyWork(
-          new Path(fromURI), toDataPath, false), conf);
+          fromPath, toDataPath, false), conf);
       rootTasks.add(rTask);
       inputs.add(new ReadEntity(ts.tableHandle));
     }

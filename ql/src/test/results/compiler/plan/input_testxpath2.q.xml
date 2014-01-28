@@ -172,7 +172,9 @@
                  <void property="conf"> 
                   <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                    <void property="dirName"> 
-                    #### A masked pattern was here #### 
+                    <object class="org.apache.hadoop.fs.Path"> 
+                     #### A masked pattern was here #### 
+                    </object> 
                    </void> 
                    <void property="numFiles"> 
                     <int>1</int> 

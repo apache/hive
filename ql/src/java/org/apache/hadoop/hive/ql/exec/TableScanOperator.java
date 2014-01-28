@@ -291,14 +291,11 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       statsToPublish.clear();
       String prefix = Utilities.join(conf.getStatsAggPrefix(), pspecs);
 
-      String key;
       int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
-      if (statsPublisher instanceof CounterStatsPublisher) {
-        key = Utilities.getHashedStatsPrefix(prefix, maxKeyLength, 0);
-      } else {
+      String key = Utilities.getHashedStatsPrefix(prefix, maxKeyLength);
+      if (!(statsPublisher instanceof CounterStatsPublisher)) {
         // stats publisher except counter type needs postfix 'taskID'
-        prefix = Utilities.getHashedStatsPrefix(prefix, maxKeyLength, taskID.length());
-        key = prefix + taskID;
+        key = Utilities.join(prefix, taskID);
       }
       for(String statType : stats.get(pspecs).getStoredStats()) {
         statsToPublish.put(statType, Long.toString(stats.get(pspecs).getStat(statType)));

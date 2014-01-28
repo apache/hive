@@ -29,6 +29,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -211,4 +212,56 @@ public class TestJsonSerDe extends TestCase {
     }
     return sb.toString();
   }
+
+  /**
+   * This test tests that our json deserialization is not too strict, as per HIVE-6166
+   *
+   * i.e, if our schema is "s:struct<a:int,b:string>,k:int", and we pass in
+   * data that looks like : {
+   *                            "x" : "abc" ,
+   *                            "t" : {
+   *                                "a" : "1",
+   *                                "b" : "2",
+   *                                "c" : [
+   *                                    { "x" : 2 , "y" : 3 } ,
+   *                                    { "x" : 3 , "y" : 2 }
+   *                                ]
+   *                            } ,
+   *                            "s" : {
+   *                                "a" : 2 ,
+   *                                "b" : "blah",
+   *                                "c": "woo"
+   *                            }
+   *                        }
+   *
+   * Then it should still work, and ignore the "x" and "t" field and "c" subfield of "s", and it
+   * should read k as null.
+   */
+  public void testLooseJsonReadability() throws Exception {
+    Configuration conf = new Configuration();
+    Properties props = new Properties();
+
+    props.put(serdeConstants.LIST_COLUMNS, "s,k");
+    props.put(serdeConstants.LIST_COLUMN_TYPES, "struct<a:int,b:string>,int");
+    JsonSerDe rjsd = new JsonSerDe();
+    rjsd.initialize(conf, props);
+
+    Text jsonText = new Text("{ \"x\" : \"abc\" , "
+        + " \"t\" : { \"a\":\"1\", \"b\":\"2\", \"c\":[ { \"x\":2 , \"y\":3 } , { \"x\":3 , \"y\":2 }] } ,"
+        +"\"s\" : { \"a\" : 2 , \"b\" : \"blah\", \"c\": \"woo\" } }");
+    List<Object> expected = new ArrayList<Object>();
+    List<Object> inner = new ArrayList<Object>();
+    inner.add(2);
+    inner.add("blah");
+    expected.add(inner);
+    expected.add(null);
+    HCatRecord expectedRecord = new DefaultHCatRecord(expected);
+
+    HCatRecord r = (HCatRecord) rjsd.deserialize(jsonText);
+    System.err.println("record : " + r.toString());
+
+    assertTrue(HCatDataCheckUtil.recordsEqual(r, expectedRecord));
+
+  }
+
 }

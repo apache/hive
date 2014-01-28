@@ -95,11 +95,4 @@ public abstract class HCatReader {
     this.conf = conf;
   }
 
-  public Configuration getConf() {
-    if (null == conf) {
-      throw new IllegalStateException(
-        "HCatReader is not constructed correctly.");
-    }
-    return conf;
-  }
 }

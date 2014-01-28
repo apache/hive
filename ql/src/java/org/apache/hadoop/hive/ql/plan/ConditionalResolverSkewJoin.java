@@ -50,7 +50,7 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
     // tables into corresponding different dirs (one dir per table).
     // this map stores mapping from "big key dir" to its corresponding mapjoin
     // task.
-    private HashMap<String, Task<? extends Serializable>> dirToTaskMap;
+    private HashMap<Path, Task<? extends Serializable>> dirToTaskMap;
     private Task<? extends Serializable> noSkewTask;
 
     /**
@@ -60,19 +60,19 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
     }
 
     public ConditionalResolverSkewJoinCtx(
-        HashMap<String, Task<? extends Serializable>> dirToTaskMap,
+        HashMap<Path, Task<? extends Serializable>> dirToTaskMap,
         Task<? extends Serializable> noSkewTask) {
       super();
       this.dirToTaskMap = dirToTaskMap;
       this.noSkewTask = noSkewTask;
     }
 
-    public HashMap<String, Task<? extends Serializable>> getDirToTaskMap() {
+    public HashMap<Path, Task<? extends Serializable>> getDirToTaskMap() {
       return dirToTaskMap;
     }
 
     public void setDirToTaskMap(
-        HashMap<String, Task<? extends Serializable>> dirToTaskMap) {
+        HashMap<Path, Task<? extends Serializable>> dirToTaskMap) {
       this.dirToTaskMap = dirToTaskMap;
     }
 
@@ -94,16 +94,14 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
     ConditionalResolverSkewJoinCtx ctx = (ConditionalResolverSkewJoinCtx) objCtx;
     List<Task<? extends Serializable>> resTsks = new ArrayList<Task<? extends Serializable>>();
 
-    Map<String, Task<? extends Serializable>> dirToTaskMap = ctx
+    Map<Path, Task<? extends Serializable>> dirToTaskMap = ctx
         .getDirToTaskMap();
-    Iterator<Entry<String, Task<? extends Serializable>>> bigKeysPathsIter = dirToTaskMap
+    Iterator<Entry<Path, Task<? extends Serializable>>> bigKeysPathsIter = dirToTaskMap
         .entrySet().iterator();
     try {
       while (bigKeysPathsIter.hasNext()) {
-        Entry<String, Task<? extends Serializable>> entry = bigKeysPathsIter
-            .next();
-        String path = entry.getKey();
-        Path dirPath = new Path(path);
+        Entry<Path, Task<? extends Serializable>> entry = bigKeysPathsIter.next();
+        Path dirPath = entry.getKey();
         FileSystem inpFs = dirPath.getFileSystem(conf);
         FileStatus[] fstatus = Utilities.listStatusIfExists(dirPath, inpFs);
         if (fstatus != null && fstatus.length > 0) {

@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -124,7 +125,7 @@ public class GenMRUnion1 implements NodeProcessor {
 
     // generate the temporary file
     Context baseCtx = parseCtx.getContext();
-    String taskTmpDir = baseCtx.getMRTmpFileURI();
+    Path taskTmpDir = baseCtx.getMRTmpPath();
 
     // Create the temporary file, its corresponding FileSinkOperaotr, and
     // its corresponding TableScanOperator.
@@ -132,7 +133,7 @@ public class GenMRUnion1 implements NodeProcessor {
         GenMapRedUtils.createTemporaryFile(parent, child, taskTmpDir, tt_desc, parseCtx);
 
     // Add the path to alias mapping
-    uCtxTask.addTaskTmpDir(taskTmpDir);
+    uCtxTask.addTaskTmpDir(taskTmpDir.toUri().toString());
     uCtxTask.addTTDesc(tt_desc);
     uCtxTask.addListTopOperators(tableScanOp);
 

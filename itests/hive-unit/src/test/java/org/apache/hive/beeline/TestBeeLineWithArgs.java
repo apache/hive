@@ -18,6 +18,10 @@
 
 package org.apache.hive.beeline;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,14 +36,11 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.beeline.BeeLine;
 import org.apache.hive.service.server.HiveServer2;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * TestBeeLineWithArgs - executes tests of the command-line arguments to BeeLine
@@ -279,6 +280,14 @@ public class TestBeeLineWithArgs {
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
         "!set nullemptystring false\n select null from " + tableName + " limit 1 ;\n";
     final String EXPECTED_PATTERN = "NULL";
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, getBaseArgs(JDBC_URL));
+  }
+
+  @Test
+  public void testGetVariableValue() throws Throwable {
+    final String TEST_NAME = "testGetVariableValue";
+    final String SCRIPT_TEXT = "set env:TERM;";
+    final String EXPECTED_PATTERN = "env:TERM";
     testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, getBaseArgs(JDBC_URL));
   }
 

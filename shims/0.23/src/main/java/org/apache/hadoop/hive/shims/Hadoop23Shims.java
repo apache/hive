@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.HashMap;
 import java.net.URI;
 import java.io.FileNotFoundException;
 
@@ -103,7 +104,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public org.apache.hadoop.mapreduce.TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable) {
-    return new TaskAttemptContextImpl(conf, new TaskAttemptID()) {
+    TaskAttemptID taskAttemptId = TaskAttemptID.forName(conf.get(MRJobConfig.TASK_ATTEMPT_ID));
+    if (taskAttemptId == null) {
+      // If the caller is not within a mapper/reducer (if reading from the table via CliDriver),
+      // then TaskAttemptID.forname() may return NULL. Fall back to using default constructor.
+      taskAttemptId = new TaskAttemptID();
+    }
+    return new TaskAttemptContextImpl(conf, taskAttemptId) {
       @Override
       public void progress() {
         progressable.progress();
@@ -530,5 +537,24 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public FileSystem createProxyFileSystem(FileSystem fs, URI uri) {
     return new ProxyFileSystem23(fs, uri);
+  }
+
+  @Override
+  public Map<String, String> getHadoopConfNames() {
+    Map<String, String> ret = new HashMap<String, String>();
+    ret.put("HADOOPFS", "fs.defaultFS");
+    ret.put("HADOOPMAPFILENAME", "mapreduce.map.input.file");
+    ret.put("HADOOPMAPREDINPUTDIR", "mapreduce.input.fileinputformat.inputdir");
+    ret.put("HADOOPMAPREDINPUTDIRRECURSIVE", "mapreduce.input.fileinputformat.input.dir.recursive");
+    ret.put("MAPREDMAXSPLITSIZE", "mapreduce.input.fileinputformat.split.maxsize");
+    ret.put("MAPREDMINSPLITSIZE", "mapreduce.input.fileinputformat.split.minsize");
+    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapreduce.input.fileinputformat.split.minsize.per.rack");
+    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapreduce.input.fileinputformat.split.minsize.per.node");
+    ret.put("HADOOPNUMREDUCERS", "mapreduce.job.reduces");
+    ret.put("HADOOPJOBNAME", "mapreduce.job.name");
+    ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapreduce.reduce.speculative");
+    ret.put("MAPREDSETUPCLEANUPNEEDED", "mapreduce.job.committer.setup.cleanup.needed");
+    ret.put("MAPREDTASKCLEANUPNEEDED", "mapreduce.job.committer.task.cleanup.needed");
+    return ret;
   }
 }
