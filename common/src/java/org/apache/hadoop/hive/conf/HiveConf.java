@@ -652,14 +652,11 @@ public class HiveConf extends Configuration {
     HIVE_STATS_MAP_NUM_ENTRIES("hive.stats.map.num.entries", 10),
     // to accurately compute statistics for GROUPBY map side parallelism needs to be known
     HIVE_STATS_MAP_SIDE_PARALLELISM("hive.stats.map.parallelism", 1),
-    // statistics annotation fetches column statistics for all required columns and for all
-    // required partitions which can be very expensive sometimes
+    // statistics annotation fetches column statistics for all required columns which can
+    // be very expensive sometimes
     HIVE_STATS_FETCH_COLUMN_STATS("hive.stats.fetch.column.stats", false),
-    // in the absence of table/partition stats, average row size will be used to
-    // estimate the number of rows/data size
-    HIVE_STATS_AVG_ROW_SIZE("hive.stats.avg.row.size", 10000),
     // in the absence of column statistics, the estimated number of rows/data size that will
-    // emitted from join operator will depend on t factor
+    // be emitted from join operator will depend on this factor
     HIVE_STATS_JOIN_FACTOR("hive.stats.join.factor", (float) 1.1),
     // in the absence of uncompressed/raw data size, total file size will be used for statistics
     // annotation. But the file may be compressed, encoded and serialized which may be lesser in size
