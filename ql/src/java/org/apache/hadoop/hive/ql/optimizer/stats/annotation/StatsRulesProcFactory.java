@@ -988,9 +988,6 @@ public class StatsRulesProcFactory {
             if (limit <= parentStats.getNumRows()) {
               long numRows = limit;
               long avgRowSize = parentStats.getAvgRowSize();
-              if (avgRowSize <= 0) {
-                avgRowSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_AVG_ROW_SIZE);
-              }
               long dataSize = avgRowSize * limit;
               wcStats.setNumRows(numRows);
               wcStats.setDataSize(dataSize);
