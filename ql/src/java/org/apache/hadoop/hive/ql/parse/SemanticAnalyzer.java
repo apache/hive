@@ -5333,7 +5333,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (isNonNativeTable) {
         queryTmpdir = dest_path;
       } else {
-        queryTmpdir = ctx.getExternalTmpPath(dest_path.toUri());
+    	// if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
+        // to final /user/hive/warehouse/ will fail later, so instead pick tmp dir
+        // on same namespace as tbl dir. 
+        queryTmpdir = dest_path.toUri().getScheme().equals("viewfs") ? 
+          ctx.getExtTmpPathRelTo(dest_path.getParent().toUri()) : 
+          ctx.getExternalTmpPath(dest_path.toUri());
       }
       if (dpCtx != null) {
         // set the root of the temporay path where dynamic partition columns will populate
@@ -5426,7 +5431,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
           .getAuthority(), partPath.toUri().getPath());
 
-      queryTmpdir = ctx.getExternalTmpPath(dest_path.toUri());
+      // if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
+      // to final /user/hive/warehouse/ will fail later, so instead pick tmp dir
+      // on same namespace as tbl dir. 
+      queryTmpdir = dest_path.toUri().getScheme().equals("viewfs") ? 
+        ctx.getExtTmpPathRelTo(dest_path.getParent().toUri()) : 
+        ctx.getExternalTmpPath(dest_path.toUri());
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add sorting/bucketing if needed
