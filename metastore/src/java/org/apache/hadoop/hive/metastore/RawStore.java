@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -428,28 +429,58 @@ public interface RawStore extends Configurable {
     String colName)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
- public abstract long cleanupEvents();
+  public abstract long cleanupEvents();
 
- public abstract boolean addToken(String tokenIdentifier, String delegationToken);
+  public abstract boolean addToken(String tokenIdentifier, String delegationToken);
 
- public abstract boolean removeToken(String tokenIdentifier);
+  public abstract boolean removeToken(String tokenIdentifier);
 
- public abstract String getToken(String tokenIdentifier);
+  public abstract String getToken(String tokenIdentifier);
 
- public abstract List<String> getAllTokenIdentifiers();
+  public abstract List<String> getAllTokenIdentifiers();
 
- public abstract int addMasterKey(String key) throws MetaException;
+  public abstract int addMasterKey(String key) throws MetaException;
 
- public abstract void updateMasterKey(Integer seqNo, String key)
+  public abstract void updateMasterKey(Integer seqNo, String key)
      throws NoSuchObjectException, MetaException;
 
- public abstract boolean removeMasterKey(Integer keySeq);
+  public abstract boolean removeMasterKey(Integer keySeq);
 
- public abstract String[] getMasterKeys();
+  public abstract String[] getMasterKeys();
 
- public abstract void verifySchema() throws MetaException;
+  public abstract void verifySchema() throws MetaException;
 
- public abstract String getMetaStoreSchemaVersion() throws  MetaException;
+  public abstract String getMetaStoreSchemaVersion() throws  MetaException;
 
- public abstract void setMetaStoreSchemaVersion(String version, String comment) throws MetaException;
+  public abstract void setMetaStoreSchemaVersion(String version, String comment) throws MetaException;
+
+  List<HiveObjectPrivilege> listPrincipalDBGrantsAll(
+      String principalName, PrincipalType principalType);
+
+  List<HiveObjectPrivilege> listPrincipalTableGrantsAll(
+      String principalName, PrincipalType principalType);
+
+  List<HiveObjectPrivilege> listPrincipalPartitionGrantsAll(
+      String principalName, PrincipalType principalType);
+
+  List<HiveObjectPrivilege> listPrincipalTableColumnGrantsAll(
+      String principalName, PrincipalType principalType);
+
+  List<HiveObjectPrivilege> listPrincipalPartitionColumnGrantsAll(
+      String principalName, PrincipalType principalType);
+
+  List<HiveObjectPrivilege> listGlobalGrantsAll();
+
+  List<HiveObjectPrivilege> listDBGrantsAll(String dbName);
+
+  List<HiveObjectPrivilege> listPartitionColumnGrantsAll(
+      String dbName, String tableName, String partitionName, String columnName);
+
+  List<HiveObjectPrivilege> listTableGrantsAll(String dbName, String tableName);
+
+  List<HiveObjectPrivilege> listPartitionGrantsAll(
+      String dbName, String tableName, String partitionName);
+
+  List<HiveObjectPrivilege> listTableColumnGrantsAll(
+      String dbName, String tableName, String columnName);
 }

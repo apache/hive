@@ -3935,6 +3935,38 @@ public class ObjectStore implements RawStore, Configurable {
     return userNameDbPriv;
   }
 
+  @Override
+  public List<HiveObjectPrivilege> listGlobalGrantsAll() {
+    boolean commited = false;
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MGlobalPrivilege.class);
+      List<MGlobalPrivilege> userNameDbPriv = (List<MGlobalPrivilege>) query.execute();
+      pm.retrieveAll(userNameDbPriv);
+      commited = commitTransaction();
+      return convertGlobal(userNameDbPriv);
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private List<HiveObjectPrivilege> convertGlobal(List<MGlobalPrivilege> privs) {
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (MGlobalPrivilege priv : privs) {
+      String pname = priv.getPrincipalName();
+      PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
+
+      HiveObjectRef objectRef = new HiveObjectRef(HiveObjectType.GLOBAL, null, null, null, null);
+      PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
+          priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
+
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+    }
+    return result;
+  }
+
   @SuppressWarnings("unchecked")
   @Override
   public List<MDBPrivilege> listPrincipalDBGrants(String principalName,
@@ -3961,6 +3993,34 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mSecurityDBList;
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalDBGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return convertDB(listPrincipalAllDBGrant(principalName, principalType));
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listDBGrantsAll(String dbName) {
+    return convertDB(listDatabaseGrants(dbName));
+  }
+
+  private List<HiveObjectPrivilege> convertDB(List<MDBPrivilege> privs) {
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (MDBPrivilege priv : privs) {
+      String pname = priv.getPrincipalName();
+      PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
+      String database = priv.getDatabase().getName();
+
+      HiveObjectRef objectRef = new HiveObjectRef(HiveObjectType.DATABASE, database,
+          null, null, null);
+      PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
+          priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
+
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+    }
+    return result;
   }
 
   @SuppressWarnings("unchecked")
@@ -4329,6 +4389,78 @@ public class ObjectStore implements RawStore, Configurable {
     return mSecurityColList;
   }
 
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalPartitionColumnGrantsAll(
+      String principalName, PrincipalType principalType) {
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalPartitionColumnGrantsAll");
+      Query query = pm.newQuery(MPartitionColumnPrivilege.class,
+          "principalName == t1 && principalType == t2");
+      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      List<MPartitionColumnPrivilege> mSecurityTabPartList = (List<MPartitionColumnPrivilege>)
+          query.executeWithArray(principalName, principalType.toString());
+      LOG.debug("Done executing query for listPrincipalPartitionColumnGrantsAll");
+      pm.retrieveAll(mSecurityTabPartList);
+      List<HiveObjectPrivilege> result = convertPartCols(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPrincipalPartitionColumnGrantsAll");
+      return result;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPartitionColumnGrantsAll(
+      String dbName, String tableName, String partitionName, String columnName) {
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPartitionColumnGrantsAll");
+      Query query = pm.newQuery(MPartitionColumnPrivilege.class,
+          "partition.table.tableName == t3 && partition.table.database.name == t4 && " +
+          "partition.partitionName == t5 && columnName == t6");
+      query.declareParameters(
+          "java.lang.String t3, java.lang.String t4, java.lang.String t5, java.lang.String t6");
+      List<MPartitionColumnPrivilege> mSecurityTabPartList = (List<MPartitionColumnPrivilege>)
+          query.executeWithArray(tableName, dbName, partitionName, columnName);
+      LOG.debug("Done executing query for listPartitionColumnGrantsAll");
+      pm.retrieveAll(mSecurityTabPartList);
+      List<HiveObjectPrivilege> result = convertPartCols(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPartitionColumnGrantsAll");
+      return result;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private List<HiveObjectPrivilege> convertPartCols(List<MPartitionColumnPrivilege> privs) {
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (MPartitionColumnPrivilege priv : privs) {
+      String pname = priv.getPrincipalName();
+      PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
+
+      MPartition mpartition = priv.getPartition();
+      MTable mtable = mpartition.getTable();
+      MDatabase mdatabase = mtable.getDatabase();
+
+      HiveObjectRef objectRef = new HiveObjectRef(HiveObjectType.COLUMN,
+          mdatabase.getName(), mtable.getTableName(), mpartition.getValues(), priv.getColumnName());
+      PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
+          priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
+
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+    }
+    return result;
+  }
+
   @SuppressWarnings("unchecked")
   private List<MTablePrivilege> listPrincipalAllTableGrants(
       String principalName, PrincipalType principalType) {
@@ -4354,6 +4486,74 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mSecurityTabPartList;
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalTableGrantsAll(
+      String principalName, PrincipalType principalType) {
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalAllTableGrants");
+      Query query = pm.newQuery(MTablePrivilege.class,
+          "principalName == t1 && principalType == t2");
+      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      List<MTablePrivilege> mSecurityTabPartList = (List<MTablePrivilege>) query.execute(
+          principalName, principalType.toString());
+      LOG.debug("Done executing query for listPrincipalAllTableGrants");
+      pm.retrieveAll(mSecurityTabPartList);
+      List<HiveObjectPrivilege> result = convertTable(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPrincipalAllTableGrants");
+      return result;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listTableGrantsAll(String dbName, String tableName) {
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("Executing listTableGrantsAll");
+      Query query = pm.newQuery(MTablePrivilege.class,
+          "table.tableName == t1 && table.database.name == t2");
+      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      List<MTablePrivilege> mSecurityTabPartList = (List<MTablePrivilege>)
+          query.executeWithArray(tableName, dbName);
+      LOG.debug("Done executing query for listTableGrantsAll");
+      pm.retrieveAll(mSecurityTabPartList);
+      List<HiveObjectPrivilege> result = convertTable(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPrincipalAllTableGrants");
+      return result;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private List<HiveObjectPrivilege> convertTable(List<MTablePrivilege> privs) {
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (MTablePrivilege priv : privs) {
+      String pname = priv.getPrincipalName();
+      PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
+
+      String table = priv.getTable().getTableName();
+      String database = priv.getTable().getDatabase().getName();
+
+      HiveObjectRef objectRef = new HiveObjectRef(HiveObjectType.TABLE, database, table,
+          null, null);
+      PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
+          priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
+
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+    }
+    return result;
   }
 
   @SuppressWarnings("unchecked")
@@ -4383,6 +4583,77 @@ public class ObjectStore implements RawStore, Configurable {
     return mSecurityTabPartList;
   }
 
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalPartitionGrantsAll(
+      String principalName, PrincipalType principalType) {
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalPartitionGrantsAll");
+      Query query = pm.newQuery(MPartitionPrivilege.class,
+          "principalName == t1 && principalType == t2");
+      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      List<MPartitionPrivilege> mSecurityTabPartList = (List<MPartitionPrivilege>)
+          query.execute(principalName, principalType.toString());
+      LOG.debug("Done executing query for listPrincipalPartitionGrantsAll");
+      pm.retrieveAll(mSecurityTabPartList);
+      List<HiveObjectPrivilege> result = convertPartition(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPrincipalPartitionGrantsAll");
+      return result;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPartitionGrantsAll(
+      String dbName, String tableName, String partitionName) {
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalPartitionGrantsAll");
+      Query query = pm.newQuery(MPartitionPrivilege.class,
+          "partition.table.tableName == t3 && partition.table.database.name == t4 && " +
+          "partition.partitionName == t5");
+      query.declareParameters("java.lang.String t3, java.lang.String t4, java.lang.String t5");
+      List<MPartitionPrivilege> mSecurityTabPartList = (List<MPartitionPrivilege>)
+          query.executeWithArray(tableName, dbName, partitionName);
+      LOG.debug("Done executing query for listPrincipalPartitionGrantsAll");
+      pm.retrieveAll(mSecurityTabPartList);
+      List<HiveObjectPrivilege> result = convertPartition(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPrincipalPartitionGrantsAll");
+      return result;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private List<HiveObjectPrivilege> convertPartition(List<MPartitionPrivilege> privs) {
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (MPartitionPrivilege priv : privs) {
+      String pname = priv.getPrincipalName();
+      PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
+
+      MPartition mpartition = priv.getPartition();
+      MTable mtable = mpartition.getTable();
+      MDatabase mdatabase = mtable.getDatabase();
+
+      HiveObjectRef objectRef = new HiveObjectRef(HiveObjectType.PARTITION,
+          mdatabase.getName(), mtable.getTableName(), mpartition.getValues(), null);
+      PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
+          priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
+
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+    }
+    return result;
+  }
+
   @SuppressWarnings("unchecked")
   private List<MTableColumnPrivilege> listPrincipalAllTableColumnGrants(
       String principalName, PrincipalType principalType) {
@@ -4407,6 +4678,75 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mSecurityColumnList;
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalTableColumnGrantsAll(
+      String principalName, PrincipalType principalType) {
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalTableColumnGrantsAll");
+      Query query = pm.newQuery(MTableColumnPrivilege.class,
+          "principalName == t1 && principalType == t2");
+      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      List<MTableColumnPrivilege> mSecurityTabPartList = (List<MTableColumnPrivilege>)
+          query.execute(principalName, principalType.toString());
+      LOG.debug("Done executing query for listPrincipalTableColumnGrantsAll");
+      pm.retrieveAll(mSecurityTabPartList);
+      List<HiveObjectPrivilege> result = convertTableCols(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPrincipalTableColumnGrantsAll");
+      return result;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listTableColumnGrantsAll(
+      String dbName, String tableName, String columnName) {
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalTableColumnGrantsAll");
+      Query query = pm.newQuery(MTableColumnPrivilege.class,
+          "table.tableName == t3 && table.database.name == t4 &&  columnName == t5");
+      query.declareParameters("java.lang.String t3, java.lang.String t4, java.lang.String t5");
+      List<MTableColumnPrivilege> mSecurityTabPartList = (List<MTableColumnPrivilege>)
+          query.executeWithArray(tableName, dbName, columnName);
+      LOG.debug("Done executing query for listPrincipalTableColumnGrantsAll");
+      pm.retrieveAll(mSecurityTabPartList);
+      List<HiveObjectPrivilege> result = convertTableCols(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPrincipalTableColumnGrantsAll");
+      return result;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private List<HiveObjectPrivilege> convertTableCols(List<MTableColumnPrivilege> privs) {
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (MTableColumnPrivilege priv : privs) {
+      String pname = priv.getPrincipalName();
+      PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
+
+      MTable mtable = priv.getTable();
+      MDatabase mdatabase = mtable.getDatabase();
+
+      HiveObjectRef objectRef = new HiveObjectRef(HiveObjectType.COLUMN,
+          mdatabase.getName(), mtable.getTableName(), null, priv.getColumnName());
+      PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
+          priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
+
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+    }
+    return result;
   }
 
   @SuppressWarnings("unchecked")

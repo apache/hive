@@ -91,7 +91,7 @@ POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).key EXPRESSION [(s
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).value SIMPLE [(src_auth)src_auth.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part_fail
-partition	ds=2010
+partition	[2010]
 columnName	key
 principalName	hive_test_group1
 principalType	GROUP
@@ -106,7 +106,7 @@ POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).key EXPRESSION [(s
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).value SIMPLE [(src_auth)src_auth.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part_fail
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_group1
 principalType	GROUP
 privilege	Select
@@ -166,7 +166,7 @@ POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2011).key EXPRESSION [(s
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2011).value SIMPLE [(src_auth)src_auth.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part_fail
-partition	ds=2011
+partition	[2011]
 columnName	key
 principalName	hive_test_group1
 principalType	GROUP
@@ -183,7 +183,7 @@ POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2011).key EXPRESSION [(s
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2011).value SIMPLE [(src_auth)src_auth.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part_fail
-partition	ds=2011
+partition	[2011]
 principalName	hive_test_group1
 principalType	GROUP
 privilege	Select
