@@ -119,6 +119,15 @@ public class GenVectorCode extends Task {
       {"ColumnArithmeticColumnDecimal", "Subtract"},
       {"ColumnArithmeticColumnDecimal", "Multiply"},
 
+      {"ColumnDivideScalarDecimal", "Divide"},
+      {"ColumnDivideScalarDecimal", "Modulo"},
+
+      {"ScalarDivideColumnDecimal", "Divide"},
+      {"ScalarDivideColumnDecimal", "Modulo"},
+
+      {"ColumnDivideColumnDecimal", "Divide"},
+      {"ColumnDivideColumnDecimal", "Modulo"},
+
       {"ColumnCompareScalar", "Equal", "long", "double", "=="},
       {"ColumnCompareScalar", "Equal", "double", "double", "=="},
       {"ColumnCompareScalar", "NotEqual", "long", "double", "!="},
@@ -578,6 +587,12 @@ public class GenVectorCode extends Task {
         generateScalarArithmeticColumnDecimal(tdesc);
       } else if (tdesc[0].equals("ColumnArithmeticColumnDecimal")) {
         generateColumnArithmeticColumnDecimal(tdesc);
+      } else if (tdesc[0].equals("ColumnDivideScalarDecimal")) {
+        generateColumnDivideScalarDecimal(tdesc);
+      } else if (tdesc[0].equals("ScalarDivideColumnDecimal")) {
+        generateScalarDivideColumnDecimal(tdesc);
+      } else if (tdesc[0].equals("ColumnDivideColumnDecimal")) {
+        generateColumnDivideColumnDecimal(tdesc);
       } else if (tdesc[0].equals("ColumnCompareScalar")) {
         generateColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("ScalarCompareColumn")) {
@@ -1203,6 +1218,48 @@ public class GenVectorCode extends Task {
        className, templateString);
   }
 
+  private void generateColumnDivideScalarDecimal(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "DecimalCol" + getInitialCapWord(operatorName) + "DecimalScalar";
+
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+       className, templateString);
+  }
+
+  private void generateScalarDivideColumnDecimal(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "DecimalScalar" + getInitialCapWord(operatorName) + "DecimalColumn";
+
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+       className, templateString);
+  }
+
+  private void generateColumnDivideColumnDecimal(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "DecimalCol" + getInitialCapWord(operatorName) + "DecimalColumn";
+
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+       className, templateString);
+  }
+
   private void generateScalarArithmeticColumn(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
@@ -1292,6 +1349,14 @@ public class GenVectorCode extends Task {
     } else {
       return type;
     }
+  }
+
+  /**
+   * Return the argument with the first letter capitalized
+   */
+  private static String getInitialCapWord(String word) {
+    String firstLetterAsCap = word.substring(0, 1).toUpperCase();
+    return firstLetterAsCap + word.substring(1);
   }
 
   private String getArithmeticReturnType(String operandType1,
