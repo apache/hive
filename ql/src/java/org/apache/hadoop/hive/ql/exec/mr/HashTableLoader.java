@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.exec.mr;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,13 +30,20 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.TemporaryHashSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.mapred.JobConf;
 
 /**
  * HashTableLoader for MR loads the hashtable for MapJoins from local disk (hashtables
@@ -44,45 +54,40 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
   private static final Log LOG = LogFactory.getLog(MapJoinOperator.class.getName());
 
-  public HashTableLoader() {
+  private ExecMapperContext context;
+  private Configuration hconf;
+
+  private MapJoinOperator joinOp;
+  private MapJoinDesc desc;
+
+  @Override
+  public void init(ExecMapperContext context, Configuration hconf, MapJoinOperator joinOp) {
+    this.context = context;
+    this.hconf = hconf;
+    this.joinOp = joinOp;
+    this.desc = joinOp.getConf();
   }
 
   @Override
-  public void load(ExecMapperContext context,
-      Configuration hconf,
-      MapJoinDesc desc,
-      byte posBigTable,
+  public void load(
       MapJoinTableContainer[] mapJoinTables,
       MapJoinTableContainerSerDe[] mapJoinTableSerdes) throws HiveException {
 
-    Path baseDir = null;
-    Path currentInputPath = context.getCurrentInputPath();
-    LOG.info("******* Load from HashTable File: input : " + currentInputPath);
-    String fileName = context.getLocalWork().getBucketFileName(currentInputPath.toString());
+    String currentInputPath = context.getCurrentInputPath().toString();
+    LOG.info("******* Load from HashTable for input file: " + currentInputPath);
+    MapredLocalWork localWork = context.getLocalWork();
     try {
-      if (ShimLoader.getHadoopShims().isLocalMode(hconf)) {
-        baseDir = context.getLocalWork().getTmpPath();
-      } else {
-        Path[] localArchives;
-        String stageID = context.getLocalWork().getStageID();
-        String suffix = Utilities.generateTarFileName(stageID);
-        FileSystem localFs = FileSystem.getLocal(hconf);
-        localArchives = DistributedCache.getLocalCacheArchives(hconf);
-        Path archive;
-        for (int j = 0; j < localArchives.length; j++) {
-          archive = localArchives[j];
-          if (!archive.getName().endsWith(suffix)) {
-            continue;
-          }
-          baseDir = archive.makeQualified(localFs);
-        }
+      if (localWork.getDirectFetchOp() != null) {
+        loadDirectly(mapJoinTables, currentInputPath);
       }
+      Path baseDir = getBaseDir(localWork);
+      if (baseDir == null) {
+        return;
+      }
+      String fileName = localWork.getBucketFileName(currentInputPath);
       for (int pos = 0; pos < mapJoinTables.length; pos++) {
-        if (pos == posBigTable) {
+        if (pos == desc.getPosBigTable() || mapJoinTables[pos] != null) {
           continue;
-        }
-        if(baseDir == null) {
-          throw new IllegalStateException("baseDir cannot be null");
         }
         Path path = Utilities.generatePath(baseDir, desc.getDumpFilePrefix(), (byte)pos, fileName);
         LOG.info("\tLoad back 1 hashtable file from tmp file uri:" + path);
@@ -99,4 +104,54 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     }
   }
 
+  private Path getBaseDir(MapredLocalWork localWork) throws Exception {
+    if (ShimLoader.getHadoopShims().isLocalMode(hconf)) {
+      return localWork.getTmpPath();
+    }
+    Path[] localArchives = DistributedCache.getLocalCacheArchives(hconf);
+    if (localArchives != null) {
+      String stageID = localWork.getStageID();
+      String suffix = Utilities.generateTarFileName(stageID);
+      FileSystem localFs = FileSystem.getLocal(hconf);
+      for (int j = 0; j < localArchives.length; j++) {
+        Path archive = localArchives[j];
+        if (!archive.getName().endsWith(suffix)) {
+          continue;
+        }
+        return archive.makeQualified(localFs);
+      }
+    }
+    return null;
+  }
+
+  private void loadDirectly(MapJoinTableContainer[] mapJoinTables, String inputFileName)
+      throws Exception {
+    MapredLocalWork localWork = context.getLocalWork();
+    List<Operator<?>> directWorks = localWork.getDirectFetchOp().get(joinOp);
+    if (directWorks == null || directWorks.isEmpty()) {
+      return;
+    }
+    JobConf job = new JobConf(hconf);
+    MapredLocalTask localTask = new MapredLocalTask(localWork, job, false);
+
+    HashTableSinkOperator sink = new TemporaryHashSinkOperator(desc);
+    sink.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>(directWorks));
+
+    for (Operator<?> operator : directWorks) {
+      if (operator instanceof TableScanOperator) {
+        operator.setChildOperators(Arrays.<Operator<? extends OperatorDesc>>asList(sink));
+      }
+    }
+    localTask.setExecContext(context);
+    localTask.startForward(inputFileName);
+
+    MapJoinTableContainer[] tables = sink.getMapJoinTables();
+    for (int i = 0; i < sink.getNumParent(); i++) {
+      if (sink.getParentOperators().get(i) != null) {
+        mapJoinTables[i] = tables[i];
+      }
+    }
+
+    Arrays.fill(tables, null);
+  }
 }

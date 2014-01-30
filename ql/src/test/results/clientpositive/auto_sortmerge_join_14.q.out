@@ -46,35 +46,14 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage , consists of Stage-5, Stage-1
-  Stage-5 has a backup stage: Stage-1
-  Stage-3 depends on stages: Stage-5
+  Stage-4 is a root stage , consists of Stage-3, Stage-1
+  Stage-3 has a backup stage: Stage-1
   Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-4
     Conditional Operator
-
-  Stage: Stage-5
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        b 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        b 
-          TableScan
-            alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
 
   Stage: Stage-3
     Map Reduce
@@ -108,6 +87,14 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            b 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            b 
+              TableScan
+                alias: b
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -229,35 +216,14 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage , consists of Stage-5, Stage-1
-  Stage-5 has a backup stage: Stage-1
-  Stage-3 depends on stages: Stage-5
+  Stage-4 is a root stage , consists of Stage-3, Stage-1
+  Stage-3 has a backup stage: Stage-1
   Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-4
     Conditional Operator
-
-  Stage: Stage-5
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a 
-          TableScan
-            alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 1
 
   Stage: Stage-3
     Map Reduce
@@ -291,6 +257,14 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            a 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            a 
+              TableScan
+                alias: a
       Reduce Operator Tree:
         Group By Operator
           aggregations:

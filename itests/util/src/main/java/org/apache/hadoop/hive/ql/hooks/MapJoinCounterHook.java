@@ -39,11 +39,12 @@ public class MapJoinCounterHook implements ExecuteWithHookContext {
     String queryID = plan.getQueryId();
     // String query = SessionState.get().getCmd();
 
-    int convertedMapJoin = 0;
     int commonJoin = 0;
+    int hintedMapJoin = 0;
+    int convertedMapJoin = 0;
+    int hintedMapJoinLocal = 0;
+    int convertedMapJoinLocal = 0;
     int backupCommonJoin = 0;
-    int convertedLocalMapJoin = 0;
-    int localMapJoin = 0;
 
     List<TaskRunner> list = hookContext.getCompleteTaskList();
     for (TaskRunner tskRunner : list) {
@@ -53,23 +54,27 @@ public class MapJoinCounterHook implements ExecuteWithHookContext {
       case Task.COMMON_JOIN:
         commonJoin++;
         break;
-      case Task.CONVERTED_LOCAL_MAPJOIN:
-        convertedLocalMapJoin++;
+      case Task.HINTED_MAPJOIN:
+        hintedMapJoin++;
+        break;
+      case Task.HINTED_MAPJOIN_LOCAL:
+        hintedMapJoinLocal++;
         break;
       case Task.CONVERTED_MAPJOIN:
         convertedMapJoin++;
         break;
+      case Task.CONVERTED_MAPJOIN_LOCAL:
+        convertedMapJoinLocal++;
+        break;
       case Task.BACKUP_COMMON_JOIN:
         backupCommonJoin++;
         break;
-      case Task.LOCAL_MAPJOIN:
-         localMapJoin++;
-         break;
       }
     }
     LogHelper console = SessionState.getConsole();
-    console.printError("[MapJoinCounter PostHook] CONVERTED_LOCAL_MAPJOIN: " + convertedLocalMapJoin
-        + " CONVERTED_MAPJOIN: " + convertedMapJoin + " LOCAL_MAPJOIN: "+localMapJoin+ " COMMON_JOIN: "+commonJoin
+    console.printError("[MapJoinCounter PostHook] COMMON_JOIN: " + commonJoin
+        + " HINTED_MAPJOIN: " + hintedMapJoin + " HINTED_MAPJOIN_LOCAL: " + hintedMapJoinLocal
+        + " CONVERTED_MAPJOIN: " + convertedMapJoin + " CONVERTED_MAPJOIN_LOCAL: " + convertedMapJoinLocal
         + " BACKUP_COMMON_JOIN: " + backupCommonJoin);
   }
 }

@@ -26,14 +26,12 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1, Stage-5 , consists of Stage-9, Stage-10, Stage-2
-  Stage-9 has a backup stage: Stage-2
-  Stage-6 depends on stages: Stage-9
+  Stage-8 depends on stages: Stage-1, Stage-5 , consists of Stage-6, Stage-7, Stage-2
+  Stage-6 has a backup stage: Stage-2
   Stage-3 depends on stages: Stage-2, Stage-6, Stage-7
   Stage-0 depends on stages: Stage-3
   Stage-4 depends on stages: Stage-0
-  Stage-10 has a backup stage: Stage-2
-  Stage-7 depends on stages: Stage-10
+  Stage-7 has a backup stage: Stage-2
   Stage-2
   Stage-5 is a root stage
 
@@ -96,25 +94,6 @@ STAGE PLANS:
   Stage: Stage-8
     Conditional Operator
 
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        $INTNAME 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        $INTNAME 
-          TableScan
-            HashTable Sink Operator
-              condition expressions:
-                0 {_col0}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[_col0]]
-              Position of Big Table: 0
-
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
@@ -155,6 +134,13 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            $INTNAME 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            $INTNAME 
+              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -212,25 +198,6 @@ STAGE PLANS:
   Stage: Stage-4
     Stats-Aggr Operator
 
-  Stage: Stage-10
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        $INTNAME1 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        $INTNAME1 
-          TableScan
-            HashTable Sink Operator
-              condition expressions:
-                0 {_col0}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[_col0]]
-              Position of Big Table: 1
-
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
@@ -271,6 +238,13 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            $INTNAME1 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            $INTNAME1 
+              TableScan
 
   Stage: Stage-2
     Map Reduce

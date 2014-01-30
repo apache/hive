@@ -92,7 +92,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   public HashTableSinkDesc(MapJoinDesc clone) {
     this.bigKeysDirMap = clone.getBigKeysDirMap();
     this.conds = clone.getConds();
-    this.exprs= clone.getExprs();
+    this.exprs = new HashMap<Byte, List<ExprNodeDesc>>(clone.getExprs());
     this.handleSkewJoin = clone.getHandleSkewJoin();
     this.keyTableDesc = clone.getKeyTableDesc();
     this.noOuterJoin = clone.getNoOuterJoin();
@@ -102,10 +102,10 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.skewKeysValuesTables = clone.getSkewKeysValuesTables();
     this.smallKeysDirMap = clone.getSmallKeysDirMap();
     this.tagOrder = clone.getTagOrder();
-    this.filters = clone.getFilters();
+    this.filters = new HashMap<Byte, List<ExprNodeDesc>>(clone.getFilters());
     this.filterMap = clone.getFilterMap();
 
-    this.keys = clone.getKeys();
+    this.keys = new HashMap<Byte, List<ExprNodeDesc>>(clone.getKeys());
     this.keyTblDesc = clone.getKeyTblDesc();
     this.valueTblDescs = clone.getValueTblDescs();
     this.valueTblFilteredDescs = clone.getValueFilteredTblDescs();

@@ -17,32 +17,11 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) src1) (TOK_TABREF (TOK_TABNAME src) src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value))) (TOK_WHERE (and (or (= (. (TOK_TABLE_OR_COL src1) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL src1) ds) '2008-04-09')) (or (= (. (TOK_TABLE_OR_COL src1) hr) '12') (= (. (TOK_TABLE_OR_COL src1) hr) '11'))))))
 
 STAGE DEPENDENCIES:
-  Stage-5 is a root stage
-  Stage-4 depends on stages: Stage-5
+  Stage-4 is a root stage
   Stage-0 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-5
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        src2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        src2 
-          TableScan
-            alias: src2
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 {value}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
@@ -78,6 +57,14 @@ STAGE PLANS:
                       name: default.dest1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            src2 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            src2 
+              TableScan
+                alias: src2
 
   Stage: Stage-0
     Move Operator

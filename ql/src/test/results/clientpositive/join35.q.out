@@ -32,9 +32,8 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1, Stage-4 , consists of Stage-9, Stage-10, Stage-2
-  Stage-9 has a backup stage: Stage-2
-  Stage-6 depends on stages: Stage-9
+  Stage-8 depends on stages: Stage-1, Stage-4 , consists of Stage-6, Stage-10, Stage-2
+  Stage-6 has a backup stage: Stage-2
   Stage-0 depends on stages: Stage-2, Stage-6, Stage-7
   Stage-3 depends on stages: Stage-0
   Stage-10 has a backup stage: Stage-2
@@ -181,27 +180,6 @@ STAGE PLANS:
   Stage: Stage-8
     Conditional Operator
 
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        x 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        x 
-          TableScan
-            alias: x
-            GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 {_col1}
-                1 {key} {value}
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
@@ -305,6 +283,15 @@ STAGE PLANS:
                     MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            x 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            x 
+              TableScan
+                alias: x
+                GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

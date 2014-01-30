@@ -18,46 +18,10 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x1) (TOK_TABREF (TOK_TABNAME src1) y1) (= (. (TOK_TABLE_OR_COL x1) key) (. (TOK_TABLE_OR_COL y1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key))))) tmp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp) key))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL tmp) key)))))
 
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-2 depends on stages: Stage-8
+  Stage-2 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-8
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        null-subquery1:tmp-subquery1:y1 
-          Fetch Operator
-            limit: -1
-        null-subquery2:tmp-subquery2:y2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        null-subquery1:tmp-subquery1:y1 
-          TableScan
-            alias: y1
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-        null-subquery2:tmp-subquery2:y2 
-          TableScan
-            alias: y2
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
@@ -133,6 +97,20 @@ STAGE PLANS:
                             type: string
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            null-subquery1:tmp-subquery1:y1 
+              Fetch Operator
+                limit: -1
+            null-subquery2:tmp-subquery2:y2 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            null-subquery1:tmp-subquery1:y1 
+              TableScan
+                alias: y1
+            null-subquery2:tmp-subquery2:y2 
+              TableScan
+                alias: y2
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -271,33 +249,11 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x1) (TOK_TABREF (TOK_TABNAME src1) y1) (= (. (TOK_TABLE_OR_COL x1) key) (. (TOK_TABLE_OR_COL y1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key))))) tmp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp) key))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL tmp) key)))))
 
 STAGE DEPENDENCIES:
-  Stage-9 is a root stage
-  Stage-7 depends on stages: Stage-9
-  Stage-8 depends on stages: Stage-7
-  Stage-2 depends on stages: Stage-8
+  Stage-7 is a root stage
+  Stage-2 depends on stages: Stage-7
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        null-subquery1:tmp-subquery1:y1 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        null-subquery1:tmp-subquery1:y1 
-          TableScan
-            alias: y1
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
@@ -330,26 +286,14 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-
-  Stage: Stage-8
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        null-subquery2:tmp-subquery2:y2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        null-subquery2:tmp-subquery2:y2 
-          TableScan
-            alias: y2
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
+          Alias -> Map Local Tables:
+            null-subquery1:tmp-subquery1:y1 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            null-subquery1:tmp-subquery1:y1 
+              TableScan
+                alias: y1
 
   Stage: Stage-2
     Map Reduce
@@ -408,6 +352,14 @@ STAGE PLANS:
                             type: string
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            null-subquery2:tmp-subquery2:y2 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            null-subquery2:tmp-subquery2:y2 
+              TableScan
+                alias: y2
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -541,8 +493,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
-  Stage-6 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-4
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -593,26 +544,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-6
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        null-subquery2:tmp-subquery2:y2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        null-subquery2:tmp-subquery2:y2 
-          TableScan
-            alias: y2
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
 
   Stage: Stage-2
     Map Reduce
@@ -671,6 +602,14 @@ STAGE PLANS:
                             type: string
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            null-subquery2:tmp-subquery2:y2 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            null-subquery2:tmp-subquery2:y2 
+              TableScan
+                alias: y2
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -798,41 +737,17 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x1) (TOK_TABREF (TOK_TABNAME src1) y1) (= (. (TOK_TABLE_OR_COL x1) key) (. (TOK_TABLE_OR_COL y1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x1) key)))) tmp1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x2) key)))) tmp2) (= (. (TOK_TABLE_OR_COL tmp1) key) (. (TOK_TABLE_OR_COL tmp2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp1) key) key) (TOK_SELEXPR (TOK_FUNCTIONSTAR count) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL tmp1) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt)))))
 
 STAGE DEPENDENCIES:
-  Stage-17 is a root stage
-  Stage-2 depends on stages: Stage-17
-  Stage-12 depends on stages: Stage-2, Stage-8 , consists of Stage-15, Stage-16, Stage-3
-  Stage-15 has a backup stage: Stage-3
-  Stage-10 depends on stages: Stage-15
+  Stage-2 is a root stage
+  Stage-12 depends on stages: Stage-2, Stage-8 , consists of Stage-10, Stage-11, Stage-3
+  Stage-10 has a backup stage: Stage-3
   Stage-4 depends on stages: Stage-3, Stage-10, Stage-11
   Stage-5 depends on stages: Stage-4
-  Stage-16 has a backup stage: Stage-3
-  Stage-11 depends on stages: Stage-16
+  Stage-11 has a backup stage: Stage-3
   Stage-3
-  Stage-18 is a root stage
-  Stage-8 depends on stages: Stage-18
+  Stage-8 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-17
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        tmp2:y2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        tmp2:y2 
-          TableScan
-            alias: y2
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
@@ -874,6 +789,14 @@ STAGE PLANS:
                     tag: -1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            tmp2:y2 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            tmp2:y2 
+              TableScan
+                alias: y2
       Reduce Operator Tree:
         Group By Operator
           bucketGroup: false
@@ -897,25 +820,6 @@ STAGE PLANS:
 
   Stage: Stage-12
     Conditional Operator
-
-  Stage: Stage-15
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        $INTNAME 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        $INTNAME 
-          TableScan
-            HashTable Sink Operator
-              condition expressions:
-                0 {_col0}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[_col0]]
-              Position of Big Table: 0
 
   Stage: Stage-10
     Map Reduce
@@ -957,6 +861,13 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            $INTNAME 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            $INTNAME 
+              TableScan
 
   Stage: Stage-4
     Map Reduce
@@ -1028,25 +939,6 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-16
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        $INTNAME1 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        $INTNAME1 
-          TableScan
-            HashTable Sink Operator
-              condition expressions:
-                0 {_col0}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[_col0]]
-              Position of Big Table: 1
-
   Stage: Stage-11
     Map Reduce
       Alias -> Map Operator Tree:
@@ -1087,6 +979,13 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            $INTNAME1 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            $INTNAME1 
+              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -1147,26 +1046,6 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-18
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        tmp1:y1 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        tmp1:y1 
-          TableScan
-            alias: y1
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
@@ -1208,6 +1087,14 @@ STAGE PLANS:
                     tag: -1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            tmp1:y1 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            tmp1:y1 
+              TableScan
+                alias: y1
       Reduce Operator Tree:
         Group By Operator
           bucketGroup: false
@@ -1312,47 +1199,11 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x1) (TOK_TABREF (TOK_TABNAME src1) y1) (= (. (TOK_TABLE_OR_COL x1) key) (. (TOK_TABLE_OR_COL y1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x1) key)))) tmp1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x2) key)))) tmp2) (= (. (TOK_TABLE_OR_COL tmp1) key) (. (TOK_TABLE_OR_COL tmp2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp1) key) key) (TOK_SELEXPR (TOK_FUNCTIONSTAR count) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL tmp1) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt)))))
 
 STAGE DEPENDENCIES:
-  Stage-9 is a root stage
-  Stage-2 depends on stages: Stage-9
+  Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        tmp1:y1 
-          Fetch Operator
-            limit: -1
-        tmp2:y2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        tmp1:y1 
-          TableScan
-            alias: y1
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-        tmp2:y2 
-          TableScan
-            alias: y2
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
@@ -1430,6 +1281,20 @@ STAGE PLANS:
                     tag: 1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            tmp1:y1 
+              Fetch Operator
+                limit: -1
+            tmp2:y2 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            tmp1:y1 
+              TableScan
+                alias: y1
+            tmp2:y2 
+              TableScan
+                alias: y2
       Reduce Operator Tree:
         Demux Operator
           Group By Operator
@@ -1651,16 +1516,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
-  Stage-10 depends on stages: Stage-2, Stage-7 , consists of Stage-12, Stage-13, Stage-3
-  Stage-12 has a backup stage: Stage-3
-  Stage-8 depends on stages: Stage-12
+  Stage-10 depends on stages: Stage-2, Stage-7 , consists of Stage-8, Stage-9, Stage-3
+  Stage-8 has a backup stage: Stage-3
   Stage-4 depends on stages: Stage-3, Stage-8, Stage-9
   Stage-5 depends on stages: Stage-4
-  Stage-13 has a backup stage: Stage-3
-  Stage-9 depends on stages: Stage-13
+  Stage-9 has a backup stage: Stage-3
   Stage-3
-  Stage-14 is a root stage
-  Stage-2 depends on stages: Stage-14
+  Stage-2 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -1715,25 +1577,6 @@ STAGE PLANS:
   Stage: Stage-10
     Conditional Operator
 
-  Stage: Stage-12
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        $INTNAME 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        $INTNAME 
-          TableScan
-            HashTable Sink Operator
-              condition expressions:
-                0 {_col0}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[_col0]]
-              Position of Big Table: 0
-
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
@@ -1774,6 +1617,13 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            $INTNAME 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            $INTNAME 
+              TableScan
 
   Stage: Stage-4
     Map Reduce
@@ -1845,25 +1695,6 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-13
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        $INTNAME1 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        $INTNAME1 
-          TableScan
-            HashTable Sink Operator
-              condition expressions:
-                0 {_col0}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[_col0]]
-              Position of Big Table: 1
-
   Stage: Stage-9
     Map Reduce
       Alias -> Map Operator Tree:
@@ -1904,6 +1735,13 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            $INTNAME1 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            $INTNAME1 
+              TableScan
 
   Stage: Stage-3
     Map Reduce
@@ -1964,26 +1802,6 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-14
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        tmp2:y2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        tmp2:y2 
-          TableScan
-            alias: y2
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
@@ -2025,6 +1843,14 @@ STAGE PLANS:
                     tag: -1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            tmp2:y2 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            tmp2:y2 
+              TableScan
+                alias: y2
       Reduce Operator Tree:
         Group By Operator
           bucketGroup: false
@@ -2129,32 +1955,11 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1) x1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x1) key)))) tmp1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x2) key)))) tmp2) (= (. (TOK_TABLE_OR_COL tmp1) key) (. (TOK_TABLE_OR_COL tmp2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp1) key) key) (TOK_SELEXPR (TOK_FUNCTIONSTAR count) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL tmp1) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt)))))
 
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-7
+  Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-7
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        tmp2:y2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        tmp2:y2 
-          TableScan
-            alias: y2
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
@@ -2220,6 +2025,14 @@ STAGE PLANS:
                     tag: 1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            tmp2:y2 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            tmp2:y2 
+              TableScan
+                alias: y2
       Reduce Operator Tree:
         Demux Operator
           Group By Operator
@@ -2447,31 +2260,10 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME part_table) x) (TOK_TABREF (TOK_TABNAME src1) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
 STAGE DEPENDENCIES:
-  Stage-5 is a root stage
-  Stage-2 depends on stages: Stage-5
+  Stage-2 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-5
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        y 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        y 
-          TableScan
-            alias: y
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
@@ -2504,6 +2296,14 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            y 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            y 
+              TableScan
+                alias: y
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -2583,35 +2383,12 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL a) key)))) tmp) (TOK_TABREF (TOK_TABNAME src) c) (= (. (TOK_TABLE_OR_COL tmp) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) key))))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL a) key)))) tmp) (TOK_TABREF (TOK_TABNAME src) c) (= (. (TOK_TABLE_OR_COL tmp) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) key)))))) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
-  Stage-17 is a root stage
-  Stage-2 depends on stages: Stage-17
-  Stage-16 depends on stages: Stage-2, Stage-7
-  Stage-4 depends on stages: Stage-16
-  Stage-18 is a root stage
-  Stage-7 depends on stages: Stage-18
+  Stage-2 is a root stage
+  Stage-4 depends on stages: Stage-2, Stage-7
+  Stage-7 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-17
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        null-subquery2:x-subquery2:tmp:a 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        null-subquery2:x-subquery2:tmp:a 
-          TableScan
-            alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 1
-
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
@@ -2653,6 +2430,14 @@ STAGE PLANS:
                     tag: -1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            null-subquery2:x-subquery2:tmp:a 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            null-subquery2:x-subquery2:tmp:a 
+              TableScan
+                alias: a
       Reduce Operator Tree:
         Group By Operator
           bucketGroup: false
@@ -2673,41 +2458,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-16
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        null-subquery1:x-subquery1:c 
-          Fetch Operator
-            limit: -1
-        null-subquery2:x-subquery2:c 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        null-subquery1:x-subquery1:c 
-          TableScan
-            alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {key}
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[key]]
-              Position of Big Table: 0
-        null-subquery2:x-subquery2:c 
-          TableScan
-            alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {key}
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[key]]
-              Position of Big Table: 0
 
   Stage: Stage-4
     Map Reduce
@@ -2778,26 +2528,20 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
-
-  Stage: Stage-18
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        null-subquery1:x-subquery1:tmp:b 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        null-subquery1:x-subquery1:tmp:b 
-          TableScan
-            alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
+          Alias -> Map Local Tables:
+            null-subquery1:x-subquery1:c 
+              Fetch Operator
+                limit: -1
+            null-subquery2:x-subquery2:c 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            null-subquery1:x-subquery1:c 
+              TableScan
+                alias: c
+            null-subquery2:x-subquery2:c 
+              TableScan
+                alias: c
 
   Stage: Stage-7
     Map Reduce
@@ -2840,6 +2584,14 @@ STAGE PLANS:
                     tag: -1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            null-subquery1:x-subquery1:tmp:b 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            null-subquery1:x-subquery1:tmp:b 
+              TableScan
+                alias: b
       Reduce Operator Tree:
         Group By Operator
           bucketGroup: false
