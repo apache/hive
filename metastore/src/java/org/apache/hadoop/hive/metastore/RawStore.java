@@ -137,7 +137,7 @@ public interface RawStore extends Configurable {
       InvalidInputException;
 
   public abstract List<Partition> getPartitions(String dbName,
-      String tableName, int max) throws MetaException;
+      String tableName, int max) throws MetaException, NoSuchObjectException;
 
   public abstract void alterTable(String dbname, String name, Table newTable)
       throws InvalidObjectException, MetaException;
@@ -378,30 +378,15 @@ public interface RawStore extends Configurable {
    *
    */
   public abstract ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
-    String colName) throws MetaException, NoSuchObjectException, InvalidInputException,
-    InvalidObjectException;
+    List<String> colName) throws MetaException, NoSuchObjectException;
 
   /**
-   * Returns the relevant column statistics for a given column in a given partition in a given
+   * Returns the relevant column statistics for given columns in given partitions in a given
    * table in a given database if such statistics exist.
-   * @param partName
-   *
-   * @param The name of the database, defaults to current database
-   * @param The name of the table
-   * @param The name of the partition
-   * @param List of partVals for the partition
-   * @param The name of the column for which statistics is requested
-   * @return Relevant column statistics for the column for the given partition in a given table
-   * @throws NoSuchObjectException
-   * @throws MetaException
-   * @throws InvalidInputException
-   * @throws InvalidObjectException
-   *
    */
-
-  public abstract ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
-    String partName, List<String> partVals, String colName)
-    throws MetaException, NoSuchObjectException, InvalidInputException, InvalidObjectException;
+  public abstract List<ColumnStatistics> getPartitionColumnStatistics(
+     String dbName, String tblName, List<String> partNames, List<String> colNames)
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Deletes column statistics if present associated with a given db, table, partition and col. If

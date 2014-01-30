@@ -562,11 +562,10 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public ColumnStatistics getTableColumnStatistics(String dbName, String tableName, String colName)
-      throws MetaException, NoSuchObjectException {
+  public  ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
+      List<String> colName) throws MetaException, NoSuchObjectException {
     return null;
   }
-
 
   @Override
   public boolean deleteTableColumnStatistics(String dbName, String tableName,
@@ -582,13 +581,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     InvalidInputException {
     return false;
 
-  }
-
-  @Override
-  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
-    String partName, List<String> partVal, String colName) throws MetaException,
-    NoSuchObjectException, InvalidInputException, InvalidObjectException  {
-    return null;
   }
 
   @Override
@@ -613,6 +605,13 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void setMetaStoreSchemaVersion(String version, String comment) throws MetaException {
+  }
+
+  @Override
+  public List<ColumnStatistics> getPartitionColumnStatistics(String dbName,
+      String tblName, List<String> colNames, List<String> partNames)
+      throws MetaException, NoSuchObjectException {
+    return null;
   }
 
   @Override

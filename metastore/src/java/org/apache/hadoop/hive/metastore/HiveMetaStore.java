@@ -83,6 +83,8 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsResult;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -90,6 +92,8 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
+import org.apache.hadoop.hive.metastore.api.TableStatsResult;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -146,6 +150,7 @@ import org.apache.thrift.transport.TTransportFactory;
 
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
+import com.google.common.collect.Lists;
 
 /**
  * TODO:pc remove application logic to a separate interface.
@@ -3193,17 +3198,34 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                     " column=" + colName);
       ColumnStatistics statsObj = null;
       try {
-        statsObj = getMS().getTableColumnStatistics(dbName, tableName, colName);
+        statsObj = getMS().getTableColumnStatistics(
+            dbName, tableName, Lists.newArrayList(colName));
+        assert statsObj.getStatsObjSize() <= 1;
+        return statsObj;
       } finally {
         endFunction("get_column_statistics_by_table: ", statsObj != null, null, tableName);
       }
-      return statsObj;
+    }
+
+    public TableStatsResult get_table_statistics_req(TableStatsRequest request)
+        throws MetaException, NoSuchObjectException, TException {
+      String dbName = request.getDbName(), tblName = request.getTblName();
+      startFunction("get_table_statistics_req: db=" + dbName + " table=" + tblName);
+      TableStatsResult result = null;
+      try {
+        ColumnStatistics cs = getMS().getTableColumnStatistics(
+            dbName, tblName, request.getColNames());
+        result = new TableStatsResult(
+            cs == null ? Lists.<ColumnStatisticsObj>newArrayList() : cs.getStatsObj());
+      } finally {
+        endFunction("get_table_statistics_req: ", result == null, null, tblName);
+      }
+      return result;
     }
 
     public ColumnStatistics get_partition_column_statistics(String dbName, String tableName,
       String partName, String colName) throws NoSuchObjectException, MetaException,
-      InvalidInputException, TException,InvalidObjectException
-    {
+      InvalidInputException, TException, InvalidObjectException {
       dbName = dbName.toLowerCase();
       tableName = tableName.toLowerCase();
       colName = colName.toLowerCase();
@@ -3213,14 +3235,39 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       ColumnStatistics statsObj = null;
 
       try {
-        List<String> partVals = getPartValsFromName(getMS(), dbName, tableName, partName);
-        statsObj = getMS().getPartitionColumnStatistics(dbName, tableName, convertedPartName,
-                                                            partVals, colName);
+        List<ColumnStatistics> list = getMS().getPartitionColumnStatistics(dbName, tableName,
+            Lists.newArrayList(convertedPartName), Lists.newArrayList(colName));
+        if (list.isEmpty()) return null;
+        if (list.size() != 1) {
+          throw new MetaException(list.size() + " statistics for single column and partition");
+        }
+        statsObj = list.get(0);
       } finally {
         endFunction("get_column_statistics_by_partition: ", statsObj != null, null, tableName);
       }
       return statsObj;
-   }
+    }
+
+    public PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)
+        throws MetaException, NoSuchObjectException, TException {
+      String dbName = request.getDbName(), tblName = request.getTblName();
+      startFunction("get_partitions_statistics_req: db=" + dbName + " table=" + tblName);
+
+      PartitionsStatsResult result = null;
+      try {
+        List<ColumnStatistics> stats = getMS().getPartitionColumnStatistics(
+            dbName, tblName, request.getPartNames(), request.getColNames());
+        Map<String, List<ColumnStatisticsObj>> map =
+            new HashMap<String, List<ColumnStatisticsObj>>();
+        for (ColumnStatistics stat : stats) {
+          map.put(stat.getStatsDesc().getPartName(), stat.getStatsObj());
+        }
+        result = new PartitionsStatsResult(map);
+      } finally {
+        endFunction("get_partitions_statistics_req: ", result == null, null, tblName);
+      }
+      return result;
+    }
 
     public boolean update_table_column_statistics(ColumnStatistics colStats)
       throws NoSuchObjectException,InvalidObjectException,MetaException,TException,

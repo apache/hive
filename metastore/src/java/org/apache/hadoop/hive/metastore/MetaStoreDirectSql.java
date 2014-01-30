@@ -41,6 +41,10 @@ import javax.jdo.datastore.JDOConnection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -50,6 +54,8 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
+import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
@@ -59,6 +65,9 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.datanucleus.store.schema.SchemaTool;
+
+import com.google.common.collect.Lists;
 
 /**
  * This class contains the optimizations for MetaStore that rely on direct SQL access to
@@ -107,8 +116,11 @@ class MetaStoreDirectSql {
       tx = pm.currentTransaction();
       tx.begin();
     }
-    // Force the underlying db to initialize.
+    // Force the underlying db to initialize. This is for tests where tables might not
+    // exist otherwise. It would be nice if there was a "create db" command.s
     pm.newQuery(MDatabase.class, "name == ''").execute();
+    pm.newQuery(MTableColumnStatistics.class, "dbName == ''").execute();
+    pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''").execute();
     // Self-test query. If it doesn't work, we will self-disable. What a PITA...
     boolean isCompatibleDatastore = false;
     String selfTestQuery = "select \"DB_ID\" from \"DBS\"";
@@ -171,9 +183,8 @@ class MetaStoreDirectSql {
     if (partNames.isEmpty()) {
       return new ArrayList<Partition>();
     }
-    String list = repeat(",?", partNames.size()).substring(1);
     return getPartitionsViaSqlFilterInternal(dbName, tblName, null,
-        "\"PARTITIONS\".\"PART_NAME\" in (" + list + ")",
+        "\"PARTITIONS\".\"PART_NAME\" in (" + makeParams(partNames.size()) + ")",
         partNames, new ArrayList<String>(), max);
   }
 
@@ -630,11 +641,7 @@ class MetaStoreDirectSql {
       query.closeAll();
       return 0;
     }
-    if (!(result instanceof List<?>)) {
-      throw new MetaException("Wrong result type " + result.getClass());
-    }
-    @SuppressWarnings("unchecked")
-    List<Object[]> list = (List<Object[]>)result;
+    List<Object[]> list = ensureList(result);
     Iterator<Object[]> iter = list.iterator();
     Object[] fields = null;
     for (Map.Entry<Long, T> entry : tree.entrySet()) {
@@ -837,5 +844,136 @@ class MetaStoreDirectSql {
           ? "(? " + node.operator.getSqlOp() + " " + tableValue + ")"
           : "(" + tableValue + " " + node.operator.getSqlOp() + " ?)");
     }
+  }
+
+  public ColumnStatistics getTableStats(
+      String dbName, String tableName, List<String> colNames) throws MetaException {
+    if (colNames.isEmpty()) {
+      return null;
+    }
+    boolean doTrace = LOG.isDebugEnabled();
+    long start = doTrace ? System.nanoTime() : 0;
+    String queryText = "select " + STATS_COLLIST + " from \"TAB_COL_STATS\" "
+      + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? and \"COLUMN_NAME\" in ("
+      + makeParams(colNames.size()) + ")";
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    Object[] params = new Object[colNames.size() + 2];
+    params[0] = dbName;
+    params[1] = tableName;
+    for (int i = 0; i < colNames.size(); ++i) {
+      params[i + 2] = colNames.get(i);
+    }
+    Object qResult = query.executeWithArray(params);
+    long queryTime = doTrace ? System.nanoTime() : 0;
+    if (qResult == null) {
+      query.closeAll();
+      return null;
+    }
+    List<Object[]> list = ensureList(qResult);
+    if (list.isEmpty()) return null;
+    ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tableName);
+    ColumnStatistics result = makeColumnStats(list, csd, 0);
+    timingTrace(doTrace, queryText, start, queryTime);
+    query.closeAll();
+    return result;
+  }
+
+  public List<ColumnStatistics> getPartitionStats(String dbName, String tableName,
+      List<String> partNames, List<String> colNames) throws MetaException {
+    if (colNames.isEmpty() || partNames.isEmpty()) {
+      return Lists.newArrayList();
+    }
+    boolean doTrace = LOG.isDebugEnabled();
+    long start = doTrace ? System.nanoTime() : 0;
+    String queryText = "select \"PARTITION_NAME\", " + STATS_COLLIST + " from \"PART_COL_STATS\""
+      + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? and \"COLUMN_NAME\" in ("
+      + makeParams(colNames.size()) + ") AND \"PARTITION_NAME\" in ("
+      + makeParams(partNames.size()) + ") order by \"PARTITION_NAME\"";
+
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    Object[] params = new Object[colNames.size() + partNames.size() + 2];
+    int paramI = 0;
+    params[paramI++] = dbName;
+    params[paramI++] = tableName;
+    for (String colName : colNames) {
+      params[paramI++] = colName;
+    }
+    for (String partName : partNames) {
+      params[paramI++] = partName;
+    }
+    Object qResult = query.executeWithArray(params);
+    long queryTime = doTrace ? System.nanoTime() : 0;
+    if (qResult == null) {
+      query.closeAll();
+      return Lists.newArrayList();
+    }
+    List<Object[]> list = ensureList(qResult);
+    List<ColumnStatistics> result = new ArrayList<ColumnStatistics>(
+        Math.min(list.size(), partNames.size()));
+    String lastPartName = null;
+    int from = 0;
+    for (int i = 0; i <= list.size(); ++i) {
+      boolean isLast = i == list.size();
+      String partName = isLast ? null : (String)list.get(i)[0];
+      if (!isLast && partName.equals(lastPartName)) {
+        continue;
+      } else if (from != i) {
+        ColumnStatisticsDesc csd = new ColumnStatisticsDesc(false, dbName, tableName);
+        csd.setPartName(lastPartName);
+        result.add(makeColumnStats(list.subList(from, i), csd, 1));
+      }
+      lastPartName = partName;
+      from = i;
+    }
+
+    timingTrace(doTrace, queryText, start, queryTime);
+    query.closeAll();
+    return result;
+  }
+
+  /** The common query part for table and partition stats */
+  private static final String STATS_COLLIST =
+      "\"COLUMN_NAME\", \"COLUMN_TYPE\", \"LONG_LOW_VALUE\", \"LONG_HIGH_VALUE\", "
+    + "\"DOUBLE_LOW_VALUE\", \"DOUBLE_HIGH_VALUE\", \"NUM_NULLS\", \"NUM_DISTINCTS\", "
+    + "\"AVG_COL_LEN\", \"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\", \"LAST_ANALYZED\"";
+
+  private ColumnStatistics makeColumnStats(
+      List<Object[]> list, ColumnStatisticsDesc csd, int offset) {
+    ColumnStatistics result = new ColumnStatistics();
+    result.setStatsDesc(csd);
+    List<ColumnStatisticsObj> csos = new ArrayList<ColumnStatisticsObj>(list.size());
+    for (Object[] row : list) {
+      // LastAnalyzed is stored per column but thrift has it per several;
+      // get the lowest for now as nobody actually uses this field.
+      Object laObj = row[offset + 12];
+      if (laObj != null && (!csd.isSetLastAnalyzed() || csd.getLastAnalyzed() > (Long)laObj)) {
+        csd.setLastAnalyzed((Long)laObj);
+      }
+      ColumnStatisticsData data = new ColumnStatisticsData();
+      // see STATS_COLLIST
+      int i = offset;
+      ColumnStatisticsObj cso = new ColumnStatisticsObj((String)row[i++], (String)row[i++], data);
+      Object llow = row[i++], lhigh = row[i++], dlow = row[i++], dhigh = row[i++],
+        nulls = row[i++], dist = row[i++], avglen = row[i++], maxlen = row[i++],
+        trues = row[i++], falses = row[i++];
+      StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data,
+          llow, lhigh, dlow, dhigh, nulls, dist, avglen, maxlen, trues, falses);
+      csos.add(cso);
+    }
+    result.setStatsObj(csos);
+    return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<Object[]> ensureList(Object result) throws MetaException {
+    if (!(result instanceof List<?>)) {
+      throw new MetaException("Wrong result type " + result.getClass());
+    }
+    return (List<Object[]>)result;
+  }
+
+  private String makeParams(int size) {
+    // W/ size 0, query will fail, but at least we'd get to see the query in debug output.
+    return (size == 0) ? "" : repeat(",?", size).substring(1);
   }
 }

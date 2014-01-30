@@ -2094,6 +2094,189 @@ class PartitionsByExprRequest {
 
 void swap(PartitionsByExprRequest &a, PartitionsByExprRequest &b);
 
+
+class TableStatsResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "3A0CB62070A0D93EE2CE174AF08C0E92";
+  static const uint8_t binary_fingerprint[16]; // = {0x3A,0x0C,0xB6,0x20,0x70,0xA0,0xD9,0x3E,0xE2,0xCE,0x17,0x4A,0xF0,0x8C,0x0E,0x92};
+
+  TableStatsResult() {
+  }
+
+  virtual ~TableStatsResult() throw() {}
+
+  std::vector<ColumnStatisticsObj>  tableStats;
+
+  void __set_tableStats(const std::vector<ColumnStatisticsObj> & val) {
+    tableStats = val;
+  }
+
+  bool operator == (const TableStatsResult & rhs) const
+  {
+    if (!(tableStats == rhs.tableStats))
+      return false;
+    return true;
+  }
+  bool operator != (const TableStatsResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TableStatsResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TableStatsResult &a, TableStatsResult &b);
+
+
+class PartitionsStatsResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "9790481369E1B27F6E70DED62CFCA4E3";
+  static const uint8_t binary_fingerprint[16]; // = {0x97,0x90,0x48,0x13,0x69,0xE1,0xB2,0x7F,0x6E,0x70,0xDE,0xD6,0x2C,0xFC,0xA4,0xE3};
+
+  PartitionsStatsResult() {
+  }
+
+  virtual ~PartitionsStatsResult() throw() {}
+
+  std::map<std::string, std::vector<ColumnStatisticsObj> >  partStats;
+
+  void __set_partStats(const std::map<std::string, std::vector<ColumnStatisticsObj> > & val) {
+    partStats = val;
+  }
+
+  bool operator == (const PartitionsStatsResult & rhs) const
+  {
+    if (!(partStats == rhs.partStats))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionsStatsResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionsStatsResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(PartitionsStatsResult &a, PartitionsStatsResult &b);
+
+
+class TableStatsRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "8E2AD6401E83558ECFD6A13D74DD0A3F";
+  static const uint8_t binary_fingerprint[16]; // = {0x8E,0x2A,0xD6,0x40,0x1E,0x83,0x55,0x8E,0xCF,0xD6,0xA1,0x3D,0x74,0xDD,0x0A,0x3F};
+
+  TableStatsRequest() : dbName(), tblName() {
+  }
+
+  virtual ~TableStatsRequest() throw() {}
+
+  std::string dbName;
+  std::string tblName;
+  std::vector<std::string>  colNames;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_tblName(const std::string& val) {
+    tblName = val;
+  }
+
+  void __set_colNames(const std::vector<std::string> & val) {
+    colNames = val;
+  }
+
+  bool operator == (const TableStatsRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(colNames == rhs.colNames))
+      return false;
+    return true;
+  }
+  bool operator != (const TableStatsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TableStatsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TableStatsRequest &a, TableStatsRequest &b);
+
+
+class PartitionsStatsRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "5F51D90BC323BCE4B704B7D98EDA0BD4";
+  static const uint8_t binary_fingerprint[16]; // = {0x5F,0x51,0xD9,0x0B,0xC3,0x23,0xBC,0xE4,0xB7,0x04,0xB7,0xD9,0x8E,0xDA,0x0B,0xD4};
+
+  PartitionsStatsRequest() : dbName(), tblName() {
+  }
+
+  virtual ~PartitionsStatsRequest() throw() {}
+
+  std::string dbName;
+  std::string tblName;
+  std::vector<std::string>  colNames;
+  std::vector<std::string>  partNames;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_tblName(const std::string& val) {
+    tblName = val;
+  }
+
+  void __set_colNames(const std::vector<std::string> & val) {
+    colNames = val;
+  }
+
+  void __set_partNames(const std::vector<std::string> & val) {
+    partNames = val;
+  }
+
+  bool operator == (const PartitionsStatsRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(colNames == rhs.colNames))
+      return false;
+    if (!(partNames == rhs.partNames))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionsStatsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionsStatsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(PartitionsStatsRequest &a, PartitionsStatsRequest &b);
+
 typedef struct _AddPartitionsResult__isset {
   _AddPartitionsResult__isset() : partitions(false) {}
   bool partitions;

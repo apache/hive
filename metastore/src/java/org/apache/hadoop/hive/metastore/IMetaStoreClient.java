@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -811,40 +812,20 @@ public interface IMetaStoreClient {
    throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
    InvalidInputException;
 
- /**
-  * Get table level column statistics given dbName, tableName and colName
-  * @param dbName
-  * @param tableName
-  * @param colName
-  * @return ColumnStatistics struct for a given db, table and col
-  * @throws NoSuchObjectException
-  * @throws MetaException
-  * @throws TException
-  * @throws InvalidInputException
-  * @throws InvalidObjectException
-  */
-
-  public ColumnStatistics getTableColumnStatistics(String dbName, String tableName, String colName)
-      throws NoSuchObjectException, MetaException, TException,
-            InvalidInputException, InvalidObjectException;
+  /**
+   * Get table column statistics given dbName, tableName and multiple colName-s
+   * @return ColumnStatistics struct for a given db, table and columns
+   */
+  public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
+      List<String> colNames) throws NoSuchObjectException, MetaException, TException;
 
   /**
-   * Get partition level column statistics given dbName, tableName, partitionName and colName
-   * @param dbName
-   * @param tableName
-   * @param partitionName
-   * @param colName
-   * @return ColumnStatistics struct for a given db, table, partition and col
-   * @throws NoSuchObjectException
-   * @throws MetaException
-   * @throws TException
-   * @throws InvalidInputException
-   * @throws InvalidObjectException
+   * Get partitions column statistics given dbName, tableName, multiple partitions and colName-s
+   * @return ColumnStatistics struct for a given db, table and columns
    */
-
-  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
-    String partitionName, String colName) throws NoSuchObjectException, MetaException, TException,
-            InvalidInputException, InvalidObjectException;
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
+      String tableName,  List<String> partNames, List<String> colNames)
+          throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName

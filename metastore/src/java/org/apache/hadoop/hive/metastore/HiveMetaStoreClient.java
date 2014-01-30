@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -66,11 +67,13 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -1110,17 +1113,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   /** {@inheritDoc} */
-  public ColumnStatistics getTableColumnStatistics(String dbName, String tableName,String colName)
-    throws NoSuchObjectException, MetaException, TException, InvalidInputException,
-    InvalidObjectException {
-    return client.get_table_column_statistics(dbName, tableName, colName);
+  public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
+      List<String> colNames) throws NoSuchObjectException, MetaException, TException,
+      InvalidInputException, InvalidObjectException {
+    return client.get_table_statistics_req(
+        new TableStatsRequest(dbName, tableName, colNames)).getTableStats();
   }
 
   /** {@inheritDoc} */
-  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
-    String partName, String colName) throws NoSuchObjectException, MetaException, TException,
-    InvalidInputException, InvalidObjectException {
-    return client.get_partition_column_statistics(dbName, tableName, partName, colName);
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
+      String dbName, String tableName, List<String> partNames, List<String> colNames)
+          throws NoSuchObjectException, MetaException, TException {
+    return client.get_partitions_statistics_req(
+        new PartitionsStatsRequest(dbName, tableName, colNames, partNames)).getPartStats();
   }
 
   /** {@inheritDoc} */

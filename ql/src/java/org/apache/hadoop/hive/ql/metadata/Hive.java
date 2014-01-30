@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -2472,26 +2473,25 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public ColumnStatistics getTableColumnStatistics(String dbName, String tableName, String colName)
-    throws HiveException {
+  public List<ColumnStatisticsObj> getTableColumnStatistics(
+      String dbName, String tableName, List<String> colNames) throws HiveException {
     try {
-      return getMSC().getTableColumnStatistics(dbName, tableName, colName);
+      return getMSC().getTableColumnStatistics(dbName, tableName, colNames);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
-
   }
 
-  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
-    String partName, String colName) throws HiveException {
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
+      String tableName, List<String> partNames, List<String> colNames) throws HiveException {
       try {
-        return getMSC().getPartitionColumnStatistics(dbName, tableName, partName, colName);
-      } catch (Exception e) {
-        LOG.debug(StringUtils.stringifyException(e));
-        throw new HiveException(e);
-      }
+      return getMSC().getPartitionColumnStatistics(dbName, tableName, partNames, colNames);
+    } catch (Exception e) {
+      LOG.debug(StringUtils.stringifyException(e));
+      throw new HiveException(e);
     }
+  }
 
   public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
     throws HiveException {

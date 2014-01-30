@@ -22,7 +22,7 @@ STAGE PLANS:
           TableScan
             alias: test1
             Statistics:
-                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -30,7 +30,7 @@ STAGE PLANS:
                     type: string
               outputColumnNames: ds
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: max(ds)
@@ -38,11 +38,11 @@ STAGE PLANS:
                 mode: hash
                 outputColumnNames: _col0
                 Statistics:
-                    numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
                 Reduce Output Operator
                   sort order: 
                   Statistics:
-                      numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -56,21 +56,21 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics:
-              numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
                   type: string
             outputColumnNames: _col0
             Statistics:
-                numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
               Statistics:
-                  numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat

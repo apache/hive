@@ -31,34 +31,31 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitionsRequest, AddPartitionsRequest._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("AddPartitionsRequest");
+public class PartitionsStatsRequest implements org.apache.thrift.TBase<PartitionsStatsRequest, PartitionsStatsRequest._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("PartitionsStatsRequest");
 
   private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tblName", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField PARTS_FIELD_DESC = new org.apache.thrift.protocol.TField("parts", org.apache.thrift.protocol.TType.LIST, (short)3);
-  private static final org.apache.thrift.protocol.TField IF_NOT_EXISTS_FIELD_DESC = new org.apache.thrift.protocol.TField("ifNotExists", org.apache.thrift.protocol.TType.BOOL, (short)4);
-  private static final org.apache.thrift.protocol.TField NEED_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("needResult", org.apache.thrift.protocol.TType.BOOL, (short)5);
+  private static final org.apache.thrift.protocol.TField COL_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("colNames", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField PART_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("partNames", org.apache.thrift.protocol.TType.LIST, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
-    schemes.put(StandardScheme.class, new AddPartitionsRequestStandardSchemeFactory());
-    schemes.put(TupleScheme.class, new AddPartitionsRequestTupleSchemeFactory());
+    schemes.put(StandardScheme.class, new PartitionsStatsRequestStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new PartitionsStatsRequestTupleSchemeFactory());
   }
 
   private String dbName; // required
   private String tblName; // required
-  private List<Partition> parts; // required
-  private boolean ifNotExists; // required
-  private boolean needResult; // optional
+  private List<String> colNames; // required
+  private List<String> partNames; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     DB_NAME((short)1, "dbName"),
     TBL_NAME((short)2, "tblName"),
-    PARTS((short)3, "parts"),
-    IF_NOT_EXISTS((short)4, "ifNotExists"),
-    NEED_RESULT((short)5, "needResult");
+    COL_NAMES((short)3, "colNames"),
+    PART_NAMES((short)4, "partNames");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,12 +74,10 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
           return DB_NAME;
         case 2: // TBL_NAME
           return TBL_NAME;
-        case 3: // PARTS
-          return PARTS;
-        case 4: // IF_NOT_EXISTS
-          return IF_NOT_EXISTS;
-        case 5: // NEED_RESULT
-          return NEED_RESULT;
+        case 3: // COL_NAMES
+          return COL_NAMES;
+        case 4: // PART_NAMES
+          return PART_NAMES;
         default:
           return null;
       }
@@ -123,10 +118,6 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
   }
 
   // isset id assignments
-  private static final int __IFNOTEXISTS_ISSET_ID = 0;
-  private static final int __NEEDRESULT_ISSET_ID = 1;
-  private byte __isset_bitfield = 0;
-  private _Fields optionals[] = {_Fields.NEED_RESULT};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -134,71 +125,68 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tblName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PARTS, new org.apache.thrift.meta_data.FieldMetaData("parts", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.COL_NAMES, new org.apache.thrift.meta_data.FieldMetaData("colNames", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
-    tmpMap.put(_Fields.IF_NOT_EXISTS, new org.apache.thrift.meta_data.FieldMetaData("ifNotExists", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.NEED_RESULT, new org.apache.thrift.meta_data.FieldMetaData("needResult", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.PART_NAMES, new org.apache.thrift.meta_data.FieldMetaData("partNames", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AddPartitionsRequest.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PartitionsStatsRequest.class, metaDataMap);
   }
 
-  public AddPartitionsRequest() {
-    this.needResult = true;
-
+  public PartitionsStatsRequest() {
   }
 
-  public AddPartitionsRequest(
+  public PartitionsStatsRequest(
     String dbName,
     String tblName,
-    List<Partition> parts,
-    boolean ifNotExists)
+    List<String> colNames,
+    List<String> partNames)
   {
     this();
     this.dbName = dbName;
     this.tblName = tblName;
-    this.parts = parts;
-    this.ifNotExists = ifNotExists;
-    setIfNotExistsIsSet(true);
+    this.colNames = colNames;
+    this.partNames = partNames;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public AddPartitionsRequest(AddPartitionsRequest other) {
-    __isset_bitfield = other.__isset_bitfield;
+  public PartitionsStatsRequest(PartitionsStatsRequest other) {
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
     }
     if (other.isSetTblName()) {
       this.tblName = other.tblName;
     }
-    if (other.isSetParts()) {
-      List<Partition> __this__parts = new ArrayList<Partition>();
-      for (Partition other_element : other.parts) {
-        __this__parts.add(new Partition(other_element));
+    if (other.isSetColNames()) {
+      List<String> __this__colNames = new ArrayList<String>();
+      for (String other_element : other.colNames) {
+        __this__colNames.add(other_element);
       }
-      this.parts = __this__parts;
+      this.colNames = __this__colNames;
     }
-    this.ifNotExists = other.ifNotExists;
-    this.needResult = other.needResult;
+    if (other.isSetPartNames()) {
+      List<String> __this__partNames = new ArrayList<String>();
+      for (String other_element : other.partNames) {
+        __this__partNames.add(other_element);
+      }
+      this.partNames = __this__partNames;
+    }
   }
 
-  public AddPartitionsRequest deepCopy() {
-    return new AddPartitionsRequest(this);
+  public PartitionsStatsRequest deepCopy() {
+    return new PartitionsStatsRequest(this);
   }
 
   @Override
   public void clear() {
     this.dbName = null;
     this.tblName = null;
-    this.parts = null;
-    setIfNotExistsIsSet(false);
-    this.ifNotExists = false;
-    this.needResult = true;
-
+    this.colNames = null;
+    this.partNames = null;
   }
 
   public String getDbName() {
@@ -247,86 +235,80 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
     }
   }
 
-  public int getPartsSize() {
-    return (this.parts == null) ? 0 : this.parts.size();
+  public int getColNamesSize() {
+    return (this.colNames == null) ? 0 : this.colNames.size();
   }
 
-  public java.util.Iterator<Partition> getPartsIterator() {
-    return (this.parts == null) ? null : this.parts.iterator();
+  public java.util.Iterator<String> getColNamesIterator() {
+    return (this.colNames == null) ? null : this.colNames.iterator();
   }
 
-  public void addToParts(Partition elem) {
-    if (this.parts == null) {
-      this.parts = new ArrayList<Partition>();
+  public void addToColNames(String elem) {
+    if (this.colNames == null) {
+      this.colNames = new ArrayList<String>();
     }
-    this.parts.add(elem);
+    this.colNames.add(elem);
   }
 
-  public List<Partition> getParts() {
-    return this.parts;
+  public List<String> getColNames() {
+    return this.colNames;
   }
 
-  public void setParts(List<Partition> parts) {
-    this.parts = parts;
+  public void setColNames(List<String> colNames) {
+    this.colNames = colNames;
   }
 
-  public void unsetParts() {
-    this.parts = null;
+  public void unsetColNames() {
+    this.colNames = null;
   }
 
-  /** Returns true if field parts is set (has been assigned a value) and false otherwise */
-  public boolean isSetParts() {
-    return this.parts != null;
+  /** Returns true if field colNames is set (has been assigned a value) and false otherwise */
+  public boolean isSetColNames() {
+    return this.colNames != null;
   }
 
-  public void setPartsIsSet(boolean value) {
+  public void setColNamesIsSet(boolean value) {
     if (!value) {
-      this.parts = null;
+      this.colNames = null;
     }
   }
 
-  public boolean isIfNotExists() {
-    return this.ifNotExists;
+  public int getPartNamesSize() {
+    return (this.partNames == null) ? 0 : this.partNames.size();
   }
 
-  public void setIfNotExists(boolean ifNotExists) {
-    this.ifNotExists = ifNotExists;
-    setIfNotExistsIsSet(true);
+  public java.util.Iterator<String> getPartNamesIterator() {
+    return (this.partNames == null) ? null : this.partNames.iterator();
   }
 
-  public void unsetIfNotExists() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __IFNOTEXISTS_ISSET_ID);
+  public void addToPartNames(String elem) {
+    if (this.partNames == null) {
+      this.partNames = new ArrayList<String>();
+    }
+    this.partNames.add(elem);
   }
 
-  /** Returns true if field ifNotExists is set (has been assigned a value) and false otherwise */
-  public boolean isSetIfNotExists() {
-    return EncodingUtils.testBit(__isset_bitfield, __IFNOTEXISTS_ISSET_ID);
+  public List<String> getPartNames() {
+    return this.partNames;
   }
 
-  public void setIfNotExistsIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __IFNOTEXISTS_ISSET_ID, value);
+  public void setPartNames(List<String> partNames) {
+    this.partNames = partNames;
   }
 
-  public boolean isNeedResult() {
-    return this.needResult;
+  public void unsetPartNames() {
+    this.partNames = null;
   }
 
-  public void setNeedResult(boolean needResult) {
-    this.needResult = needResult;
-    setNeedResultIsSet(true);
+  /** Returns true if field partNames is set (has been assigned a value) and false otherwise */
+  public boolean isSetPartNames() {
+    return this.partNames != null;
   }
 
-  public void unsetNeedResult() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __NEEDRESULT_ISSET_ID);
-  }
-
-  /** Returns true if field needResult is set (has been assigned a value) and false otherwise */
-  public boolean isSetNeedResult() {
-    return EncodingUtils.testBit(__isset_bitfield, __NEEDRESULT_ISSET_ID);
-  }
-
-  public void setNeedResultIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __NEEDRESULT_ISSET_ID, value);
+  public void setPartNamesIsSet(boolean value) {
+    if (!value) {
+      this.partNames = null;
+    }
   }
 
   public void setFieldValue(_Fields field, Object value) {
@@ -347,27 +329,19 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
       }
       break;
 
-    case PARTS:
+    case COL_NAMES:
       if (value == null) {
-        unsetParts();
+        unsetColNames();
       } else {
-        setParts((List<Partition>)value);
+        setColNames((List<String>)value);
       }
       break;
 
-    case IF_NOT_EXISTS:
+    case PART_NAMES:
       if (value == null) {
-        unsetIfNotExists();
+        unsetPartNames();
       } else {
-        setIfNotExists((Boolean)value);
-      }
-      break;
-
-    case NEED_RESULT:
-      if (value == null) {
-        unsetNeedResult();
-      } else {
-        setNeedResult((Boolean)value);
+        setPartNames((List<String>)value);
       }
       break;
 
@@ -382,14 +356,11 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
     case TBL_NAME:
       return getTblName();
 
-    case PARTS:
-      return getParts();
+    case COL_NAMES:
+      return getColNames();
 
-    case IF_NOT_EXISTS:
-      return Boolean.valueOf(isIfNotExists());
-
-    case NEED_RESULT:
-      return Boolean.valueOf(isNeedResult());
+    case PART_NAMES:
+      return getPartNames();
 
     }
     throw new IllegalStateException();
@@ -406,12 +377,10 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
       return isSetDbName();
     case TBL_NAME:
       return isSetTblName();
-    case PARTS:
-      return isSetParts();
-    case IF_NOT_EXISTS:
-      return isSetIfNotExists();
-    case NEED_RESULT:
-      return isSetNeedResult();
+    case COL_NAMES:
+      return isSetColNames();
+    case PART_NAMES:
+      return isSetPartNames();
     }
     throw new IllegalStateException();
   }
@@ -420,12 +389,12 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof AddPartitionsRequest)
-      return this.equals((AddPartitionsRequest)that);
+    if (that instanceof PartitionsStatsRequest)
+      return this.equals((PartitionsStatsRequest)that);
     return false;
   }
 
-  public boolean equals(AddPartitionsRequest that) {
+  public boolean equals(PartitionsStatsRequest that) {
     if (that == null)
       return false;
 
@@ -447,30 +416,21 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
         return false;
     }
 
-    boolean this_present_parts = true && this.isSetParts();
-    boolean that_present_parts = true && that.isSetParts();
-    if (this_present_parts || that_present_parts) {
-      if (!(this_present_parts && that_present_parts))
+    boolean this_present_colNames = true && this.isSetColNames();
+    boolean that_present_colNames = true && that.isSetColNames();
+    if (this_present_colNames || that_present_colNames) {
+      if (!(this_present_colNames && that_present_colNames))
         return false;
-      if (!this.parts.equals(that.parts))
-        return false;
-    }
-
-    boolean this_present_ifNotExists = true;
-    boolean that_present_ifNotExists = true;
-    if (this_present_ifNotExists || that_present_ifNotExists) {
-      if (!(this_present_ifNotExists && that_present_ifNotExists))
-        return false;
-      if (this.ifNotExists != that.ifNotExists)
+      if (!this.colNames.equals(that.colNames))
         return false;
     }
 
-    boolean this_present_needResult = true && this.isSetNeedResult();
-    boolean that_present_needResult = true && that.isSetNeedResult();
-    if (this_present_needResult || that_present_needResult) {
-      if (!(this_present_needResult && that_present_needResult))
+    boolean this_present_partNames = true && this.isSetPartNames();
+    boolean that_present_partNames = true && that.isSetPartNames();
+    if (this_present_partNames || that_present_partNames) {
+      if (!(this_present_partNames && that_present_partNames))
         return false;
-      if (this.needResult != that.needResult)
+      if (!this.partNames.equals(that.partNames))
         return false;
     }
 
@@ -491,31 +451,26 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
     if (present_tblName)
       builder.append(tblName);
 
-    boolean present_parts = true && (isSetParts());
-    builder.append(present_parts);
-    if (present_parts)
-      builder.append(parts);
+    boolean present_colNames = true && (isSetColNames());
+    builder.append(present_colNames);
+    if (present_colNames)
+      builder.append(colNames);
 
-    boolean present_ifNotExists = true;
-    builder.append(present_ifNotExists);
-    if (present_ifNotExists)
-      builder.append(ifNotExists);
-
-    boolean present_needResult = true && (isSetNeedResult());
-    builder.append(present_needResult);
-    if (present_needResult)
-      builder.append(needResult);
+    boolean present_partNames = true && (isSetPartNames());
+    builder.append(present_partNames);
+    if (present_partNames)
+      builder.append(partNames);
 
     return builder.toHashCode();
   }
 
-  public int compareTo(AddPartitionsRequest other) {
+  public int compareTo(PartitionsStatsRequest other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    AddPartitionsRequest typedOther = (AddPartitionsRequest)other;
+    PartitionsStatsRequest typedOther = (PartitionsStatsRequest)other;
 
     lastComparison = Boolean.valueOf(isSetDbName()).compareTo(typedOther.isSetDbName());
     if (lastComparison != 0) {
@@ -537,32 +492,22 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetParts()).compareTo(typedOther.isSetParts());
+    lastComparison = Boolean.valueOf(isSetColNames()).compareTo(typedOther.isSetColNames());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetParts()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.parts, typedOther.parts);
+    if (isSetColNames()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.colNames, typedOther.colNames);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetIfNotExists()).compareTo(typedOther.isSetIfNotExists());
+    lastComparison = Boolean.valueOf(isSetPartNames()).compareTo(typedOther.isSetPartNames());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetIfNotExists()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ifNotExists, typedOther.ifNotExists);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetNeedResult()).compareTo(typedOther.isSetNeedResult());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetNeedResult()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.needResult, typedOther.needResult);
+    if (isSetPartNames()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partNames, typedOther.partNames);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -584,7 +529,7 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("AddPartitionsRequest(");
+    StringBuilder sb = new StringBuilder("PartitionsStatsRequest(");
     boolean first = true;
 
     sb.append("dbName:");
@@ -603,23 +548,21 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("parts:");
-    if (this.parts == null) {
+    sb.append("colNames:");
+    if (this.colNames == null) {
       sb.append("null");
     } else {
-      sb.append(this.parts);
+      sb.append(this.colNames);
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("ifNotExists:");
-    sb.append(this.ifNotExists);
-    first = false;
-    if (isSetNeedResult()) {
-      if (!first) sb.append(", ");
-      sb.append("needResult:");
-      sb.append(this.needResult);
-      first = false;
+    sb.append("partNames:");
+    if (this.partNames == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.partNames);
     }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -634,12 +577,12 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'tblName' is unset! Struct:" + toString());
     }
 
-    if (!isSetParts()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'parts' is unset! Struct:" + toString());
+    if (!isSetColNames()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'colNames' is unset! Struct:" + toString());
     }
 
-    if (!isSetIfNotExists()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'ifNotExists' is unset! Struct:" + toString());
+    if (!isSetPartNames()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'partNames' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -655,23 +598,21 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
     }
   }
 
-  private static class AddPartitionsRequestStandardSchemeFactory implements SchemeFactory {
-    public AddPartitionsRequestStandardScheme getScheme() {
-      return new AddPartitionsRequestStandardScheme();
+  private static class PartitionsStatsRequestStandardSchemeFactory implements SchemeFactory {
+    public PartitionsStatsRequestStandardScheme getScheme() {
+      return new PartitionsStatsRequestStandardScheme();
     }
   }
 
-  private static class AddPartitionsRequestStandardScheme extends StandardScheme<AddPartitionsRequest> {
+  private static class PartitionsStatsRequestStandardScheme extends StandardScheme<PartitionsStatsRequest> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, AddPartitionsRequest struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, PartitionsStatsRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -697,37 +638,38 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // PARTS
+          case 3: // COL_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list322 = iprot.readListBegin();
-                struct.parts = new ArrayList<Partition>(_list322.size);
-                for (int _i323 = 0; _i323 < _list322.size; ++_i323)
+                org.apache.thrift.protocol.TList _list298 = iprot.readListBegin();
+                struct.colNames = new ArrayList<String>(_list298.size);
+                for (int _i299 = 0; _i299 < _list298.size; ++_i299)
                 {
-                  Partition _elem324; // required
-                  _elem324 = new Partition();
-                  _elem324.read(iprot);
-                  struct.parts.add(_elem324);
+                  String _elem300; // required
+                  _elem300 = iprot.readString();
+                  struct.colNames.add(_elem300);
                 }
                 iprot.readListEnd();
               }
-              struct.setPartsIsSet(true);
+              struct.setColNamesIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // IF_NOT_EXISTS
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.ifNotExists = iprot.readBool();
-              struct.setIfNotExistsIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 5: // NEED_RESULT
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.needResult = iprot.readBool();
-              struct.setNeedResultIsSet(true);
+          case 4: // PART_NAMES
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list301 = iprot.readListBegin();
+                struct.partNames = new ArrayList<String>(_list301.size);
+                for (int _i302 = 0; _i302 < _list301.size; ++_i302)
+                {
+                  String _elem303; // required
+                  _elem303 = iprot.readString();
+                  struct.partNames.add(_elem303);
+                }
+                iprot.readListEnd();
+              }
+              struct.setPartNamesIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -741,7 +683,7 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, AddPartitionsRequest struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, PartitionsStatsRequest struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -755,24 +697,28 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
         oprot.writeString(struct.tblName);
         oprot.writeFieldEnd();
       }
-      if (struct.parts != null) {
-        oprot.writeFieldBegin(PARTS_FIELD_DESC);
+      if (struct.colNames != null) {
+        oprot.writeFieldBegin(COL_NAMES_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.parts.size()));
-          for (Partition _iter325 : struct.parts)
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.colNames.size()));
+          for (String _iter304 : struct.colNames)
           {
-            _iter325.write(oprot);
+            oprot.writeString(_iter304);
           }
           oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(IF_NOT_EXISTS_FIELD_DESC);
-      oprot.writeBool(struct.ifNotExists);
-      oprot.writeFieldEnd();
-      if (struct.isSetNeedResult()) {
-        oprot.writeFieldBegin(NEED_RESULT_FIELD_DESC);
-        oprot.writeBool(struct.needResult);
+      if (struct.partNames != null) {
+        oprot.writeFieldBegin(PART_NAMES_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partNames.size()));
+          for (String _iter305 : struct.partNames)
+          {
+            oprot.writeString(_iter305);
+          }
+          oprot.writeListEnd();
+        }
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -781,63 +727,64 @@ public class AddPartitionsRequest implements org.apache.thrift.TBase<AddPartitio
 
   }
 
-  private static class AddPartitionsRequestTupleSchemeFactory implements SchemeFactory {
-    public AddPartitionsRequestTupleScheme getScheme() {
-      return new AddPartitionsRequestTupleScheme();
+  private static class PartitionsStatsRequestTupleSchemeFactory implements SchemeFactory {
+    public PartitionsStatsRequestTupleScheme getScheme() {
+      return new PartitionsStatsRequestTupleScheme();
     }
   }
 
-  private static class AddPartitionsRequestTupleScheme extends TupleScheme<AddPartitionsRequest> {
+  private static class PartitionsStatsRequestTupleScheme extends TupleScheme<PartitionsStatsRequest> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, AddPartitionsRequest struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, PartitionsStatsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeString(struct.dbName);
       oprot.writeString(struct.tblName);
       {
-        oprot.writeI32(struct.parts.size());
-        for (Partition _iter326 : struct.parts)
+        oprot.writeI32(struct.colNames.size());
+        for (String _iter306 : struct.colNames)
         {
-          _iter326.write(oprot);
+          oprot.writeString(_iter306);
         }
       }
-      oprot.writeBool(struct.ifNotExists);
-      BitSet optionals = new BitSet();
-      if (struct.isSetNeedResult()) {
-        optionals.set(0);
-      }
-      oprot.writeBitSet(optionals, 1);
-      if (struct.isSetNeedResult()) {
-        oprot.writeBool(struct.needResult);
+      {
+        oprot.writeI32(struct.partNames.size());
+        for (String _iter307 : struct.partNames)
+        {
+          oprot.writeString(_iter307);
+        }
       }
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, AddPartitionsRequest struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, PartitionsStatsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.dbName = iprot.readString();
       struct.setDbNameIsSet(true);
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list327 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.parts = new ArrayList<Partition>(_list327.size);
-        for (int _i328 = 0; _i328 < _list327.size; ++_i328)
+        org.apache.thrift.protocol.TList _list308 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.colNames = new ArrayList<String>(_list308.size);
+        for (int _i309 = 0; _i309 < _list308.size; ++_i309)
         {
-          Partition _elem329; // required
-          _elem329 = new Partition();
-          _elem329.read(iprot);
-          struct.parts.add(_elem329);
+          String _elem310; // required
+          _elem310 = iprot.readString();
+          struct.colNames.add(_elem310);
         }
       }
-      struct.setPartsIsSet(true);
-      struct.ifNotExists = iprot.readBool();
-      struct.setIfNotExistsIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
-      if (incoming.get(0)) {
-        struct.needResult = iprot.readBool();
-        struct.setNeedResultIsSet(true);
+      struct.setColNamesIsSet(true);
+      {
+        org.apache.thrift.protocol.TList _list311 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.partNames = new ArrayList<String>(_list311.size);
+        for (int _i312 = 0; _i312 < _list311.size; ++_i312)
+        {
+          String _elem313; // required
+          _elem313 = iprot.readString();
+          struct.partNames.add(_elem313);
+        }
       }
+      struct.setPartNamesIsSet(true);
     }
   }
 
