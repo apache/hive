@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -105,18 +108,16 @@ public class StatsUtils {
     // column level statistics are required only for the columns that are needed
     List<ColumnInfo> schema = tableScanOperator.getSchema().getSignature();
     List<String> neededColumns = tableScanOperator.getNeededColumns();
-    String dbName = table.getDbName();
-    String tabName = table.getTableName();
     boolean fetchColStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
     float deserFactor =
         HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
 
     if (!table.isPartitioned()) {
-      long nr = getNumRows(dbName, tabName);
-      long ds = getRawDataSize(dbName, tabName);
+      long nr = getNumRows(table);
+      long ds = getRawDataSize(table);
       if (ds <= 0) {
-        ds = getTotalSize(dbName, tabName);
+        ds = getTotalSize(table);
 
         // if data size is still 0 then get file size
         if (ds <= 0) {
@@ -145,119 +146,99 @@ public class StatsUtils {
         colStats = getTableColumnStats(table, schema, neededColumns);
       }
 
-      // if column stats available and if atleast one column doesn't have stats
-      // then mark it as partial
-      if (checkIfColStatsAvailable(colStats) && colStats.contains(null)) {
-        stats.setColumnStatsState(Statistics.State.PARTIAL);
-      }
-
-      // if column stats available and if all columns have stats then mark it
-      // as complete
-      if (checkIfColStatsAvailable(colStats) && !colStats.contains(null)) {
-        stats.setColumnStatsState(Statistics.State.COMPLETE);
-      }
-
-      if (!checkIfColStatsAvailable(colStats)) {
-        // if there is column projection and if we do not have stats then mark
-        // it as NONE. Else we will have estimated stats for const/udf columns
-        if (!neededColumns.isEmpty()) {
-          stats.setColumnStatsState(Statistics.State.NONE);
-        } else {
-          stats.setColumnStatsState(Statistics.State.COMPLETE);
-        }
-      }
+      stats.setColumnStatsState(deriveStatType(colStats, neededColumns));
       stats.addToColumnStats(colStats);
-    } else {
-
+    } else if (partList != null) {
       // For partitioned tables, get the size of all the partitions after pruning
       // the partitions that are not required
-      if (partList != null) {
-        List<String> partNames = Lists.newArrayList();
+      List<Long> rowCounts = getBasicStatForPartitions(
+          table, partList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
+      List<Long> dataSizes =  getBasicStatForPartitions(
+          table, partList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
+
+      long nr = getSumIgnoreNegatives(rowCounts);
+      long ds = getSumIgnoreNegatives(dataSizes);
+      if (ds <= 0) {
+        dataSizes = getBasicStatForPartitions(
+            table, partList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
+        ds = getSumIgnoreNegatives(dataSizes);
+
+        // if data size still could not be determined, then fall back to filesytem to get file
+        // sizes
+        if (ds <= 0) {
+          dataSizes = getFileSizeForPartitions(conf, partList.getNotDeniedPartns());
+        }
+        ds = getSumIgnoreNegatives(dataSizes);
+
+        ds = (long) (ds * deserFactor);
+      }
+
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      if (avgRowSize > 0) {
+        setUnknownRcDsToAverage(rowCounts, dataSizes, avgRowSize);
+        nr = getSumIgnoreNegatives(rowCounts);
+        ds = getSumIgnoreNegatives(dataSizes);
+
+        // number of rows -1 means that statistics from metastore is not reliable
+        if (nr <= 0) {
+          nr = ds / avgRowSize;
+        }
+      }
+      stats.addToNumRows(nr);
+      stats.addToDataSize(ds);
+
+      // if at least a partition does not contain row count then mark basic stats state as PARTIAL
+      if (containsNonPositives(rowCounts)) {
+        stats.setBasicStatsState(State.PARTIAL);
+      }
+      boolean haveFullStats = fetchColStats;
+      if (fetchColStats) {
+        List<String> partNames = new ArrayList<String>(partList.getNotDeniedPartns().size());
         for (Partition part : partList.getNotDeniedPartns()) {
           partNames.add(part.getName());
         }
-
-        List<Long> rowCounts =
-            getBasicStatForPartitions(table, partNames, StatsSetupConst.ROW_COUNT);
-        List<Long> dataSizes =
-            getBasicStatForPartitions(table, partNames, StatsSetupConst.RAW_DATA_SIZE);
-
-        long nr = getSumIgnoreNegatives(rowCounts);
-        long ds = getSumIgnoreNegatives(dataSizes);
-        if (ds <= 0) {
-          dataSizes = getBasicStatForPartitions(table, partNames, StatsSetupConst.TOTAL_SIZE);
-          ds = getSumIgnoreNegatives(dataSizes);
-
-          // if data size still could not be determined, then fall back to filesytem to get file
-          // sizes
-          if (ds <= 0) {
-            dataSizes = getFileSizeForPartitions(conf, partList.getNotDeniedPartns());
-          }
-          ds = getSumIgnoreNegatives(dataSizes);
-
-          ds = (long) (ds * deserFactor);
-        }
-
-        int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
-        if (avgRowSize > 0) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Estimated average row size: " + avgRowSize);
-          }
-
-          for (int i = 0; i < rowCounts.size(); i++) {
-            long rc = rowCounts.get(i);
-            long s = dataSizes.get(i);
-            if (rc <= 0 && s > 0) {
-              rc = s / avgRowSize;
-              rowCounts.set(i, rc);
-            }
-
-            if (s <= 0 && rc > 0) {
-              s = rc * avgRowSize;
-              dataSizes.set(i, s);
+        Map<String, List<ColStatistics>> partStats =
+            getPartColumnStats(table, schema, partNames, neededColumns);
+        if (partStats != null) {
+          for (String partName : partNames) {
+            List<ColStatistics> partStat = partStats.get(partName);
+            haveFullStats &= (partStat != null);
+            if (partStat != null) {
+              stats.updateColumnStatsState(deriveStatType(partStat, neededColumns));
+              stats.addToColumnStats(partStat);
             }
           }
-          nr = getSumIgnoreNegatives(rowCounts);
-          ds = getSumIgnoreNegatives(dataSizes);
-
-          // number of rows -1 means that statistics from metastore is not reliable
-          if (nr <= 0) {
-            nr = ds / avgRowSize;
-          }
-        }
-        stats.addToNumRows(nr);
-        stats.addToDataSize(ds);
-
-        // if atleast a partition does not contain row count then mark basic stats state as PARTIAL
-        if (containsNonPositives(rowCounts)) {
-          stats.setBasicStatsState(State.PARTIAL);
-        }
-
-        // column stats
-        for (Partition part : partList.getNotDeniedPartns()) {
-          List<ColStatistics> colStats = Lists.newArrayList();
-          if (fetchColStats) {
-            colStats = getPartitionColumnStats(table, part, schema, neededColumns);
-          }
-          if (checkIfColStatsAvailable(colStats) && colStats.contains(null)) {
-            stats.updateColumnStatsState(Statistics.State.PARTIAL);
-          } else if (checkIfColStatsAvailable(colStats) && !colStats.contains(null)) {
-            stats.updateColumnStatsState(Statistics.State.COMPLETE);
-          } else {
-            // if there is column projection and if we do not have stats then mark
-            // it as NONE. Else we will have estimated stats for const/udf columns
-            if (!neededColumns.isEmpty()) {
-              stats.updateColumnStatsState(Statistics.State.NONE);
-            } else {
-              stats.updateColumnStatsState(Statistics.State.COMPLETE);
-            }
-          }
-          stats.addToColumnStats(colStats);
         }
       }
+      // There are some partitions with no state (or we didn't fetch any state).
+      // Update the stats with empty list to reflect that in the state/initialize structures.
+      if (!haveFullStats) {
+        List<ColStatistics> emptyStats = Lists.<ColStatistics>newArrayList();
+        stats.addToColumnStats(emptyStats);
+        stats.updateColumnStatsState(deriveStatType(emptyStats, neededColumns));
+      }
     }
-
     return stats;
+  }
+
+  private static void setUnknownRcDsToAverage(
+      List<Long> rowCounts, List<Long> dataSizes, int avgRowSize) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Estimated average row size: " + avgRowSize);
+    }
+    for (int i = 0; i < rowCounts.size(); i++) {
+      long rc = rowCounts.get(i);
+      long s = dataSizes.get(i);
+      if (rc <= 0 && s > 0) {
+        rc = s / avgRowSize;
+        rowCounts.set(i, rc);
+      }
+
+      if (s <= 0 && rc > 0) {
+        s = rc * avgRowSize;
+        dataSizes.set(i, s);
+      }
+    }
   }
 
   public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema,
@@ -361,104 +342,22 @@ public class StatsUtils {
     return result;
   }
 
-  /**
-   * Get the partition level columns statistics from metastore for all the needed columns
-   * @param table
-   *          - table object
-   * @param part
-   *          - partition object
-   * @param schema
-   *          - output schema
-   * @param neededColumns
-   *          - list of needed columns
-   * @return column statistics
-   */
-  public static List<ColStatistics> getPartitionColumnStats(Table table, Partition part,
-      List<ColumnInfo> schema, List<String> neededColumns) {
-
-    String dbName = table.getDbName();
-    String tabName = table.getTableName();
-    String partName = part.getName();
-    List<ColStatistics> colStatistics = Lists.newArrayList();
-    for (ColumnInfo col : schema) {
-      if (!col.isHiddenVirtualCol()) {
-        String colName = col.getInternalName();
-        if (neededColumns.contains(colName)) {
-          String tabAlias = col.getTabAlias();
-          ColStatistics cs = getParitionColumnStatsForColumn(dbName, tabName, partName, colName);
-          if (cs != null) {
-            cs.setTableAlias(tabAlias);
-          }
-          colStatistics.add(cs);
-        }
+  private static Statistics.State deriveStatType(
+      List<ColStatistics> colStats, List<String> neededColumns) {
+    boolean hasStats = false,
+        hasNull = (colStats == null) || (colStats.size() < neededColumns.size());
+    if (colStats != null) {
+      for (ColStatistics cs : colStats) {
+        boolean isNull = cs == null;
+        hasStats |= !isNull;
+        hasNull |= isNull;
+        if (hasNull && hasStats) break;
       }
     }
-    return colStatistics;
-  }
-
-  /**
-   * Get the partition level columns statistics from metastore for a specific column
-   * @param dbName
-   *          - database name
-   * @param tabName
-   *          - table name
-   * @param partName
-   *          - partition name
-   * @param colName
-   *          - column name
-   * @return column statistics
-   */
-  public static ColStatistics getParitionColumnStatsForColumn(String dbName, String tabName,
-      String partName, String colName) {
-    try {
-      ColumnStatistics colStats =
-          Hive.get().getPartitionColumnStatistics(dbName, tabName, partName, colName);
-      if (colStats != null) {
-        return getColStatistics(colStats.getStatsObj().get(0), tabName, colName);
-      }
-    } catch (HiveException e) {
-      return null;
-    }
-    return null;
-  }
-
-  /**
-   * Will return true if column statistics for atleast one column is available
-   * @param colStats
-   *          - column stats
-   * @return
-   */
-  private static boolean checkIfColStatsAvailable(List<ColStatistics> colStats) {
-    for (ColStatistics cs : colStats) {
-      if (cs != null) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Get table level column stats for specified column
-   * @param dbName
-   *          - database name
-   * @param tableName
-   *          - table name
-   * @param colName
-   *          - column name
-   * @return column stats
-   */
-  public static ColStatistics getTableColumnStatsForColumn(String dbName, String tableName,
-      String colName) {
-    try {
-      ColumnStatistics colStat = Hive.get().getTableColumnStatistics(dbName, tableName, colName);
-      if (colStat != null) {
-        // there will be only one column statistics object
-        return getColStatistics(colStat.getStatsObj().get(0), tableName, colName);
-      }
-    } catch (HiveException e) {
-      return null;
-    }
-    return null;
+    State result = (hasStats
+        ? (hasNull ? Statistics.State.PARTIAL : Statistics.State.COMPLETE)
+        : (neededColumns.isEmpty() ? Statistics.State.COMPLETE : Statistics.State.NONE));
+    return result;
   }
 
   /**
@@ -536,26 +435,85 @@ public class StatsUtils {
    *          - list of needed columns
    * @return column statistics
    */
-  public static List<ColStatistics> getTableColumnStats(Table table, List<ColumnInfo> schema,
-      List<String> neededColumns) {
-
+  public static List<ColStatistics> getTableColumnStats(
+      Table table, List<ColumnInfo> schema, List<String> neededColumns) {
     String dbName = table.getDbName();
     String tabName = table.getTableName();
-    List<ColStatistics> colStatistics = Lists.newArrayList();
-    for (ColumnInfo col : schema) {
-      if (!col.isHiddenVirtualCol()) {
-        String colName = col.getInternalName();
-        if (neededColumns.contains(colName)) {
-          String tabAlias = col.getTabAlias();
-          ColStatistics cs = getTableColumnStatsForColumn(dbName, tabName, colName);
-          if (cs != null) {
-            cs.setTableAlias(tabAlias);
-          }
-          colStatistics.add(cs);
-        }
+    Map<String, String> colToTabAlias = new HashMap<String, String>(schema.size());
+    List<String> neededColsInTable = processNeededColumns(schema, neededColumns, colToTabAlias);
+    List<ColStatistics> stats = null;
+    try {
+      List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
+          dbName, tabName, neededColsInTable);
+      stats = new ArrayList<ColStatistics>(colStat.size());
+      for (ColumnStatisticsObj statObj : colStat) {
+        ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
+        cs.setTableAlias(colToTabAlias.get(cs.getColumnName()));
+        stats.add(cs);
       }
+    } catch (HiveException e) {
+      LOG.error("Failed to retrieve table statistics: ", e);
+      stats = null;
     }
-    return colStatistics;
+    return stats;
+  }
+
+  /**
+   * Get table level column statistics from metastore for needed columns
+   * @param table
+   *          - table
+   * @param schema
+   *          - output schema
+   * @param neededColumns
+   *          - list of needed columns
+   * @return column statistics
+   */
+  public static Map<String, List<ColStatistics>> getPartColumnStats(Table table,
+      List<ColumnInfo> schema, List<String> partNames, List<String> neededColumns) {
+    String dbName = table.getDbName();
+    String tabName = table.getTableName();
+    Map<String, String> colToTabAlias = new HashMap<String, String>(schema.size());
+    List<String> neededColsInTable = processNeededColumns(schema, neededColumns, colToTabAlias);
+    Map<String, List<ColStatistics>> stats = null;
+    try {
+      Map<String, List<ColumnStatisticsObj>> colStat = Hive.get().getPartitionColumnStatistics(
+          dbName, tabName, partNames, neededColsInTable);
+      stats = new HashMap<String, List<ColStatistics>>(colStat.size());
+      for (Map.Entry<String, List<ColumnStatisticsObj>> entry : colStat.entrySet()) {
+        List<ColStatistics> partStat = new ArrayList<ColStatistics>(entry.getValue().size());
+        for (ColumnStatisticsObj statObj : entry.getValue()) {
+          ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
+          cs.setTableAlias(colToTabAlias.get(cs.getColumnName()));
+          partStat.add(cs);
+        }
+        stats.put(entry.getKey(), partStat);
+      }
+    } catch (HiveException e) {
+      LOG.error("Failed to retrieve partitions statistics: ", e);
+      stats = null;
+    }
+    return stats;
+  }
+
+  private static List<String> processNeededColumns(List<ColumnInfo> schema,
+      List<String> neededColumns, Map<String, String> colToTabAlias) {
+    for (ColumnInfo col : schema) {
+      if (col.isHiddenVirtualCol()) continue;
+      colToTabAlias.put(col.getInternalName(), col.getTabAlias());
+    }
+    // Remove hidden virtual columns, as well as needed columns that are not
+    // part of the table. TODO: the latter case should not really happen...
+    List<String> neededColsInTable = null;
+    int limit = neededColumns.size();
+    for (int i = 0; i < limit; ++i) {
+      if (colToTabAlias.containsKey(neededColumns.get(i))) continue;
+      if (neededColsInTable == null) {
+        neededColsInTable = Lists.newArrayList(neededColumns);
+      }
+      neededColsInTable.remove(i--);
+      --limit;
+    }
+    return (neededColsInTable == null) ? neededColumns : neededColsInTable;
   }
 
   /**
@@ -1037,38 +995,26 @@ public class StatsUtils {
 
   /**
    * Get number of rows of a give table
-   * @param dbName
-   *          - database name
-   * @param tabName
-   *          - table name
    * @return number of rows
    */
-  public static long getNumRows(String dbName, String tabName) {
-    return getBasicStatForTable(dbName, tabName, StatsSetupConst.ROW_COUNT);
+  public static long getNumRows(Table table) {
+    return getBasicStatForTable(table, StatsSetupConst.ROW_COUNT);
   }
 
   /**
    * Get raw data size of a give table
-   * @param dbName
-   *          - database name
-   * @param tabName
-   *          - table name
    * @return raw data size
    */
-  public static long getRawDataSize(String dbName, String tabName) {
-    return getBasicStatForTable(dbName, tabName, StatsSetupConst.RAW_DATA_SIZE);
+  public static long getRawDataSize(Table table) {
+    return getBasicStatForTable(table, StatsSetupConst.RAW_DATA_SIZE);
   }
 
   /**
    * Get total size of a give table
-   * @param dbName
-   *          - database name
-   * @param tabName
-   *          - table name
    * @return total size
    */
-  public static long getTotalSize(String dbName, String tabName) {
-    return getBasicStatForTable(dbName, tabName, StatsSetupConst.TOTAL_SIZE);
+  public static long getTotalSize(Table table) {
+    return getBasicStatForTable(table, StatsSetupConst.TOTAL_SIZE);
   }
 
   /**
@@ -1081,15 +1027,7 @@ public class StatsUtils {
    *          - type of stats
    * @return value of stats
    */
-  public static long getBasicStatForTable(String dbName, String tabName, String statType) {
-
-    Table table;
-    try {
-      table = Hive.get().getTable(dbName, tabName);
-    } catch (HiveException e) {
-      return 0;
-    }
-
+  public static long getBasicStatForTable(Table table, String statType) {
     Map<String, String> params = table.getParameters();
     long result = 0;
 
@@ -1107,23 +1045,16 @@ public class StatsUtils {
    * Get basic stats of partitions
    * @param table
    *          - table
-   * @param partNames
-   *          - partition names
+   * @param parts
+   *          - partitions
    * @param statType
    *          - type of stats
    * @return value of stats
    */
-  public static List<Long> getBasicStatForPartitions(Table table, List<String> partNames,
+  public static List<Long> getBasicStatForPartitions(Table table, List<Partition> parts,
       String statType) {
 
     List<Long> stats = Lists.newArrayList();
-    List<Partition> parts;
-    try {
-      parts = Hive.get().getPartitionsByNames(table, partNames);
-    } catch (HiveException e1) {
-      return stats;
-    }
-
     for (Partition part : parts) {
       Map<String, String> params = part.getParameters();
       long result = 0;

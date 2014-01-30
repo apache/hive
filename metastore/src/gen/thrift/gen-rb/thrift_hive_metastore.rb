@@ -1180,6 +1180,40 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition_column_statistics failed: unknown result')
     end
 
+    def get_table_statistics_req(request)
+      send_get_table_statistics_req(request)
+      return recv_get_table_statistics_req()
+    end
+
+    def send_get_table_statistics_req(request)
+      send_message('get_table_statistics_req', Get_table_statistics_req_args, :request => request)
+    end
+
+    def recv_get_table_statistics_req()
+      result = receive_message(Get_table_statistics_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_statistics_req failed: unknown result')
+    end
+
+    def get_partitions_statistics_req(request)
+      send_get_partitions_statistics_req(request)
+      return recv_get_partitions_statistics_req()
+    end
+
+    def send_get_partitions_statistics_req(request)
+      send_message('get_partitions_statistics_req', Get_partitions_statistics_req_args, :request => request)
+    end
+
+    def recv_get_partitions_statistics_req()
+      result = receive_message(Get_partitions_statistics_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_statistics_req failed: unknown result')
+    end
+
     def delete_partition_column_statistics(db_name, tbl_name, part_name, col_name)
       send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name)
       return recv_delete_partition_column_statistics()
@@ -2382,6 +2416,32 @@ module ThriftHiveMetastore
         result.o4 = o4
       end
       write_result(result, oprot, 'get_partition_column_statistics', seqid)
+    end
+
+    def process_get_table_statistics_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_table_statistics_req_args)
+      result = Get_table_statistics_req_result.new()
+      begin
+        result.success = @handler.get_table_statistics_req(args.request)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_table_statistics_req', seqid)
+    end
+
+    def process_get_partitions_statistics_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_partitions_statistics_req_args)
+      result = Get_partitions_statistics_req_result.new()
+      begin
+        result.success = @handler.get_partitions_statistics_req(args.request)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_partitions_statistics_req', seqid)
     end
 
     def process_delete_partition_column_statistics(seqid, iprot, oprot)
@@ -5279,6 +5339,78 @@ module ThriftHiveMetastore
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidInputException},
       O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::InvalidObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_table_statistics_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::TableStatsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_table_statistics_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::TableStatsResult},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partitions_statistics_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::PartitionsStatsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partitions_statistics_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::PartitionsStatsResult},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

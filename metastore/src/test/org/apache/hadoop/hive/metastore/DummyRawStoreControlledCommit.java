@@ -200,7 +200,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitions(String dbName, String tableName, int max)
-      throws MetaException {
+      throws MetaException, NoSuchObjectException {
     return objectStore.getPartitions(dbName, tableName, max);
   }
 
@@ -494,9 +494,8 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
-      String colName)
-      throws MetaException, NoSuchObjectException, InvalidInputException {
-    return objectStore.getTableColumnStatistics(dbName, tableName, colName);
+      List<String> colNames) throws MetaException, NoSuchObjectException {
+    return objectStore.getTableColumnStatistics(dbName, tableName, colNames);
   }
 
   @Override
@@ -513,15 +512,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
       InvalidInputException {
     return objectStore.deletePartitionColumnStatistics(dbName, tableName, partName,
         partVals, colName);
-  }
-
-  @Override
-  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
-      String partName, List<String> partVal, String colName)
-      throws MetaException, NoSuchObjectException, InvalidInputException,
-      InvalidObjectException  {
-    return objectStore.getPartitionColumnStatistics(dbName, tableName, partName,
-        partVal, colName);
   }
 
   @Override
@@ -585,6 +575,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<ColumnStatistics> getPartitionColumnStatistics(String dbName,
+      String tblName, List<String> colNames, List<String> partNames)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getPartitionColumnStatistics(dbName, tblName  , colNames, partNames);
+  }
+
+  @Override
   public boolean doesPartitionExist(String dbName, String tableName,
       List<String> partVals) throws MetaException, NoSuchObjectException {
     return objectStore.doesPartitionExist(dbName, tableName, partVals);
@@ -595,5 +592,4 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
       throws InvalidObjectException, MetaException {
     return objectStore.addPartitions(dbName, tblName, parts);
   }
-
 }
