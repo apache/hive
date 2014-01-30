@@ -29,6 +29,17 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarDivideDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarModuloDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColAddDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColModuloDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColModuloDecimalScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyDecimalScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalColumn;
@@ -331,44 +342,6 @@ public class TestVectorArithmeticExpressions {
 
     // verify proper null output data value
     assertTrue(r.vector[0].equals(new Decimal128("0.01", (short) 2)));
-  }
-
-  // Test decimal column-column addition
-  @Test
-  public void testDecimalColumnAddDecimalColumn() {
-    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
-    VectorExpression expr = new DecimalColAddDecimalColumn(0, 1, 2);
-    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
-
-    // test without nulls
-    expr.evaluate(b);
-    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-2.30", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("1.00", (short) 2)));
-
-    // test nulls propagation
-    b = getVectorizedRowBatch3DecimalCols();
-    DecimalColumnVector c0 = (DecimalColumnVector) b.cols[0];
-    c0.noNulls = false;
-    c0.isNull[0] = true;
-    r = (DecimalColumnVector) b.cols[2];
-    expr.evaluate(b);
-    assertTrue(!r.noNulls && r.isNull[0]);
-
-    // Verify null output data entry is not 0, but rather the value specified by design,
-    // which is the minimum non-0 value, 0.01 in this case.
-    assertTrue(r.vector[0].equals(new Decimal128("0.01", (short) 2)));
-
-    // test that overflow produces NULL
-    b = getVectorizedRowBatch3DecimalCols();
-    c0 = (DecimalColumnVector) b.cols[0];
-    c0.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
-    r = (DecimalColumnVector) b.cols[2];
-    expr.evaluate(b); // will cause overflow for result at position 0, must yield NULL
-    assertTrue(!r.noNulls && r.isNull[0]);
-
-    // verify proper null output data value
-    assertTrue(r.vector[0].equals(new Decimal128("0.01", (short) 2)));
 
     // test left input repeating
     b = getVectorizedRowBatch3DecimalCols();
@@ -399,7 +372,7 @@ public class TestVectorArithmeticExpressions {
 
   // Spot check decimal column-column subtract
   @Test
-  public void testDecimalColumnSubtractDecimalColumn() {
+  public void testDecimalColSubtractDecimalColumn() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     VectorExpression expr = new DecimalColSubtractDecimalColumn(0, 1, 2);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
@@ -421,7 +394,7 @@ public class TestVectorArithmeticExpressions {
 
   // Spot check decimal column-column multiply
   @Test
-  public void testDecimalColumnMultiplyDecimalColumn() {
+  public void testDecimalColMultiplyDecimalColumn() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     VectorExpression expr = new DecimalColMultiplyDecimalColumn(0, 1, 2);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
@@ -498,6 +471,269 @@ public class TestVectorArithmeticExpressions {
     r = (DecimalColumnVector) b.cols[2];
     assertFalse(r.noNulls);
     assertTrue(r.isNull[0]);
+  }
+
+  /* Test decimal column to decimal scalar division. This is used to cover all the
+   * cases used in the source code template ColumnDivideScalarDecimal.txt.
+   * The template is used for division and modulo.
+   */
+  @Test
+  public void testDecimalColDivideDecimalScalar() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    Decimal128 d = new Decimal128("2.00", (short) 2);
+    VectorExpression expr = new DecimalColDivideDecimalScalar(0, d, 2);
+
+
+    // test without nulls
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[0].equals(new Decimal128("0.60", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-1.65", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+
+    // test null propagation
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
+    r = (DecimalColumnVector) b.cols[2];
+    in.noNulls = false;
+    in.isNull[0] = true;
+    expr.evaluate(b);
+    assertTrue(!r.noNulls);
+    assertTrue(r.isNull[0]);
+
+    // test repeating case, no nulls
+    b = getVectorizedRowBatch3DecimalCols();
+    in = (DecimalColumnVector) b.cols[0];
+    in.isRepeating = true;
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.isRepeating);
+    assertTrue(r.vector[0].equals(new Decimal128("0.60", (short) 2)));
+
+    // test repeating case for null value
+    b = getVectorizedRowBatch3DecimalCols();
+    in = (DecimalColumnVector) b.cols[0];
+    in.isRepeating = true;
+    in.isNull[0] = true;
+    in.noNulls = false;
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.isRepeating);
+    assertTrue(!r.noNulls);
+    assertTrue(r.isNull[0]);
+
+    // test that zero-divide produces null for all output values
+    b = getVectorizedRowBatch3DecimalCols();
+    in = (DecimalColumnVector) b.cols[0];
+    expr = new DecimalColDivideDecimalScalar(0, new Decimal128("0", (short) 2), 2);
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+    assertTrue(r.isRepeating);
+  }
+
+  /* Test decimal scalar divided column. This tests the primary logic
+   * for template ScalarDivideColumnDecimal.txt.
+   */
+  @Test
+  public void testDecimalScalarDivideDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    Decimal128 d = new Decimal128("3.96", (short) 2);  // 1.20 * 3.30
+    VectorExpression expr = new DecimalScalarDivideDecimalColumn(d, 0, 2);
+
+    // test without nulls
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[0].equals(new Decimal128("3.30", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-1.20", (short) 2)));
+    assertFalse(r.noNulls); // entry 2 is null due to zero-divide
+    assertTrue(r.isNull[2]);
+
+    // test null propagation
+    b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
+    r = (DecimalColumnVector) b.cols[2];
+    in.noNulls = false;
+    in.isNull[0] = true;
+    expr.evaluate(b);
+    assertTrue(!r.noNulls);
+    assertTrue(r.isNull[0]);
+
+    // test repeating case, no nulls
+    b = getVectorizedRowBatch3DecimalCols();
+    in = (DecimalColumnVector) b.cols[0];
+    in.isRepeating = true;
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.isRepeating);
+    assertTrue(r.vector[0].equals(new Decimal128("3.30", (short) 2)));
+
+    // test repeating case for null value
+    b = getVectorizedRowBatch3DecimalCols();
+    in = (DecimalColumnVector) b.cols[0];
+    in.isRepeating = true;
+    in.isNull[0] = true;
+    in.noNulls = false;
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.isRepeating);
+    assertTrue(!r.noNulls);
+    assertTrue(r.isNull[0]);
+  }
+
+  // Spot check Decimal Col-Scalar Modulo
+  @Test
+  public void testDecimalColModuloDecimalScalar() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    Decimal128 d = new Decimal128("2.00", (short) 2);
+    VectorExpression expr = new DecimalColModuloDecimalScalar(0, d, 2);
+
+    // test without nulls
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[0].equals(new Decimal128("1.20", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-1.30", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+
+    // try again with some different data values and divisor
+    DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
+    in.vector[0].update("15.40", (short) 2);
+    in.vector[1].update("-17.20", (short) 2);
+    in.vector[2].update("70.00", (short) 2);
+    d.update("4.75", (short) 2);
+
+    expr.evaluate(b);
+    assertTrue(r.vector[0].equals(new Decimal128("1.15", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-2.95", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("3.50", (short) 2)));
+
+    // try a zero-divide to show a repeating NULL is produced
+    d.update("0", (short) 2);
+    expr.evaluate(b);
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+    assertTrue(r.isRepeating);
+  }
+
+  // Spot check decimal scalar-column modulo
+  @Test
+  public void testDecimalScalarModuloDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    Decimal128 d = new Decimal128("2.00", (short) 2);
+    VectorExpression expr = new DecimalScalarModuloDecimalColumn(d, 0, 2);
+
+    // test without nulls
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[0].equals(new Decimal128("0.80", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("2.00", (short) 2)));
+    assertFalse(r.noNulls); // entry 2 will be null due to zero-divide
+    assertTrue(r.isNull[2]);
+
+    // try again with some different data values
+    DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
+    in.vector[0].update("0.50", (short) 2);
+    in.vector[1].update("0.80", (short) 2);
+    in.vector[2].update("0.70", (short) 2);
+
+    expr.evaluate(b);
+    assertTrue(r.vector[0].equals(new Decimal128("0.00", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("0.40", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("0.60", (short) 2)));
+  }
+
+  @Test
+  public void testDecimalColDivideDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector in1 = (DecimalColumnVector) b.cols[1];
+    for (int i = 0; i < 3; i++) {
+      in1.vector[i] = new Decimal128("0.50", (short) 2);
+    }
+    VectorExpression expr = new DecimalColDivideDecimalColumn(0, 1, 2);
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+
+    // all divides are by 0.50 so the result column is 2 times col 0.
+    assertTrue(r.vector[0].equals(new Decimal128("2.40", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-6.60", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+
+    // test null on left
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[0] = true;
+    expr.evaluate(b);
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+
+    // test null on right
+    b = getVectorizedRowBatch3DecimalCols();
+    b.cols[1].noNulls = false;
+    b.cols[1].isNull[0] = true;
+    r = (DecimalColumnVector) b.cols[2];
+    expr.evaluate(b);
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+
+    // test null on both sides
+    b = getVectorizedRowBatch3DecimalCols();
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[0] = true;
+    b.cols[1].noNulls = false;
+    b.cols[1].isNull[0] = true;
+    expr.evaluate(b);
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+    assertFalse(r.isNull[1]);
+    assertFalse(r.isNull[2]);
+
+    // test repeating on left
+    b = getVectorizedRowBatch3DecimalCols();
+    b.cols[0].isRepeating = true;
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[2].equals(new Decimal128("1.20", (short) 2)));
+
+    // test repeating on right
+    b = getVectorizedRowBatch3DecimalCols();
+    b.cols[1].isRepeating = true;
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+
+    // test both repeating
+    b = getVectorizedRowBatch3DecimalCols();
+    b.cols[0].isRepeating = true;
+    b.cols[1].isRepeating = true;
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertTrue(r.isRepeating);
+    assertTrue(r.vector[0].equals(new Decimal128("1.20", (short) 2)));
+
+    // test zero-divide to show it results in NULL
+    b = getVectorizedRowBatch3DecimalCols();
+    ((DecimalColumnVector) b.cols[1]).vector[0].update(0);
+    expr.evaluate(b);
+    r = (DecimalColumnVector) b.cols[2];
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[0]);
+  }
+
+  // Spot check decimal column modulo decimal column
+  @Test
+  public void testDecimalColModuloDecimalColumn() {
+    VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
+    DecimalColumnVector in1 = (DecimalColumnVector) b.cols[1];
+    for (int i = 0; i < 3; i++) {
+      in1.vector[i] = new Decimal128("0.50", (short) 2);
+    }
+    VectorExpression expr = new DecimalColModuloDecimalColumn(0, 1, 2);
+    expr.evaluate(b);
+    DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
+
+    assertTrue(r.vector[0].equals(new Decimal128("0.20", (short) 2)));
+    assertTrue(r.vector[1].equals(new Decimal128("-0.30", (short) 2)));
+    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
   }
 
   /* Spot check correctness of decimal column subtract decimal scalar. The case for

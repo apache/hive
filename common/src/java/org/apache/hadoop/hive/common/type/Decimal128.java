@@ -1190,10 +1190,54 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     HiveDecimal rightHD = HiveDecimal.create(right.toBigDecimal());
     HiveDecimal thisHD = HiveDecimal.create(this.toBigDecimal());
     HiveDecimal result = thisHD.divide(rightHD);
+
+    /* If the result is null, throw an exception. This can be caught
+     * by calling code in the vectorized code path and made to yield
+     * a SQL NULL value.
+     */
+    if (result == null) {
+      throw new ArithmeticException("null divide result");
+    }
     this.update(result.bigDecimalValue().toPlainString(), newScale);
     this.unscaledValue.throwIfExceedsTenToThirtyEight();
   }
 
+  /**
+    * Performs decimal modulo
+    * <p>
+    * The definition of modulo (x % p) is:
+    *   x - IntegerPart(x / p, resultScale) * p
+    * </p>
+    *
+    * @left
+    *    is x
+    * @right
+    *    is p
+    * @result
+    *    receives the result
+    * @scratch
+    *    scratch space to avoid need to create a new object
+    * @scale
+    *    scale of result
+    */
+   public static void modulo(Decimal128 left, Decimal128 right, Decimal128 result,
+       short scale) {
+
+     // set result to x / p (the quotient)
+     Decimal128.divide(left, right, result, scale);
+
+     // take integer part of it
+     result.zeroFractionPart();
+
+     // multiply by p
+     result.multiplyDestructive(right, scale);
+
+     // negate it
+     result.negateDestructive();
+
+     // add x to it
+     result.addDestructive(left, scale);
+   }
 
   /**
    * Makes this {@code Decimal128} a positive number. Unlike
@@ -1664,5 +1708,36 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
       this.unscaledValue.update(val);
       this.signum = 1;
     }
+  }
+
+  /**
+   * Zero the fractional part of value.
+   *
+   * Argument scratch is needed to hold unused remainder output, to avoid need to
+   * create a new object.
+   */
+  public void zeroFractionPart() {
+    short placesToRemove = this.getScale();
+
+    // If there's no fraction part, return immediately to avoid the cost of a divide.
+    if (placesToRemove == 0) {
+      return;
+    }
+
+    /* Divide by a power of 10 equal to 10**scale to logically shift the digits
+     * places right by "scale" positions to eliminate them.
+     */
+    UnsignedInt128 powerTenDivisor = SqlMathUtil.POWER_TENS_INT128[placesToRemove];
+
+    /* A scratch variable is created here. This could be optimized in the future
+     * by perhaps using thread-local storage to allocate this scratch field.
+     */
+    UnsignedInt128 scratch = new UnsignedInt128();
+    this.getUnscaledValue().divideDestructive(powerTenDivisor, scratch);
+
+    /* Multiply by the same power of ten to shift the decimal point back to
+     * the original place. Places to the right of the decimal will be zero.
+     */
+    this.getUnscaledValue().scaleUpTenDestructive(placesToRemove);
   }
 }
