@@ -1633,6 +1633,13 @@
 </property>
 
 <property>
+  <name>hive.users.in.admin.role</name>
+  <value></value>
+  <description>Comma separated list of users who are in admin role for bootstrapping.
+    More users can be added in ADMIN role later.</description>
+</property>
+
+<property>
   <name>hive.security.command.whitelist</name>
   <value>set,reset,dfs,add,delete</value>
   <description>Comma separated list of non-SQL Hive commands users are authorized to execute</description>

@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.apache.commons.cli.OptionBuilder;
@@ -150,6 +150,7 @@ import org.apache.thrift.transport.TTransportFactory;
 
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 /**
@@ -169,6 +170,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * default port on which to start the Hive server
    */
   private static final int DEFAULT_HIVE_METASTORE_PORT = 9083;
+  public static final String ADMIN = "ADMIN";
 
   private static HadoopThriftAuthBridge.Server saslServer;
   private static boolean useSasl;
@@ -194,6 +196,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       IHMSHandler {
     public static final Log LOG = HiveMetaStore.LOG;
     private static boolean createDefaultDB = false;
+    private static boolean adminCreated = false;
     private String rawStoreClassName;
     private final HiveConf hiveConf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
@@ -346,7 +349,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           alterHandlerName), hiveConf);
       wh = new Warehouse(hiveConf);
 
-      createDefaultDB();
+      synchronized (HMSHandler.class) {
+        createDefaultDB();
+        createAdminRoleNAddUsers();
+      }
 
       if (hiveConf.getBoolean("hive.metastore.metrics.enabled", false)) {
         try {
@@ -453,22 +459,101 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @throws MetaException
      */
     private void createDefaultDB() throws MetaException {
-      synchronized (HMSHandler.class) {
-        if (HMSHandler.createDefaultDB || !checkForDefaultDb) {
-          return;
-        }
+      if (HMSHandler.createDefaultDB || !checkForDefaultDb) {
+        return;
+      }
+      try {
+        createDefaultDB_core(getMS());
+      } catch (InvalidObjectException e) {
+        throw new MetaException(e.getMessage());
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        assert (e instanceof RuntimeException);
+        throw (RuntimeException) e;
+      }
+    }
 
+    private void createAdminRoleNAddUsers() throws MetaException {
+
+      if(adminCreated) {
+        LOG.debug("Admin role already created previously.");        
+        return;
+      }
+      Class<?> authCls;
+      Class<?> authIface;
+      try {
+        authCls = hiveConf.getClassByName(hiveConf.getVar(ConfVars.HIVE_AUTHORIZATION_MANAGER));
+        authIface = Class.forName("org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory");
+      } catch (ClassNotFoundException e) {
+        LOG.debug("No auth manager specified", e);
+        return;
+      }
+      if(!authIface.isAssignableFrom(authCls)){
+        LOG.warn("Configured auth manager "+authCls.getName()+" doesn't implement "+ ConfVars.
+          HIVE_AUTHENTICATOR_MANAGER+ " admin role will not be created.");
+        return;
+      }
+      RawStore ms = getMS();
+      try {
+        ms.addRole(ADMIN, ADMIN);
+      } catch (InvalidObjectException e) {
+        LOG.debug("admin role already exists",e);
+      } catch (NoSuchObjectException e) {
+        // This should never be thrown.
+        LOG.warn("Unexpected exception while adding ADMIN role" , e);
+      }
+      LOG.info("Added admin role in metastore");
+      // now grant all privs to admin
+      PrivilegeBag privs = new PrivilegeBag();
+      privs.addToPrivileges(new HiveObjectPrivilege( new HiveObjectRef(HiveObjectType.GLOBAL, null,
+        null, null, null), ADMIN, PrincipalType.ROLE, new PrivilegeGrantInfo("All", 0, ADMIN,
+        PrincipalType.ROLE, true)));
+      try {
+        ms.grantPrivileges(privs);
+      } catch (InvalidObjectException e) {
+        // Surprisingly these privs are already granted.
+        LOG.debug("Failed while granting global privs to admin", e);
+      } catch (NoSuchObjectException e) {
+        // Unlikely to be thrown.
+        LOG.warn("Failed while granting global privs to admin", e);
+      }
+
+      // now add pre-configured users to admin role
+      String userStr = HiveConf.getVar(hiveConf,ConfVars.USERS_IN_ADMIN_ROLE,"").trim();
+      if (userStr.isEmpty()) {
+        LOG.info("No user is added in admin role, since config is empty");
+        return;
+      }
+      // Since user names need to be valid unix user names, per IEEE Std 1003.1-2001 they cannot
+      // contain comma, so we can safely split above string on comma.
+
+     Iterator<String> users = Splitter.on(",").trimResults().omitEmptyStrings().split(userStr).
+       iterator();
+      if (!users.hasNext()) {
+        LOG.info("No user is added in admin role, since config value "+ userStr +
+          " is in incorrect format.");
+        return;
+      }
+      LOG.info("Added " + userStr + " to admin role");
+      Role adminRole;
+      try {
+        adminRole = ms.getRole(ADMIN);
+      } catch (NoSuchObjectException e) {
+        LOG.error("Failed to retrieve just added admin role",e);
+        return;
+      }
+      while (users.hasNext()) {
+        String userName = users.next();
         try {
-          createDefaultDB_core(getMS());
+          ms.grantRole(adminRole, userName, PrincipalType.USER, ADMIN, PrincipalType.ROLE, true);
+        } catch (NoSuchObjectException e) {
+          LOG.error("Failed to add "+ userName + " in admin role",e);
         } catch (InvalidObjectException e) {
-          throw new MetaException(e.getMessage());
-        } catch (MetaException e) {
-          throw e;
-        } catch (Exception e) {
-          assert (e instanceof RuntimeException);
-          throw (RuntimeException) e;
+          LOG.debug(userName + " already in admin role", e);
         }
       }
+      adminCreated = true;
     }
 
     private void logInfo(String m) {
