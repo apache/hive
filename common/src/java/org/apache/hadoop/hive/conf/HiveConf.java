@@ -134,7 +134,8 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HMSHANDLERINTERVAL,
       HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF,
       HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN,
-      HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES
+      HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
+      HiveConf.ConfVars.USERS_IN_ADMIN_ROLE
       };
 
   /**
@@ -891,7 +892,8 @@ public class HiveConf extends Configuration {
     // none is the default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.
     // column: implies column names can contain any character.
     HIVE_QUOTEDID_SUPPORT("hive.support.quoted.identifiers", "column",
-        new PatternValidator("none", "column"))
+        new PatternValidator("none", "column")),
+    USERS_IN_ADMIN_ROLE("hive.users.in.admin.role","")
     ;
 
     public final String varname;
