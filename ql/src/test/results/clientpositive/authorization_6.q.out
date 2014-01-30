@@ -111,7 +111,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2011).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2011).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 columnName	key
 principalName	hive_test_user
 principalType	USER
@@ -128,7 +128,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2011).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2011).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2011
+partition	[2011]
 columnName	key
 principalName	hive_test_user
 principalType	USER

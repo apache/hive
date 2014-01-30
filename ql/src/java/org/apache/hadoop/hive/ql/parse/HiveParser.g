@@ -261,6 +261,7 @@ TOK_PRINCIPAL_NAME;
 TOK_USER;
 TOK_GROUP;
 TOK_ROLE;
+TOK_RESOURCE_ALL;
 TOK_GRANT_WITH_OPTION;
 TOK_GRANT_WITH_ADMIN_OPTION;
 TOK_PRIV_ALL;
@@ -1375,14 +1376,15 @@ showRoles
 showGrants
 @init {pushMsg("show grants", state);}
 @after {popMsg(state);}
-    : KW_SHOW KW_GRANT principalName privilegeIncludeColObject?
-    -> ^(TOK_SHOW_GRANT principalName privilegeIncludeColObject?)
+    : KW_SHOW KW_GRANT principalName? (KW_ON privilegeIncludeColObject)?
+    -> ^(TOK_SHOW_GRANT principalName? privilegeIncludeColObject?)
     ;
 
 privilegeIncludeColObject
 @init {pushMsg("privilege object including columns", state);}
 @after {popMsg(state);}
-    : KW_ON privObjectType identifier (LPAREN cols=columnNameList RPAREN)? partitionSpec?
+    : KW_ALL -> ^(TOK_RESOURCE_ALL)
+    | privObjectType identifier (LPAREN cols=columnNameList RPAREN)? partitionSpec?
     -> ^(TOK_PRIV_OBJECT_COL identifier privObjectType $cols? partitionSpec?)
     ;
 
