@@ -71,8 +71,12 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
     try {
       reportProgress();
 
-      // get alias
+      lastAlias = alias;
       alias = (byte) tag;
+
+      if (!alias.equals(lastAlias)) {
+        nextSz = joinEmitInterval;
+      }
 
       List<Object> nr = getFilteredValue(alias, row);
 
