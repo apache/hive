@@ -60,8 +60,7 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin) a) (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin_part) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME bucketmapjoin_tmp_result))) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL b) ds) "2008-04-08"))))
 
 STAGE DEPENDENCIES:
-  Stage-9 is a root stage
-  Stage-1 depends on stages: Stage-9
+  Stage-1 is a root stage
   Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
   Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
@@ -71,71 +70,6 @@ STAGE DEPENDENCIES:
   Stage-7 depends on stages: Stage-6
 
 STAGE PLANS:
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        b 
-          Fetch Operator
-            limit: -1
-            Partition Description:
-                Partition
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  partition values:
-                    ds 2008-04-08
-                  properties:
-                    COLUMN_STATS_ACCURATE true
-                    bucket_count 3
-                    bucket_field_name key
-                    columns key,value
-                    columns.types int:string
-#### A masked pattern was here ####
-                    name default.srcbucket_mapjoin_part
-                    numFiles 3
-                    numRows 0
-                    partition_columns ds
-                    rawDataSize 0
-                    serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 4200
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucket_count 3
-                      bucket_field_name key
-                      columns key,value
-                      columns.types int:string
-#### A masked pattern was here ####
-                      name default.srcbucket_mapjoin_part
-                      partition_columns ds
-                      serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.srcbucket_mapjoin_part
-                  name: default.srcbucket_mapjoin_part
-      Alias -> Map Local Operator Tree:
-        b 
-          TableScan
-            alias: b
-            Statistics:
-                numRows: 40 dataSize: 4200 basicStatsState: COMPLETE colStatsState: NONE
-            GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 {key} {value}
-                1 {value}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
@@ -198,6 +132,59 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            b 
+              Fetch Operator
+                limit: -1
+                Partition Description:
+                    Partition
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      partition values:
+                        ds 2008-04-08
+                      properties:
+                        COLUMN_STATS_ACCURATE true
+                        bucket_count 3
+                        bucket_field_name key
+                        columns key,value
+                        columns.types int:string
+#### A masked pattern was here ####
+                        name default.srcbucket_mapjoin_part
+                        numFiles 3
+                        numRows 0
+                        partition_columns ds
+                        rawDataSize 0
+                        serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        totalSize 4200
+#### A masked pattern was here ####
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        properties:
+                          bucket_count 3
+                          bucket_field_name key
+                          columns key,value
+                          columns.types int:string
+#### A masked pattern was here ####
+                          name default.srcbucket_mapjoin_part
+                          partition_columns ds
+                          serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.srcbucket_mapjoin_part
+                      name: default.srcbucket_mapjoin_part
+          Alias -> Map Local Operator Tree:
+            b 
+              TableScan
+                alias: b
+                Statistics:
+                    numRows: 40 dataSize: 4200 basicStatsState: COMPLETE colStatsState: NONE
+                GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

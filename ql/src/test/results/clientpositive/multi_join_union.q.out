@@ -48,9 +48,6 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a 
-          Fetch Operator
-            limit: -1
         c-subquery1:a-subquery1:src13 
           Fetch Operator
             limit: -1
@@ -58,18 +55,6 @@ STAGE PLANS:
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a 
-          TableScan
-            alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 1
         c-subquery1:a-subquery1:src13 
           TableScan
             alias: src13
@@ -179,6 +164,18 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            a 
+              Fetch Operator
+                limit: -1
+            c-subquery1:a-subquery1:src13 
+            c-subquery2:a-subquery2:src14 
+          Alias -> Map Local Operator Tree:
+            a 
+              TableScan
+                alias: a
+            c-subquery1:a-subquery1:src13 
+            c-subquery2:a-subquery2:src14 
 
   Stage: Stage-0
     Fetch Operator

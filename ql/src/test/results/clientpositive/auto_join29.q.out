@@ -16,31 +16,10 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        src1 
-          Fetch Operator
-            limit: -1
         src2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            HashTable Sink Operator
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
-              filter predicates:
-                0 {(key < 10)}
-                1 
-                2 {(key < 10)}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 2
         src2 
           TableScan
             alias: src2
@@ -50,16 +29,16 @@ STAGE PLANS:
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
+                  0 
                   1 {key} {value}
                   2 {key} {value}
                 filter predicates:
-                  0 {(key < 10)}
+                  0 
                   1 
                   2 {(key < 10)}
                 handleSkewJoin: false
                 keys:
-                  0 [Column[key]]
+                  0 
                   1 [Column[key]]
                   2 [Column[key]]
                 Position of Big Table: 2
@@ -135,6 +114,16 @@ STAGE PLANS:
                         type: string
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            src1 
+              Fetch Operator
+                limit: -1
+            src2 
+          Alias -> Map Local Operator Tree:
+            src1 
+              TableScan
+                alias: src1
+            src2 
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -2016,9 +2005,6 @@ STAGE PLANS:
         src1 
           Fetch Operator
             limit: -1
-        src2 
-          Fetch Operator
-            limit: -1
       Alias -> Map Local Operator Tree:
         src1 
           TableScan
@@ -2030,36 +2016,18 @@ STAGE PLANS:
               HashTable Sink Operator
                 condition expressions:
                   0 {key} {value}
-                  1 {key} {value}
+                  1 
                   2 {key} {value}
                 filter predicates:
                   0 
-                  1 {(key > 10)}
+                  1 
                   2 {(key < 10)}
                 handleSkewJoin: false
                 keys:
                   0 [Column[key]]
-                  1 [Column[key]]
+                  1 
                   2 [Column[key]]
                 Position of Big Table: 2
-        src2 
-          TableScan
-            alias: src2
-            HashTable Sink Operator
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
-              filter predicates:
-                0 
-                1 {(key > 10)}
-                2 {(key < 10)}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 2
 
   Stage: Stage-2
     Map Reduce
@@ -2132,6 +2100,16 @@ STAGE PLANS:
                         type: string
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            src1 
+            src2 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            src1 
+            src2 
+              TableScan
+                alias: src2
       Reduce Operator Tree:
         Extract
           File Output Operator

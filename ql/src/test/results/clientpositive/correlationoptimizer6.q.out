@@ -673,47 +673,11 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1) x) (TOK_TABREF (TOK_TABNAME src1) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key) key) (TOK_SELEXPR (TOK_FUNCTION count 1) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key)))) xx) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x) (TOK_TABREF (TOK_TABNAME src) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key) key) (TOK_SELEXPR (TOK_FUNCTION count 1) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key)))) yy) (= (. (TOK_TABLE_OR_COL xx) key) (. (TOK_TABLE_OR_COL yy) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL xx) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL xx) cnt)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL yy) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL yy) cnt))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL xx) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL xx) cnt)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL yy) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL yy) cnt)))))
 
 STAGE DEPENDENCIES:
-  Stage-9 is a root stage
-  Stage-2 depends on stages: Stage-9
+  Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        xx:y 
-          Fetch Operator
-            limit: -1
-        yy:y 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        xx:y 
-          TableScan
-            alias: y
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-        yy:y 
-          TableScan
-            alias: y
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
@@ -801,6 +765,20 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            xx:y 
+              Fetch Operator
+                limit: -1
+            yy:y 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            xx:y 
+              TableScan
+                alias: y
+            yy:y 
+              TableScan
+                alias: y
       Reduce Operator Tree:
         Demux Operator
           Group By Operator
@@ -5180,34 +5158,12 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1) x) (TOK_TABREF (TOK_TABNAME src1) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key) key) (TOK_SELEXPR (TOK_FUNCTION count 1) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key)))) xx) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x) (TOK_TABREF (TOK_TABNAME src) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) value) (TOK_SELEXPR (TOK_FUNCTION count 1) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL x) value)))) yy) (= (. (TOK_TABLE_OR_COL xx) key) (. (TOK_TABLE_OR_COL yy) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL xx) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL xx) cnt)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL yy) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL yy) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL yy) cnt))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL xx) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL xx) cnt)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL yy) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL yy) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL yy) cnt)))))
 
 STAGE DEPENDENCIES:
-  Stage-11 is a root stage
-  Stage-2 depends on stages: Stage-11
-  Stage-10 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-10
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
   Stage-4 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-11
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        yy:y 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        yy:y 
-          TableScan
-            alias: y
-            HashTable Sink Operator
-              condition expressions:
-                0 {key} {value}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
@@ -5262,6 +5218,14 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            yy:y 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            yy:y 
+              TableScan
+                alias: y
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -5290,26 +5254,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-10
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        xx:y 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        xx:y 
-          TableScan
-            alias: y
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
 
   Stage: Stage-3
     Map Reduce
@@ -5375,6 +5319,14 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            xx:y 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            xx:y 
+              TableScan
+                alias: y
       Reduce Operator Tree:
         Demux Operator
           Group By Operator

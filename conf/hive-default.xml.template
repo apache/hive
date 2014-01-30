@@ -866,6 +866,15 @@
 </property>
 
 <property>
+  <name>hive.auto.convert.join.use.nonstaged</name>
+  <value>true</value>
+  <description>For conditional joins, if input stream from a small alias can be directly applied to join operator without
+    filtering or projection, the alias need not to be pre-staged in distributed cache via mapred local task.
+    Currently, this is not working with vectorization or tez execution engine.
+  </description>
+</property>
+
+<property>
   <name>hive.script.auto.progress</name>
   <value>false</value>
   <description>Whether Hive Transform/Map/Reduce Clause should automatically send progress information to TaskTracker to avoid the task getting killed because of inactivity.  Hive sends progress information when the script is outputting to stderr.  This option removes the need of periodically producing stderr messages, but users should be cautious because this may prevent infinite loops in the scripts to be killed by TaskTracker. </description>

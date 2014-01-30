@@ -15,23 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.HashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 
-/**
- * HashTableLoader is an interface used by MapJoinOperator used to load the hashtables
- * needed to process the join.
- */
-public interface HashTableLoader {
+import java.io.IOException;
 
-  void init(ExecMapperContext context, Configuration hconf, MapJoinOperator joinOp);
+public class TemporaryHashSinkOperator extends HashTableSinkOperator {
+  public TemporaryHashSinkOperator(MapJoinDesc desc) {
+    conf = new HashTableSinkDesc(desc);
+  }
 
-  void load(MapJoinTableContainer[] mapJoinTables, MapJoinTableContainerSerDe[] mapJoinTableSerdes)
-      throws HiveException;
+  @Override
+  protected void flushToFile() throws IOException, HiveException {
+    // do nothing
+  }
 }

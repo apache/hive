@@ -257,34 +257,10 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME test_table3) a) (TOK_TABREF (TOK_TABNAME test_table4) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key))) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-3
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        b 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        b 
-          TableScan
-            alias: b
-            Statistics:
-                numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
-            GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[value])]
-              Position of Big Table: 0
-
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
@@ -340,6 +316,17 @@ STAGE PLANS:
                         type: string
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            b 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            b 
+              TableScan
+                alias: b
+                Statistics:
+                    numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
+                GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

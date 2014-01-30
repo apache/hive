@@ -285,38 +285,16 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME test_table1) a) (TOK_TABREF (TOK_TABNAME test_table2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME test_table3) (TOK_PARTSPEC (TOK_PARTVAL ds '1')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (TOK_FUNCTION concat (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL b) value)))) (TOK_WHERE (and (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL a) ds)) (= (. (TOK_TABLE_OR_COL b) ds) '1')))))
 
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage , consists of Stage-7, Stage-8, Stage-1
-  Stage-7 has a backup stage: Stage-1
-  Stage-4 depends on stages: Stage-7
+  Stage-6 is a root stage , consists of Stage-4, Stage-5, Stage-1
+  Stage-4 has a backup stage: Stage-1
   Stage-0 depends on stages: Stage-1, Stage-4, Stage-5
   Stage-3 depends on stages: Stage-0
-  Stage-8 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-8
+  Stage-5 has a backup stage: Stage-1
   Stage-1
 
 STAGE PLANS:
   Stage: Stage-6
     Conditional Operator
-
-  Stage: Stage-7
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        b 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        b 
-          TableScan
-            alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 {key} {value}
-                1 {value}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
 
   Stage: Stage-4
     Map Reduce
@@ -359,6 +337,14 @@ STAGE PLANS:
                         type: string
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            b 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            b 
+              TableScan
+                alias: b
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -384,26 +370,6 @@ STAGE PLANS:
 
   Stage: Stage-3
     Stats-Aggr Operator
-
-  Stage: Stage-8
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a 
-          TableScan
-            alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 {key} {value}
-                1 {value}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 1
 
   Stage: Stage-5
     Map Reduce
@@ -446,6 +412,14 @@ STAGE PLANS:
                         type: string
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            a 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            a 
+              TableScan
+                alias: a
       Reduce Operator Tree:
         Extract
           File Output Operator

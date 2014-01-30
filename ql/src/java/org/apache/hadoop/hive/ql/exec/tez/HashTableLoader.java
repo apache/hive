@@ -47,14 +47,19 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
   private static final Log LOG = LogFactory.getLog(MapJoinOperator.class.getName());
 
-  public HashTableLoader() {
+  private ExecMapperContext context;
+  private Configuration hconf;
+  private MapJoinDesc desc;
+
+  @Override
+  public void init(ExecMapperContext context, Configuration hconf, MapJoinOperator joinOp) {
+    this.context = context;
+    this.hconf = hconf;
+    this.desc = joinOp.getConf();
   }
 
   @Override
-  public void load(ExecMapperContext context,
-      Configuration hconf,
-      MapJoinDesc desc,
-      byte posBigTable,
+  public void load(
       MapJoinTableContainer[] mapJoinTables,
       MapJoinTableContainerSerDe[] mapJoinTableSerdes) throws HiveException {
 
@@ -65,7 +70,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR);
 
     for (int pos = 0; pos < mapJoinTables.length; pos++) {
-      if (pos == posBigTable) {
+      if (pos == desc.getPosBigTable()) {
         continue;
       }
 

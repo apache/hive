@@ -17,8 +17,7 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1) x) (TOK_TABREF (TOK_TABNAME src) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j1))) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST X))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-9 is a root stage
-  Stage-1 depends on stages: Stage-9
+  Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
@@ -28,26 +27,6 @@ STAGE DEPENDENCIES:
   Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        x 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        x 
-          TableScan
-            alias: x
-            HashTable Sink Operator
-              condition expressions:
-                0 {key} {value}
-                1 {value}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 1
-
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
@@ -85,6 +64,14 @@ STAGE PLANS:
                       name: default.dest_j1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            x 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            x 
+              TableScan
+                alias: x
 
   Stage: Stage-7
     Conditional Operator

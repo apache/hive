@@ -14,32 +14,11 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-1 depends on stages: Stage-4
+  Stage-1 is a root stage
   Stage-3 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-4
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        d 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        d 
-          TableScan
-            alias: d
-            HashTable Sink Operator
-              condition expressions:
-                0 {value}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
@@ -81,6 +60,14 @@ STAGE PLANS:
                     tag: -1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            d 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            d 
+              TableScan
+                alias: d
       Reduce Operator Tree:
         Group By Operator
           bucketGroup: false
@@ -180,31 +167,10 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-3
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        d 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        d 
-          TableScan
-            alias: d
-            HashTable Sink Operator
-              condition expressions:
-                0 {value}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
@@ -246,6 +212,14 @@ STAGE PLANS:
                     tag: -1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            d 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            d 
+              TableScan
+                alias: d
       Reduce Operator Tree:
         Group By Operator
           bucketGroup: false
@@ -315,32 +289,11 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-1 depends on stages: Stage-4
+  Stage-1 is a root stage
   Stage-3 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-4
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        d 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        d 
-          TableScan
-            alias: d
-            HashTable Sink Operator
-              condition expressions:
-                0 {value}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
@@ -375,6 +328,14 @@ STAGE PLANS:
                   tag: -1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            d 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            d 
+              TableScan
+                alias: d
       Reduce Operator Tree:
         Group By Operator
           bucketGroup: false
@@ -474,31 +435,10 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-3
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        d 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        d 
-          TableScan
-            alias: d
-            HashTable Sink Operator
-              condition expressions:
-                0 {value}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
@@ -533,6 +473,14 @@ STAGE PLANS:
                   tag: -1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            d 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            d 
+              TableScan
+                alias: d
       Reduce Operator Tree:
         Group By Operator
           bucketGroup: false

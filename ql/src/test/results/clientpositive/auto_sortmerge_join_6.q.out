@@ -531,59 +531,17 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME src) c) (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL a) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage , consists of Stage-9, Stage-10, Stage-11, Stage-1
-  Stage-9 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-9
+  Stage-8 is a root stage , consists of Stage-5, Stage-6, Stage-7, Stage-1
+  Stage-5 has a backup stage: Stage-1
   Stage-2 depends on stages: Stage-1, Stage-5, Stage-6, Stage-7
-  Stage-10 has a backup stage: Stage-1
-  Stage-6 depends on stages: Stage-10
-  Stage-11 has a backup stage: Stage-1
-  Stage-7 depends on stages: Stage-11
+  Stage-6 has a backup stage: Stage-1
+  Stage-7 has a backup stage: Stage-1
   Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-8
     Conditional Operator
-
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        b 
-          Fetch Operator
-            limit: -1
-        c 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        b 
-          TableScan
-            alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 0
-        c 
-          TableScan
-            alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 0
 
   Stage: Stage-5
     Map Reduce
@@ -621,6 +579,20 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            b 
+              Fetch Operator
+                limit: -1
+            c 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            b 
+              TableScan
+                alias: b
+            c 
+              TableScan
+                alias: c
 
   Stage: Stage-2
     Map Reduce
@@ -652,45 +624,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-10
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a 
-          Fetch Operator
-            limit: -1
-        c 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a 
-          TableScan
-            alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 1
-        c 
-          TableScan
-            alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 1
 
   Stage: Stage-6
     Map Reduce
@@ -728,45 +661,20 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-
-  Stage: Stage-11
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a 
-          Fetch Operator
-            limit: -1
-        b 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a 
-          TableScan
-            alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 2
-        b 
-          TableScan
-            alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 2
+          Alias -> Map Local Tables:
+            a 
+              Fetch Operator
+                limit: -1
+            c 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            a 
+              TableScan
+                alias: a
+            c 
+              TableScan
+                alias: c
 
   Stage: Stage-7
     Map Reduce
@@ -804,6 +712,20 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            a 
+              Fetch Operator
+                limit: -1
+            b 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            a 
+              TableScan
+                alias: a
+            b 
+              TableScan
+                alias: b
 
   Stage: Stage-1
     Map Reduce
@@ -1294,59 +1216,17 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME src) c) (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL a) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage , consists of Stage-9, Stage-10, Stage-11, Stage-1
-  Stage-9 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-9
+  Stage-8 is a root stage , consists of Stage-5, Stage-6, Stage-7, Stage-1
+  Stage-5 has a backup stage: Stage-1
   Stage-2 depends on stages: Stage-1, Stage-5, Stage-6, Stage-7
-  Stage-10 has a backup stage: Stage-1
-  Stage-6 depends on stages: Stage-10
-  Stage-11 has a backup stage: Stage-1
-  Stage-7 depends on stages: Stage-11
+  Stage-6 has a backup stage: Stage-1
+  Stage-7 has a backup stage: Stage-1
   Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-8
     Conditional Operator
-
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        b 
-          Fetch Operator
-            limit: -1
-        c 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        b 
-          TableScan
-            alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 0
-        c 
-          TableScan
-            alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 0
 
   Stage: Stage-5
     Map Reduce
@@ -1384,6 +1264,20 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            b 
+              Fetch Operator
+                limit: -1
+            c 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            b 
+              TableScan
+                alias: b
+            c 
+              TableScan
+                alias: c
 
   Stage: Stage-2
     Map Reduce
@@ -1415,45 +1309,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-10
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a 
-          Fetch Operator
-            limit: -1
-        c 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a 
-          TableScan
-            alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 1
-        c 
-          TableScan
-            alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 1
 
   Stage: Stage-6
     Map Reduce
@@ -1491,45 +1346,20 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-
-  Stage: Stage-11
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a 
-          Fetch Operator
-            limit: -1
-        b 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a 
-          TableScan
-            alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 2
-        b 
-          TableScan
-            alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [GenericUDFBridge(Column[key])]
-                1 [GenericUDFBridge(Column[key])]
-                2 [GenericUDFBridge(Column[key])]
-              Position of Big Table: 2
+          Alias -> Map Local Tables:
+            a 
+              Fetch Operator
+                limit: -1
+            c 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            a 
+              TableScan
+                alias: a
+            c 
+              TableScan
+                alias: c
 
   Stage: Stage-7
     Map Reduce
@@ -1567,6 +1397,20 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            a 
+              Fetch Operator
+                limit: -1
+            b 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            a 
+              TableScan
+                alias: a
+            b 
+              TableScan
+                alias: b
 
   Stage: Stage-1
     Map Reduce
@@ -1675,58 +1519,16 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME tbl3) c) (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL a) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage , consists of Stage-8, Stage-9, Stage-10, Stage-1
-  Stage-8 has a backup stage: Stage-1
-  Stage-4 depends on stages: Stage-8
-  Stage-9 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-9
-  Stage-10 has a backup stage: Stage-1
-  Stage-6 depends on stages: Stage-10
+  Stage-7 is a root stage , consists of Stage-4, Stage-5, Stage-6, Stage-1
+  Stage-4 has a backup stage: Stage-1
+  Stage-5 has a backup stage: Stage-1
+  Stage-6 has a backup stage: Stage-1
   Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-7
     Conditional Operator
-
-  Stage: Stage-8
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        b 
-          Fetch Operator
-            limit: -1
-        c 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        b 
-          TableScan
-            alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 0
-        c 
-          TableScan
-            alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 0
 
   Stage: Stage-4
     Map Reduce
@@ -1763,6 +1565,20 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            b 
+              Fetch Operator
+                limit: -1
+            c 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            b 
+              TableScan
+                alias: b
+            c 
+              TableScan
+                alias: c
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1782,45 +1598,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a 
-          Fetch Operator
-            limit: -1
-        c 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a 
-          TableScan
-            alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 1
-        c 
-          TableScan
-            alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 1
 
   Stage: Stage-5
     Map Reduce
@@ -1857,6 +1634,20 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            a 
+              Fetch Operator
+                limit: -1
+            c 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            a 
+              TableScan
+                alias: a
+            c 
+              TableScan
+                alias: c
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1876,45 +1667,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-10
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a 
-          Fetch Operator
-            limit: -1
-        b 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a 
-          TableScan
-            alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 2
-        b 
-          TableScan
-            alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 2
 
   Stage: Stage-6
     Map Reduce
@@ -1951,6 +1703,20 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            a 
+              Fetch Operator
+                limit: -1
+            b 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            a 
+              TableScan
+                alias: a
+            b 
+              TableScan
+                alias: b
       Reduce Operator Tree:
         Group By Operator
           aggregations:

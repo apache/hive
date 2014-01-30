@@ -433,51 +433,11 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME T2) x) (TOK_TABREF (TOK_TABNAME T1) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key))) (TOK_TABREF (TOK_TABNAME T3) z) (= (. (TOK_TABLE_OR_COL y) key) (. (TOK_TABLE_OR_COL z) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key) key) (TOK_SELEXPR (TOK_FUNCTION count 1) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL y) key)))) tmp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION SUM (TOK_FUNCTION HASH (. (TOK_TABLE_OR_COL tmp) key)))) (TOK_SELEXPR (TOK_FUNCTION SUM (TOK_FUNCTION HASH (. (TOK_TABLE_OR_COL tmp) cnt)))))))
 
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-7
+  Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-7
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        tmp:y 
-          Fetch Operator
-            limit: -1
-        tmp:z 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        tmp:y 
-          TableScan
-            alias: y
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {key}
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 0
-        tmp:z 
-          TableScan
-            alias: z
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {key}
-                2 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
@@ -527,6 +487,20 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            tmp:y 
+              Fetch Operator
+                limit: -1
+            tmp:z 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            tmp:y 
+              TableScan
+                alias: y
+            tmp:z 
+              TableScan
+                alias: z
       Reduce Operator Tree:
         Group By Operator
           aggregations:

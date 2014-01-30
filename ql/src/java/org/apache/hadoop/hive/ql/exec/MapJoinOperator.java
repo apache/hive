@@ -145,8 +145,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       }
     }
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
-    loader.load(this.getExecContext(), hconf, this.getConf(),
-        posBigTable, mapJoinTables, mapJoinTableSerdes);
+    loader.init(getExecContext(), hconf, this);
+    loader.load(mapJoinTables, mapJoinTableSerdes);
     cache.cache(tableKey, mapJoinTables);
     cache.cache(serdeKey, mapJoinTableSerdes);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);

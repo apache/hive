@@ -27,47 +27,11 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1) x) (TOK_TABREF (TOK_TABNAME src) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value) value2)))) subq) (TOK_TABREF (TOK_TABNAME srcpart) z) (and (and (= (. (TOK_TABLE_OR_COL subq) key1) (. (TOK_TABLE_OR_COL z) key)) (= (. (TOK_TABLE_OR_COL z) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL z) hr) 11)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j1))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) key1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL z) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-6 depends on stages: Stage-8
+  Stage-6 is a root stage
   Stage-0 depends on stages: Stage-6
   Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-8
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        subq:x 
-          Fetch Operator
-            limit: -1
-        z 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        subq:x 
-          TableScan
-            alias: x
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 1
-        z 
-          TableScan
-            alias: z
-            HashTable Sink Operator
-              condition expressions:
-                0 {_col0}
-                1 {value}
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[key]]
-              Position of Big Table: 0
-
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
@@ -120,6 +84,20 @@ STAGE PLANS:
                           name: default.dest_j1
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            subq:x 
+              Fetch Operator
+                limit: -1
+            z 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            subq:x 
+              TableScan
+                alias: x
+            z 
+              TableScan
+                alias: z
 
   Stage: Stage-0
     Move Operator
