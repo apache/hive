@@ -1522,17 +1522,17 @@ public final class Utilities {
   /**
    * The first group will contain the task id. The second group is the optional extension. The file
    * name looks like: "0_0" or "0_0.gz". There may be a leading prefix (tmp_). Since getTaskId() can
-   * return an integer only - this should match a pure integer as well. {1,3} is used to limit
-   * matching for attempts #'s 0-999.
+   * return an integer only - this should match a pure integer as well. {1,6} is used to limit
+   * matching for attempts #'s 0-999999.
    */
   private static final Pattern FILE_NAME_TO_TASK_ID_REGEX =
-      Pattern.compile("^.*?([0-9]+)(_[0-9]{1,3})?(\\..*)?$");
+      Pattern.compile("^.*?([0-9]+)(_[0-9]{1,6})?(\\..*)?$");
 
   /**
    * This retruns prefix part + taskID for bucket join for partitioned table
    */
   private static final Pattern FILE_NAME_PREFIXED_TASK_ID_REGEX =
-      Pattern.compile("^.*?((\\(.*\\))?[0-9]+)(_[0-9]{1,3})?(\\..*)?$");
+      Pattern.compile("^.*?((\\(.*\\))?[0-9]+)(_[0-9]{1,6})?(\\..*)?$");
 
   /**
    * This breaks a prefixed bucket number into the prefix and the taskID
