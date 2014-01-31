@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -34,11 +35,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -1043,6 +1040,7 @@ class RecordReaderImpl implements RecordReader {
   private static class DecimalTreeReader extends TreeReader{
     private InStream valueStream;
     private IntegerReader scaleStream = null;
+    private LongColumnVector scratchScaleVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
 
     private final int precision;
     private final int scale;
@@ -1093,8 +1091,50 @@ class RecordReaderImpl implements RecordReader {
 
     @Override
     Object nextVector(Object previousVector, long batchSize) throws IOException {
-      throw new UnsupportedOperationException(
-          "NextVector is not supported operation for Decimal type");
+      DecimalColumnVector result = null;
+      if (previousVector == null) {
+        result = new DecimalColumnVector(precision, scale);
+      } else {
+        result = (DecimalColumnVector) previousVector;
+      }
+
+      // Save the reference for isNull in the scratch vector
+      boolean [] scratchIsNull = scratchScaleVector.isNull;
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      // Read value entries based on isNull entries
+      if (result.isRepeating) {
+        if (!result.isNull[0]) {
+          BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
+          short scaleInData = (short) scaleStream.next();
+          result.vector[0].update(bInt, scaleInData);
+
+          // Change the scale to match the schema if the scale in data is different.
+          if (scale != scaleInData) {
+            result.vector[0].changeScaleDestructive((short) scale);
+          }
+        }
+      } else {
+        // result vector has isNull values set, use the same to read scale vector.
+        scratchScaleVector.isNull = result.isNull;
+        scaleStream.nextVector(scratchScaleVector, batchSize);
+        for (int i = 0; i < batchSize; i++) {
+          if (!result.isNull[i]) {
+            BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
+            result.vector[i].update(bInt, (short) scratchScaleVector.vector[i]);
+
+            // Change the scale to match the schema if the scale in data is different.
+            if (scale != scratchScaleVector.vector[i]) {
+              result.vector[i].changeScaleDestructive((short) scale);
+            }
+          }
+        }
+      }
+      // Switch back the null vector.
+      scratchScaleVector.isNull = scratchIsNull;
+      return result;
     }
 
     @Override

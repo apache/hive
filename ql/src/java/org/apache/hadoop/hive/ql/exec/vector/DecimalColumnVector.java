@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 
 public class DecimalColumnVector extends ColumnVector {
@@ -37,11 +40,17 @@ public class DecimalColumnVector extends ColumnVector {
   public short scale;
   public short precision;
 
+  private final HiveDecimalWritable writableObj = new HiveDecimalWritable();
+
   public DecimalColumnVector(int precision, int scale) {
-    super(VectorizedRowBatch.DEFAULT_SIZE);
+    this(VectorizedRowBatch.DEFAULT_SIZE, precision, scale);
+  }
+
+  public DecimalColumnVector(int size, int precision, int scale) {
+    super(size);
     this.precision = (short) precision;
     this.scale = (short) scale;
-    final int len = VectorizedRowBatch.DEFAULT_SIZE;
+    final int len = size;
     vector = new Decimal128[len];
     for (int i = 0; i < len; i++) {
       vector[i] = new Decimal128(0, this.scale);
@@ -50,8 +59,16 @@ public class DecimalColumnVector extends ColumnVector {
 
   @Override
   public Writable getWritableObject(int index) {
-    // TODO Auto-generated method stub
-    return null;
+    if (isRepeating) {
+      index = 0;
+    }
+    if (!noNulls && isNull[index]) {
+      return NullWritable.get();
+    } else {
+      Decimal128 dec = vector[index];
+      writableObj.set(HiveDecimal.create(dec.toBigDecimal()));
+      return writableObj;
+    }
   }
 
   @Override

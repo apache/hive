@@ -16,7 +16,7 @@
 package org.apache.hadoop.hive.common.type;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
+import java.math.BigInteger;
 import java.nio.IntBuffer;
 
 /**
@@ -548,6 +548,25 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     this.scale = (short) (scaleAndSignum >> 16);
     this.signum = (byte) (scaleAndSignum & 0xFF);
     this.unscaledValue.update32(array, offset + 1);
+  }
+
+  /**
+   * Updates the value of this object with the given {@link BigInteger} and scale.
+   *
+   * @param bigInt
+   *          {@link java.math.BigInteger}
+   * @param scale
+   */
+  public void update(BigInteger bigInt, short scale) {
+    this.scale = scale;
+    this.signum = (byte) bigInt.compareTo(BigInteger.ZERO);
+    if (signum == 0) {
+      update(0);
+    } else if (signum < 0) {
+      unscaledValue.update(bigInt.negate());
+    } else {
+      unscaledValue.update(bigInt);
+    }
   }
 
   /**
@@ -1428,7 +1447,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    * @return {@code true} if and only if the specified {@code Object} is a
    *         {@code Decimal128} whose value and scale are equal to this
    *         {@code Decimal128}'s.
-   * @see #compareTo(java.math.Decimal128)
+   * @see #compareTo(Decimal128)
    * @see #hashCode
    */
   @Override
