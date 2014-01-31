@@ -80,7 +80,6 @@ public class HCatUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatUtil.class);
   private static volatile HiveClientCache hiveClientCache;
-  private final static int DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS = 2 * 60;
 
   public static boolean checkJobContextIfRunningFromBackend(JobContext j) {
     if (j.getConfiguration().get("mapred.task.id", "").equals("") &&
@@ -551,14 +550,16 @@ public class HCatUtil {
   public static HiveMetaStoreClient getHiveClient(HiveConf hiveConf)
     throws MetaException, IOException {
 
-    // Singleton behaviour: create the cache instance if required. The cache needs to be created lazily and
-    // using the expiry time available in hiveConf.
+    if (hiveConf.getBoolean(HCatConstants.HCAT_HIVE_CLIENT_DISABLE_CACHE, false)){
+      // If cache is disabled, don't use it.
+      return HiveClientCache.getNonCachedHiveClient(hiveConf);
+    }
 
+    // Singleton behaviour: create the cache instance if required.
     if (hiveClientCache == null) {
       synchronized (HiveMetaStoreClient.class) {
         if (hiveClientCache == null) {
-          hiveClientCache = new HiveClientCache(hiveConf.getInt(HCatConstants.HCAT_HIVE_CLIENT_EXPIRY_TIME,
-            DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS));
+          hiveClientCache = new HiveClientCache(hiveConf);
         }
       }
     }
@@ -567,6 +568,10 @@ public class HCatUtil {
     } catch (LoginException e) {
       throw new IOException("Couldn't create hiveMetaStoreClient, Error getting UGI for user", e);
     }
+  }
+
+  private static HiveMetaStoreClient getNonCachedHiveClient(HiveConf hiveConf) throws MetaException{
+    return new HiveMetaStoreClient(hiveConf);
   }
 
   public static void closeHiveClientQuietly(HiveMetaStoreClient client) {
