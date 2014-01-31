@@ -19,8 +19,9 @@
 package org.apache.hadoop.hive.ql.security.authorization;
 
 import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.hadoop.hive.ql.security.authorization.Privilege.PrivilegeType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * PrivilegeRegistry is used to do privilege lookups. Given a privilege name, it
@@ -28,9 +29,35 @@ import org.apache.hadoop.hive.ql.security.authorization.Privilege.PrivilegeType;
  */
 public class PrivilegeRegistry {
 
-  protected static HashMap<PrivilegeType, Privilege> Registry = new HashMap<PrivilegeType, Privilege>();
+  protected static Map<PrivilegeType, Privilege> Registry = null;
 
-  static {
+  public static Privilege getPrivilege(PrivilegeType privilegeType) {
+    initializeRegistry();
+    return Registry.get(privilegeType);
+  }
+
+  private static void initializeRegistry() {
+    if(Registry != null){
+      //already initialized, nothing to do
+      return;
+    }
+    //population of registry done in separate synchronized call
+    populateRegistry();
+  }
+
+  /**
+   * Add entries to registry. This needs to be synchronized to avoid Registry being populated
+   * multiple times.
+   */
+  private static synchronized void populateRegistry() {
+    //do check again in synchronized block
+    if(Registry != null){
+      //already initialized, nothing to do
+      return;
+    }
+    Registry = new HashMap<PrivilegeType, Privilege>();
+
+    //add the privileges supported in authorization mode V1
     Registry.put(Privilege.ALL.getPriv(), Privilege.ALL);
     Registry.put(Privilege.ALTER_DATA.getPriv(), Privilege.ALTER_DATA);
     Registry.put(Privilege.ALTER_METADATA.getPriv(), Privilege.ALTER_METADATA);
@@ -41,18 +68,23 @@ public class PrivilegeRegistry {
     Registry.put(Privilege.SELECT.getPriv(), Privilege.SELECT);
     Registry.put(Privilege.SHOW_DATABASE.getPriv(),
         Privilege.SHOW_DATABASE);
-  }
-
-  public static Privilege getPrivilege(PrivilegeType privilegeType) {
-    return Registry.get(privilegeType);
+    if(SessionState.get().isAuthorizationModeV2()){
+      //add the privileges not supported in V1
+      //The list of privileges supported in V2 is implementation defined,
+      //so just pass everything that syntax supports.
+      Registry.put(Privilege.INSERT.getPriv(), Privilege.INSERT);
+      Registry.put(Privilege.DELETE.getPriv(), Privilege.DELETE);
+    }
   }
 
   public static Privilege getPrivilege(int privilegeToken) {
-    return Registry.get(Privilege.getPrivTypeByToken(privilegeToken));
+    initializeRegistry();
+    return Registry.get(PrivilegeType.getPrivTypeByToken(privilegeToken));
   }
 
   public static Privilege getPrivilege(String privilegeName) {
-    return Registry.get(Privilege.getPrivTypeByName(privilegeName));
+    initializeRegistry();
+    return Registry.get(PrivilegeType.getPrivTypeByName(privilegeName));
   }
 
 }

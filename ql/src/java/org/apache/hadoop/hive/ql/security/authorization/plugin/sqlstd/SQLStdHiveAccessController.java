@@ -18,7 +18,11 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,6 +52,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 public class SQLStdHiveAccessController implements HiveAccessController {
 
   private HiveMetastoreClientFactory metastoreClientFactory;
+  private static final String [] SUPPORTED_PRIVS = {"INSERT", "UPDATE", "DELETE", "SELECT", "ALL"};
+  private static final Set<String> SUPPORTED_PRIVS_SET
+    = new HashSet<String>(Arrays.asList(SUPPORTED_PRIVS));
 
 
   SQLStdHiveAccessController(HiveMetastoreClientFactory metastoreClientFactory,
@@ -90,6 +97,10 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       if(privilege.getColumns() != null && privilege.getColumns().size() > 0){
         throw new HiveAuthorizationPluginException("Privileges on columns not supported currently"
             + " in sql standard authorization mode");
+      }
+      if(!SUPPORTED_PRIVS_SET.contains(privilege.getName().toUpperCase(Locale.US))){
+        throw new HiveAuthorizationPluginException("Privilege: " + privilege.getName() +
+            " is not supported in sql standard authorization mode");
       }
       PrivilegeGrantInfo grantInfo = getThriftPrivilegeGrantInfo(privilege, grantorPrincipal, grantOption);
       for(HivePrincipal principal : hivePrincipals){
