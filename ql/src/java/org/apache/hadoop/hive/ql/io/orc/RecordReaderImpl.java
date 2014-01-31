@@ -2776,7 +2776,37 @@ class RecordReaderImpl implements RecordReader {
       readStripe();
     }
 
-    long batchSize = Math.min(VectorizedRowBatch.DEFAULT_SIZE, (rowCountInStripe - rowInStripe));
+    long batchSize = 0;
+
+    // In case of PPD, batch size should be aware of row group boundaries. If only a subset of row
+    // groups are selected then marker position is set to the end of range (subset of row groups
+    // within strip). Batch size computed out of marker position makes sure that batch size is
+    // aware of row group boundary and will not cause overflow when reading rows
+    // illustration of this case is here https://issues.apache.org/jira/browse/HIVE-6287
+    if (rowIndexStride != 0 && includedRowGroups != null && rowInStripe < rowCountInStripe) {
+      int startRowGroup = (int) (rowInStripe / rowIndexStride);
+      if (!includedRowGroups[startRowGroup]) {
+        while (startRowGroup < includedRowGroups.length && !includedRowGroups[startRowGroup]) {
+          startRowGroup += 1;
+        }
+      }
+
+      int endRowGroup = startRowGroup;
+      while (endRowGroup < includedRowGroups.length && includedRowGroups[endRowGroup]) {
+        endRowGroup += 1;
+      }
+
+      final long markerPosition = (endRowGroup * rowIndexStride) < rowCountInStripe ? (endRowGroup * rowIndexStride)
+          : rowCountInStripe;
+      batchSize = Math.min(VectorizedRowBatch.DEFAULT_SIZE, (markerPosition - rowInStripe));
+
+      if (LOG.isDebugEnabled() && batchSize < VectorizedRowBatch.DEFAULT_SIZE) {
+        LOG.debug("markerPosition: " + markerPosition + " batchSize: " + batchSize);
+      }
+    } else {
+      batchSize = Math.min(VectorizedRowBatch.DEFAULT_SIZE, (rowCountInStripe - rowInStripe));
+    }
+
     rowInStripe += batchSize;
     if (previous == null) {
       ColumnVector[] cols = (ColumnVector[]) reader.nextVector(null, (int) batchSize);
