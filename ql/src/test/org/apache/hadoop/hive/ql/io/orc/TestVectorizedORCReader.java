@@ -22,8 +22,11 @@ import junit.framework.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
@@ -71,9 +74,10 @@ public class TestVectorizedORCReader {
     private final String k;
     private final Timestamp t;
     private final Date dt;
+    private final HiveDecimal hd;
 
     MyRecord(Boolean bo, Byte by, Integer i, Long l, Short s, Double d, String k, Timestamp t,
-             Date dt) {
+             Date dt, HiveDecimal hd) {
       this.bo = bo;
       this.by = by;
       this.i = i;
@@ -83,6 +87,7 @@ public class TestVectorizedORCReader {
       this.k = k;
       this.t = t;
       this.dt = dt;
+      this.hd = hd;
     }
   }
 
@@ -109,13 +114,15 @@ public class TestVectorizedORCReader {
         "Heaven,", "we", "were", "all", "going", "direct", "the", "other",
         "way"};
     String[] dates = new String[] {"1991-02-28", "1970-01-31", "1950-04-23"};
+    String[] decimalStrings = new String[] {"234.443", "10001000", "0.3333367", "67788798.0", "-234.443",
+        "-10001000", "-0.3333367", "-67788798.0", "0"};
     for (int i = 0; i < 21000; ++i) {
       if ((i % 7) != 0) {
         writer.addRow(new MyRecord(((i % 3) == 0), (byte)(i % 5), i, (long) 200, (short) (300 + i), (double) (400 + i),
             words[r1.nextInt(words.length)], new Timestamp(Calendar.getInstance().getTime().getTime()),
-            Date.valueOf(dates[i % 3])));
+            Date.valueOf(dates[i % 3]), HiveDecimal.create(decimalStrings[i % decimalStrings.length])));
       } else {
-        writer.addRow(new MyRecord(null, null, i, (long) 200, null, null, null, null, null));
+        writer.addRow(new MyRecord(null, null, i, (long) 200, null, null, null, null, null, null));
       }
     }
     writer.close();
@@ -162,6 +169,13 @@ public class TestVectorizedORCReader {
             Assert.assertEquals(adt.getTime(), DateWritable.daysToMillis((int) ((LongWritable) b).get()));
             continue;
           }
+
+          // Decimals are stored as BigInteger, so convert and compare
+          if (a instanceof HiveDecimal) {
+            HiveDecimalWritable dec = (HiveDecimalWritable) b;
+            Assert.assertEquals(a, dec.getHiveDecimal());
+          }
+
           if (null == a) {
             Assert.assertEquals(true, (b == null || (b instanceof NullWritable)));
           } else {
@@ -180,6 +194,7 @@ public class TestVectorizedORCReader {
       Assert.assertEquals(false, batch.cols[6].isRepeating);
       Assert.assertEquals(false, batch.cols[7].isRepeating);
       Assert.assertEquals(false, batch.cols[8].isRepeating);
+      Assert.assertEquals(false, batch.cols[9].isRepeating);
 
       // Check non null
       Assert.assertEquals(false, batch.cols[0].noNulls);
@@ -191,6 +206,7 @@ public class TestVectorizedORCReader {
       Assert.assertEquals(false, batch.cols[6].noNulls);
       Assert.assertEquals(false, batch.cols[7].noNulls);
       Assert.assertEquals(false, batch.cols[8].noNulls);
+      Assert.assertEquals(false, batch.cols[9].noNulls);
     }
     Assert.assertEquals(false, rr.hasNext());
   }

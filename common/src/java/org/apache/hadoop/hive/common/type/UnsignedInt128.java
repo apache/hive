@@ -18,7 +18,6 @@ package org.apache.hadoop.hive.common.type;
 import java.math.BigInteger;
 import java.nio.IntBuffer;
 import java.util.Arrays;
-import org.apache.hadoop.hive.common.type.SqlMathUtil;
 
 /**
  * This code was originally written for Microsoft PolyBase.
@@ -117,11 +116,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
    *          v3
    */
   public UnsignedInt128(int v0, int v1, int v2, int v3) {
-    this.v[0] = v0;
-    this.v[1] = v1;
-    this.v[2] = v2;
-    this.v[3] = v3;
-    updateCount();
+    update(v0, v1, v2, v3);
   }
 
   /**
@@ -156,6 +151,32 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
    */
   public UnsignedInt128(char[] str, int offset, int length) {
     update(str, offset, length);
+  }
+
+  /**
+   * Constructs from the given BigInteger
+   *
+   * @param bigInt
+   *          java BigInteger
+   */
+  public UnsignedInt128(BigInteger bigInt) {
+    update(bigInt);
+  }
+
+  /**
+   * Updates the value of this object from the given {@link BigInteger}.
+   * Only positive BigIntegers are expected and behavior is undefined for
+   * negative BigIntegers.
+   *
+   * @param bigInt
+   *          java BigInteger
+   */
+  public void update(BigInteger bigInt) {
+    int v0 = bigInt.intValue();
+    int v1 = bigInt.shiftRight(32).intValue();
+    int v2 = bigInt.shiftRight(64).intValue();
+    int v3 = bigInt.shiftRight(96).intValue();
+    update(v0, v1, v2, v3);
   }
 
   /** @return v[0] */
