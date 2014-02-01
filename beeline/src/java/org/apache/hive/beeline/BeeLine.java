@@ -126,6 +126,7 @@ public class BeeLine {
   private static final int ERRNO_OTHER = 2;
 
   private static final String HIVE_VAR_PREFIX = "--hivevar";
+  private static final String HIVE_CONF_PREFIX = "--hiveconf";
 
   private final Map<Object, Object> formats = map(new Object[] {
       "vertical", new VerticalOutputFormat(this),
@@ -515,6 +516,16 @@ public class BeeLine {
           return false;
         }
         getOpts().getHiveVariables().put(parts[0], parts[1]);
+        continue;
+      }
+
+      // Parse hive conf variables
+      if (args[i].equals(HIVE_CONF_PREFIX)) {
+        String[] parts = split(args[++i], "=");
+        if (parts.length != 2) {
+          return false;
+        }
+        getOpts().getHiveConfVariables().put(parts[0], parts[1]);
         continue;
       }
 

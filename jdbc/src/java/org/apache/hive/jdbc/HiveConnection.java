@@ -63,7 +63,6 @@ import org.apache.hive.service.cli.thrift.TSessionHandle;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.THttpClient;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -85,6 +84,7 @@ public class HiveConnection implements java.sql.Connection {
   private static final String HIVE_SSL_TRUST_STORE = "sslTrustStore";
   private static final String HIVE_SSL_TRUST_STORE_PASSWORD = "trustStorePassword";
   private static final String HIVE_VAR_PREFIX = "hivevar:";
+  private static final String HIVE_CONF_PREFIX = "hiveconf:";
 
   private final String jdbcURI;
   private final String host;
@@ -124,6 +124,8 @@ public class HiveConnection implements java.sql.Connection {
         String key = (String) kv.getKey();
         if (key.startsWith(HIVE_VAR_PREFIX)) {
           hiveVarMap.put(key.substring(HIVE_VAR_PREFIX.length()), info.getProperty(key));
+        } else if (key.startsWith(HIVE_CONF_PREFIX)) {
+          hiveConfMap.put(key.substring(HIVE_CONF_PREFIX.length()), info.getProperty(key));
         }
       }
     }
