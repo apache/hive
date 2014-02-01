@@ -156,6 +156,9 @@ public class SessionState {
   LineageState ls;
 
   private PerfLogger perfLogger;
+
+  private final String userName;
+
   /**
    * Get the lineage state stored in this session.
    *
@@ -205,7 +208,12 @@ public class SessionState {
   }
 
   public SessionState(HiveConf conf) {
+    this(conf, null);
+  }
+
+  public SessionState(HiveConf conf, String userName) {
     this.conf = conf;
+    this.userName = userName;
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
     overriddenConfigurations = new HashMap<String, String>();
@@ -338,7 +346,7 @@ public class SessionState {
     }
 
     try {
-        authenticator = HiveUtils.getAuthenticator(
+      authenticator = HiveUtils.getAuthenticator(
           getConf(),HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
       authorizer = HiveUtils.getAuthorizeProviderManager(
           getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -348,8 +356,9 @@ public class SessionState {
         //if it was null, the new authorization plugin must be specified in config
         HiveAuthorizerFactory authorizerFactory =
             HiveUtils.getAuthorizerFactory(getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
+        String authUser = userName == null ? authenticator.getUserName() : userName;
         authorizerV2 = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(),
-            getConf(), authenticator.getUserName());
+            getConf(), authUser);
       }
       else{
         createTableGrants = CreateTableAutomaticGrant.create(getConf());
