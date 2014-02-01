@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
@@ -202,9 +203,11 @@ public class SQLStdHiveAccessController implements HiveAccessController {
               AuthorizationUtils.getThriftPrincipalType(grantorPrinc.getType()),
               grantOption
               );
-        }  catch (Exception e) {
-          String msg = "Error granting roles for " + hivePrincipal.getName() +  " to role " + roleName
-              + hivePrincipal.getName();
+        } catch (MetaException e) {
+          throw new HiveAuthorizationPluginException(e.getMessage(), e);
+        } catch (Exception e) {
+          String msg = "Error granting roles for " + hivePrincipal.getName() +  " to role "
+              + roleName + ": " + e.getMessage();
           throw new HiveAuthorizationPluginException(msg, e);
         }
       }
