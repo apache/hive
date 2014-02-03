@@ -1,0 +1,18 @@
+PREHOOK: query: -- this is applicable to any security mode as check is in metastore
+create role role1
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: -- this is applicable to any security mode as check is in metastore
+create role role1
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: create role role2
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role role2
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant role role1 to role role2
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role role1 to role role2
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: -- this will create a cycle
+grant role role2 to role role1
+PREHOOK: type: GRANT_ROLE
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationPluginException: Cannot grant role role1 to role2 as role2 already belongs to the role role1. (no cycles allowed)

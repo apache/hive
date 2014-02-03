@@ -35,6 +35,7 @@ import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -55,7 +56,7 @@ class VerifyingObjectStore extends ObjectStore {
         dbName, tblName, filter, maxParts, true, false);
     List<Partition> ormResults = getPartitionsByFilterInternal(
         dbName, tblName, filter, maxParts, false, true);
-    verifyParts(sqlResults, ormResults);
+    verifyLists(sqlResults, ormResults, Partition.class);
     return sqlResults;
   }
 
@@ -66,7 +67,7 @@ class VerifyingObjectStore extends ObjectStore {
         dbName, tblName, partNames, true, false);
     List<Partition> ormResults = getPartitionsByNamesInternal(
         dbName, tblName, partNames, false, true);
-    verifyParts(sqlResults, ormResults);
+    verifyLists(sqlResults, ormResults, Partition.class);
     return sqlResults;
   }
 
@@ -83,21 +84,59 @@ class VerifyingObjectStore extends ObjectStore {
       LOG.error(msg);
       throw new MetaException(msg);
     }
-    verifyParts(result, ormParts);
+    verifyLists(result, ormParts, Partition.class);
     return sqlResult;
   }
 
   @Override
   public List<Partition> getPartitions(
-      String dbName, String tableName, int maxParts) throws MetaException {
+      String dbName, String tableName, int maxParts) throws MetaException, NoSuchObjectException {
     List<Partition> sqlResults = getPartitionsInternal(dbName, tableName, maxParts, true, false);
     List<Partition> ormResults = getPartitionsInternal(dbName, tableName, maxParts, false, true);
-    verifyParts(sqlResults, ormResults);
+    verifyLists(sqlResults, ormResults, Partition.class);
     return sqlResults;
-  };
+  }
 
-  private void verifyParts(Collection<Partition> sqlResults, Collection<Partition> ormResults)
-      throws MetaException {
+  @Override
+  public ColumnStatistics getTableColumnStatistics(String dbName,
+      String tableName, List<String> colNames) throws MetaException, NoSuchObjectException {
+    ColumnStatistics sqlResult = getTableColumnStatisticsInternal(
+        dbName, tableName, colNames, true, false);
+    ColumnStatistics jdoResult = getTableColumnStatisticsInternal(
+        dbName, tableName, colNames, false, true);
+    verifyObjects(sqlResult, jdoResult, ColumnStatistics.class);
+    return sqlResult;
+  }
+
+  @Override
+  public List<ColumnStatistics> getPartitionColumnStatistics(String dbName,
+      String tableName, List<String> partNames, List<String> colNames)
+      throws MetaException, NoSuchObjectException {
+    List<ColumnStatistics> sqlResult = getPartitionColumnStatisticsInternal(
+        dbName, tableName, partNames, colNames, true, false);
+    List<ColumnStatistics> jdoResult = getPartitionColumnStatisticsInternal(
+        dbName, tableName, partNames, colNames,  false, true);
+    verifyLists(sqlResult, jdoResult, ColumnStatistics.class);
+    return sqlResult;
+  }
+
+  private void verifyObjects(
+      Object sqlResult, Object jdoResult, Class<?> clazz) throws MetaException {
+    if (EqualsBuilder.reflectionEquals(sqlResult, jdoResult)) return;
+    StringBuilder errorStr = new StringBuilder("Objects are different: \n");
+    try {
+      dumpObject(errorStr, "SQL", sqlResult, clazz, 0);
+      errorStr.append("\n");
+      dumpObject(errorStr, "ORM", jdoResult, clazz, 0);
+    } catch (Throwable t) {
+      errorStr.append("Error getting the diff: " + t);
+    }
+    LOG.error("Different results: \n" + errorStr.toString());
+    throw new MetaException("Different results from SQL and ORM, see log for details");
+  }
+
+  private <T> void verifyLists(Collection<T> sqlResults, Collection<T> ormResults,
+      Class<?> clazz) throws MetaException {
     final int MAX_DIFFS = 5;
     if (sqlResults.size() != ormResults.size()) {
       String msg = "Lists are not the same size: SQL " + sqlResults.size()
@@ -106,18 +145,18 @@ class VerifyingObjectStore extends ObjectStore {
       throw new MetaException(msg);
     }
 
-    Iterator<Partition> sqlIter = sqlResults.iterator(), ormIter = ormResults.iterator();
+    Iterator<T> sqlIter = sqlResults.iterator(), ormIter = ormResults.iterator();
     StringBuilder errorStr = new StringBuilder();
     int errors = 0;
     for (int partIx = 0; partIx < sqlResults.size(); ++partIx) {
       assert sqlIter.hasNext() && ormIter.hasNext();
-      Partition p1 = sqlIter.next(), p2 = ormIter.next();
+      T p1 = sqlIter.next(), p2 = ormIter.next();
       if (EqualsBuilder.reflectionEquals(p1, p2)) continue;
       errorStr.append("Results are different at list index " + partIx + ": \n");
       try {
-        dumpObject(errorStr, "SQL", p1, Partition.class, 0);
+        dumpObject(errorStr, "SQL", p1, clazz, 0);
         errorStr.append("\n");
-        dumpObject(errorStr, "ORM", p2, Partition.class, 0);
+        dumpObject(errorStr, "ORM", p2, clazz, 0);
         errorStr.append("\n\n");
       } catch (Throwable t) {
         String msg = "Error getting the diff at list index " + partIx;
@@ -136,8 +175,8 @@ class VerifyingObjectStore extends ObjectStore {
     }
   }
 
-  private void dumpObject(StringBuilder errorStr, String name, Object p, Class<?> c, int level)
-      throws IllegalAccessException {
+  private static void dumpObject(StringBuilder errorStr, String name, Object p,
+      Class<?> c, int level) throws IllegalAccessException {
     String offsetStr = repeat("  ", level);
     if (p == null || c == String.class || c.isPrimitive()
         || ClassUtils.wrapperToPrimitive(c) != null) {

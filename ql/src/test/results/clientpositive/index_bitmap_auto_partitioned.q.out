@@ -39,9 +39,6 @@ POSTHOOK: Lineage: default__srcpart_src_part_index__ PARTITION(ds=2008-04-09,hr=
 POSTHOOK: Lineage: default__srcpart_src_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__srcpart_src_part_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__srcpart_src_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL key) 86) (= (TOK_TABLE_OR_COL ds) '2008-04-09'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
-
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -51,65 +48,36 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-        tmp_index:ind0:default__srcpart_src_part_index__ 
+      Map Operator Tree:
           TableScan
             alias: default__srcpart_src_part_index__
             filterExpr:
-                expr: ((key = 86) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
-                type: boolean
             Filter Operator
-              predicate:
-                  expr: ((key = 86) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
-                  type: boolean
+              predicate: ((key = 86) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
               Select Operator
-                expressions:
-                      expr: _bucketname
-                      type: string
-                      expr: _offset
-                      type: bigint
+                expressions: _bucketname (type: string), _offset (type: bigint)
                 outputColumnNames: _col0, _col1
                 Group By Operator
-                  aggregations:
-                        expr: collect_set(_col1)
-                  bucketGroup: false
-                  keys:
-                        expr: _col0
-                        type: string
+                  aggregations: collect_set(_col1)
+                  keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
+                    key expressions: _col0 (type: string)
                     sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: array<bigint>
+                    Map-reduce partition columns: _col0 (type: string)
+                    value expressions: _col1 (type: array<bigint>)
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: collect_set(VALUE._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
+          aggregations: collect_set(VALUE._col0)
+          keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: array<bigint>
+            expressions: _col0 (type: string), _col1 (type: array<bigint>)
             outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
-              GlobalTableId: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -123,40 +91,29 @@ STAGE PLANS:
 
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        srcpart 
+      Map Operator Tree:
           TableScan
             alias: srcpart
             filterExpr:
-                expr: ((key = 86) and (ds = '2008-04-09'))
-                type: boolean
+            Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: (key = 86)
-                  type: boolean
+              predicate: (key = 86) (type: boolean)
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+                expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: string
+                  key expressions: _col0 (type: string)
                   sort order: +
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 0
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

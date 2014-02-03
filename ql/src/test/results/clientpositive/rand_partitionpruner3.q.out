@@ -7,7 +7,54 @@ POSTHOOK: query: -- complex predicates in the where clause
 explain extended select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME a)))) (TOK_WHERE (and (and (and (< (TOK_FUNCTION rand 1) 0.1) (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08')) (not (or (> (TOK_TABLE_OR_COL key) 50) (< (TOK_TABLE_OR_COL key) 10)))) (like (. (TOK_TABLE_OR_COL a) hr) '%2')))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            srcpart
+         a
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+               TOK_TABNAME
+                  a
+      TOK_WHERE
+         and
+            and
+               and
+                  <
+                     TOK_FUNCTION
+                        rand
+                        1
+                     0.1
+                  =
+                     .
+                        TOK_TABLE_OR_COL
+                           a
+                        ds
+                     '2008-04-08'
+               not
+                  or
+                     >
+                        TOK_TABLE_OR_COL
+                           key
+                        50
+                     <
+                        TOK_TABLE_OR_COL
+                           key
+                        10
+            like
+               .
+                  TOK_TABLE_OR_COL
+                     a
+                  hr
+               '%2'
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -16,40 +63,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
-            Statistics:
-                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate:
-                  expr: ((rand(1) < 0.1) and (not ((key > 50) or (key < 10))))
-                  type: boolean
-              Statistics:
-                  numRows: 3 dataSize: 601 basicStatsState: COMPLETE colStatsState: NONE
+              predicate: ((rand(1) < 0.1) and (not ((key > 50) or (key < 10)))) (type: boolean)
+              Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
+                expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics:
-                    numRows: 3 dataSize: 601 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics:
-                      numRows: 3 dataSize: 601 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -139,7 +171,48 @@ POSTHOOK: query: -- without rand for comparison
 explain extended select a.* from srcpart a where a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME a)))) (TOK_WHERE (and (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (not (or (> (TOK_TABLE_OR_COL key) 50) (< (TOK_TABLE_OR_COL key) 10)))) (like (. (TOK_TABLE_OR_COL a) hr) '%2')))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            srcpart
+         a
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+               TOK_TABNAME
+                  a
+      TOK_WHERE
+         and
+            and
+               =
+                  .
+                     TOK_TABLE_OR_COL
+                        a
+                     ds
+                  '2008-04-08'
+               not
+                  or
+                     >
+                        TOK_TABLE_OR_COL
+                           key
+                        50
+                     <
+                        TOK_TABLE_OR_COL
+                           key
+                        10
+            like
+               .
+                  TOK_TABLE_OR_COL
+                     a
+                  hr
+               '%2'
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -148,40 +221,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
-            Statistics:
-                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate:
-                  expr: (not ((key > 50) or (key < 10)))
-                  type: boolean
-              Statistics:
-                  numRows: 11 dataSize: 2204 basicStatsState: COMPLETE colStatsState: NONE
+              predicate: (not ((key > 50) or (key < 10))) (type: boolean)
+              Statistics: Num rows: 11 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
+                expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics:
-                    numRows: 11 dataSize: 2204 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 11 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics:
-                      numRows: 11 dataSize: 2204 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 11 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

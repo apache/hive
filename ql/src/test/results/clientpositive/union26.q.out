@@ -42,9 +42,6 @@ WHERE ds='2008-04-08' and hr='11'
 ) a
 group by key, value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) a) (TOK_TABREF (TOK_TABNAME srcpart) b) (AND (and (and (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL a) hr) '11')) (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL b) hr) '12')) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))))) (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol (TOK_TABALIAS myTable))) (TOK_TABREF (TOK_TABNAME srcpart)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL ds) '2008-04-08') (= (TOK_TABLE_OR_COL hr) '11')))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1) counts) (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))
-
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -53,36 +50,24 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1:a-subquery1:a 
-          TableScan
-            alias: a
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-        null-subquery1:a-subquery1:b 
+      Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
+              key expressions: key (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: a
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: key (type: string)
+              sort order: +
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              value expressions: key (type: string), value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -90,18 +75,14 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 
-          handleSkewJoin: false
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
+            expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -109,174 +90,106 @@ STAGE PLANS:
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          TableScan
-            Union
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: string
-                outputColumnNames: _col0, _col1
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: false
-                  keys:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    sort order: ++
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col2
-                          type: bigint
-        null-subquery2:a-subquery2:srcpart 
+      Map Operator Tree:
           TableScan
             alias: srcpart
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Lateral View Forward
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+                expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col1, _col6
+                  Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
+                    expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                     Union
+                      Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions:
-                              expr: _col0
-                              type: string
-                              expr: _col1
-                              type: string
+                        expressions: _col0 (type: string), _col1 (type: string)
                         outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
-                          aggregations:
-                                expr: count(1)
-                          bucketGroup: false
-                          keys:
-                                expr: _col0
-                                type: string
-                                expr: _col1
-                                type: string
+                          aggregations: count(1)
+                          keys: _col0 (type: string), _col1 (type: string)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
-                            key expressions:
-                                  expr: _col0
-                                  type: string
-                                  expr: _col1
-                                  type: string
+                            key expressions: _col0 (type: string), _col1 (type: string)
                             sort order: ++
-                            Map-reduce partition columns:
-                                  expr: _col0
-                                  type: string
-                                  expr: _col1
-                                  type: string
-                            tag: -1
-                            value expressions:
-                                  expr: _col2
-                                  type: bigint
+                            Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                            Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col2 (type: bigint)
               Select Operator
-                expressions:
-                      expr: array(1,2,3)
-                      type: array<int>
+                expressions: array(1,2,3) (type: array<int>)
                 outputColumnNames: _col0
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 UDTF Operator
+                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col0, _col1, _col6
+                    Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col1
-                            type: string
+                      expressions: _col0 (type: string), _col1 (type: string)
                       outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                       Union
+                        Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
-                          expressions:
-                                expr: _col0
-                                type: string
-                                expr: _col1
-                                type: string
+                          expressions: _col0 (type: string), _col1 (type: string)
                           outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
                           Group By Operator
-                            aggregations:
-                                  expr: count(1)
-                            bucketGroup: false
-                            keys:
-                                  expr: _col0
-                                  type: string
-                                  expr: _col1
-                                  type: string
+                            aggregations: count(1)
+                            keys: _col0 (type: string), _col1 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
-                              key expressions:
-                                    expr: _col0
-                                    type: string
-                                    expr: _col1
-                                    type: string
+                              key expressions: _col0 (type: string), _col1 (type: string)
                               sort order: ++
-                              Map-reduce partition columns:
-                                    expr: _col0
-                                    type: string
-                                    expr: _col1
-                                    type: string
-                              tag: -1
-                              value expressions:
-                                    expr: _col2
-                                    type: bigint
+                              Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                              Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
+                              value expressions: _col2 (type: bigint)
+          TableScan
+            Union
+              Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: _col0 (type: string), _col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(1)
+                  keys: _col0 (type: string), _col1 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: string)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                    Statistics: Num rows: 121 Data size: 18017 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col2 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
-                expr: KEY._col1
-                type: string
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 60 Data size: 8934 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col2
-                  type: bigint
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
+            expressions: _col2 (type: bigint), _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 60 Data size: 8934 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 60 Data size: 8934 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

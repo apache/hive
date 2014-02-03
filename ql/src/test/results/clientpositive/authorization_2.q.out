@@ -86,7 +86,7 @@ POSTHOOK: query: show grant user hive_test_user on table authorization_part part
 POSTHOOK: type: SHOW_GRANT
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Create
@@ -94,7 +94,7 @@ privilege	Create
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Drop
@@ -102,7 +102,7 @@ privilege	Drop
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Update
@@ -140,7 +140,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 columnName	key
 principalName	hive_test_user
 principalType	USER
@@ -215,7 +215,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 columnName	key
 principalName	hive_test_user
 principalType	USER
@@ -324,7 +324,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Create
@@ -332,7 +332,7 @@ privilege	Create
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Drop
@@ -340,7 +340,7 @@ privilege	Drop
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Update
@@ -386,7 +386,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Create
@@ -394,7 +394,7 @@ privilege	Create
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Drop
@@ -402,7 +402,7 @@ privilege	Drop
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Select
@@ -410,7 +410,7 @@ privilege	Select
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Update
@@ -442,14 +442,14 @@ database	default
 table	authorization_part
 principalName	hive_test_user
 principalType	USER
-privilege	Select
+privilege	Update
 #### A masked pattern was here ####
 grantor	hive_test_user
 database	default
 table	authorization_part
 principalName	hive_test_user
 principalType	USER
-privilege	Update
+privilege	Select
 #### A masked pattern was here ####
 grantor	hive_test_user
 PREHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
@@ -535,7 +535,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Create
@@ -543,7 +543,7 @@ privilege	Create
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Drop
@@ -551,7 +551,7 @@ privilege	Drop
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Select
@@ -559,7 +559,7 @@ privilege	Select
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Update
@@ -619,7 +619,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Create
@@ -627,7 +627,7 @@ privilege	Create
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Drop
@@ -635,7 +635,7 @@ privilege	Drop
 grantor	hive_test_user
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Update
@@ -732,7 +732,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 columnName	key
 principalName	hive_test_group1
 principalType	GROUP
@@ -827,7 +827,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 columnName	key
 principalName	hive_test_group1
 principalType	GROUP
@@ -997,7 +997,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_group1
 principalType	GROUP
 privilege	Select
@@ -1100,7 +1100,7 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 database	default
 table	authorization_part
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_group1
 principalType	GROUP
 privilege	Select

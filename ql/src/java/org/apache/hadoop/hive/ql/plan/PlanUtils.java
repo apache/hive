@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -914,5 +915,27 @@ public final class PlanUtils {
     }
     // make compile happy
     return null;
+  }
+
+  public static String getExprListString(Collection<ExprNodeDesc> exprs) {
+    StringBuffer sb = new StringBuffer();
+    boolean first = true;
+    for (ExprNodeDesc expr: exprs) {
+      if (!first) {
+        sb.append(", ");
+      } else {
+        first = false;
+      }
+      addExprToStringBuffer(expr, sb);
+    }
+
+    return sb.length() == 0 ? null : sb.toString();
+  }
+
+  public static void addExprToStringBuffer(ExprNodeDesc expr, StringBuffer sb) {
+    sb.append(expr.getExprString());
+    sb.append(" (type: ");
+    sb.append(expr.getTypeString());
+    sb.append(")");
   }
 }

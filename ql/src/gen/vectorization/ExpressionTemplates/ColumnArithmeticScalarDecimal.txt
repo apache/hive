@@ -117,7 +117,10 @@ public class <ClassName> extends VectorExpression {
       }
     }
     
-    NullUtil.setNullDataEntriesDecimal(outputColVector, batch.selectedInUse, sel, n);
+    /*
+     * Null data entries are not set to a special non-zero value because all null math operations
+     * are checked, meaning that a zero-divide always results in a null result.
+     */
   }
 
   @Override

@@ -57,7 +57,7 @@ public class TestJdbcDriver extends TestCase {
   private static final String partitionedColumnName = "partcolabc";
   private static final String partitionedColumnValue = "20090619";
   private static final String partitionedTableComment = "Partitioned table";
-  private static final String dataTypeTableName = "testDataTypeTable";
+  private static final String dataTypeTableName = "testdatatypetable";
   private static final String dataTypeTableComment = "Table with many column data types";
   private final HiveConf conf;
   private final Path dataFilePath;

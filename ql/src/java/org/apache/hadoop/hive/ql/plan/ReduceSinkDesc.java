@@ -144,6 +144,10 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "key expressions")
+  public String getKeyColString() {
+    return PlanUtils.getExprListString(keyCols);
+  }
+
   public java.util.ArrayList<ExprNodeDesc> getKeyCols() {
     return keyCols;
   }
@@ -161,6 +165,10 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "value expressions")
+  public String getValueColsString() {
+    return PlanUtils.getExprListString(valueCols);
+  }
+
   public java.util.ArrayList<ExprNodeDesc> getValueCols() {
     return valueCols;
   }
@@ -170,6 +178,10 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "Map-reduce partition columns")
+  public String getParitionColsString() {
+    return PlanUtils.getExprListString(partitionCols);
+  }
+
   public java.util.ArrayList<ExprNodeDesc> getPartitionCols() {
     return partitionCols;
   }
@@ -179,7 +191,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.partitionCols = partitionCols;
   }
 
-  @Explain(displayName = "tag")
+  @Explain(displayName = "tag", normalExplain = false)
   public int getTag() {
     return tag;
   }
@@ -196,7 +208,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.topN = topN;
   }
 
-  @Explain(displayName = "TopN")
+  @Explain(displayName = "TopN", normalExplain = false)
   public Integer getTopNExplain() {
     return topN > 0 ? topN : null;
   }

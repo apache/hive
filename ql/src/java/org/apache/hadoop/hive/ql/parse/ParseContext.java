@@ -297,10 +297,6 @@ public class ParseContext {
     return opToPartList;
   }
 
-  public void setOpToPartList(HashMap<TableScanOperator, PrunedPartitionList> opToPartList) {
-    this.opToPartList = opToPartList;
-  }
-
   /**
    * @return the topToTable
    */

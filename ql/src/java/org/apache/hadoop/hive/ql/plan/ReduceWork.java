@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -95,6 +97,11 @@ public class ReduceWork extends BaseWork {
     this.tagToValueDesc = tagToValueDesc;
   }
 
+  @Explain(displayName = "Execution mode")
+  public String getVectorModeOn() {
+    return vectorMode ? "vectorized" : null;
+  }
+
   @Explain(displayName = "Reduce Operator Tree")
   public Operator<?> getReducer() {
     return reducer;
@@ -122,10 +129,10 @@ public class ReduceWork extends BaseWork {
   }
 
   @Override
-  protected List<Operator<?>> getAllRootOperators() {
-    ArrayList<Operator<?>> opList = new ArrayList<Operator<?>>();
-    opList.add(getReducer());
-    return opList;
+  protected Set<Operator<?>> getAllRootOperators() {
+    Set<Operator<?>> opSet = new LinkedHashSet<Operator<?>>();
+    opSet.add(getReducer());
+    return opSet;
   }
 
   /**

@@ -22,9 +22,6 @@ FROM SRC
 INSERT OVERWRITE TABLE testTable1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) WHERE SRC.key < 20 GROUP BY 1 
 INSERT OVERWRITE TABLE testTable2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) WHERE SRC.key < 20 GROUP BY 1, 2
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME testTable1))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL SRC) key)) (TOK_SELEXPR (TOK_FUNCTIONDI COUNT (TOK_FUNCTION SUBSTR (. (TOK_TABLE_OR_COL SRC) value) 5)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL SRC) key) 20)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL SRC) key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME testTable2))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL SRC) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL SRC) value)) (TOK_SELEXPR (TOK_FUNCTIONDI COUNT (TOK_FUNCTION SUBSTR (. (TOK_TABLE_OR_COL SRC) value) 5)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL SRC) key) 20)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL SRC) key) (. (TOK_TABLE_OR_COL SRC) value))))
-
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -36,97 +33,62 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-        src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: (key < 20)
-                  type: boolean
+              predicate: (key < 20) (type: boolean)
+              Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+                expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
+                Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: count(DISTINCT substr(value, 5))
-                  bucketGroup: false
-                  keys:
-                        expr: key
-                        type: string
-                        expr: substr(value, 5)
-                        type: string
+                  aggregations: count(DISTINCT substr(value, 5))
+                  keys: key (type: string), substr(value, 5) (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
+                    key expressions: _col0 (type: string), _col1 (type: string)
                     sort order: ++
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col2
-                          type: bigint
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col2 (type: bigint)
             Filter Operator
-              predicate:
-                  expr: (key < 20)
-                  type: boolean
+              predicate: (key < 20) (type: boolean)
+              Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+                expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
+                Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: count(DISTINCT substr(value, 5))
-                  bucketGroup: false
-                  keys:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                        expr: substr(value, 5)
-                        type: string
+                  aggregations: count(DISTINCT substr(value, 5))
+                  keys: key (type: string), value (type: string), substr(value, 5) (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    GlobalTableId: 0
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(DISTINCT KEY._col1:0._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
+          aggregations: count(DISTINCT KEY._col1:0._col0)
+          keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: UDFToInteger(_col0)
-                  type: int
-                  expr: _col1
-                  type: bigint
+            expressions: UDFToInteger(_col0) (type: int), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 1
+              Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -148,51 +110,28 @@ STAGE PLANS:
 
   Stage: Stage-4
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-                    expr: _col2
-                    type: string
+              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
               sort order: +++
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-              tag: -1
-              value expressions:
-                    expr: _col3
-                    type: bigint
+              Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+              Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(DISTINCT KEY._col2:0._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
-                expr: KEY._col1
-                type: string
+          aggregations: count(DISTINCT KEY._col2:0._col0)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: UDFToInteger(_col0)
-                  type: int
-                  expr: _col1
-                  type: string
-                  expr: _col2
-                  type: bigint
+            expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), _col2 (type: bigint)
             outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 2
+              Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -298,9 +237,6 @@ POSTHOOK: Lineage: testtable1.value EXPRESSION [(src)src.FieldSchema(name:value,
 POSTHOOK: Lineage: testtable2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: testtable2.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: testtable2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME testTable1))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL SRC) key)) (TOK_SELEXPR (TOK_FUNCTIONDI COUNT (TOK_FUNCTION SUBSTR (. (TOK_TABLE_OR_COL SRC) value) 5)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL SRC) key) 20)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL SRC) key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME testTable2))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL SRC) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL SRC) value)) (TOK_SELEXPR (TOK_FUNCTIONDI COUNT (TOK_FUNCTION SUBSTR (. (TOK_TABLE_OR_COL SRC) value) 5)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL SRC) key) 20)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL SRC) value) (. (TOK_TABLE_OR_COL SRC) key))))
-
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -312,97 +248,62 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-        src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: (key < 20)
-                  type: boolean
+              predicate: (key < 20) (type: boolean)
+              Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+                expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
+                Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: count(DISTINCT substr(value, 5))
-                  bucketGroup: false
-                  keys:
-                        expr: key
-                        type: string
-                        expr: substr(value, 5)
-                        type: string
+                  aggregations: count(DISTINCT substr(value, 5))
+                  keys: key (type: string), substr(value, 5) (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
+                    key expressions: _col0 (type: string), _col1 (type: string)
                     sort order: ++
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col2
-                          type: bigint
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col2 (type: bigint)
             Filter Operator
-              predicate:
-                  expr: (key < 20)
-                  type: boolean
+              predicate: (key < 20) (type: boolean)
+              Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: value
-                      type: string
-                      expr: key
-                      type: string
+                expressions: value (type: string), key (type: string)
                 outputColumnNames: value, key
+                Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: count(DISTINCT substr(value, 5))
-                  bucketGroup: false
-                  keys:
-                        expr: value
-                        type: string
-                        expr: key
-                        type: string
-                        expr: substr(value, 5)
-                        type: string
+                  aggregations: count(DISTINCT substr(value, 5))
+                  keys: value (type: string), key (type: string), substr(value, 5) (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    GlobalTableId: 0
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(DISTINCT KEY._col1:0._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
+          aggregations: count(DISTINCT KEY._col1:0._col0)
+          keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: UDFToInteger(_col0)
-                  type: int
-                  expr: _col1
-                  type: bigint
+            expressions: UDFToInteger(_col0) (type: int), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 1
+              Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -424,51 +325,28 @@ STAGE PLANS:
 
   Stage: Stage-4
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-                    expr: _col2
-                    type: string
+              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
               sort order: +++
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-              tag: -1
-              value expressions:
-                    expr: _col3
-                    type: bigint
+              Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+              Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(DISTINCT KEY._col2:0._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
-                expr: KEY._col1
-                type: string
+          aggregations: count(DISTINCT KEY._col2:0._col0)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: UDFToInteger(_col1)
-                  type: int
-                  expr: _col0
-                  type: string
-                  expr: _col2
-                  type: bigint
+            expressions: UDFToInteger(_col1) (type: int), _col0 (type: string), _col2 (type: bigint)
             outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 2
+              Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -598,9 +476,6 @@ POSTHOOK: Lineage: testtable2.val1 SIMPLE [(src)src.FieldSchema(name:value, type
 POSTHOOK: Lineage: testtable2.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: testtable2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: testtable2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key) key) (TOK_SELEXPR (TOK_FUNCTION count 1) value)) (TOK_WHERE (<= (. (TOK_TABLE_OR_COL b) key) 20)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL b) key)))) t)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t) value))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (. (TOK_TABLE_OR_COL t) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL t) key)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -609,60 +484,42 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        t:b 
+      Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: (key <= 20)
-                  type: boolean
+              predicate: (key <= 20) (type: boolean)
+              Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
+                expressions: key (type: string)
                 outputColumnNames: key
+                Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: false
-                  keys:
-                        expr: key
-                        type: string
+                  aggregations: count(1)
+                  keys: key (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
+                    key expressions: _col0 (type: string)
                     sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: bigint
+            expressions: _col0 (type: string), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -670,27 +527,19 @@ STAGE PLANS:
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col1
-                    type: bigint
-                    expr: _col0
-                    type: string
+              key expressions: _col1 (type: bigint), _col0 (type: string)
               sort order: -+
-              tag: -1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
+              Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: bigint)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 0
+            Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -778,9 +627,6 @@ POSTHOOK: Lineage: testtable2.val1 SIMPLE [(src)src.FieldSchema(name:value, type
 POSTHOOK: Lineage: testtable2.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: testtable2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: testtable2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) value) c2) (TOK_SELEXPR (TOK_FUNCTIONDI COUNT (TOK_FUNCTION SUBSTR (. (TOK_TABLE_OR_COL src1) value) 5)) c3)) (TOK_WHERE (and (> (. (TOK_TABLE_OR_COL src1) key) 10) (< (. (TOK_TABLE_OR_COL src1) key) 20))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src1) value)))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) src2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value) c4)) (TOK_WHERE (and (> (. (TOK_TABLE_OR_COL src2) key) 15) (< (. (TOK_TABLE_OR_COL src2) key) 25))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src2) value)))) b) (= (. (TOK_TABLE_OR_COL a) c1) (. (TOK_TABLE_OR_COL b) c3)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c1) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c2) c2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) c3) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) c4) c4)))) c)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL c1)) (TOK_SELEXPR (TOK_TABLE_OR_COL c2)) (TOK_SELEXPR (TOK_TABLE_OR_COL c3)) (TOK_SELEXPR (TOK_TABLE_OR_COL c4))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL c1)) (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL c2)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL c3)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL c4)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -791,74 +637,42 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        c:a:src1 
+      Map Operator Tree:
           TableScan
             alias: src1
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: ((key > 10) and (key < 20))
-                  type: boolean
+              predicate: ((key > 10) and (key < 20)) (type: boolean)
+              Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+                expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
+                Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: count(DISTINCT substr(value, 5))
-                  bucketGroup: false
-                  keys:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                        expr: substr(value, 5)
-                        type: string
+                  aggregations: count(DISTINCT substr(value, 5))
+                  keys: key (type: string), value (type: string), substr(value, 5) (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
+                    key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     sort order: +++
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col3
-                          type: bigint
+                    Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                    Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(DISTINCT KEY._col2:0._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
-                expr: KEY._col1
-                type: string
+          aggregations: count(DISTINCT KEY._col2:0._col0)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
+            expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -866,39 +680,21 @@ STAGE PLANS:
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-        c:$INTNAME 
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
+              key expressions: _col0 (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-        c:$INTNAME1 
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
+              key expressions: _col0 (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -906,22 +702,14 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
-          handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col3, _col4
+          Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
-                  expr: _col3
-                  type: string
-                  expr: _col4
-                  type: string
+            expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col4 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -929,35 +717,19 @@ STAGE PLANS:
 
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-                    expr: _col2
-                    type: string
-                    expr: _col3
-                    type: string
+              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
               sort order: --++
-              tag: -1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-                    expr: _col2
-                    type: string
-                    expr: _col3
-                    type: string
+              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 0
+            Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -965,63 +737,39 @@ STAGE PLANS:
 
   Stage: Stage-4
     Map Reduce
-      Alias -> Map Operator Tree:
-        c:b:src2 
+      Map Operator Tree:
           TableScan
             alias: src2
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: ((key > 15) and (key < 25))
-                  type: boolean
+              predicate: ((key > 15) and (key < 25)) (type: boolean)
+              Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+                expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
+                Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  bucketGroup: false
-                  keys:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
+                  keys: key (type: string), value (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
+                    key expressions: _col0 (type: string), _col1 (type: string)
                     sort order: ++
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    tag: -1
+                    Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                    Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
-                expr: KEY._col1
-                type: string
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
+            expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

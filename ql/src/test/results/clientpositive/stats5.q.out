@@ -9,9 +9,6 @@ PREHOOK: query: explain analyze table analyze_src compute statistics
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze table analyze_src compute statistics
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_ANALYZE (TOK_TAB (TOK_TABNAME analyze_src)))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -19,10 +16,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Map Reduce
-      Alias -> Map Operator Tree:
-        analyze_src 
+      Map Operator Tree:
           TableScan
             alias: analyze_src
+            Statistics: Num rows: -1 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
 
   Stage: Stage-1
     Stats-Aggr Operator

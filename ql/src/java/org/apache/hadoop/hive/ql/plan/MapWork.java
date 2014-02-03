@@ -24,7 +24,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -199,7 +201,6 @@ public class MapWork extends BaseWork {
     this.aliasToPartnInfo = aliasToPartnInfo;
   }
 
-  @Explain(displayName = "Alias -> Map Operator Tree")
   public LinkedHashMap<String, Operator<? extends OperatorDesc>> getAliasToWork() {
     return aliasToWork;
   }
@@ -226,7 +227,7 @@ public class MapWork extends BaseWork {
   }
 
 
-  @Explain(displayName = "Split Sample")
+  @Explain(displayName = "Split Sample", normalExplain = false)
   public HashMap<String, SplitSample> getNameToSplitSample() {
     return nameToSplitSample;
   }
@@ -298,9 +299,15 @@ public class MapWork extends BaseWork {
     }
   }
 
+  @Explain(displayName = "Execution mode")
+  public String getVectorModeOn() {
+    return vectorMode ? "vectorized" : null;
+  }
+
   @Override
-  protected List<Operator<?>> getAllRootOperators() {
-    ArrayList<Operator<?>> opList = new ArrayList<Operator<?>>();
+  @Explain(displayName = "Map Operator Tree")
+  public Set<Operator<?>> getAllRootOperators() {
+    Set<Operator<?>> opSet = new LinkedHashSet<Operator<?>>();
 
     Map<String, ArrayList<String>> pa = getPathToAliases();
     if (pa != null) {
@@ -308,12 +315,12 @@ public class MapWork extends BaseWork {
         for (String a : ls) {
           Operator<?> op = getAliasToWork().get(a);
           if (op != null ) {
-            opList.add(op);
+            opSet.add(op);
           }
         }
       }
     }
-    return opList;
+    return opSet;
   }
 
   public void mergeAliasedInput(String alias, String pathDir, PartitionDesc partitionInfo) {
@@ -471,7 +478,7 @@ public class MapWork extends BaseWork {
     this.samplingType = samplingType;
   }
 
-  @Explain(displayName = "Sampling")
+  @Explain(displayName = "Sampling", normalExplain = false)
   public String getSamplingTypeString() {
     return samplingType == 1 ? "SAMPLING_ON_PREV_MR" :
         samplingType == 2 ? "SAMPLING_ON_START" : null;

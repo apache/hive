@@ -8,9 +8,6 @@ EXPLAIN
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcbucket) (TOK_TABLEBUCKETSAMPLE 1 5 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -18,22 +15,20 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        s 
+      Map Operator Tree:
           TableScan
             alias: s
+            Statistics: Num rows: 2900 Data size: 11603 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: (((hash(key) & 2147483647) % 5) = 0)
-                  type: boolean
+              predicate: (((hash(key) & 2147483647) % 5) = 0) (type: boolean)
+              Statistics: Num rows: 1450 Data size: 5801 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: int
+                expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 1450 Data size: 5801 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
+                  Statistics: Num rows: 1450 Data size: 5801 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

@@ -154,59 +154,74 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
   @Override
   public Task<? extends Serializable> createShowGrantTask(ASTNode ast, Path resultFile, HashSet<ReadEntity> inputs,
       HashSet<WriteEntity> outputs) throws SemanticException {
+
+    PrincipalDesc principalDesc = null;
     PrivilegeObjectDesc privHiveObj = null;
-
-    ASTNode principal = (ASTNode) ast.getChild(0);
-    PrincipalType type = PrincipalType.USER;
-    switch (principal.getType()) {
-    case HiveParser.TOK_USER:
-      type = PrincipalType.USER;
-      break;
-    case HiveParser.TOK_GROUP:
-      type = PrincipalType.GROUP;
-      break;
-    case HiveParser.TOK_ROLE:
-      type = PrincipalType.ROLE;
-      break;
-    }
-    String principalName = BaseSemanticAnalyzer.unescapeIdentifier(principal.getChild(0).getText());
-    PrincipalDesc principalDesc = new PrincipalDesc(principalName, type);
-
     List<String> cols = null;
-    if (ast.getChildCount() > 1) {
-      ASTNode child = (ASTNode) ast.getChild(1);
-      if (child.getToken().getType() == HiveParser.TOK_PRIV_OBJECT_COL) {
-        privHiveObj = new PrivilegeObjectDesc();
-        //set object name
-        privHiveObj.setObject(BaseSemanticAnalyzer.unescapeIdentifier(child.getChild(0).getText()));
-        //set object type
-        ASTNode objTypeNode = (ASTNode) child.getChild(1);
-        privHiveObj.setTable(objTypeNode.getToken().getType() == HiveParser.TOK_TABLE_TYPE);
 
-        //set col and partition spec if specified
-        if (child.getChildCount() > 2) {
-          for (int i = 2; i < child.getChildCount(); i++) {
-            ASTNode grandChild = (ASTNode) child.getChild(i);
-            if (grandChild.getToken().getType() == HiveParser.TOK_PARTSPEC) {
-              privHiveObj.setPartSpec(DDLSemanticAnalyzer.getPartSpec(grandChild));
-            } else if (grandChild.getToken().getType() == HiveParser.TOK_TABCOLNAME) {
-              cols = BaseSemanticAnalyzer.getColumnNames((ASTNode) grandChild);
-            }
-          }
-        }
+    ASTNode param = null;
+    if (ast.getChildCount() > 0) {
+      param = (ASTNode) ast.getChild(0);
+      principalDesc = getPrincipalDesc(param);
+      if (principalDesc != null) {
+        param = (ASTNode) ast.getChild(1);  // shift one
       }
     }
 
-    if (privHiveObj == null && cols != null) {
-      throw new SemanticException(
-          "For user-level privileges, column sets should be null. columns="
-              + cols.toString());
+    if (param != null) {
+      if (param.getType() == HiveParser.TOK_RESOURCE_ALL) {
+        privHiveObj = new PrivilegeObjectDesc();
+      } else if (param.getType() == HiveParser.TOK_PRIV_OBJECT_COL) {
+        privHiveObj = new PrivilegeObjectDesc();
+        //set object name
+        String text = param.getChild(0).getText();
+        privHiveObj.setObject(BaseSemanticAnalyzer.unescapeIdentifier(text));
+        //set object type
+        ASTNode objTypeNode = (ASTNode) param.getChild(1);
+        privHiveObj.setTable(objTypeNode.getToken().getType() == HiveParser.TOK_TABLE_TYPE);
+
+        //set col and partition spec if specified
+        for (int i = 2; i < param.getChildCount(); i++) {
+          ASTNode partOrCol = (ASTNode) param.getChild(i);
+          if (partOrCol.getType() == HiveParser.TOK_PARTSPEC) {
+            privHiveObj.setPartSpec(DDLSemanticAnalyzer.getPartSpec(partOrCol));
+          } else if (partOrCol.getType() == HiveParser.TOK_TABCOLNAME) {
+            cols = BaseSemanticAnalyzer.getColumnNames(partOrCol);
+          } else {
+            throw new SemanticException("Invalid token type " + partOrCol.getType());
+          }
+        }
+      }
     }
 
     ShowGrantDesc showGrant = new ShowGrantDesc(resultFile.toString(),
         principalDesc, privHiveObj, cols);
     return TaskFactory.get(new DDLWork(inputs, outputs, showGrant), conf);
   }
+
+  private PrincipalDesc getPrincipalDesc(ASTNode principal) {
+    PrincipalType type = getPrincipalType(principal);
+    if (type != null) {
+      String text = principal.getChild(0).getText();
+      String principalName = BaseSemanticAnalyzer.unescapeIdentifier(text);
+      return new PrincipalDesc(principalName, type);
+    }
+    return null;
+  }
+
+  private PrincipalType getPrincipalType(ASTNode principal) {
+    switch (principal.getType()) {
+      case HiveParser.TOK_USER:
+        return PrincipalType.USER;
+      case HiveParser.TOK_GROUP:
+        return PrincipalType.GROUP;
+      case HiveParser.TOK_ROLE:
+        return PrincipalType.ROLE;
+      default:
+        return null;
+    }
+  }
+
   @Override
   public Task<? extends Serializable> createRevokeRoleTask(ASTNode ast, HashSet<ReadEntity> inputs,
       HashSet<WriteEntity> outputs) {
@@ -235,8 +250,12 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
         && SessionState.get().getAuthenticator() != null) {
       roleOwnerName = SessionState.get().getAuthenticator().getUserName();
     }
+
+    //until change is made to use the admin option. Default to false with V2 authorization
+    boolean isAdmin = SessionState.get().isAuthorizationModeV2() ? false : true;
+
     GrantRevokeRoleDDL grantRevokeRoleDDL = new GrantRevokeRoleDDL(isGrant,
-        roles, principalDesc, roleOwnerName, PrincipalType.USER, true);
+        roles, principalDesc, roleOwnerName, PrincipalType.USER, isAdmin);
     return TaskFactory.get(new DDLWork(inputs, outputs, grantRevokeRoleDDL), conf);
   }
 

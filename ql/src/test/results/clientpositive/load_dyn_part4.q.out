@@ -45,9 +45,6 @@ insert overwrite table nzhang_part4 partition (ds, hr) select key, value, ds, hr
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: nzhang_part4 PARTITION(ds=2008-04-08,hr=existing_value).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part4 PARTITION(ds=2008-04-08,hr=existing_value).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME nzhang_part4) (TOK_PARTSPEC (TOK_PARTVAL ds) (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL ds)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (and (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL ds)) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL hr))))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -56,24 +53,17 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        srcpart 
+      Map Operator Tree:
           TableScan
             alias: srcpart
+            Statistics: Num rows: 116 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-                    expr: ds
-                    type: string
-                    expr: hr
-                    type: string
+              expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 116 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                GlobalTableId: 1
+                Statistics: Num rows: 116 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

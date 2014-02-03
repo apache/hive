@@ -45,7 +45,18 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_ANALYZE (TOK_TAB (TOK_TABNAME analyze_srcpart) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr))))
+  
+TOK_ANALYZE
+   TOK_TAB
+      TOK_TABNAME
+         analyze_srcpart
+      TOK_PARTSPEC
+         TOK_PARTVAL
+            ds
+            '2008-04-08'
+         TOK_PARTVAL
+            hr
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -54,12 +65,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Map Reduce
-      Alias -> Map Operator Tree:
-        analyze_srcpart 
+      Map Operator Tree:
           TableScan
             alias: analyze_srcpart
-            Statistics:
-                numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: COMPLETE
+            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
             Statistics Aggregation Key Prefix: default.analyze_srcpart/
             GatherStats: true
       Path -> Alias:

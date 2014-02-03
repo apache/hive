@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -153,9 +155,8 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         inputObjInspectors, posBigTableAlias, tagLen);
 
     if (!noOuterJoin) {
-      List<ObjectInspector>[] rowContainerObjectInspectors = new List[tagLen];
       for (Byte alias : order) {
-        if (alias == posBigTableAlias) {
+        if (alias == posBigTableAlias || joinValues[alias] == null) {
           continue;
         }
         List<ObjectInspector> rcOIs = joinValuesObjectInspectors[alias];
@@ -164,7 +165,6 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
           rcOIs = new ArrayList<ObjectInspector>(rcOIs);
           rcOIs.add(PrimitiveObjectInspectorFactory.writableShortObjectInspector);
         }
-        rowContainerObjectInspectors[alias] = rcOIs;
       }
     }
     mapJoinTables = new MapJoinTableContainer[tagLen];
@@ -198,7 +198,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     }
   }
 
-
+  public MapJoinTableContainer[] getMapJoinTables() {
+    return mapJoinTables;
+  }
 
   private static List<ObjectInspector>[] getStandardObjectInspectors(
       List<ObjectInspector>[] aliasToObjectInspectors, int maxTag) {
@@ -265,37 +267,43 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   public void closeOp(boolean abort) throws HiveException {
     try {
       if (mapJoinTables != null) {
-        // get tmp path
-        Path tmpPath = this.getExecContext().getLocalWork().getTmpPath();
-        LOG.info("Temp URI for side table: " + tmpPath);
-        for (byte tag = 0; tag < mapJoinTables.length; tag++) {
-          // get the key and value
-          MapJoinTableContainer tableContainer = mapJoinTables[tag];
-          if (tableContainer == null) {
-            continue;
-          }
-          // get current input file name
-          String bigBucketFileName = getExecContext().getCurrentBigBucketFile();
-          String fileName = getExecContext().getLocalWork().getBucketFileName(bigBucketFileName);
-          // get the tmp URI path; it will be a hdfs path if not local mode
-          String dumpFilePrefix = conf.getDumpFilePrefix();
-          Path path = Utilities.generatePath(tmpPath, dumpFilePrefix, tag, fileName);
-          console.printInfo(Utilities.now() + "\tDump the side-table into file: " + path);
-          // get the hashtable file and path
-          FileSystem fs = path.getFileSystem(hconf);
-          ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(fs.create(path), 4096));
-          try {
-            mapJoinTableSerdes[tag].persist(out, tableContainer);
-          } finally {
-            out.close();
-          }
-          tableContainer.clear();
-          console.printInfo(Utilities.now() + "\tUpload 1 File to: " + path);
-        }
+        flushToFile();
       }
       super.closeOp(abort);
     } catch (Exception e) {
       LOG.error("Error generating side-table", e);
+    }
+  }
+
+  protected void flushToFile() throws IOException, HiveException {
+    // get tmp file URI
+    Path tmpURI = getExecContext().getLocalWork().getTmpPath();
+    LOG.info("Temp URI for side table: " + tmpURI);
+    for (byte tag = 0; tag < mapJoinTables.length; tag++) {
+      // get the key and value
+      MapJoinTableContainer tableContainer = mapJoinTables[tag];
+      if (tableContainer == null) {
+        continue;
+      }
+      // get current input file name
+      String bigBucketFileName = getExecContext().getCurrentBigBucketFile();
+      String fileName = getExecContext().getLocalWork().getBucketFileName(bigBucketFileName);
+      // get the tmp URI path; it will be a hdfs path if not local mode
+      String dumpFilePrefix = conf.getDumpFilePrefix();
+      Path path = Utilities.generatePath(tmpURI, dumpFilePrefix, tag, fileName);
+      console.printInfo(Utilities.now() + "\tDump the side-table into file: " + path);
+      // get the hashtable file and path
+      FileSystem fs = path.getFileSystem(hconf);
+      ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(fs.create(path), 4096));
+      try {
+        mapJoinTableSerdes[tag].persist(out, tableContainer);
+      } finally {
+        out.close();
+      }
+      tableContainer.clear();
+      FileStatus status = fs.getFileStatus(path);
+      console.printInfo(Utilities.now() + "\tUploaded 1 File to: " + path +
+          " (" + status.getLen() + " bytes)");
     }
   }
 

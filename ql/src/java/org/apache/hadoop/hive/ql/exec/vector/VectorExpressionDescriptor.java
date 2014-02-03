@@ -34,6 +34,7 @@ public class VectorExpressionDescriptor {
     LONG(1),
     DOUBLE(2),
     STRING(3),
+    DECIMAL(4),
     ANY(7);
 
     private final int value;

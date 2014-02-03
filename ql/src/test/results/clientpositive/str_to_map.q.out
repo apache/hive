@@ -13,9 +13,6 @@ PREHOOK: query: explain select str_to_map('a=1,b=2,c=3',',','=')['a'] from src l
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (TOK_FUNCTION str_to_map 'a=1,b=2,c=3' ',' '=') 'a'))) (TOK_LIMIT 3)))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -26,12 +23,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: str_to_map('a=1,b=2,c=3',',','=')['a']
-                  type: string
+            expressions: str_to_map('a=1,b=2,c=3',',','=')['a'] (type: string)
             outputColumnNames: _col0
+            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Limit
+              Number of rows: 3
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
@@ -49,9 +48,6 @@ PREHOOK: query: explain select str_to_map('a:1,b:2,c:3') from src limit 3
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select str_to_map('a:1,b:2,c:3') from src limit 3
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION str_to_map 'a:1,b:2,c:3'))) (TOK_LIMIT 3)))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -62,12 +58,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: str_to_map('a:1,b:2,c:3')
-                  type: map<string,string>
+            expressions: str_to_map('a:1,b:2,c:3') (type: map<string,string>)
             outputColumnNames: _col0
+            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Limit
+              Number of rows: 3
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
@@ -85,9 +83,6 @@ PREHOOK: query: explain select str_to_map('a:1,b:2,c:3',',',':') from src limit 
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION str_to_map 'a:1,b:2,c:3' ',' ':'))) (TOK_LIMIT 3)))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -98,12 +93,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: str_to_map('a:1,b:2,c:3',',',':')
-                  type: map<string,string>
+            expressions: str_to_map('a:1,b:2,c:3',',',':') (type: map<string,string>)
             outputColumnNames: _col0
+            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Limit
+              Number of rows: 3
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
@@ -125,9 +122,6 @@ POSTHOOK: query: explain select str_to_map(t.ss,',',':')['a']
 from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST 'a:1,b:2,c:3') TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST ss)))))) t)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (TOK_FUNCTION str_to_map (. (TOK_TABLE_OR_COL t) ss) ',' ':') 'a'))) (TOK_LIMIT 3)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -135,30 +129,31 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        t:src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
-              expressions:
-                    expr: 'a:1,b:2,c:3'
-                    type: string
+              expressions: 'a:1,b:2,c:3' (type: string)
               outputColumnNames: _col0
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
               Transform Operator
                 command: cat
                 output info:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
-                  expressions:
-                        expr: str_to_map(_col0,',',':')['a']
-                        type: string
+                  expressions: str_to_map(_col0,',',':')['a'] (type: string)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                   Limit
+                    Number of rows: 3
+                    Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      GlobalTableId: 0
+                      Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

@@ -51,7 +51,6 @@ public class TableDesc implements Serializable, Cloneable {
    * @param outputFormatClass
    * @param properties must contain serde class name associate with this table.
    */
-
   public TableDesc(
       final Class<? extends InputFormat> inputFormatClass,
       final Class<?> outputFormatClass, final Properties properties) {

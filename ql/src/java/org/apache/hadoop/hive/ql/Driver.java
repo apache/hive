@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
-import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -102,6 +101,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
@@ -703,7 +703,7 @@ public class Driver implements CommandProcessor {
   }
 
   private void doAuthorizationV2(SessionState ss, HiveOperation op, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) {
+      HashSet<WriteEntity> outputs) throws HiveException {
     HiveOperationType hiveOpType = getHiveOperationType(op);
     List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputs);
     List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputs);
@@ -711,35 +711,25 @@ public class Driver implements CommandProcessor {
     return;
   }
 
-  private List<HivePrivilegeObject> getHivePrivObjects(HashSet<? extends Entity> inputs) {
+  private List<HivePrivilegeObject> getHivePrivObjects(HashSet<? extends Entity> privObjects) {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
-    for(Entity input : inputs){
-      HivePrivilegeObjectType privObjType = getHivePrivilegeObjectType(input.getType());
+    if(privObjects == null){
+      return hivePrivobjs;
+    }
+    for(Entity privObject : privObjects){
+      HivePrivilegeObjectType privObjType =
+          AuthorizationUtils.getHivePrivilegeObjectType(privObject.getType());
+
       //support for authorization on partitions or uri needs to be added
       HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType,
-          input.getDatabase().getName(),
-          input.getTable().getTableName());
+          privObject.getDatabase() == null ? null : privObject.getDatabase().getName(),
+              privObject.getTable() == null ? null : privObject.getTable().getTableName());
       hivePrivobjs.add(hPrivObject);
     }
     return hivePrivobjs;
   }
 
-  private HivePrivilegeObjectType getHivePrivilegeObjectType(Type type) {
-    switch(type){
-    case DATABASE:
-      return HivePrivilegeObjectType.DATABASE;
-    case TABLE:
-      return HivePrivilegeObjectType.TABLE;
-    case LOCAL_DIR:
-    case DFS_DIR:
-      return HivePrivilegeObjectType.URI;
-    case PARTITION:
-    case DUMMYPARTITION: //need to determine if a different type is needed for dummy partitions
-      return HivePrivilegeObjectType.PARTITION;
-    default:
-      return null;
-    }
-  }
+
 
   private HiveOperationType getHiveOperationType(HiveOperation op) {
     return HiveOperationType.valueOf(op.name());

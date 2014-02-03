@@ -16,7 +16,7 @@
 package org.apache.hadoop.hive.common.type;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
+import java.math.BigInteger;
 import java.nio.IntBuffer;
 
 /**
@@ -548,6 +548,25 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     this.scale = (short) (scaleAndSignum >> 16);
     this.signum = (byte) (scaleAndSignum & 0xFF);
     this.unscaledValue.update32(array, offset + 1);
+  }
+
+  /**
+   * Updates the value of this object with the given {@link BigInteger} and scale.
+   *
+   * @param bigInt
+   *          {@link java.math.BigInteger}
+   * @param scale
+   */
+  public void update(BigInteger bigInt, short scale) {
+    this.scale = scale;
+    this.signum = (byte) bigInt.compareTo(BigInteger.ZERO);
+    if (signum == 0) {
+      update(0);
+    } else if (signum < 0) {
+      unscaledValue.update(bigInt.negate());
+    } else {
+      unscaledValue.update(bigInt);
+    }
   }
 
   /**
@@ -1190,10 +1209,54 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     HiveDecimal rightHD = HiveDecimal.create(right.toBigDecimal());
     HiveDecimal thisHD = HiveDecimal.create(this.toBigDecimal());
     HiveDecimal result = thisHD.divide(rightHD);
+
+    /* If the result is null, throw an exception. This can be caught
+     * by calling code in the vectorized code path and made to yield
+     * a SQL NULL value.
+     */
+    if (result == null) {
+      throw new ArithmeticException("null divide result");
+    }
     this.update(result.bigDecimalValue().toPlainString(), newScale);
     this.unscaledValue.throwIfExceedsTenToThirtyEight();
   }
 
+  /**
+    * Performs decimal modulo
+    * <p>
+    * The definition of modulo (x % p) is:
+    *   x - IntegerPart(x / p, resultScale) * p
+    * </p>
+    *
+    * @left
+    *    is x
+    * @right
+    *    is p
+    * @result
+    *    receives the result
+    * @scratch
+    *    scratch space to avoid need to create a new object
+    * @scale
+    *    scale of result
+    */
+   public static void modulo(Decimal128 left, Decimal128 right, Decimal128 result,
+       short scale) {
+
+     // set result to x / p (the quotient)
+     Decimal128.divide(left, right, result, scale);
+
+     // take integer part of it
+     result.zeroFractionPart();
+
+     // multiply by p
+     result.multiplyDestructive(right, scale);
+
+     // negate it
+     result.negateDestructive();
+
+     // add x to it
+     result.addDestructive(left, scale);
+   }
 
   /**
    * Makes this {@code Decimal128} a positive number. Unlike
@@ -1384,7 +1447,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    * @return {@code true} if and only if the specified {@code Object} is a
    *         {@code Decimal128} whose value and scale are equal to this
    *         {@code Decimal128}'s.
-   * @see #compareTo(java.math.Decimal128)
+   * @see #compareTo(Decimal128)
    * @see #hashCode
    */
   @Override
@@ -1444,15 +1507,24 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     }
 
     long ret;
+    UnsignedInt128 tmp;
     if (scale == 0) {
-      ret = (this.unscaledValue.getV1()) << 32L | this.unscaledValue.getV0();
+      ret = this.unscaledValue.getV1();
+      ret <<= 32L;
+      ret |= SqlMathUtil.LONG_MASK & this.unscaledValue.getV0();
     } else {
-      UnsignedInt128 tmp = new UnsignedInt128(this.unscaledValue);
+      tmp = new UnsignedInt128(this.unscaledValue);
       tmp.scaleDownTenDestructive(scale);
-      ret = (tmp.getV1()) << 32L | tmp.getV0();
+      ret = tmp.getV1();
+      ret <<= 32L;
+      ret |= SqlMathUtil.LONG_MASK & tmp.getV0();
     }
 
-    return SqlMathUtil.setSignBitLong(ret, signum > 0);
+    if (signum >= 0) {
+      return ret;
+    } else {
+      return -ret;
+    }
   }
 
   /**
@@ -1634,5 +1706,57 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    */
   public void setNullDataValue() {
     unscaledValue.update(1, 0, 0, 0);
+  }
+
+  /**
+   * Update the value to a decimal value with the decimal point equal to
+   * val but with the decimal point inserted scale
+   * digits from the right. Behavior is undefined if scale is > 38 or < 0.
+   *
+   * For example, updateFixedPoint(123456789L, (short) 3) changes the target
+   * to the value 123456.789 with scale 3.
+   */
+  public void updateFixedPoint(long val, short scale) {
+    this.scale = scale;
+    if (val < 0L) {
+      this.unscaledValue.update(-val);
+      this.signum = -1;
+    } else if (val == 0L) {
+      zeroClear();
+    } else {
+      this.unscaledValue.update(val);
+      this.signum = 1;
+    }
+  }
+
+  /**
+   * Zero the fractional part of value.
+   *
+   * Argument scratch is needed to hold unused remainder output, to avoid need to
+   * create a new object.
+   */
+  public void zeroFractionPart() {
+    short placesToRemove = this.getScale();
+
+    // If there's no fraction part, return immediately to avoid the cost of a divide.
+    if (placesToRemove == 0) {
+      return;
+    }
+
+    /* Divide by a power of 10 equal to 10**scale to logically shift the digits
+     * places right by "scale" positions to eliminate them.
+     */
+    UnsignedInt128 powerTenDivisor = SqlMathUtil.POWER_TENS_INT128[placesToRemove];
+
+    /* A scratch variable is created here. This could be optimized in the future
+     * by perhaps using thread-local storage to allocate this scratch field.
+     */
+    UnsignedInt128 scratch = new UnsignedInt128();
+    this.getUnscaledValue().divideDestructive(powerTenDivisor, scratch);
+
+    /* Multiply by the same power of ten to shift the decimal point back to
+     * the original place. Places to the right of the decimal will be zero.
+     */
+    this.getUnscaledValue().scaleUpTenDestructive(placesToRemove);
   }
 }

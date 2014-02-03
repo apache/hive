@@ -9,9 +9,6 @@ PREHOOK: type: SHOWCOLUMNS
 POSTHOOK: query: EXPLAIN
 SHOW COLUMNS from shcol_test
 POSTHOOK: type: SHOWCOLUMNS
-ABSTRACT SYNTAX TREE:
-  (TOK_SHOWCOLUMNS (TOK_TABNAME shcol_test))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 is a root stage

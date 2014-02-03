@@ -261,13 +261,16 @@ TOK_PRINCIPAL_NAME;
 TOK_USER;
 TOK_GROUP;
 TOK_ROLE;
+TOK_RESOURCE_ALL;
 TOK_GRANT_WITH_OPTION;
 TOK_GRANT_WITH_ADMIN_OPTION;
 TOK_PRIV_ALL;
 TOK_PRIV_ALTER_METADATA;
 TOK_PRIV_ALTER_DATA;
+TOK_PRIV_DELETE;
 TOK_PRIV_DROP;
 TOK_PRIV_INDEX;
+TOK_PRIV_INSERT;
 TOK_PRIV_LOCK;
 TOK_PRIV_SELECT;
 TOK_PRIV_SHOW_DATABASE;
@@ -557,6 +560,22 @@ import java.util.HashMap;
     return msg;
   }
   
+  public void pushMsg(String msg, RecognizerSharedState state) {
+    // ANTLR generated code does not wrap the @init code wit this backtracking check,
+    //  even if the matching @after has it. If we have parser rules with that are doing
+    // some lookahead with syntactic predicates this can cause the push() and pop() calls
+    // to become unbalanced, so make sure both push/pop check the backtracking state.
+    if (state.backtracking == 0) {
+      msgs.push(msg);
+    }
+  }
+
+  public void popMsg(RecognizerSharedState state) {
+    if (state.backtracking == 0) {
+      msgs.pop();
+    }
+  }
+
   // counter to generate unique union aliases
   private int aliasCounter;
   
@@ -579,15 +598,15 @@ statement
 	;
 
 explainStatement
-@init { msgs.push("explain statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("explain statement", state); }
+@after { popMsg(state); }
 	: KW_EXPLAIN (explainOptions=KW_EXTENDED|explainOptions=KW_FORMATTED|explainOptions=KW_DEPENDENCY|explainOptions=KW_LOGICAL)? execStatement
       -> ^(TOK_EXPLAIN execStatement $explainOptions?)
 	;
 
 execStatement
-@init { msgs.push("statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("statement", state); }
+@after { popMsg(state); }
     : queryStatementExpression[true]
     | loadStatement
     | exportStatement
@@ -596,29 +615,29 @@ execStatement
     ;
 
 loadStatement
-@init { msgs.push("load statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("load statement", state); }
+@after { popMsg(state); }
     : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tableOrPartition)
     -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite?)
     ;
 
 exportStatement
-@init { msgs.push("export statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("export statement", state); }
+@after { popMsg(state); }
     : KW_EXPORT KW_TABLE (tab=tableOrPartition) KW_TO (path=StringLiteral)
     -> ^(TOK_EXPORT $tab $path)
     ;
 
 importStatement
-@init { msgs.push("import statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("import statement", state); }
+@after { popMsg(state); }
 	: KW_IMPORT ((ext=KW_EXTERNAL)? KW_TABLE (tab=tableOrPartition))? KW_FROM (path=StringLiteral) tableLocation?
     -> ^(TOK_IMPORT $path $tab? $ext? tableLocation?)
     ;
 
 ddlStatement
-@init { msgs.push("ddl statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("ddl statement", state); }
+@after { popMsg(state); }
     : createDatabaseStatement
     | switchDatabaseStatement
     | dropDatabaseStatement
@@ -654,15 +673,15 @@ ddlStatement
     ;
 
 ifExists
-@init { msgs.push("if exists clause"); }
-@after { msgs.pop(); }
+@init { pushMsg("if exists clause", state); }
+@after { popMsg(state); }
     : KW_IF KW_EXISTS
     -> ^(TOK_IFEXISTS)
     ;
 
 restrictOrCascade
-@init { msgs.push("restrict or cascade clause"); }
-@after { msgs.pop(); }
+@init { pushMsg("restrict or cascade clause", state); }
+@after { popMsg(state); }
     : KW_RESTRICT
     -> ^(TOK_RESTRICT)
     | KW_CASCADE
@@ -670,36 +689,36 @@ restrictOrCascade
     ;
 
 ifNotExists
-@init { msgs.push("if not exists clause"); }
-@after { msgs.pop(); }
+@init { pushMsg("if not exists clause", state); }
+@after { popMsg(state); }
     : KW_IF KW_NOT KW_EXISTS
     -> ^(TOK_IFNOTEXISTS)
     ;
 
 storedAsDirs
-@init { msgs.push("stored as directories"); }
-@after { msgs.pop(); }
+@init { pushMsg("stored as directories", state); }
+@after { popMsg(state); }
     : KW_STORED KW_AS KW_DIRECTORIES
     -> ^(TOK_STOREDASDIRS)
     ;
 
 orReplace
-@init { msgs.push("or replace clause"); }
-@after { msgs.pop(); }
+@init { pushMsg("or replace clause", state); }
+@after { popMsg(state); }
     : KW_OR KW_REPLACE
     -> ^(TOK_ORREPLACE)
     ;
 
 ignoreProtection
-@init { msgs.push("ignore protection clause"); }
-@after { msgs.pop(); }
+@init { pushMsg("ignore protection clause", state); }
+@after { popMsg(state); }
         : KW_IGNORE KW_PROTECTION
         -> ^(TOK_IGNOREPROTECTION)
         ;
 
 createDatabaseStatement
-@init { msgs.push("create database statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("create database statement", state); }
+@after { popMsg(state); }
     : KW_CREATE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
         name=identifier
@@ -710,51 +729,51 @@ createDatabaseStatement
     ;
 
 dbLocation
-@init { msgs.push("database location specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("database location specification", state); }
+@after { popMsg(state); }
     :
       KW_LOCATION locn=StringLiteral -> ^(TOK_DATABASELOCATION $locn)
     ;
 
 dbProperties
-@init { msgs.push("dbproperties"); }
-@after { msgs.pop(); }
+@init { pushMsg("dbproperties", state); }
+@after { popMsg(state); }
     :
       LPAREN dbPropertiesList RPAREN -> ^(TOK_DATABASEPROPERTIES dbPropertiesList)
     ;
 
 dbPropertiesList
-@init { msgs.push("database properties list"); }
-@after { msgs.pop(); }
+@init { pushMsg("database properties list", state); }
+@after { popMsg(state); }
     :
       keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_DBPROPLIST keyValueProperty+)
     ;
 
 
 switchDatabaseStatement
-@init { msgs.push("switch database statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("switch database statement", state); }
+@after { popMsg(state); }
     : KW_USE identifier
     -> ^(TOK_SWITCHDATABASE identifier)
     ;
 
 dropDatabaseStatement
-@init { msgs.push("drop database statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("drop database statement", state); }
+@after { popMsg(state); }
     : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? identifier restrictOrCascade?
     -> ^(TOK_DROPDATABASE identifier ifExists? restrictOrCascade?)
     ;
 
 databaseComment
-@init { msgs.push("database's comment"); }
-@after { msgs.pop(); }
+@init { pushMsg("database's comment", state); }
+@after { popMsg(state); }
     : KW_COMMENT comment=StringLiteral
     -> ^(TOK_DATABASECOMMENT $comment)
     ;
 
 createTableStatement
-@init { msgs.push("create table statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("create table statement", state); }
+@after { popMsg(state); }
     : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
       (  like=KW_LIKE likeName=tableName
          tableLocation?
@@ -786,13 +805,13 @@ createTableStatement
     ;
 
 truncateTableStatement
-@init { msgs.push("truncate table statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("truncate table statement", state); }
+@after { popMsg(state); }
     : KW_TRUNCATE KW_TABLE tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? -> ^(TOK_TRUNCATETABLE tablePartitionPrefix columnNameList?);
 
 createIndexStatement
-@init { msgs.push("create index statement");}
-@after {msgs.pop();}
+@init { pushMsg("create index statement", state);}
+@after {popMsg(state);}
     : KW_CREATE KW_INDEX indexName=identifier
       KW_ON KW_TABLE tab=tableName LPAREN indexedCols=columnNameList RPAREN
       KW_AS typeName=StringLiteral
@@ -816,63 +835,63 @@ createIndexStatement
     ;
 
 indexComment
-@init { msgs.push("comment on an index");}
-@after {msgs.pop();}
+@init { pushMsg("comment on an index", state);}
+@after {popMsg(state);}
         :
                 KW_COMMENT comment=StringLiteral  -> ^(TOK_INDEXCOMMENT $comment)
         ;
 
 autoRebuild
-@init { msgs.push("auto rebuild index");}
-@after {msgs.pop();}
+@init { pushMsg("auto rebuild index", state);}
+@after {popMsg(state);}
     : KW_WITH KW_DEFERRED KW_REBUILD
     ->^(TOK_DEFERRED_REBUILDINDEX)
     ;
 
 indexTblName
-@init { msgs.push("index table name");}
-@after {msgs.pop();}
+@init { pushMsg("index table name", state);}
+@after {popMsg(state);}
     : KW_IN KW_TABLE indexTbl=tableName
     ->^(TOK_CREATEINDEX_INDEXTBLNAME $indexTbl)
     ;
 
 indexPropertiesPrefixed
-@init { msgs.push("table properties with prefix"); }
-@after { msgs.pop(); }
+@init { pushMsg("table properties with prefix", state); }
+@after { popMsg(state); }
     :
         KW_IDXPROPERTIES! indexProperties
     ;
 
 indexProperties
-@init { msgs.push("index properties"); }
-@after { msgs.pop(); }
+@init { pushMsg("index properties", state); }
+@after { popMsg(state); }
     :
       LPAREN indexPropertiesList RPAREN -> ^(TOK_INDEXPROPERTIES indexPropertiesList)
     ;
 
 indexPropertiesList
-@init { msgs.push("index properties list"); }
-@after { msgs.pop(); }
+@init { pushMsg("index properties list", state); }
+@after { popMsg(state); }
     :
       keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_INDEXPROPLIST keyValueProperty+)
     ;
 
 dropIndexStatement
-@init { msgs.push("drop index statement");}
-@after {msgs.pop();}
+@init { pushMsg("drop index statement", state);}
+@after {popMsg(state);}
     : KW_DROP KW_INDEX ifExists? indexName=identifier KW_ON tab=tableName
     ->^(TOK_DROPINDEX $indexName $tab ifExists?)
     ;
 
 dropTableStatement
-@init { msgs.push("drop statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("drop statement", state); }
+@after { popMsg(state); }
     : KW_DROP KW_TABLE ifExists? tableName -> ^(TOK_DROPTABLE tableName ifExists?)
     ;
 
 alterStatement
-@init { msgs.push("alter statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("alter statement", state); }
+@after { popMsg(state); }
     : KW_ALTER!
         (
             KW_TABLE! alterTableStatementSuffix
@@ -886,8 +905,8 @@ alterStatement
     ;
 
 alterTableStatementSuffix
-@init { msgs.push("alter table statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("alter table statement", state); }
+@after { popMsg(state); }
     : alterStatementSuffixRename
     | alterStatementSuffixAddCol
     | alterStatementSuffixRenameCol
@@ -911,8 +930,8 @@ alterStatementPartitionKeyType
 	;
 
 alterViewStatementSuffix
-@init { msgs.push("alter view statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("alter view statement", state); }
+@after { popMsg(state); }
     : alterViewSuffixProperties
     | alterStatementSuffixRename
         -> ^(TOK_ALTERVIEW_RENAME alterStatementSuffixRename)
@@ -925,8 +944,8 @@ alterViewStatementSuffix
     ;
 
 alterIndexStatementSuffix
-@init { msgs.push("alter index statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("alter index statement", state); }
+@after { popMsg(state); }
     : indexName=identifier
       (KW_ON tableNameId=identifier)
       partitionSpec?
@@ -941,36 +960,36 @@ alterIndexStatementSuffix
     ;
 
 alterDatabaseStatementSuffix
-@init { msgs.push("alter database statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("alter database statement", state); }
+@after { popMsg(state); }
     : alterDatabaseSuffixProperties
     ;
 
 alterDatabaseSuffixProperties
-@init { msgs.push("alter database properties statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("alter database properties statement", state); }
+@after { popMsg(state); }
     : name=identifier KW_SET KW_DBPROPERTIES dbProperties
     -> ^(TOK_ALTERDATABASE_PROPERTIES $name dbProperties)
     ;
 
 alterStatementSuffixRename
-@init { msgs.push("rename statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("rename statement", state); }
+@after { popMsg(state); }
     : oldName=identifier KW_RENAME KW_TO newName=identifier
     -> ^(TOK_ALTERTABLE_RENAME $oldName $newName)
     ;
 
 alterStatementSuffixAddCol
-@init { msgs.push("add column statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("add column statement", state); }
+@after { popMsg(state); }
     : identifier (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN
     -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS identifier columnNameTypeList)
     ->                 ^(TOK_ALTERTABLE_REPLACECOLS identifier columnNameTypeList)
     ;
 
 alterStatementSuffixRenameCol
-@init { msgs.push("rename column name"); }
-@after { msgs.pop(); }
+@init { pushMsg("rename column name", state); }
+@after { popMsg(state); }
     : identifier KW_CHANGE KW_COLUMN? oldName=identifier newName=identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition?
     ->^(TOK_ALTERTABLE_RENAMECOL identifier $oldName $newName colType $comment? alterStatementChangeColPosition?)
     ;
@@ -982,8 +1001,8 @@ alterStatementChangeColPosition
     ;
 
 alterStatementSuffixAddPartitions
-@init { msgs.push("add partition statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("add partition statement", state); }
+@after { popMsg(state); }
     : identifier KW_ADD ifNotExists? alterStatementSuffixAddPartitionsElement+
     -> ^(TOK_ALTERTABLE_ADDPARTS identifier ifNotExists? alterStatementSuffixAddPartitionsElement+)
     ;
@@ -993,43 +1012,43 @@ alterStatementSuffixAddPartitionsElement
     ;
 
 alterStatementSuffixTouch
-@init { msgs.push("touch statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("touch statement", state); }
+@after { popMsg(state); }
     : identifier KW_TOUCH (partitionSpec)*
     -> ^(TOK_ALTERTABLE_TOUCH identifier (partitionSpec)*)
     ;
 
 alterStatementSuffixArchive
-@init { msgs.push("archive statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("archive statement", state); }
+@after { popMsg(state); }
     : identifier KW_ARCHIVE (partitionSpec)*
     -> ^(TOK_ALTERTABLE_ARCHIVE identifier (partitionSpec)*)
     ;
 
 alterStatementSuffixUnArchive
-@init { msgs.push("unarchive statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("unarchive statement", state); }
+@after { popMsg(state); }
     : identifier KW_UNARCHIVE (partitionSpec)*
     -> ^(TOK_ALTERTABLE_UNARCHIVE identifier (partitionSpec)*)
     ;
 
 partitionLocation
-@init { msgs.push("partition location"); }
-@after { msgs.pop(); }
+@init { pushMsg("partition location", state); }
+@after { popMsg(state); }
     :
       KW_LOCATION locn=StringLiteral -> ^(TOK_PARTITIONLOCATION $locn)
     ;
 
 alterStatementSuffixDropPartitions
-@init { msgs.push("drop partition statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("drop partition statement", state); }
+@after { popMsg(state); }
     : identifier KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* ignoreProtection?
     -> ^(TOK_ALTERTABLE_DROPPARTS identifier dropPartitionSpec+ ifExists? ignoreProtection?)
     ;
 
 alterStatementSuffixProperties
-@init { msgs.push("alter properties statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("alter properties statement", state); }
+@after { popMsg(state); }
     : name=identifier KW_SET KW_TBLPROPERTIES tableProperties
     -> ^(TOK_ALTERTABLE_PROPERTIES $name tableProperties)
     | name=identifier KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
@@ -1037,8 +1056,8 @@ alterStatementSuffixProperties
     ;
 
 alterViewSuffixProperties
-@init { msgs.push("alter view properties statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("alter view properties statement", state); }
+@after { popMsg(state); }
     : name=identifier KW_SET KW_TBLPROPERTIES tableProperties
     -> ^(TOK_ALTERVIEW_PROPERTIES $name tableProperties)
     | name=identifier KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
@@ -1046,8 +1065,8 @@ alterViewSuffixProperties
     ;
 
 alterStatementSuffixSerdeProperties
-@init { msgs.push("alter serdes statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("alter serdes statement", state); }
+@after { popMsg(state); }
     : KW_SET KW_SERDE serdeName=StringLiteral (KW_WITH KW_SERDEPROPERTIES tableProperties)?
     -> ^(TOK_ALTERTABLE_SERIALIZER $serdeName tableProperties?)
     | KW_SET KW_SERDEPROPERTIES tableProperties
@@ -1055,22 +1074,22 @@ alterStatementSuffixSerdeProperties
     ;
 
 tablePartitionPrefix
-@init {msgs.push("table partition prefix");}
-@after {msgs.pop();}
+@init {pushMsg("table partition prefix", state);}
+@after {popMsg(state);}
   :name=identifier partitionSpec?
   ->^(TOK_TABLE_PARTITION $name partitionSpec?)
   ;
 
 alterTblPartitionStatement
-@init {msgs.push("alter table partition statement");}
-@after {msgs.pop();}
+@init {pushMsg("alter table partition statement", state);}
+@after {popMsg(state);}
   : tablePartitionPrefix alterTblPartitionStatementSuffix
   -> ^(TOK_ALTERTABLE_PARTITION tablePartitionPrefix alterTblPartitionStatementSuffix)
   ;
 
 alterTblPartitionStatementSuffix
-@init {msgs.push("alter table partition statement suffix");}
-@after {msgs.pop();}
+@init {pushMsg("alter table partition statement suffix", state);}
+@after {popMsg(state);}
   : alterStatementSuffixFileFormat
   | alterStatementSuffixLocation
   | alterStatementSuffixProtectMode
@@ -1083,59 +1102,59 @@ alterTblPartitionStatementSuffix
   ;
 
 alterStatementSuffixFileFormat
-@init {msgs.push("alter fileformat statement"); }
-@after {msgs.pop();}
+@init {pushMsg("alter fileformat statement", state); }
+@after {popMsg(state);}
 	: KW_SET KW_FILEFORMAT fileFormat
 	-> ^(TOK_ALTERTABLE_FILEFORMAT fileFormat)
 	;
 
 alterStatementSuffixClusterbySortby
-@init {msgs.push("alter partition cluster by sort by statement");}
-@after {msgs.pop();}
+@init {pushMsg("alter partition cluster by sort by statement", state);}
+@after {popMsg(state);}
   : KW_NOT KW_CLUSTERED -> ^(TOK_ALTERTABLE_CLUSTER_SORT TOK_NOT_CLUSTERED)
   | KW_NOT KW_SORTED -> ^(TOK_ALTERTABLE_CLUSTER_SORT TOK_NOT_SORTED)
   | tableBuckets -> ^(TOK_ALTERTABLE_CLUSTER_SORT tableBuckets)
   ;
 
 alterTblPartitionStatementSuffixSkewedLocation
-@init {msgs.push("alter partition skewed location");}
-@after {msgs.pop();}
+@init {pushMsg("alter partition skewed location", state);}
+@after {popMsg(state);}
   : KW_SET KW_SKEWED KW_LOCATION skewedLocations
   -> ^(TOK_ALTERTBLPART_SKEWED_LOCATION skewedLocations)
   ;
   
 skewedLocations
-@init { msgs.push("skewed locations"); }
-@after { msgs.pop(); }
+@init { pushMsg("skewed locations", state); }
+@after { popMsg(state); }
     :
       LPAREN skewedLocationsList RPAREN -> ^(TOK_SKEWED_LOCATIONS skewedLocationsList)
     ;
 
 skewedLocationsList
-@init { msgs.push("skewed locations list"); }
-@after { msgs.pop(); }
+@init { pushMsg("skewed locations list", state); }
+@after { popMsg(state); }
     :
       skewedLocationMap (COMMA skewedLocationMap)* -> ^(TOK_SKEWED_LOCATION_LIST skewedLocationMap+)
     ;
 
 skewedLocationMap
-@init { msgs.push("specifying skewed location map"); }
-@after { msgs.pop(); }
+@init { pushMsg("specifying skewed location map", state); }
+@after { popMsg(state); }
     :
       key=skewedValueLocationElement EQUAL value=StringLiteral -> ^(TOK_SKEWED_LOCATION_MAP $key $value)
     ;
 
 alterStatementSuffixLocation
-@init {msgs.push("alter location");}
-@after {msgs.pop();}
+@init {pushMsg("alter location", state);}
+@after {popMsg(state);}
   : KW_SET KW_LOCATION newLoc=StringLiteral
   -> ^(TOK_ALTERTABLE_LOCATION $newLoc)
   ;
 
 	
 alterStatementSuffixSkewedby
-@init {msgs.push("alter skewed by statement");}
-@after{msgs.pop();}
+@init {pushMsg("alter skewed by statement", state);}
+@after{popMsg(state);}
 	:name=identifier tableSkewed
 	->^(TOK_ALTERTABLE_SKEWED $name tableSkewed)
 	|
@@ -1147,58 +1166,58 @@ alterStatementSuffixSkewedby
 	;
 
 alterStatementSuffixExchangePartition
-@init {msgs.push("alter exchange partition");}
-@after{msgs.pop();}
+@init {pushMsg("alter exchange partition", state);}
+@after{popMsg(state);}
     : name=tableName KW_EXCHANGE partitionSpec KW_WITH KW_TABLE exchangename=tableName
     -> ^(TOK_EXCHANGEPARTITION $name partitionSpec $exchangename)
     ;
 
 alterStatementSuffixProtectMode
-@init { msgs.push("alter partition protect mode statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("alter partition protect mode statement", state); }
+@after { popMsg(state); }
     : alterProtectMode
     -> ^(TOK_ALTERTABLE_PROTECTMODE alterProtectMode)
     ;
 
 alterStatementSuffixRenamePart
-@init { msgs.push("alter table rename partition statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("alter table rename partition statement", state); }
+@after { popMsg(state); }
     : KW_RENAME KW_TO partitionSpec
     ->^(TOK_ALTERTABLE_RENAMEPART partitionSpec)
     ;
 
 alterStatementSuffixMergeFiles
-@init { msgs.push(""); }
-@after { msgs.pop(); }
+@init { pushMsg("", state); }
+@after { popMsg(state); }
     : KW_CONCATENATE
     -> ^(TOK_ALTERTABLE_MERGEFILES)
     ;
 
 alterProtectMode
-@init { msgs.push("protect mode specification enable"); }
-@after { msgs.pop(); }
+@init { pushMsg("protect mode specification enable", state); }
+@after { popMsg(state); }
     : KW_ENABLE alterProtectModeMode  -> ^(TOK_ENABLE alterProtectModeMode)
     | KW_DISABLE alterProtectModeMode  -> ^(TOK_DISABLE alterProtectModeMode)
     ;
 
 alterProtectModeMode
-@init { msgs.push("protect mode specification enable"); }
-@after { msgs.pop(); }
+@init { pushMsg("protect mode specification enable", state); }
+@after { popMsg(state); }
     : KW_OFFLINE  -> ^(TOK_OFFLINE)
     | KW_NO_DROP KW_CASCADE? -> ^(TOK_NO_DROP KW_CASCADE?)
     | KW_READONLY  -> ^(TOK_READONLY)
     ;
 
 alterStatementSuffixBucketNum
-@init { msgs.push(""); }
-@after { msgs.pop(); }
+@init { pushMsg("", state); }
+@after { popMsg(state); }
     : KW_INTO num=Number KW_BUCKETS
     -> ^(TOK_TABLEBUCKETS $num)
     ;
 
 fileFormat
-@init { msgs.push("file format specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("file format specification", state); }
+@after { popMsg(state); }
     : KW_SEQUENCEFILE  -> ^(TOK_TBLSEQUENCEFILE)
     | KW_TEXTFILE  -> ^(TOK_TBLTEXTFILE)
     | KW_RCFILE  -> ^(TOK_TBLRCFILE)
@@ -1209,48 +1228,48 @@ fileFormat
     ;
 
 tabTypeExpr
-@init { msgs.push("specifying table types"); }
-@after { msgs.pop(); }
+@init { pushMsg("specifying table types", state); }
+@after { popMsg(state); }
 
    : identifier (DOT^ (KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE | identifier))*
    ;
 
 descTabTypeExpr
-@init { msgs.push("specifying describe table types"); }
-@after { msgs.pop(); }
+@init { pushMsg("specifying describe table types", state); }
+@after { popMsg(state); }
 
    : identifier (DOT^ (KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE | identifier))* identifier?
    ;
 
 partTypeExpr
-@init { msgs.push("specifying table partitions"); }
-@after { msgs.pop(); }
+@init { pushMsg("specifying table partitions", state); }
+@after { popMsg(state); }
     :  tabTypeExpr partitionSpec? -> ^(TOK_TABTYPE tabTypeExpr partitionSpec?)
     ;
 
 descPartTypeExpr
-@init { msgs.push("specifying describe table partitions"); }
-@after { msgs.pop(); }
+@init { pushMsg("specifying describe table partitions", state); }
+@after { popMsg(state); }
     :  descTabTypeExpr partitionSpec? -> ^(TOK_TABTYPE descTabTypeExpr partitionSpec?)
     ;
 
 descStatement
-@init { msgs.push("describe statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("describe statement", state); }
+@after { popMsg(state); }
     : (KW_DESCRIBE|KW_DESC) (descOptions=KW_FORMATTED|descOptions=KW_EXTENDED|descOptions=KW_PRETTY)? (parttype=descPartTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions?)
     | (KW_DESCRIBE|KW_DESC) KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
     | (KW_DESCRIBE|KW_DESC) KW_DATABASE KW_EXTENDED? (dbName=identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
     ;
 
 analyzeStatement
-@init { msgs.push("analyze statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("analyze statement", state); }
+@after { popMsg(state); }
     : KW_ANALYZE KW_TABLE (parttype=tableOrPartition) KW_COMPUTE KW_STATISTICS ((noscan=KW_NOSCAN) | (partialscan=KW_PARTIALSCAN) | (KW_FOR KW_COLUMNS statsColumnName=columnNameList))? -> ^(TOK_ANALYZE $parttype $noscan? $partialscan? $statsColumnName?)
     ;
 
 showStatement
-@init { msgs.push("show statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("show statement", state); }
+@after { popMsg(state); }
     : KW_SHOW (KW_DATABASES|KW_SCHEMAS) (KW_LIKE showStmtIdentifier)? -> ^(TOK_SHOWDATABASES showStmtIdentifier?)
     | KW_SHOW KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tabname=tableName ((KW_FROM|KW_IN) db_name=identifier)? 
@@ -1268,52 +1287,52 @@ showStatement
     ;
 
 lockStatement
-@init { msgs.push("lock statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("lock statement", state); }
+@after { popMsg(state); }
     : KW_LOCK KW_TABLE tableName partitionSpec? lockMode -> ^(TOK_LOCKTABLE tableName lockMode partitionSpec?)
     ;
 
 lockDatabase
-@init { msgs.push("lock database statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("lock database statement", state); }
+@after { popMsg(state); }
     : KW_LOCK KW_DATABASE (dbName=Identifier) lockMode -> ^(TOK_LOCKDB $dbName lockMode)
     ;
 
 lockMode
-@init { msgs.push("lock mode"); }
-@after { msgs.pop(); }
+@init { pushMsg("lock mode", state); }
+@after { popMsg(state); }
     : KW_SHARED | KW_EXCLUSIVE
     ;
 
 unlockStatement
-@init { msgs.push("unlock statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("unlock statement", state); }
+@after { popMsg(state); }
     : KW_UNLOCK KW_TABLE tableName partitionSpec?  -> ^(TOK_UNLOCKTABLE tableName partitionSpec?)
     ;
 
 unlockDatabase
-@init { msgs.push("unlock database statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("unlock database statement", state); }
+@after { popMsg(state); }
     : KW_UNLOCK KW_DATABASE (dbName=Identifier) -> ^(TOK_UNLOCKDB $dbName)
     ;
 
 createRoleStatement
-@init { msgs.push("create role"); }
-@after { msgs.pop(); }
+@init { pushMsg("create role", state); }
+@after { popMsg(state); }
     : KW_CREATE KW_ROLE roleName=identifier
     -> ^(TOK_CREATEROLE $roleName)
     ;
 
 dropRoleStatement
-@init {msgs.push("drop role");}
-@after {msgs.pop();}
+@init {pushMsg("drop role", state);}
+@after {popMsg(state);}
     : KW_DROP KW_ROLE roleName=identifier
     -> ^(TOK_DROPROLE $roleName)
     ;
 
 grantPrivileges
-@init {msgs.push("grant privileges");}
-@after {msgs.pop();}
+@init {pushMsg("grant privileges", state);}
+@after {popMsg(state);}
     : KW_GRANT privList=privilegeList
       privilegeObject?
       KW_TO principalSpecification
@@ -1322,57 +1341,58 @@ grantPrivileges
     ;
 
 revokePrivileges
-@init {msgs.push("revoke privileges");}
-@afer {msgs.pop();}
+@init {pushMsg("revoke privileges", state);}
+@afer {popMsg(state);}
     : KW_REVOKE privilegeList privilegeObject? KW_FROM principalSpecification
     -> ^(TOK_REVOKE privilegeList principalSpecification privilegeObject?)
     ;
 
 grantRole
-@init {msgs.push("grant role");}
-@after {msgs.pop();}
+@init {pushMsg("grant role", state);}
+@after {popMsg(state);}
     : KW_GRANT KW_ROLE? identifier (COMMA identifier)* KW_TO principalSpecification withAdminOption?
     -> ^(TOK_GRANT_ROLE principalSpecification withAdminOption? identifier+)
     ;
 
 revokeRole
-@init {msgs.push("revoke role");}
-@after {msgs.pop();}
+@init {pushMsg("revoke role", state);}
+@after {popMsg(state);}
     : KW_REVOKE KW_ROLE? identifier (COMMA identifier)* KW_FROM principalSpecification withAdminOption?
     -> ^(TOK_REVOKE_ROLE principalSpecification withAdminOption? identifier+)
     ;
 
 showRoleGrants
-@init {msgs.push("show role grants");}
-@after {msgs.pop();}
+@init {pushMsg("show role grants", state);}
+@after {popMsg(state);}
     : KW_SHOW KW_ROLE KW_GRANT principalName
     -> ^(TOK_SHOW_ROLE_GRANT principalName)
     ;
 
 showRoles
-@init {msgs.push("show roles");}
-@after {msgs.pop();}
+@init {pushMsg("show roles", state);}
+@after {popMsg(state);}
     : KW_SHOW KW_ROLES
     -> ^(TOK_SHOW_ROLES)
     ;
 
 showGrants
-@init {msgs.push("show grants");}
-@after {msgs.pop();}
-    : KW_SHOW KW_GRANT principalName privilegeIncludeColObject?
-    -> ^(TOK_SHOW_GRANT principalName privilegeIncludeColObject?)
+@init {pushMsg("show grants", state);}
+@after {popMsg(state);}
+    : KW_SHOW KW_GRANT principalName? (KW_ON privilegeIncludeColObject)?
+    -> ^(TOK_SHOW_GRANT principalName? privilegeIncludeColObject?)
     ;
 
 privilegeIncludeColObject
-@init {msgs.push("privilege object including columns");}
-@after {msgs.pop();}
-    : KW_ON privObjectType identifier (LPAREN cols=columnNameList RPAREN)? partitionSpec?
+@init {pushMsg("privilege object including columns", state);}
+@after {popMsg(state);}
+    : KW_ALL -> ^(TOK_RESOURCE_ALL)
+    | privObjectType identifier (LPAREN cols=columnNameList RPAREN)? partitionSpec?
     -> ^(TOK_PRIV_OBJECT_COL identifier privObjectType $cols? partitionSpec?)
     ;
 
 privilegeObject
-@init {msgs.push("privilege subject");}
-@after {msgs.pop();}
+@init {pushMsg("privilege subject", state);}
+@after {popMsg(state);}
     : KW_ON privObjectType identifier partitionSpec?
     -> ^(TOK_PRIV_OBJECT identifier privObjectType partitionSpec?)
     ;
@@ -1380,8 +1400,8 @@ privilegeObject
 
 // database or table type. Type is optional, default type is table
 privObjectType
-@init {msgs.push("privilege object type type");}
-@after {msgs.pop();}
+@init {pushMsg("privilege object type type", state);}
+@after {popMsg(state);}
     : KW_DATABASE -> ^(TOK_DB_TYPE)
     | KW_VIEW -> ^(TOK_TABLE_TYPE)
     | KW_TABLE? -> ^(TOK_TABLE_TYPE)
@@ -1389,22 +1409,22 @@ privObjectType
 
 
 privilegeList
-@init {msgs.push("grant privilege list");}
-@after {msgs.pop();}
+@init {pushMsg("grant privilege list", state);}
+@after {popMsg(state);}
     : privlegeDef (COMMA privlegeDef)*
     -> ^(TOK_PRIVILEGE_LIST privlegeDef+)
     ;
 
 privlegeDef
-@init {msgs.push("grant privilege");}
-@after {msgs.pop();}
+@init {pushMsg("grant privilege", state);}
+@after {popMsg(state);}
     : privilegeType (LPAREN cols=columnNameList RPAREN)?
     -> ^(TOK_PRIVILEGE privilegeType $cols?)
     ;
 
 privilegeType
-@init {msgs.push("privilege type");}
-@after {msgs.pop();}
+@init {pushMsg("privilege type", state);}
+@after {popMsg(state);}
     : KW_ALL -> ^(TOK_PRIV_ALL)
     | KW_ALTER -> ^(TOK_PRIV_ALTER_METADATA)
     | KW_UPDATE -> ^(TOK_PRIV_ALTER_DATA)
@@ -1414,77 +1434,79 @@ privilegeType
     | KW_LOCK -> ^(TOK_PRIV_LOCK)
     | KW_SELECT -> ^(TOK_PRIV_SELECT)
     | KW_SHOW_DATABASE -> ^(TOK_PRIV_SHOW_DATABASE)
+    | KW_INSERT -> ^(TOK_PRIV_INSERT)
+    | KW_DELETE -> ^(TOK_PRIV_DELETE)
     ;
 
 principalSpecification
-@init { msgs.push("user/group/role name list"); }
-@after { msgs.pop(); }
+@init { pushMsg("user/group/role name list", state); }
+@after { popMsg(state); }
     : principalName (COMMA principalName)* -> ^(TOK_PRINCIPAL_NAME principalName+)
     ;
 
 principalName
-@init {msgs.push("user|group|role name");}
-@after {msgs.pop();}
+@init {pushMsg("user|group|role name", state);}
+@after {popMsg(state);}
     : KW_USER identifier -> ^(TOK_USER identifier)
     | KW_GROUP identifier -> ^(TOK_GROUP identifier)
     | KW_ROLE identifier -> ^(TOK_ROLE identifier)
     ;
 
 withGrantOption
-@init {msgs.push("with grant option");}
-@after {msgs.pop();}
+@init {pushMsg("with grant option", state);}
+@after {popMsg(state);}
     : KW_WITH KW_GRANT KW_OPTION
     -> ^(TOK_GRANT_WITH_OPTION)
     ;
 
 withAdminOption
-@init {msgs.push("with admin option");}
-@after {msgs.pop();}
+@init {pushMsg("with admin option", state);}
+@after {popMsg(state);}
     : KW_WITH KW_ADMIN KW_OPTION
     -> ^(TOK_GRANT_WITH_ADMIN_OPTION)
     ;
 
 metastoreCheck
-@init { msgs.push("metastore check statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("metastore check statement", state); }
+@after { popMsg(state); }
     : KW_MSCK (repair=KW_REPAIR)? (KW_TABLE table=identifier partitionSpec? (COMMA partitionSpec)*)?
     -> ^(TOK_MSCK $repair? ($table partitionSpec*)?)
     ;
 
 createFunctionStatement
-@init { msgs.push("create function statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("create function statement", state); }
+@after { popMsg(state); }
     : KW_CREATE KW_TEMPORARY KW_FUNCTION identifier KW_AS StringLiteral
     -> ^(TOK_CREATEFUNCTION identifier StringLiteral)
     ;
 
 dropFunctionStatement
-@init { msgs.push("drop temporary function statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("drop temporary function statement", state); }
+@after { popMsg(state); }
     : KW_DROP KW_TEMPORARY KW_FUNCTION ifExists? identifier
     -> ^(TOK_DROPFUNCTION identifier ifExists?)
     ;
 
 createMacroStatement
-@init { msgs.push("create macro statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("create macro statement", state); }
+@after { popMsg(state); }
     : KW_CREATE KW_TEMPORARY KW_MACRO Identifier
       LPAREN columnNameTypeList? RPAREN expression
     -> ^(TOK_CREATEMACRO Identifier columnNameTypeList? expression)
     ;
 
 dropMacroStatement
-@init { msgs.push("drop macro statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("drop macro statement", state); }
+@after { popMsg(state); }
     : KW_DROP KW_TEMPORARY KW_MACRO ifExists? Identifier
     -> ^(TOK_DROPMACRO Identifier ifExists?)
     ;
 
 createViewStatement
 @init {
-    msgs.push("create view statement");
+    pushMsg("create view statement", state);
 }
-@after { msgs.pop(); }
+@after { popMsg(state); }
     : KW_CREATE (orReplace)? KW_VIEW (ifNotExists)? name=tableName
         (LPAREN columnNameCommentList RPAREN)? tableComment? viewPartition?
         tablePropertiesPrefixed?
@@ -1501,95 +1523,95 @@ createViewStatement
     ;
 
 viewPartition
-@init { msgs.push("view partition specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("view partition specification", state); }
+@after { popMsg(state); }
     : KW_PARTITIONED KW_ON LPAREN columnNameList RPAREN
     -> ^(TOK_VIEWPARTCOLS columnNameList)
     ;
 
 dropViewStatement
-@init { msgs.push("drop view statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("drop view statement", state); }
+@after { popMsg(state); }
     : KW_DROP KW_VIEW ifExists? viewName -> ^(TOK_DROPVIEW viewName ifExists?)
     ;
 
 showStmtIdentifier
-@init { msgs.push("identifier for show statement"); }
-@after { msgs.pop(); }
+@init { pushMsg("identifier for show statement", state); }
+@after { popMsg(state); }
     : identifier
     | StringLiteral
     ;
 
 tableComment
-@init { msgs.push("table's comment"); }
-@after { msgs.pop(); }
+@init { pushMsg("table's comment", state); }
+@after { popMsg(state); }
     :
       KW_COMMENT comment=StringLiteral  -> ^(TOK_TABLECOMMENT $comment)
     ;
 
 tablePartition
-@init { msgs.push("table partition specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("table partition specification", state); }
+@after { popMsg(state); }
     : KW_PARTITIONED KW_BY LPAREN columnNameTypeList RPAREN
     -> ^(TOK_TABLEPARTCOLS columnNameTypeList)
     ;
 
 tableBuckets
-@init { msgs.push("table buckets specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("table buckets specification", state); }
+@after { popMsg(state); }
     :
       KW_CLUSTERED KW_BY LPAREN bucketCols=columnNameList RPAREN (KW_SORTED KW_BY LPAREN sortCols=columnNameOrderList RPAREN)? KW_INTO num=Number KW_BUCKETS
     -> ^(TOK_TABLEBUCKETS $bucketCols $sortCols? $num)
     ;
 
 tableSkewed
-@init { msgs.push("table skewed specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("table skewed specification", state); }
+@after { popMsg(state); }
     :
      KW_SKEWED KW_BY LPAREN skewedCols=columnNameList RPAREN KW_ON LPAREN (skewedValues=skewedValueElement) RPAREN (storedAsDirs)?
     -> ^(TOK_TABLESKEWED $skewedCols $skewedValues storedAsDirs?)
     ;
 
 rowFormat
-@init { msgs.push("serde specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("serde specification", state); }
+@after { popMsg(state); }
     : rowFormatSerde -> ^(TOK_SERDE rowFormatSerde)
     | rowFormatDelimited -> ^(TOK_SERDE rowFormatDelimited)
     |   -> ^(TOK_SERDE)
     ;
 
 recordReader
-@init { msgs.push("record reader specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("record reader specification", state); }
+@after { popMsg(state); }
     : KW_RECORDREADER StringLiteral -> ^(TOK_RECORDREADER StringLiteral)
     |   -> ^(TOK_RECORDREADER)
     ;
 
 recordWriter
-@init { msgs.push("record writer specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("record writer specification", state); }
+@after { popMsg(state); }
     : KW_RECORDWRITER StringLiteral -> ^(TOK_RECORDWRITER StringLiteral)
     |   -> ^(TOK_RECORDWRITER)
     ;
 
 rowFormatSerde
-@init { msgs.push("serde format specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("serde format specification", state); }
+@after { popMsg(state); }
     : KW_ROW KW_FORMAT KW_SERDE name=StringLiteral (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
     -> ^(TOK_SERDENAME $name $serdeprops?)
     ;
 
 rowFormatDelimited
-@init { msgs.push("serde properties specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("serde properties specification", state); }
+@after { popMsg(state); }
     :
       KW_ROW KW_FORMAT KW_DELIMITED tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier? tableRowNullFormat?
     -> ^(TOK_SERDEPROPS tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier? tableRowNullFormat?)
     ;
 
 tableRowFormat
-@init { msgs.push("table row format specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("table row format specification", state); }
+@after { popMsg(state); }
     :
       rowFormatDelimited
     -> ^(TOK_TABLEROWFORMAT rowFormatDelimited)
@@ -1598,22 +1620,22 @@ tableRowFormat
     ;
 
 tablePropertiesPrefixed
-@init { msgs.push("table properties with prefix"); }
-@after { msgs.pop(); }
+@init { pushMsg("table properties with prefix", state); }
+@after { popMsg(state); }
     :
         KW_TBLPROPERTIES! tableProperties
     ;
 
 tableProperties
-@init { msgs.push("table properties"); }
-@after { msgs.pop(); }
+@init { pushMsg("table properties", state); }
+@after { popMsg(state); }
     :
       LPAREN tablePropertiesList RPAREN -> ^(TOK_TABLEPROPERTIES tablePropertiesList)
     ;
 
 tablePropertiesList
-@init { msgs.push("table properties list"); }
-@after { msgs.pop(); }
+@init { pushMsg("table properties list", state); }
+@after { popMsg(state); }
     :
       keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_TABLEPROPLIST keyValueProperty+)
     |
@@ -1621,61 +1643,61 @@ tablePropertiesList
     ;
 
 keyValueProperty
-@init { msgs.push("specifying key/value property"); }
-@after { msgs.pop(); }
+@init { pushMsg("specifying key/value property", state); }
+@after { popMsg(state); }
     :
       key=StringLiteral EQUAL value=StringLiteral -> ^(TOK_TABLEPROPERTY $key $value)
     ;
 
 keyProperty
-@init { msgs.push("specifying key property"); }
-@after { msgs.pop(); }
+@init { pushMsg("specifying key property", state); }
+@after { popMsg(state); }
     :
       key=StringLiteral -> ^(TOK_TABLEPROPERTY $key TOK_NULL)
     ;
 
 tableRowFormatFieldIdentifier
-@init { msgs.push("table row format's field separator"); }
-@after { msgs.pop(); }
+@init { pushMsg("table row format's field separator", state); }
+@after { popMsg(state); }
     :
       KW_FIELDS KW_TERMINATED KW_BY fldIdnt=StringLiteral (KW_ESCAPED KW_BY fldEscape=StringLiteral)?
     -> ^(TOK_TABLEROWFORMATFIELD $fldIdnt $fldEscape?)
     ;
 
 tableRowFormatCollItemsIdentifier
-@init { msgs.push("table row format's column separator"); }
-@after { msgs.pop(); }
+@init { pushMsg("table row format's column separator", state); }
+@after { popMsg(state); }
     :
       KW_COLLECTION KW_ITEMS KW_TERMINATED KW_BY collIdnt=StringLiteral
     -> ^(TOK_TABLEROWFORMATCOLLITEMS $collIdnt)
     ;
 
 tableRowFormatMapKeysIdentifier
-@init { msgs.push("table row format's map key separator"); }
-@after { msgs.pop(); }
+@init { pushMsg("table row format's map key separator", state); }
+@after { popMsg(state); }
     :
       KW_MAP KW_KEYS KW_TERMINATED KW_BY mapKeysIdnt=StringLiteral
     -> ^(TOK_TABLEROWFORMATMAPKEYS $mapKeysIdnt)
     ;
 
 tableRowFormatLinesIdentifier
-@init { msgs.push("table row format's line separator"); }
-@after { msgs.pop(); }
+@init { pushMsg("table row format's line separator", state); }
+@after { popMsg(state); }
     :
       KW_LINES KW_TERMINATED KW_BY linesIdnt=StringLiteral
     -> ^(TOK_TABLEROWFORMATLINES $linesIdnt)
     ;
 
 tableRowNullFormat
-@init { msgs.push("table row format's null specifier"); }
-@after { msgs.pop(); }
+@init { pushMsg("table row format's null specifier", state); }
+@after { popMsg(state); }
     :
       KW_NULL KW_DEFINED KW_AS nullIdnt=StringLiteral
     -> ^(TOK_TABLEROWFORMATNULL $nullIdnt)
     ;
 tableFileFormat
-@init { msgs.push("table file format specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("table file format specification", state); }
+@after { popMsg(state); }
     :
       KW_STORED KW_AS KW_SEQUENCEFILE  -> TOK_TBLSEQUENCEFILE
       | KW_STORED KW_AS KW_TEXTFILE  -> TOK_TBLTEXTFILE
@@ -1691,140 +1713,140 @@ tableFileFormat
     ;
 
 tableLocation
-@init { msgs.push("table location specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("table location specification", state); }
+@after { popMsg(state); }
     :
       KW_LOCATION locn=StringLiteral -> ^(TOK_TABLELOCATION $locn)
     ;
 
 columnNameTypeList
-@init { msgs.push("column name type list"); }
-@after { msgs.pop(); }
+@init { pushMsg("column name type list", state); }
+@after { popMsg(state); }
     : columnNameType (COMMA columnNameType)* -> ^(TOK_TABCOLLIST columnNameType+)
     ;
 
 columnNameColonTypeList
-@init { msgs.push("column name type list"); }
-@after { msgs.pop(); }
+@init { pushMsg("column name type list", state); }
+@after { popMsg(state); }
     : columnNameColonType (COMMA columnNameColonType)* -> ^(TOK_TABCOLLIST columnNameColonType+)
     ;
 
 columnNameList
-@init { msgs.push("column name list"); }
-@after { msgs.pop(); }
+@init { pushMsg("column name list", state); }
+@after { popMsg(state); }
     : columnName (COMMA columnName)* -> ^(TOK_TABCOLNAME columnName+)
     ;
 
 columnName
-@init { msgs.push("column name"); }
-@after { msgs.pop(); }
+@init { pushMsg("column name", state); }
+@after { popMsg(state); }
     :
       identifier
     ;
 
 columnNameOrderList
-@init { msgs.push("column name order list"); }
-@after { msgs.pop(); }
+@init { pushMsg("column name order list", state); }
+@after { popMsg(state); }
     : columnNameOrder (COMMA columnNameOrder)* -> ^(TOK_TABCOLNAME columnNameOrder+)
     ;
 
 skewedValueElement
-@init { msgs.push("skewed value element"); }
-@after { msgs.pop(); }
+@init { pushMsg("skewed value element", state); }
+@after { popMsg(state); }
     : 
       skewedColumnValues
      | skewedColumnValuePairList
     ;
 
 skewedColumnValuePairList
-@init { msgs.push("column value pair list"); }
-@after { msgs.pop(); }
+@init { pushMsg("column value pair list", state); }
+@after { popMsg(state); }
     : skewedColumnValuePair (COMMA skewedColumnValuePair)* -> ^(TOK_TABCOLVALUE_PAIR skewedColumnValuePair+)
     ;
 
 skewedColumnValuePair
-@init { msgs.push("column value pair"); }
-@after { msgs.pop(); }
+@init { pushMsg("column value pair", state); }
+@after { popMsg(state); }
     : 
       LPAREN colValues=skewedColumnValues RPAREN 
       -> ^(TOK_TABCOLVALUES $colValues)
     ;
 
 skewedColumnValues
-@init { msgs.push("column values"); }
-@after { msgs.pop(); }
+@init { pushMsg("column values", state); }
+@after { popMsg(state); }
     : skewedColumnValue (COMMA skewedColumnValue)* -> ^(TOK_TABCOLVALUE skewedColumnValue+)
     ;
 
 skewedColumnValue
-@init { msgs.push("column value"); }
-@after { msgs.pop(); }
+@init { pushMsg("column value", state); }
+@after { popMsg(state); }
     :
       constant
     ;
 
 skewedValueLocationElement
-@init { msgs.push("skewed value location element"); }
-@after { msgs.pop(); }
+@init { pushMsg("skewed value location element", state); }
+@after { popMsg(state); }
     : 
       skewedColumnValue
      | skewedColumnValuePair
     ;
     
 columnNameOrder
-@init { msgs.push("column name order"); }
-@after { msgs.pop(); }
+@init { pushMsg("column name order", state); }
+@after { popMsg(state); }
     : identifier (asc=KW_ASC | desc=KW_DESC)?
     -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC identifier)
     ->                  ^(TOK_TABSORTCOLNAMEDESC identifier)
     ;
 
 columnNameCommentList
-@init { msgs.push("column name comment list"); }
-@after { msgs.pop(); }
+@init { pushMsg("column name comment list", state); }
+@after { popMsg(state); }
     : columnNameComment (COMMA columnNameComment)* -> ^(TOK_TABCOLNAME columnNameComment+)
     ;
 
 columnNameComment
-@init { msgs.push("column name comment"); }
-@after { msgs.pop(); }
+@init { pushMsg("column name comment", state); }
+@after { popMsg(state); }
     : colName=identifier (KW_COMMENT comment=StringLiteral)?
     -> ^(TOK_TABCOL $colName TOK_NULL $comment?)
     ;
 
 columnRefOrder
-@init { msgs.push("column order"); }
-@after { msgs.pop(); }
+@init { pushMsg("column order", state); }
+@after { popMsg(state); }
     : expression (asc=KW_ASC | desc=KW_DESC)?
     -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC expression)
     ->                  ^(TOK_TABSORTCOLNAMEDESC expression)
     ;
 
 columnNameType
-@init { msgs.push("column specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("column specification", state); }
+@after { popMsg(state); }
     : colName=identifier colType (KW_COMMENT comment=StringLiteral)?
     -> {$comment == null}? ^(TOK_TABCOL $colName colType)
     ->                     ^(TOK_TABCOL $colName colType $comment)
     ;
 
 columnNameColonType
-@init { msgs.push("column specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("column specification", state); }
+@after { popMsg(state); }
     : colName=identifier COLON colType (KW_COMMENT comment=StringLiteral)?
     -> {$comment == null}? ^(TOK_TABCOL $colName colType)
     ->                     ^(TOK_TABCOL $colName colType $comment)
     ;
 
 colType
-@init { msgs.push("column type"); }
-@after { msgs.pop(); }
+@init { pushMsg("column type", state); }
+@after { popMsg(state); }
     : type
     ;
 
 colTypeList
-@init { msgs.push("column type list"); }
-@after { msgs.pop(); }
+@init { pushMsg("column type list", state); }
+@after { popMsg(state); }
     : colType (COMMA colType)* -> ^(TOK_COLTYPELIST colType+)
     ;
 
@@ -1836,8 +1858,8 @@ type
     | unionType;
 
 primitiveType
-@init { msgs.push("primitive type specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("primitive type specification", state); }
+@after { popMsg(state); }
     : KW_TINYINT       ->    TOK_TINYINT
     | KW_SMALLINT      ->    TOK_SMALLINT
     | KW_INT           ->    TOK_INT
@@ -1856,33 +1878,33 @@ primitiveType
     ;
 
 listType
-@init { msgs.push("list type"); }
-@after { msgs.pop(); }
+@init { pushMsg("list type", state); }
+@after { popMsg(state); }
     : KW_ARRAY LESSTHAN type GREATERTHAN   -> ^(TOK_LIST type)
     ;
 
 structType
-@init { msgs.push("struct type"); }
-@after { msgs.pop(); }
+@init { pushMsg("struct type", state); }
+@after { popMsg(state); }
     : KW_STRUCT LESSTHAN columnNameColonTypeList GREATERTHAN -> ^(TOK_STRUCT columnNameColonTypeList)
     ;
 
 mapType
-@init { msgs.push("map type"); }
-@after { msgs.pop(); }
+@init { pushMsg("map type", state); }
+@after { popMsg(state); }
     : KW_MAP LESSTHAN left=primitiveType COMMA right=type GREATERTHAN
     -> ^(TOK_MAP $left $right)
     ;
 
 unionType
-@init { msgs.push("uniontype type"); }
-@after { msgs.pop(); }
+@init { pushMsg("uniontype type", state); }
+@after { popMsg(state); }
     : KW_UNIONTYPE LESSTHAN colTypeList GREATERTHAN -> ^(TOK_UNIONTYPE colTypeList)
     ;
 
 setOperator
-@init { msgs.push("set operator"); }
-@after { msgs.pop(); }
+@init { pushMsg("set operator", state); }
+@after { popMsg(state); }
     : KW_UNION KW_ALL -> ^(TOK_UNION)
     ;
 
@@ -1998,8 +2020,8 @@ body
    ;
 
 insertClause
-@init { msgs.push("insert clause"); }
-@after { msgs.pop(); }
+@init { pushMsg("insert clause", state); }
+@after { popMsg(state); }
    :
      KW_INSERT KW_OVERWRITE destination ifNotExists? -> ^(TOK_DESTINATION destination ifNotExists?)
    | KW_INSERT KW_INTO KW_TABLE tableOrPartition
@@ -2007,8 +2029,8 @@ insertClause
    ;
 
 destination
-@init { msgs.push("destination specification"); }
-@after { msgs.pop(); }
+@init { pushMsg("destination specification", state); }
+@after { popMsg(state); }
    :
      KW_LOCAL KW_DIRECTORY StringLiteral tableRowFormat? tableFileFormat? -> ^(TOK_LOCAL_DIR StringLiteral tableRowFormat? tableFileFormat?)
    | KW_DIRECTORY StringLiteral -> ^(TOK_DIR StringLiteral)
@@ -2016,8 +2038,8 @@ destination
    ;
 
 limitClause
-@init { msgs.push("limit clause"); }
-@after { msgs.pop(); }
+@init { pushMsg("limit clause", state); }
+@after { popMsg(state); }
    :
    KW_LIMIT num=Number -> ^(TOK_LIMIT $num)
    ;

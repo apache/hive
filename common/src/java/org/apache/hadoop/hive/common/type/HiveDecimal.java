@@ -205,6 +205,14 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     return create(bd.divide(dec.bd, MAX_SCALE, RoundingMode.HALF_UP), true);
   }
 
+  /**
+   * Get the sign of the underlying decimal.
+   * @return 0 if the decimal is equal to 0, -1 if less than zero, and 1 if greater than 0
+   */
+  public int signum() {
+    return bd.signum();
+  }
+
   private static BigDecimal trim(BigDecimal d) {
     if (d.compareTo(BigDecimal.ZERO) == 0) {
       // Special case for 0, because java doesn't strip zeros correctly on that number.

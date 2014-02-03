@@ -155,11 +155,13 @@ import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -541,18 +543,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int showGrants(ShowGrantDesc showGrantDesc) throws HiveException {
-    StringBuilder builder = new StringBuilder();
+
+    if(SessionState.get().isAuthorizationModeV2()){
+      return showGrantsV2(showGrantDesc);
+    }
+
+    PrincipalDesc principalDesc = showGrantDesc.getPrincipalDesc();
+    PrivilegeObjectDesc hiveObjectDesc = showGrantDesc.getHiveObj();
+    String principalName = principalDesc == null ? null : principalDesc.getName();
+    PrincipalType type = principalDesc == null ? null : principalDesc.getType();
+    List<HiveObjectPrivilege> privs = new ArrayList<HiveObjectPrivilege>();
     try {
-      PrincipalDesc principalDesc = showGrantDesc.getPrincipalDesc();
-      PrivilegeObjectDesc hiveObjectDesc = showGrantDesc.getHiveObj();
-      String principalName = principalDesc.getName();
       if (hiveObjectDesc == null) {
-        //show all privileges for this user
-        List<HiveObjectPrivilege> users = db.showPrivilegeGrant(
-            HiveObjectType.GLOBAL, principalName, principalDesc.getType(),
-            null, null, null, null);
-        writeGrantInfo(builder, principalDesc.getType(), principalName,
-            null, null, null, null, users);
+        privs.addAll(db.showPrivilegeGrant(HiveObjectType.GLOBAL, principalName, type,
+          null, null, null, null));
+      } else if (hiveObjectDesc != null && hiveObjectDesc.getObject() == null) {
+        privs.addAll(db.showPrivilegeGrant(null, principalName, type, null, null, null, null));
       } else {
         String obj = hiveObjectDesc.getObject();
         boolean notFound = true;
@@ -592,40 +598,31 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
         if (!hiveObjectDesc.getTable()) {
           // show database level privileges
-          List<HiveObjectPrivilege> dbs = db.showPrivilegeGrant(HiveObjectType.DATABASE, principalName,
-              principalDesc.getType(), dbName, null, null, null);
-          writeGrantInfo(builder, principalDesc.getType(), principalName,
-              dbName, null, null, null, dbs);
+          privs.addAll(db.showPrivilegeGrant(HiveObjectType.DATABASE,
+              principalName, type, dbName, null, null, null));
         } else {
           if (showGrantDesc.getColumns() != null) {
             // show column level privileges
             for (String columnName : showGrantDesc.getColumns()) {
-              List<HiveObjectPrivilege> columnss = db.showPrivilegeGrant(
+              privs.addAll(db.showPrivilegeGrant(
                   HiveObjectType.COLUMN, principalName,
-                  principalDesc.getType(), dbName, tableName, partValues,
-                  columnName);
-              writeGrantInfo(builder, principalDesc.getType(),
-                  principalName, dbName, tableName, partName, columnName,
-                  columnss);
+                  type, dbName, tableName, partValues,
+                  columnName));
             }
           } else if (hiveObjectDesc.getPartSpec() != null) {
             // show partition level privileges
-            List<HiveObjectPrivilege> parts = db.showPrivilegeGrant(
-                HiveObjectType.PARTITION, principalName, principalDesc
-                    .getType(), dbName, tableName, partValues, null);
-            writeGrantInfo(builder, principalDesc.getType(),
-                principalName, dbName, tableName, partName, null, parts);
+            privs.addAll(db.showPrivilegeGrant(
+                HiveObjectType.PARTITION, principalName, type,
+                dbName, tableName, partValues, null));
           } else {
             // show table level privileges
-            List<HiveObjectPrivilege> tbls = db.showPrivilegeGrant(
-                HiveObjectType.TABLE, principalName, principalDesc.getType(),
-                dbName, tableName, null, null);
-            writeGrantInfo(builder, principalDesc.getType(),
-                principalName, dbName, tableName, null, null, tbls);
+            privs.addAll(db.showPrivilegeGrant(
+                HiveObjectType.TABLE, principalName, type,
+                dbName, tableName, null, null));
           }
         }
       }
-      writeToFile(builder.toString(), showGrantDesc.getResFile());
+      writeToFile(writeGrantInfo(privs), showGrantDesc.getResFile());
     } catch (FileNotFoundException e) {
       LOG.info("show table status: " + stringifyException(e));
       return 1;
@@ -635,6 +632,37 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);
+    }
+    return 0;
+  }
+
+  private int showGrantsV2(ShowGrantDesc showGrantDesc) throws HiveException {
+    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
+    try {
+      List<HivePrivilegeInfo> privInfos = authorizer.showPrivileges(
+          getHivePrincipal(showGrantDesc.getPrincipalDesc()),
+          getHivePrivilegeObject(showGrantDesc.getHiveObj())
+          );
+      List<HiveObjectPrivilege> privList = new ArrayList<HiveObjectPrivilege>();
+      for(HivePrivilegeInfo privInfo : privInfos){
+        HivePrincipal principal = privInfo.getPrincipal();
+        HivePrivilegeObject privObj = privInfo.getObject();
+        HivePrivilege priv = privInfo.getPrivilege();
+
+        PrivilegeGrantInfo grantInfo =
+            AuthorizationUtils.getThriftPrivilegeGrantInfo(priv, privInfo.getGrantorPrincipal(),
+                privInfo.isGrantOption());
+
+        //only grantInfo is used
+        HiveObjectPrivilege thriftObjectPriv = new HiveObjectPrivilege(new HiveObjectRef(
+          AuthorizationUtils.getThriftHiveObjType(privObj.getType()),privObj.getDbname(),
+          privObj.getTableviewname(),null,null), principal.getName(), 
+          AuthorizationUtils.getThriftPrincipalType(principal.getType()), grantInfo);
+        privList.add(thriftObjectPriv);
+      }
+      writeToFile(writeGrantInfo(privList), showGrantDesc.getResFile());
+    } catch (IOException e) {
+      throw new HiveException("Error in show grant statement", e);
     }
     return 0;
   }
@@ -823,6 +851,24 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return new HivePrivilegeObject(getPrivObjectType(privSubjectDesc), dbTable[0], dbTable[1]);
   }
 
+  private HivePrincipalType getHivePrincipalType(PrincipalType type) throws HiveException {
+    if(type == null){
+      return null;
+    }
+
+    switch(type){
+    case USER:
+      return HivePrincipalType.USER;
+    case ROLE:
+      return HivePrincipalType.ROLE;
+    case GROUP:
+      throw new HiveException(ErrorMsg.UNNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP);
+    default:
+      //should not happen as we take care of all existing types
+      throw new AssertionError("Unsupported authorization type specified");
+    }
+  }
+
   private HivePrivilegeObjectType getPrivObjectType(PrivilegeObjectDesc privSubjectDesc) {
     //TODO: This needs to change to support view once view grant/revoke is supported as
     // part of HIVE-6181
@@ -841,24 +887,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals) throws HiveException {
     ArrayList<HivePrincipal> hivePrincipals = new ArrayList<HivePrincipal>();
     for(PrincipalDesc principal : principals){
-      hivePrincipals.add(
-          new HivePrincipal(principal.getName(), getHivePrincipalType(principal.getType())));
+      hivePrincipals.add(getHivePrincipal(principal));
     }
     return hivePrincipals;
   }
 
-  private HivePrincipalType getHivePrincipalType(PrincipalType type) throws HiveException {
-    switch(type){
-    case USER:
-      return HivePrincipalType.USER;
-    case ROLE:
-      return HivePrincipalType.ROLE;
-    case GROUP:
-      throw new HiveException(ErrorMsg.UNNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP);
-    default:
-      //should not happen as we take care of all existing types
-      throw new HiveException("Unsupported authorization type specified");
-    }
+  private HivePrincipal getHivePrincipal(PrincipalDesc principal) throws HiveException {
+    return new HivePrincipal(principal.getName(),
+        AuthorizationUtils.getHivePrincipalType(principal.getType()));
   }
 
   private void throwNotFound(String objType, String objName) throws HiveException {
@@ -915,7 +951,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.info("role ddl exception: " + stringifyException(e));
       return 1;
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
 
     return 0;
@@ -945,6 +981,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException("Unkown role operation "
           + operation.getOperationName());
     }
+
     return 0;
   }
 
@@ -955,10 +992,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws IOException
    */
   private void writeListToFile(List<String> entries, String resFile) throws IOException {
-    StringBuilder sb = new StringBuilder(entries.size()*2);
+    StringBuilder sb = new StringBuilder();
     for(String entry : entries){
       sb.append(entry);
-      sb.append(terminator);
+      sb.append((char)terminator);
     }
     writeToFile(sb.toString(), resFile);
   }
@@ -2191,7 +2228,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
 
     return 0;
@@ -2249,7 +2286,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e.toString());
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
 
     return 0;
@@ -2368,7 +2405,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (IOException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }
@@ -2420,7 +2457,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }
@@ -2512,7 +2549,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e.toString());
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }
@@ -2753,7 +2790,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }
@@ -3023,48 +3060,55 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  public static void writeGrantInfo(StringBuilder builder,
-      PrincipalType principalType, String principalName, String dbName,
-      String tableName, String partName, String columnName,
-      List<HiveObjectPrivilege> privileges) throws IOException {
+  static String writeGrantInfo(List<HiveObjectPrivilege> privileges) {
     if (privileges == null || privileges.isEmpty()) {
-      return;
+      return "";
     }
 
-    sortPrivileges(privileges);
-
+    StringBuilder builder = new StringBuilder();
     for (HiveObjectPrivilege privilege : privileges) {
       PrivilegeGrantInfo grantInfo = privilege.getGrantInfo();
+      HiveObjectRef resource = privilege.getHiveObject();
       String privName = grantInfo.getPrivilege();
       long unixTimestamp = grantInfo.getCreateTime() * 1000L;
       Date createTime = new Date(unixTimestamp);
       String grantor = grantInfo.getGrantor();
 
-      if (dbName != null) {
-        writeKeyValuePair(builder, "database", dbName);
-      }
-      if (tableName != null) {
-        writeKeyValuePair(builder, "table", tableName);
-      }
-      if (partName != null) {
-        writeKeyValuePair(builder, "partition", partName);
-      }
-      if (columnName != null) {
-        writeKeyValuePair(builder, "columnName", columnName);
+      switch (resource.getObjectType()) {
+        case DATABASE:
+          writeKeyValuePair(builder, "database", resource.getDbName());
+          break;
+        case TABLE:
+          writeKeyValuePair(builder, "database", resource.getDbName());
+          writeKeyValuePair(builder, "table", resource.getObjectName());
+          break;
+        case PARTITION:
+          writeKeyValuePair(builder, "database", resource.getDbName());
+          writeKeyValuePair(builder, "table", resource.getObjectName());
+          writeKeyValuePair(builder, "partition", String.valueOf(resource.getPartValues()));
+          break;
+        case COLUMN:
+          writeKeyValuePair(builder, "database", resource.getDbName());
+          writeKeyValuePair(builder, "table", resource.getObjectName());
+          if (resource.getPartValues() != null && !resource.getPartValues().isEmpty()) {
+            writeKeyValuePair(builder, "partition", String.valueOf(resource.getPartValues()));
+          }
+          writeKeyValuePair(builder, "columnName", resource.getColumnName());
+          break;
       }
 
-      writeKeyValuePair(builder, "principalName", principalName);
-      writeKeyValuePair(builder, "principalType", "" + principalType);
+      writeKeyValuePair(builder, "principalName", privilege.getPrincipalName());
+      writeKeyValuePair(builder, "principalType", "" + privilege.getPrincipalType());
       writeKeyValuePair(builder, "privilege", privName);
       writeKeyValuePair(builder, "grantTime", "" + createTime);
       if (grantor != null) {
         writeKeyValuePair(builder, "grantor", grantor);
       }
     }
+    return builder.toString();
   }
 
-  private static void writeKeyValuePair(StringBuilder builder, String key,
-      String value) throws IOException {
+  private static void writeKeyValuePair(StringBuilder builder, String key, String value) {
     if (builder.length() > 0) {
       builder.append((char)terminator);
     }

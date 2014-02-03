@@ -91,6 +91,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  bool update_partition_column_statistics(ColumnStatistics stats_obj)'
   print '  ColumnStatistics get_table_column_statistics(string db_name, string tbl_name, string col_name)'
   print '  ColumnStatistics get_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name)'
+  print '  TableStatsResult get_table_statistics_req(TableStatsRequest request)'
+  print '  PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)'
   print '  bool delete_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name)'
   print '  bool delete_table_column_statistics(string db_name, string tbl_name, string col_name)'
   print '  bool create_role(Role role)'
@@ -565,6 +567,18 @@ elif cmd == 'get_partition_column_statistics':
     print 'get_partition_column_statistics requires 4 args'
     sys.exit(1)
   pp.pprint(client.get_partition_column_statistics(args[0],args[1],args[2],args[3],))
+
+elif cmd == 'get_table_statistics_req':
+  if len(args) != 1:
+    print 'get_table_statistics_req requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.get_table_statistics_req(eval(args[0]),))
+
+elif cmd == 'get_partitions_statistics_req':
+  if len(args) != 1:
+    print 'get_partitions_statistics_req requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.get_partitions_statistics_req(eval(args[0]),))
 
 elif cmd == 'delete_partition_column_statistics':
   if len(args) != 4:

@@ -327,7 +327,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     try{
       MapredLocalWork localwork = mWork.getMapLocalWork();
-      if (localwork != null) {
+      if (localwork != null && localwork.hasStagedAlias()) {
         if (!ShimLoader.getHadoopShims().isLocalMode(job)) {
           Path localPath = localwork.getTmpPath();
           Path hdfsPath = mWork.getTmpHDFSPath();

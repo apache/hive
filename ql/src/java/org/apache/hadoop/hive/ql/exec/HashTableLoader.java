@@ -30,7 +30,8 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
  */
 public interface HashTableLoader {
 
-  void load(ExecMapperContext context, Configuration hconf, MapJoinDesc desc, byte posBigTable,
-      MapJoinTableContainer[] mapJoinTables, MapJoinTableContainerSerDe[] mapJoinTableSerdes)
+  void init(ExecMapperContext context, Configuration hconf, MapJoinOperator joinOp);
+
+  void load(MapJoinTableContainer[] mapJoinTables, MapJoinTableContainerSerDe[] mapJoinTableSerdes)
       throws HiveException;
 }

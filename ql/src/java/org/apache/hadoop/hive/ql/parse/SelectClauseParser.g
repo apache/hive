@@ -46,8 +46,8 @@ catch (RecognitionException e) {
 //----------------------- Rules for parsing selectClause -----------------------------
 // select a,b,c ...
 selectClause
-@init { gParent.msgs.push("select clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("select clause", state); }
+@after { gParent.popMsg(state); }
     :
     KW_SELECT hintClause? (((KW_ALL | dist=KW_DISTINCT)? selectList)
                           | (transform=KW_TRANSFORM selectTrfmClause))
@@ -59,15 +59,15 @@ selectClause
     ;
 
 selectList
-@init { gParent.msgs.push("select list"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("select list", state); }
+@after { gParent.popMsg(state); }
     :
     selectItem ( COMMA  selectItem )* -> selectItem+
     ;
 
 selectTrfmClause
-@init { gParent.msgs.push("transform clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("transform clause", state); }
+@after { gParent.popMsg(state); }
     :
     LPAREN selectExpressionList RPAREN
     inSerde=rowFormat inRec=recordWriter
@@ -78,29 +78,29 @@ selectTrfmClause
     ;
 
 hintClause
-@init { gParent.msgs.push("hint clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("hint clause", state); }
+@after { gParent.popMsg(state); }
     :
     DIVIDE STAR PLUS hintList STAR DIVIDE -> ^(TOK_HINTLIST hintList)
     ;
 
 hintList
-@init { gParent.msgs.push("hint list"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("hint list", state); }
+@after { gParent.popMsg(state); }
     :
     hintItem (COMMA hintItem)* -> hintItem+
     ;
 
 hintItem
-@init { gParent.msgs.push("hint item"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("hint item", state); }
+@after { gParent.popMsg(state); }
     :
     hintName (LPAREN hintArgs RPAREN)? -> ^(TOK_HINT hintName hintArgs?)
     ;
 
 hintName
-@init { gParent.msgs.push("hint name"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("hint name", state); }
+@after { gParent.popMsg(state); }
     :
     KW_MAPJOIN -> TOK_MAPJOIN
     | KW_STREAMTABLE -> TOK_STREAMTABLE
@@ -108,22 +108,22 @@ hintName
     ;
 
 hintArgs
-@init { gParent.msgs.push("hint arguments"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("hint arguments", state); }
+@after { gParent.popMsg(state); }
     :
     hintArgName (COMMA hintArgName)* -> ^(TOK_HINTARGLIST hintArgName+)
     ;
 
 hintArgName
-@init { gParent.msgs.push("hint argument name"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("hint argument name", state); }
+@after { gParent.popMsg(state); }
     :
     identifier
     ;
 
 selectItem
-@init { gParent.msgs.push("selection target"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("selection target", state); }
+@after { gParent.popMsg(state); }
     :
     ( selectExpression
       ((KW_AS? identifier) | (KW_AS LPAREN identifier (COMMA identifier)* RPAREN))?
@@ -131,8 +131,8 @@ selectItem
     ;
 
 trfmClause
-@init { gParent.msgs.push("transform clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("transform clause", state); }
+@after { gParent.popMsg(state); }
     :
     (   KW_MAP    selectExpressionList
       | KW_REDUCE selectExpressionList )
@@ -144,37 +144,37 @@ trfmClause
     ;
 
 selectExpression
-@init { gParent.msgs.push("select expression"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("select expression", state); }
+@after { gParent.popMsg(state); }
     :
     expression | tableAllColumns
     ;
 
 selectExpressionList
-@init { gParent.msgs.push("select expression list"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("select expression list", state); }
+@after { gParent.popMsg(state); }
     :
     selectExpression (COMMA selectExpression)* -> ^(TOK_EXPLIST selectExpression+)
     ;
 
 //---------------------- Rules for windowing clauses -------------------------------
 window_clause 
-@init { gParent.msgs.push("window_clause"); }
-@after { gParent.msgs.pop(); } 
+@init { gParent.pushMsg("window_clause", state); }
+@after { gParent.popMsg(state); } 
 :
   KW_WINDOW window_defn (COMMA window_defn)* -> ^(KW_WINDOW window_defn+)
 ;  
 
 window_defn 
-@init { gParent.msgs.push("window_defn"); }
-@after { gParent.msgs.pop(); } 
+@init { gParent.pushMsg("window_defn", state); }
+@after { gParent.popMsg(state); } 
 :
   Identifier KW_AS window_specification -> ^(TOK_WINDOWDEF Identifier window_specification)
 ;  
 
 window_specification 
-@init { gParent.msgs.push("window_specification"); }
-@after { gParent.msgs.pop(); } 
+@init { gParent.pushMsg("window_specification", state); }
+@after { gParent.popMsg(state); } 
 :
   (Identifier | ( LPAREN Identifier? partitioningSpec? window_frame? RPAREN)) -> ^(TOK_WINDOWSPEC Identifier? partitioningSpec? window_frame?)
 ;
@@ -185,24 +185,24 @@ window_frame :
 ;
 
 window_range_expression 
-@init { gParent.msgs.push("window_range_expression"); }
-@after { gParent.msgs.pop(); } 
+@init { gParent.pushMsg("window_range_expression", state); }
+@after { gParent.popMsg(state); } 
 :
  KW_ROWS sb=window_frame_start_boundary -> ^(TOK_WINDOWRANGE $sb) |
  KW_ROWS KW_BETWEEN s=window_frame_boundary KW_AND end=window_frame_boundary -> ^(TOK_WINDOWRANGE $s $end)
 ;
 
 window_value_expression 
-@init { gParent.msgs.push("window_value_expression"); }
-@after { gParent.msgs.pop(); } 
+@init { gParent.pushMsg("window_value_expression", state); }
+@after { gParent.popMsg(state); } 
 :
  KW_RANGE sb=window_frame_start_boundary -> ^(TOK_WINDOWVALUES $sb) |
  KW_RANGE KW_BETWEEN s=window_frame_boundary KW_AND end=window_frame_boundary -> ^(TOK_WINDOWVALUES $s $end)
 ;
 
 window_frame_start_boundary 
-@init { gParent.msgs.push("windowframestartboundary"); }
-@after { gParent.msgs.pop(); } 
+@init { gParent.pushMsg("windowframestartboundary", state); }
+@after { gParent.popMsg(state); } 
 :
   KW_UNBOUNDED KW_PRECEDING  -> ^(KW_PRECEDING KW_UNBOUNDED) | 
   KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
@@ -210,8 +210,8 @@ window_frame_start_boundary
 ;
 
 window_frame_boundary 
-@init { gParent.msgs.push("windowframeboundary"); }
-@after { gParent.msgs.pop(); } 
+@init { gParent.pushMsg("windowframeboundary", state); }
+@after { gParent.popMsg(state); } 
 :
   KW_UNBOUNDED (r=KW_PRECEDING|r=KW_FOLLOWING)  -> ^($r KW_UNBOUNDED) | 
   KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |

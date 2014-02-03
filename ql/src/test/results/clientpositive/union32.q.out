@@ -34,9 +34,6 @@ UNION ALL
 SELECT CAST(key AS BIGINT) AS key FROM t2) a
 ORDER BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL key)) key)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_BIGINT (TOK_TABLE_OR_COL key)) key))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -44,58 +41,49 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1:a-subquery1:t1 
+      Map Operator Tree:
           TableScan
             alias: t1
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: UDFToDouble(key)
-                    type: double
+              expressions: UDFToDouble(key) (type: double)
               outputColumnNames: _col0
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
+                Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: double
+                  expressions: _col0 (type: double)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: double
+                    key expressions: _col0 (type: double)
                     sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: double
-        null-subquery2:a-subquery2:t2 
+                    Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: double)
           TableScan
             alias: t2
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: UDFToDouble(UDFToLong(key))
-                    type: double
+              expressions: UDFToDouble(UDFToLong(key)) (type: double)
               outputColumnNames: _col0
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
+                Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: double
+                  expressions: _col0 (type: double)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: double
+                    key expressions: _col0 (type: double)
                     sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: double
+                    Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: double)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 0
+            Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -159,9 +147,6 @@ UNION ALL
 SELECT CAST(key AS DOUBLE) AS key FROM t2) a
 ORDER BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_BIGINT (. (TOK_TABLE_OR_COL a) key)) key)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL key)) key))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
-
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -170,34 +155,24 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1:a-subquery1:a 
-          TableScan
-            alias: a
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-        null-subquery1:a-subquery1:b 
+      Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
+              key expressions: key (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: key (type: string)
+              sort order: +
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+              value expressions: key (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -205,16 +180,14 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 
-          handleSkewJoin: false
           outputColumnNames: _col0
+          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: UDFToDouble(UDFToLong(_col0))
-                  type: double
+            expressions: UDFToDouble(UDFToLong(_col0)) (type: double)
             outputColumnNames: _col0
+            Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -222,52 +195,43 @@ STAGE PLANS:
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          TableScan
-            Union
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: double
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: double
-                  sort order: +
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: double
-        null-subquery2:a-subquery2:t2 
+      Map Operator Tree:
           TableScan
             alias: t2
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: UDFToDouble(key)
-                    type: double
+              expressions: UDFToDouble(key) (type: double)
               outputColumnNames: _col0
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
+                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: double
+                  expressions: _col0 (type: double)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: double
+                    key expressions: _col0 (type: double)
                     sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: double
+                    Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: double)
+          TableScan
+            Union
+              Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: _col0 (type: double)
+                outputColumnNames: _col0
+                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: double)
+                  sort order: +
+                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: double)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 0
+            Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -343,9 +307,6 @@ UNION ALL
 SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
 ORDER BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL key)) key)))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_BIGINT (. (TOK_TABLE_OR_COL a) key)) key))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -354,34 +315,24 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery2:a-subquery2:a 
+      Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
+              key expressions: key (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-        null-subquery2:a-subquery2:b 
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+              value expressions: key (type: string)
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
+              key expressions: key (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -389,16 +340,14 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 
-          handleSkewJoin: false
           outputColumnNames: _col0
+          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: UDFToDouble(UDFToLong(_col0))
-                  type: double
+            expressions: UDFToDouble(UDFToLong(_col0)) (type: double)
             outputColumnNames: _col0
+            Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -406,52 +355,43 @@ STAGE PLANS:
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Union
+              Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: double
+                expressions: _col0 (type: double)
                 outputColumnNames: _col0
+                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: double
+                  key expressions: _col0 (type: double)
                   sort order: +
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: double
-        null-subquery1:a-subquery1:t2 
+                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: double)
           TableScan
             alias: t2
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: UDFToDouble(key)
-                    type: double
+              expressions: UDFToDouble(key) (type: double)
               outputColumnNames: _col0
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
+                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: double
+                  expressions: _col0 (type: double)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: double
+                    key expressions: _col0 (type: double)
                     sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: double
+                    Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: double)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 0
+            Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -527,9 +467,6 @@ UNION ALL
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 ORDER BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_BIGINT (. (TOK_TABLE_OR_COL a) key)) key) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (. (TOK_TABLE_OR_COL b) key)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL key)) key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_TABLE_OR_COL key)) value))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
-
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -538,37 +475,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1:a-subquery1:a 
-          TableScan
-            alias: a
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-        null-subquery1:a-subquery1:b 
+      Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
+              key expressions: key (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+              value expressions: key (type: string)
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: key (type: string)
+              sort order: +
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+              value expressions: key (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -576,18 +501,14 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 {VALUE._col0}
-          handleSkewJoin: false
           outputColumnNames: _col0, _col4
+          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: UDFToDouble(UDFToLong(_col0))
-                  type: double
-                  expr: UDFToString(UDFToDouble(_col4))
-                  type: string
+            expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(UDFToDouble(_col4)) (type: string)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -595,62 +516,43 @@ STAGE PLANS:
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          TableScan
-            Union
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: double
-                      expr: _col1
-                      type: string
-                outputColumnNames: _col0, _col1
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: double
-                  sort order: +
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: double
-                        expr: _col1
-                        type: string
-        null-subquery2:a-subquery2:t2 
+      Map Operator Tree:
           TableScan
             alias: t2
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: UDFToDouble(key)
-                    type: double
-                    expr: key
-                    type: string
+              expressions: UDFToDouble(key) (type: double), key (type: string)
               outputColumnNames: _col0, _col1
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
+                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: double
-                        expr: _col1
-                        type: string
+                  expressions: _col0 (type: double), _col1 (type: string)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: double
+                    key expressions: _col0 (type: double)
                     sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: double
-                          expr: _col1
-                          type: string
+                    Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: double), _col1 (type: string)
+          TableScan
+            Union
+              Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: _col0 (type: double), _col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: double)
+                  sort order: +
+                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: double), _col1 (type: string)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 0
+            Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -726,9 +628,6 @@ UNION ALL
 SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 ORDER BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL key)) key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_TABLE_OR_COL key)) value)))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_BIGINT (. (TOK_TABLE_OR_COL a) key)) key) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (. (TOK_TABLE_OR_COL b) key)) value))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -737,37 +636,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery2:a-subquery2:a 
+      Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
+              key expressions: key (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-        null-subquery2:a-subquery2:b 
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+              value expressions: key (type: string)
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
+              key expressions: key (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+              value expressions: key (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -775,18 +662,14 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 {VALUE._col0}
-          handleSkewJoin: false
           outputColumnNames: _col0, _col4
+          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: UDFToDouble(UDFToLong(_col0))
-                  type: double
-                  expr: UDFToDouble(_col4)
-                  type: double
+            expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToDouble(_col4) (type: double)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -794,62 +677,43 @@ STAGE PLANS:
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Union
+              Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: double
-                      expr: _col1
-                      type: double
+                expressions: _col0 (type: double), _col1 (type: double)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: double
+                  key expressions: _col0 (type: double)
                   sort order: +
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: double
-                        expr: _col1
-                        type: double
-        null-subquery1:a-subquery1:t2 
+                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: double), _col1 (type: double)
           TableScan
             alias: t2
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: UDFToDouble(key)
-                    type: double
-                    expr: UDFToDouble(key)
-                    type: double
+              expressions: UDFToDouble(key) (type: double), UDFToDouble(key) (type: double)
               outputColumnNames: _col0, _col1
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
+                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: double
-                        expr: _col1
-                        type: double
+                  expressions: _col0 (type: double), _col1 (type: double)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: double
+                    key expressions: _col0 (type: double)
                     sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: double
-                          expr: _col1
-                          type: double
+                    Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: double), _col1 (type: double)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 0
+            Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

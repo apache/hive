@@ -15,9 +15,6 @@ SELECT trim(trim(trim(trim(trim(trim(trim(trim(trim(trim( '  abc  '))))))))))
 FROM src
 WHERE src.key = 86
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim '  abc  ')))))))))))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL src) key) 86))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -31,22 +28,20 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: (key = 86)
-                  type: boolean
+              predicate: (key = 86) (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: trim(trim(trim(trim(trim(trim(trim(trim(trim(trim('  abc  '))))))))))
-                      type: string
+                expressions: trim(trim(trim(trim(trim(trim(trim(trim(trim(trim('  abc  ')))))))))) (type: string)
                 outputColumnNames: _col0
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 1
+                  Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -77,12 +72,10 @@ STAGE PLANS:
 
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -91,12 +84,10 @@ STAGE PLANS:
 
   Stage: Stage-5
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

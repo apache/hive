@@ -21,9 +21,6 @@ PARTITION (ds='2010-02-01') location 'B'
 PARTITION (ds='2010-03-01')
 PARTITION (ds='2010-04-01') location 'C'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-ABSTRACT SYNTAX TREE:
-#### A masked pattern was here ####
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

@@ -51,7 +51,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
    */
   protected transient List<ObjectInspector>[] joinKeysStandardObjectInspectors;
 
-  protected transient byte posBigTable = -1; // one of the tables that is not in memory
+  protected transient byte posBigTable = -1; // pos of driver alias
 
   protected transient RowContainer<List<Object>> emptyList = null;
 
