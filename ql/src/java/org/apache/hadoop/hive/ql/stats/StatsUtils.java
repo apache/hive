@@ -110,6 +110,8 @@ public class StatsUtils {
     List<String> neededColumns = tableScanOperator.getNeededColumns();
     boolean fetchColStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
+    boolean fetchPartStats =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_PARTITION_STATS);
     float deserFactor =
         HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
 
@@ -151,27 +153,34 @@ public class StatsUtils {
     } else if (partList != null) {
       // For partitioned tables, get the size of all the partitions after pruning
       // the partitions that are not required
-      List<Long> rowCounts = getBasicStatForPartitions(
-          table, partList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
-      List<Long> dataSizes =  getBasicStatForPartitions(
-          table, partList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
+      long nr = 0;
+      long ds = 0;
 
-      long nr = getSumIgnoreNegatives(rowCounts);
-      long ds = getSumIgnoreNegatives(dataSizes);
-      if (ds <= 0) {
-        dataSizes = getBasicStatForPartitions(
-            table, partList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
+      List<Long> rowCounts = Lists.newArrayList();
+      List<Long> dataSizes = Lists.newArrayList();
+
+      if (fetchPartStats) {
+        rowCounts = getBasicStatForPartitions(
+            table, partList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
+        dataSizes =  getBasicStatForPartitions(
+            table, partList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
+
+        nr = getSumIgnoreNegatives(rowCounts);
         ds = getSumIgnoreNegatives(dataSizes);
-
-        // if data size still could not be determined, then fall back to filesytem to get file
-        // sizes
         if (ds <= 0) {
-          dataSizes = getFileSizeForPartitions(conf, partList.getNotDeniedPartns());
+          dataSizes = getBasicStatForPartitions(
+              table, partList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
+          ds = getSumIgnoreNegatives(dataSizes);
         }
-        ds = getSumIgnoreNegatives(dataSizes);
-
-        ds = (long) (ds * deserFactor);
       }
+
+      // if data size still could not be determined, then fall back to filesytem to get file
+      // sizes
+      if (ds <= 0) {
+        dataSizes = getFileSizeForPartitions(conf, partList.getNotDeniedPartns());
+      }
+      ds = getSumIgnoreNegatives(dataSizes);
+      ds = (long) (ds * deserFactor);
 
       int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
       if (avgRowSize > 0) {
