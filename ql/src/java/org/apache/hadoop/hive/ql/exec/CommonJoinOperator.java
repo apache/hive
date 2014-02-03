@@ -113,6 +113,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   int joinEmitInterval = -1;
   int joinCacheSize = 0;
   long nextSz = 0;
+  transient Byte lastAlias = null;
 
   transient boolean handleSkewJoin = false;
 
@@ -244,7 +245,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
     joinEmitInterval = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVEJOINEMITINTERVAL);
-    nextSz = joinEmitInterval;
     joinCacheSize = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVEJOINCACHESIZE);
 

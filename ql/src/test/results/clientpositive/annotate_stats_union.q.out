@@ -67,7 +67,21 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            loc_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               state
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -76,27 +90,21 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        loc_orc 
+      Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: state
-                    type: string
+              expressions: state (type: string)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 8 dataSize: 688 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics:
-                    numRows: 8 dataSize: 688 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -177,7 +185,46 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state))))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)))))) tmp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_SUBQUERY
+         TOK_UNION
+            TOK_QUERY
+               TOK_FROM
+                  TOK_TABREF
+                     TOK_TABNAME
+                        loc_orc
+               TOK_INSERT
+                  TOK_DESTINATION
+                     TOK_DIR
+                        TOK_TMP_FILE
+                  TOK_SELECT
+                     TOK_SELEXPR
+                        TOK_TABLE_OR_COL
+                           state
+            TOK_QUERY
+               TOK_FROM
+                  TOK_TABREF
+                     TOK_TABNAME
+                        loc_orc
+               TOK_INSERT
+                  TOK_DESTINATION
+                     TOK_DIR
+                        TOK_TMP_FILE
+                  TOK_SELECT
+                     TOK_SELEXPR
+                        TOK_TABLE_OR_COL
+                           state
+         tmp
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -186,37 +233,27 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1:tmp-subquery1:loc_orc 
+      Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: state
-                    type: string
+              expressions: state (type: string)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 8 dataSize: 688 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics:
-                    numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
+                  expressions: _col0 (type: string)
                   outputColumnNames: _col0
-                  Statistics:
-                      numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics:
-                        numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -232,36 +269,26 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-        null-subquery2:tmp-subquery2:loc_orc 
           TableScan
             alias: loc_orc
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: state
-                    type: string
+              expressions: state (type: string)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 8 dataSize: 688 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics:
-                    numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
+                  expressions: _col0 (type: string)
                   outputColumnNames: _col0
-                  Statistics:
-                      numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics:
-                        numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -342,7 +369,20 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            loc_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -354,22 +394,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics:
-              numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
-            expressions:
-                  expr: state
-                  type: string
-                  expr: locid
-                  type: int
-                  expr: zip
-                  type: bigint
-                  expr: year
-                  type: int
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: -- numRows: 16 rawDataSize: 1592
@@ -383,7 +413,44 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))) tmp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_SUBQUERY
+         TOK_UNION
+            TOK_QUERY
+               TOK_FROM
+                  TOK_TABREF
+                     TOK_TABNAME
+                        loc_orc
+               TOK_INSERT
+                  TOK_DESTINATION
+                     TOK_DIR
+                        TOK_TMP_FILE
+                  TOK_SELECT
+                     TOK_SELEXPR
+                        TOK_ALLCOLREF
+            TOK_QUERY
+               TOK_FROM
+                  TOK_TABREF
+                     TOK_TABNAME
+                        loc_orc
+               TOK_INSERT
+                  TOK_DESTINATION
+                     TOK_DIR
+                        TOK_TMP_FILE
+                  TOK_SELECT
+                     TOK_SELEXPR
+                        TOK_ALLCOLREF
+         tmp
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -392,49 +459,27 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1:tmp-subquery1:loc_orc 
+      Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: state
-                    type: string
-                    expr: locid
-                    type: int
-                    expr: zip
-                    type: bigint
-                    expr: year
-                    type: int
+              expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics:
-                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics:
-                    numRows: 16 dataSize: 1592 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: int
-                        expr: _col2
-                        type: bigint
-                        expr: _col3
-                        type: int
+                  expressions: _col0 (type: string), _col1 (type: int), _col2 (type: bigint), _col3 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics:
-                      numRows: 16 dataSize: 1592 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics:
-                        numRows: 16 dataSize: 1592 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -450,48 +495,26 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-        null-subquery2:tmp-subquery2:loc_orc 
           TableScan
             alias: loc_orc
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: state
-                    type: string
-                    expr: locid
-                    type: int
-                    expr: zip
-                    type: bigint
-                    expr: year
-                    type: int
+              expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics:
-                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics:
-                    numRows: 16 dataSize: 1592 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: int
-                        expr: _col2
-                        type: bigint
-                        expr: _col3
-                        type: int
+                  expressions: _col0 (type: string), _col1 (type: int), _col2 (type: bigint), _col3 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics:
-                      numRows: 16 dataSize: 1592 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics:
-                        numRows: 16 dataSize: 1592 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -706,7 +729,48 @@ POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(nam
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME default loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state))))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)))))) temp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_SUBQUERY
+         TOK_UNION
+            TOK_QUERY
+               TOK_FROM
+                  TOK_TABREF
+                     TOK_TABNAME
+                        default
+                        loc_orc
+               TOK_INSERT
+                  TOK_DESTINATION
+                     TOK_DIR
+                        TOK_TMP_FILE
+                  TOK_SELECT
+                     TOK_SELEXPR
+                        TOK_TABLE_OR_COL
+                           state
+            TOK_QUERY
+               TOK_FROM
+                  TOK_TABREF
+                     TOK_TABNAME
+                        test
+                        loc_orc
+               TOK_INSERT
+                  TOK_DESTINATION
+                     TOK_DIR
+                        TOK_TMP_FILE
+                  TOK_SELECT
+                     TOK_SELEXPR
+                        TOK_TABLE_OR_COL
+                           state
+         temp
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -715,37 +779,27 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1:temp-subquery1:loc_orc 
+      Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: state
-                    type: string
+              expressions: state (type: string)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 8 dataSize: 688 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics:
-                    numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
+                  expressions: _col0 (type: string)
                   outputColumnNames: _col0
-                  Statistics:
-                      numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics:
-                        numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -761,36 +815,26 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-        null-subquery2:temp-subquery2:loc_orc 
           TableScan
             alias: loc_orc
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: state
-                    type: string
+              expressions: state (type: string)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 8 dataSize: 688 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics:
-                    numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
+                  expressions: _col0 (type: string)
                   outputColumnNames: _col0
-                  Statistics:
-                      numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics:
-                        numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -920,7 +964,48 @@ POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(nam
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test loc_staging))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state))))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)))))) temp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_SUBQUERY
+         TOK_UNION
+            TOK_QUERY
+               TOK_FROM
+                  TOK_TABREF
+                     TOK_TABNAME
+                        test
+                        loc_staging
+               TOK_INSERT
+                  TOK_DESTINATION
+                     TOK_DIR
+                        TOK_TMP_FILE
+                  TOK_SELECT
+                     TOK_SELEXPR
+                        TOK_TABLE_OR_COL
+                           state
+            TOK_QUERY
+               TOK_FROM
+                  TOK_TABREF
+                     TOK_TABNAME
+                        test
+                        loc_orc
+               TOK_INSERT
+                  TOK_DESTINATION
+                     TOK_DIR
+                        TOK_TMP_FILE
+                  TOK_SELECT
+                     TOK_SELEXPR
+                        TOK_TABLE_OR_COL
+                           state
+         temp
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -929,37 +1014,27 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1:temp-subquery1:loc_staging 
+      Map Operator Tree:
           TableScan
-            alias: loc_staging
-            Statistics:
-                numRows: 8 dataSize: 117 basicStatsState: COMPLETE colStatsState: COMPLETE
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: state
-                    type: string
+              expressions: state (type: string)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 8 dataSize: 688 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics:
-                    numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
+                  expressions: _col0 (type: string)
                   outputColumnNames: _col0
-                  Statistics:
-                      numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics:
-                        numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -975,36 +1050,26 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-        null-subquery2:temp-subquery2:loc_orc 
           TableScan
-            alias: loc_orc
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            alias: loc_staging
+            Statistics: Num rows: 8 Data size: 117 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: state
-                    type: string
+              expressions: state (type: string)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 8 dataSize: 688 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics:
-                    numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
+                  expressions: _col0 (type: string)
                   outputColumnNames: _col0
-                  Statistics:
-                      numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics:
-                        numRows: 16 dataSize: 1376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    Statistics: Num rows: 16 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat

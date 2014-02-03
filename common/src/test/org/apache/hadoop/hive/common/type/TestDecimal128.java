@@ -17,6 +17,9 @@ package org.apache.hadoop.hive.common.type;
 
 import static org.junit.Assert.*;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Random;
 
 import org.junit.After;
@@ -376,6 +379,203 @@ public class TestDecimal128 {
     verifyMultiplyDivideInverse(a, b);
   }
 
+  // Test a set of random adds at high precision.
+  @Test
+  public void testHighPrecisionDecimal128Add() {
+    final int N = 10000;
+    for (int i = 0; i < N; i++) {
+      verifyHighPrecisionAddSingle();
+    }
+  }
+
+  // Test one random hi-precision decimal add.
+  private void verifyHighPrecisionAddSingle() {
+
+    Decimal128 a, b, r;
+    String sA, sB;
+
+    a = new Decimal128();
+    sA = makeNumericString(37);
+    a.update(sA, (short) 0);
+    b = new Decimal128();
+    sB = makeNumericString(37);
+    b.update(sB, (short) 0);
+
+    r = new Decimal128();
+    r.addDestructive(a, (short) 0);
+    r.addDestructive(b, (short) 0);
+
+    String res1 = r.toFormalString();
+
+    // Now do the add with Java BigDecimal
+    BigDecimal bdA = new BigDecimal(sA);
+    BigDecimal bdB = new BigDecimal(sB);
+    BigDecimal bdR = bdA.add(bdB);
+
+    String res2 = bdR.toPlainString();
+
+    // Compare the results
+    assertEquals(res1, res2);
+  }
+
+  // Test a set of random subtracts at high precision.
+  @Test
+  public void testHighPrecisionDecimal128Subtract() {
+    final int N = 10000;
+    for (int i = 0; i < N; i++) {
+      verifyHighPrecisionSubtractSingle();
+    }
+  }
+
+  // Test one random high-precision subtract.
+  private void verifyHighPrecisionSubtractSingle() {
+
+    Decimal128 a, b, r;
+    String sA, sB;
+
+    a = new Decimal128();
+    sA = makeNumericString(37);
+    a.update(sA, (short) 0);
+    b = new Decimal128();
+    sB = makeNumericString(37);
+    b.update(sB, (short) 0);
+
+    r = new Decimal128();
+    r.addDestructive(a, (short) 0);
+    r.subtractDestructive(b, (short) 0);
+
+    String res1 = r.toFormalString();
+
+    // Now do the add with Java BigDecimal
+    BigDecimal bdA = new BigDecimal(sA);
+    BigDecimal bdB = new BigDecimal(sB);
+    BigDecimal bdR = bdA.subtract(bdB);
+
+    String res2 = bdR.toPlainString();
+
+    // Compare the results
+    assertEquals(res1, res2);
+  }
+
+  // Test a set of random multiplications at high precision.
+  @Test
+  public void testHighPrecisionDecimal128Multiply() {
+    final int N = 10000;
+    for (int i = 0; i < N; i++) {
+      verifyHighPrecisionMultiplySingle();
+    }
+  }
+
+  // Test a single, high-precision multiply of random inputs.
+  private void verifyHighPrecisionMultiplySingle() {
+
+    Decimal128 a, b, r;
+    String sA, sB;
+
+    Random rand = new Random();
+    int aDigits = rand.nextInt(37) + 1; // number of digits in a (1..37)
+    int bDigits = 38 - aDigits;         // number of digits in b (1..37)
+    assertTrue(aDigits + bDigits == 38 && aDigits > 0 && bDigits > 0);
+
+    a = new Decimal128();
+    sA = makeNumericString(aDigits);
+    a.update(sA, (short) 0);
+    b = new Decimal128();
+    sB = makeNumericString(bDigits);
+    b.update(sB, (short) 0);
+
+    r = new Decimal128();
+    r.addDestructive(a, (short) 0);
+    r.multiplyDestructive(b, (short) 0);
+
+    String res1 = r.toFormalString();
+
+    // Now do the add with Java BigDecimal
+    BigDecimal bdA = new BigDecimal(sA);
+    BigDecimal bdB = new BigDecimal(sB);
+    BigDecimal bdR = bdA.multiply(bdB);
+
+    String res2 = bdR.toPlainString();
+
+    // Compare the results
+    assertEquals(res1, res2);
+  }
+
+  // Test a set of random divisions at high precision.
+  @Test
+  public void testHighPrecisionDecimal128Divide() {
+    final int N = 10000;
+    for (int i = 0; i < N; i++) {
+      verifyHighPrecisionDivideSingle();
+    }
+  }
+
+  // Test a single, high-precision divide of random inputs.
+  private void verifyHighPrecisionDivideSingle() {
+
+    Decimal128 a, b, r;
+    String sA, sB;
+
+    Random rand = new Random();
+    int aDigits = rand.nextInt(37) + 1; // number of digits in a (1..37)
+    int bDigits = 38 - aDigits;         // number of digits in b (1..37)
+    int temp;
+
+    // make sure b will have less digits than A
+    if (bDigits > aDigits) {
+      temp = aDigits;
+      aDigits = bDigits;
+      bDigits = temp;
+    }
+    if (bDigits == aDigits) {
+      return;
+    }
+    assertTrue(aDigits + bDigits == 38 && aDigits > 0 && bDigits > 0);
+
+    a = new Decimal128();
+    sA = makeNumericString(aDigits);
+    a.update(sA, (short) 0);
+    b = new Decimal128();
+    sB = makeNumericString(bDigits);
+    b.update(sB, (short) 0);
+    if (b.isZero()) {
+
+      // don't do zero-divide if one comes up at random
+      return;
+    }
+
+    r = new Decimal128();
+    r.addDestructive(a, (short) 0);
+    r.divideDestructive(b, (short) 0);
+
+    String res1 = r.toFormalString();
+
+    // Now do the operation with Java BigDecimal
+    BigDecimal bdA = new BigDecimal(sA);
+    BigDecimal bdB = new BigDecimal(sB);
+    BigDecimal bdR = bdA.divide(bdB, 0, RoundingMode.HALF_UP);
+
+    String res2 = bdR.toPlainString();
+
+    // Compare the results
+    assertEquals(res1, res2);
+  }
+
+  /* Return a random number with length digits, as a string. Results may be
+   * negative or positive.
+   */
+  private String makeNumericString(int length) {
+    Random r = new Random();
+    StringBuilder b = new StringBuilder();
+    for(int i = 0; i < length; i++) {
+      b.append(r.nextInt(10));
+    }
+
+    // choose a random sign
+    String sign = r.nextInt(2) == 0 ? "-" : "";
+    return sign + b.toString();
+  }
+
   @Test
   public void testPiNewton() {
 
@@ -535,5 +735,23 @@ public class TestDecimal128 {
       fail();
     } catch (ArithmeticException ex) {
     }
+  }
+
+  @Test
+  public void testToLong() {
+    Decimal128 d = new Decimal128("1.25", (short) 2);
+    assertEquals(1, d.longValue());
+    d.update("4294967295", (short) 0); // 2^32-1
+    assertEquals(4294967295L, d.longValue());
+    d.update("4294967296", (short) 0); // 2^32 -- needs 2 32 bit words
+    assertEquals(4294967296L, d.longValue());
+    d.update("-4294967295", (short) 0); // -(2^32-1)
+    assertEquals(-4294967295L, d.longValue());
+    d.update("-4294967296", (short) 0); // -(2^32)
+    assertEquals(-4294967296L, d.longValue());
+    d.update("4294967295.01", (short) 2); // 2^32-1 + .01
+    assertEquals(4294967295L, d.longValue());
+    d.update("4294967296.01", (short) 2); // 2^32 + .01
+    assertEquals(4294967296L, d.longValue());
   }
 }

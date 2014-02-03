@@ -47,8 +47,8 @@ catch (RecognitionException e) {
 
 // group by a,b
 groupByClause
-@init { gParent.msgs.push("group by clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("group by clause", state); }
+@after { gParent.popMsg(state); }
     :
     KW_GROUP KW_BY
     groupByExpression
@@ -63,8 +63,8 @@ groupByClause
     ;
 
 groupingSetExpression
-@init {gParent.msgs.push("grouping set expression"); }
-@after {gParent.msgs.pop(); }
+@init {gParent.pushMsg("grouping set expression", state); }
+@after {gParent.popMsg(state); }
    :
    groupByExpression
    -> ^(TOK_GROUPING_SETS_EXPRESSION groupByExpression)
@@ -81,30 +81,30 @@ groupingSetExpression
 
 
 groupByExpression
-@init { gParent.msgs.push("group by expression"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("group by expression", state); }
+@after { gParent.popMsg(state); }
     :
     expression
     ;
 
 havingClause
-@init { gParent.msgs.push("having clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("having clause", state); }
+@after { gParent.popMsg(state); }
     :
     KW_HAVING havingCondition -> ^(TOK_HAVING havingCondition)
     ;
 
 havingCondition
-@init { gParent.msgs.push("having condition"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("having condition", state); }
+@after { gParent.popMsg(state); }
     :
     expression
     ;
 
 // order by a,b
 orderByClause
-@init { gParent.msgs.push("order by clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("order by clause", state); }
+@after { gParent.popMsg(state); }
     :
     KW_ORDER KW_BY
     LPAREN columnRefOrder
@@ -116,8 +116,8 @@ orderByClause
     ;
 
 clusterByClause
-@init { gParent.msgs.push("cluster by clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("cluster by clause", state); }
+@after { gParent.popMsg(state); }
     :
     KW_CLUSTER KW_BY
     LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_CLUSTERBY expression+)
@@ -128,8 +128,8 @@ clusterByClause
     ;
 
 partitionByClause
-@init  { gParent.msgs.push("partition by clause"); }
-@after { gParent.msgs.pop(); }
+@init  { gParent.pushMsg("partition by clause", state); }
+@after { gParent.popMsg(state); }
     :
     KW_PARTITION KW_BY
     LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_DISTRIBUTEBY expression+)
@@ -139,8 +139,8 @@ partitionByClause
     ;
 
 distributeByClause
-@init { gParent.msgs.push("distribute by clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("distribute by clause", state); }
+@after { gParent.popMsg(state); }
     :
     KW_DISTRIBUTE KW_BY
     LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_DISTRIBUTEBY expression+)
@@ -150,8 +150,8 @@ distributeByClause
     ;
 
 sortByClause
-@init { gParent.msgs.push("sort by clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("sort by clause", state); }
+@after { gParent.popMsg(state); }
     :
     KW_SORT KW_BY
     LPAREN columnRefOrder
@@ -164,8 +164,8 @@ sortByClause
 
 // fun(par1, par2, par3)
 function
-@init { gParent.msgs.push("function specification"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("function specification", state); }
+@after { gParent.popMsg(state); }
     :
     functionName
     LPAREN
@@ -180,15 +180,15 @@ function
     ;
 
 functionName
-@init { gParent.msgs.push("function name"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("function name", state); }
+@after { gParent.popMsg(state); }
     : // Keyword IF is also a function name
     KW_IF | KW_ARRAY | KW_MAP | KW_STRUCT | KW_UNIONTYPE | identifier
     ;
 
 castExpression
-@init { gParent.msgs.push("cast expression"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("cast expression", state); }
+@after { gParent.popMsg(state); }
     :
     KW_CAST
     LPAREN
@@ -199,8 +199,8 @@ castExpression
     ;
 
 caseExpression
-@init { gParent.msgs.push("case expression"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("case expression", state); }
+@after { gParent.popMsg(state); }
     :
     KW_CASE expression
     (KW_WHEN expression KW_THEN expression)+
@@ -209,8 +209,8 @@ caseExpression
     ;
 
 whenExpression
-@init { gParent.msgs.push("case expression"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("case expression", state); }
+@after { gParent.popMsg(state); }
     :
     KW_CASE
      ( KW_WHEN expression KW_THEN expression)+
@@ -219,8 +219,8 @@ whenExpression
     ;
 
 constant
-@init { gParent.msgs.push("constant"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("constant", state); }
+@after { gParent.popMsg(state); }
     :
     Number
     | dateLiteral
@@ -240,8 +240,8 @@ stringLiteralSequence
     ;
 
 charSetStringLiteral
-@init { gParent.msgs.push("character string literal"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("character string literal", state); }
+@after { gParent.popMsg(state); }
     :
     csName=CharSetName csLiteral=CharSetLiteral -> ^(TOK_CHARSETLITERAL $csName $csLiteral)
     ;
@@ -257,8 +257,8 @@ dateLiteral
     ;
 
 expression
-@init { gParent.msgs.push("expression specification"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("expression specification", state); }
+@after { gParent.popMsg(state); }
     :
     precedenceOrExpression
     ;

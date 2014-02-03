@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.velocity.runtime.parser.node.GetExecutor;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -333,6 +334,16 @@ public class Context {
   public Path getExternalTmpPath(URI extURI) {
     return new Path(getExternalScratchDir(extURI), EXT_PREFIX +
       nextPathId());
+  }
+
+  /**
+   * This is similar to getExternalTmpPath() with difference being this method returns temp path
+   * within passed in uri, whereas getExternalTmpPath() ignores passed in path and returns temp
+   * path within /tmp
+   */
+  public Path getExtTmpPathRelTo(URI uri) {
+    return new Path (getScratchDir(uri.getScheme(), uri.getAuthority(), !explain, 
+    uri.getPath() + Path.SEPARATOR + "_" + this.executionId), EXT_PREFIX + nextPathId());
   }
 
   /**

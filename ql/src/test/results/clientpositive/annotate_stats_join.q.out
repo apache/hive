@@ -221,7 +221,35 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME emp_orc) e) (TOK_TABREF (TOK_TABNAME dept_orc) d) (= (. (TOK_TABLE_OR_COL e) deptid) (. (TOK_TABLE_OR_COL d) deptid)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_TABREF
+            TOK_TABNAME
+               emp_orc
+            e
+         TOK_TABREF
+            TOK_TABNAME
+               dept_orc
+            d
+         =
+            .
+               TOK_TABLE_OR_COL
+                  e
+               deptid
+            .
+               TOK_TABLE_OR_COL
+                  d
+               deptid
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -230,51 +258,29 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        d 
+      Map Operator Tree:
           TableScan
             alias: d
-            Statistics:
-                numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: deptid
-                    type: int
+              key expressions: deptid (type: int)
               sort order: +
-              Map-reduce partition columns:
-                    expr: deptid
-                    type: int
-              Statistics:
-                  numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: deptid (type: int)
+              Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 1
-              value expressions:
-                    expr: deptid
-                    type: int
-                    expr: deptname
-                    type: string
-        e 
+              value expressions: deptid (type: int), deptname (type: string)
           TableScan
             alias: e
-            Statistics:
-                numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: deptid
-                    type: int
+              key expressions: deptid (type: int)
               sort order: +
-              Map-reduce partition columns:
-                    expr: deptid
-                    type: int
-              Statistics:
-                  numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: deptid (type: int)
+              Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 0
-              value expressions:
-                    expr: lastname
-                    type: string
-                    expr: deptid
-                    type: int
+              value expressions: lastname (type: string), deptid (type: int)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -377,30 +383,18 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
-          handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col4, _col5
-          Statistics:
-              numRows: 4 dataSize: 760 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 4 Data size: 760 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: int
-                  expr: _col4
-                  type: int
-                  expr: _col5
-                  type: string
+            expressions: _col0 (type: string), _col1 (type: int), _col4 (type: int), _col5 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics:
-                numRows: 4 dataSize: 760 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 4 Data size: 760 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 4 dataSize: 760 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 4 Data size: 760 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -440,7 +434,49 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME emp_orc) e) (TOK_TABREF (TOK_TABNAME dept_orc) d) (= (. (TOK_TABLE_OR_COL e) deptid) (. (TOK_TABLE_OR_COL d) deptid))) (TOK_TABREF (TOK_TABNAME emp_orc) e1) (= (. (TOK_TABLE_OR_COL e) deptid) (. (TOK_TABLE_OR_COL e1) deptid)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_JOIN
+            TOK_TABREF
+               TOK_TABNAME
+                  emp_orc
+               e
+            TOK_TABREF
+               TOK_TABNAME
+                  dept_orc
+               d
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     e
+                  deptid
+               .
+                  TOK_TABLE_OR_COL
+                     d
+                  deptid
+         TOK_TABREF
+            TOK_TABNAME
+               emp_orc
+            e1
+         =
+            .
+               TOK_TABLE_OR_COL
+                  e
+               deptid
+            .
+               TOK_TABLE_OR_COL
+                  e1
+               deptid
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -449,73 +485,40 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        d 
+      Map Operator Tree:
           TableScan
             alias: d
-            Statistics:
-                numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: deptid
-                    type: int
+              key expressions: deptid (type: int)
               sort order: +
-              Map-reduce partition columns:
-                    expr: deptid
-                    type: int
-              Statistics:
-                  numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: deptid (type: int)
+              Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 1
-              value expressions:
-                    expr: deptid
-                    type: int
-                    expr: deptname
-                    type: string
-        e 
-          TableScan
-            alias: e
-            Statistics:
-                numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
-            GatherStats: false
-            Reduce Output Operator
-              key expressions:
-                    expr: deptid
-                    type: int
-              sort order: +
-              Map-reduce partition columns:
-                    expr: deptid
-                    type: int
-              Statistics:
-                  numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
-              tag: 0
-              value expressions:
-                    expr: lastname
-                    type: string
-                    expr: deptid
-                    type: int
-        e1 
+              value expressions: deptid (type: int), deptname (type: string)
           TableScan
             alias: e1
-            Statistics:
-                numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: deptid
-                    type: int
+              key expressions: deptid (type: int)
               sort order: +
-              Map-reduce partition columns:
-                    expr: deptid
-                    type: int
-              Statistics:
-                  numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: deptid (type: int)
+              Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 2
-              value expressions:
-                    expr: lastname
-                    type: string
-                    expr: deptid
-                    type: int
+              value expressions: lastname (type: string), deptid (type: int)
+          TableScan
+            alias: e
+            Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
+            GatherStats: false
+            Reduce Output Operator
+              key expressions: deptid (type: int)
+              sort order: +
+              Map-reduce partition columns: deptid (type: int)
+              Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
+              tag: 0
+              value expressions: lastname (type: string), deptid (type: int)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -620,34 +623,18 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
             2 {VALUE._col0} {VALUE._col1}
-          handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-          Statistics:
-              numRows: 4 dataSize: 1136 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 4 Data size: 1136 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: int
-                  expr: _col4
-                  type: int
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: int
+            expressions: _col0 (type: string), _col1 (type: int), _col4 (type: int), _col5 (type: string), _col8 (type: string), _col9 (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            Statistics:
-                numRows: 4 dataSize: 1136 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 4 Data size: 1136 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 4 dataSize: 1136 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 4 Data size: 1136 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -685,7 +672,49 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME emp_orc) e) (TOK_TABREF (TOK_TABNAME dept_orc) d) (= (. (TOK_TABLE_OR_COL e) deptid) (. (TOK_TABLE_OR_COL d) deptid))) (TOK_TABREF (TOK_TABNAME loc_orc) l) (= (. (TOK_TABLE_OR_COL e) deptid) (. (TOK_TABLE_OR_COL l) locid)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_JOIN
+            TOK_TABREF
+               TOK_TABNAME
+                  emp_orc
+               e
+            TOK_TABREF
+               TOK_TABNAME
+                  dept_orc
+               d
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     e
+                  deptid
+               .
+                  TOK_TABLE_OR_COL
+                     d
+                  deptid
+         TOK_TABREF
+            TOK_TABNAME
+               loc_orc
+            l
+         =
+            .
+               TOK_TABLE_OR_COL
+                  e
+               deptid
+            .
+               TOK_TABLE_OR_COL
+                  l
+               locid
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -694,77 +723,40 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        d 
+      Map Operator Tree:
           TableScan
             alias: d
-            Statistics:
-                numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: deptid
-                    type: int
+              key expressions: deptid (type: int)
               sort order: +
-              Map-reduce partition columns:
-                    expr: deptid
-                    type: int
-              Statistics:
-                  numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: deptid (type: int)
+              Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 1
-              value expressions:
-                    expr: deptid
-                    type: int
-                    expr: deptname
-                    type: string
-        e 
+              value expressions: deptid (type: int), deptname (type: string)
           TableScan
             alias: e
-            Statistics:
-                numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: deptid
-                    type: int
+              key expressions: deptid (type: int)
               sort order: +
-              Map-reduce partition columns:
-                    expr: deptid
-                    type: int
-              Statistics:
-                  numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: deptid (type: int)
+              Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 0
-              value expressions:
-                    expr: lastname
-                    type: string
-                    expr: deptid
-                    type: int
-        l 
+              value expressions: lastname (type: string), deptid (type: int)
           TableScan
             alias: l
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: locid
-                    type: int
+              key expressions: locid (type: int)
               sort order: +
-              Map-reduce partition columns:
-                    expr: locid
-                    type: int
-              Statistics:
-                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: locid (type: int)
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 2
-              value expressions:
-                    expr: state
-                    type: string
-                    expr: locid
-                    type: int
-                    expr: zip
-                    type: bigint
-                    expr: year
-                    type: int
+              value expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -914,38 +906,18 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
             2 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
-          handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col10, _col11
-          Statistics:
-              numRows: 5 dataSize: 1449 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 5 Data size: 1449 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: int
-                  expr: _col4
-                  type: int
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: int
-                  expr: _col10
-                  type: bigint
-                  expr: _col11
-                  type: int
+            expressions: _col0 (type: string), _col1 (type: int), _col4 (type: int), _col5 (type: string), _col8 (type: string), _col9 (type: int), _col10 (type: bigint), _col11 (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-            Statistics:
-                numRows: 5 dataSize: 1449 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 5 Data size: 1449 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 5 dataSize: 1449 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 5 Data size: 1449 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -985,7 +957,49 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME emp_orc) e) (TOK_TABREF (TOK_TABNAME dept_orc) d) (= (. (TOK_TABLE_OR_COL e) deptid) (. (TOK_TABLE_OR_COL d) deptid))) (TOK_TABREF (TOK_TABNAME loc_orc) l) (= (. (TOK_TABLE_OR_COL e) deptid) (. (TOK_TABLE_OR_COL l) state)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_JOIN
+            TOK_TABREF
+               TOK_TABNAME
+                  emp_orc
+               e
+            TOK_TABREF
+               TOK_TABNAME
+                  dept_orc
+               d
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     e
+                  deptid
+               .
+                  TOK_TABLE_OR_COL
+                     d
+                  deptid
+         TOK_TABREF
+            TOK_TABNAME
+               loc_orc
+            l
+         =
+            .
+               TOK_TABLE_OR_COL
+                  e
+               deptid
+            .
+               TOK_TABLE_OR_COL
+                  l
+               state
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -994,77 +1008,40 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        d 
+      Map Operator Tree:
           TableScan
             alias: d
-            Statistics:
-                numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: UDFToDouble(deptid)
-                    type: double
+              key expressions: UDFToDouble(deptid) (type: double)
               sort order: +
-              Map-reduce partition columns:
-                    expr: UDFToDouble(deptid)
-                    type: double
-              Statistics:
-                  numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: UDFToDouble(deptid) (type: double)
+              Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 1
-              value expressions:
-                    expr: deptid
-                    type: int
-                    expr: deptname
-                    type: string
-        e 
+              value expressions: deptid (type: int), deptname (type: string)
           TableScan
             alias: e
-            Statistics:
-                numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: UDFToDouble(deptid)
-                    type: double
+              key expressions: UDFToDouble(deptid) (type: double)
               sort order: +
-              Map-reduce partition columns:
-                    expr: UDFToDouble(deptid)
-                    type: double
-              Statistics:
-                  numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: UDFToDouble(deptid) (type: double)
+              Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 0
-              value expressions:
-                    expr: lastname
-                    type: string
-                    expr: deptid
-                    type: int
-        l 
+              value expressions: lastname (type: string), deptid (type: int)
           TableScan
             alias: l
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: UDFToDouble(state)
-                    type: double
+              key expressions: UDFToDouble(state) (type: double)
               sort order: +
-              Map-reduce partition columns:
-                    expr: UDFToDouble(state)
-                    type: double
-              Statistics:
-                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: UDFToDouble(state) (type: double)
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 2
-              value expressions:
-                    expr: state
-                    type: string
-                    expr: locid
-                    type: int
-                    expr: zip
-                    type: bigint
-                    expr: year
-                    type: int
+              value expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1214,38 +1191,18 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
             2 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
-          handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col10, _col11
-          Statistics:
-              numRows: 4 dataSize: 1156 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 4 Data size: 1156 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: int
-                  expr: _col4
-                  type: int
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: int
-                  expr: _col10
-                  type: bigint
-                  expr: _col11
-                  type: int
+            expressions: _col0 (type: string), _col1 (type: int), _col4 (type: int), _col5 (type: string), _col8 (type: string), _col9 (type: int), _col10 (type: bigint), _col11 (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-            Statistics:
-                numRows: 4 dataSize: 1156 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 4 Data size: 1156 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 4 dataSize: 1156 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 4 Data size: 1156 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1285,7 +1242,45 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME emp_orc) e) (TOK_TABREF (TOK_TABNAME dept_orc) d) (and (= (. (TOK_TABLE_OR_COL e) deptid) (. (TOK_TABLE_OR_COL d) deptid)) (= (. (TOK_TABLE_OR_COL e) lastname) (. (TOK_TABLE_OR_COL d) deptname))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_TABREF
+            TOK_TABNAME
+               emp_orc
+            e
+         TOK_TABREF
+            TOK_TABNAME
+               dept_orc
+            d
+         and
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     e
+                  deptid
+               .
+                  TOK_TABLE_OR_COL
+                     d
+                  deptid
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     e
+                  lastname
+               .
+                  TOK_TABLE_OR_COL
+                     d
+                  deptname
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1294,59 +1289,29 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        d 
+      Map Operator Tree:
           TableScan
             alias: d
-            Statistics:
-                numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: deptid
-                    type: int
-                    expr: deptname
-                    type: string
+              key expressions: deptid (type: int), deptname (type: string)
               sort order: ++
-              Map-reduce partition columns:
-                    expr: deptid
-                    type: int
-                    expr: deptname
-                    type: string
-              Statistics:
-                  numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: deptid (type: int), deptname (type: string)
+              Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 1
-              value expressions:
-                    expr: deptid
-                    type: int
-                    expr: deptname
-                    type: string
-        e 
+              value expressions: deptid (type: int), deptname (type: string)
           TableScan
             alias: e
-            Statistics:
-                numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: deptid
-                    type: int
-                    expr: lastname
-                    type: string
+              key expressions: deptid (type: int), lastname (type: string)
               sort order: ++
-              Map-reduce partition columns:
-                    expr: deptid
-                    type: int
-                    expr: lastname
-                    type: string
-              Statistics:
-                  numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: deptid (type: int), lastname (type: string)
+              Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 0
-              value expressions:
-                    expr: lastname
-                    type: string
-                    expr: deptid
-                    type: int
+              value expressions: lastname (type: string), deptid (type: int)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1449,30 +1414,18 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
-          handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col4, _col5
-          Statistics:
-              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: int
-                  expr: _col4
-                  type: int
-                  expr: _col5
-                  type: string
+            expressions: _col0 (type: string), _col1 (type: int), _col4 (type: int), _col5 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics:
-                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1512,7 +1465,69 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME emp_orc) e) (TOK_TABREF (TOK_TABNAME dept_orc) d) (and (= (. (TOK_TABLE_OR_COL e) deptid) (. (TOK_TABLE_OR_COL d) deptid)) (= (. (TOK_TABLE_OR_COL e) lastname) (. (TOK_TABLE_OR_COL d) deptname)))) (TOK_TABREF (TOK_TABNAME loc_orc) l) (and (= (. (TOK_TABLE_OR_COL e) deptid) (. (TOK_TABLE_OR_COL l) locid)) (= (. (TOK_TABLE_OR_COL e) lastname) (. (TOK_TABLE_OR_COL l) state))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_JOIN
+            TOK_TABREF
+               TOK_TABNAME
+                  emp_orc
+               e
+            TOK_TABREF
+               TOK_TABNAME
+                  dept_orc
+               d
+            and
+               =
+                  .
+                     TOK_TABLE_OR_COL
+                        e
+                     deptid
+                  .
+                     TOK_TABLE_OR_COL
+                        d
+                     deptid
+               =
+                  .
+                     TOK_TABLE_OR_COL
+                        e
+                     lastname
+                  .
+                     TOK_TABLE_OR_COL
+                        d
+                     deptname
+         TOK_TABREF
+            TOK_TABNAME
+               loc_orc
+            l
+         and
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     e
+                  deptid
+               .
+                  TOK_TABLE_OR_COL
+                     l
+                  locid
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     e
+                  lastname
+               .
+                  TOK_TABLE_OR_COL
+                     l
+                  state
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1521,89 +1536,40 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        d 
+      Map Operator Tree:
           TableScan
             alias: d
-            Statistics:
-                numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: deptid
-                    type: int
-                    expr: deptname
-                    type: string
+              key expressions: deptid (type: int), deptname (type: string)
               sort order: ++
-              Map-reduce partition columns:
-                    expr: deptid
-                    type: int
-                    expr: deptname
-                    type: string
-              Statistics:
-                  numRows: 4 dataSize: 384 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: deptid (type: int), deptname (type: string)
+              Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 1
-              value expressions:
-                    expr: deptid
-                    type: int
-                    expr: deptname
-                    type: string
-        e 
+              value expressions: deptid (type: int), deptname (type: string)
           TableScan
             alias: e
-            Statistics:
-                numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: deptid
-                    type: int
-                    expr: lastname
-                    type: string
+              key expressions: deptid (type: int), lastname (type: string)
               sort order: ++
-              Map-reduce partition columns:
-                    expr: deptid
-                    type: int
-                    expr: lastname
-                    type: string
-              Statistics:
-                  numRows: 6 dataSize: 560 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: deptid (type: int), lastname (type: string)
+              Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 0
-              value expressions:
-                    expr: lastname
-                    type: string
-                    expr: deptid
-                    type: int
-        l 
+              value expressions: lastname (type: string), deptid (type: int)
           TableScan
             alias: l
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
-              key expressions:
-                    expr: locid
-                    type: int
-                    expr: state
-                    type: string
+              key expressions: locid (type: int), state (type: string)
               sort order: ++
-              Map-reduce partition columns:
-                    expr: locid
-                    type: int
-                    expr: state
-                    type: string
-              Statistics:
-                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Map-reduce partition columns: locid (type: int), state (type: string)
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
               tag: 2
-              value expressions:
-                    expr: state
-                    type: string
-                    expr: locid
-                    type: int
-                    expr: zip
-                    type: bigint
-                    expr: year
-                    type: int
+              value expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1753,38 +1719,18 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
             2 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
-          handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col10, _col11
-          Statistics:
-              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: int
-                  expr: _col4
-                  type: int
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: int
-                  expr: _col10
-                  type: bigint
-                  expr: _col11
-                  type: int
+            expressions: _col0 (type: string), _col1 (type: int), _col4 (type: int), _col5 (type: string), _col8 (type: string), _col9 (type: int), _col10 (type: bigint), _col11 (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-            Statistics:
-                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat

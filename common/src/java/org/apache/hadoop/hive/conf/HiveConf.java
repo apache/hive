@@ -134,7 +134,8 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HMSHANDLERINTERVAL,
       HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF,
       HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN,
-      HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES
+      HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
+      HiveConf.ConfVars.USERS_IN_ADMIN_ROLE
       };
 
   /**
@@ -529,6 +530,7 @@ public class HiveConf extends Configuration {
     HIVECONVERTJOINNOCONDITIONALTASK("hive.auto.convert.join.noconditionaltask", true),
     HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD("hive.auto.convert.join.noconditionaltask.size",
         10000000L),
+    HIVECONVERTJOINUSENONSTAGED("hive.auto.convert.join.use.nonstaged", true),
     HIVESKEWJOINKEY("hive.skewjoin.key", 100000),
     HIVESKEWJOINMAPJOINNUMMAPTASK("hive.skewjoin.mapjoin.map.tasks", 10000),
     HIVESKEWJOINMAPJOINMINSPLIT("hive.skewjoin.mapjoin.min.split", 33554432L), //32M
@@ -652,14 +654,14 @@ public class HiveConf extends Configuration {
     HIVE_STATS_MAP_NUM_ENTRIES("hive.stats.map.num.entries", 10),
     // to accurately compute statistics for GROUPBY map side parallelism needs to be known
     HIVE_STATS_MAP_SIDE_PARALLELISM("hive.stats.map.parallelism", 1),
-    // statistics annotation fetches column statistics for all required columns and for all
-    // required partitions which can be very expensive sometimes
+    // statistics annotation fetches stats for each partition, which can be expensive. turning
+    // this off will result in basic sizes being fetched from namenode instead
+    HIVE_STATS_FETCH_PARTITION_STATS("hive.stats.fetch.partition.stats", true),
+    // statistics annotation fetches column statistics for all required columns which can
+    // be very expensive sometimes
     HIVE_STATS_FETCH_COLUMN_STATS("hive.stats.fetch.column.stats", false),
-    // in the absence of table/partition stats, average row size will be used to
-    // estimate the number of rows/data size
-    HIVE_STATS_AVG_ROW_SIZE("hive.stats.avg.row.size", 10000),
     // in the absence of column statistics, the estimated number of rows/data size that will
-    // emitted from join operator will depend on t factor
+    // be emitted from join operator will depend on this factor
     HIVE_STATS_JOIN_FACTOR("hive.stats.join.factor", (float) 1.1),
     // in the absence of uncompressed/raw data size, total file size will be used for statistics
     // annotation. But the file may be compressed, encoded and serialized which may be lesser in size
@@ -894,7 +896,8 @@ public class HiveConf extends Configuration {
     // none is the default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.
     // column: implies column names can contain any character.
     HIVE_QUOTEDID_SUPPORT("hive.support.quoted.identifiers", "column",
-        new PatternValidator("none", "column"))
+        new PatternValidator("none", "column")),
+    USERS_IN_ADMIN_ROLE("hive.users.in.admin.role","")
     ;
 
     public final String varname;

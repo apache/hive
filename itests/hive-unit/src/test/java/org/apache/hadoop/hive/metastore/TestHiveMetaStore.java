@@ -1437,34 +1437,24 @@ public abstract class TestHiveMetaStore extends TestCase {
       client.updateTableColumnStatistics(colStats);
 
       // retrieve the stats obj that was just written
-      ColumnStatistics colStats2 = client.getTableColumnStatistics(dbName, tblName, colName[0]);
+      ColumnStatisticsObj colStats2 = client.getTableColumnStatistics(
+          dbName, tblName, Lists.newArrayList(colName[0])).get(0);
 
      // compare stats obj to ensure what we get is what we wrote
       assertNotNull(colStats2);
-      assertEquals(colStats2.getStatsDesc().getDbName(), dbName);
-      assertEquals(colStats2.getStatsDesc().getTableName(), tblName);
-      assertEquals(colStats2.getStatsObj().get(0).getColName(), colName[0]);
-      assertEquals(colStats2.getStatsObj().get(0).getStatsData().getDoubleStats().getLowValue(),
-        lowValue);
-      assertEquals(colStats2.getStatsObj().get(0).getStatsData().getDoubleStats().getHighValue(),
-        highValue);
-      assertEquals(colStats2.getStatsObj().get(0).getStatsData().getDoubleStats().getNumNulls(),
-        numNulls);
-      assertEquals(colStats2.getStatsObj().get(0).getStatsData().getDoubleStats().getNumDVs(),
-        numDVs);
-      assertEquals(colStats2.getStatsDesc().isIsTblLevel(), isTblLevel);
+      assertEquals(colStats2.getColName(), colName[0]);
+      assertEquals(colStats2.getStatsData().getDoubleStats().getLowValue(), lowValue);
+      assertEquals(colStats2.getStatsData().getDoubleStats().getHighValue(), highValue);
+      assertEquals(colStats2.getStatsData().getDoubleStats().getNumNulls(), numNulls);
+      assertEquals(colStats2.getStatsData().getDoubleStats().getNumDVs(), numDVs);
 
       // test delete column stats; if no col name is passed all column stats associated with the
       // table is deleted
       boolean status = client.deleteTableColumnStatistics(dbName, tblName, null);
       assertTrue(status);
       // try to query stats for a column for which stats doesn't exist
-      try {
-        colStats2 = client.getTableColumnStatistics(dbName, tblName, colName[1]);
-        assertTrue(true);
-      } catch (NoSuchObjectException e) {
-        System.out.println("Statistics for column=" + colName[1] + " not found");
-      }
+      assertTrue(client.getTableColumnStatistics(
+          dbName, tblName, Lists.newArrayList(colName[1])).isEmpty());
 
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);
@@ -1473,7 +1463,8 @@ public abstract class TestHiveMetaStore extends TestCase {
       client.updateTableColumnStatistics(colStats);
 
       // query column stats for column whose stats were updated in the previous call
-      colStats2 = client.getTableColumnStatistics(dbName, tblName, colName[0]);
+      colStats2 = client.getTableColumnStatistics(
+          dbName, tblName, Lists.newArrayList(colName[0])).get(0);
 
       // partition level column statistics test
       // create a table with multiple partitions
@@ -1505,37 +1496,27 @@ public abstract class TestHiveMetaStore extends TestCase {
 
      client.updatePartitionColumnStatistics(colStats);
 
-     colStats2 = client.getPartitionColumnStatistics(dbName, tblName, partName, colName[1]);
+     colStats2 = client.getPartitionColumnStatistics(dbName, tblName,
+         Lists.newArrayList(partName), Lists.newArrayList(colName[1])).get(partName).get(0);
 
      // compare stats obj to ensure what we get is what we wrote
      assertNotNull(colStats2);
-     assertEquals(colStats2.getStatsDesc().getDbName(), dbName);
-     assertEquals(colStats2.getStatsDesc().getTableName(), tblName);
      assertEquals(colStats.getStatsDesc().getPartName(), partName);
-     assertEquals(colStats2.getStatsObj().get(0).getColName(), colName[1]);
-     assertEquals(colStats2.getStatsObj().get(0).getStatsData().getStringStats().getMaxColLen(),
-       maxColLen);
-     assertEquals(colStats2.getStatsObj().get(0).getStatsData().getStringStats().getAvgColLen(),
-       avgColLen);
-     assertEquals(colStats2.getStatsObj().get(0).getStatsData().getStringStats().getNumNulls(),
-       numNulls);
-     assertEquals(colStats2.getStatsObj().get(0).getStatsData().getStringStats().getNumDVs(),
-       numDVs);
-     assertEquals(colStats2.getStatsDesc().isIsTblLevel(), isTblLevel);
+     assertEquals(colStats2.getColName(), colName[1]);
+     assertEquals(colStats2.getStatsData().getStringStats().getMaxColLen(), maxColLen);
+     assertEquals(colStats2.getStatsData().getStringStats().getAvgColLen(), avgColLen);
+     assertEquals(colStats2.getStatsData().getStringStats().getNumNulls(), numNulls);
+     assertEquals(colStats2.getStatsData().getStringStats().getNumDVs(), numDVs);
 
      // test stats deletion at partition level
      client.deletePartitionColumnStatistics(dbName, tblName, partName, colName[1]);
 
-     colStats2 = client.getPartitionColumnStatistics(dbName, tblName, partName, colName[0]);
+     colStats2 = client.getPartitionColumnStatistics(dbName, tblName,
+         Lists.newArrayList(partName), Lists.newArrayList(colName[0])).get(partName).get(0);
 
      // test get stats on a column for which stats doesn't exist
-     try {
-       colStats2 = client.getPartitionColumnStatistics(dbName, tblName, partName, colName[1]);
-       assertTrue(true);
-     } catch (NoSuchObjectException e) {
-       System.out.println("Statistics for column=" + colName[1] + " not found");
-     }
-
+     assertTrue(client.getPartitionColumnStatistics(dbName, tblName,
+           Lists.newArrayList(partName), Lists.newArrayList(colName[1])).isEmpty());
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testColumnStatistics() failed.");

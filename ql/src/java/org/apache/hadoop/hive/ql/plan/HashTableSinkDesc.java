@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -92,7 +93,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   public HashTableSinkDesc(MapJoinDesc clone) {
     this.bigKeysDirMap = clone.getBigKeysDirMap();
     this.conds = clone.getConds();
-    this.exprs= clone.getExprs();
+    this.exprs = new HashMap<Byte, List<ExprNodeDesc>>(clone.getExprs());
     this.handleSkewJoin = clone.getHandleSkewJoin();
     this.keyTableDesc = clone.getKeyTableDesc();
     this.noOuterJoin = clone.getNoOuterJoin();
@@ -102,10 +103,10 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.skewKeysValuesTables = clone.getSkewKeysValuesTables();
     this.smallKeysDirMap = clone.getSmallKeysDirMap();
     this.tagOrder = clone.getTagOrder();
-    this.filters = clone.getFilters();
+    this.filters = new HashMap<Byte, List<ExprNodeDesc>>(clone.getFilters());
     this.filterMap = clone.getFilterMap();
 
-    this.keys = clone.getKeys();
+    this.keys = new HashMap<Byte, List<ExprNodeDesc>>(clone.getKeys());
     this.keyTblDesc = clone.getKeyTblDesc();
     this.valueTblDescs = clone.getValueTblDescs();
     this.valueTblFilteredDescs = clone.getValueFilteredTblDescs();
@@ -316,9 +317,20 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   }
 
   /**
-   * @return the keys
+   * @return the keys in string form
    */
   @Explain(displayName = "keys")
+  public Map<Byte, String> getKeysString() {
+    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
+    for (Map.Entry<Byte, List<ExprNodeDesc>> k: getKeys().entrySet()) {
+      keyMap.put(k.getKey(), PlanUtils.getExprListString(k.getValue()));
+    }
+    return keyMap;
+  }
+
+  /**
+   * @return the keys
+   */
   public Map<Byte, List<ExprNodeDesc>> getKeys() {
     return keys;
   }
@@ -334,7 +346,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   /**
    * @return the position of the big table not in memory
    */
-  @Explain(displayName = "Position of Big Table")
+  @Explain(displayName = "Position of Big Table", normalExplain = false)
   public int getPosBigTable() {
     return posBigTable;
   }

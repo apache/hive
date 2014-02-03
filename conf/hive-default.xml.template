@@ -866,6 +866,15 @@
 </property>
 
 <property>
+  <name>hive.auto.convert.join.use.nonstaged</name>
+  <value>true</value>
+  <description>For conditional joins, if input stream from a small alias can be directly applied to join operator without
+    filtering or projection, the alias need not to be pre-staged in distributed cache via mapred local task.
+    Currently, this is not working with vectorization or tez execution engine.
+  </description>
+</property>
+
+<property>
   <name>hive.script.auto.progress</name>
   <value>false</value>
   <description>Whether Hive Transform/Map/Reduce Clause should automatically send progress information to TaskTracker to avoid the task getting killed because of inactivity.  Hive sends progress information when the script is outputting to stderr.  This option removes the need of periodically producing stderr messages, but users should be cautious because this may prevent infinite loops in the scripts to be killed by TaskTracker. </description>
@@ -1322,6 +1331,102 @@
 </property>
 
 <property>
+  <name>hive.stats.max.variable.length</name>
+  <value>100</value>
+  <description>
+    To estimate the size of data flowing through operators in Hive/Tez(for reducer estimation etc.),
+    average row size is multiplied with the total number of rows coming out of each operator.
+    Average row size is computed from average column size of all columns in the row. In the absence
+    of column statistics, for variable length columns (like string, bytes etc.), this value will be
+    used. For fixed length columns their corresponding Java equivalent sizes are used
+    (float - 4 bytes, double - 8 bytes etc.).
+  </description>
+</property>
+
+<property>
+  <name>hive.stats.list.num.entries</name>
+  <value>10</value>
+  <description>
+    To estimate the size of data flowing through operators in Hive/Tez(for reducer estimation etc.),
+    average row size is multiplied with the total number of rows coming out of each operator.
+    Average row size is computed from average column size of all columns in the row. In the absence
+    of column statistics and for variable length complex columns like list, the average number of
+    entries/values can be specified using this config.
+  </description>
+</property>
+
+<property>
+  <name>hive.stats.map.num.entries</name>
+  <value>10</value>
+  <description>
+    To estimate the size of data flowing through operators in Hive/Tez(for reducer estimation etc.),
+    average row size is multiplied with the total number of rows coming out of each operator.
+    Average row size is computed from average column size of all columns in the row. In the absence
+    of column statistics and for variable length complex columns like map, the average number of
+    entries/values can be specified using this config.
+  </description>
+</property>
+
+<property>
+  <name>hive.stats.map.parallelism</name>
+  <value>1</value>
+  <description>
+    Hive/Tez optimizer estimates the data size flowing through each of the operators.
+    For GROUPBY operator, to accurately compute the data size map-side parallelism needs to
+    be known. By default, this value is set to 1 since optimizer is not aware of the number of
+    mappers during compile-time. This Hive config can be used to specify the number of mappers
+    to be used for data size computation of GROUPBY operator.
+  </description>
+</property>
+
+<property>
+  <name>hive.stats.fetch.column.stats</name>
+  <value>false</value>
+  <description>
+    Annotation of operator tree with statistics information requires column statisitcs.
+    Column statistics are fetched from metastore. Fetching column statistics for each needed column
+    can be expensive when the number of columns is high. This flag can be used to disable fetching
+    of column statistics from metastore.
+  </description>
+</property>
+
+<property>
+  <name>hive.stats.fetch.partition.stats</name>
+  <value>true</value>
+  <description>
+    Annotation of operator tree with statistics information requires partition level basic
+    statisitcs like number of rows, data size and file size. Partition statistics are fetched from
+    metastore. Fetching partition statistics for each needed partition can be expensive when the
+    number of partitions is high. This flag can be used to disable fetching of partition statistics
+    from metastore. When this flag is disabled, Hive will make calls to filesystem to get file sizes
+    and will estimate the number of rows from row schema.
+  </description>
+</property>
+
+<property>
+  <name>hive.stats.join.factor</name>
+  <value>1.1</value>
+  <description>
+    Hive/Tez optimizer estimates the data size flowing through each of the operators. JOIN operator
+    uses column statistics to estimate the number of rows flowing out of it and hence the data size.
+    In the absence of column statistics, this factor determines the amount of rows that flows out
+    of JOIN operator.
+  </description>
+</property>
+
+<property>
+  <name>hive.stats.deserialization.factor</name>
+  <value>1.0</value>
+  <description>
+    Hive/Tez optimizer estimates the data size flowing through each of the operators. In the absence
+    of basic statistics like number of rows and data size, file size is used to estimate the number
+    of rows and data size. Since files in tables/partitions are serialized (and optionally
+    compressed) the estimates of number of rows and data size cannot be reliably determined.
+    This factor is multiplied with the file size to account for serialization and compression.
+  </description>
+</property>
+
+<property>
   <name>hive.support.concurrency</name>
   <value>false</value>
   <description>Whether Hive supports concurrency or not. A ZooKeeper instance must be up and running for the default Hive lock manager to support read-write locks.</description>
@@ -1534,6 +1639,13 @@
   <value></value>
   <description>the privileges automatically granted to the owner whenever a table gets created.
    An example like "select,drop" will grant select and drop privilege to the owner of the table</description>
+</property>
+
+<property>
+  <name>hive.users.in.admin.role</name>
+  <value></value>
+  <description>Comma separated list of users who are in admin role for bootstrapping.
+    More users can be added in ADMIN role later.</description>
 </property>
 
 <property>

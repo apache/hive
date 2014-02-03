@@ -4,9 +4,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.hr = 15
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRCPART) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME x)))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL x) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL x) hr) 15)))))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -17,21 +14,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: x
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Filter Operator
-            predicate:
-                expr: ((ds = '2008-04-08') and (hr = 15))
-                type: boolean
+            predicate: ((ds = '2008-04-08') and (hr = 15)) (type: boolean)
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-                    expr: ds
-                    type: string
-                    expr: hr
-                    type: string
+              expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.hr = 15

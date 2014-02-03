@@ -1692,7 +1692,12 @@ public final class GenMapRedUtils {
       // generate the temporary file
       // it must be on the same file system as the current destination
       Context baseCtx = parseCtx.getContext();
-      Path tmpDir = baseCtx.getExternalTmpPath(dest.toUri());
+  	  // if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
+      // to final location /user/hive/warehouse/ will fail later, so instead pick tmp dir
+      // on same namespace as tbl dir. 
+      Path tmpDir = dest.toUri().getScheme().equals("viewfs") ? 
+        baseCtx.getExtTmpPathRelTo(dest.toUri()) : 
+        baseCtx.getExternalTmpPath(dest.toUri());
 
       FileSinkDesc fileSinkDesc = fsOp.getConf();
       // Change all the linked file sink descriptors

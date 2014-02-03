@@ -71,7 +71,7 @@ POSTHOOK: query: show grant user hive_test_user on table authorization_fail part
 POSTHOOK: type: SHOW_GRANT
 database	default
 table	authorization_fail
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Alter
@@ -79,7 +79,7 @@ privilege	Alter
 grantor	hive_test_user
 database	default
 table	authorization_fail
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Create
@@ -87,7 +87,7 @@ privilege	Create
 grantor	hive_test_user
 database	default
 table	authorization_fail
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Select
@@ -105,7 +105,7 @@ POSTHOOK: query: show grant user hive_test_user on table authorization_fail part
 POSTHOOK: type: SHOW_GRANT
 database	default
 table	authorization_fail
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Alter
@@ -113,7 +113,7 @@ privilege	Alter
 grantor	hive_test_user
 database	default
 table	authorization_fail
-partition	ds=2010
+partition	[2010]
 principalName	hive_test_user
 principalType	USER
 privilege	Create

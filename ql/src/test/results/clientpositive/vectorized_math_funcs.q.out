@@ -106,9 +106,6 @@ where cbigint % 500 = 0
 -- test use of a math function in the WHERE clause
 and sin(cfloat) >= -1.0
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL cdouble)) (TOK_SELEXPR (TOK_FUNCTION Round (TOK_TABLE_OR_COL cdouble) 2)) (TOK_SELEXPR (TOK_FUNCTION Floor (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Ceil (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Rand)) (TOK_SELEXPR (TOK_FUNCTION Rand 98007)) (TOK_SELEXPR (TOK_FUNCTION Exp (TOK_FUNCTION ln (TOK_TABLE_OR_COL cdouble)))) (TOK_SELEXPR (TOK_FUNCTION Ln (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Ln (TOK_TABLE_OR_COL cfloat))) (TOK_SELEXPR (TOK_FUNCTION Log10 (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Log2 (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Log2 (- (TOK_TABLE_OR_COL cdouble) 15601.0))) (TOK_SELEXPR (TOK_FUNCTION Log2 (TOK_TABLE_OR_COL cfloat))) (TOK_SELEXPR (TOK_FUNCTION Log2 (TOK_TABLE_OR_COL cbigint))) (TOK_SELEXPR (TOK_FUNCTION Log2 (TOK_TABLE_OR_COL cint))) (TOK_SELEXPR (TOK_FUNCTION Log2 (TOK_TABLE_OR_COL csmallint))) (TOK_SELEXPR (TOK_FUNCTION Log2 (TOK_TABLE_OR_COL ctinyint))) (TOK_SELEXPR (TOK_FUNCTION Log 2.0 (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Pow (TOK_FUNCTION log2 (TOK_TABLE_OR_COL cdouble)) 2.0)) (TOK_SELEXPR (TOK_FUNCTION Power (TOK_FUNCTION log2 (TOK_TABLE_OR_COL cdouble)) 2.0)) (TOK_SELEXPR (TOK_FUNCTION Sqrt (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Sqrt (TOK_TABLE_OR_COL cbigint))) (TOK_SELEXPR (TOK_FUNCTION Bin (TOK_TABLE_OR_COL cbigint))) (TOK_SELEXPR (TOK_FUNCTION Hex (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Conv (TOK_TABLE_OR_COL cbigint) 10 16)) (TOK_SELEXPR (TOK_FUNCTION Abs (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Abs (TOK_TABLE_OR_COL ctinyint))) (TOK_SELEXPR (TOK_FUNCTION Pmod (TOK_TABLE_OR_COL cint) 3)) (TOK_SELEXPR (TOK_FUNCTION Sin (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Asin (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Cos (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION ACos (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Atan (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Degrees (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Radians (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Positive (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Positive (TOK_TABLE_OR_COL cbigint))) (TOK_SELEXPR (TOK_FUNCTION Negative (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Sign (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION Sign (TOK_TABLE_OR_COL cbigint))) (TOK_SELEXPR (TOK_FUNCTION cos (+ (- (TOK_FUNCTION sin (TOK_FUNCTION log (TOK_TABLE_OR_COL cdouble)))) 3.14159)))) (TOK_WHERE (and (= (% (TOK_TABLE_OR_COL cbigint) 500) 0) (>= (TOK_FUNCTION sin (TOK_TABLE_OR_COL cfloat)) (- 1.0))))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -116,109 +113,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
+            Statistics: Num rows: 11788 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: (((cbigint % 500) = 0) and (sin(cfloat) >= (- 1.0)))
-                  type: boolean
-              Vectorized execution: true
+              predicate: (((cbigint % 500) = 0) and (sin(cfloat) >= (- 1.0))) (type: boolean)
+              Statistics: Num rows: 1964 Data size: 62851 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: cdouble
-                      type: double
-                      expr: round(cdouble, 2)
-                      type: double
-                      expr: floor(cdouble)
-                      type: bigint
-                      expr: ceil(cdouble)
-                      type: bigint
-                      expr: rand()
-                      type: double
-                      expr: rand(98007)
-                      type: double
-                      expr: exp(ln(cdouble))
-                      type: double
-                      expr: ln(cdouble)
-                      type: double
-                      expr: ln(cfloat)
-                      type: double
-                      expr: log10(cdouble)
-                      type: double
-                      expr: log2(cdouble)
-                      type: double
-                      expr: log2((cdouble - 15601.0))
-                      type: double
-                      expr: log2(cfloat)
-                      type: double
-                      expr: log2(cbigint)
-                      type: double
-                      expr: log2(cint)
-                      type: double
-                      expr: log2(csmallint)
-                      type: double
-                      expr: log2(ctinyint)
-                      type: double
-                      expr: log(2.0, cdouble)
-                      type: double
-                      expr: power(log2(cdouble), 2.0)
-                      type: double
-                      expr: power(log2(cdouble), 2.0)
-                      type: double
-                      expr: sqrt(cdouble)
-                      type: double
-                      expr: sqrt(cbigint)
-                      type: double
-                      expr: bin(cbigint)
-                      type: string
-                      expr: hex(cdouble)
-                      type: string
-                      expr: conv(cbigint, 10, 16)
-                      type: string
-                      expr: abs(cdouble)
-                      type: double
-                      expr: abs(ctinyint)
-                      type: int
-                      expr: (cint pmod 3)
-                      type: int
-                      expr: sin(cdouble)
-                      type: double
-                      expr: asin(cdouble)
-                      type: double
-                      expr: cos(cdouble)
-                      type: double
-                      expr: acos(cdouble)
-                      type: double
-                      expr: atan(cdouble)
-                      type: double
-                      expr: degrees(cdouble)
-                      type: double
-                      expr: radians(cdouble)
-                      type: double
-                      expr: cdouble
-                      type: double
-                      expr: cbigint
-                      type: bigint
-                      expr: (- cdouble)
-                      type: double
-                      expr: sign(cdouble)
-                      type: double
-                      expr: sign(cbigint)
-                      type: double
-                      expr: cos(((- sin(log(cdouble))) + 3.14159))
-                      type: double
+                expressions: cdouble (type: double), round(cdouble, 2) (type: double), floor(cdouble) (type: bigint), ceil(cdouble) (type: bigint), rand() (type: double), rand(98007) (type: double), exp(ln(cdouble)) (type: double), ln(cdouble) (type: double), ln(cfloat) (type: double), log10(cdouble) (type: double), log2(cdouble) (type: double), log2((cdouble - 15601.0)) (type: double), log2(cfloat) (type: double), log2(cbigint) (type: double), log2(cint) (type: double), log2(csmallint) (type: double), log2(ctinyint) (type: double), log(2.0, cdouble) (type: double), power(log2(cdouble), 2.0) (type: double), power(log2(cdouble), 2.0) (type: double), sqrt(cdouble) (type: double), sqrt(cbigint) (type: double), bin(cbigint) (type: string), hex(cdouble) (type: string), conv(cbigint, 10, 16) (type: string), abs(cdouble) (type: double), abs(ctinyint) (type: int), (cint pmod 3) (type: int), sin(cdouble) (type: double), asin(cdouble) (type: double), cos(cdouble) (type: double), acos(cdouble) (type: double), atan(cdouble) (type: double), degrees(cdouble) (type: double), radians(cdouble) (type: double), cdouble (type: double), cbigint (type: bigint), (- cdouble) (type: double), sign(cdouble) (type: double), sign(cbigint) (type: double), cos(((- sin(log(cdouble))) + 3.14159)) (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40
-                Vectorized execution: true
+                Statistics: Num rows: 1964 Data size: 62851 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
+                  Statistics: Num rows: 1964 Data size: 62851 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  Vectorized execution: true
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

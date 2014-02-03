@@ -58,7 +58,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.likeTableName = likeTableName;
   }
 
-  @Explain(displayName = "if not exists")
+  @Explain(displayName = "if not exists", displayOnlyOnTrue = true)
   public boolean getIfNotExists() {
     return ifNotExists;
   }
@@ -103,7 +103,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.location = location;
   }
 
-  @Explain(displayName = "isExternal")
+  @Explain(displayName = "isExternal", displayOnlyOnTrue = true)
   public boolean isExternal() {
     return isExternal;
   }

@@ -26,9 +26,6 @@ SELECT size(src_thrift.lint),
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src_thrift))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION size (. (TOK_TABLE_OR_COL src_thrift) lint))) (TOK_SELEXPR (TOK_FUNCTION size (. (TOK_TABLE_OR_COL src_thrift) lintstring))) (TOK_SELEXPR (TOK_FUNCTION size (. (TOK_TABLE_OR_COL src_thrift) mstringstring))) (TOK_SELEXPR (TOK_FUNCTION size TOK_NULL))) (TOK_WHERE (AND (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lint)) (NOT (TOK_FUNCTION TOK_ISNULL (. (TOK_TABLE_OR_COL src_thrift) mstringstring))))) (TOK_LIMIT 1)))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -39,22 +36,17 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_thrift
+          Statistics: Num rows: 0 Data size: 1606 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
-            predicate:
-                expr: (lint is not null and (not mstringstring is null))
-                type: boolean
+            predicate: (lint is not null and (not mstringstring is null)) (type: boolean)
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: size(lint)
-                    type: int
-                    expr: size(lintstring)
-                    type: int
-                    expr: size(mstringstring)
-                    type: int
-                    expr: size(null)
-                    type: int
+              expressions: size(lint) (type: int), size(lintstring) (type: int), size(mstringstring) (type: int), size(null) (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Limit
+                Number of rows: 1
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 ListSink
 
 PREHOOK: query: FROM src_thrift

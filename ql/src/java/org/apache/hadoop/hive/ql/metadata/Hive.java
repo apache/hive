@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -2194,7 +2195,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       }
       success = fs.rename(srcf, destf);
-      LOG.debug((replace ? "Replacing src:" : "Renaming src:") + srcf.toString()
+      LOG.info((replace ? "Replacing src:" : "Renaming src:") + srcf.toString()
           + ";dest: " + destf.toString()  + ";Status:" + success);
     } catch (IOException ioe) {
       throw new HiveException("Unable to move source" + srcf + " to destination " + destf, ioe);
@@ -2296,10 +2297,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       List<List<Path[]>> result = checkPaths(conf, fs, srcs, destf, true);
 
-      // point of no return -- delete oldPath only if it is not same as destf,
-      // otherwise, the oldPath/destf will be cleaned later just before move
-      if (oldPath != null && (!destf.getFileSystem(conf).equals(oldPath.getFileSystem(conf))
-          || !destf.equals(oldPath))) {
+      if (oldPath != null) {
         try {
           FileSystem fs2 = oldPath.getFileSystem(conf);
           if (fs2.exists(oldPath)) {
@@ -2320,6 +2318,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
         Path destfp = destf.getParent();
         if (!fs.exists(destfp)) {
           boolean success = fs.mkdirs(destfp);
+          if (!success) {
+            LOG.warn("Error creating directory " + destf.toString());
+          }
           if (inheritPerms && success) {
             fs.setPermission(destfp, fs.getFileStatus(destfp.getParent()).getPermission());
           }
@@ -2333,6 +2334,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       } else { // srcf is a file or pattern containing wildcards
         if (!fs.exists(destf)) {
           boolean success = fs.mkdirs(destf);
+          if (!success) {
+            LOG.warn("Error creating directory " + destf.toString());
+          }
           if (inheritPerms && success) {
             fs.setPermission(destf, fs.getFileStatus(destf.getParent()).getPermission());
           }
@@ -2472,26 +2476,25 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public ColumnStatistics getTableColumnStatistics(String dbName, String tableName, String colName)
-    throws HiveException {
+  public List<ColumnStatisticsObj> getTableColumnStatistics(
+      String dbName, String tableName, List<String> colNames) throws HiveException {
     try {
-      return getMSC().getTableColumnStatistics(dbName, tableName, colName);
+      return getMSC().getTableColumnStatistics(dbName, tableName, colNames);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
-
   }
 
-  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
-    String partName, String colName) throws HiveException {
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
+      String tableName, List<String> partNames, List<String> colNames) throws HiveException {
       try {
-        return getMSC().getPartitionColumnStatistics(dbName, tableName, partName, colName);
-      } catch (Exception e) {
-        LOG.debug(StringUtils.stringifyException(e));
-        throw new HiveException(e);
-      }
+      return getMSC().getPartitionColumnStatistics(dbName, tableName, partNames, colNames);
+    } catch (Exception e) {
+      LOG.debug(StringUtils.stringifyException(e));
+      throw new HiveException(e);
     }
+  }
 
   public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
     throws HiveException {

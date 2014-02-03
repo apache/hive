@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -137,7 +138,7 @@ public interface RawStore extends Configurable {
       InvalidInputException;
 
   public abstract List<Partition> getPartitions(String dbName,
-      String tableName, int max) throws MetaException;
+      String tableName, int max) throws MetaException, NoSuchObjectException;
 
   public abstract void alterTable(String dbname, String name, Table newTable)
       throws InvalidObjectException, MetaException;
@@ -378,30 +379,15 @@ public interface RawStore extends Configurable {
    *
    */
   public abstract ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
-    String colName) throws MetaException, NoSuchObjectException, InvalidInputException,
-    InvalidObjectException;
+    List<String> colName) throws MetaException, NoSuchObjectException;
 
   /**
-   * Returns the relevant column statistics for a given column in a given partition in a given
+   * Returns the relevant column statistics for given columns in given partitions in a given
    * table in a given database if such statistics exist.
-   * @param partName
-   *
-   * @param The name of the database, defaults to current database
-   * @param The name of the table
-   * @param The name of the partition
-   * @param List of partVals for the partition
-   * @param The name of the column for which statistics is requested
-   * @return Relevant column statistics for the column for the given partition in a given table
-   * @throws NoSuchObjectException
-   * @throws MetaException
-   * @throws InvalidInputException
-   * @throws InvalidObjectException
-   *
    */
-
-  public abstract ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
-    String partName, List<String> partVals, String colName)
-    throws MetaException, NoSuchObjectException, InvalidInputException, InvalidObjectException;
+  public abstract List<ColumnStatistics> getPartitionColumnStatistics(
+     String dbName, String tblName, List<String> partNames, List<String> colNames)
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Deletes column statistics if present associated with a given db, table, partition and col. If
@@ -443,28 +429,58 @@ public interface RawStore extends Configurable {
     String colName)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
- public abstract long cleanupEvents();
+  public abstract long cleanupEvents();
 
- public abstract boolean addToken(String tokenIdentifier, String delegationToken);
+  public abstract boolean addToken(String tokenIdentifier, String delegationToken);
 
- public abstract boolean removeToken(String tokenIdentifier);
+  public abstract boolean removeToken(String tokenIdentifier);
 
- public abstract String getToken(String tokenIdentifier);
+  public abstract String getToken(String tokenIdentifier);
 
- public abstract List<String> getAllTokenIdentifiers();
+  public abstract List<String> getAllTokenIdentifiers();
 
- public abstract int addMasterKey(String key) throws MetaException;
+  public abstract int addMasterKey(String key) throws MetaException;
 
- public abstract void updateMasterKey(Integer seqNo, String key)
+  public abstract void updateMasterKey(Integer seqNo, String key)
      throws NoSuchObjectException, MetaException;
 
- public abstract boolean removeMasterKey(Integer keySeq);
+  public abstract boolean removeMasterKey(Integer keySeq);
 
- public abstract String[] getMasterKeys();
+  public abstract String[] getMasterKeys();
 
- public abstract void verifySchema() throws MetaException;
+  public abstract void verifySchema() throws MetaException;
 
- public abstract String getMetaStoreSchemaVersion() throws  MetaException;
+  public abstract String getMetaStoreSchemaVersion() throws  MetaException;
 
- public abstract void setMetaStoreSchemaVersion(String version, String comment) throws MetaException;
+  public abstract void setMetaStoreSchemaVersion(String version, String comment) throws MetaException;
+
+  List<HiveObjectPrivilege> listPrincipalDBGrantsAll(
+      String principalName, PrincipalType principalType);
+
+  List<HiveObjectPrivilege> listPrincipalTableGrantsAll(
+      String principalName, PrincipalType principalType);
+
+  List<HiveObjectPrivilege> listPrincipalPartitionGrantsAll(
+      String principalName, PrincipalType principalType);
+
+  List<HiveObjectPrivilege> listPrincipalTableColumnGrantsAll(
+      String principalName, PrincipalType principalType);
+
+  List<HiveObjectPrivilege> listPrincipalPartitionColumnGrantsAll(
+      String principalName, PrincipalType principalType);
+
+  List<HiveObjectPrivilege> listGlobalGrantsAll();
+
+  List<HiveObjectPrivilege> listDBGrantsAll(String dbName);
+
+  List<HiveObjectPrivilege> listPartitionColumnGrantsAll(
+      String dbName, String tableName, String partitionName, String columnName);
+
+  List<HiveObjectPrivilege> listTableGrantsAll(String dbName, String tableName);
+
+  List<HiveObjectPrivilege> listPartitionGrantsAll(
+      String dbName, String tableName, String partitionName);
+
+  List<HiveObjectPrivilege> listTableColumnGrantsAll(
+      String dbName, String tableName, String columnName);
 }

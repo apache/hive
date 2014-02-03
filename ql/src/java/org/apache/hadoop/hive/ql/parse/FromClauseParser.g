@@ -54,22 +54,22 @@ tableAllColumns
 
 // (table|column)
 tableOrColumn
-@init { gParent.msgs.push("table or column identifier"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("table or column identifier", state); }
+@after { gParent.popMsg(state); }
     :
     identifier -> ^(TOK_TABLE_OR_COL identifier)
     ;
 
 expressionList
-@init { gParent.msgs.push("expression list"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("expression list", state); }
+@after { gParent.popMsg(state); }
     :
     expression (COMMA expression)* -> ^(TOK_EXPLIST expression+)
     ;
 
 aliasList
-@init { gParent.msgs.push("alias list"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("alias list", state); }
+@after { gParent.popMsg(state); }
     :
     identifier (COMMA identifier)* -> ^(TOK_ALIASLIST identifier+)
     ;
@@ -77,40 +77,40 @@ aliasList
 //----------------------- Rules for parsing fromClause ------------------------------
 // from [col1, col2, col3] table1, [col4, col5] table2
 fromClause
-@init { gParent.msgs.push("from clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("from clause", state); }
+@after { gParent.popMsg(state); }
     :
     KW_FROM joinSource -> ^(TOK_FROM joinSource)
     ;
 
 joinSource
-@init { gParent.msgs.push("join source"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("join source", state); }
+@after { gParent.popMsg(state); }
     : fromSource ( joinToken^ fromSource ( KW_ON! expression {$joinToken.start.getType() != COMMA}? )? )*
     | uniqueJoinToken^ uniqueJoinSource (COMMA! uniqueJoinSource)+
     ;
 
 uniqueJoinSource
-@init { gParent.msgs.push("join source"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("join source", state); }
+@after { gParent.popMsg(state); }
     : KW_PRESERVE? fromSource uniqueJoinExpr
     ;
 
 uniqueJoinExpr
-@init { gParent.msgs.push("unique join expression list"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("unique join expression list", state); }
+@after { gParent.popMsg(state); }
     : LPAREN e1+=expression (COMMA e1+=expression)* RPAREN
       -> ^(TOK_EXPLIST $e1*)
     ;
 
 uniqueJoinToken
-@init { gParent.msgs.push("unique join"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("unique join", state); }
+@after { gParent.popMsg(state); }
     : KW_UNIQUEJOIN -> TOK_UNIQUEJOIN;
 
 joinToken
-@init { gParent.msgs.push("join type specifier"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("join type specifier", state); }
+@after { gParent.popMsg(state); }
     :
       KW_JOIN                      -> TOK_JOIN
     | KW_INNER KW_JOIN             -> TOK_JOIN
@@ -123,8 +123,8 @@ joinToken
     ;
 
 lateralView
-@init {gParent.msgs.push("lateral view"); }
-@after {gParent.msgs.pop(); }
+@init {gParent.pushMsg("lateral view", state); }
+@after {gParent.popMsg(state); }
 	:
 	KW_LATERAL KW_VIEW KW_OUTER function tableAlias (KW_AS identifier ((COMMA)=> COMMA identifier)*)?
 	-> ^(TOK_LATERAL_VIEW_OUTER ^(TOK_SELECT ^(TOK_SELEXPR function identifier* tableAlias)))
@@ -134,29 +134,29 @@ lateralView
 	;
 
 tableAlias
-@init {gParent.msgs.push("table alias"); }
-@after {gParent.msgs.pop(); }
+@init {gParent.pushMsg("table alias", state); }
+@after {gParent.popMsg(state); }
     :
     identifier -> ^(TOK_TABALIAS identifier)
     ;
 
 fromSource
-@init { gParent.msgs.push("from source"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("from source", state); }
+@after { gParent.popMsg(state); }
     :
     ((Identifier LPAREN)=> partitionedTableFunction | tableSource | subQuerySource) (lateralView^)*
     ;
 
 tableBucketSample
-@init { gParent.msgs.push("table bucket sample specification"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("table bucket sample specification", state); }
+@after { gParent.popMsg(state); }
     :
     KW_TABLESAMPLE LPAREN KW_BUCKET (numerator=Number) KW_OUT KW_OF (denominator=Number) (KW_ON expr+=expression (COMMA expr+=expression)*)? RPAREN -> ^(TOK_TABLEBUCKETSAMPLE $numerator $denominator $expr*)
     ;
 
 splitSample
-@init { gParent.msgs.push("table split sample specification"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("table split sample specification", state); }
+@after { gParent.popMsg(state); }
     :
     KW_TABLESAMPLE LPAREN  (numerator=Number) (percent=KW_PERCENT|KW_ROWS) RPAREN
     -> {percent != null}? ^(TOK_TABLESPLITSAMPLE TOK_PERCENT $numerator)
@@ -167,23 +167,23 @@ splitSample
     ;
 
 tableSample
-@init { gParent.msgs.push("table sample specification"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("table sample specification", state); }
+@after { gParent.popMsg(state); }
     :
     tableBucketSample |
     splitSample
     ;
 
 tableSource
-@init { gParent.msgs.push("table source"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("table source", state); }
+@after { gParent.popMsg(state); }
     : tabname=tableName (props=tableProperties)? (ts=tableSample)? (KW_AS? alias=Identifier)?
     -> ^(TOK_TABREF $tabname $props? $ts? $alias?)
     ;
 
 tableName
-@init { gParent.msgs.push("table name"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("table name", state); }
+@after { gParent.popMsg(state); }
     :
     db=identifier DOT tab=identifier
     -> ^(TOK_TABNAME $db $tab)
@@ -193,24 +193,24 @@ tableName
     ;
 
 viewName
-@init { gParent.msgs.push("view name"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("view name", state); }
+@after { gParent.popMsg(state); }
     :
     (db=identifier DOT)? view=identifier
     -> ^(TOK_TABNAME $db? $view)
     ;
 
 subQuerySource
-@init { gParent.msgs.push("subquery source"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("subquery source", state); }
+@after { gParent.popMsg(state); }
     :
     LPAREN queryStatementExpression[false] RPAREN identifier -> ^(TOK_SUBQUERY queryStatementExpression identifier)
     ;
 
 //---------------------- Rules for parsing PTF clauses -----------------------------
 partitioningSpec
-@init { gParent.msgs.push("partitioningSpec clause"); }
-@after { gParent.msgs.pop(); } 
+@init { gParent.pushMsg("partitioningSpec clause", state); }
+@after { gParent.popMsg(state); } 
    :
    partitionByClause orderByClause? -> ^(TOK_PARTITIONINGSPEC partitionByClause orderByClause?) |
    orderByClause -> ^(TOK_PARTITIONINGSPEC orderByClause) |
@@ -220,8 +220,8 @@ partitioningSpec
    ;
 
 partitionTableFunctionSource
-@init { gParent.msgs.push("partitionTableFunctionSource clause"); }
-@after { gParent.msgs.pop(); } 
+@init { gParent.pushMsg("partitionTableFunctionSource clause", state); }
+@after { gParent.popMsg(state); } 
    :
    subQuerySource |
    tableSource |
@@ -229,8 +229,8 @@ partitionTableFunctionSource
    ;
 
 partitionedTableFunction
-@init { gParent.msgs.push("ptf clause"); }
-@after { gParent.msgs.pop(); } 
+@init { gParent.pushMsg("ptf clause", state); }
+@after { gParent.popMsg(state); } 
    :
    name=Identifier
    LPAREN KW_ON ptfsrc=partitionTableFunctionSource partitioningSpec?
@@ -242,15 +242,15 @@ partitionedTableFunction
 //----------------------- Rules for parsing whereClause -----------------------------
 // where a=b and ...
 whereClause
-@init { gParent.msgs.push("where clause"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("where clause", state); }
+@after { gParent.popMsg(state); }
     :
     KW_WHERE searchCondition -> ^(TOK_WHERE searchCondition)
     ;
 
 searchCondition
-@init { gParent.msgs.push("search condition"); }
-@after { gParent.msgs.pop(); }
+@init { gParent.pushMsg("search condition", state); }
+@after { gParent.popMsg(state); }
     :
     expression
     ;

@@ -54,7 +54,31 @@ POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=1,partcol2=__HIVE_DEFAU
 POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=__HIVE_DEFAULT_PARTITION__,partcol2=1).intcol SIMPLE []
 POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=__HIVE_DEFAULT_PARTITION__,partcol2=__HIVE_DEFAULT_PARTITION__).intcol SIMPLE []
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME dynamic_part_table))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL intcol))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL partcol1) '1') (= (TOK_TABLE_OR_COL partcol2) '1')))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            dynamic_part_table
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               intcol
+      TOK_WHERE
+         and
+            =
+               TOK_TABLE_OR_COL
+                  partcol1
+               '1'
+            =
+               TOK_TABLE_OR_COL
+                  partcol2
+               '1'
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -63,27 +87,21 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        dynamic_part_table 
+      Map Operator Tree:
           TableScan
             alias: dynamic_part_table
-            Statistics:
-                numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: intcol
-                    type: string
+              expressions: intcol (type: string)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics:
-                    numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -160,7 +178,31 @@ POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=1,partcol2=__HIVE_DEFAU
 POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=__HIVE_DEFAULT_PARTITION__,partcol2=1).intcol SIMPLE []
 POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=__HIVE_DEFAULT_PARTITION__,partcol2=__HIVE_DEFAULT_PARTITION__).intcol SIMPLE []
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME dynamic_part_table))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL intcol))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL partcol1) '1') (= (TOK_TABLE_OR_COL partcol2) '1')))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            dynamic_part_table
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               intcol
+      TOK_WHERE
+         and
+            =
+               TOK_TABLE_OR_COL
+                  partcol1
+               '1'
+            =
+               TOK_TABLE_OR_COL
+                  partcol2
+               '1'
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -169,27 +211,21 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        dynamic_part_table 
+      Map Operator Tree:
           TableScan
             alias: dynamic_part_table
-            Statistics:
-                numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: intcol
-                    type: string
+              expressions: intcol (type: string)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics:
-                    numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -266,7 +302,41 @@ POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=1,partcol2=__HIVE_DEFAU
 POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=__HIVE_DEFAULT_PARTITION__,partcol2=1).intcol SIMPLE []
 POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=__HIVE_DEFAULT_PARTITION__,partcol2=__HIVE_DEFAULT_PARTITION__).intcol SIMPLE []
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME dynamic_part_table))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL intcol))) (TOK_WHERE (or (and (= (TOK_TABLE_OR_COL partcol1) '1') (= (TOK_TABLE_OR_COL partcol2) '1')) (and (= (TOK_TABLE_OR_COL partcol1) '1') (= (TOK_TABLE_OR_COL partcol2) '__HIVE_DEFAULT_PARTITION__'))))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            dynamic_part_table
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               intcol
+      TOK_WHERE
+         or
+            and
+               =
+                  TOK_TABLE_OR_COL
+                     partcol1
+                  '1'
+               =
+                  TOK_TABLE_OR_COL
+                     partcol2
+                  '1'
+            and
+               =
+                  TOK_TABLE_OR_COL
+                     partcol1
+                  '1'
+               =
+                  TOK_TABLE_OR_COL
+                     partcol2
+                  '__HIVE_DEFAULT_PARTITION__'
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -275,27 +345,21 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        dynamic_part_table 
+      Map Operator Tree:
           TableScan
             alias: dynamic_part_table
-            Statistics:
-                numRows: 2 dataSize: 2 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: intcol
-                    type: string
+              expressions: intcol (type: string)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 2 dataSize: 2 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics:
-                    numRows: 2 dataSize: 2 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat

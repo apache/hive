@@ -37,6 +37,6 @@ public interface HiveAuthorizationValidator {
    * @param outputHObjs
    */
   void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs);
+      List<HivePrivilegeObject> outputHObjs) throws HiveAuthorizationPluginException;
 
 }

@@ -16,11 +16,86 @@ FROM src1 x JOIN src y ON (x.key = y.key)
 JOIN srcpart z ON (x.key = z.key and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1) x) (TOK_TABREF (TOK_TABNAME src) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key))) (TOK_TABREF (TOK_TABNAME srcpart) z) (and (and (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL z) key)) (= (. (TOK_TABLE_OR_COL z) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL z) hr) 11)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j1))) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x y))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL z) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_JOIN
+            TOK_TABREF
+               TOK_TABNAME
+                  src1
+               x
+            TOK_TABREF
+               TOK_TABNAME
+                  src
+               y
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     x
+                  key
+               .
+                  TOK_TABLE_OR_COL
+                     y
+                  key
+         TOK_TABREF
+            TOK_TABNAME
+               srcpart
+            z
+         and
+            and
+               =
+                  .
+                     TOK_TABLE_OR_COL
+                        x
+                     key
+                  .
+                     TOK_TABLE_OR_COL
+                        z
+                     key
+               =
+                  .
+                     TOK_TABLE_OR_COL
+                        z
+                     ds
+                  '2008-04-08'
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     z
+                  hr
+               11
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_TAB
+            TOK_TABNAME
+               dest_j1
+      TOK_SELECT
+         TOK_HINTLIST
+            TOK_HINT
+               TOK_MAPJOIN
+               TOK_HINTARGLIST
+                  x
+                  y
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  x
+               key
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  z
+               value
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  y
+               value
+
 
 STAGE DEPENDENCIES:
-  Stage-10 is a root stage
-  Stage-1 depends on stages: Stage-10
+  Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
@@ -30,59 +105,12 @@ STAGE DEPENDENCIES:
   Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-10
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        x 
-          Fetch Operator
-            limit: -1
-        y 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        x 
-          TableScan
-            alias: x
-            Statistics:
-                numRows: 2 dataSize: 216 basicStatsState: COMPLETE colStatsState: NONE
-            GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 {value}
-                2 {value}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 2
-        y 
-          TableScan
-            alias: y
-            Statistics:
-                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
-            GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 {key}
-                1 {value}
-                2 {value}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 2
-
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        z 
+      Map Operator Tree:
           TableScan
             alias: z
-            Statistics:
-                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -92,33 +120,23 @@ STAGE PLANS:
                 0 {key}
                 1 {value}
                 2 {value}
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
+                0 key (type: string)
+                1 key (type: string)
+                2 key (type: string)
               outputColumnNames: _col0, _col5, _col9
               Position of Big Table: 2
-              Statistics:
-                  numRows: 63 dataSize: 12786 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col9
-                      type: string
-                      expr: _col5
-                      type: string
+                expressions: _col0 (type: string), _col9 (type: string), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics:
-                    numRows: 63 dataSize: 12786 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics:
-                      numRows: 63 dataSize: 12786 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -140,6 +158,24 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
+          Alias -> Map Local Tables:
+            x 
+              Fetch Operator
+                limit: -1
+            y 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            x 
+              TableScan
+                alias: x
+                Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+                GatherStats: false
+            y 
+              TableScan
+                alias: y
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -224,8 +260,7 @@ STAGE PLANS:
 
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             GatherStats: false
             File Output Operator
@@ -291,8 +326,7 @@ STAGE PLANS:
 
   Stage: Stage-5
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             GatherStats: false
             File Output Operator

@@ -15,16 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
-import org.apache.hadoop.hive.conf.HiveConf;
+package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-@Private
-public class DefaultHiveAuthorizerFactory implements HiveAuthorizerFactory{
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+
+/**
+ * Cast input double to a decimal. Get target value scale from output column vector.
+ */
+public class CastDoubleToDecimal extends FuncDoubleToDecimal {
+
+  private static final long serialVersionUID = 1L;
+
+  public CastDoubleToDecimal(int inputColumn, int outputColumn) {
+    super(inputColumn, outputColumn);
+  }
+
   @Override
-  public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
-      HiveConf conf, String hiveCurrentUser) {
-    return null;
+  protected void func(DecimalColumnVector outV, DoubleColumnVector inV, int i) {
+    outV.vector[i].update(inV.vector[i], outV.scale);
+    outV.checkPrecisionOverflow(i);
   }
 }

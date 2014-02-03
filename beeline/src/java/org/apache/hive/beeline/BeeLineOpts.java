@@ -88,6 +88,7 @@ class BeeLineOpts implements Completor {
   private String scriptFile = null;
 
   private Map<String, String> hiveVariables = new HashMap<String, String>();
+  private Map<String, String> hiveConfVariables = new HashMap<String, String>();
 
   public BeeLineOpts(BeeLine beeLine, Properties props) {
     this.beeLine = beeLine;
@@ -464,6 +465,13 @@ class BeeLineOpts implements Completor {
     return nullEmptyString ? "" : DEFAULT_NULL_STRING;
   }
 
+  public Map<String, String> getHiveConfVariables() {
+    return hiveConfVariables;
+  }
+
+  public void setHiveConfVariables(Map<String, String> hiveConfVariables) {
+    this.hiveConfVariables = hiveConfVariables;
+  }
 
 }
 

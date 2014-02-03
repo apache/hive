@@ -36,6 +36,7 @@ public class LimitDesc extends AbstractOperatorDesc {
     this.limit = limit;
   }
 
+  @Explain(displayName = "Number of rows")
   public int getLimit() {
     return limit;
   }

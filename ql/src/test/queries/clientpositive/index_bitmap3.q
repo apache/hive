@@ -12,16 +12,16 @@ SELECT * FROM default__src_src2_index__ ORDER BY value;
 
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
-EXPLAIN
-SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
-FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
-        WHERE key = 0) a
-  JOIN 
-     (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src2_index__
-        WHERE value = "val_0") b
-  ON
-    a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
-EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname;
+-- EXPLAIN
+-- SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
+-- FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
+--         WHERE key = 0) a
+--   JOIN 
+--     (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src2_index__
+--        WHERE value = "val_0") b
+--  ON
+--    a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
+-- EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname;
 
 INSERT OVERWRITE DIRECTORY "${system:test.tmp.dir}/index_result" 
 SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`

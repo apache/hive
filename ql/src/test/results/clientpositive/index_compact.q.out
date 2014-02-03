@@ -8,9 +8,6 @@ PREHOOK: type: CREATEINDEX
 POSTHOOK: query: EXPLAIN
 CREATE INDEX srcpart_index_proj ON TABLE srcpart(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
-ABSTRACT SYNTAX TREE:
-  (TOK_CREATEINDEX srcpart_index_proj 'COMPACT' (TOK_TABNAME srcpart) (TOK_TABCOLNAME key) TOK_DEFERRED_REBUILDINDEX)
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -151,9 +148,6 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_CREATEINDEX srcpart_index_proj 'COMPACT' (TOK_TABNAME srcpart) (TOK_TABCOLNAME key) TOK_DEFERRED_REBUILDINDEX)
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

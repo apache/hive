@@ -75,7 +75,6 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
     return "Const " + typeInfo.toString() + " " + value;
   }
 
-  @Explain(displayName = "expr")
   @Override
   public String getExprString() {
     if (value == null) {

@@ -20,9 +20,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value))
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION find_in_set (. (TOK_TABLE_OR_COL src1) key) (TOK_FUNCTION concat (. (TOK_TABLE_OR_COL src1) key) ',' (. (TOK_TABLE_OR_COL src1) value)))))))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -33,11 +30,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src1
+          Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: find_in_set(key, concat(key, ',', value))
-                  type: int
+            expressions: find_in_set(key, concat(key, ',', value)) (type: int)
             outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value))

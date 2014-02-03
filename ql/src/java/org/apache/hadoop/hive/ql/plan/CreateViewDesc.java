@@ -144,7 +144,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     return tblProps;
   }
 
-  @Explain(displayName = "if not exists")
+  @Explain(displayName = "if not exists", displayOnlyOnTrue = true)
   public boolean getIfNotExists() {
     return ifNotExists;
   }
@@ -162,7 +162,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.orReplace = orReplace;
   }
 
-  @Explain(displayName = "is alter view as select")
+  @Explain(displayName = "is alter view as select", displayOnlyOnTrue = true)
   public boolean getIsAlterViewAs() {
     return isAlterViewAs;
   }

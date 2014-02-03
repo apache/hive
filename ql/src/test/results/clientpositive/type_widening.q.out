@@ -4,9 +4,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- Check for int, bigint automatic type widening conversions in UDFs, UNIONS
 EXPLAIN SELECT COALESCE(0, 9223372036854775807) FROM src LIMIT 1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION COALESCE 0 9223372036854775807))) (TOK_LIMIT 1)))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -17,12 +14,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: COALESCE(0,9223372036854775807)
-                  type: bigint
+            expressions: COALESCE(0,9223372036854775807) (type: bigint)
             outputColumnNames: _col0
+            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Limit
+              Number of rows: 1
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: SELECT COALESCE(0, 9223372036854775807) FROM src LIMIT 1
@@ -38,9 +37,6 @@ PREHOOK: query: EXPLAIN SELECT * FROM (SELECT 0 AS numcol FROM src UNION ALL SEL
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT * FROM (SELECT 0 AS numcol FROM src UNION ALL SELECT 9223372036854775807 AS numcol FROM src) a ORDER BY numcol
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 0 numcol)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 9223372036854775807 numcol))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL numcol)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -48,58 +44,49 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1:a-subquery1:src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
-              expressions:
-                    expr: UDFToLong(0)
-                    type: bigint
+              expressions: UDFToLong(0) (type: bigint)
               outputColumnNames: _col0
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
               Union
+                Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: bigint
+                  expressions: _col0 (type: bigint)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: bigint
+                    key expressions: _col0 (type: bigint)
                     sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
-        null-subquery2:a-subquery2:src 
+                    Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
           TableScan
             alias: src
+            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
-              expressions:
-                    expr: 9223372036854775807
-                    type: bigint
+              expressions: 9223372036854775807 (type: bigint)
               outputColumnNames: _col0
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
               Union
+                Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
-                  expressions:
-                        expr: _col0
-                        type: bigint
+                  expressions: _col0 (type: bigint)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: bigint
+                    key expressions: _col0 (type: bigint)
                     sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                    Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            GlobalTableId: 0
+            Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

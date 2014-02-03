@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -200,7 +201,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitions(String dbName, String tableName, int max)
-      throws MetaException {
+      throws MetaException, NoSuchObjectException {
     return objectStore.getPartitions(dbName, tableName, max);
   }
 
@@ -493,10 +494,72 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<HiveObjectPrivilege> listPrincipalDBGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return objectStore.listPrincipalDBGrantsAll(principalName, principalType);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalTableGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return objectStore.listPrincipalTableGrantsAll(principalName, principalType);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalPartitionGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return objectStore.listPrincipalPartitionGrantsAll(principalName, principalType);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalTableColumnGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return objectStore.listPrincipalTableColumnGrantsAll(principalName, principalType);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalPartitionColumnGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return objectStore.listPrincipalPartitionColumnGrantsAll(principalName, principalType);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listGlobalGrantsAll() {
+    return objectStore.listGlobalGrantsAll();
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listDBGrantsAll(String dbName) {
+    return objectStore.listDBGrantsAll(dbName);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPartitionColumnGrantsAll(String dbName, String tableName,
+      String partitionName, String columnName) {
+    return objectStore.listPartitionColumnGrantsAll(dbName, tableName, partitionName, columnName);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listTableGrantsAll(String dbName, String tableName) {
+    return objectStore.listTableGrantsAll(dbName, tableName);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPartitionGrantsAll(String dbName, String tableName,
+      String partitionName) {
+    return objectStore.listPartitionGrantsAll(dbName, tableName, partitionName);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listTableColumnGrantsAll(String dbName, String tableName,
+      String columnName) {
+    return objectStore.listTableColumnGrantsAll(dbName, tableName, columnName);
+  }
+
+  @Override
   public ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
-      String colName)
-      throws MetaException, NoSuchObjectException, InvalidInputException {
-    return objectStore.getTableColumnStatistics(dbName, tableName, colName);
+      List<String> colNames) throws MetaException, NoSuchObjectException {
+    return objectStore.getTableColumnStatistics(dbName, tableName, colNames);
   }
 
   @Override
@@ -513,15 +576,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
       InvalidInputException {
     return objectStore.deletePartitionColumnStatistics(dbName, tableName, partName,
         partVals, colName);
-  }
-
-  @Override
-  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
-      String partName, List<String> partVal, String colName)
-      throws MetaException, NoSuchObjectException, InvalidInputException,
-      InvalidObjectException  {
-    return objectStore.getPartitionColumnStatistics(dbName, tableName, partName,
-        partVal, colName);
   }
 
   @Override
@@ -585,6 +639,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<ColumnStatistics> getPartitionColumnStatistics(String dbName,
+      String tblName, List<String> colNames, List<String> partNames)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getPartitionColumnStatistics(dbName, tblName  , colNames, partNames);
+  }
+
+  @Override
   public boolean doesPartitionExist(String dbName, String tableName,
       List<String> partVals) throws MetaException, NoSuchObjectException {
     return objectStore.doesPartitionExist(dbName, tableName, partVals);
@@ -595,5 +656,4 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
       throws InvalidObjectException, MetaException {
     return objectStore.addPartitions(dbName, tblName, parts);
   }
-
 }

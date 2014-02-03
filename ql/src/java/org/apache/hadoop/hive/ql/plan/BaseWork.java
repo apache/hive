@@ -20,7 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -79,22 +82,25 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     dummyOps.add(dummyOp);
   }
 
-  protected abstract List<Operator<?>> getAllRootOperators();
+  protected abstract Set<Operator<?>> getAllRootOperators();
 
-  public List<Operator<?>> getAllOperators() {
+  public Set<Operator<?>> getAllOperators() {
 
-    List<Operator<?>> returnList = new ArrayList<Operator<?>>();
-    List<Operator<?>> opList = getAllRootOperators();
+    Set<Operator<?>> returnSet = new LinkedHashSet<Operator<?>>();
+    Set<Operator<?>> opSet = getAllRootOperators();
+    Stack<Operator<?>> opStack = new Stack<Operator<?>>();
 
-    //recursively add all children
-    while (!opList.isEmpty()) {
-      Operator<?> op = opList.remove(0);
+    // add all children
+    opStack.addAll(opSet);
+    
+    while(!opStack.empty()) {
+      Operator<?> op = opStack.pop();
+      returnSet.add(op);
       if (op.getChildOperators() != null) {
-        opList.addAll(op.getChildOperators());
+        opStack.addAll(op.getChildOperators());
       }
-      returnList.add(op);
     }
 
-    return returnList;
+    return returnSet;
   }
 }

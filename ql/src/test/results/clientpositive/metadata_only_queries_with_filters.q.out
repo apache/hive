@@ -228,9 +228,6 @@ POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).s SIMPLE [(over10k)over10k.
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME stats_tbl_part))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)) (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTION sum 1)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL s))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL bo))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL bin))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL si))) (TOK_SELEXPR (TOK_FUNCTION max (TOK_TABLE_OR_COL i))) (TOK_SELEXPR (TOK_FUNCTION min (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTION max (TOK_TABLE_OR_COL f))) (TOK_SELEXPR (TOK_FUNCTION min (TOK_TABLE_OR_COL d)))) (TOK_WHERE (= (TOK_TABLE_OR_COL dt) 2010))))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -296,9 +293,6 @@ POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).s SIMPLE [(over10k)over10k.
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME stats_tbl_part))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)) (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTION sum 1)) (TOK_SELEXPR (TOK_FUNCTION sum 2)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL s))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL bo))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL bin))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL si))) (TOK_SELEXPR (TOK_FUNCTION max (TOK_TABLE_OR_COL i))) (TOK_SELEXPR (TOK_FUNCTION min (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTION max (TOK_TABLE_OR_COL f))) (TOK_SELEXPR (TOK_FUNCTION min (TOK_TABLE_OR_COL d)))) (TOK_WHERE (> (TOK_TABLE_OR_COL dt) 2010))))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

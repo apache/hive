@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.SqlMathUtil;
+import org.apache.hadoop.hive.common.type.UnsignedInt128;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 
 /**
@@ -67,6 +69,18 @@ public class DecimalUtil {
       DecimalColumnVector outputColVector) {
     try {
       Decimal128.divide(left, right, outputColVector.vector[i], outputColVector.scale);
+      outputColVector.vector[i].checkPrecisionOverflow(outputColVector.precision);
+    } catch (ArithmeticException e) {  // catch on error
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  // Modulo operator with overflow/zero-divide check.
+  public static void moduloChecked(int i, Decimal128 left, Decimal128 right,
+      DecimalColumnVector outputColVector) {
+    try {
+      Decimal128.modulo(left, right, outputColVector.vector[i], outputColVector.scale);
       outputColVector.vector[i].checkPrecisionOverflow(outputColVector.precision);
     } catch (ArithmeticException e) {  // catch on error
       outputColVector.noNulls = false;
