@@ -32,9 +32,6 @@ POSTHOOK: type: SHOWINDEXES
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__._bucketname SIMPLE [(show_idx_t1)show_idx_t1.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__._offsets EXPRESSION [(show_idx_t1)show_idx_t1.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__.key SIMPLE [(show_idx_t1)show_idx_t1.FieldSchema(name:key, type:string, comment:null), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_SHOWINDEXES show_idx_t1)
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 is a root stage
@@ -65,9 +62,6 @@ POSTHOOK: type: SHOWINDEXES
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__._bucketname SIMPLE [(show_idx_t1)show_idx_t1.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__._offsets EXPRESSION [(show_idx_t1)show_idx_t1.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__.key SIMPLE [(show_idx_t1)show_idx_t1.FieldSchema(name:key, type:string, comment:null), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_SHOWINDEXES show_idx_t1)
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 is a root stage
@@ -98,9 +92,6 @@ POSTHOOK: type: SHOWINDEXES
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__._bucketname SIMPLE [(show_idx_t1)show_idx_t1.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__._offsets EXPRESSION [(show_idx_t1)show_idx_t1.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__.key SIMPLE [(show_idx_t1)show_idx_t1.FieldSchema(name:key, type:string, comment:null), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_SHOWINDEXES show_idx_t1 FORMATTED)
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 is a root stage

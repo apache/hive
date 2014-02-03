@@ -12,9 +12,6 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       AND lintstring.myint IS NOT NULL
       AND lintstring IS NOT NULL
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src_thrift))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_9')) (TOK_SELEXPR (. (TOK_TABLE_OR_COL lintstring) myint))) (TOK_WHERE (AND (AND (TOK_FUNCTION TOK_ISNOTNULL ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_9')) (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL lintstring) myint))) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL lintstring))))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -22,24 +19,20 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        src_thrift 
+      Map Operator Tree:
           TableScan
             alias: src_thrift
+            Statistics: Num rows: 0 Data size: 1606 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: ((mstringstring['key_9'] is not null and lintstring.myint is not null) and lintstring is not null)
-                  type: boolean
+              predicate: ((mstringstring['key_9'] is not null and lintstring.myint is not null) and lintstring is not null) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: mstringstring['key_9']
-                      type: string
-                      expr: lintstring.myint
-                      type: array<int>
+                expressions: mstringstring['key_9'] (type: string), lintstring.myint (type: array<int>)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -89,9 +82,6 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       AND lintstring.myint IS NOT NULL
       AND lintstring IS NOT NULL
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src_thrift))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_9')) (TOK_SELEXPR (. (TOK_TABLE_OR_COL lintstring) myint))) (TOK_WHERE (AND (AND (TOK_FUNCTION TOK_ISNOTNULL ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_9')) (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL lintstring) myint))) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL lintstring))))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -99,24 +89,20 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        src_thrift 
+      Map Operator Tree:
           TableScan
             alias: src_thrift
+            Statistics: Num rows: 0 Data size: 1606 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: ((mstringstring['key_9'] is not null and lintstring.myint is not null) and lintstring is not null)
-                  type: boolean
+              predicate: ((mstringstring['key_9'] is not null and lintstring.myint is not null) and lintstring is not null) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: mstringstring['key_9']
-                      type: string
-                      expr: lintstring.myint
-                      type: array<int>
+                expressions: mstringstring['key_9'] (type: string), lintstring.myint (type: array<int>)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

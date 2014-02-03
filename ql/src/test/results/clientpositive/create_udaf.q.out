@@ -4,9 +4,6 @@ PREHOOK: type: CREATEFUNCTION
 POSTHOOK: query: EXPLAIN
 CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 POSTHOOK: type: CREATEFUNCTION
-ABSTRACT SYNTAX TREE:
-  (TOK_CREATEFUNCTION test_max 'org.apache.hadoop.hive.ql.udf.UDAFTestMax')
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

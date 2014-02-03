@@ -116,9 +116,6 @@ POSTHOOK: Lineage: default__show_idx_full_idx_compound__._bucketname SIMPLE [(sh
 POSTHOOK: Lineage: default__show_idx_full_idx_compound__._offsets EXPRESSION [(show_idx_full)show_idx_full.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__show_idx_full_idx_compound__.key SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: default__show_idx_full_idx_compound__.value1 SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:value1, type:string, comment:null), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_SHOWINDEXES show_idx_full)
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 is a root stage
@@ -170,9 +167,6 @@ POSTHOOK: Lineage: default__show_idx_full_idx_compound__._bucketname SIMPLE [(sh
 POSTHOOK: Lineage: default__show_idx_full_idx_compound__._offsets EXPRESSION [(show_idx_full)show_idx_full.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__show_idx_full_idx_compound__.key SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: default__show_idx_full_idx_compound__.value1 SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:value1, type:string, comment:null), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_SHOWINDEXES show_idx_empty)
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 is a root stage

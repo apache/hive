@@ -67,7 +67,20 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            loc_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -79,22 +92,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics:
-              numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
-            expressions:
-                  expr: state
-                  type: string
-                  expr: locid
-                  type: int
-                  expr: zip
-                  type: bigint
-                  expr: year
-                  type: int
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: -- numRows: 4 rawDataSize: 396
@@ -108,7 +111,22 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 4)))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            loc_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+      TOK_LIMIT
+         4
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -120,25 +138,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics:
-              numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
-            expressions:
-                  expr: state
-                  type: string
-                  expr: locid
-                  type: int
-                  expr: zip
-                  type: bigint
-                  expr: year
-                  type: int
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
-              Statistics:
-                  numRows: 4 dataSize: 396 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Number of rows: 4
+              Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: -- greater than the available number of rows
@@ -154,7 +162,22 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 16)))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            loc_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+      TOK_LIMIT
+         16
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -166,25 +189,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics:
-              numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
-            expressions:
-                  expr: state
-                  type: string
-                  expr: locid
-                  type: int
-                  expr: zip
-                  type: bigint
-                  expr: year
-                  type: int
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
-              Statistics:
-                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Number of rows: 16
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: -- numRows: 0 rawDataSize: 0
@@ -198,7 +211,22 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 0)))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            loc_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+      TOK_LIMIT
+         0
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -210,24 +238,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics:
-              numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
-            expressions:
-                  expr: state
-                  type: string
-                  expr: locid
-                  type: int
-                  expr: zip
-                  type: bigint
-                  expr: year
-                  type: int
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics:
-                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
-              Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
+              Number of rows: 0
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
               ListSink
 

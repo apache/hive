@@ -5,7 +5,44 @@ POSTHOOK: query: EXPLAIN EXTENDED
 SELECT x.* FROM SRCPART x WHERE key IS NOT NULL AND ds = '2008-04-08' order by x.key, x.hr
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRCPART) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME x)))) (TOK_WHERE (AND (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL key)) (= (TOK_TABLE_OR_COL ds) '2008-04-08'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL x) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL x) hr)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            SRCPART
+         x
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+               TOK_TABNAME
+                  x
+      TOK_WHERE
+         AND
+            TOK_FUNCTION
+               TOK_ISNOTNULL
+               TOK_TABLE_OR_COL
+                  key
+            =
+               TOK_TABLE_OR_COL
+                  ds
+               '2008-04-08'
+      TOK_ORDERBY
+         TOK_TABSORTCOLNAMEASC
+            .
+               TOK_TABLE_OR_COL
+                  x
+               key
+         TOK_TABSORTCOLNAMEASC
+            .
+               TOK_TABLE_OR_COL
+                  x
+               hr
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -14,52 +51,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        x 
+      Map Operator Tree:
           TableScan
             alias: x
-            Statistics:
-                numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate:
-                  expr: key is not null
-                  type: boolean
-              Statistics:
-                  numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
+                expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics:
-                    numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col3
-                        type: string
+                  key expressions: _col0 (type: string), _col3 (type: string)
                   sort order: ++
-                  Statistics:
-                      numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                        expr: _col2
-                        type: string
-                        expr: _col3
-                        type: string
+                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -153,15 +163,13 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
-          Statistics:
-              numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
+          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics:
-                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat

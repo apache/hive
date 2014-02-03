@@ -83,9 +83,6 @@ POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring2 SIMPLE [(alltype
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:from deserializer), ]
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:from deserializer), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc_part))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (TOK_TABLE_OR_COL cdouble) 2))) (TOK_LIMIT 10)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -93,26 +90,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc_part 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc_part
+            Statistics: Num rows: 200 Data size: 41576 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: (cdouble + 2)
-                    type: double
+              expressions: (cdouble + 2) (type: double)
               outputColumnNames: _col0
-              Vectorized execution: true
+              Statistics: Num rows: 200 Data size: 41576 Basic stats: COMPLETE Column stats: NONE
               Limit
-                Vectorized execution: true
+                Number of rows: 10
+                Statistics: Num rows: 10 Data size: 2070 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
+                  Statistics: Num rows: 10 Data size: 2070 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  Vectorized execution: true
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

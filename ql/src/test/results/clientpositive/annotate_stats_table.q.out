@@ -29,7 +29,20 @@ POSTHOOK: query: -- basicStatState: NONE colStatState: NONE
 explain extended select * from emp_orc
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME emp_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            emp_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -41,18 +54,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emp_orc
-          Statistics:
-              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           GatherStats: false
           Select Operator
-            expressions:
-                  expr: lastname
-                  type: string
-                  expr: deptid
-                  type: int
+            expressions: lastname (type: string), deptid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics:
-                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             ListSink
 
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_staging
@@ -84,7 +91,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
 POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME emp_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            emp_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -96,18 +116,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emp_orc
-          Statistics:
-              numRows: 3 dataSize: 349 basicStatsState: COMPLETE colStatsState: NONE
+          Statistics: Num rows: 3 Data size: 349 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator
-            expressions:
-                  expr: lastname
-                  type: string
-                  expr: deptid
-                  type: int
+            expressions: lastname (type: string), deptid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics:
-                numRows: 3 dataSize: 349 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 3 Data size: 349 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: -- table level analyze statistics
@@ -131,7 +145,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
 POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME emp_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            emp_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -143,18 +170,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emp_orc
-          Statistics:
-              numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: NONE
+          Statistics: Num rows: 6 Data size: 349 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator
-            expressions:
-                  expr: lastname
-                  type: string
-                  expr: deptid
-                  type: int
+            expressions: lastname (type: string), deptid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics:
-                numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 6 Data size: 349 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: -- column level partial statistics
@@ -178,7 +199,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
 POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME emp_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            emp_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -190,18 +224,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emp_orc
-          Statistics:
-              numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: PARTIAL
+          Statistics: Num rows: 6 Data size: 349 Basic stats: COMPLETE Column stats: PARTIAL
           GatherStats: false
           Select Operator
-            expressions:
-                  expr: lastname
-                  type: string
-                  expr: deptid
-                  type: int
+            expressions: lastname (type: string), deptid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics:
-                numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: PARTIAL
+            Statistics: Num rows: 6 Data size: 349 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: -- all selected columns have statistics
@@ -215,7 +243,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
 POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME emp_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL deptid)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            emp_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               deptid
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -224,27 +266,21 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        emp_orc 
+      Map Operator Tree:
           TableScan
             alias: emp_orc
-            Statistics:
-                numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 6 Data size: 349 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: deptid
-                    type: int
+              expressions: deptid (type: int)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 6 dataSize: 20 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 6 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics:
-                    numRows: 6 dataSize: 20 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 6 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -335,7 +371,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
 POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME emp_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            emp_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -347,18 +396,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emp_orc
-          Statistics:
-              numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 6 Data size: 349 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
-            expressions:
-                  expr: lastname
-                  type: string
-                  expr: deptid
-                  type: int
+            expressions: lastname (type: string), deptid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics:
-                numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 6 Data size: 349 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
@@ -370,7 +413,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
 POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME emp_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL lastname)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            emp_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               lastname
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -379,27 +436,21 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        emp_orc 
+      Map Operator Tree:
           TableScan
             alias: emp_orc
-            Statistics:
-                numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 6 Data size: 349 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: lastname
-                    type: string
+              expressions: lastname (type: string)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 6 dataSize: 546 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 6 Data size: 546 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics:
-                    numRows: 6 dataSize: 546 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 6 Data size: 546 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -478,7 +529,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
 POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME emp_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL deptid)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            emp_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               deptid
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -487,27 +552,21 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        emp_orc 
+      Map Operator Tree:
           TableScan
             alias: emp_orc
-            Statistics:
-                numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 6 Data size: 349 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: deptid
-                    type: int
+              expressions: deptid (type: int)
               outputColumnNames: _col0
-              Statistics:
-                  numRows: 6 dataSize: 20 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 6 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics:
-                    numRows: 6 dataSize: 20 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 6 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -586,7 +645,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
 POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME emp_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL lastname)) (TOK_SELEXPR (TOK_TABLE_OR_COL deptid)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            emp_orc
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               lastname
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               deptid
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -595,29 +671,21 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        emp_orc 
+      Map Operator Tree:
           TableScan
             alias: emp_orc
-            Statistics:
-                numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 6 Data size: 349 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: lastname
-                    type: string
-                    expr: deptid
-                    type: int
+              expressions: lastname (type: string), deptid (type: int)
               outputColumnNames: _col0, _col1
-              Statistics:
-                  numRows: 6 dataSize: 566 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 6 Data size: 566 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics:
-                    numRows: 6 dataSize: 566 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 6 Data size: 566 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat

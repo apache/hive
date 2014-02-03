@@ -146,6 +146,10 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "keys")
+  public String getKeyString() {
+    return PlanUtils.getExprListString(keys);
+  }
+
   public ArrayList<ExprNodeDesc> getKeys() {
     return keys;
   }
@@ -181,6 +185,14 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "aggregations")
+  public List<String> getAggregatorStrings() {
+    List<String> res = new ArrayList<String>();
+    for (AggregationDesc agg: aggregators) {
+      res.add(agg.getExprString());
+    }
+    return res;
+  }
+
   public ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> getAggregators() {
     return aggregators;
   }
@@ -198,7 +210,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.groupKeyNotReductionKey = groupKeyNotReductionKey;
   }
 
-  @Explain(displayName = "bucketGroup")
+  @Explain(displayName = "bucketGroup", displayOnlyOnTrue = true)
   public boolean getBucketGroup() {
     return bucketGroup;
   }

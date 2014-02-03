@@ -31,9 +31,6 @@ select * from (
   select * from tst x where x.d='2009-02-02' limit 10
 ) subq
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tst) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) d) '2009-01-01')) (TOK_LIMIT 10))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tst) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) d) '2009-02-02')) (TOK_LIMIT 10)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -43,36 +40,29 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1:subq-subquery1:x 
+      Map Operator Tree:
           TableScan
             alias: x
+            Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions:
-                    expr: a
-                    type: int
-                    expr: b
-                    type: int
-                    expr: d
-                    type: string
+              expressions: a (type: int), b (type: int), d (type: string)
               outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Limit
+                Number of rows: 10
+                Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: int
-                        expr: _col2
-                        type: string
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Limit
+            Number of rows: 10
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -80,41 +70,31 @@ STAGE PLANS:
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Union
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: int
-                      expr: _col2
-                      type: string
+                expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
                 outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
           TableScan
             Union
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: int
-                      expr: _col2
-                      type: string
+                expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
                 outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -122,36 +102,29 @@ STAGE PLANS:
 
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery2:subq-subquery2:x 
+      Map Operator Tree:
           TableScan
             alias: x
+            Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions:
-                    expr: a
-                    type: int
-                    expr: b
-                    type: int
-                    expr: d
-                    type: string
+              expressions: a (type: int), b (type: int), d (type: string)
               outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Limit
+                Number of rows: 10
+                Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: int
-                        expr: _col2
-                        type: string
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Limit
+            Number of rows: 10
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

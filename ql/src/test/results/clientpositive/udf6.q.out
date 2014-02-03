@@ -19,9 +19,6 @@ POSTHOOK: query: EXPLAIN
 SELECT IF(TRUE, 1, 2) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME dest1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION IF TRUE 1 2)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -29,18 +26,17 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        dest1 
+      Map Operator Tree:
           TableScan
             alias: dest1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions:
-                    expr: if(true, 1, 2)
-                    type: int
+              expressions: if(true, 1, 2) (type: int)
               outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                GlobalTableId: 0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -77,9 +73,6 @@ SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
        CAST('128' AS STRING) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME dest1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION IF TRUE 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF TOK_NULL 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF TRUE "a" "b")) (TOK_SELEXPR (TOK_FUNCTION IF TRUE 0.1 0.2)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_BIGINT 1) (TOK_FUNCTION TOK_BIGINT 2))) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_TINYINT 127) (TOK_FUNCTION TOK_TINYINT 126))) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_SMALLINT 127) (TOK_FUNCTION TOK_SMALLINT 128))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT 128)) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE 1.0)) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING '128')))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -87,38 +80,17 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        dest1 
+      Map Operator Tree:
           TableScan
             alias: dest1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions:
-                    expr: if(true, 1, 2)
-                    type: int
-                    expr: if(false, 1, 2)
-                    type: int
-                    expr: if(null, 1, 2)
-                    type: int
-                    expr: if(true, 'a', 'b')
-                    type: string
-                    expr: if(true, 0.1, 0.2)
-                    type: double
-                    expr: if(false, UDFToLong(1), UDFToLong(2))
-                    type: bigint
-                    expr: if(false, UDFToByte(127), UDFToByte(126))
-                    type: tinyint
-                    expr: if(false, UDFToShort(127), UDFToShort(128))
-                    type: smallint
-                    expr: 128
-                    type: int
-                    expr: 1.0
-                    type: double
-                    expr: '128'
-                    type: string
+              expressions: if(true, 1, 2) (type: int), if(false, 1, 2) (type: int), if(null, 1, 2) (type: int), if(true, 'a', 'b') (type: string), if(true, 0.1, 0.2) (type: double), if(false, UDFToLong(1), UDFToLong(2)) (type: bigint), if(false, UDFToByte(127), UDFToByte(126)) (type: tinyint), if(false, UDFToShort(127), UDFToShort(128)) (type: smallint), 128 (type: int), 1.0 (type: double), '128' (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                GlobalTableId: 0
+                Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

@@ -76,6 +76,10 @@ public class SelectDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "expressions")
+  public String getColListString() {
+    return PlanUtils.getExprListString(colList);
+  }
+
   public List<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> getColList() {
     return colList;
   }

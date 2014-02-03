@@ -4,9 +4,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 SELECT src5.src1_value FROM (SELECT src3.*, src4.value as src4_value, src4.key as src4_key FROM src src4 JOIN (SELECT src2.*, src1.key as src1_key, src1.value as src1_value FROM src src1 JOIN src src2 ON src1.key = src2.key) src3 ON src3.src1_key = src4.key) src5
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src4) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src2))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) src1_key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) value) src1_value)))) src3) (= (. (TOK_TABLE_OR_COL src3) src1_key) (. (TOK_TABLE_OR_COL src4) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src3))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src4) value) src4_value) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src4) key) src4_key)))) src5)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src5) src1_value)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -15,36 +12,24 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        src5:src3:src1 
-          TableScan
-            alias: src1
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-        src5:src3:src2 
+      Map Operator Tree:
           TableScan
             alias: src2
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
+              key expressions: key (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: src1
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: key (type: string)
+              sort order: +
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              value expressions: key (type: string), value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -52,18 +37,14 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 
-          handleSkewJoin: false
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
+            expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col2, _col3
+            Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -71,33 +52,22 @@ STAGE PLANS:
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-        src5:$INTNAME 
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col2
-                    type: string
+              key expressions: _col2 (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: _col2
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: _col3
-                    type: string
-        src5:src4 
+              Map-reduce partition columns: _col2 (type: string)
+              Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col3 (type: string)
           TableScan
             alias: src4
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
+              key expressions: key (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -105,16 +75,15 @@ STAGE PLANS:
           condition expressions:
             0 
             1 {VALUE._col3}
-          handleSkewJoin: false
           outputColumnNames: _col7
+          Statistics: Num rows: 69 Data size: 7032 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col7
-                  type: string
+            expressions: _col7 (type: string)
             outputColumnNames: _col0
+            Statistics: Num rows: 69 Data size: 7032 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 69 Data size: 7032 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

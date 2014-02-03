@@ -4,9 +4,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x ORDER BY key limit 10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME x)))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -14,34 +11,28 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        x 
+      Map Operator Tree:
           TableScan
             alias: x
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+              expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: string
+                key expressions: _col0 (type: string)
                 sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: string
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           Limit
+            Number of rows: 10
+            Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -75,9 +66,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x ORDER BY key desc limit 10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME x)))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -85,34 +73,28 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        x 
+      Map Operator Tree:
           TableScan
             alias: x
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+              expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: string
+                key expressions: _col0 (type: string)
                 sort order: -
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: string
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           Limit
+            Number of rows: 10
+            Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

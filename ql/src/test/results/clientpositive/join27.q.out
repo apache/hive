@@ -13,9 +13,6 @@ INSERT OVERWRITE TABLE dest_j1
 SELECT /*+ MAPJOIN(x) */ x.key, x.value, y.value
 FROM src1 x JOIN src y ON (x.value = y.value)
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1) x) (TOK_TABREF (TOK_TABNAME src) y) (= (. (TOK_TABLE_OR_COL x) value) (. (TOK_TABLE_OR_COL y) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j1))) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -29,34 +26,28 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        y 
+      Map Operator Tree:
           TableScan
             alias: y
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
                 0 {key} {value}
                 1 {value}
-              handleSkewJoin: false
               keys:
-                0 [Column[value]]
-                1 [Column[value]]
+                0 value (type: string)
+                1 value (type: string)
               outputColumnNames: _col0, _col1, _col5
-              Position of Big Table: 1
+              Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: UDFToInteger(_col0)
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col5
-                      type: string
+                expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 1
+                  Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -72,6 +63,7 @@ STAGE PLANS:
             x 
               TableScan
                 alias: x
+                Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-7
     Conditional Operator
@@ -97,12 +89,10 @@ STAGE PLANS:
 
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -111,12 +101,10 @@ STAGE PLANS:
 
   Stage: Stage-5
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

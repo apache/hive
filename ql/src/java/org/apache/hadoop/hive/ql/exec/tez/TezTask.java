@@ -266,8 +266,7 @@ public class TezTask extends Task<TezWork> {
     try {
       List<BaseWork> ws = work.getAllWork();
       for (BaseWork w: ws) {
-        List<Operator<?>> ops = w.getAllOperators();
-        for (Operator<?> op: ops) {
+        for (Operator<?> op: w.getAllOperators()) {
           op.jobClose(conf, rc == 0);
         }
       }

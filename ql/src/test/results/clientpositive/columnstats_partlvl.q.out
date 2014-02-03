@@ -29,9 +29,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_ANALYZE (TOK_TAB (TOK_TABNAME Employee_Part) (TOK_PARTSPEC (TOK_PARTVAL employeeSalary 2000.0))) (TOK_TABCOLNAME employeeID))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 is a root stage
@@ -39,42 +36,29 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Map Reduce
-      Alias -> Map Operator Tree:
-        employee_part 
+      Map Operator Tree:
           TableScan
             alias: employee_part
             Select Operator
-              expressions:
-                    expr: employeeid
-                    type: int
+              expressions: employeeid (type: int)
               outputColumnNames: employeeid
               Group By Operator
-                aggregations:
-                      expr: compute_stats(employeeid, 16)
-                bucketGroup: false
+                aggregations: compute_stats(employeeid, 16)
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: compute_stats(VALUE._col0)
-          bucketGroup: false
+          aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint>
+            expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint>)
             outputColumnNames: _col0
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -95,7 +79,18 @@ POSTHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_ANALYZE (TOK_TAB (TOK_TABNAME Employee_Part) (TOK_PARTSPEC (TOK_PARTVAL employeeSalary 2000.0))) (TOK_TABCOLNAME employeeID))
+  
+TOK_ANALYZE
+   TOK_TAB
+      TOK_TABNAME
+         Employee_Part
+      TOK_PARTSPEC
+         TOK_PARTVAL
+            employeeSalary
+            2000.0
+   TOK_TABCOLNAME
+      employeeID
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -104,28 +99,21 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Map Reduce
-      Alias -> Map Operator Tree:
-        employee_part 
+      Map Operator Tree:
           TableScan
             alias: employee_part
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: employeeid
-                    type: int
+              expressions: employeeid (type: int)
               outputColumnNames: employeeid
               Group By Operator
-                aggregations:
-                      expr: compute_stats(employeeid, 16)
-                bucketGroup: false
+                aggregations: compute_stats(employeeid, 16)
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -177,15 +165,11 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: compute_stats(VALUE._col0)
-          bucketGroup: false
+          aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint>
+            expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint>)
             outputColumnNames: _col0
             File Output Operator
               compressed: false
@@ -233,9 +217,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_ANALYZE (TOK_TAB (TOK_TABNAME Employee_Part) (TOK_PARTSPEC (TOK_PARTVAL employeeSalary 4000.0))) (TOK_TABCOLNAME employeeID))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 is a root stage
@@ -243,42 +224,29 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Map Reduce
-      Alias -> Map Operator Tree:
-        employee_part 
+      Map Operator Tree:
           TableScan
             alias: employee_part
             Select Operator
-              expressions:
-                    expr: employeeid
-                    type: int
+              expressions: employeeid (type: int)
               outputColumnNames: employeeid
               Group By Operator
-                aggregations:
-                      expr: compute_stats(employeeid, 16)
-                bucketGroup: false
+                aggregations: compute_stats(employeeid, 16)
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: compute_stats(VALUE._col0)
-          bucketGroup: false
+          aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint>
+            expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint>)
             outputColumnNames: _col0
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -299,7 +267,18 @@ POSTHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_ANALYZE (TOK_TAB (TOK_TABNAME Employee_Part) (TOK_PARTSPEC (TOK_PARTVAL employeeSalary 4000.0))) (TOK_TABCOLNAME employeeID))
+  
+TOK_ANALYZE
+   TOK_TAB
+      TOK_TABNAME
+         Employee_Part
+      TOK_PARTSPEC
+         TOK_PARTVAL
+            employeeSalary
+            4000.0
+   TOK_TABCOLNAME
+      employeeID
+
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -308,28 +287,21 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Map Reduce
-      Alias -> Map Operator Tree:
-        employee_part 
+      Map Operator Tree:
           TableScan
             alias: employee_part
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: employeeid
-                    type: int
+              expressions: employeeid (type: int)
               outputColumnNames: employeeid
               Group By Operator
-                aggregations:
-                      expr: compute_stats(employeeid, 16)
-                bucketGroup: false
+                aggregations: compute_stats(employeeid, 16)
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -381,15 +353,11 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: compute_stats(VALUE._col0)
-          bucketGroup: false
+          aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint>
+            expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint>)
             outputColumnNames: _col0
             File Output Operator
               compressed: false

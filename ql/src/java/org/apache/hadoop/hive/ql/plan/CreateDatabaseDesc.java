@@ -58,7 +58,7 @@ public class CreateDatabaseDesc extends DDLDesc implements Serializable {
 
 
 
-  @Explain(displayName="if not exists")
+  @Explain(displayName="if not exists", displayOnlyOnTrue = true)
   public boolean getIfNotExists() {
     return ifNotExists;
   }

@@ -145,7 +145,6 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     return sb.toString();
   }
 
-  @Explain(displayName = "expr")
   @Override
   public String getExprString() {
     // Get the children expr strings

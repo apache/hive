@@ -54,9 +54,6 @@ POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).key EXPRESSION [(src)src.Field
 POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME rcfile_merge3a))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME rcfile_merge3b))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -70,20 +67,17 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        rcfile_merge3a 
+      Map Operator Tree:
           TableScan
             alias: rcfile_merge3a
+            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: key
-                    type: int
-                    expr: value
-                    type: string
+              expressions: key (type: int), value (type: string)
               outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                GlobalTableId: 1
+                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat

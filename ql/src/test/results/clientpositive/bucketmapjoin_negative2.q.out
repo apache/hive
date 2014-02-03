@@ -64,7 +64,54 @@ from srcbucket_mapjoin a join srcbucket_mapjoin_part_2 b
 on a.key=b.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin) a) (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin_part_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME bucketmapjoin_tmp_result))) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_TABREF
+            TOK_TABNAME
+               srcbucket_mapjoin
+            a
+         TOK_TABREF
+            TOK_TABNAME
+               srcbucket_mapjoin_part_2
+            b
+         =
+            .
+               TOK_TABLE_OR_COL
+                  a
+               key
+            .
+               TOK_TABLE_OR_COL
+                  b
+               key
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_TAB
+            TOK_TABNAME
+               bucketmapjoin_tmp_result
+      TOK_SELECT
+         TOK_HINTLIST
+            TOK_HINT
+               TOK_MAPJOIN
+               TOK_HINTARGLIST
+                  b
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  a
+               key
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  a
+               value
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  b
+               value
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -79,12 +126,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
-            Statistics:
-                numRows: 26 dataSize: 2750 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -92,33 +137,23 @@ STAGE PLANS:
               condition expressions:
                 0 {key} {value}
                 1 {value}
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               outputColumnNames: _col0, _col1, _col5
               Position of Big Table: 0
-              Statistics:
-                  numRows: 63 dataSize: 6736 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 63 Data size: 6736 Basic stats: COMPLETE Column stats: NONE
               BucketMapJoin: true
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col5
-                      type: string
+                expressions: _col0 (type: int), _col1 (type: string), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics:
-                    numRows: 63 dataSize: 6736 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 63 Data size: 6736 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics:
-                      numRows: 63 dataSize: 6736 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 63 Data size: 6736 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -231,8 +266,7 @@ STAGE PLANS:
             b 
               TableScan
                 alias: b
-                Statistics:
-                    numRows: 58 dataSize: 6124 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 58 Data size: 6124 Basic stats: COMPLETE Column stats: NONE
                 GatherStats: false
           Bucket Mapjoin Context:
               Alias Bucket Base File Name Mapping:
@@ -327,8 +361,7 @@ STAGE PLANS:
 
   Stage: Stage-4
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             GatherStats: false
             File Output Operator
@@ -394,8 +427,7 @@ STAGE PLANS:
 
   Stage: Stage-6
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             GatherStats: false
             File Output Operator

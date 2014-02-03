@@ -42,9 +42,6 @@ POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
-
 STAGE DEPENDENCIES:
   Stage-4 is a root stage , consists of Stage-3, Stage-1
   Stage-3 has a backup stage: Stage-1
@@ -57,8 +54,7 @@ STAGE PLANS:
 
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
             Map Join Operator
@@ -67,24 +63,17 @@ STAGE PLANS:
               condition expressions:
                 0 
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
+                0 key (type: int)
+                1 key (type: int)
               Select Operator
                 Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
                   Reduce Output Operator
                     sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                    value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -97,19 +86,14 @@ STAGE PLANS:
                 alias: b
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -117,49 +101,37 @@ STAGE PLANS:
 
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Left Outer Join0 to 1
               condition expressions:
                 0 
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 0
+                0 key (type: int)
+                1 key (type: int)
               Select Operator
                 Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
                   Reduce Output Operator
                     sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                    value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -212,9 +184,6 @@ POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
-
 STAGE DEPENDENCIES:
   Stage-4 is a root stage , consists of Stage-3, Stage-1
   Stage-3 has a backup stage: Stage-1
@@ -227,8 +196,7 @@ STAGE PLANS:
 
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-        b 
+      Map Operator Tree:
           TableScan
             alias: b
             Map Join Operator
@@ -237,24 +205,17 @@ STAGE PLANS:
               condition expressions:
                 0 
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 1
+                0 key (type: int)
+                1 key (type: int)
               Select Operator
                 Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
                   Reduce Output Operator
                     sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                    value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -267,19 +228,14 @@ STAGE PLANS:
                 alias: a
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -287,49 +243,37 @@ STAGE PLANS:
 
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        b 
+      Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 189 Data size: 1891 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Right Outer Join0 to 1
               condition expressions:
                 0 
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              Position of Big Table: 1
+                0 key (type: int)
+                1 key (type: int)
               Select Operator
                 Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
                   Reduce Output Operator
                     sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                    value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

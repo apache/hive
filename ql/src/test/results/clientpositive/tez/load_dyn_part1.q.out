@@ -42,9 +42,6 @@ from srcpart
 insert overwrite table nzhang_part1 partition (ds, hr) select key, value, ds, hr where ds <= '2008-04-08'
 insert overwrite table nzhang_part2 partition(ds='2008-12-31', hr) select key, value, hr where ds > '2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME nzhang_part1) (TOK_PARTSPEC (TOK_PARTVAL ds) (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL ds)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (<= (TOK_TABLE_OR_COL ds) '2008-04-08'))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME nzhang_part2) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-12-31') (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (> (TOK_TABLE_OR_COL ds) '2008-04-08'))))
-
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-9 depends on stages: Stage-2 , consists of Stage-6, Stage-5, Stage-7
@@ -66,54 +63,42 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Tez
-      Alias -> Map Operator Tree:
-        srcpart 
-          TableScan
-            alias: srcpart
-            Filter Operator
-              predicate:
-                  expr: (ds <= '2008-04-08')
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
-                outputColumnNames: _col0, _col1, _col2, _col3
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.nzhang_part1
-            Filter Operator
-              predicate:
-                  expr: (ds > '2008-04-08')
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: hr
-                      type: string
-                outputColumnNames: _col0, _col1, _col2
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 2
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.nzhang_part2
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 116 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (ds <= '2008-04-08') (type: boolean)
+                    Statistics: Num rows: 38 Data size: 7615 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 38 Data size: 7615 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 38 Data size: 7615 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.nzhang_part1
+                  Filter Operator
+                    predicate: (ds > '2008-04-08') (type: boolean)
+                    Statistics: Num rows: 38 Data size: 7615 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), value (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 38 Data size: 7615 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 38 Data size: 7615 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.nzhang_part2
 
   Stage: Stage-9
     Conditional Operator
@@ -161,31 +146,31 @@ STAGE PLANS:
 
   Stage: Stage-5
     Tez
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          TableScan
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.nzhang_part1
+      Vertices:
+        Merge 
+            Map Operator Tree:
+                TableScan
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.nzhang_part1
 
   Stage: Stage-7
     Tez
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          TableScan
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.nzhang_part1
+      Vertices:
+        Merge 
+            Map Operator Tree:
+                TableScan
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.nzhang_part1
 
   Stage: Stage-8
     Move Operator
@@ -204,31 +189,31 @@ STAGE PLANS:
 
   Stage: Stage-11
     Tez
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          TableScan
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.nzhang_part2
+      Vertices:
+        Merge 
+            Map Operator Tree:
+                TableScan
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.nzhang_part2
 
   Stage: Stage-13
     Tez
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          TableScan
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.nzhang_part2
+      Vertices:
+        Merge 
+            Map Operator Tree:
+                TableScan
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.nzhang_part2
 
   Stage: Stage-14
     Move Operator

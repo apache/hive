@@ -44,9 +44,6 @@ POSTHOOK: query: EXPLAIN
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
-ABSTRACT SYNTAX TREE:
-#### A masked pattern was here ####
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -57,11 +54,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_json
+          Statistics: Num rows: 6 Data size: 645 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
 #### A masked pattern was here ####
-                  type: string
             outputColumnNames: _col0
+            Statistics: Num rows: 6 Data size: 645 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT get_json_object(src_json.json, '$') FROM src_json

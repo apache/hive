@@ -10,9 +10,6 @@ JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-3 depends on stages: Stage-1
@@ -21,43 +18,35 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        c 
+      Map Operator Tree:
           TableScan
             alias: c
+            Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
                 0 {value}
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: string)
+                1 key (type: string)
               outputColumnNames: _col1
-              Position of Big Table: 0
+              Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: _col1
-                      type: string
+                expressions: _col1 (type: string)
                 outputColumnNames: _col1
+                Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  bucketGroup: false
-                  keys:
-                        expr: _col1
-                        type: string
+                  keys: _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
+                    key expressions: _col0 (type: string)
                     sort order: +
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
+                    Map-reduce partition columns: rand() (type: double)
+                    Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -68,17 +57,15 @@ STAGE PLANS:
             d 
               TableScan
                 alias: d
+                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
+          keys: KEY._col0 (type: string)
           mode: partials
           outputColumnNames: _col0
+          Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 0
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -86,34 +73,26 @@ STAGE PLANS:
 
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
+              key expressions: _col0 (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: -1
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
+          keys: KEY._col0 (type: string)
           mode: final
           outputColumnNames: _col0
+          Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
+            expressions: _col0 (type: string)
             outputColumnNames: _col0
+            Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -163,9 +142,6 @@ JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -173,43 +149,35 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        c 
+      Map Operator Tree:
           TableScan
             alias: c
+            Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
                 0 {value}
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: string)
+                1 key (type: string)
               outputColumnNames: _col1
-              Position of Big Table: 0
+              Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: _col1
-                      type: string
+                expressions: _col1 (type: string)
                 outputColumnNames: _col1
+                Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  bucketGroup: false
-                  keys:
-                        expr: _col1
-                        type: string
+                  keys: _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
+                    key expressions: _col0 (type: string)
                     sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: -1
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -220,22 +188,20 @@ STAGE PLANS:
             d 
               TableScan
                 alias: d
+                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
+          keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
+            expressions: _col0 (type: string)
             outputColumnNames: _col0
+            Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -285,9 +251,6 @@ JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-3 depends on stages: Stage-1
@@ -296,36 +259,30 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        c 
+      Map Operator Tree:
           TableScan
             alias: c
+            Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
                 0 {value}
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: string)
+                1 key (type: string)
               outputColumnNames: _col1
-              Position of Big Table: 0
+              Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: _col1
-                      type: string
+                expressions: _col1 (type: string)
                 outputColumnNames: _col1
+                Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col1
-                        type: string
+                  key expressions: _col1 (type: string)
                   sort order: +
-                  Map-reduce partition columns:
-                        expr: rand()
-                        type: double
-                  tag: -1
+                  Map-reduce partition columns: rand() (type: double)
+                  Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -336,17 +293,15 @@ STAGE PLANS:
             d 
               TableScan
                 alias: d
+                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
+          keys: KEY._col0 (type: string)
           mode: partial1
           outputColumnNames: _col0
+          Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 0
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -354,34 +309,26 @@ STAGE PLANS:
 
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
+              key expressions: _col0 (type: string)
               sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: -1
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
+          keys: KEY._col0 (type: string)
           mode: final
           outputColumnNames: _col0
+          Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
+            expressions: _col0 (type: string)
             outputColumnNames: _col0
+            Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -431,9 +378,6 @@ JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -441,36 +385,30 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        c 
+      Map Operator Tree:
           TableScan
             alias: c
+            Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
                 0 {value}
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: string)
+                1 key (type: string)
               outputColumnNames: _col1
-              Position of Big Table: 0
+              Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: _col1
-                      type: string
+                expressions: _col1 (type: string)
                 outputColumnNames: _col1
+                Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col1
-                        type: string
+                  key expressions: _col1 (type: string)
                   sort order: +
-                  Map-reduce partition columns:
-                        expr: _col1
-                        type: string
-                  tag: -1
+                  Map-reduce partition columns: _col1 (type: string)
+                  Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -481,22 +419,20 @@ STAGE PLANS:
             d 
               TableScan
                 alias: d
+                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
+          keys: KEY._col0 (type: string)
           mode: complete
           outputColumnNames: _col0
+          Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
+            expressions: _col0 (type: string)
             outputColumnNames: _col0
+            Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 63 Data size: 6342 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
