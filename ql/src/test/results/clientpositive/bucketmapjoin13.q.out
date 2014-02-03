@@ -95,7 +95,41 @@ POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).value SIMPLE [(src
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin_part_1) a) (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin_part_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_TABREF
+            TOK_TABNAME
+               srcbucket_mapjoin_part_1
+            a
+         TOK_TABREF
+            TOK_TABNAME
+               srcbucket_mapjoin_part_2
+            b
+         =
+            .
+               TOK_TABLE_OR_COL
+                  a
+               key
+            .
+               TOK_TABLE_OR_COL
+                  b
+               key
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_HINTLIST
+            TOK_HINT
+               TOK_MAPJOIN
+               TOK_HINTARGLIST
+                  b
+         TOK_SELEXPR
+            TOK_FUNCTIONSTAR
+               count
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -104,12 +138,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
-            Statistics:
-                numRows: 1000 dataSize: 10624 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -117,32 +149,23 @@ STAGE PLANS:
               condition expressions:
                 0 
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               Position of Big Table: 0
-              Statistics:
-                  numRows: 1100 dataSize: 11686 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                Statistics:
-                    numRows: 1100 dataSize: 11686 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics:
-                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics:
-                        numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                    value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -195,8 +218,7 @@ STAGE PLANS:
             b 
               TableScan
                 alias: b
-                Statistics:
-                    numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -293,27 +315,20 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics:
-              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics:
-                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -382,7 +397,48 @@ POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).value SIMPLE [(src
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin_part_1) a) (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin_part_2) b) (and (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (= (. (TOK_TABLE_OR_COL a) part) '2')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_TABREF
+            TOK_TABNAME
+               srcbucket_mapjoin_part_1
+            a
+         TOK_TABREF
+            TOK_TABNAME
+               srcbucket_mapjoin_part_2
+            b
+         and
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     a
+                  key
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  key
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     a
+                  part
+               '2'
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_HINTLIST
+            TOK_HINT
+               TOK_MAPJOIN
+               TOK_HINTARGLIST
+                  b
+         TOK_SELEXPR
+            TOK_FUNCTIONSTAR
+               count
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -391,12 +447,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
-            Statistics:
-                numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -404,33 +458,24 @@ STAGE PLANS:
               condition expressions:
                 0 
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               Position of Big Table: 0
-              Statistics:
-                  numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               BucketMapJoin: true
               Select Operator
-                Statistics:
-                    numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics:
-                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics:
-                        numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                    value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -483,8 +528,7 @@ STAGE PLANS:
             b 
               TableScan
                 alias: b
-                Statistics:
-                    numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 GatherStats: false
           Bucket Mapjoin Context:
               Alias Bucket Base File Name Mapping:
@@ -544,27 +588,20 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics:
-              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics:
-                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -645,7 +682,41 @@ POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).value SIMPLE [(src
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin_part_1) a) (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin_part_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_TABREF
+            TOK_TABNAME
+               srcbucket_mapjoin_part_1
+            a
+         TOK_TABREF
+            TOK_TABNAME
+               srcbucket_mapjoin_part_2
+            b
+         =
+            .
+               TOK_TABLE_OR_COL
+                  a
+               key
+            .
+               TOK_TABLE_OR_COL
+                  b
+               key
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_HINTLIST
+            TOK_HINT
+               TOK_MAPJOIN
+               TOK_HINTARGLIST
+                  b
+         TOK_SELEXPR
+            TOK_FUNCTIONSTAR
+               count
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -654,12 +725,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
-            Statistics:
-                numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -667,33 +736,24 @@ STAGE PLANS:
               condition expressions:
                 0 
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               Position of Big Table: 0
-              Statistics:
-                  numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               BucketMapJoin: true
               Select Operator
-                Statistics:
-                    numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics:
-                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics:
-                        numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                    value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -746,8 +806,7 @@ STAGE PLANS:
             b 
               TableScan
                 alias: b
-                Statistics:
-                    numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 GatherStats: false
           Bucket Mapjoin Context:
               Alias Bucket Base File Name Mapping:
@@ -807,27 +866,20 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics:
-              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics:
-                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -910,7 +962,41 @@ POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).value SIMPLE [(src
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin_part_1) a) (TOK_TABREF (TOK_TABNAME srcbucket_mapjoin_part_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_TABREF
+            TOK_TABNAME
+               srcbucket_mapjoin_part_1
+            a
+         TOK_TABREF
+            TOK_TABNAME
+               srcbucket_mapjoin_part_2
+            b
+         =
+            .
+               TOK_TABLE_OR_COL
+                  a
+               key
+            .
+               TOK_TABLE_OR_COL
+                  b
+               key
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_HINTLIST
+            TOK_HINT
+               TOK_MAPJOIN
+               TOK_HINTARGLIST
+                  b
+         TOK_SELEXPR
+            TOK_FUNCTIONSTAR
+               count
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -919,12 +1005,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
-            Statistics:
-                numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -932,33 +1016,24 @@ STAGE PLANS:
               condition expressions:
                 0 
                 1 
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               Position of Big Table: 0
-              Statistics:
-                  numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               BucketMapJoin: true
               Select Operator
-                Statistics:
-                    numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics:
-                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics:
-                        numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                    value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -1011,8 +1086,7 @@ STAGE PLANS:
             b 
               TableScan
                 alias: b
-                Statistics:
-                    numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 GatherStats: false
           Bucket Mapjoin Context:
               Alias Bucket Base File Name Mapping:
@@ -1072,27 +1146,20 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics:
-              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics:
-                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat

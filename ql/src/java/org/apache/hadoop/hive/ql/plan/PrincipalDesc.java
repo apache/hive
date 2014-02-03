@@ -50,7 +50,7 @@ public class PrincipalDesc implements Serializable, Cloneable {
     this.name = name;
   }
 
-  @Explain(displayName="type")
+  @Explain(displayName="type", normalExplain = false)
   public PrincipalType getType() {
     return type;
   }

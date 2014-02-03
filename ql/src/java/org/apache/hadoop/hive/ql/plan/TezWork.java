@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,9 +58,20 @@ public class TezWork extends AbstractOperatorDesc {
       new HashMap<Pair<BaseWork, BaseWork>, EdgeType>();
 
   /**
+   * getWorkMap returns a map of "vertex name" to BaseWork
+   */
+  @Explain(displayName = "Vertices")
+  public Map<String, BaseWork> getWorkMap() {
+    Map<String, BaseWork> result = new LinkedHashMap<String, BaseWork>();
+    for (BaseWork w: getAllWork()) {
+      result.put(w.getName(), w);
+    }
+    return result;
+  }
+
+  /**
    * getAllWork returns a topologically sorted list of BaseWork
    */
-  @Explain(skipHeader = true, displayName = "Tez Work")
   public List<BaseWork> getAllWork() {
 
     List<BaseWork> result = new LinkedList<BaseWork>();
@@ -217,7 +230,46 @@ public class TezWork extends AbstractOperatorDesc {
     invertedWorkGraph.remove(work);
   }
 
+  /**
+   * returns the edge type connecting work a and b
+   */
   public EdgeType getEdgeProperty(BaseWork a, BaseWork b) {
     return edgeProperties.get(new ImmutablePair(a,b));
+  }
+
+  /*
+   * Dependency is a class used for explain
+   */ 
+  public class Dependency implements Serializable {
+    public BaseWork w;
+    public EdgeType type;
+
+    @Explain(displayName = "Name")
+    public String getName() {
+      return w.getName();
+    }
+    
+    @Explain(displayName = "Type")
+    public String getType() {
+      return type.toString();
+    }
+  }
+
+  @Explain(displayName = "Edges")
+  public Map<String, List<Dependency>> getDependencyMap() {
+    Map<String, List<Dependency>> result = new LinkedHashMap<String, List<Dependency>>();
+    for (Map.Entry<BaseWork, List<BaseWork>> entry: invertedWorkGraph.entrySet()) {
+      List dependencies = new LinkedList<Dependency>();
+      for (BaseWork d: entry.getValue()) {
+        Dependency dependency = new Dependency();
+        dependency.w = d;
+        dependency.type = getEdgeProperty(d, entry.getKey());
+        dependencies.add(dependency);
+      }
+      if (!dependencies.isEmpty()) {
+        result.put(entry.getKey().getName(), dependencies);
+      }
+    }
+    return result;
   }
 }

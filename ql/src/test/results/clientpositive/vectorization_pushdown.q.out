@@ -3,9 +3,6 @@ PREHOOK: query: explain SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdo
 PREHOOK: type: QUERY
 POSTHOOK: query: explain SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION AVG (TOK_TABLE_OR_COL cbigint)))) (TOK_WHERE (< (TOK_TABLE_OR_COL cbigint) (TOK_TABLE_OR_COL cdouble)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -13,52 +10,41 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
             filterExpr:
-                expr: (cbigint < cdouble)
-                type: boolean
+            Statistics: Num rows: 23577 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: (cbigint < cdouble)
-                  type: boolean
-              Vectorized execution: true
+              predicate: (cbigint < cdouble) (type: boolean)
+              Statistics: Num rows: 7859 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: cbigint
-                      type: bigint
+                expressions: cbigint (type: bigint)
                 outputColumnNames: cbigint
-                Vectorized execution: true
+                Statistics: Num rows: 7859 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: avg(cbigint)
-                  bucketGroup: false
+                  aggregations: avg(cbigint)
                   mode: hash
                   outputColumnNames: _col0
-                  Vectorized execution: true
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: struct<count:bigint,sum:double>
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    value expressions: _col0 (type: struct<count:bigint,sum:double>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: avg(VALUE._col0)
-          bucketGroup: false
+          aggregations: avg(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: double
+            expressions: _col0 (type: double)
             outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

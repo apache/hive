@@ -2,9 +2,6 @@ PREHOOK: query: explain select * from srcpart where key < 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from srcpart where key < 10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -12,28 +9,20 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        srcpart 
+      Map Operator Tree:
           TableScan
             alias: srcpart
+            Statistics: Num rows: 116 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
+              predicate: (key < 10) (type: boolean)
+              Statistics: Num rows: 38 Data size: 7615 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
+                expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 38 Data size: 7615 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
+                  Statistics: Num rows: 38 Data size: 7615 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -103,9 +92,6 @@ PREHOOK: query: explain select * from srcpart
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from srcpart
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -116,17 +102,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          Statistics: Num rows: 116 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: key
-                  type: string
-                  expr: value
-                  type: string
-                  expr: ds
-                  type: string
-                  expr: hr
-                  type: string
+            expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 116 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select * from srcpart
@@ -2149,9 +2129,6 @@ PREHOOK: query: explain select key from srcpart
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key from srcpart
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -2159,18 +2136,17 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        srcpart 
+      Map Operator Tree:
           TableScan
             alias: srcpart
+            Statistics: Num rows: 232 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: key
-                    type: string
+              expressions: key (type: string)
               outputColumnNames: _col0
+              Statistics: Num rows: 232 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                GlobalTableId: 0
+                Statistics: Num rows: 232 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

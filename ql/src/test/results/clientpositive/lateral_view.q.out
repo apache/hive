@@ -17,9 +17,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol (TOK_TABALIAS myTable))) (TOK_TABREF (TOK_TABNAME src)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL myCol))) (TOK_LIMIT 1)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -28,83 +25,55 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Lateral View Forward
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+                expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col1, _col4
+                  Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                          expr: _col4
-                          type: int
+                    expressions: _col0 (type: string), _col1 (type: string), _col4 (type: int)
                     outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col2
-                            type: int
+                      key expressions: _col0 (type: string), _col2 (type: int)
                       sort order: ++
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: int
+                      Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
               Select Operator
-                expressions:
-                      expr: array(1,2,3)
-                      type: array<int>
+                expressions: array(1,2,3) (type: array<int>)
                 outputColumnNames: _col0
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 UDTF Operator
+                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col0, _col1, _col4
+                    Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col1
-                            type: string
-                            expr: _col4
-                            type: int
+                      expressions: _col0 (type: string), _col1 (type: string), _col4 (type: int)
                       outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions:
-                              expr: _col0
-                              type: string
-                              expr: _col2
-                              type: int
+                        key expressions: _col0 (type: string), _col2 (type: int)
                         sort order: ++
-                        tag: -1
-                        value expressions:
-                              expr: _col0
-                              type: string
-                              expr: _col1
-                              type: string
-                              expr: _col2
-                              type: int
+                        Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
           Limit
+            Number of rows: 1
+            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -112,30 +81,22 @@ STAGE PLANS:
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col2
-                    type: int
+              key expressions: _col0 (type: string), _col2 (type: int)
               sort order: ++
-              tag: -1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-                    expr: _col2
-                    type: int
+              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
           Limit
+            Number of rows: 1
+            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -150,9 +111,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol (TOK_TABALIAS myTable))) (TOK_TABREF (TOK_TABNAME src)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME myTable)))) (TOK_LIMIT 3)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -160,45 +118,51 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Lateral View Forward
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
               Select Operator
+                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                 Lateral View Join Operator
                   outputColumnNames: _col4
+                  Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
-                    expressions:
-                          expr: _col4
-                          type: int
+                    expressions: _col4 (type: int)
                     outputColumnNames: _col0
+                    Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                     Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        GlobalTableId: 0
+                        Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               Select Operator
-                expressions:
-                      expr: array(1,2,3)
-                      type: array<int>
+                expressions: array(1,2,3) (type: array<int>)
                 outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                 UDTF Operator
+                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col4
+                    Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
-                      expressions:
-                            expr: _col4
-                            type: int
+                      expressions: _col4 (type: int)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                       Limit
+                        Number of rows: 3
+                        Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          GlobalTableId: 0
+                          Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -213,9 +177,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 'a' 'b' 'c')) myCol2 (TOK_TABALIAS myTable2))) (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol (TOK_TABALIAS myTable))) (TOK_TABREF (TOK_TABNAME src))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL myTable) myCol)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL myTable2) myCol2))) (TOK_LIMIT 9)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -223,113 +184,117 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Lateral View Forward
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
               Select Operator
+                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                 Lateral View Join Operator
                   outputColumnNames: _col4
+                  Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                   Lateral View Forward
+                    Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
-                      expressions:
-                            expr: _col4
-                            type: int
+                      expressions: _col4 (type: int)
                       outputColumnNames: _col4
+                      Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col4, _col5
+                        Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                         Select Operator
-                          expressions:
-                                expr: _col4
-                                type: int
-                                expr: _col5
-                                type: string
+                          expressions: _col4 (type: int), _col5 (type: string)
                           outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                           Limit
+                            Number of rows: 9
+                            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                             File Output Operator
                               compressed: false
-                              GlobalTableId: 0
+                              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                               table:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     Select Operator
-                      expressions:
-                            expr: array('a','b','c')
-                            type: array<string>
+                      expressions: array('a','b','c') (type: array<string>)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                       UDTF Operator
+                        Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col4, _col5
+                          Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                           Select Operator
-                            expressions:
-                                  expr: _col4
-                                  type: int
-                                  expr: _col5
-                                  type: string
+                            expressions: _col4 (type: int), _col5 (type: string)
                             outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                             Limit
+                              Number of rows: 9
+                              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                               File Output Operator
                                 compressed: false
-                                GlobalTableId: 0
+                                Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                                 table:
                                     input format: org.apache.hadoop.mapred.TextInputFormat
                                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               Select Operator
-                expressions:
-                      expr: array(1,2,3)
-                      type: array<int>
+                expressions: array(1,2,3) (type: array<int>)
                 outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                 UDTF Operator
+                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col4
+                    Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                     Lateral View Forward
+                      Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                       Select Operator
-                        expressions:
-                              expr: _col4
-                              type: int
+                        expressions: _col4 (type: int)
                         outputColumnNames: _col4
+                        Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                         Lateral View Join Operator
                           outputColumnNames: _col4, _col5
+                          Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                           Select Operator
-                            expressions:
-                                  expr: _col4
-                                  type: int
-                                  expr: _col5
-                                  type: string
+                            expressions: _col4 (type: int), _col5 (type: string)
                             outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                             Limit
+                              Number of rows: 9
+                              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                               File Output Operator
                                 compressed: false
-                                GlobalTableId: 0
+                                Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                                 table:
                                     input format: org.apache.hadoop.mapred.TextInputFormat
                                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       Select Operator
-                        expressions:
-                              expr: array('a','b','c')
-                              type: array<string>
+                        expressions: array('a','b','c') (type: array<string>)
                         outputColumnNames: _col0
+                        Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                         UDTF Operator
+                          Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                           function name: explode
                           Lateral View Join Operator
                             outputColumnNames: _col4, _col5
+                            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                             Select Operator
-                              expressions:
-                                    expr: _col4
-                                    type: int
-                                    expr: _col5
-                                    type: string
+                              expressions: _col4 (type: int), _col5 (type: string)
                               outputColumnNames: _col0, _col1
+                              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                               Limit
+                                Number of rows: 9
+                                Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                                 File Output Operator
                                   compressed: false
-                                  GlobalTableId: 0
+                                  Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                                   table:
                                       input format: org.apache.hadoop.mapred.TextInputFormat
                                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -344,9 +309,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (. (TOK_TABLE_OR_COL myTable) myCol)) myCol2 (TOK_TABALIAS myTable2))) (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array (TOK_FUNCTION array 1 2 3))) myCol (TOK_TABALIAS myTable))) (TOK_TABREF (TOK_TABNAME src))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME myTable2)))) (TOK_LIMIT 3)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -354,97 +316,113 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
             Lateral View Forward
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
               Select Operator
+                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                 Lateral View Join Operator
                   outputColumnNames: _col4
+                  Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                   Lateral View Forward
+                    Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
+                      Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col5
+                        Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                         Select Operator
-                          expressions:
-                                expr: _col5
-                                type: int
+                          expressions: _col5 (type: int)
                           outputColumnNames: _col0
+                          Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                           Limit
+                            Number of rows: 3
+                            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                             File Output Operator
                               compressed: false
-                              GlobalTableId: 0
+                              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                               table:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     Select Operator
-                      expressions:
-                            expr: _col4
-                            type: array<int>
+                      expressions: _col4 (type: array<int>)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                       UDTF Operator
+                        Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col5
+                          Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                           Select Operator
-                            expressions:
-                                  expr: _col5
-                                  type: int
+                            expressions: _col5 (type: int)
                             outputColumnNames: _col0
+                            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                             Limit
+                              Number of rows: 3
+                              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                               File Output Operator
                                 compressed: false
-                                GlobalTableId: 0
+                                Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                                 table:
                                     input format: org.apache.hadoop.mapred.TextInputFormat
                                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               Select Operator
-                expressions:
-                      expr: array(array(1,2,3))
-                      type: array<array<int>>
+                expressions: array(array(1,2,3)) (type: array<array<int>>)
                 outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                 UDTF Operator
+                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col4
+                    Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                     Lateral View Forward
+                      Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                       Select Operator
+                        Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                         Lateral View Join Operator
                           outputColumnNames: _col5
+                          Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                           Select Operator
-                            expressions:
-                                  expr: _col5
-                                  type: int
+                            expressions: _col5 (type: int)
                             outputColumnNames: _col0
+                            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                             Limit
+                              Number of rows: 3
+                              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                               File Output Operator
                                 compressed: false
-                                GlobalTableId: 0
+                                Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                                 table:
                                     input format: org.apache.hadoop.mapred.TextInputFormat
                                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       Select Operator
-                        expressions:
-                              expr: _col4
-                              type: array<int>
+                        expressions: _col4 (type: array<int>)
                         outputColumnNames: _col0
+                        Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                         UDTF Operator
+                          Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
                           function name: explode
                           Lateral View Join Operator
                             outputColumnNames: _col5
+                            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                             Select Operator
-                              expressions:
-                                    expr: _col5
-                                    type: int
+                              expressions: _col5 (type: int)
                               outputColumnNames: _col0
+                              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                               Limit
+                                Number of rows: 3
+                                Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                                 File Output Operator
                                   compressed: false
-                                  GlobalTableId: 0
+                                  Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
                                   table:
                                       input format: org.apache.hadoop.mapred.TextInputFormat
                                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -521,9 +499,6 @@ POSTHOOK: query: EXPLAIN
 SELECT myCol from tmp_pyang_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol (TOK_TABALIAS myTab))) (TOK_TABREF (TOK_TABNAME tmp_pyang_lv)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL myCol))) (TOK_LIMIT 3)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -531,45 +506,51 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        tmp_pyang_lv 
+      Map Operator Tree:
           TableScan
             alias: tmp_pyang_lv
+            Statistics: Num rows: 500 Data size: 1406 Basic stats: COMPLETE Column stats: COMPLETE
             Lateral View Forward
+              Statistics: Num rows: 500 Data size: 1406 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
+                Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Lateral View Join Operator
                   outputColumnNames: _col3
+                  Statistics: Num rows: 1000 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions:
-                          expr: _col3
-                          type: int
+                    expressions: _col3 (type: int)
                     outputColumnNames: _col0
+                    Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Limit
+                      Number of rows: 3
+                      Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        GlobalTableId: 0
+                        Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               Select Operator
-                expressions:
-                      expr: array(1,2,3)
-                      type: array<int>
+                expressions: array(1,2,3) (type: array<int>)
                 outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
                 UDTF Operator
+                  Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col3
+                    Statistics: Num rows: 1000 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions:
-                            expr: _col3
-                            type: int
+                      expressions: _col3 (type: int)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Limit
+                        Number of rows: 3
+                        Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          GlobalTableId: 0
+                          Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -821,9 +802,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_TABLE_OR_COL value)) myCol (TOK_TABALIAS myTable))) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tmp_pyang_src_rcfile))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION array ([ (TOK_TABLE_OR_COL value) 0)) value)) (TOK_GROUPBY ([ (TOK_TABLE_OR_COL value) 0) (TOK_TABLE_OR_COL key)))) a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL myCol)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -831,95 +809,71 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a:tmp_pyang_src_rcfile 
+      Map Operator Tree:
           TableScan
             alias: tmp_pyang_src_rcfile
+            Statistics: Num rows: 20 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: value
-                    type: array<string>
-                    expr: key
-                    type: string
+              expressions: value (type: array<string>), key (type: string)
               outputColumnNames: value, key
+              Statistics: Num rows: 20 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                bucketGroup: false
-                keys:
-                      expr: value[0]
-                      type: string
-                      expr: key
-                      type: string
+                keys: value[0] (type: string), key (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 20 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                  tag: -1
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 20 Data size: 184 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: string
-                expr: KEY._col1
-                type: string
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 10 Data size: 92 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: array(_col0)
-                  type: array<string>
+            expressions: array(_col0) (type: array<string>)
             outputColumnNames: _col1
+            Statistics: Num rows: 10 Data size: 92 Basic stats: COMPLETE Column stats: NONE
             Lateral View Forward
+              Statistics: Num rows: 10 Data size: 92 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: _col1
-                      type: array<string>
+                expressions: _col1 (type: array<string>)
                 outputColumnNames: _col1
+                Statistics: Num rows: 10 Data size: 92 Basic stats: COMPLETE Column stats: NONE
                 Lateral View Join Operator
                   outputColumnNames: _col1, _col2
+                  Statistics: Num rows: 20 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions:
-                          expr: _col1
-                          type: array<string>
-                          expr: _col2
-                          type: string
+                    expressions: _col1 (type: array<string>), _col2 (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 20 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      GlobalTableId: 0
+                      Statistics: Num rows: 20 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               Select Operator
-                expressions:
-                      expr: _col1
-                      type: array<string>
+                expressions: _col1 (type: array<string>)
                 outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 92 Basic stats: COMPLETE Column stats: NONE
                 UDTF Operator
+                  Statistics: Num rows: 10 Data size: 92 Basic stats: COMPLETE Column stats: NONE
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col1, _col2
+                    Statistics: Num rows: 20 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions:
-                            expr: _col1
-                            type: array<string>
-                            expr: _col2
-                            type: string
+                      expressions: _col1 (type: array<string>), _col2 (type: string)
                       outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 20 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        GlobalTableId: 0
+                        Statistics: Num rows: 20 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

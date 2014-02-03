@@ -349,7 +349,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.tagOrder = tagOrder;
   }
 
-  @Explain(displayName = "handleSkewJoin")
+  @Explain(displayName = "handleSkewJoin", displayOnlyOnTrue = true)
   public boolean getHandleSkewJoin() {
     return handleSkewJoin;
   }

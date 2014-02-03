@@ -18,9 +18,6 @@ FROM SRC
 INSERT OVERWRITE TABLE DEST1 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key) limit 10
 INSERT OVERWRITE TABLE DEST2 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value) limit 10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME DEST1))) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION ARRAY (. (TOK_TABLE_OR_COL SRC) key))) (TOK_SELEXPR (TOK_FUNCTION COUNT 1))) (TOK_GROUPBY (TOK_FUNCTION ARRAY (. (TOK_TABLE_OR_COL SRC) key))) (TOK_LIMIT 10)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME DEST2))) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION MAP (. (TOK_TABLE_OR_COL SRC) key) (. (TOK_TABLE_OR_COL SRC) value))) (TOK_SELEXPR (TOK_FUNCTION COUNT 1))) (TOK_GROUPBY (TOK_FUNCTION MAP (. (TOK_TABLE_OR_COL SRC) key) (. (TOK_TABLE_OR_COL SRC) value))) (TOK_LIMIT 10)))
-
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -34,80 +31,58 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-        src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: key
-                    type: string
+              expressions: key (type: string)
               outputColumnNames: key
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations:
-                      expr: count(1)
-                bucketGroup: false
-                keys:
-                      expr: array(key)
-                      type: array<string>
+                aggregations: count(1)
+                keys: array(key) (type: array<string>)
                 mode: hash
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: array<string>
+                  key expressions: _col0 (type: array<string>)
                   sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: array<string>
-                  tag: -1
-                  value expressions:
-                        expr: _col1
-                        type: bigint
+                  Map-reduce partition columns: _col0 (type: array<string>)
+                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
             Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+              expressions: key (type: string), value (type: string)
               outputColumnNames: key, value
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations:
-                      expr: count(1)
-                bucketGroup: false
-                keys:
-                      expr: map(key:value)
-                      type: map<string,string>
+                aggregations: count(1)
+                keys: map(key:value) (type: map<string,string>)
                 mode: hash
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: array<string>
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: array<string>)
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: array<string>
-                  expr: _col1
-                  type: bigint
+            expressions: _col0 (type: array<string>), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
             Limit
+              Number of rows: 10
+              Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                GlobalTableId: 0
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -115,23 +90,21 @@ STAGE PLANS:
 
   Stage: Stage-3
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
               sort order: 
-              tag: -1
-              value expressions:
-                    expr: _col0
-                    type: array<string>
-                    expr: _col1
-                    type: bigint
+              Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: array<string>), _col1 (type: bigint)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
           Limit
+            Number of rows: 10
+            Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 1
+              Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -153,42 +126,30 @@ STAGE PLANS:
 
   Stage: Stage-5
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: map<string,string>
+              key expressions: _col0 (type: map<string,string>)
               sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: map<string,string>
-              tag: -1
-              value expressions:
-                    expr: _col1
-                    type: bigint
+              Map-reduce partition columns: _col0 (type: map<string,string>)
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: map<string,string>
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: map<string,string>)
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: map<string,string>
-                  expr: _col1
-                  type: bigint
+            expressions: _col0 (type: map<string,string>), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 14 Data size: 2805 Basic stats: COMPLETE Column stats: NONE
             Limit
+              Number of rows: 10
+              Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                GlobalTableId: 0
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -196,23 +157,21 @@ STAGE PLANS:
 
   Stage: Stage-6
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
               sort order: 
-              tag: -1
-              value expressions:
-                    expr: _col0
-                    type: map<string,string>
-                    expr: _col1
-                    type: bigint
+              Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: map<string,string>), _col1 (type: bigint)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
           Limit
+            Number of rows: 10
+            Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 2
+              Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

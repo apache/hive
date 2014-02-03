@@ -40,9 +40,6 @@ SELECT a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test_table1) a)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME test_table2) (TOK_PARTSPEC (TOK_PARTVAL ds '1')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL a) ds) '1'))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -51,40 +48,26 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: key
-                    type: int
-                    expr: value
-                    type: string
-                    expr: value
-                    type: string
+              expressions: key (type: int), value (type: string), value (type: string)
               outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions:
-                      expr: UDFToString(_col0)
-                      type: string
+                key expressions: UDFToString(_col0) (type: string)
                 sort order: +
-                Map-reduce partition columns:
-                      expr: UDFToString(_col0)
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col2
-                      type: string
+                Map-reduce partition columns: UDFToString(_col0) (type: string)
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -200,9 +183,6 @@ POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchem
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test_table1) a)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME test_table3) (TOK_PARTSPEC (TOK_PARTVAL ds '1')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL a) ds) '1'))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -211,22 +191,17 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: value
-                    type: string
-                    expr: key
-                    type: int
-                    expr: value
-                    type: string
+              expressions: value (type: string), key (type: int), value (type: string)
               outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                GlobalTableId: 1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -383,9 +358,6 @@ POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.Fie
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test_table1) a)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME test_table2) (TOK_PARTSPEC (TOK_PARTVAL ds '2')))) (TOK_SELECT (TOK_SELEXPR (+ (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL a) key))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL a) ds) '1'))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -394,40 +366,26 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: (key + key)
-                    type: int
-                    expr: value
-                    type: string
-                    expr: value
-                    type: string
+              expressions: (key + key) (type: int), value (type: string), value (type: string)
               outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions:
-                      expr: UDFToString(_col0)
-                      type: string
+                key expressions: UDFToString(_col0) (type: string)
                 sort order: +
-                Map-reduce partition columns:
-                      expr: UDFToString(_col0)
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col2
-                      type: string
+                Map-reduce partition columns: UDFToString(_col0) (type: string)
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            GlobalTableId: 1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

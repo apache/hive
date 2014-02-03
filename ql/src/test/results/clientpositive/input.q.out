@@ -4,9 +4,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME x))))))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -17,13 +14,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: x
+          Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: key
-                  type: string
-                  expr: value
-                  type: string
+            expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT x.* FROM SRC x

@@ -99,7 +99,26 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).value SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alter_coltype))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_WHERE (= (TOK_TABLE_OR_COL dt) '100x'))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            alter_coltype
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_FUNCTIONSTAR
+               count
+      TOK_WHERE
+         =
+            TOK_TABLE_OR_COL
+               dt
+            '100x'
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -108,32 +127,23 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alter_coltype 
+      Map Operator Tree:
           TableScan
             alias: alter_coltype
-            Statistics:
-                numRows: 25 dataSize: 191 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              Statistics:
-                  numRows: 25 dataSize: 191 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations:
-                      expr: count()
-                bucketGroup: false
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
-                Statistics:
-                    numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics:
-                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
+                  value expressions: _col0 (type: bigint)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -184,27 +194,20 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics:
-              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics:
-                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -308,7 +311,26 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)s
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alter_coltype))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_WHERE (= (TOK_TABLE_OR_COL ts) '6:30pm'))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            alter_coltype
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_FUNCTIONSTAR
+               count
+      TOK_WHERE
+         =
+            TOK_TABLE_OR_COL
+               ts
+            '6:30pm'
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -317,32 +339,23 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alter_coltype 
+      Map Operator Tree:
           TableScan
             alias: alter_coltype
-            Statistics:
-                numRows: 25 dataSize: 191 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              Statistics:
-                  numRows: 25 dataSize: 191 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations:
-                      expr: count()
-                bucketGroup: false
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
-                Statistics:
-                    numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics:
-                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
+                  value expressions: _col0 (type: bigint)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -393,27 +406,20 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics:
-              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics:
-                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -470,7 +476,31 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)s
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alter_coltype))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL ts) 3.0) (= (TOK_TABLE_OR_COL dt) 10)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            alter_coltype
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_FUNCTIONSTAR
+               count
+      TOK_WHERE
+         and
+            =
+               TOK_TABLE_OR_COL
+                  ts
+               3.0
+            =
+               TOK_TABLE_OR_COL
+                  dt
+               10
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -479,39 +509,27 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alter_coltype 
+      Map Operator Tree:
           TableScan
             alias: alter_coltype
-            Statistics:
-                numRows: 75 dataSize: 573 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 75 Data size: 573 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate:
-                  expr: ((ts = 3.0) and (dt = 10))
-                  type: boolean
-              Statistics:
-                  numRows: 75 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
+              predicate: ((ts = 3.0) and (dt = 10)) (type: boolean)
+              Statistics: Num rows: 75 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Select Operator
-                Statistics:
-                    numRows: 75 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
+                Statistics: Num rows: 75 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics:
-                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     sort order: 
-                    Statistics:
-                        numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                    value expressions: _col0 (type: bigint)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -648,27 +666,20 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics:
-              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics:
-                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -797,7 +808,35 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)s
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alter_coltype))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL dt)) (TOK_SELEXPR (TOK_TABLE_OR_COL ts))) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL dt)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            alter_coltype
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               key
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               value
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               dt
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               ts
+      TOK_WHERE
+         TOK_FUNCTION
+            TOK_ISNOTNULL
+            TOK_TABLE_OR_COL
+               dt
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -806,33 +845,21 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alter_coltype 
+      Map Operator Tree:
           TableScan
             alias: alter_coltype
-            Statistics:
-                numRows: 75 dataSize: 573 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 75 Data size: 573 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-                    expr: dt
-                    type: string
-                    expr: ts
-                    type: string
+              expressions: key (type: string), value (type: string), dt (type: string), ts (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics:
-                  numRows: 75 dataSize: 573 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 75 Data size: 573 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics:
-                    numRows: 75 dataSize: 573 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 75 Data size: 573 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1041,7 +1068,31 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)s
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alter_coltype))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_WHERE (or (= (TOK_TABLE_OR_COL dt) '100x') (= (TOK_TABLE_OR_COL dt) '10')))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            alter_coltype
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_FUNCTIONSTAR
+               count
+      TOK_WHERE
+         or
+            =
+               TOK_TABLE_OR_COL
+                  dt
+               '100x'
+            =
+               TOK_TABLE_OR_COL
+                  dt
+               '10'
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1050,32 +1101,23 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alter_coltype 
+      Map Operator Tree:
           TableScan
             alias: alter_coltype
-            Statistics:
-                numRows: 75 dataSize: 573 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 75 Data size: 573 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              Statistics:
-                  numRows: 75 dataSize: 573 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 75 Data size: 573 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations:
-                      expr: count()
-                bucketGroup: false
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
-                Statistics:
-                    numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics:
-                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
+                  value expressions: _col0 (type: bigint)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1212,27 +1254,20 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics:
-              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
+            expressions: _col0 (type: bigint)
             outputColumnNames: _col0
-            Statistics:
-                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics:
-                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat

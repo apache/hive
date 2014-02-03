@@ -6,9 +6,6 @@ POSTHOOK: query: -- TODO: add more stuff here after HIVE-5918 is fixed, such as 
 explain
 select cdouble / 0.0 from alltypesorc limit 100
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (/ (TOK_TABLE_OR_COL cdouble) 0.0))) (TOK_LIMIT 100)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -16,26 +13,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
+            Statistics: Num rows: 47154 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: (cdouble / 0.0)
-                    type: double
+              expressions: (cdouble / 0.0) (type: double)
               outputColumnNames: _col0
-              Vectorized execution: true
+              Statistics: Num rows: 47154 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
               Limit
-                Vectorized execution: true
+                Number of rows: 100
+                Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
+                  Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  Vectorized execution: true
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -163,9 +159,6 @@ explain
 select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) 
 from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2 limit 100
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (- (TOK_TABLE_OR_COL cbigint) 988888L) s1) (TOK_SELEXPR (/ (TOK_TABLE_OR_COL cdouble) (- (TOK_TABLE_OR_COL cbigint) 988888L)) s2) (TOK_SELEXPR (/ 1.2 (- (TOK_TABLE_OR_COL cbigint) 988888L)))) (TOK_WHERE (and (> (TOK_TABLE_OR_COL cbigint) 0) (< (TOK_TABLE_OR_COL cbigint) 100000000))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL s1)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL s2))) (TOK_LIMIT 100)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -173,47 +166,32 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
+            Statistics: Num rows: 23577 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: ((cbigint > 0) and (cbigint < 100000000))
-                  type: boolean
-              Vectorized execution: true
+              predicate: ((cbigint > 0) and (cbigint < 100000000)) (type: boolean)
+              Statistics: Num rows: 2619 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: (cbigint - 988888)
-                      type: bigint
-                      expr: (cdouble / (cbigint - 988888))
-                      type: double
-                      expr: (1.2 / (cbigint - 988888))
-                      type: double
+                expressions: (cbigint - 988888) (type: bigint), (cdouble / (cbigint - 988888)) (type: double), (1.2 / (cbigint - 988888)) (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Vectorized execution: true
+                Statistics: Num rows: 2619 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: bigint
-                        expr: _col1
-                        type: double
+                  key expressions: _col0 (type: bigint), _col1 (type: double)
                   sort order: ++
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
-                        expr: _col1
-                        type: double
-                        expr: _col2
-                        type: double
-                  Vectorized execution: true
+                  Statistics: Num rows: 2619 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint), _col1 (type: double), _col2 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 2619 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
           Limit
+            Number of rows: 100
+            Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -345,9 +323,6 @@ explain
 select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0), cbigint / (cdouble + 200.0), 1 / (cdouble + 200.0), 1.2 / (cdouble + 200.0) 
 from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2 limit 100
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (TOK_TABLE_OR_COL cdouble) 200.0) s1) (TOK_SELEXPR (/ (TOK_TABLE_OR_COL cbigint) (+ (TOK_TABLE_OR_COL cdouble) 200.0)) s2) (TOK_SELEXPR (/ (+ (TOK_TABLE_OR_COL cdouble) 200.0) (+ (TOK_TABLE_OR_COL cdouble) 200.0))) (TOK_SELEXPR (/ (TOK_TABLE_OR_COL cbigint) (+ (TOK_TABLE_OR_COL cdouble) 200.0))) (TOK_SELEXPR (/ 1 (+ (TOK_TABLE_OR_COL cdouble) 200.0))) (TOK_SELEXPR (/ 1.2 (+ (TOK_TABLE_OR_COL cdouble) 200.0)))) (TOK_WHERE (and (>= (TOK_TABLE_OR_COL cdouble) (- 500)) (< (TOK_TABLE_OR_COL cdouble) (- 199)))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL s1)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL s2))) (TOK_LIMIT 100)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -355,59 +330,32 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
+            Statistics: Num rows: 23577 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: ((cdouble >= (- 500)) and (cdouble < (- 199)))
-                  type: boolean
-              Vectorized execution: true
+              predicate: ((cdouble >= (- 500)) and (cdouble < (- 199))) (type: boolean)
+              Statistics: Num rows: 2619 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: (cdouble + 200.0)
-                      type: double
-                      expr: (cbigint / (cdouble + 200.0))
-                      type: double
-                      expr: ((cdouble + 200.0) / (cdouble + 200.0))
-                      type: double
-                      expr: (cbigint / (cdouble + 200.0))
-                      type: double
-                      expr: (1 / (cdouble + 200.0))
-                      type: double
-                      expr: (1.2 / (cdouble + 200.0))
-                      type: double
+                expressions: (cdouble + 200.0) (type: double), (cbigint / (cdouble + 200.0)) (type: double), ((cdouble + 200.0) / (cdouble + 200.0)) (type: double), (cbigint / (cdouble + 200.0)) (type: double), (1 / (cdouble + 200.0)) (type: double), (1.2 / (cdouble + 200.0)) (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Vectorized execution: true
+                Statistics: Num rows: 2619 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: double
-                        expr: _col1
-                        type: double
+                  key expressions: _col0 (type: double), _col1 (type: double)
                   sort order: ++
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: double
-                        expr: _col1
-                        type: double
-                        expr: _col2
-                        type: double
-                        expr: _col3
-                        type: double
-                        expr: _col4
-                        type: double
-                        expr: _col5
-                        type: double
-                  Vectorized execution: true
+                  Statistics: Num rows: 2619 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: double), _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 2619 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
           Limit
+            Number of rows: 100
+            Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

@@ -110,7 +110,6 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
     return "Column[" + column + "]";
   }
 
-  @Explain(displayName = "expr")
   @Override
   public String getExprString() {
     return getColumn();

@@ -80,7 +80,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         pCtx,
         tasks,
         fetchTask,
-        input.toStringTree(),
+        input.dump(),
         sem.getInputs(),
         extended,
         formatted,

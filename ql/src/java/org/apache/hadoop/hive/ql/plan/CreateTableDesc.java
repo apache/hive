@@ -148,7 +148,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     return Utilities.getFieldSchemaString(getPartCols());
   }
 
-  @Explain(displayName = "if not exists")
+  @Explain(displayName = "if not exists", displayOnlyOnTrue = true)
   public boolean getIfNotExists() {
     return ifNotExists;
   }
@@ -196,6 +196,14 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   }
 
   @Explain(displayName = "# buckets")
+  public Integer getNumBucketsExplain() {
+    if (numBuckets == -1) {
+      return null;
+    } else {
+      return numBuckets;
+    }
+  }
+
   public int getNumBuckets() {
     return numBuckets;
   }
@@ -294,7 +302,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.location = location;
   }
 
-  @Explain(displayName = "isExternal")
+  @Explain(displayName = "isExternal", displayOnlyOnTrue = true)
   public boolean isExternal() {
     return isExternal;
   }

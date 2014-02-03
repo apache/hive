@@ -77,9 +77,6 @@ POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(sr
 POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_CREATEINDEX srcpart_rc_index 'BITMAP' (TOK_TABNAME srcpart_rc) (TOK_TABCOLNAME key) TOK_DEFERRED_REBUILDINDEX)
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -317,9 +314,6 @@ POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(sr
 POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_CREATEINDEX srcpart_rc_index 'BITMAP' (TOK_TABNAME srcpart_rc) (TOK_TABCOLNAME key) TOK_DEFERRED_REBUILDINDEX)
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

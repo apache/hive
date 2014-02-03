@@ -37,9 +37,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a))) (TOK_SELEXPR TOK_ALLCOLREF))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -47,36 +44,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        b 
+      Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
                 0 {key} {value}
                 1 {key} {value}
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               outputColumnNames: _col0, _col1, _col4, _col5
-              Position of Big Table: 1
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col4
-                      type: int
-                      expr: _col5
-                      type: string
+                expressions: _col0 (type: int), _col1 (type: string), _col4 (type: int), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -102,9 +88,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a))) (TOK_SELEXPR TOK_ALLCOLREF))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -112,36 +95,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        b 
+      Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Left Outer Join0 to 1
               condition expressions:
                 0 {key} {value}
                 1 {key} {value}
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               outputColumnNames: _col0, _col1, _col4, _col5
-              Position of Big Table: 1
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col4
-                      type: int
-                      expr: _col5
-                      type: string
+                expressions: _col0 (type: int), _col1 (type: string), _col4 (type: int), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -172,9 +144,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a))) (TOK_SELEXPR TOK_ALLCOLREF))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -182,36 +151,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        b 
+      Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Right Outer Join0 to 1
               condition expressions:
                 0 {key} {value}
                 1 {key} {value}
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               outputColumnNames: _col0, _col1, _col4, _col5
-              Position of Big Table: 1
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col4
-                      type: int
-                      expr: _col5
-                      type: string
+                expressions: _col0 (type: int), _col1 (type: string), _col4 (type: int), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -241,9 +199,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a))) (TOK_SELEXPR TOK_ALLCOLREF))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -251,36 +206,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        b 
+      Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Outer Join 0 to 1
               condition expressions:
                 0 {key} {value}
                 1 {key} {value}
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               outputColumnNames: _col0, _col1, _col4, _col5
-              Position of Big Table: 1
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col4
-                      type: int
-                      expr: _col5
-                      type: string
+                expressions: _col0 (type: int), _col1 (type: string), _col4 (type: int), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -315,9 +259,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(b)*/ * from smb_bucket_1 a join smb_bucket_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR TOK_ALLCOLREF))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -325,36 +266,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
                 0 {key} {value}
                 1 {key} {value}
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               outputColumnNames: _col0, _col1, _col4, _col5
-              Position of Big Table: 0
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col4
-                      type: int
-                      expr: _col5
-                      type: string
+                expressions: _col0 (type: int), _col1 (type: string), _col4 (type: int), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -380,9 +310,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(b)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR TOK_ALLCOLREF))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -390,36 +317,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Left Outer Join0 to 1
               condition expressions:
                 0 {key} {value}
                 1 {key} {value}
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               outputColumnNames: _col0, _col1, _col4, _col5
-              Position of Big Table: 0
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col4
-                      type: int
-                      expr: _col5
-                      type: string
+                expressions: _col0 (type: int), _col1 (type: string), _col4 (type: int), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -450,9 +366,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(b)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR TOK_ALLCOLREF))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -460,36 +373,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Right Outer Join0 to 1
               condition expressions:
                 0 {key} {value}
                 1 {key} {value}
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               outputColumnNames: _col0, _col1, _col4, _col5
-              Position of Big Table: 0
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col4
-                      type: int
-                      expr: _col5
-                      type: string
+                expressions: _col0 (type: int), _col1 (type: string), _col4 (type: int), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -519,9 +421,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(b)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR TOK_ALLCOLREF))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -529,36 +428,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        a 
+      Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Outer Join 0 to 1
               condition expressions:
                 0 {key} {value}
                 1 {key} {value}
-              handleSkewJoin: false
               keys:
-                0 [Column[key]]
-                1 [Column[key]]
+                0 key (type: int)
+                1 key (type: int)
               outputColumnNames: _col0, _col1, _col4, _col5
-              Position of Big Table: 0
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col4
-                      type: int
-                      expr: _col5
-                      type: string
+                expressions: _col0 (type: int), _col1 (type: string), _col4 (type: int), _col5 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

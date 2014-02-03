@@ -101,16 +101,16 @@ public class Statistics implements Serializable {
   }
 
   @Override
-  @Explain(displayName = "")
+  @Explain(displayName = "Statistics")
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append(" numRows: ");
+    sb.append("Num rows: ");
     sb.append(numRows);
-    sb.append(" dataSize: ");
+    sb.append(" Data size: ");
     sb.append(dataSize);
-    sb.append(" basicStatsState: ");
+    sb.append(" Basic stats: ");
     sb.append(basicStatsState);
-    sb.append(" colStatsState: ");
+    sb.append(" Column stats: ");
     sb.append(columnStatsState);
     return sb.toString();
   }

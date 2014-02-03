@@ -3,9 +3,6 @@ PREHOOK: query: explain SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint <
 PREHOOK: type: QUERY
 POSTHOOK: query: explain SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint < cdouble and cint > 0 limit 7
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL cbigint)) (TOK_SELEXPR (TOK_TABLE_OR_COL cdouble))) (TOK_WHERE (and (< (TOK_TABLE_OR_COL cbigint) (TOK_TABLE_OR_COL cdouble)) (> (TOK_TABLE_OR_COL cint) 0))) (TOK_LIMIT 7)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -13,33 +10,28 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
+            Statistics: Num rows: 18861 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: ((cbigint < cdouble) and (cint > 0))
-                  type: boolean
-              Vectorized execution: true
+              predicate: ((cbigint < cdouble) and (cint > 0)) (type: boolean)
+              Statistics: Num rows: 2095 Data size: 41901 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: cbigint
-                      type: bigint
-                      expr: cdouble
-                      type: double
+                expressions: cbigint (type: bigint), cdouble (type: double)
                 outputColumnNames: _col0, _col1
-                Vectorized execution: true
+                Statistics: Num rows: 2095 Data size: 41901 Basic stats: COMPLETE Column stats: NONE
                 Limit
-                  Vectorized execution: true
+                  Number of rows: 7
+                  Statistics: Num rows: 7 Data size: 140 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    GlobalTableId: 0
+                    Statistics: Num rows: 7 Data size: 140 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    Vectorized execution: true
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -71,9 +63,6 @@ POSTHOOK: query: -- HIVE-3562 Some limit can be pushed down to map stage - c/p p
 explain
 select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble limit 20
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL ctinyint)) (TOK_SELEXPR (TOK_TABLE_OR_COL cdouble)) (TOK_SELEXPR (TOK_TABLE_OR_COL csmallint))) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL ctinyint))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL ctinyint)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cdouble))) (TOK_LIMIT 20)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -81,49 +70,33 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
+            Statistics: Num rows: 23577 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: ctinyint is not null
-                  type: boolean
-              Vectorized execution: true
+              predicate: ctinyint is not null (type: boolean)
+              Statistics: Num rows: 11789 Data size: 188626 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: ctinyint
-                      type: tinyint
-                      expr: cdouble
-                      type: double
-                      expr: csmallint
-                      type: smallint
+                expressions: ctinyint (type: tinyint), cdouble (type: double), csmallint (type: smallint)
                 outputColumnNames: _col0, _col1, _col2
-                Vectorized execution: true
+                Statistics: Num rows: 11789 Data size: 188626 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: tinyint
-                        expr: _col1
-                        type: double
+                  key expressions: _col0 (type: tinyint), _col1 (type: double)
                   sort order: ++
-                  tag: -1
-                  TopN: 20
+                  Statistics: Num rows: 11789 Data size: 188626 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.3
-                  value expressions:
-                        expr: _col0
-                        type: tinyint
-                        expr: _col1
-                        type: double
-                        expr: _col2
-                        type: smallint
-                  Vectorized execution: true
+                  value expressions: _col0 (type: tinyint), _col1 (type: double), _col2 (type: smallint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 11789 Data size: 188626 Basic stats: COMPLETE Column stats: NONE
           Limit
+            Number of rows: 20
+            Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -169,9 +142,6 @@ POSTHOOK: query: -- deduped RS
 explain
 select ctinyint,avg(cdouble + 1) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL ctinyint)) (TOK_SELEXPR (TOK_FUNCTION avg (+ (TOK_TABLE_OR_COL cdouble) 1)))) (TOK_GROUPBY (TOK_TABLE_OR_COL ctinyint)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL ctinyint))) (TOK_LIMIT 20)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -179,63 +149,45 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
+            Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: ctinyint
-                    type: tinyint
-                    expr: cdouble
-                    type: double
+              expressions: ctinyint (type: tinyint), cdouble (type: double)
               outputColumnNames: ctinyint, cdouble
-              Vectorized execution: true
+              Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations:
-                      expr: avg((cdouble + 1))
-                bucketGroup: false
-                keys:
-                      expr: ctinyint
-                      type: tinyint
+                aggregations: avg((cdouble + 1))
+                keys: ctinyint (type: tinyint)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Vectorized execution: true
+                Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: tinyint
+                  key expressions: _col0 (type: tinyint)
                   sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: tinyint
-                  tag: -1
-                  TopN: 20
+                  Map-reduce partition columns: _col0 (type: tinyint)
+                  Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.3
-                  value expressions:
-                        expr: _col1
-                        type: struct<count:bigint,sum:double>
+                  value expressions: _col1 (type: struct<count:bigint,sum:double>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: avg(VALUE._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: tinyint
+          aggregations: avg(VALUE._col0)
+          keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 15718 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: tinyint
-                  expr: _col1
-                  type: double
+            expressions: _col0 (type: tinyint), _col1 (type: double)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 15718 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
             Limit
+              Number of rows: 20
+              Statistics: Num rows: 20 Data size: 240 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                GlobalTableId: 0
+                Statistics: Num rows: 20 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -281,9 +233,6 @@ POSTHOOK: query: -- distincts
 explain
 select distinct(ctinyint) from alltypesorc limit 20
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_SELEXPR (TOK_TABLE_OR_COL ctinyint))) (TOK_LIMIT 20)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -291,52 +240,42 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
+            Statistics: Num rows: 94309 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: ctinyint
-                    type: tinyint
+              expressions: ctinyint (type: tinyint)
               outputColumnNames: ctinyint
-              Vectorized execution: true
+              Statistics: Num rows: 94309 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                bucketGroup: false
-                keys:
-                      expr: ctinyint
-                      type: tinyint
+                keys: ctinyint (type: tinyint)
                 mode: hash
                 outputColumnNames: _col0
-                Vectorized execution: true
+                Statistics: Num rows: 94309 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: tinyint
+                  key expressions: _col0 (type: tinyint)
                   sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: tinyint
-                  tag: -1
-                  TopN: 20
+                  Map-reduce partition columns: _col0 (type: tinyint)
+                  Statistics: Num rows: 94309 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.3
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: tinyint
+          keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics: Num rows: 47154 Data size: 188616 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: tinyint
+            expressions: _col0 (type: tinyint)
             outputColumnNames: _col0
+            Statistics: Num rows: 47154 Data size: 188616 Basic stats: COMPLETE Column stats: NONE
             Limit
+              Number of rows: 20
+              Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                GlobalTableId: 0
+                Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -380,9 +319,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL ctinyint)) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL cdouble)))) (TOK_GROUPBY (TOK_TABLE_OR_COL ctinyint)) (TOK_LIMIT 20)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -390,67 +326,45 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
+            Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: ctinyint
-                    type: tinyint
-                    expr: cdouble
-                    type: double
+              expressions: ctinyint (type: tinyint), cdouble (type: double)
               outputColumnNames: ctinyint, cdouble
-              Vectorized execution: true
+              Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations:
-                      expr: count(DISTINCT cdouble)
-                bucketGroup: false
-                keys:
-                      expr: ctinyint
-                      type: tinyint
-                      expr: cdouble
-                      type: double
+                aggregations: count(DISTINCT cdouble)
+                keys: ctinyint (type: tinyint), cdouble (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Vectorized execution: true
+                Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: tinyint
-                        expr: _col1
-                        type: double
+                  key expressions: _col0 (type: tinyint), _col1 (type: double)
                   sort order: ++
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: tinyint
-                  tag: -1
-                  TopN: 20
+                  Map-reduce partition columns: _col0 (type: tinyint)
+                  Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.3
-                  value expressions:
-                        expr: _col2
-                        type: bigint
+                  value expressions: _col2 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: count(DISTINCT KEY._col1:0._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: tinyint
+          aggregations: count(DISTINCT KEY._col1:0._col0)
+          keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 15718 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: tinyint
-                  expr: _col1
-                  type: bigint
+            expressions: _col0 (type: tinyint), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 15718 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
             Limit
+              Number of rows: 20
+              Statistics: Num rows: 20 Data size: 240 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                GlobalTableId: 0
+                Statistics: Num rows: 20 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -496,9 +410,6 @@ POSTHOOK: query: -- limit zero
 explain
 select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL ctinyint)) (TOK_SELEXPR (TOK_TABLE_OR_COL cdouble))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL ctinyint))) (TOK_LIMIT 0)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -506,36 +417,29 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
+            Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions:
-                    expr: ctinyint
-                    type: tinyint
-                    expr: cdouble
-                    type: double
+              expressions: ctinyint (type: tinyint), cdouble (type: double)
               outputColumnNames: _col0, _col1
-              Vectorized execution: true
+              Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: tinyint
+                key expressions: _col0 (type: tinyint)
                 sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: tinyint
-                      expr: _col1
-                      type: double
-                Vectorized execution: true
+                Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: tinyint), _col1 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
           Limit
+            Number of rows: 0
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -561,9 +465,6 @@ POSTHOOK: query: -- 2MR (applied to last RS)
 explain
 select cdouble, sum(ctinyint) as sum from alltypesorc where ctinyint is not null group by cdouble order by sum, cdouble limit 20
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL cdouble)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL ctinyint)) sum)) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL ctinyint))) (TOK_GROUPBY (TOK_TABLE_OR_COL cdouble)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL sum)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cdouble))) (TOK_LIMIT 20)))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -572,65 +473,43 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        alltypesorc 
+      Map Operator Tree:
           TableScan
             alias: alltypesorc
+            Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate:
-                  expr: ctinyint is not null
-                  type: boolean
-              Vectorized execution: true
+              predicate: ctinyint is not null (type: boolean)
+              Statistics: Num rows: 15718 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: cdouble
-                      type: double
-                      expr: ctinyint
-                      type: tinyint
+                expressions: cdouble (type: double), ctinyint (type: tinyint)
                 outputColumnNames: cdouble, ctinyint
-                Vectorized execution: true
+                Statistics: Num rows: 15718 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations:
-                        expr: sum(ctinyint)
-                  bucketGroup: false
-                  keys:
-                        expr: cdouble
-                        type: double
+                  aggregations: sum(ctinyint)
+                  keys: cdouble (type: double)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Vectorized execution: true
+                  Statistics: Num rows: 15718 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: double
+                    key expressions: _col0 (type: double)
                     sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
+                    Map-reduce partition columns: _col0 (type: double)
+                    Statistics: Num rows: 15718 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations:
-                expr: sum(VALUE._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: double
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: double)
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics: Num rows: 7859 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions:
-                  expr: _col0
-                  type: double
-                  expr: _col1
-                  type: bigint
+            expressions: _col0 (type: double), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 7859 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -638,30 +517,23 @@ STAGE PLANS:
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions:
-                    expr: _col1
-                    type: bigint
-                    expr: _col0
-                    type: double
+              key expressions: _col1 (type: bigint), _col0 (type: double)
               sort order: ++
-              tag: -1
-              TopN: 20
+              Statistics: Num rows: 7859 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.3
-              value expressions:
-                    expr: _col0
-                    type: double
-                    expr: _col1
-                    type: bigint
+              value expressions: _col0 (type: double), _col1 (type: bigint)
       Reduce Operator Tree:
         Extract
+          Statistics: Num rows: 7859 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
           Limit
+            Number of rows: 20
+            Statistics: Num rows: 20 Data size: 240 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
+              Statistics: Num rows: 20 Data size: 240 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

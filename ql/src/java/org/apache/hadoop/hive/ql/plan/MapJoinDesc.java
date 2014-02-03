@@ -142,9 +142,20 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   }
 
   /**
-   * @return the keys
+   * @return the keys in string form
    */
   @Explain(displayName = "keys")
+  public Map<Byte, String> getKeysString() {
+    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
+    for (Map.Entry<Byte, List<ExprNodeDesc>> k: getKeys().entrySet()) {
+      keyMap.put(k.getKey(), PlanUtils.getExprListString(k.getValue()));
+    }
+    return keyMap;
+  }
+   
+  /**
+   * @return the keys
+   */
   public Map<Byte, List<ExprNodeDesc>> getKeys() {
     return keys;
   }
@@ -160,7 +171,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   /**
    * @return the position of the big table not in memory
    */
-  @Explain(displayName = "Position of Big Table")
+  @Explain(displayName = "Position of Big Table", normalExplain = false)
   public int getPosBigTable() {
     return posBigTable;
   }

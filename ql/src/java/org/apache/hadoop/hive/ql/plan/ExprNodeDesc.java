@@ -76,7 +76,6 @@ public abstract class ExprNodeDesc implements Serializable, Node {
       .getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
   }
 
-  @Explain(displayName = "type")
   public String getTypeString() {
     return typeInfo.getTypeName();
   }

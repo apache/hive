@@ -97,6 +97,12 @@ public class FilterDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "predicate")
+  public String getPredicateString() {
+    StringBuffer sb = new StringBuffer();
+    PlanUtils.addExprToStringBuffer(predicate, sb);
+    return sb.toString();
+  }
+    
   public org.apache.hadoop.hive.ql.plan.ExprNodeDesc getPredicate() {
     return predicate;
   }

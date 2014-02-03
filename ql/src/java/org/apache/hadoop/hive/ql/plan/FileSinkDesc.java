@@ -162,7 +162,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.compressed = compressed;
   }
 
-  @Explain(displayName = "GlobalTableId")
+  @Explain(displayName = "GlobalTableId", normalExplain = false)
   public int getDestTableId() {
     return destTableId;
   }

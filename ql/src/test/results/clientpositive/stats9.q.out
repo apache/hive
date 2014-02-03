@@ -19,9 +19,6 @@ POSTHOOK: query: explain analyze table analyze_srcbucket compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_ANALYZE (TOK_TAB (TOK_TABNAME analyze_srcbucket)))
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -29,10 +26,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Map Reduce
-      Alias -> Map Operator Tree:
-        analyze_srcbucket 
+      Map Operator Tree:
           TableScan
             alias: analyze_srcbucket
+            Statistics: Num rows: -1 Data size: 11603 Basic stats: PARTIAL Column stats: COMPLETE
 
   Stage: Stage-1
     Stats-Aggr Operator

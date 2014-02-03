@@ -139,7 +139,6 @@ public class AggregationDesc implements java.io.Serializable {
     return mode;
   }
 
-  @Explain(displayName = "expr")
   public String getExprString() {
     StringBuilder sb = new StringBuilder();
     sb.append(genericUDAFName);
