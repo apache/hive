@@ -3,38 +3,50 @@ PREHOOK: query: -- This test is used for testing EXPLAIN DEPENDENCY command
 -- Create some views
 CREATE VIEW V1 AS SELECT key, value from src
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: -- This test is used for testing EXPLAIN DEPENDENCY command
 
 -- Create some views
 CREATE VIEW V1 AS SELECT key, value from src
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@V1
 PREHOOK: query: CREATE VIEW V2 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: CREATE VIEW V2 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@V2
 PREHOOK: query: CREATE VIEW V3 AS 
   SELECT src1.key, src2.value FROM V2 src1 
   JOIN src src2 ON src1.key = src2.key WHERE src1.ds IS NOT NULL
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@v2
 POSTHOOK: query: CREATE VIEW V3 AS 
   SELECT src1.key, src2.value FROM V2 src1 
   JOIN src src2 ON src1.key = src2.key WHERE src1.ds IS NOT NULL
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@v2
 POSTHOOK: Output: default@V3
 PREHOOK: query: CREATE VIEW V4 AS 
   SELECT src1.key, src2.value as value1, src3.value as value2 
   FROM V1 src1 JOIN V2 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@v1
 PREHOOK: Input: default@v2
 POSTHOOK: query: CREATE VIEW V4 AS 
   SELECT src1.key, src2.value as value1, src3.value as value2 
   FROM V1 src1 JOIN V2 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@v1
 POSTHOOK: Input: default@v2
 POSTHOOK: Output: default@V4
@@ -98,10 +110,12 @@ PREHOOK: query: -- The table should show up in the explain dependency even if no
 -- of the partitions are selected.
 CREATE VIEW V5 as SELECT * FROM srcpart where ds = '10'
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: -- The table should show up in the explain dependency even if none
 -- of the partitions are selected.
 CREATE VIEW V5 as SELECT * FROM srcpart where ds = '10'
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@V5
 PREHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V5
 PREHOOK: type: QUERY

@@ -56,8 +56,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: CREATE VIEW view1 AS SELECT * FROM table1
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@table1
 POSTHOOK: query: CREATE VIEW view1 AS SELECT * FROM table1
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@table1
 POSTHOOK: Output: default@view1
 PREHOOK: query: CREATE TABLE table2 LIKE view1
 PREHOOK: type: CREATETABLE
@@ -236,9 +238,11 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: -- check partitions
 create view view1 partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: -- check partitions
 create view view1 partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@view1
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

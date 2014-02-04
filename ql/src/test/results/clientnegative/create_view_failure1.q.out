@@ -11,4 +11,5 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@xxx12
 PREHOOK: query: CREATE VIEW xxx12 AS SELECT key FROM src
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. AlreadyExistsException(message:Table xxx12 already exists)

@@ -8,8 +8,10 @@ POSTHOOK: query: drop view if exists w
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create view v as select cast(key as string) from src
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: create view v as select cast(key as string) from src
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@v
 PREHOOK: query: describe formatted v
 PREHOOK: type: DESCTABLE
@@ -44,10 +46,12 @@ PREHOOK: query: create view w as select key, value from (
   select key, value from src
 ) a
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: create view w as select key, value from (
   select key, value from src
 ) a
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@w
 PREHOOK: query: describe formatted w
 PREHOOK: type: DESCTABLE
@@ -129,8 +133,10 @@ STAGE PLANS:
 
 PREHOOK: query: CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@items
 POSTHOOK: query: CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@items
 POSTHOOK: Output: default@priceview
 PREHOOK: query: select * from priceview
 PREHOOK: type: QUERY

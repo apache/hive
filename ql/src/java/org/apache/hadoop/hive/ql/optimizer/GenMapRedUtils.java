@@ -421,28 +421,6 @@ public final class GenMapRedUtils {
     setTaskPlan(alias_id, topOp, task, local, opProcCtx, null);
   }
 
-  private static ReadEntity getParentViewInfo(String alias_id,
-      Map<String, ReadEntity> viewAliasToInput) {
-    String[] aliases = alias_id.split(":");
-
-    String currentAlias = null;
-    ReadEntity currentInput = null;
-    // Find the immediate parent possible.
-    // For eg: for a query like 'select * from V3', where V3 -> V2, V2 -> V1, V1 -> T
-    // -> implies depends on.
-    // T's parent would be V1
-    for (int pos = 0; pos < aliases.length; pos++) {
-      currentAlias = currentAlias == null ? aliases[pos] : currentAlias + ":" + aliases[pos];
-      ReadEntity input = viewAliasToInput.get(currentAlias);
-      if (input == null) {
-        return currentInput;
-      }
-      currentInput = input;
-    }
-
-    return currentInput;
-  }
-
   /**
    * set the current task in the mapredWork.
    *
@@ -572,7 +550,8 @@ public final class GenMapRedUtils {
     // Track the dependencies for the view. Consider a query like: select * from V;
     // where V is a view of the form: select * from T
     // The dependencies should include V at depth 0, and T at depth 1 (inferred).
-    ReadEntity parentViewInfo = getParentViewInfo(alias_id, parseCtx.getViewAliasToInput());
+    Map<String, ReadEntity> viewToInput = parseCtx.getViewAliasToInput();
+    ReadEntity parentViewInfo = PlanUtils.getParentViewInfo(alias_id, viewToInput);
 
     // The table should also be considered a part of inputs, even if the table is a
     // partitioned table and whether any partition is selected or not
