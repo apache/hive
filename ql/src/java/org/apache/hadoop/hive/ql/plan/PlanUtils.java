@@ -36,7 +36,9 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -49,6 +51,8 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -937,5 +941,43 @@ public final class PlanUtils {
     sb.append(" (type: ");
     sb.append(expr.getTypeString());
     sb.append(")");
+  }
+
+  public static void addInputsForView(ParseContext parseCtx) throws HiveException {
+    Set<ReadEntity> inputs = parseCtx.getSemanticInputs();
+    for (Map.Entry<String, Operator<?>> entry : parseCtx.getTopOps().entrySet()) {
+      if (!(entry.getValue() instanceof TableScanOperator)) {
+        continue;
+      }
+      String alias = entry.getKey();
+      TableScanOperator topOp = (TableScanOperator) entry.getValue();
+      ReadEntity parentViewInfo = getParentViewInfo(alias, parseCtx.getViewAliasToInput());
+
+      // Adds tables only for create view (PPD filter can be appended by outer query)
+      Table table = parseCtx.getTopToTable().get(topOp);
+      PlanUtils.addInput(inputs, new ReadEntity(table, parentViewInfo));
+    }
+  }
+
+  public static ReadEntity getParentViewInfo(String alias_id,
+      Map<String, ReadEntity> viewAliasToInput) {
+    String[] aliases = alias_id.split(":");
+
+    String currentAlias = null;
+    ReadEntity currentInput = null;
+    // Find the immediate parent possible.
+    // For eg: for a query like 'select * from V3', where V3 -> V2, V2 -> V1, V1 -> T
+    // -> implies depends on.
+    // T's parent would be V1
+    for (int pos = 0; pos < aliases.length; pos++) {
+      currentAlias = currentAlias == null ? aliases[pos] : currentAlias + ":" + aliases[pos];
+      ReadEntity input = viewAliasToInput.get(currentAlias);
+      if (input == null) {
+        return currentInput;
+      }
+      currentInput = input;
+    }
+
+    return currentInput;
   }
 }

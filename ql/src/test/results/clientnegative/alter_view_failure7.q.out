@@ -7,10 +7,12 @@ PARTITIONED ON (ds,hr)
 AS 
 SELECT key,ds,hr FROM srcpart
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: CREATE VIEW xxx8
 PARTITIONED ON (ds,hr)
 AS 
 SELECT key,ds,hr FROM srcpart
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@xxx8
 FAILED: SemanticException partition spec {ds=2011-01-01} doesn't contain all (2) partition columns

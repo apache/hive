@@ -47,17 +47,21 @@ POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, ty
 PREHOOK: query: -- view with date column
 create view ctas_date_3 as select * from ctas_date_2 where dd > date '2000-01-01'
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@ctas_date_2
 POSTHOOK: query: -- view with date column
 create view ctas_date_3 as select * from ctas_date_2 where dd > date '2000-01-01'
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@ctas_date_2
 POSTHOOK: Output: default@ctas_date_3
 POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
 POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create view ctas_date_4 as select * from ctas_date_2 where dd < date '2000-01-01'
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@ctas_date_2
 POSTHOOK: query: create view ctas_date_4 as select * from ctas_date_2 where dd < date '2000-01-01'
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@ctas_date_2
 POSTHOOK: Output: default@ctas_date_4
 POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
 POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

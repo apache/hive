@@ -7,10 +7,12 @@ PARTITIONED ON (value)
 AS 
 SELECT * FROM src
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: CREATE VIEW xxx4 
 PARTITIONED ON (value)
 AS 
 SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@xxx4
 FAILED: SemanticException [Error 10131]: To alter a view you need to use the ALTER VIEW command.

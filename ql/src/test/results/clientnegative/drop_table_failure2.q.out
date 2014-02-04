@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE VIEW xxx6 AS SELECT key FROM src
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: CREATE VIEW xxx6 AS SELECT key FROM src
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@xxx6
 PREHOOK: query: -- Can't use DROP TABLE on a view
 DROP TABLE xxx6

@@ -145,6 +145,9 @@ on t1_old.keymap = t1_mapping.keymap and
    t1_old.ds = t1_mapping.ds
 ) subq
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1_mapping
+PREHOOK: Input: default@t1_new
+PREHOOK: Input: default@t1_old
 POSTHOOK: query: create view t1 partitioned on (ds) as
 select * from
 (
@@ -155,6 +158,9 @@ on t1_old.keymap = t1_mapping.keymap and
    t1_old.ds = t1_mapping.ds
 ) subq
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1_mapping
+POSTHOOK: Input: default@t1_new
+POSTHOOK: Input: default@t1_old
 POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1_mapping PARTITION(ds=2011-10-13).key SIMPLE []
 POSTHOOK: Lineage: t1_mapping PARTITION(ds=2011-10-13).keymap SIMPLE []

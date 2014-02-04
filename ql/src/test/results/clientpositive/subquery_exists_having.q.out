@@ -159,6 +159,7 @@ having exists
   where a.key = b.key and a.value > 'val_9'
   )
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: -- view test
 create view cv1 as 
 select b.key, count(*) as c
@@ -170,6 +171,7 @@ having exists
   where a.key = b.key and a.value > 'val_9'
   )
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@cv1
 PREHOOK: query: select * from cv1
 PREHOOK: type: QUERY

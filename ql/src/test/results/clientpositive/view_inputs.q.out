@@ -2,16 +2,20 @@ PREHOOK: query: -- Tests that selecting from a view and another view that select
 
 CREATE VIEW test_view1 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: -- Tests that selecting from a view and another view that selects from that same view
 
 CREATE VIEW test_view1 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_view1
 PREHOOK: query: CREATE VIEW test_view2 AS SELECT * FROM test_view1
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 PREHOOK: Input: default@test_view1
 POSTHOOK: query: CREATE VIEW test_view2 AS SELECT * FROM test_view1
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Input: default@test_view1
 POSTHOOK: Output: default@test_view2
 PREHOOK: query: SELECT COUNT(*) FROM test_view1 a JOIN test_view2 b ON a.key = b.key

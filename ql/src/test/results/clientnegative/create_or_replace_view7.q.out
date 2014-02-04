@@ -8,22 +8,28 @@ drop view v
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create view v1 partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: create view v1 partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@v1
 PREHOOK: query: create view v2 partitioned on (ds, hr) as select * from v1
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@v1
 POSTHOOK: query: create view v2 partitioned on (ds, hr) as select * from v1
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@v1
 POSTHOOK: Output: default@v2
 PREHOOK: query: create view v3 partitioned on (ds, hr) as select * from v2
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@v1
 PREHOOK: Input: default@v2
 POSTHOOK: query: create view v3 partitioned on (ds, hr) as select * from v2
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@v1
 POSTHOOK: Input: default@v2
 POSTHOOK: Output: default@v3
