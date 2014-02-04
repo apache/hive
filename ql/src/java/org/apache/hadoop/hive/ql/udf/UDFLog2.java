@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLog2DoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLog2LongToDouble;
@@ -34,7 +33,7 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
     extended = "Example:\n"
     + "  > SELECT _FUNC_(2) FROM src LIMIT 1;\n" + "  1")
 @VectorizedExpressions({FuncLog2LongToDouble.class, FuncLog2DoubleToDouble.class})
-public class UDFLog2 extends UDF {
+public class UDFLog2 extends UDFMath {
   private static double log2 = Math.log(2.0);
 
   private final DoubleWritable result = new DoubleWritable();

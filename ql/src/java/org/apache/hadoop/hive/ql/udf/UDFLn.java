@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnLongToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * UDFLn.
@@ -34,7 +35,7 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
     extended = "Example:\n"
     + "  > SELECT _FUNC_(1) FROM src LIMIT 1;\n" + "  0")
 @VectorizedExpressions({FuncLnLongToDouble.class, FuncLnDoubleToDouble.class})
-public class UDFLn extends UDF {
+public class UDFLn extends UDFMath {
   private final DoubleWritable result = new DoubleWritable();
 
   public UDFLn() {
