@@ -262,7 +262,7 @@ public class DagUtils {
     byte[] mrInput = null;
     if (useTezGroupedSplits) {
       mrInput = MRHelpers.createMRInputPayloadWithGrouping(serializedConf,
-          null, HiveInputFormat.class.getName());
+          HiveInputFormat.class.getName());
     } else {
       mrInput = MRHelpers.createMRInputPayload(serializedConf, null);
     }
