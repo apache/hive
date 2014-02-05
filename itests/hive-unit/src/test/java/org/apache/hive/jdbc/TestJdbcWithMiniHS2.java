@@ -28,6 +28,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -52,7 +54,8 @@ import org.junit.Test;
       String dataFileDir = conf.get("test.data.files").replace('\\', '/')
           .replace("c:", "");
       dataFilePath = new Path(dataFileDir, "kv1.txt");
-      miniHS2.start();
+      Map<String, String> confOverlay = new HashMap<String, String>();
+      miniHS2.start(confOverlay);
     }
 
     @Before

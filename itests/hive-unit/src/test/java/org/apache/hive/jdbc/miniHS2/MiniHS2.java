@@ -20,6 +20,7 @@ package org.apache.hive.jdbc.miniHS2;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -33,32 +34,40 @@ import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
+import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
 import org.apache.hive.service.server.HiveServer2;
 
 import com.google.common.io.Files;
 
-public class MiniHS2 extends AbstarctHiveService {
+public class MiniHS2 extends AbstractHiveService {
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private HiveServer2 hiveServer2 = null;
   private final File baseDir;
   private static final AtomicLong hs2Counter = new AtomicLong();
+  private static final String HS2_BINARY_MODE = "binary";
+  private static final String HS2_HTTP_MODE = "http";
 
   public MiniHS2(HiveConf hiveConf) throws IOException {
-    super(hiveConf, "localhost", MetaStoreUtils.findFreePort());
+    super(hiveConf, "localhost", MetaStoreUtils.findFreePort(), MetaStoreUtils.findFreePort());
     baseDir =  Files.createTempDir();
     setWareHouseDir("file://" + baseDir.getPath() + File.separator + "warehouse");
     String metaStoreURL =  "jdbc:derby:" + baseDir.getAbsolutePath() + File.separator + "test_metastore-" +
         hs2Counter.incrementAndGet() + ";create=true";
-
     System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, metaStoreURL);
     hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY, metaStoreURL);
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, getHost());
-    hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, getPort());
+    hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, getBinaryPort());
+    hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT, getHttpPort());
     HiveMetaStore.HMSHandler.resetDefaultDBFlag();
   }
 
-  public void start() throws Exception {
+  public void start(Map<String, String> confOverlay) throws Exception {
     hiveServer2 = new HiveServer2();
+    // Set confOverlay parameters
+    for (Map.Entry<String, String> entry : confOverlay.entrySet()) {
+      setConfProperty(entry.getKey(), entry.getValue());
+    }
     hiveServer2.init(getHiveConf());
     hiveServer2.start();
     waitForStartup();
@@ -80,14 +89,23 @@ public class MiniHS2 extends AbstarctHiveService {
   public CLIServiceClient getServiceClientInternal() {
     for (Service service : hiveServer2.getServices()) {
       if (service instanceof ThriftBinaryCLIService) {
-        return new ThriftCLIServiceClient((ThriftBinaryCLIService)service);
+        return new ThriftCLIServiceClient((ThriftBinaryCLIService) service);
+      }
+      if (service instanceof ThriftHttpCLIService) {
+        return new ThriftCLIServiceClient((ThriftHttpCLIService) service);
       }
     }
-    throw new IllegalStateException("HS2 not running Thrift service");
+    throw new IllegalStateException("HiveServer2 not running Thrift service");
   }
 
   public String getJdbcURL() {
-    return "jdbc:hive2://" + getHost() + ":" + getPort() + "/default";
+    String transportMode = getConfProperty(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname);
+    if(transportMode != null && (transportMode.equalsIgnoreCase(HS2_HTTP_MODE))) {
+      return "jdbc:hive2://" + getHost() + ":" + getHttpPort() + "/default";
+    }
+    else {
+      return "jdbc:hive2://" + getHost() + ":" + getBinaryPort() + "/default";
+    }
   }
 
   public static String getJdbcDriverName() {
@@ -103,7 +121,7 @@ public class MiniHS2 extends AbstarctHiveService {
       Thread.sleep(500L);
       waitTime += 500L;
       if (waitTime > startupTimeout) {
-        throw new TimeoutException("Couldn't access new HiveServer: " + getJdbcURL());
+        throw new TimeoutException("Couldn't access new HiveServer2: " + getJdbcURL());
       }
       try {
         sessionHandle = hs2Client.openSession("foo", "bar");

@@ -26,10 +26,12 @@ import org.apache.hive.service.cli.CLIService;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
-import org.mortbay.jetty.nio.SelectChannelConnector;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
-import org.mortbay.thread.QueuedThreadPool;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 
 public class ThriftHttpCLIService extends ThriftCLIService {
@@ -75,15 +77,31 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         }
       }
 
-      httpServer = new org.mortbay.jetty.Server();
-
+      httpServer = new org.eclipse.jetty.server.Server();
       QueuedThreadPool threadPool = new QueuedThreadPool();
       threadPool.setMinThreads(minWorkerThreads);
       threadPool.setMaxThreads(maxWorkerThreads);
       httpServer.setThreadPool(threadPool);
-      SelectChannelConnector connector = new SelectChannelConnector();
-      connector.setPort(portNum);
+      SelectChannelConnector connector;
+      Boolean useSsl = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL);
+      String schemeName = useSsl ? "https" : "http";
 
+      if (useSsl) {
+        String keyStorePath = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH).trim();
+        String keyStorePassword = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD);
+        if (keyStorePath.isEmpty()) {
+          throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH.varname +
+              " Not configured for SSL connection");
+        }
+        SslContextFactory sslContextFactory = new SslContextFactory();
+        sslContextFactory.setKeyStorePath(keyStorePath);
+        sslContextFactory.setKeyStorePassword(keyStorePassword);
+        connector = new SslSelectChannelConnector(sslContextFactory);
+      } else {
+        connector = new SelectChannelConnector();
+      }
+
+      connector.setPort(portNum);
       // Linux:yes, Windows:no
       connector.setReuseAddress(!Shell.WINDOWS);
       httpServer.addConnector(connector);
@@ -93,12 +111,15 @@ public class ThriftHttpCLIService extends ThriftCLIService {
 
       TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
       TServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory);
-      final Context context = new Context(httpServer, "/", Context.SESSIONS);
+
+      final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+      context.setContextPath("/");
+      httpServer.setHandler(context);
       context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
 
       // TODO: check defaults: maxTimeout, keepalive, maxBodySize, bodyRecieveDuration, etc.
       httpServer.start();
-      String msg = "Starting CLIService in Http mode on port " + portNum +
+      String msg = "Started ThriftHttpCLIService in " + schemeName + " mode on port " + portNum +
           " path=" + httpPath +
           " with " + minWorkerThreads + ".." + maxWorkerThreads + " worker threads";
       LOG.info(msg);

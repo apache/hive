@@ -102,8 +102,8 @@
     <hbase.hadoop1.version>0.96.0-hadoop1</hbase.hadoop1.version>
     <hbase.hadoop2.version>0.96.0-hadoop2</hbase.hadoop2.version>
     <!-- httpcomponents are not always in version sync -->
-    <httpcomponents.client.version>4.2.5</httpcomponents.client.version>
-    <httpcomponents.core.version>4.2.4</httpcomponents.core.version>
+    <httpcomponents.client.version>4.3.2</httpcomponents.client.version>
+    <httpcomponents.core.version>4.3.1</httpcomponents.core.version>
     <jackson.version>1.9.2</jackson.version>
     <javaewah.version>0.3.2</javaewah.version>
     <javolution.version>5.5.1</javolution.version>
@@ -111,6 +111,7 @@
     <!-- TODO figure out how to reconcile jetty versions -->
     <jetty.version>6.1.26</jetty.version>
     <jetty.webhcat.version>7.6.0.v20120127</jetty.webhcat.version>
+    <jetty.hive-service.version>7.6.0.v20120127</jetty.hive-service.version>
     <jersey.version>1.14</jersey.version>
     <jline.version>0.9.94</jline.version>
     <jms.version>1.1</jms.version>
