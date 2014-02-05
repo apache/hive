@@ -33,7 +33,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_ppd_keyrange
-            filterExpr:
+            filterExpr: ((key > 8) and (key < 21)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: ((key > 8) and (key < 21)) (type: boolean)
@@ -85,7 +85,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_ppd_keyrange
-            filterExpr:
+            filterExpr: ((key > 8) and (key <= 17)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: ((key > 8) and (key <= 17)) (type: boolean)
@@ -134,7 +134,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_ppd_keyrange
-            filterExpr:
+            filterExpr: ((key > 8) and (key <= 17)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (value like '%11%') (type: boolean)

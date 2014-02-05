@@ -494,7 +494,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_pred
-            filterExpr:
+            filterExpr: ((t is not null and (t < 0)) and (t > (- 2))) (type: boolean)
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((t is not null and (t < 0)) and (t > (- 2))) (type: boolean)
@@ -686,7 +686,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_pred
-            filterExpr:
+            filterExpr: (((t = (- 1)) and s is not null) and (s like 'bob%')) (type: boolean)
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((t = (- 1)) and s is not null) and (s like 'bob%')) (type: boolean)
@@ -877,7 +877,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_pred
-            filterExpr:
+            filterExpr: (((s is not null and (s like 'bob%')) and (not (t) IN ((- 1), (- 2), (- 3)))) and t BETWEEN 25 AND 30) (type: boolean)
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((s is not null and (s like 'bob%')) and (not (t) IN ((- 1), (- 2), (- 3)))) and t BETWEEN 25 AND 30) (type: boolean)
@@ -1103,7 +1103,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_pred
-            filterExpr:
+            filterExpr: (((((((d >= round(9.99)) and (d < 12.0)) and t is not null) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400) (type: boolean)
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((((((d >= round(9.99)) and (d < 12.0)) and t is not null) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400) (type: boolean)
@@ -1368,7 +1368,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_pred
-            filterExpr:
+            filterExpr: (((((((((t > 10) and (t <> 101)) and (d >= round(9.99))) and (d < 12.0)) and t is not null) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400) (type: boolean)
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((((((((t > 10) and (t <> 101)) and (d >= round(9.99))) and (d < 12.0)) and t is not null) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400) (type: boolean)

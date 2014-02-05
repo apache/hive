@@ -125,7 +125,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: default__doctors_doctors_index__
-            filterExpr:
+            filterExpr: (number > 6) (type: boolean)
             Filter Operator
               predicate: (number > 6) (type: boolean)
               Select Operator
@@ -158,7 +158,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: doctors
-            filterExpr:
+            filterExpr: (number > 6) (type: boolean)
             Statistics: Num rows: 2 Data size: 521 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (number > 6) (type: boolean)
