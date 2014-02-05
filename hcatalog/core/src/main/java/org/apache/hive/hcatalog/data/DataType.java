@@ -19,15 +19,26 @@
 
 package org.apache.hive.hcatalog.data;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-
+/*
+ * The data written and read withing the same M/R job, thus should never be written by one 
+ * version of Hive and read by another.
+ * @see org.apache.hive.hcatalog.data.ReaderWriter
+ */
 public abstract class DataType {
-
+  //todo: this should be moved to be an inner class of ReaderWrite as that is the only place it 
+  // is used
   public static final byte NULL = 1;
   public static final byte BOOLEAN = 5;
   public static final byte BYTE = 6;
@@ -38,6 +49,11 @@ public abstract class DataType {
   public static final byte DOUBLE = 25;
   public static final byte STRING = 55;
   public static final byte BINARY = 60;
+  public static final byte CHAR = 61;
+  public static final byte VARCHAR = 62;
+  public static final byte DECIMAL = 63;
+  public static final byte DATE = 64;
+  public static final byte TIMESTAMP = 65;
 
   public static final byte MAP = 100;
   public static final byte STRUCT = 110;
@@ -79,6 +95,16 @@ public abstract class DataType {
       return MAP;
     } else if (o instanceof byte[]) {
       return BINARY;
+    } else if(o instanceof HiveChar) {
+      return CHAR;
+    } else if(o instanceof HiveVarchar) {
+      return VARCHAR;
+    } else if(o instanceof HiveDecimal) {
+      return DECIMAL;
+    } else if(o instanceof Date) {
+      return DATE;
+    } else if(o instanceof Timestamp) {
+      return TIMESTAMP;
     } else {
       return ERROR;
     }
@@ -170,8 +196,17 @@ public abstract class DataType {
           return 0;
         }
       }
-
-      default:
+      case CHAR:
+        return ((HiveChar)o1).compareTo((HiveChar)o2);  
+      case VARCHAR:
+        return ((HiveVarchar)o1).compareTo((HiveVarchar)o2);
+      case DECIMAL:
+        return ((HiveDecimal)o1).compareTo((HiveDecimal)o2);
+      case DATE:
+        return ((Date)o1).compareTo((Date)o2);
+      case TIMESTAMP:
+        return ((Timestamp)o1).compareTo((Timestamp)o2);
+     default:
         throw new RuntimeException("Unkown type " + dt1 +
           " in compare");
       }

@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.data.schema;
 
 import junit.framework.TestCase;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.hcatalog.common.HCatException;
 
 import java.util.ArrayList;
@@ -60,6 +61,14 @@ public class TestHCatSchema extends TestCase {
   public void testHashCodeEquals() throws HCatException {
     HCatFieldSchema memberID1 = new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number");
     HCatFieldSchema memberID2 = new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number");
+    assertTrue("Expected objects to be equal", memberID1.equals(memberID2));
+    assertTrue("Expected hash codes to be equal", memberID1.hashCode() == memberID2.hashCode());
+    memberID1 = new HCatFieldSchema("memberID", TypeInfoFactory.getDecimalTypeInfo(5,2), "decimal(5,2)");
+    memberID2 = new HCatFieldSchema("memberID", TypeInfoFactory.getDecimalTypeInfo(5,3), "decimal(5)");
+    assertFalse("Expected objects to be unequal", memberID1.equals(memberID2));
+    assertFalse("Expected hash codes to be unequal", memberID1.hashCode() == memberID2.hashCode());
+    memberID1 = new HCatFieldSchema("memberID", TypeInfoFactory.getVarcharTypeInfo(5), "varchar(5)");
+    memberID2 = new HCatFieldSchema("memberID", TypeInfoFactory.getVarcharTypeInfo(5), "varchar(5)");
     assertTrue("Expected objects to be equal", memberID1.equals(memberID2));
     assertTrue("Expected hash codes to be equal", memberID1.hashCode() == memberID2.hashCode());
   }

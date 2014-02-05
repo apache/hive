@@ -127,7 +127,7 @@
         requires netty < 3.6.0 we force hadoops version
       -->
     <netty.version>3.4.0.Final</netty.version>
-    <pig.version>0.10.1</pig.version>
+    <pig.version>0.12.0</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.5</slf4j.version>

@@ -97,10 +97,4 @@ public class HcatTestUtils {
     }
 
   }
-  /**
-   * Used by various tests to make sure the path is safe for Windows
-   */
-  public static String makePathASafeFileName(String filePath) {
-    return new File(filePath).getPath().replaceAll("\\\\", "/");
-  }
 }

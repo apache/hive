@@ -119,7 +119,7 @@ public class HCatUtil {
   }
 
   public static String encodeBytes(byte[] bytes) {
-    StringBuffer strBuf = new StringBuffer();
+    StringBuilder strBuf = new StringBuilder();
 
     for (int i = 0; i < bytes.length; i++) {
       strBuf.append((char) (((bytes[i] >> 4) & 0xF) + ('a')));
@@ -282,11 +282,13 @@ public class HCatUtil {
           .getTypeInfoFromTypeString(tableField.getType());
 
         if (!partitionType.equals(tableType)) {
-          throw new HCatException(
-            ErrorType.ERROR_SCHEMA_TYPE_MISMATCH, "Column <"
+          String msg =
+            "Column <"
             + field.getName() + ">, expected <"
             + tableType.getTypeName() + ">, got <"
-            + partitionType.getTypeName() + ">");
+            + partitionType.getTypeName() + ">";
+          LOG.warn(msg);
+          throw new HCatException(ErrorType.ERROR_SCHEMA_TYPE_MISMATCH, msg);
         }
       }
     }
@@ -656,5 +658,13 @@ public class HCatUtil {
    */
   public static String makePathASafeFileName(String filePath) {
     return new File(filePath).getPath().replaceAll("\\\\", "/");
+  }
+  public static void assertNotNull(Object t, String msg, Logger logger) {
+    if(t == null) {
+      if(logger != null) {
+        logger.warn(msg);
+      }
+      throw new IllegalArgumentException(msg);
+    }
   }
 }
