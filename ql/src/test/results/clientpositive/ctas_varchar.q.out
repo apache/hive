@@ -41,9 +41,11 @@ POSTHOOK: Lineage: ctas_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value,
 PREHOOK: query: -- view with varchar column
 create view ctas_varchar_3 as select key, value from ctas_varchar_2
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@ctas_varchar_2
 POSTHOOK: query: -- view with varchar column
 create view ctas_varchar_3 as select key, value from ctas_varchar_2
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@ctas_varchar_2
 POSTHOOK: Output: default@ctas_varchar_3
 POSTHOOK: Lineage: ctas_varchar_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ctas_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

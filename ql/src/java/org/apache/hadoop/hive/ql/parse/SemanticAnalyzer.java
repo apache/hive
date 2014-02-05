@@ -8917,6 +8917,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     resultSchema =
         convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRowResolver());
 
+    ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner,
+        opToPartList, topOps, topSelOps, opParseCtx, joinContext, smbMapJoinContext,
+        topToTable, topToTableProps, fsopToTable,
+        loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
+        listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
+        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
+        opToPartToSkewedPruner, viewAliasToInput,
+        reduceSinkOperatorsAddedByEnforceBucketingSorting, queryProperties);
+
     if (createVwDesc != null) {
       saveViewDefinition();
 
@@ -8930,17 +8939,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // skip the rest of this method.
       ctx.setResDir(null);
       ctx.setResFile(null);
+
+      try {
+        PlanUtils.addInputsForView(pCtx);
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
       return;
     }
-
-    ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner,
-        opToPartList, topOps, topSelOps, opParseCtx, joinContext, smbMapJoinContext,
-        topToTable, topToTableProps, fsopToTable,
-        loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
-        listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
-        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
-        opToPartToSkewedPruner, viewAliasToInput,
-        reduceSinkOperatorsAddedByEnforceBucketingSorting, queryProperties);
 
     // Generate table access stats if required
     if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS) == true) {

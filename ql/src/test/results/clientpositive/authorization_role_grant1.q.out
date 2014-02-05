@@ -17,6 +17,7 @@ PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
 src_role2
+PUBLIC
 
 PREHOOK: query: show roles
 PREHOOK: type: SHOW_ROLES
@@ -34,6 +35,8 @@ PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
+PUBLIC
+
 PREHOOK: query: show roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show roles
@@ -61,6 +64,7 @@ PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
 src_role_wadmin
+PUBLIC
 
 PREHOOK: query: -- revoke role without role keyword
 revoke src_role_wadmin from user user2 with admin option
@@ -72,6 +76,8 @@ PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
+PUBLIC
+
 PREHOOK: query: -- drop roles
 show roles
 PREHOOK: type: SHOW_ROLES

@@ -340,11 +340,13 @@ create view v1 as
 select `x+1```, `y&y`
 from t4 where `x+1``` < '200'
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t4
 POSTHOOK: query: -- view
 create view v1 as 
 select `x+1```, `y&y`
 from t4 where `x+1``` < '200'
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t4
 POSTHOOK: Output: default@v1
 POSTHOOK: Lineage: t4.x+1` SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t4.y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

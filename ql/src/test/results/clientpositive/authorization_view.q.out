@@ -2,10 +2,12 @@ PREHOOK: query: -- SORT_BEFORE_DIFF
 
 create view src_autho_test as select * from src
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: -- SORT_BEFORE_DIFF
 
 create view src_autho_test as select * from src
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: --view grant to user
 
@@ -180,6 +182,7 @@ PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user hive_test_user
 POSTHOOK: type: SHOW_ROLE_GRANT
 src_role
+PUBLIC
 PREHOOK: query: --column grant to role
 
 grant select(key) on view src_autho_test to role src_role

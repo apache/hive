@@ -4,12 +4,14 @@ SELECT key, value
 FROM src
 WHERE key=86
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: CREATE VIEW testViewPart PARTITIONED ON (value)
 AS
 SELECT key, value
 FROM src
 WHERE key=86
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@testViewPart
 PREHOOK: query: ALTER VIEW testViewPart 
 ADD PARTITION (value='val_86') PARTITION (value='val_xyz')

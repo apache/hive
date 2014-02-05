@@ -154,6 +154,39 @@ public class Server {
   }
 
   /**
+   * Get version of hadoop software being run by this WebHCat server
+   */
+  @GET
+  @Path("version/hadoop")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response hadoopVersion()  throws IOException {
+    VersionDelegator d = new VersionDelegator(appConf);
+    return d.getVersion("hadoop");
+  }
+
+  /**
+   * Get version of hive software being run by this WebHCat server
+   */
+  @GET
+  @Path("version/hive")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response hiveVersion()  throws IOException {
+    VersionDelegator d = new VersionDelegator(appConf);
+    return d.getVersion("hive");
+  }
+
+  /**
+   * Get version of hive software being run by this WebHCat server
+   */
+  @GET
+  @Path("version/pig")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response pigVersion()  throws IOException {
+    VersionDelegator d = new VersionDelegator(appConf);
+    return d.getVersion("pig");
+  }
+
+  /**
    * Execute an hcat ddl expression on the local box.  It is run
    * as the authenticated user and rate limited.
    */

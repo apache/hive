@@ -5,8 +5,10 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@invites
 PREHOOK: query: CREATE VIEW view1 as SELECT * FROM invites
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@invites
 POSTHOOK: query: CREATE VIEW view1 as SELECT * FROM invites
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@invites
 POSTHOOK: Output: default@view1
 PREHOOK: query: DESCRIBE EXTENDED view1
 PREHOOK: type: DESCTABLE

@@ -7,6 +7,7 @@ where exists
   from src a 
   where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: -- exists test
 create view cv1 as 
 select * 
@@ -16,6 +17,7 @@ where exists
   from src a 
   where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@cv1
 PREHOOK: query: select * 
 from cv1 where cv1.key in (select key from cv1 c where c.key > '95')
@@ -44,6 +46,7 @@ where b.key not in
   where b.value = a.value  and a.key = b.key and a.value > 'val_11'
   )
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: -- not in test
 create view cv2 as 
 select * 
@@ -54,6 +57,7 @@ where b.key not in
   where b.value = a.value  and a.key = b.key and a.value > 'val_11'
   )
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@cv2
 PREHOOK: query: select * 
 from cv2 where cv2.key in (select key from cv2 c where c.key < '11')
@@ -86,6 +90,7 @@ where b.key in (select key from src where src.key > '8')
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: -- in where + having
 create view cv3 as
 select key, value, count(*) 
@@ -94,6 +99,7 @@ where b.key in (select key from src where src.key > '8')
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@cv3
 PREHOOK: query: select * from cv3
 PREHOOK: type: QUERY
