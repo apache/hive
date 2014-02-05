@@ -5,9 +5,11 @@ POSTHOOK: type: DROPVIEW
 PREHOOK: query: -- views and tables share the same namespace
 CREATE VIEW xxx4 AS SELECT key FROM src
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
 POSTHOOK: query: -- views and tables share the same namespace
 CREATE VIEW xxx4 AS SELECT key FROM src
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@xxx4
 PREHOOK: query: CREATE TABLE xxx4(key int)
 PREHOOK: type: CREATETABLE

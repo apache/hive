@@ -19,14 +19,18 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@xxx10
 PREHOOK: query: CREATE VIEW xxx9 AS SELECT * FROM xxx10
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@xxx10
 POSTHOOK: query: CREATE VIEW xxx9 AS SELECT * FROM xxx10
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@xxx10
 POSTHOOK: Output: default@xxx9
 PREHOOK: query: CREATE VIEW xxx8 AS SELECT * FROM xxx9 xxx
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@xxx10
 PREHOOK: Input: default@xxx9
 POSTHOOK: query: CREATE VIEW xxx8 AS SELECT * FROM xxx9 xxx
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@xxx10
 POSTHOOK: Input: default@xxx9
 POSTHOOK: Output: default@xxx8
 PREHOOK: query: ALTER TABLE xxx10 REPLACE COLUMNS (key int)

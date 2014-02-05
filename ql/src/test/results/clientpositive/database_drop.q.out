@@ -40,8 +40,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: db5@temp_tbl
 PREHOOK: query: CREATE VIEW temp_tbl_view AS SELECT * FROM temp_tbl
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: db5@temp_tbl
 POSTHOOK: query: CREATE VIEW temp_tbl_view AS SELECT * FROM temp_tbl
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: db5@temp_tbl
 POSTHOOK: Output: db5@temp_tbl_view
 PREHOOK: query: CREATE INDEX idx1 ON TABLE temp_tbl(id) AS 'COMPACT' with DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
@@ -80,8 +82,10 @@ POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.
 POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: db5@temp_tbl2
 POSTHOOK: query: CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: db5@temp_tbl2
 POSTHOOK: Output: db5@temp_tbl2_view
 POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]

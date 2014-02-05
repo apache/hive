@@ -197,6 +197,39 @@ public class TestWebHCatE2e {
       ErrorMsg.INVALID_TABLE.getErrorCode(),
       getErrorCode(p.responseBody));
   }
+
+  @Test
+  public void getHadoopVersion() throws Exception {
+    MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/version/hadoop",
+        HTTP_METHOD_TYPE.GET);
+    Assert.assertEquals(HttpStatus.OK_200, p.httpStatusCode);
+    Map<String, Object> props = JsonBuilder.jsonToMap(p.responseBody);
+    Assert.assertEquals("hadoop", props.get("module"));
+    Assert.assertTrue(p.getAssertMsg(),
+        ((String)props.get("version")).matches("[1-2].[0-9]+.[0-9]+.*"));
+  }
+
+  @Test
+  public void getHiveVersion() throws Exception {
+    MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/version/hive",
+        HTTP_METHOD_TYPE.GET);
+    Assert.assertEquals(HttpStatus.OK_200, p.httpStatusCode);
+    Map<String, Object> props = JsonBuilder.jsonToMap(p.responseBody);
+    Assert.assertEquals("hive", props.get("module"));
+    Assert.assertTrue(p.getAssertMsg(),
+        ((String) props.get("version")).matches("0.[0-9]+.[0-9]+.*"));
+  }
+
+  @Test
+  public void getPigVersion() throws Exception {
+    MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/version/pig",
+        HTTP_METHOD_TYPE.GET);
+    Assert.assertEquals(HttpStatus.NOT_IMPLEMENTED_501, p.httpStatusCode);
+    Map<String, Object> props = JsonBuilder.jsonToMap(p.responseBody);
+    Assert.assertEquals(p.getAssertMsg(), "Pig version request not yet " +
+        "implemented", (String)props.get("error"));
+  }
+
   /**
    * It's expected that Templeton returns a properly formatted JSON object when it
    * encounters an error.  It should have {@code ERROR_CODE} element in it which

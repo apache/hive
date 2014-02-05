@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.api;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -72,6 +74,7 @@ public class HCatCreateTableDesc {
   private String outputformat;
   private String serde;
   private String storageHandler;
+  private Map<String, String> serdeParams;
 
   private HCatCreateTableDesc(String dbName, String tableName, List<HCatFieldSchema> columns) {
     this.dbName = dbName;
@@ -146,6 +149,11 @@ public class HCatCreateTableDesc {
       }
     }
     newTable.setSd(sd);
+    if(serdeParams != null) {
+      for(Map.Entry<String, String> param : serdeParams.entrySet()) {
+        sd.getSerdeInfo().putToParameters(param.getKey(), param.getValue());
+      }
+    }
     if (this.partCols != null) {
       ArrayList<FieldSchema> hivePtnCols = new ArrayList<FieldSchema>();
       for (HCatFieldSchema fs : this.partCols) {
@@ -296,6 +304,12 @@ public class HCatCreateTableDesc {
   public String getDatabaseName() {
     return this.dbName;
   }
+ /**
+   * Gets the SerDe parameters; for example see {@link org.apache.hive.hcatalog.api.HCatCreateTableDesc.Builder#fieldsTerminatedBy(char)}
+   */
+  public Map<String, String> getSerdeParams() {
+    return serdeParams;
+  }
 
   @Override
   public String toString() {
@@ -325,7 +339,9 @@ public class HCatCreateTableDesc {
       : "outputformat=null")
       + (serde != null ? "serde=" + serde + ", " : "serde=null")
       + (storageHandler != null ? "storageHandler=" + storageHandler
-      : "storageHandler=null") + "]";
+      : "storageHandler=null") 
+      + ",serdeParams=" + (serdeParams == null ? "null" : serdeParams)
+      + "]";
   }
 
   public static class Builder {
@@ -344,6 +360,7 @@ public class HCatCreateTableDesc {
     private Map<String, String> tblProps;
     private boolean ifNotExists;
     private String dbName;
+    private Map<String, String> serdeParams;
 
 
     private Builder(String dbName, String tableName, List<HCatFieldSchema> columns) {
@@ -466,7 +483,52 @@ public class HCatCreateTableDesc {
       this.fileFormat = format;
       return this;
     }
-
+    /**
+     * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
+     */
+    public Builder fieldsTerminatedBy(char delimiter) {
+      return serdeParam(serdeConstants.FIELD_DELIM, Character.toString(delimiter));
+    }
+    /**
+     * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
+     */
+    public Builder escapeChar(char escapeChar) {
+      return serdeParam(serdeConstants.ESCAPE_CHAR, Character.toString(escapeChar));
+    }
+    /**
+     * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
+     */
+    public Builder collectionItemsTerminatedBy(char delimiter) {
+      return serdeParam(serdeConstants.COLLECTION_DELIM, Character.toString(delimiter));
+    }
+    /**
+     * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
+     */
+    public Builder mapKeysTerminatedBy(char delimiter) {
+      return serdeParam(serdeConstants.MAPKEY_DELIM, Character.toString(delimiter));
+    }
+    /**
+     * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
+     */
+    public Builder linesTerminatedBy(char delimiter) {
+      return serdeParam(serdeConstants.LINE_DELIM, Character.toString(delimiter));
+    }
+    /**
+     * See <i>row_format</i> element of CREATE_TABLE DDL for Hive.
+     */
+    public Builder nullDefinedAs(char nullChar) {
+      return serdeParam(serdeConstants.SERIALIZATION_NULL_FORMAT, Character.toString(nullChar));
+    }
+    /**
+     * used for setting arbitrary SerDe parameter
+     */
+    public Builder serdeParam(String paramName, String value) {
+      if(serdeParams == null) {
+        serdeParams = new HashMap<String, String>();
+      }
+      serdeParams.put(paramName, value);
+      return this;
+    }
     /**
      * Builds the HCatCreateTableDesc.
      *
@@ -514,6 +576,7 @@ public class HCatCreateTableDesc {
           .getName();
         LOG.info("Table output format:" + desc.outputformat);
       }
+      desc.serdeParams = this.serdeParams;
       return desc;
     }
   }

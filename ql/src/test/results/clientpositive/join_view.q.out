@@ -20,10 +20,14 @@ PREHOOK: query: -- test join views: see HIVE-1989
 
 create view v as select invites.bar, invites2.foo, invites2.ds from invites join invites2 on invites.ds=invites2.ds
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@invites
+PREHOOK: Input: default@invites2
 POSTHOOK: query: -- test join views: see HIVE-1989
 
 create view v as select invites.bar, invites2.foo, invites2.ds from invites join invites2 on invites.ds=invites2.ds
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@invites
+POSTHOOK: Input: default@invites2
 POSTHOOK: Output: default@v
 PREHOOK: query: explain select * from v where ds='2011-09-01'
 PREHOOK: type: QUERY
