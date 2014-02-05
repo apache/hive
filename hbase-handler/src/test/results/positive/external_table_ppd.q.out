@@ -124,7 +124,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t_hbase
-            filterExpr:
+            filterExpr: (int_col > 0) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (int_col > 0) (type: boolean)
