@@ -28,20 +28,32 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
+import org.apache.pig.parser.AliasMasker;
 
 public class TestDefaultHCatRecord extends TestCase {
 
+  /**
+   * test that we properly serialize/deserialize HCatRecordS
+   * @throws IOException
+   */
   public void testRYW() throws IOException {
 
     File f = new File("binary.dat");
@@ -65,7 +77,9 @@ public class TestDefaultHCatRecord extends TestCase {
     for (int i = 0; i < recs.length; i++) {
       HCatRecord rec = new DefaultHCatRecord();
       rec.readFields(inpStream);
-      Assert.assertTrue(HCatDataCheckUtil.recordsEqual(recs[i], rec));
+      StringBuilder msg = new StringBuilder("recs[" + i + "]='" + recs[i] + "' rec='" + rec + "'");
+      boolean isEqual = HCatDataCheckUtil.recordsEqual(recs[i], rec, msg);
+      Assert.assertTrue(msg.toString(), isEqual);
     }
 
     Assert.assertEquals(fInStream.available(), 0);
@@ -134,6 +148,21 @@ public class TestDefaultHCatRecord extends TestCase {
     Assert.assertTrue(HCatDataCheckUtil.recordsEqual(newRec, inpRec));
   }
 
+  /**
+   * Test type specific get/set methods on HCatRecord types added in Hive 13
+   * @throws HCatException
+   */
+  public void testGetSetByType3() throws HCatException {
+    HCatRecord inpRec = getHCat13TypesRecord();
+    HCatRecord newRec = new DefaultHCatRecord(inpRec.size());
+    HCatSchema hsch = HCatSchemaUtils.getHCatSchema(
+            "a:decimal(5,2),b:char(10),c:varchar(20),d:date,e:timestamp");
+    newRec.setDecimal("a", hsch, inpRec.getDecimal("a", hsch));
+    newRec.setChar("b", hsch, inpRec.getChar("b", hsch));
+    newRec.setVarchar("c", hsch, inpRec.getVarchar("c", hsch));
+    newRec.setDate("d", hsch, inpRec.getDate("d", hsch));
+    newRec.setTimestamp("e", hsch, inpRec.getTimestamp("e", hsch));
+  }
 
   private HCatRecord getGetSet2InpRec() {
     List<Object> rlist = new ArrayList<Object>();
@@ -238,9 +267,32 @@ public class TestDefaultHCatRecord extends TestCase {
     rec_6.add(getList());
     HCatRecord tup_6 = new DefaultHCatRecord(rec_6);
 
+    return new HCatRecord[]{tup_1, tup_2, tup_3, tup_4, tup_5, tup_6, getHCat13TypesRecord(), 
+            getHCat13TypesComplexRecord()};
+  }
+  private static HCatRecord getHCat13TypesRecord() {
+    List<Object> rec_hcat13types = new ArrayList<Object>(5);
+    rec_hcat13types.add(HiveDecimal.create(new BigDecimal("123.45")));//prec 5, scale 2
+    rec_hcat13types.add(new HiveChar("hive_char", 10));
+    rec_hcat13types.add(new HiveVarchar("hive_varchar", 20));
+    rec_hcat13types.add(Date.valueOf("2014-01-06"));
+    rec_hcat13types.add(new Timestamp(System.currentTimeMillis()));
+    return new DefaultHCatRecord(rec_hcat13types);
+  }
+  private static HCatRecord getHCat13TypesComplexRecord() {
+    List<Object> rec_hcat13ComplexTypes = new ArrayList<Object>();
+    Map<HiveDecimal, String> m = new HashMap<HiveDecimal, String>();
+    m.put(HiveDecimal.create(new BigDecimal("1234.12")), "1234.12");
+    m.put(HiveDecimal.create(new BigDecimal("1234.13")), "1234.13");
+    rec_hcat13ComplexTypes.add(m);
 
-    return new HCatRecord[]{tup_1, tup_2, tup_3, tup_4, tup_5, tup_6};
-
+    Map<Timestamp, List<Object>> m2 = new HashMap<Timestamp, List<Object>>();
+    List<Object> list = new ArrayList<Object>();
+    list.add(Date.valueOf("2014-01-05"));
+    list.add(new HashMap<HiveDecimal, String>(m));
+    m2.put(new Timestamp(System.currentTimeMillis()), list);
+    rec_hcat13ComplexTypes.add(m2);
+    return new DefaultHCatRecord(rec_hcat13ComplexTypes);
   }
 
   private Object getList() {

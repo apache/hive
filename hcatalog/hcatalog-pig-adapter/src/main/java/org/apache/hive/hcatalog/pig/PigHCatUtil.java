@@ -20,8 +20,11 @@ package org.apache.hive.hcatalog.pig;
 
 
 import java.io.IOException;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -56,6 +62,8 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.util.UDFContext;
 import org.apache.pig.impl.util.Utils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -206,7 +214,7 @@ class PigHCatUtil {
       rfSchemaList.add(rfSchema);
     }
     ResourceSchema rSchema = new ResourceSchema();
-    rSchema.setFields(rfSchemaList.toArray(new ResourceFieldSchema[0]));
+    rSchema.setFields(rfSchemaList.toArray(new ResourceFieldSchema[rfSchemaList.size()]));
     return rSchema;
 
   }
@@ -266,7 +274,7 @@ class PigHCatUtil {
     } else if (arrayElementFieldSchema.getType() == Type.ARRAY) {
       ResourceSchema s = new ResourceSchema();
       List<ResourceFieldSchema> lrfs = Arrays.asList(getResourceSchemaFromFieldSchema(arrayElementFieldSchema));
-      s.setFields(lrfs.toArray(new ResourceFieldSchema[0]));
+      s.setFields(lrfs.toArray(new ResourceFieldSchema[lrfs.size()]));
       bagSubFieldSchemas[0].setSchema(s);
     } else {
       ResourceFieldSchema[] innerTupleFieldSchemas = new ResourceFieldSchema[1];
@@ -276,8 +284,7 @@ class PigHCatUtil {
         .setSchema(null); // the element type is not a tuple - so no subschema
       bagSubFieldSchemas[0].setSchema(new ResourceSchema().setFields(innerTupleFieldSchemas));
     }
-    ResourceSchema s = new ResourceSchema().setFields(bagSubFieldSchemas);
-    return s;
+    return new ResourceSchema().setFields(bagSubFieldSchemas);
 
   }
 
@@ -288,7 +295,7 @@ class PigHCatUtil {
     for (HCatFieldSchema subField : hfs.getStructSubSchema().getFields()) {
       lrfs.add(getResourceSchemaFromFieldSchema(subField));
     }
-    s.setFields(lrfs.toArray(new ResourceFieldSchema[0]));
+    s.setFields(lrfs.toArray(new ResourceFieldSchema[lrfs.size()]));
     return s;
   }
 
@@ -300,9 +307,16 @@ class PigHCatUtil {
   static public byte getPigType(HCatFieldSchema hfs) throws IOException {
     return getPigType(hfs.getType());
   }
-
+  /**
+   * Defines a mapping of HCatalog type to Pig type; not every mapping is exact, 
+   * see {@link #extractPigObject(Object, org.apache.hive.hcatalog.data.schema.HCatFieldSchema)}
+   * See http://pig.apache.org/docs/r0.12.0/basic.html#data-types
+   * See {@link org.apache.hive.hcatalog.pig.HCatBaseStorer#validateSchema(org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema, org.apache.hive.hcatalog.data.schema.HCatFieldSchema, org.apache.pig.impl.logicalLayer.schema.Schema, org.apache.hive.hcatalog.data.schema.HCatSchema, int)}
+   * for Pig->Hive type mapping.
+   */ 
   static public byte getPigType(Type type) throws IOException {
-    if (type == Type.STRING) {
+    if (type == Type.STRING || type == Type.CHAR || type == Type.VARCHAR) {
+      //CHARARRAY is unbounded so Hive->Pig is lossless
       return DataType.CHARARRAY;
     }
 
@@ -341,6 +355,14 @@ class PigHCatUtil {
     if (type == Type.BOOLEAN && pigHasBooleanSupport) {
       return DataType.BOOLEAN;
     }
+    if(type == Type.DECIMAL) {
+      //Hive is more restrictive, so Hive->Pig works
+      return DataType.BIGDECIMAL;
+    }
+    if(type == Type.DATE || type == Type.TIMESTAMP) {
+      //Hive Date is representable as Pig DATETIME
+      return DataType.DATETIME;
+    }
 
     throw new PigException("HCatalog column type '" + type.toString()
         + "' is not supported in Pig as a column type", PIG_EXCEPTION_CODE);
@@ -353,22 +375,54 @@ class PigHCatUtil {
     return transformToTuple(hr.getAll(), hs);
   }
 
-  @SuppressWarnings("unchecked")
+  /**
+   * Converts object from Hive's value system to Pig's value system
+   * see HCatBaseStorer#getJavaObj() for Pig->Hive conversion 
+   * @param o object from Hive value system
+   * @return object in Pig value system 
+   */
   public static Object extractPigObject(Object o, HCatFieldSchema hfs) throws Exception {
+    if(o == null) {
+      return null;
+    }
     Object result;
     Type itemType = hfs.getType();
     switch (itemType) {
     case BINARY:
-      result = (o == null) ? null : new DataByteArray((byte[]) o);
+      result = new DataByteArray((byte[]) o);
       break;
     case STRUCT:
-      result = transformToTuple((List<Object>) o, hfs);
+      result = transformToTuple((List<?>) o, hfs);
       break;
     case ARRAY:
-      result = transformToBag((List<? extends Object>) o, hfs);
+      result = transformToBag((List<?>) o, hfs);
       break;
     case MAP:
-      result = transformToPigMap((Map<Object, Object>) o, hfs);
+      result = transformToPigMap((Map<?,?>) o, hfs);
+      break;
+    case DECIMAL:
+      result = ((HiveDecimal)o).bigDecimalValue();
+      break;
+    case CHAR:
+      result = ((HiveChar)o).getValue();
+      break;
+    case VARCHAR:
+      result = ((HiveVarchar)o).getValue();
+      break;
+    case DATE:
+      /*java.sql.Date is weird.  It automatically adjusts it's millis value to be in the local TZ
+      * e.g. d = new java.sql.Date(System.currentMillis()).toString() so if you do this just after
+      * midnight in Palo Alto, you'll get yesterday's date printed out.*/
+      Date d = (Date)o;
+      result = new DateTime(d.getYear() + 1900, d.getMonth() + 1, d.getDate(), 0, 0);//uses local TZ
+      break;
+    case TIMESTAMP:
+      /*DATA TRUNCATION!!!
+       Timestamp may have nanos; we'll strip those away and create a Joda DateTime
+       object in local TZ; This is arbitrary, since Hive value doesn't have any TZ notion, but
+       we need to set something for TZ.
+       Timestamp is consistently in GMT (unless you call toString() on it) so we use millis*/
+      result = new DateTime(((Timestamp)o).getTime());//uses local TZ
       break;
     default:
       result = o;
@@ -377,7 +431,7 @@ class PigHCatUtil {
     return result;
   }
 
-  private static Tuple transformToTuple(List<? extends Object> objList, HCatFieldSchema hfs) throws Exception {
+  private static Tuple transformToTuple(List<?> objList, HCatFieldSchema hfs) throws Exception {
     try {
       return transformToTuple(objList, hfs.getStructSubSchema());
     } catch (Exception e) {
@@ -389,7 +443,7 @@ class PigHCatUtil {
     }
   }
 
-  private static Tuple transformToTuple(List<? extends Object> objList, HCatSchema hs) throws Exception {
+  private static Tuple transformToTuple(List<?> objList, HCatSchema hs) throws Exception {
     if (objList == null) {
       return null;
     }
@@ -401,21 +455,20 @@ class PigHCatUtil {
     return t;
   }
 
-  private static Map<String, Object> transformToPigMap(Map<Object, Object> map, HCatFieldSchema hfs) throws Exception {
+  private static Map<String, Object> transformToPigMap(Map<?, ?> map, HCatFieldSchema hfs) throws Exception {
     if (map == null) {
       return null;
     }
 
     Map<String, Object> result = new HashMap<String, Object>();
-    for (Entry<Object, Object> entry : map.entrySet()) {
+    for (Entry<?, ?> entry : map.entrySet()) {
       // since map key for Pig has to be Strings
       result.put(entry.getKey().toString(), extractPigObject(entry.getValue(), hfs.getMapValueSchema().get(0)));
     }
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  private static DataBag transformToBag(List<? extends Object> list, HCatFieldSchema hfs) throws Exception {
+  private static DataBag transformToBag(List<?> list, HCatFieldSchema hfs) throws Exception {
     if (list == null) {
       return null;
     }
@@ -425,7 +478,7 @@ class PigHCatUtil {
     for (Object o : list) {
       Tuple tuple;
       if (elementSubFieldSchema.getType() == Type.STRUCT) {
-        tuple = transformToTuple((List<Object>) o, elementSubFieldSchema);
+        tuple = transformToTuple((List<?>) o, elementSubFieldSchema);
       } else {
         // bags always contain tuples
         tuple = tupFac.newTuple(extractPigObject(o, elementSubFieldSchema));

@@ -26,7 +26,9 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
+import org.apache.pig.backend.executionengine.ExecException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Simplify writing HCatalog tests that require a HiveMetaStore.
@@ -81,7 +84,26 @@ public class HCatBaseTest {
   }
 
   protected void logAndRegister(PigServer server, String query) throws IOException {
+    logAndRegister(server, query, 1);
+  }
+  protected void logAndRegister(PigServer server, String query, int lineNumber) throws IOException {
+    assert lineNumber > 0 : "(lineNumber > 0) is false";
     LOG.info("Registering pig query: " + query);
-    server.registerQuery(query);
+    server.registerQuery(query, lineNumber);
+  }
+
+  /**
+   * creates PigServer in LOCAL mode.  
+   * http://pig.apache.org/docs/r0.12.0/perf.html#error-handling
+   * @param stopOnFailure equivalent of "-stop_on_failure" command line arg, setting to 'true' makes
+   *                      debugging easier
+   */
+  public static PigServer createPigServer(boolean stopOnFailure) throws ExecException {
+    if(stopOnFailure) {
+      Properties p = new Properties();
+      p.put("stop.on.failure", Boolean.TRUE.toString());
+      return new PigServer(ExecType.LOCAL, p);
+    }
+    return new PigServer(ExecType.LOCAL);
   }
 }

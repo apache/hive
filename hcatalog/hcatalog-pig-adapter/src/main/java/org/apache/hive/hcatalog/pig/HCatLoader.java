@@ -47,6 +47,8 @@ import org.apache.pig.PigException;
 import org.apache.pig.ResourceSchema;
 import org.apache.pig.ResourceStatistics;
 import org.apache.pig.impl.util.UDFContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Pig {@link org.apache.pig.LoadFunc} to read data from HCat
@@ -54,6 +56,7 @@ import org.apache.pig.impl.util.UDFContext;
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
 public class HCatLoader extends HCatBaseLoader {
+  private static final Logger LOG = LoggerFactory.getLogger(HCatLoader.class);
 
   private static final String PARTITION_FILTER = "partition.filter"; // for future use
 
@@ -170,6 +173,9 @@ public class HCatLoader extends HCatBaseLoader {
           throw new IOException(e);
         }
       }
+    }
+    if(LOG.isDebugEnabled()) {
+      LOG.debug("outputSchema=" + outputSchema);
     }
 
   }
