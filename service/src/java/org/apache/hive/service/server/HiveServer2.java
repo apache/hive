@@ -54,8 +54,7 @@ public class HiveServer2 extends CompositeService {
     if(transportMode == null) {
       transportMode = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
     }
-    if(transportMode != null && (transportMode.equalsIgnoreCase("http") ||
-        transportMode.equalsIgnoreCase("https"))) {
+    if(transportMode != null && (transportMode.equalsIgnoreCase("http"))) {
       thriftCLIService = new ThriftHttpCLIService(cliService);
     }
     else {

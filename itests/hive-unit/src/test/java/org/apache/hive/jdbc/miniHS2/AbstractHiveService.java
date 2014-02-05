@@ -24,19 +24,21 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 /***
  * Base class for Hive service
- * AbstarctHiveService.
+ * AbstractHiveService.
  *
  */
-public abstract class AbstarctHiveService {
+public abstract class AbstractHiveService {
   private HiveConf hiveConf = null;
   private String hostname;
-  private int port;
+  private int binaryPort;
+  private int httpPort;
   private boolean startedHiveService = false;
 
-  public AbstarctHiveService(HiveConf hiveConf, String hostname, int port) {
+  public AbstractHiveService(HiveConf hiveConf, String hostname, int binaryPort, int httpPort) {
     this.hiveConf = hiveConf;
     this.hostname = hostname;
-    this.port = port;
+    this.binaryPort = binaryPort;
+    this.httpPort = httpPort;
   }
 
   /**
@@ -94,16 +96,29 @@ public abstract class AbstarctHiveService {
   }
 
   /**
-   * Set service port #
+   * Set binary service port #
    * @param portNum
    */
-  public void setPort(int portNum) {
-    this.port = portNum;
+  public void setBinaryPort(int portNum) {
+    this.binaryPort = portNum;
   }
 
-  // get service port#
-  protected int getPort() {
-    return port;
+  /**
+   * Set http service port #
+   * @param portNum
+   */
+  public void setHttpPort(int portNum) {
+    this.httpPort = portNum;
+  }
+
+  // Get binary service port #
+  protected int getBinaryPort() {
+    return binaryPort;
+  }
+
+  // Get http service port #
+  protected int getHttpPort() {
+    return httpPort;
   }
 
   public boolean isStarted() {
@@ -116,13 +131,13 @@ public abstract class AbstarctHiveService {
 
   protected void verifyStarted() {
     if (!isStarted()) {
-      throw new IllegalStateException("HS2 is not running");
+      throw new IllegalStateException("HiveServer2 is not running");
     }
   }
 
   protected void verifyNotStarted() {
     if (isStarted()) {
-      throw new IllegalStateException("HS2 alreadyrunning");
+      throw new IllegalStateException("HiveServer2 already running");
     }
   }
 
