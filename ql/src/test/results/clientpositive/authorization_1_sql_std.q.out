@@ -49,6 +49,7 @@ PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user hive_test_user
 POSTHOOK: type: SHOW_ROLE_GRANT
 src_role
+PUBLIC
 
 PREHOOK: query: --table grant to role
 

@@ -589,7 +589,9 @@ public class QTestUtil {
 
     List<String> roleNames = db.getAllRoleNames();
       for (String roleName : roleNames) {
-        db.dropRole(roleName);
+        if (!"PUBLIC".equals(roleName)) {
+          db.dropRole(roleName);
+        }
     }
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands

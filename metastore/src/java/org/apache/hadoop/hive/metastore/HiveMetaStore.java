@@ -171,6 +171,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   private static final int DEFAULT_HIVE_METASTORE_PORT = 9083;
   public static final String ADMIN = "ADMIN";
+  public static final String PUBLIC = "PUBLIC";
 
   private static HadoopThriftAuthBridge.Server saslServer;
   private static boolean useSasl;
@@ -196,7 +197,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       IHMSHandler {
     public static final Log LOG = HiveMetaStore.LOG;
     private static boolean createDefaultDB = false;
-    private static boolean adminCreated = false;
+    private static boolean defaultRolesCreated = false;
     private String rawStoreClassName;
     private final HiveConf hiveConf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
@@ -351,7 +352,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       synchronized (HMSHandler.class) {
         createDefaultDB();
-        createAdminRoleNAddUsers();
+        createDefaultRolesNAddUsers();
       }
 
       if (hiveConf.getBoolean("hive.metastore.metrics.enabled", false)) {
@@ -394,6 +395,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return threadLocalId.get() + ": " + s;
     }
 
+    @Override
     public void setConf(Configuration conf) {
       threadLocalConf.set(conf);
       RawStore ms = threadLocalMS.get();
@@ -474,10 +476,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    private void createAdminRoleNAddUsers() throws MetaException {
+    private void createDefaultRolesNAddUsers() throws MetaException {
 
-      if(adminCreated) {
-        LOG.debug("Admin role already created previously.");        
+      if(defaultRolesCreated) {
+        LOG.debug("Admin role already created previously.");
         return;
       }
       Class<?> authCls;
@@ -498,12 +500,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.addRole(ADMIN, ADMIN);
       } catch (InvalidObjectException e) {
-        LOG.debug("admin role already exists",e);
+        LOG.debug(ADMIN +" role already exists",e);
       } catch (NoSuchObjectException e) {
         // This should never be thrown.
-        LOG.warn("Unexpected exception while adding ADMIN role" , e);
+        LOG.warn("Unexpected exception while adding " +ADMIN+" roles" , e);
       }
-      LOG.info("Added admin role in metastore");
+      LOG.info("Added "+ ADMIN+ " role in metastore");
+      try {
+        ms.addRole(PUBLIC, PUBLIC);
+      } catch (InvalidObjectException e) {
+        LOG.debug(PUBLIC + " role already exists",e);
+      } catch (NoSuchObjectException e) {
+        // This should never be thrown.
+        LOG.warn("Unexpected exception while adding "+PUBLIC +" roles" , e);
+      }
+      LOG.info("Added "+PUBLIC+ " role in metastore");
       // now grant all privs to admin
       PrivilegeBag privs = new PrivilegeBag();
       privs.addToPrivileges(new HiveObjectPrivilege( new HiveObjectRef(HiveObjectType.GLOBAL, null,
@@ -553,7 +564,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           LOG.debug(userName + " already in admin role", e);
         }
       }
-      adminCreated = true;
+      defaultRolesCreated = true;
     }
 
     private void logInfo(String m) {
@@ -690,6 +701,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public void create_database(final Database db)
         throws AlreadyExistsException, InvalidObjectException, MetaException {
       startFunction("create_database", ": " + db.toString());
@@ -722,6 +734,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public Database get_database(final String name) throws NoSuchObjectException,
         MetaException {
       startFunction("get_database", ": " + name);
@@ -745,6 +758,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return db;
     }
 
+    @Override
     public void alter_database(final String dbName, final Database db)
         throws NoSuchObjectException, TException, MetaException {
       startFunction("alter_database" + dbName);
@@ -881,6 +895,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           parent.toString() : parent.toString() + Path.SEPARATOR);
     }
 
+    @Override
     public void drop_database(final String dbName, final boolean deleteData, final boolean cascade)
         throws NoSuchObjectException, InvalidOperationException, MetaException {
 
@@ -914,6 +929,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public List<String> get_databases(final String pattern) throws MetaException {
       startFunction("get_databases", ": " + pattern);
 
@@ -934,6 +950,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
     public List<String> get_all_databases() throws MetaException {
       startFunction("get_all_databases");
 
@@ -975,6 +992,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public boolean create_type(final Type type) throws AlreadyExistsException,
         MetaException, InvalidObjectException {
       startFunction("create_type", ": " + type.toString());
@@ -1001,6 +1019,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return success;
     }
 
+    @Override
     public Type get_type(final String name) throws MetaException, NoSuchObjectException {
       startFunction("get_type", ": " + name);
 
@@ -1051,6 +1070,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public boolean drop_type(final String name) throws MetaException, NoSuchObjectException {
       startFunction("drop_type", ": " + name);
 
@@ -1074,6 +1094,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return success;
     }
 
+    @Override
     public Map<String, Type> get_type_all(String name) throws MetaException {
       // TODO Auto-generated method stub
       startFunction("get_type_all", ": " + name);
@@ -1458,6 +1479,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return MetaStoreUtils.isIndexTable(table);
     }
 
+    @Override
     public Table get_table(final String dbname, final String name) throws MetaException,
         NoSuchObjectException {
       Table t = null;
@@ -1500,6 +1522,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @throws InvalidOperationException
      * @throws UnknownDBException
      */
+    @Override
     public List<Table> get_table_objects_by_name(final String dbname, final List<String> names)
         throws MetaException, InvalidOperationException, UnknownDBException {
       List<Table> tables = null;
@@ -1829,6 +1852,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return result;
     }
 
+    @Override
     public int add_partitions(final List<Partition> parts) throws MetaException,
         InvalidObjectException, AlreadyExistsException {
       startFunction("add_partition");
@@ -2212,6 +2236,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     }
 
+    @Override
     public Partition get_partition(final String db_name, final String tbl_name,
         final List<String> part_vals) throws MetaException, NoSuchObjectException {
       startPartitionFunction("get_partition", db_name, tbl_name, part_vals);
@@ -2260,6 +2285,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
     public List<Partition> get_partitions(final String db_name, final String tbl_name,
         final short max_parts) throws NoSuchObjectException, MetaException {
       startTableFunction("get_partitions", db_name, tbl_name);
@@ -2309,6 +2335,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     }
 
+    @Override
     public List<String> get_partition_names(final String db_name, final String tbl_name,
         final short max_parts) throws MetaException {
       startTableFunction("get_partition_names", db_name, tbl_name);
@@ -2485,6 +2512,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       throw new MetaException("Not yet implemented");
     }
 
+    @Override
     public void alter_index(final String dbname, final String base_table_name,
         final String index_name, final Index newIndex)
         throws InvalidOperationException, MetaException {
@@ -2516,6 +2544,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return;
     }
 
+    @Override
     public String getVersion() throws TException {
       endFunction(startFunction("getVersion"), true, null);
       return "3.0";
@@ -2575,6 +2604,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public List<String> get_tables(final String dbname, final String pattern)
         throws MetaException {
       startFunction("get_tables", ": db=" + dbname + " pat=" + pattern);
@@ -2596,6 +2626,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
     public List<String> get_all_tables(final String dbname) throws MetaException {
       startFunction("get_all_tables", ": db=" + dbname);
 
@@ -2616,6 +2647,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
     public List<FieldSchema> get_fields(String db, String tableName)
         throws MetaException, UnknownTableException, UnknownDBException {
       startFunction("get_fields", ": db=" + db + "tbl=" + tableName);
@@ -2675,6 +2707,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @throws UnknownTableException
      * @throws UnknownDBException
      */
+    @Override
     public List<FieldSchema> get_schema(String db, String tableName)
         throws MetaException, UnknownTableException, UnknownDBException {
       startFunction("get_schema", ": db=" + db + "tbl=" + tableName);
@@ -2721,6 +2754,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public String getCpuProfile(int profileDurationInSec) throws TException {
       return "";
     }
@@ -2731,6 +2765,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * were an exception thrown while retrieving the variable, or if name is
      * null, defaultValue is returned.
      */
+    @Override
     public String get_config_value(String name, String defaultValue)
         throws TException, ConfigValSecurityException {
       startFunction("get_config_value", ": name=" + name + " defaultValue="
@@ -2818,6 +2853,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return p;
     }
 
+    @Override
     public Partition get_partition_by_name(final String db_name, final String tbl_name,
         final String part_name) throws MetaException, NoSuchObjectException, TException {
 
@@ -3272,6 +3308,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return convertedPartName;
     }
 
+    @Override
     public ColumnStatistics get_table_column_statistics(String dbName, String tableName,
       String colName) throws NoSuchObjectException, MetaException, TException,
       InvalidInputException, InvalidObjectException
@@ -3292,6 +3329,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public TableStatsResult get_table_statistics_req(TableStatsRequest request)
         throws MetaException, NoSuchObjectException, TException {
       String dbName = request.getDbName(), tblName = request.getTblName();
@@ -3308,6 +3346,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return result;
     }
 
+    @Override
     public ColumnStatistics get_partition_column_statistics(String dbName, String tableName,
       String partName, String colName) throws NoSuchObjectException, MetaException,
       InvalidInputException, TException, InvalidObjectException {
@@ -3333,6 +3372,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return statsObj;
     }
 
+    @Override
     public PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)
         throws MetaException, NoSuchObjectException, TException {
       String dbName = request.getDbName(), tblName = request.getTblName();
@@ -3354,6 +3394,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return result;
     }
 
+    @Override
     public boolean update_table_column_statistics(ColumnStatistics colStats)
       throws NoSuchObjectException,InvalidObjectException,MetaException,TException,
       InvalidInputException
@@ -3392,6 +3433,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public boolean update_partition_column_statistics(ColumnStatistics colStats)
       throws NoSuchObjectException,InvalidObjectException,MetaException,TException,
       InvalidInputException
@@ -3438,6 +3480,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public boolean delete_partition_column_statistics(String dbName, String tableName,
       String partName, String colName) throws NoSuchObjectException, MetaException,
       InvalidObjectException, TException, InvalidInputException
@@ -3462,6 +3505,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
     public boolean delete_table_column_statistics(String dbName, String tableName, String colName)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException,
       InvalidInputException
@@ -3674,7 +3718,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final String grantor, final PrincipalType grantorType, final boolean grantOption)
         throws MetaException, TException {
       incrementCounter("add_role_member");
-
+      if (PUBLIC.equals(roleName)) {
+        throw new MetaException("No user can be added to " + PUBLIC +". Since all users implictly"
+        + " belong to " + PUBLIC + " role.");
+      }
       Boolean ret = null;
       try {
         RawStore ms = getMS();
@@ -3719,14 +3766,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return false;
     }
 
+    @Override
     public List<Role> list_roles(final String principalName,
         final PrincipalType principalType) throws MetaException, TException {
       incrementCounter("list_roles");
 
-      List<Role> ret = null;
+      List<Role> result = new ArrayList<Role>();
       try {
-
-        List<Role> result = new ArrayList<Role>();
         List<MRoleMap> roleMap = getMS().listRoles(principalName, principalType);
         if (roleMap != null) {
           for (MRoleMap role : roleMap) {
@@ -3735,14 +3781,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 .getCreateTime(), r.getOwnerName()));
           }
         }
-        ret = result;
+        // all users by default belongs to public role
+        result.add(new Role(PUBLIC,0,PUBLIC));
+        return result;
       } catch (MetaException e) {
         throw e;
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-
-      return ret;
     }
 
     @Override
@@ -3750,6 +3796,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws MetaException, TException {
       incrementCounter("create_role");
 
+      if (PUBLIC.equals(role.getRoleName())) {
+         throw new MetaException(PUBLIC + " role implictly exists. It can't be created.");
+      }
       Boolean ret = null;
       try {
         ret = getMS().addRole(role.getRoleName(), role.getOwnerName());
@@ -3765,7 +3814,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public boolean drop_role(final String roleName)
         throws MetaException, TException {
       incrementCounter("drop_role");
-
+      if (ADMIN.equals(roleName) || PUBLIC.equals(roleName)) {
+        throw new MetaException(PUBLIC + "/" + ADMIN +" role can't be dropped.");
+      }
       Boolean ret = null;
       try {
         ret = getMS().removeRole(roleName);
@@ -3784,19 +3835,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<String> ret = null;
       try {
         ret = getMS().listRoleNames();
+        return ret;
       } catch (MetaException e) {
         throw e;
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-      return ret;
     }
 
     @Override
     public boolean grant_privileges(final PrivilegeBag privileges) throws MetaException,
         TException {
       incrementCounter("grant_privileges");
-
       Boolean ret = null;
       try {
         ret = getMS().grantPrivileges(privileges);
@@ -3813,6 +3863,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final PrincipalType principalType) throws MetaException, TException {
       incrementCounter("remove_role_member");
 
+      if (PUBLIC.equals(roleName)) {
+        throw new MetaException(PUBLIC + " role can't be revoked.");
+      }
       Boolean ret = null;
       try {
         RawStore ms = getMS();
@@ -3830,7 +3883,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public boolean revoke_privileges(final PrivilegeBag privileges)
         throws MetaException, TException {
       incrementCounter("revoke_privileges");
-
       Boolean ret = null;
       try {
         ret = getMS().revokePrivileges(privileges);
