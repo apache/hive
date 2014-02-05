@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
@@ -161,13 +162,28 @@ public class TestHCatClient {
 
     client.dropTable(db, tableOne, true);
     HCatCreateTableDesc tableDesc2 = HCatCreateTableDesc.create(db,
-      tableTwo, cols).build();
+      tableTwo, cols).fieldsTerminatedBy('\001').escapeChar('\002').linesTerminatedBy('\003').
+      mapKeysTerminatedBy('\004').collectionItemsTerminatedBy('\005').nullDefinedAs('\006').build();
     client.createTable(tableDesc2);
     HCatTable table2 = client.getTable(db, tableTwo);
     assertTrue(table2.getInputFileFormat().equalsIgnoreCase(
       TextInputFormat.class.getName()));
     assertTrue(table2.getOutputFileFormat().equalsIgnoreCase(
       IgnoreKeyTextOutputFormat.class.getName()));
+    assertTrue("SerdeParams not found", table2.getSerdeParams() != null);
+    assertEquals("checking " + serdeConstants.FIELD_DELIM, Character.toString('\001'),
+      table2.getSerdeParams().get(serdeConstants.FIELD_DELIM));
+    assertEquals("checking " + serdeConstants.ESCAPE_CHAR, Character.toString('\002'),
+      table2.getSerdeParams().get(serdeConstants.ESCAPE_CHAR));
+    assertEquals("checking " + serdeConstants.LINE_DELIM, Character.toString('\003'),
+      table2.getSerdeParams().get(serdeConstants.LINE_DELIM));
+    assertEquals("checking " + serdeConstants.MAPKEY_DELIM, Character.toString('\004'),
+      table2.getSerdeParams().get(serdeConstants.MAPKEY_DELIM));
+    assertEquals("checking " + serdeConstants.COLLECTION_DELIM, Character.toString('\005'),
+      table2.getSerdeParams().get(serdeConstants.COLLECTION_DELIM));
+    assertEquals("checking " + serdeConstants.SERIALIZATION_NULL_FORMAT, Character.toString('\006'),
+      table2.getSerdeParams().get(serdeConstants.SERIALIZATION_NULL_FORMAT));
+    
     assertEquals((expectedDir + "/" + db + ".db/" + tableTwo).toLowerCase(), table2.getLocation().toLowerCase());
     client.close();
   }

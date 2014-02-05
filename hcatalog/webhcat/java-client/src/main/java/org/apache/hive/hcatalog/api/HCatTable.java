@@ -48,6 +48,7 @@ public class HCatTable {
   private String dbName;
   private String serde;
   private String location;
+  private Map<String, String> serdeParams;
 
   HCatTable(Table hiveTable) throws HCatException {
     this.tableName = hiveTable.getTableName();
@@ -73,6 +74,7 @@ public class HCatTable {
     tblProps = hiveTable.getParameters();
     serde = hiveTable.getSd().getSerdeInfo().getSerializationLib();
     location = hiveTable.getSd().getLocation();
+    serdeParams = hiveTable.getSd().getSerdeInfo().getParameters();
   }
 
   /**
@@ -200,6 +202,12 @@ public class HCatTable {
   public String getLocation() {
     return location;
   }
+  /**
+   * Returns parameters such as field delimiter,etc.
+   */
+  public Map<String, String> getSerdeParams() {
+    return serdeParams;
+  }
 
   @Override
   public String toString() {
@@ -222,6 +230,8 @@ public class HCatTable {
       + ", " : "storageHandler=null")
       + (tblProps != null ? "tblProps=" + tblProps + ", " : "tblProps=null")
       + (serde != null ? "serde=" + serde + ", " : "serde=")
-      + (location != null ? "location=" + location : "location=") + "]";
+      + (location != null ? "location=" + location : "location=")
+      + ",serdeParams=" + (serdeParams == null ? "null" : serdeParams)
+      + "]";
   }
 }
