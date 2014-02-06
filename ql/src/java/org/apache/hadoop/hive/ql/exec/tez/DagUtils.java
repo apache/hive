@@ -17,18 +17,27 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -67,6 +76,7 @@ import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
 import org.apache.hadoop.yarn.api.records.URL;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
+import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.EdgeProperty;
 import org.apache.tez.dag.api.EdgeProperty.DataMovementType;
@@ -96,8 +106,35 @@ import org.apache.tez.runtime.library.output.OnFileUnorderedKVOutput;
  */
 public class DagUtils {
 
+  private static final Log LOG = LogFactory.getLog(DagUtils.class.getName());
   private static final String TEZ_DIR = "_tez_scratch_dir";
   private static DagUtils instance;
+
+  private void addCredentials(MapWork mapWork, DAG dag) {
+    Set<String> paths = mapWork.getPathToAliases().keySet();
+    if (paths != null && !paths.isEmpty()) {
+      Iterator<URI> pathIterator = Iterators.transform(paths.iterator(), new Function<String, URI>() {
+        @Override
+        public URI apply(String input) {
+          return new Path(input).toUri();
+        }
+      });
+    
+      Set<URI> uris = new HashSet<URI>();
+      Iterators.addAll(uris, pathIterator);
+
+      if (LOG.isDebugEnabled()) {
+        for (URI uri: uris) {
+          LOG.debug("Marking URI as needing credentials: "+uri);
+        }
+      }
+      dag.addURIsForCredentials(uris);
+    }
+  }
+
+  private void addCredentials(ReduceWork reduceWork, DAG dag) {
+    // nothing at the moment
+  }
 
   /*
    * Creates the configuration object necessary to run a specific vertex from
@@ -648,6 +685,17 @@ public class DagUtils {
     }
 
     return v;
+  }
+
+  /**
+   * Set up credentials for the base work on secure clusters
+   */
+  public void addCredentials(BaseWork work, DAG dag) {
+    if (work instanceof MapWork) {
+      addCredentials((MapWork) work, dag);
+    } else if (work instanceof ReduceWork) {
+      addCredentials((ReduceWork) work, dag);
+    }
   }
 
   /**

@@ -210,6 +210,7 @@ public class TezTask extends Task<TezWork> {
       Vertex wx = utils.createVertex(wxConf, w, tezDir,
          appJarLr, additionalLr, fs, ctx, !isFinal);
       dag.addVertex(wx);
+      utils.addCredentials(w, dag);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + w.getName());
       workToVertex.put(w, wx);
       workToConf.put(w, wxConf);
