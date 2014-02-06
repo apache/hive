@@ -96,12 +96,6 @@ class MetaStoreDirectSql {
    */
   private final boolean isCompatibleDatastore;
 
-  // TODO: we might also want to work around the strange and arguably non-standard behavior
-  // of postgres where it rolls back a tx after a failed select (see SQL92 4.28, on page 69
-  // about implicit rollbacks; 4.10.1 last paragraph for the "spirit" of the standard).
-  // See #canUseDirectSql in ObjectStore, isActiveTransaction is undesirable but unavoidable
-  // for postgres; in MySQL and other databases we could avoid it.
-
   public MetaStoreDirectSql(PersistenceManager pm) {
     this.pm = pm;
     Transaction tx = pm.currentTransaction();
@@ -116,21 +110,29 @@ class MetaStoreDirectSql {
       tx = pm.currentTransaction();
       tx.begin();
     }
-    // Force the underlying db to initialize. This is for tests where tables might not
-    // exist otherwise. It would be nice if there was a "create db" command.s
-    pm.newQuery(MDatabase.class, "name == ''").execute();
-    pm.newQuery(MTableColumnStatistics.class, "dbName == ''").execute();
-    pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''").execute();
-    // Self-test query. If it doesn't work, we will self-disable. What a PITA...
-    boolean isCompatibleDatastore = false;
-    String selfTestQuery = "select \"DB_ID\" from \"DBS\"";
+
+    boolean isCompatibleDatastore = true;
     try {
-      pm.newQuery("javax.jdo.query.SQL", selfTestQuery).execute();
-      isCompatibleDatastore = true;
-      tx.commit();
+      // Force the underlying db to initialize.
+      pm.newQuery(MDatabase.class, "name == ''").execute();
+      pm.newQuery(MTableColumnStatistics.class, "dbName == ''").execute();
+      pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''").execute();
     } catch (Exception ex) {
-      LOG.error("Self-test query [" + selfTestQuery + "] failed; direct SQL is disabled", ex);
+      isCompatibleDatastore = false;
+      LOG.error("Database initialization failed; direct SQL is disabled", ex);
       tx.rollback();
+    }
+    if (isCompatibleDatastore) {
+      // Self-test query. If it doesn't work, we will self-disable. What a PITA...
+      String selfTestQuery = "select \"DB_ID\" from \"DBS\"";
+      try {
+        pm.newQuery("javax.jdo.query.SQL", selfTestQuery).execute();
+        tx.commit();
+      } catch (Exception ex) {
+        isCompatibleDatastore = false;
+        LOG.error("Self-test query [" + selfTestQuery + "] failed; direct SQL is disabled", ex);
+        tx.rollback();
+      }
     }
 
     this.isCompatibleDatastore = isCompatibleDatastore;
