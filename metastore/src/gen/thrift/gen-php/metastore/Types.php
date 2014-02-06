@@ -1280,6 +1280,11 @@ class Role {
   public $roleName = null;
   public $createTime = null;
   public $ownerName = null;
+  public $principalName = null;
+  public $principalType = null;
+  public $grantOption = null;
+  public $grantTime = null;
+  public $grantor = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1296,6 +1301,26 @@ class Role {
           'var' => 'ownerName',
           'type' => TType::STRING,
           ),
+        4 => array(
+          'var' => 'principalName',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'principalType',
+          'type' => TType::STRING,
+          ),
+        6 => array(
+          'var' => 'grantOption',
+          'type' => TType::BOOL,
+          ),
+        7 => array(
+          'var' => 'grantTime',
+          'type' => TType::I32,
+          ),
+        8 => array(
+          'var' => 'grantor',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -1307,6 +1332,21 @@ class Role {
       }
       if (isset($vals['ownerName'])) {
         $this->ownerName = $vals['ownerName'];
+      }
+      if (isset($vals['principalName'])) {
+        $this->principalName = $vals['principalName'];
+      }
+      if (isset($vals['principalType'])) {
+        $this->principalType = $vals['principalType'];
+      }
+      if (isset($vals['grantOption'])) {
+        $this->grantOption = $vals['grantOption'];
+      }
+      if (isset($vals['grantTime'])) {
+        $this->grantTime = $vals['grantTime'];
+      }
+      if (isset($vals['grantor'])) {
+        $this->grantor = $vals['grantor'];
       }
     }
   }
@@ -1351,6 +1391,41 @@ class Role {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->principalName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->principalType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->grantOption);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->grantTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->grantor);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -1377,6 +1452,31 @@ class Role {
     if ($this->ownerName !== null) {
       $xfer += $output->writeFieldBegin('ownerName', TType::STRING, 3);
       $xfer += $output->writeString($this->ownerName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->principalName !== null) {
+      $xfer += $output->writeFieldBegin('principalName', TType::STRING, 4);
+      $xfer += $output->writeString($this->principalName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->principalType !== null) {
+      $xfer += $output->writeFieldBegin('principalType', TType::STRING, 5);
+      $xfer += $output->writeString($this->principalType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->grantOption !== null) {
+      $xfer += $output->writeFieldBegin('grantOption', TType::BOOL, 6);
+      $xfer += $output->writeBool($this->grantOption);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->grantTime !== null) {
+      $xfer += $output->writeFieldBegin('grantTime', TType::I32, 7);
+      $xfer += $output->writeI32($this->grantTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->grantor !== null) {
+      $xfer += $output->writeFieldBegin('grantor', TType::STRING, 8);
+      $xfer += $output->writeString($this->grantor);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

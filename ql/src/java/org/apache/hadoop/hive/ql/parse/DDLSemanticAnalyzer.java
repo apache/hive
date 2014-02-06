@@ -515,7 +515,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         createShowRoleGrantTask(ast, ctx.getResFile(), getInputs(), getOutputs());
     if(task != null) {
       rootTasks.add(task);
-      setFetchTask(createFetchTask(RoleDDLDesc.getSchema()));
+      setFetchTask(createFetchTask(RoleDDLDesc.getRoleDescSchema()));
     }
   }
 
@@ -525,7 +525,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     showRolesDesc.setResFile(ctx.getResFile().toString());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showRolesDesc), conf));
-    setFetchTask(createFetchTask(RoleDDLDesc.getSchema()));
+    setFetchTask(createFetchTask(RoleDDLDesc.getRoleNameSchema()));
   }
 
   private void analyzeAlterDatabase(ASTNode ast) throws SemanticException {

@@ -236,7 +236,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
    * Retrieve schema from the server
    */
   private void retrieveSchema() throws SQLException {
-    System.err.println("[HiveQueryResultSet/next] 0");
     try {
       TGetResultSetMetadataReq metadataReq = new TGetResultSetMetadataReq(stmtHandle);
       // TODO need session handle

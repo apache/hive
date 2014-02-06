@@ -990,8 +990,8 @@ void swap(PrincipalPrivilegeSet &a, PrincipalPrivilegeSet &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* Role::ascii_fingerprint = "70563A0628F75DF9555F4D24690B1E26";
-const uint8_t Role::binary_fingerprint[16] = {0x70,0x56,0x3A,0x06,0x28,0xF7,0x5D,0xF9,0x55,0x5F,0x4D,0x24,0x69,0x0B,0x1E,0x26};
+const char* Role::ascii_fingerprint = "8DEBC3096AEF414FFF38C357ECEEA8BC";
+const uint8_t Role::binary_fingerprint[16] = {0x8D,0xEB,0xC3,0x09,0x6A,0xEF,0x41,0x4F,0xFF,0x38,0xC3,0x57,0xEC,0xEE,0xA8,0xBC};
 
 uint32_t Role::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -1037,6 +1037,46 @@ uint32_t Role::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->principalName);
+          this->__isset.principalName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->principalType);
+          this->__isset.principalType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->grantOption);
+          this->__isset.grantOption = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->grantTime);
+          this->__isset.grantTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->grantor);
+          this->__isset.grantor = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -1065,6 +1105,31 @@ uint32_t Role::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeString(this->ownerName);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.principalName) {
+    xfer += oprot->writeFieldBegin("principalName", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->principalName);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.principalType) {
+    xfer += oprot->writeFieldBegin("principalType", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->principalType);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.grantOption) {
+    xfer += oprot->writeFieldBegin("grantOption", ::apache::thrift::protocol::T_BOOL, 6);
+    xfer += oprot->writeBool(this->grantOption);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.grantTime) {
+    xfer += oprot->writeFieldBegin("grantTime", ::apache::thrift::protocol::T_I32, 7);
+    xfer += oprot->writeI32(this->grantTime);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.grantor) {
+    xfer += oprot->writeFieldBegin("grantor", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->grantor);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -1075,6 +1140,11 @@ void swap(Role &a, Role &b) {
   swap(a.roleName, b.roleName);
   swap(a.createTime, b.createTime);
   swap(a.ownerName, b.ownerName);
+  swap(a.principalName, b.principalName);
+  swap(a.principalType, b.principalType);
+  swap(a.grantOption, b.grantOption);
+  swap(a.grantTime, b.grantTime);
+  swap(a.grantor, b.grantor);
   swap(a.__isset, b.__isset);
 }
 

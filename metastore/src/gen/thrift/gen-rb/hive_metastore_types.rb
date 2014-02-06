@@ -212,11 +212,21 @@ class Role
   ROLENAME = 1
   CREATETIME = 2
   OWNERNAME = 3
+  PRINCIPALNAME = 4
+  PRINCIPALTYPE = 5
+  GRANTOPTION = 6
+  GRANTTIME = 7
+  GRANTOR = 8
 
   FIELDS = {
     ROLENAME => {:type => ::Thrift::Types::STRING, :name => 'roleName'},
     CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
-    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'}
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
+    PRINCIPALNAME => {:type => ::Thrift::Types::STRING, :name => 'principalName', :optional => true},
+    PRINCIPALTYPE => {:type => ::Thrift::Types::STRING, :name => 'principalType', :optional => true},
+    GRANTOPTION => {:type => ::Thrift::Types::BOOL, :name => 'grantOption', :optional => true},
+    GRANTTIME => {:type => ::Thrift::Types::I32, :name => 'grantTime', :optional => true},
+    GRANTOR => {:type => ::Thrift::Types::STRING, :name => 'grantor', :optional => true}
   }
 
   def struct_fields; FIELDS; end

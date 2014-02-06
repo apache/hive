@@ -869,6 +869,11 @@ class Role:
    - roleName
    - createTime
    - ownerName
+   - principalName
+   - principalType
+   - grantOption
+   - grantTime
+   - grantor
   """
 
   thrift_spec = (
@@ -876,12 +881,22 @@ class Role:
     (1, TType.STRING, 'roleName', None, None, ), # 1
     (2, TType.I32, 'createTime', None, None, ), # 2
     (3, TType.STRING, 'ownerName', None, None, ), # 3
+    (4, TType.STRING, 'principalName', None, None, ), # 4
+    (5, TType.STRING, 'principalType', None, None, ), # 5
+    (6, TType.BOOL, 'grantOption', None, None, ), # 6
+    (7, TType.I32, 'grantTime', None, None, ), # 7
+    (8, TType.STRING, 'grantor', None, None, ), # 8
   )
 
-  def __init__(self, roleName=None, createTime=None, ownerName=None,):
+  def __init__(self, roleName=None, createTime=None, ownerName=None, principalName=None, principalType=None, grantOption=None, grantTime=None, grantor=None,):
     self.roleName = roleName
     self.createTime = createTime
     self.ownerName = ownerName
+    self.principalName = principalName
+    self.principalType = principalType
+    self.grantOption = grantOption
+    self.grantTime = grantTime
+    self.grantor = grantor
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -907,6 +922,31 @@ class Role:
           self.ownerName = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.principalName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.principalType = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.BOOL:
+          self.grantOption = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.I32:
+          self.grantTime = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.STRING:
+          self.grantor = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -928,6 +968,26 @@ class Role:
     if self.ownerName is not None:
       oprot.writeFieldBegin('ownerName', TType.STRING, 3)
       oprot.writeString(self.ownerName)
+      oprot.writeFieldEnd()
+    if self.principalName is not None:
+      oprot.writeFieldBegin('principalName', TType.STRING, 4)
+      oprot.writeString(self.principalName)
+      oprot.writeFieldEnd()
+    if self.principalType is not None:
+      oprot.writeFieldBegin('principalType', TType.STRING, 5)
+      oprot.writeString(self.principalType)
+      oprot.writeFieldEnd()
+    if self.grantOption is not None:
+      oprot.writeFieldBegin('grantOption', TType.BOOL, 6)
+      oprot.writeBool(self.grantOption)
+      oprot.writeFieldEnd()
+    if self.grantTime is not None:
+      oprot.writeFieldBegin('grantTime', TType.I32, 7)
+      oprot.writeI32(self.grantTime)
+      oprot.writeFieldEnd()
+    if self.grantor is not None:
+      oprot.writeFieldBegin('grantor', TType.STRING, 8)
+      oprot.writeString(self.grantor)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

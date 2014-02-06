@@ -107,6 +107,11 @@ struct Role {
   1: string roleName,
   2: i32 createTime,
   3: string ownerName,
+  4: optional string principalName,
+  5: optional string principalType,
+  6: optional bool grantOption,
+  7: optional i32 grantTime,
+  8: optional string grantor
 }
 
 // namespace for tables

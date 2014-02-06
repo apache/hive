@@ -94,7 +94,7 @@ public interface HiveAuthorizer {
    * @return list of roles
    * @throws HiveAuthorizationPluginException
    */
-  List<String> getRoles(HivePrincipal hivePrincipal)
+  List<HiveRole> getRoles(HivePrincipal hivePrincipal)
       throws HiveAuthorizationPluginException;
 
   /**

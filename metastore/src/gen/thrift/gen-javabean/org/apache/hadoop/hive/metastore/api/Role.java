@@ -37,6 +37,11 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
   private static final org.apache.thrift.protocol.TField ROLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("roleName", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField CREATE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("createTime", org.apache.thrift.protocol.TType.I32, (short)2);
   private static final org.apache.thrift.protocol.TField OWNER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField PRINCIPAL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("principalName", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField PRINCIPAL_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("principalType", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField GRANT_OPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("grantOption", org.apache.thrift.protocol.TType.BOOL, (short)6);
+  private static final org.apache.thrift.protocol.TField GRANT_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("grantTime", org.apache.thrift.protocol.TType.I32, (short)7);
+  private static final org.apache.thrift.protocol.TField GRANTOR_FIELD_DESC = new org.apache.thrift.protocol.TField("grantor", org.apache.thrift.protocol.TType.STRING, (short)8);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,12 +52,22 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
   private String roleName; // required
   private int createTime; // required
   private String ownerName; // required
+  private String principalName; // optional
+  private String principalType; // optional
+  private boolean grantOption; // optional
+  private int grantTime; // optional
+  private String grantor; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ROLE_NAME((short)1, "roleName"),
     CREATE_TIME((short)2, "createTime"),
-    OWNER_NAME((short)3, "ownerName");
+    OWNER_NAME((short)3, "ownerName"),
+    PRINCIPAL_NAME((short)4, "principalName"),
+    PRINCIPAL_TYPE((short)5, "principalType"),
+    GRANT_OPTION((short)6, "grantOption"),
+    GRANT_TIME((short)7, "grantTime"),
+    GRANTOR((short)8, "grantor");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -73,6 +88,16 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
           return CREATE_TIME;
         case 3: // OWNER_NAME
           return OWNER_NAME;
+        case 4: // PRINCIPAL_NAME
+          return PRINCIPAL_NAME;
+        case 5: // PRINCIPAL_TYPE
+          return PRINCIPAL_TYPE;
+        case 6: // GRANT_OPTION
+          return GRANT_OPTION;
+        case 7: // GRANT_TIME
+          return GRANT_TIME;
+        case 8: // GRANTOR
+          return GRANTOR;
         default:
           return null;
       }
@@ -114,7 +139,10 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
 
   // isset id assignments
   private static final int __CREATETIME_ISSET_ID = 0;
+  private static final int __GRANTOPTION_ISSET_ID = 1;
+  private static final int __GRANTTIME_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
+  private _Fields optionals[] = {_Fields.PRINCIPAL_NAME,_Fields.PRINCIPAL_TYPE,_Fields.GRANT_OPTION,_Fields.GRANT_TIME,_Fields.GRANTOR};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -123,6 +151,16 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
     tmpMap.put(_Fields.CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("createTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.OWNER_NAME, new org.apache.thrift.meta_data.FieldMetaData("ownerName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PRINCIPAL_NAME, new org.apache.thrift.meta_data.FieldMetaData("principalName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PRINCIPAL_TYPE, new org.apache.thrift.meta_data.FieldMetaData("principalType", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.GRANT_OPTION, new org.apache.thrift.meta_data.FieldMetaData("grantOption", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.GRANT_TIME, new org.apache.thrift.meta_data.FieldMetaData("grantTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.GRANTOR, new org.apache.thrift.meta_data.FieldMetaData("grantor", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Role.class, metaDataMap);
@@ -155,6 +193,17 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
     if (other.isSetOwnerName()) {
       this.ownerName = other.ownerName;
     }
+    if (other.isSetPrincipalName()) {
+      this.principalName = other.principalName;
+    }
+    if (other.isSetPrincipalType()) {
+      this.principalType = other.principalType;
+    }
+    this.grantOption = other.grantOption;
+    this.grantTime = other.grantTime;
+    if (other.isSetGrantor()) {
+      this.grantor = other.grantor;
+    }
   }
 
   public Role deepCopy() {
@@ -167,6 +216,13 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
     setCreateTimeIsSet(false);
     this.createTime = 0;
     this.ownerName = null;
+    this.principalName = null;
+    this.principalType = null;
+    setGrantOptionIsSet(false);
+    this.grantOption = false;
+    setGrantTimeIsSet(false);
+    this.grantTime = 0;
+    this.grantor = null;
   }
 
   public String getRoleName() {
@@ -237,6 +293,119 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
     }
   }
 
+  public String getPrincipalName() {
+    return this.principalName;
+  }
+
+  public void setPrincipalName(String principalName) {
+    this.principalName = principalName;
+  }
+
+  public void unsetPrincipalName() {
+    this.principalName = null;
+  }
+
+  /** Returns true if field principalName is set (has been assigned a value) and false otherwise */
+  public boolean isSetPrincipalName() {
+    return this.principalName != null;
+  }
+
+  public void setPrincipalNameIsSet(boolean value) {
+    if (!value) {
+      this.principalName = null;
+    }
+  }
+
+  public String getPrincipalType() {
+    return this.principalType;
+  }
+
+  public void setPrincipalType(String principalType) {
+    this.principalType = principalType;
+  }
+
+  public void unsetPrincipalType() {
+    this.principalType = null;
+  }
+
+  /** Returns true if field principalType is set (has been assigned a value) and false otherwise */
+  public boolean isSetPrincipalType() {
+    return this.principalType != null;
+  }
+
+  public void setPrincipalTypeIsSet(boolean value) {
+    if (!value) {
+      this.principalType = null;
+    }
+  }
+
+  public boolean isGrantOption() {
+    return this.grantOption;
+  }
+
+  public void setGrantOption(boolean grantOption) {
+    this.grantOption = grantOption;
+    setGrantOptionIsSet(true);
+  }
+
+  public void unsetGrantOption() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __GRANTOPTION_ISSET_ID);
+  }
+
+  /** Returns true if field grantOption is set (has been assigned a value) and false otherwise */
+  public boolean isSetGrantOption() {
+    return EncodingUtils.testBit(__isset_bitfield, __GRANTOPTION_ISSET_ID);
+  }
+
+  public void setGrantOptionIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __GRANTOPTION_ISSET_ID, value);
+  }
+
+  public int getGrantTime() {
+    return this.grantTime;
+  }
+
+  public void setGrantTime(int grantTime) {
+    this.grantTime = grantTime;
+    setGrantTimeIsSet(true);
+  }
+
+  public void unsetGrantTime() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __GRANTTIME_ISSET_ID);
+  }
+
+  /** Returns true if field grantTime is set (has been assigned a value) and false otherwise */
+  public boolean isSetGrantTime() {
+    return EncodingUtils.testBit(__isset_bitfield, __GRANTTIME_ISSET_ID);
+  }
+
+  public void setGrantTimeIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __GRANTTIME_ISSET_ID, value);
+  }
+
+  public String getGrantor() {
+    return this.grantor;
+  }
+
+  public void setGrantor(String grantor) {
+    this.grantor = grantor;
+  }
+
+  public void unsetGrantor() {
+    this.grantor = null;
+  }
+
+  /** Returns true if field grantor is set (has been assigned a value) and false otherwise */
+  public boolean isSetGrantor() {
+    return this.grantor != null;
+  }
+
+  public void setGrantorIsSet(boolean value) {
+    if (!value) {
+      this.grantor = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case ROLE_NAME:
@@ -263,6 +432,46 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
       }
       break;
 
+    case PRINCIPAL_NAME:
+      if (value == null) {
+        unsetPrincipalName();
+      } else {
+        setPrincipalName((String)value);
+      }
+      break;
+
+    case PRINCIPAL_TYPE:
+      if (value == null) {
+        unsetPrincipalType();
+      } else {
+        setPrincipalType((String)value);
+      }
+      break;
+
+    case GRANT_OPTION:
+      if (value == null) {
+        unsetGrantOption();
+      } else {
+        setGrantOption((Boolean)value);
+      }
+      break;
+
+    case GRANT_TIME:
+      if (value == null) {
+        unsetGrantTime();
+      } else {
+        setGrantTime((Integer)value);
+      }
+      break;
+
+    case GRANTOR:
+      if (value == null) {
+        unsetGrantor();
+      } else {
+        setGrantor((String)value);
+      }
+      break;
+
     }
   }
 
@@ -276,6 +485,21 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
 
     case OWNER_NAME:
       return getOwnerName();
+
+    case PRINCIPAL_NAME:
+      return getPrincipalName();
+
+    case PRINCIPAL_TYPE:
+      return getPrincipalType();
+
+    case GRANT_OPTION:
+      return Boolean.valueOf(isGrantOption());
+
+    case GRANT_TIME:
+      return Integer.valueOf(getGrantTime());
+
+    case GRANTOR:
+      return getGrantor();
 
     }
     throw new IllegalStateException();
@@ -294,6 +518,16 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
       return isSetCreateTime();
     case OWNER_NAME:
       return isSetOwnerName();
+    case PRINCIPAL_NAME:
+      return isSetPrincipalName();
+    case PRINCIPAL_TYPE:
+      return isSetPrincipalType();
+    case GRANT_OPTION:
+      return isSetGrantOption();
+    case GRANT_TIME:
+      return isSetGrantTime();
+    case GRANTOR:
+      return isSetGrantor();
     }
     throw new IllegalStateException();
   }
@@ -338,6 +572,51 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
         return false;
     }
 
+    boolean this_present_principalName = true && this.isSetPrincipalName();
+    boolean that_present_principalName = true && that.isSetPrincipalName();
+    if (this_present_principalName || that_present_principalName) {
+      if (!(this_present_principalName && that_present_principalName))
+        return false;
+      if (!this.principalName.equals(that.principalName))
+        return false;
+    }
+
+    boolean this_present_principalType = true && this.isSetPrincipalType();
+    boolean that_present_principalType = true && that.isSetPrincipalType();
+    if (this_present_principalType || that_present_principalType) {
+      if (!(this_present_principalType && that_present_principalType))
+        return false;
+      if (!this.principalType.equals(that.principalType))
+        return false;
+    }
+
+    boolean this_present_grantOption = true && this.isSetGrantOption();
+    boolean that_present_grantOption = true && that.isSetGrantOption();
+    if (this_present_grantOption || that_present_grantOption) {
+      if (!(this_present_grantOption && that_present_grantOption))
+        return false;
+      if (this.grantOption != that.grantOption)
+        return false;
+    }
+
+    boolean this_present_grantTime = true && this.isSetGrantTime();
+    boolean that_present_grantTime = true && that.isSetGrantTime();
+    if (this_present_grantTime || that_present_grantTime) {
+      if (!(this_present_grantTime && that_present_grantTime))
+        return false;
+      if (this.grantTime != that.grantTime)
+        return false;
+    }
+
+    boolean this_present_grantor = true && this.isSetGrantor();
+    boolean that_present_grantor = true && that.isSetGrantor();
+    if (this_present_grantor || that_present_grantor) {
+      if (!(this_present_grantor && that_present_grantor))
+        return false;
+      if (!this.grantor.equals(that.grantor))
+        return false;
+    }
+
     return true;
   }
 
@@ -359,6 +638,31 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
     builder.append(present_ownerName);
     if (present_ownerName)
       builder.append(ownerName);
+
+    boolean present_principalName = true && (isSetPrincipalName());
+    builder.append(present_principalName);
+    if (present_principalName)
+      builder.append(principalName);
+
+    boolean present_principalType = true && (isSetPrincipalType());
+    builder.append(present_principalType);
+    if (present_principalType)
+      builder.append(principalType);
+
+    boolean present_grantOption = true && (isSetGrantOption());
+    builder.append(present_grantOption);
+    if (present_grantOption)
+      builder.append(grantOption);
+
+    boolean present_grantTime = true && (isSetGrantTime());
+    builder.append(present_grantTime);
+    if (present_grantTime)
+      builder.append(grantTime);
+
+    boolean present_grantor = true && (isSetGrantor());
+    builder.append(present_grantor);
+    if (present_grantor)
+      builder.append(grantor);
 
     return builder.toHashCode();
   }
@@ -397,6 +701,56 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
     }
     if (isSetOwnerName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ownerName, typedOther.ownerName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetPrincipalName()).compareTo(typedOther.isSetPrincipalName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPrincipalName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.principalName, typedOther.principalName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetPrincipalType()).compareTo(typedOther.isSetPrincipalType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPrincipalType()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.principalType, typedOther.principalType);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetGrantOption()).compareTo(typedOther.isSetGrantOption());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetGrantOption()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.grantOption, typedOther.grantOption);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetGrantTime()).compareTo(typedOther.isSetGrantTime());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetGrantTime()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.grantTime, typedOther.grantTime);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetGrantor()).compareTo(typedOther.isSetGrantor());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetGrantor()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.grantor, typedOther.grantor);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -440,6 +794,48 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
       sb.append(this.ownerName);
     }
     first = false;
+    if (isSetPrincipalName()) {
+      if (!first) sb.append(", ");
+      sb.append("principalName:");
+      if (this.principalName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.principalName);
+      }
+      first = false;
+    }
+    if (isSetPrincipalType()) {
+      if (!first) sb.append(", ");
+      sb.append("principalType:");
+      if (this.principalType == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.principalType);
+      }
+      first = false;
+    }
+    if (isSetGrantOption()) {
+      if (!first) sb.append(", ");
+      sb.append("grantOption:");
+      sb.append(this.grantOption);
+      first = false;
+    }
+    if (isSetGrantTime()) {
+      if (!first) sb.append(", ");
+      sb.append("grantTime:");
+      sb.append(this.grantTime);
+      first = false;
+    }
+    if (isSetGrantor()) {
+      if (!first) sb.append(", ");
+      sb.append("grantor:");
+      if (this.grantor == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.grantor);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -509,6 +905,46 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // PRINCIPAL_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.principalName = iprot.readString();
+              struct.setPrincipalNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // PRINCIPAL_TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.principalType = iprot.readString();
+              struct.setPrincipalTypeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // GRANT_OPTION
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.grantOption = iprot.readBool();
+              struct.setGrantOptionIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // GRANT_TIME
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.grantTime = iprot.readI32();
+              struct.setGrantTimeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 8: // GRANTOR
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.grantor = iprot.readString();
+              struct.setGrantorIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -534,6 +970,37 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
         oprot.writeFieldBegin(OWNER_NAME_FIELD_DESC);
         oprot.writeString(struct.ownerName);
         oprot.writeFieldEnd();
+      }
+      if (struct.principalName != null) {
+        if (struct.isSetPrincipalName()) {
+          oprot.writeFieldBegin(PRINCIPAL_NAME_FIELD_DESC);
+          oprot.writeString(struct.principalName);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.principalType != null) {
+        if (struct.isSetPrincipalType()) {
+          oprot.writeFieldBegin(PRINCIPAL_TYPE_FIELD_DESC);
+          oprot.writeString(struct.principalType);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetGrantOption()) {
+        oprot.writeFieldBegin(GRANT_OPTION_FIELD_DESC);
+        oprot.writeBool(struct.grantOption);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetGrantTime()) {
+        oprot.writeFieldBegin(GRANT_TIME_FIELD_DESC);
+        oprot.writeI32(struct.grantTime);
+        oprot.writeFieldEnd();
+      }
+      if (struct.grantor != null) {
+        if (struct.isSetGrantor()) {
+          oprot.writeFieldBegin(GRANTOR_FIELD_DESC);
+          oprot.writeString(struct.grantor);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -562,7 +1029,22 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
       if (struct.isSetOwnerName()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetPrincipalName()) {
+        optionals.set(3);
+      }
+      if (struct.isSetPrincipalType()) {
+        optionals.set(4);
+      }
+      if (struct.isSetGrantOption()) {
+        optionals.set(5);
+      }
+      if (struct.isSetGrantTime()) {
+        optionals.set(6);
+      }
+      if (struct.isSetGrantor()) {
+        optionals.set(7);
+      }
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetRoleName()) {
         oprot.writeString(struct.roleName);
       }
@@ -572,12 +1054,27 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
       if (struct.isSetOwnerName()) {
         oprot.writeString(struct.ownerName);
       }
+      if (struct.isSetPrincipalName()) {
+        oprot.writeString(struct.principalName);
+      }
+      if (struct.isSetPrincipalType()) {
+        oprot.writeString(struct.principalType);
+      }
+      if (struct.isSetGrantOption()) {
+        oprot.writeBool(struct.grantOption);
+      }
+      if (struct.isSetGrantTime()) {
+        oprot.writeI32(struct.grantTime);
+      }
+      if (struct.isSetGrantor()) {
+        oprot.writeString(struct.grantor);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Role struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         struct.roleName = iprot.readString();
         struct.setRoleNameIsSet(true);
@@ -589,6 +1086,26 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
       if (incoming.get(2)) {
         struct.ownerName = iprot.readString();
         struct.setOwnerNameIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.principalName = iprot.readString();
+        struct.setPrincipalNameIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.principalType = iprot.readString();
+        struct.setPrincipalTypeIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.grantOption = iprot.readBool();
+        struct.setGrantOptionIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.grantTime = iprot.readI32();
+        struct.setGrantTimeIsSet(true);
+      }
+      if (incoming.get(7)) {
+        struct.grantor = iprot.readString();
+        struct.setGrantorIsSet(true);
       }
     }
   }

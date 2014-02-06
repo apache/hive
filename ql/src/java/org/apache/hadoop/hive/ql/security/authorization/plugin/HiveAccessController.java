@@ -40,7 +40,7 @@ public interface HiveAccessController {
   void dropRole(String roleName)
       throws HiveAuthorizationPluginException;
 
-  List<String> getRoles(HivePrincipal hivePrincipal)
+  List<HiveRole> getRoles(HivePrincipal hivePrincipal)
       throws HiveAuthorizationPluginException;
 
   void grantRole(List<HivePrincipal> hivePrincipals, List<String> roles, boolean grantOption,
