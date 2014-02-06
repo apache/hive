@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table if not exists authorization_invalid_v1 (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@authorization_invalid_v1
-FAILED: SemanticException undefined privilege 731
+FAILED: SemanticException undefined privilege TOK_PRIV_DELETE

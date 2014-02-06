@@ -322,7 +322,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       Privilege privObj = PrivilegeRegistry.getPrivilege(privilegeType.getType());
 
       if (privObj == null) {
-        throw new SemanticException("undefined privilege " + privilegeType.getType());
+        throw new SemanticException("undefined privilege " + privilegeType.getText());
       }
       List<String> cols = null;
       if (privilegeDef.getChildCount() > 1) {

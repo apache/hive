@@ -251,6 +251,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   //flag for partial scan during analyze ... compute statistics
   protected boolean partialscan = false;
 
+  /*
+   * Capture the CTE definitions in a Query.
+   */
+  private final Map<String, ASTNode> aliasToCTEs;
+  /*
+   * Used to check recursive CTE invocations. Similar to viewsExpanded
+   */
+  private ArrayList<String> ctesExpanded;
+
   private static class Phase1Ctx {
     String dest;
     int nextNum;
@@ -286,6 +295,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         HiveConf.ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME);
     queryProperties = new QueryProperties();
     opToPartToSkewedPruner = new HashMap<TableScanOperator, Map<String, ExprNodeDesc>>();
+    aliasToCTEs = new HashMap<String, ASTNode>();
   }
 
   @Override
@@ -305,6 +315,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opParseCtx.clear();
     groupOpToInputTables.clear();
     prunedPartitions.clear();
+    aliasToCTEs.clear();
   }
 
   public void initParseCtx(ParseContext pctx) {
@@ -665,6 +676,98 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     unparseTranslator.addIdentifierTranslation((ASTNode) subq.getChild(1));
 
     return alias;
+  }
+
+  /*
+   * Phase1: hold onto any CTE definitions in aliasToCTE.
+   * CTE definitions are global to the Query.
+   */
+  private void processCTE(QB qb, ASTNode ctes) throws SemanticException {
+
+    int numCTEs = ctes.getChildCount();
+
+    for(int i=0; i <numCTEs; i++) {
+      ASTNode cte = (ASTNode) ctes.getChild(i);
+      ASTNode cteQry = (ASTNode) cte.getChild(0);
+      String alias = unescapeIdentifier(cte.getChild(1).getText());
+
+      String qName = qb.getId() == null ? "" : qb.getId() + ":";
+      qName += alias.toLowerCase();
+
+      if ( aliasToCTEs.containsKey(qName)) {
+        throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(cte.getChild(1)));
+      }
+      aliasToCTEs.put(qName, cteQry);
+    }
+  }
+
+  /*
+   * We allow CTE definitions in views. So we can end up with a hierarchy of CTE definitions:
+   * - at the top level of a query statement
+   * - where a view is referenced.
+   * - views may refer to other views.
+   *
+   * The scoping rules we use are: to search for a CTE from the current QB outwards. In order to
+   * disambiguate between CTES are different levels we qualify(prefix) them with the id of the QB
+   * they appear in when adding them to the <code>aliasToCTEs</code> map.
+   * 
+   */
+  private ASTNode findCTEFromName(QB qb, String cteName) {
+
+    /*
+     * When saving a view definition all table references in the AST are qualified; including CTE references.
+     * Where as CTE definitions have no DB qualifier; so we strip out the DB qualifier before searching in 
+     * <code>aliasToCTEs</code> map.
+     */
+    String currDB = SessionState.get().getCurrentDatabase();
+    if ( currDB != null && cteName.startsWith(currDB) &&
+        cteName.length() > currDB.length() &&
+        cteName.charAt(currDB.length()) == '.'   ) {
+      cteName = cteName.substring(currDB.length() + 1);
+    }
+
+    StringBuffer qId = new StringBuffer();
+    if (qb.getId() != null) {
+      qId.append(qb.getId());
+    }
+
+    while (qId.length() > 0) {
+      String nm = qId + ":" + cteName;
+      if (aliasToCTEs.containsKey(nm)) {
+        return aliasToCTEs.get(nm);
+      }
+      int lastIndex = qId.lastIndexOf(":");
+      lastIndex = lastIndex < 0 ? 0 : lastIndex;
+      qId.setLength(lastIndex);
+    }
+    return aliasToCTEs.get(cteName);
+  }
+  
+  /*
+   * If a CTE is referenced in a QueryBlock:
+   * - add it as a SubQuery for now.
+   *   - SQ.alias is the alias used in QB. (if no alias is specified, 
+   *     it used the CTE name. Works just like table references)
+   *   - Adding SQ done by:
+   *     - copying AST of CTE
+   *     - setting ASTOrigin on cloned AST.
+   *   - trigger phase 1 on new QBExpr.
+   *   - update QB data structs: remove this as a table reference, move it to a SQ invocation. 
+   */
+  private void addCTEAsSubQuery(QB qb, String cteName, String cteAlias) throws SemanticException {
+    cteAlias = cteAlias == null ? cteName : cteAlias;
+    ASTNode cteQryNode = findCTEFromName(qb, cteName);
+    QBExpr cteQBExpr = new QBExpr(cteAlias);
+
+    String cteText = ctx.getTokenRewriteStream().toString(
+        cteQryNode.getTokenStartIndex(), cteQryNode.getTokenStopIndex());
+    final ASTNodeOrigin cteOrigin = new ASTNodeOrigin("CTE", cteName,
+        cteText, cteAlias, cteQryNode);
+    cteQryNode = (ASTNode) ParseDriver.adaptor.dupTree(cteQryNode);
+    SubQueryUtils.setOriginDeep(cteQryNode, cteOrigin);
+
+    doPhase1QBExpr(cteQryNode, cteQBExpr, qb.getId(), cteAlias);
+    qb.rewriteCTEToSubq(cteAlias, cteName, cteQBExpr);
   }
 
   private boolean isJoinToken(ASTNode node) {
@@ -1042,6 +1145,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         assert ast.getChildCount() == 1;
         qb.getParseInfo().getDestToLateralView().put(ctx_1.dest, ast);
         break;
+      case HiveParser.TOK_CTE:
+        processCTE(qb, ast);
+        break;
       default:
         skipRecursion = false;
         break;
@@ -1094,12 +1200,35 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // This is needed for tracking the dependencies for inputs, along with their parents.
       Map<String, ObjectPair<String, ReadEntity>> aliasToViewInfo =
           new HashMap<String, ObjectPair<String, ReadEntity>>();
+
+      /*
+       * used to capture view to SQ conversions. This is used to check for
+       * recursive CTE invocations.
+       */
+      Map<String, String> sqAliasToCTEName = new HashMap<String, String>();
+
       for (String alias : tabAliases) {
         String tab_name = qb.getTabNameForAlias(alias);
         Table tab = null;
         try {
           tab = db.getTable(tab_name);
         } catch (InvalidTableException ite) {
+          /*
+           * if this s a CTE reference:
+           * Add its AST as a SubQuery to this QB.
+           */
+          ASTNode cteNode = findCTEFromName(qb, tab_name.toLowerCase());
+          if ( cteNode != null ) {
+            String cte_name = tab_name.toLowerCase();
+            if (ctesExpanded.contains(cte_name)) {
+              throw new SemanticException("Recursive cte " + tab_name +
+                  " detected (cycle: " + StringUtils.join(ctesExpanded, " -> ") +
+                  " -> " + tab_name + ").");
+            }
+            addCTEAsSubQuery(qb, cte_name, alias);
+            sqAliasToCTEName.put(alias, cte_name);
+            continue;
+          }
           throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(qb
               .getParseInfo().getSrcForAlias(alias)));
         }
@@ -1192,15 +1321,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Go over the subqueries and getMetaData for these
       for (String alias : qb.getSubqAliases()) {
         boolean wasView = aliasToViewInfo.containsKey(alias);
+        boolean wasCTE = sqAliasToCTEName.containsKey(alias);
         ReadEntity newParentInput = null;
         if (wasView) {
           viewsExpanded.add(aliasToViewInfo.get(alias).getFirst());
           newParentInput = aliasToViewInfo.get(alias).getSecond();
+        } else if (wasCTE) {
+          ctesExpanded.add(sqAliasToCTEName.get(alias));
         }
         QBExpr qbexpr = qb.getSubqForAlias(alias);
         getMetaData(qbexpr, newParentInput);
         if (wasView) {
           viewsExpanded.remove(viewsExpanded.size() - 1);
+        } else if (wasCTE) {
+          ctesExpanded.remove(ctesExpanded.size() - 1);
         }
       }
 
@@ -8917,6 +9051,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode child = ast;
     this.ast = ast;
     viewsExpanded = new ArrayList<String>();
+    ctesExpanded = new ArrayList<String>();
 
     LOG.info("Starting Semantic Analysis");
 
