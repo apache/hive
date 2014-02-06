@@ -219,6 +219,10 @@ public class QB {
     aliasToSubq.put(alias, qbexpr);
   }
 
+  public void rewriteCTEToSubq(String alias, String cteName, QBExpr qbexpr) {
+    rewriteViewToSubq(alias, cteName, qbexpr);
+  }
+
   public QBJoinTree getQbJoinTree() {
     return qbjoin;
   }

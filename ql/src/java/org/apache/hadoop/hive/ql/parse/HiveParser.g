@@ -317,6 +317,7 @@ TOK_SUBQUERY_OP_NOTIN;
 TOK_SUBQUERY_OP_NOTEXISTS;
 TOK_DB_TYPE;
 TOK_TABLE_TYPE;
+TOK_CTE;
 }
 
 
@@ -787,7 +788,7 @@ createTableStatement
          tableFileFormat?
          tableLocation?
          tablePropertiesPrefixed?
-         (KW_AS selectStatement[true])?
+         (KW_AS selectStatementWithCTE)?
       )
     -> ^(TOK_CREATETABLE $name $ext? ifNotExists?
          ^(TOK_LIKETABLE $likeName?)
@@ -800,7 +801,7 @@ createTableStatement
          tableFileFormat?
          tableLocation?
          tablePropertiesPrefixed?
-         selectStatement?
+         selectStatementWithCTE?
         )
     ;
 
@@ -939,8 +940,8 @@ alterViewStatementSuffix
         -> ^(TOK_ALTERVIEW_ADDPARTS alterStatementSuffixAddPartitions)
     | alterStatementSuffixDropPartitions
         -> ^(TOK_ALTERVIEW_DROPPARTS alterStatementSuffixDropPartitions)
-    | name=tableName KW_AS selectStatement[true]
-        -> ^(TOK_ALTERVIEW_AS $name selectStatement)
+    | name=tableName KW_AS selectStatementWithCTE
+        -> ^(TOK_ALTERVIEW_AS $name selectStatementWithCTE)
     ;
 
 alterIndexStatementSuffix
@@ -1511,14 +1512,14 @@ createViewStatement
         (LPAREN columnNameCommentList RPAREN)? tableComment? viewPartition?
         tablePropertiesPrefixed?
         KW_AS
-        selectStatement[true]
+        selectStatementWithCTE
     -> ^(TOK_CREATEVIEW $name orReplace?
          ifNotExists?
          columnNameCommentList?
          tableComment?
          viewPartition?
          tablePropertiesPrefixed?
-         selectStatement
+         selectStatementWithCTE
         )
     ;
 
@@ -1910,10 +1911,36 @@ setOperator
 
 queryStatementExpression[boolean topLevel]
     :
+    /* Would be nice to do this as a gated semantic perdicate
+       But the predicate gets pushed as a lookahead decision.
+       Calling rule doesnot know about topLevel
+    */
+    (w=withClause {topLevel}?)?
+    queryStatementExpressionBody[topLevel] {
+      if ($w.tree != null) {
+      adaptor.addChild($queryStatementExpressionBody.tree, $w.tree);
+      }
+    }
+    ->  queryStatementExpressionBody
+    ;
+
+queryStatementExpressionBody[boolean topLevel]
+    :
     fromStatement[topLevel]
     | regularBody[topLevel]
     ;
-    
+
+withClause
+  :
+  KW_WITH cteStatement (COMMA cteStatement)* -> ^(TOK_CTE cteStatement+)
+;
+
+cteStatement
+   :
+   identifier KW_AS LPAREN queryStatementExpression[false] RPAREN
+   -> ^(TOK_SUBQUERY queryStatementExpression identifier)
+;
+
 fromStatement[boolean topLevel]
 : (singleFromStatement  -> singleFromStatement)
 	(u=setOperator r=singleFromStatement
@@ -1986,6 +2013,17 @@ singleSelectStatement
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? window_clause? limitClause?))
    ;
+
+selectStatementWithCTE
+    :
+    (w=withClause)?
+    selectStatement[true] {
+      if ($w.tree != null) {
+      adaptor.addChild($selectStatement.tree, $w.tree);
+      }
+    }
+    ->  selectStatement
+    ;
 
 body
    :

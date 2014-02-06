@@ -1,0 +1,1 @@
+FAILED: SemanticException Recursive cte q1 detected (cycle: q1 -> q2 -> q1).
