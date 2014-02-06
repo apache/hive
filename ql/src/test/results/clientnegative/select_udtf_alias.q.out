@@ -1,1 +1,1 @@
-FAILED: ParseException line 3:49 missing FROM at 'LIMIT' near ')' in table name
+FAILED: SemanticException [Error 10083]: The number of aliases supplied in the AS clause does not match the number of columns output by the UDTF expected 1 aliases but got 2

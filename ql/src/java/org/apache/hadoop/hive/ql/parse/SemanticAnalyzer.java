@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,6 +39,8 @@ import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -75,8 +77,10 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -165,6 +169,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.NullStructSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -178,6 +183,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.InputFormat;
 
 /**
@@ -187,6 +193,10 @@ import org.apache.hadoop.mapred.InputFormat;
  */
 
 public class SemanticAnalyzer extends BaseSemanticAnalyzer {
+
+  public static final String DUMMY_DATABASE = "_dummy_database";
+  public static final String DUMMY_TABLE = "_dummy_table";
+
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
   private HashMap<String, Operator<? extends OperatorDesc>> topOps;
@@ -8615,6 +8625,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       aliasToOpInfo.put(alias, op);
     }
 
+    if (aliasToOpInfo.isEmpty()) {
+      qb.getMetaData().setSrcForAlias(DUMMY_TABLE, getDummyTable());
+      TableScanOperator op = (TableScanOperator) genTablePlan(DUMMY_TABLE, qb);
+      op.getConf().setRowLimit(1);
+      qb.addAlias(DUMMY_TABLE);
+      qb.setTabAlias(DUMMY_TABLE, DUMMY_TABLE);
+      aliasToOpInfo.put(DUMMY_TABLE, op);
+    }
+
     Operator srcOpInfo = null;
     Operator lastPTFOp = null;
 
@@ -8694,6 +8713,37 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     this.qb = qb;
     return bodyOpInfo;
+  }
+
+  private Table getDummyTable() throws SemanticException {
+    Path dummyPath = createDummyFile();
+    Table desc = new Table(DUMMY_DATABASE, DUMMY_TABLE);
+    desc.getTTable().getSd().setLocation(dummyPath.toString());
+    desc.getTTable().getSd().getSerdeInfo().setSerializationLib(NullStructSerDe.class.getName());
+    desc.setInputFormatClass(NullRowsInputFormat.class);
+    desc.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
+    return desc;
+  }
+
+  // add dummy data for not removed by CombineHiveInputFormat, etc.
+  private Path createDummyFile() throws SemanticException {
+    Path dummyPath = new Path(ctx.getMRScratchDir(), "dummy_path");
+    Path dummyFile = new Path(dummyPath, "dummy_file");
+    FSDataOutputStream fout = null;
+    try {
+      FileSystem fs = dummyFile.getFileSystem(conf);
+      if (fs.exists(dummyFile)) {
+        return dummyPath;
+      }
+      fout = fs.create(dummyFile);
+      fout.write(1);
+      fout.close();
+    } catch (IOException e) {
+      throw new SemanticException(e);
+    } finally {
+      IOUtils.closeStream(fout);
+    }
+    return dummyPath;
   }
 
   /**

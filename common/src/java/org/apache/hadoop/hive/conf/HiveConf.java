@@ -413,6 +413,8 @@ public class HiveConf extends Configuration {
     HIVEADDEDJARS("hive.added.jars.path", ""),
     HIVEADDEDARCHIVES("hive.added.archives.path", ""),
 
+    HIVE_CURRENT_DATABASE("hive.current.database", ""), // internal usage only
+
     // for hive script operator
     HIVES_AUTO_PROGRESS_TIMEOUT("hive.auto.progress.timeout", 0),
     HIVETABLENAME("hive.table.name", ""),

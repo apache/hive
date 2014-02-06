@@ -555,6 +555,9 @@ public class Driver implements CommandProcessor {
     }
     if (outputs != null && outputs.size() > 0) {
       for (WriteEntity write : outputs) {
+        if (write.isDummy()) {
+          continue;
+        }
         if (write.getType() == Entity.Type.DATABASE) {
           ss.getAuthorizer().authorize(write.getDatabase(),
               null, op.getOutputRequiredPrivileges());
@@ -585,7 +588,7 @@ public class Driver implements CommandProcessor {
       //determine if partition level privileges should be checked for input tables
       Map<String, Boolean> tableUsePartLevelAuth = new HashMap<String, Boolean>();
       for (ReadEntity read : inputs) {
-        if (read.getType() == Entity.Type.DATABASE) {
+        if (read.isDummy() || read.getType() == Entity.Type.DATABASE) {
           continue;
         }
         Table tbl = read.getTable();
@@ -659,6 +662,9 @@ public class Driver implements CommandProcessor {
       // cache the results for table authorization
       Set<String> tableAuthChecked = new HashSet<String>();
       for (ReadEntity read : inputs) {
+        if (read.isDummy()) {
+          continue;
+        }
         if (read.getType() == Entity.Type.DATABASE) {
           ss.getAuthorizer().authorize(read.getDatabase(), op.getInputRequiredPrivileges(), null);
           continue;

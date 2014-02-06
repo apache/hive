@@ -283,6 +283,8 @@ public final class FunctionRegistry {
     registerUDF("^", UDFOPBitXor.class, true);
     registerUDF("~", UDFOPBitNot.class, true);
 
+    registerGenericUDF("current_database", UDFCurrentDB.class);
+
     registerGenericUDF("isnull", GenericUDFOPNull.class);
     registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
 
