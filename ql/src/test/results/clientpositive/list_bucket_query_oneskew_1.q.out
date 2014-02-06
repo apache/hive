@@ -181,7 +181,31 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL x))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL x) 484)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            fact_daily
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               x
+      TOK_WHERE
+         and
+            =
+               TOK_TABLE_OR_COL
+                  ds
+               '1'
+            =
+               TOK_TABLE_OR_COL
+                  x
+               484
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -190,34 +214,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        fact_daily 
+      Map Operator Tree:
           TableScan
             alias: fact_daily
-            Statistics:
-                numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate:
-                  expr: (x = 484)
-                  type: boolean
-              Statistics:
-                  numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
+              predicate: (x = 484) (type: boolean)
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: x
-                      type: int
+                expressions: x (type: int)
                 outputColumnNames: _col0
-                Statistics:
-                    numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics:
-                      numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -311,7 +326,31 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL x))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL x) 495)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            fact_daily
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               x
+      TOK_WHERE
+         and
+            =
+               TOK_TABLE_OR_COL
+                  ds
+               '1'
+            =
+               TOK_TABLE_OR_COL
+                  x
+               495
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -320,34 +359,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        fact_daily 
+      Map Operator Tree:
           TableScan
             alias: fact_daily
-            Statistics:
-                numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate:
-                  expr: (x = 495)
-                  type: boolean
-              Statistics:
-                  numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
+              predicate: (x = 495) (type: boolean)
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: x
-                      type: int
+                expressions: x (type: int)
                 outputColumnNames: _col0
-                Statistics:
-                    numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics:
-                      numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -437,7 +467,31 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL x))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL x) 1)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            fact_daily
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               x
+      TOK_WHERE
+         and
+            =
+               TOK_TABLE_OR_COL
+                  ds
+               '1'
+            =
+               TOK_TABLE_OR_COL
+                  x
+               1
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -446,34 +500,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        fact_daily 
+      Map Operator Tree:
           TableScan
             alias: fact_daily
-            Statistics:
-                numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate:
-                  expr: (x = 1)
-                  type: boolean
-              Statistics:
-                  numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
+              predicate: (x = 1) (type: boolean)
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: x
-                      type: int
+                expressions: x (type: int)
                 outputColumnNames: _col0
-                Statistics:
-                    numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics:
-                      numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

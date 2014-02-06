@@ -265,7 +265,36 @@ POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSche
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL x))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL ds) '1') (not (= (TOK_TABLE_OR_COL x) 86)))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL x)))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            fact_daily
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               x
+      TOK_WHERE
+         and
+            =
+               TOK_TABLE_OR_COL
+                  ds
+               '1'
+            not
+               =
+                  TOK_TABLE_OR_COL
+                     x
+                  86
+      TOK_ORDERBY
+         TOK_TABSORTCOLNAMEASC
+            TOK_TABLE_OR_COL
+               x
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -274,38 +303,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        fact_daily 
+      Map Operator Tree:
           TableScan
             alias: fact_daily
-            Statistics:
-                numRows: 29 dataSize: 117 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 29 Data size: 117 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate:
-                  expr: (not (x = 86))
-                  type: boolean
-              Statistics:
-                  numRows: 15 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
+              predicate: (not (x = 86)) (type: boolean)
+              Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: x
-                      type: int
+                expressions: x (type: int)
                 outputColumnNames: _col0
-                Statistics:
-                    numRows: 15 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: int
+                  key expressions: _col0 (type: int)
                   sort order: +
-                  Statistics:
-                      numRows: 15 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: int
+                  value expressions: _col0 (type: int)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -442,15 +458,13 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
-          Statistics:
-              numRows: 15 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
+          Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics:
-                numRows: 15 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
