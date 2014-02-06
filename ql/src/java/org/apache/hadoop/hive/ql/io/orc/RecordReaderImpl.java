@@ -2529,15 +2529,22 @@ class RecordReaderImpl implements RecordReader {
                   types.get(column).getKind(), stream.getKind(), isCompressed,
                   hasNull[column]);
               long start = indexes[column].getEntry(group).getPositions(posn);
+              final long nextGroupOffset;
+              if (group < includedRowGroups.length - 1) {
+                nextGroupOffset = indexes[column].getEntry(group + 1).getPositions(posn);
+              } else {
+                nextGroupOffset = length;
+              }
+
               // figure out the worst case last location
-              long end = (group == includedRowGroups.length - 1) ?
-                  length : Math.min(length,
-                                    indexes[column].getEntry(group + 1)
-                                        .getPositions(posn)
-                                        + (isCompressed ?
-                                            (OutStream.HEADER_SIZE
-                                              + compressionSize) :
-                                            WORST_UNCOMPRESSED_SLOP));
+
+              // if adjacent groups have the same compressed block offset then stretch the slop
+              // by factor of 2 to safely accommodate the next compression block.
+              // One for the current compression block and another for the next compression block.
+              final long slop = isCompressed ? 2 * (OutStream.HEADER_SIZE + compressionSize)
+                  : WORST_UNCOMPRESSED_SLOP;
+              long end = (group == includedRowGroups.length - 1) ? length : Math.min(length,
+                  nextGroupOffset + slop);
               result.add(new DiskRange(offset + start, offset + end));
             }
           }

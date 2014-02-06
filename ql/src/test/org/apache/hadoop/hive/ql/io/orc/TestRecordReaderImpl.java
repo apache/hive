@@ -539,8 +539,8 @@ public class TestRecordReaderImpl {
     result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
         columns, rowGroups, true, encodings, types, 32768);
     assertThat(result, is(diskRanges(0, 1000, 100, 1000,
-        400, 1000, 1000, 11000+32771,
-        11000, 21000+32771, 41000, 51000+32771)));
+        400, 1000, 1000, 11000+(2*32771),
+        11000, 21000+(2*32771), 41000, 100000)));
 
     rowGroups = new boolean[]{false, false, false, false, false, true};
     result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
