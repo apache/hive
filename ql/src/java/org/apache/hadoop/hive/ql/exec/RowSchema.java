@@ -50,9 +50,13 @@ public class RowSchema implements Serializable {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder('(');
+    StringBuilder sb = new StringBuilder();
+    sb.append('(');
     if (signature != null) {
-      for (ColumnInfo col : signature) {
+      for (ColumnInfo col: signature) {
+        if (sb.length() > 1) {
+          sb.append(',');
+        }
         sb.append(col.toString());
       }
     }
