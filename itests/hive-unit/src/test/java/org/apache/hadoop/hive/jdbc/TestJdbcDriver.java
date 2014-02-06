@@ -1147,24 +1147,16 @@ public class TestJdbcDriver extends TestCase {
 
     ResultSet res = stmt.getResultSet();
     assertTrue(res.next());
-    assertEquals("database", res.getString(1));
-    assertEquals("default", res.getString(2));
-    assertTrue(res.next());
-    assertEquals("table", res.getString(1));
+    assertEquals("default", res.getString(1));
     assertEquals(dataTypeTableName, res.getString(2));
-    assertTrue(res.next());
-    assertEquals("principalName", res.getString(1));
-    assertEquals("hive_test_user", res.getString(2));
-    assertTrue(res.next());
-    assertEquals("principalType", res.getString(1));
-    assertEquals("USER", res.getString(2));
-    assertTrue(res.next());
-    assertEquals("privilege", res.getString(1));
-    assertEquals("Select", res.getString(2));
-    assertTrue(res.next());
-    assertEquals("grantTime", res.getString(1));
-    assertTrue(res.next());
-    assertEquals("grantor", res.getString(1));
+    assertEquals("", res.getString(3));     // partition
+    assertEquals("", res.getString(4));     // column
+    assertEquals("hive_test_user", res.getString(5));
+    assertEquals("USER", res.getString(6));
+    assertEquals("Select", res.getString(7));
+    assertEquals(false, res.getBoolean(8)); // grant option
+    assertEquals(-1, res.getLong(9));
+    assertNotNull(res.getString(10));       // grantor
     assertFalse(res.next());
     res.close();
   }

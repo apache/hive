@@ -553,19 +553,24 @@ class PrincipalPrivilegeSet {
 void swap(PrincipalPrivilegeSet &a, PrincipalPrivilegeSet &b);
 
 typedef struct _Role__isset {
-  _Role__isset() : roleName(false), createTime(false), ownerName(false) {}
+  _Role__isset() : roleName(false), createTime(false), ownerName(false), principalName(false), principalType(false), grantOption(false), grantTime(false), grantor(false) {}
   bool roleName;
   bool createTime;
   bool ownerName;
+  bool principalName;
+  bool principalType;
+  bool grantOption;
+  bool grantTime;
+  bool grantor;
 } _Role__isset;
 
 class Role {
  public:
 
-  static const char* ascii_fingerprint; // = "70563A0628F75DF9555F4D24690B1E26";
-  static const uint8_t binary_fingerprint[16]; // = {0x70,0x56,0x3A,0x06,0x28,0xF7,0x5D,0xF9,0x55,0x5F,0x4D,0x24,0x69,0x0B,0x1E,0x26};
+  static const char* ascii_fingerprint; // = "8DEBC3096AEF414FFF38C357ECEEA8BC";
+  static const uint8_t binary_fingerprint[16]; // = {0x8D,0xEB,0xC3,0x09,0x6A,0xEF,0x41,0x4F,0xFF,0x38,0xC3,0x57,0xEC,0xEE,0xA8,0xBC};
 
-  Role() : roleName(), createTime(0), ownerName() {
+  Role() : roleName(), createTime(0), ownerName(), principalName(), principalType(), grantOption(0), grantTime(0), grantor() {
   }
 
   virtual ~Role() throw() {}
@@ -573,6 +578,11 @@ class Role {
   std::string roleName;
   int32_t createTime;
   std::string ownerName;
+  std::string principalName;
+  std::string principalType;
+  bool grantOption;
+  int32_t grantTime;
+  std::string grantor;
 
   _Role__isset __isset;
 
@@ -588,6 +598,31 @@ class Role {
     ownerName = val;
   }
 
+  void __set_principalName(const std::string& val) {
+    principalName = val;
+    __isset.principalName = true;
+  }
+
+  void __set_principalType(const std::string& val) {
+    principalType = val;
+    __isset.principalType = true;
+  }
+
+  void __set_grantOption(const bool val) {
+    grantOption = val;
+    __isset.grantOption = true;
+  }
+
+  void __set_grantTime(const int32_t val) {
+    grantTime = val;
+    __isset.grantTime = true;
+  }
+
+  void __set_grantor(const std::string& val) {
+    grantor = val;
+    __isset.grantor = true;
+  }
+
   bool operator == (const Role & rhs) const
   {
     if (!(roleName == rhs.roleName))
@@ -595,6 +630,26 @@ class Role {
     if (!(createTime == rhs.createTime))
       return false;
     if (!(ownerName == rhs.ownerName))
+      return false;
+    if (__isset.principalName != rhs.__isset.principalName)
+      return false;
+    else if (__isset.principalName && !(principalName == rhs.principalName))
+      return false;
+    if (__isset.principalType != rhs.__isset.principalType)
+      return false;
+    else if (__isset.principalType && !(principalType == rhs.principalType))
+      return false;
+    if (__isset.grantOption != rhs.__isset.grantOption)
+      return false;
+    else if (__isset.grantOption && !(grantOption == rhs.grantOption))
+      return false;
+    if (__isset.grantTime != rhs.__isset.grantTime)
+      return false;
+    else if (__isset.grantTime && !(grantTime == rhs.grantTime))
+      return false;
+    if (__isset.grantor != rhs.__isset.grantor)
+      return false;
+    else if (__isset.grantor && !(grantor == rhs.grantor))
       return false;
     return true;
   }

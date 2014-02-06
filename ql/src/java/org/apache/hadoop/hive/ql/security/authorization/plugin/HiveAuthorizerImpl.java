@@ -66,7 +66,7 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
   }
 
   @Override
-  public List<String> getRoles(HivePrincipal hivePrincipal) throws HiveAuthorizationPluginException {
+  public List<HiveRole> getRoles(HivePrincipal hivePrincipal) throws HiveAuthorizationPluginException {
     return accessController.getRoles(hivePrincipal);
   }
 

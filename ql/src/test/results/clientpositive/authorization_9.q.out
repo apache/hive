@@ -27,53 +27,17 @@ PREHOOK: query: show grant user hive_test_user on database default
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on database default
 POSTHOOK: type: SHOW_GRANT
-database	default
-principalName	hive_test_user
-principalType	USER
-privilege	Select
-#### A masked pattern was here ####
-grantor	hive_test_user
+default				hive_test_user	USER	Select	false	-1	hive_test_user
 PREHOOK: query: show grant user hive_test_user on table dummy
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table dummy
 POSTHOOK: type: SHOW_GRANT
-database	default
-table	dummy
-principalName	hive_test_user
-principalType	USER
-privilege	Select
-#### A masked pattern was here ####
-grantor	hive_test_user
+default	dummy			hive_test_user	USER	Select	false	-1	hive_test_user
 PREHOOK: query: show grant user hive_test_user on all
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on all
 POSTHOOK: type: SHOW_GRANT
-database	default
-principalName	hive_test_user
-principalType	USER
-privilege	Select
-#### A masked pattern was here ####
-grantor	hive_test_user
-database	default
-table	dummy
-principalName	hive_test_user
-principalType	USER
-privilege	Select
-#### A masked pattern was here ####
-grantor	hive_test_user
-database	default
-table	dummy
-columnName	key
-principalName	hive_test_user
-principalType	USER
-privilege	Select
-#### A masked pattern was here ####
-grantor	hive_test_user
-database	default
-table	dummy
-columnName	value
-principalName	hive_test_user
-principalType	USER
-privilege	Select
-#### A masked pattern was here ####
-grantor	hive_test_user
+default				hive_test_user	USER	Select	false	-1	hive_test_user
+default	dummy			hive_test_user	USER	Select	false	-1	hive_test_user
+default	dummy		key	hive_test_user	USER	Select	false	-1	hive_test_user
+default	dummy		value	hive_test_user	USER	Select	false	-1	hive_test_user

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
 
 
 /**
@@ -174,13 +175,14 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   }
 
   @Override
-  public List<String> getRoles(HivePrincipal hivePrincipal) throws HiveAuthorizationPluginException {
+  public List<HiveRole> getRoles(HivePrincipal hivePrincipal) throws HiveAuthorizationPluginException {
     try {
       List<Role> roles = metastoreClientFactory.getHiveMetastoreClient().list_roles(
           hivePrincipal.getName(), AuthorizationUtils.getThriftPrincipalType(hivePrincipal.getType()));
-      List<String> roleNames = new ArrayList<String>(roles.size());
-      for(Role role : roles){
-        roleNames.add(role.getRoleName());
+      List<HiveRole> roleNames = new ArrayList<HiveRole>(roles.size());
+      for (Role role : roles){
+        ;
+        roleNames.add(new HiveRole(role));
       }
       return roleNames;
     } catch (Exception e) {

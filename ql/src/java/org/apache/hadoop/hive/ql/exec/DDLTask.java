@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -164,6 +163,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -622,7 +622,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           }
         }
       }
-      writeToFile(writeGrantInfo(privs), showGrantDesc.getResFile());
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
+      writeToFile(writeGrantInfo(privs, testMode), showGrantDesc.getResFile());
     } catch (FileNotFoundException e) {
       LOG.info("show table status: " + stringifyException(e));
       return 1;
@@ -660,7 +661,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           AuthorizationUtils.getThriftPrincipalType(principal.getType()), grantInfo);
         privList.add(thriftObjectPriv);
       }
-      writeToFile(writeGrantInfo(privList), showGrantDesc.getResFile());
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
+      writeToFile(writeGrantInfo(privList, testMode), showGrantDesc.getResFile());
     } catch (IOException e) {
       throw new HiveException("Error in show grant statement", e);
     }
@@ -914,19 +916,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } else if (operation.equals(RoleDDLDesc.RoleOperation.DROP_ROLE)) {
         db.dropRole(roleDDLDesc.getName());
       } else if (operation.equals(RoleDDLDesc.RoleOperation.SHOW_ROLE_GRANT)) {
-        List<Role> roles = db.showRoleGrant(roleDDLDesc.getName(), roleDDLDesc
-            .getPrincipalType());
-        if (roles != null && roles.size() > 0) {
-          Path resFile = new Path(roleDDLDesc.getResFile());
-          FileSystem fs = resFile.getFileSystem(conf);
-          outStream = fs.create(resFile);
-          for (Role role : roles) {
-            outStream.writeBytes(role.getRoleName());
-            outStream.write(terminator);
-          }
-          outStream.close();
-          outStream = null;
-        }
+        boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
+        List<Role> roles = db.showRoleGrant(roleDDLDesc.getName(), roleDDLDesc.getPrincipalType());
+        writeToFile(writeRoleInfo(roles, testMode), roleDDLDesc.getResFile());
       } else if (operation.equals(RoleDDLDesc.RoleOperation.SHOW_ROLES)) {
         List<String> roleNames = db.getAllRoleNames();
         Path resFile = new Path(roleDDLDesc.getResFile());
@@ -969,9 +961,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       authorizer.dropRole(roleDDLDesc.getName());
       break;
     case SHOW_ROLE_GRANT:
-      List<String> roles = authorizer.getRoles(new HivePrincipal(roleDDLDesc.getName(),
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
+      List<HiveRole> roles = authorizer.getRoles(new HivePrincipal(roleDDLDesc.getName(),
           getHivePrincipalType(roleDDLDesc.getPrincipalType())));
-      writeListToFile(roles, roleDDLDesc.getResFile());
+      writeToFile(writeHiveRoleInfo(roles, testMode), roleDDLDesc.getResFile());
       break;
     case SHOW_ROLES:
       List<String> allRoles = authorizer.getAllRoles();
@@ -2498,23 +2491,23 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       Collections.sort(locks, new Comparator<HiveLock>() {
 
-          @Override
-            public int compare(HiveLock o1, HiveLock o2) {
-            int cmp = o1.getHiveLockObject().getName().compareTo(o2.getHiveLockObject().getName());
-            if (cmp == 0) {
-              if (o1.getHiveLockMode() == o2.getHiveLockMode()) {
-                return cmp;
-              }
-              // EXCLUSIVE locks occur before SHARED locks
-              if (o1.getHiveLockMode() == HiveLockMode.EXCLUSIVE) {
-                return -1;
-              }
-              return +1;
+        @Override
+        public int compare(HiveLock o1, HiveLock o2) {
+          int cmp = o1.getHiveLockObject().getName().compareTo(o2.getHiveLockObject().getName());
+          if (cmp == 0) {
+            if (o1.getHiveLockMode() == o2.getHiveLockMode()) {
+              return cmp;
             }
-            return cmp;
+            // EXCLUSIVE locks occur before SHARED locks
+            if (o1.getHiveLockMode() == HiveLockMode.EXCLUSIVE) {
+              return -1;
+            }
+            return +1;
           }
+          return cmp;
+        }
 
-        });
+      });
 
       Iterator<HiveLock> locksIter = locks.iterator();
 
@@ -2923,8 +2916,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       else {
         Map<String, String> properties = tbl.getParameters();
-        for (String key : properties.keySet()) {
-          writeKeyValuePair(builder, key, properties.get(key));
+        for (Entry<String, String> entry : properties.entrySet()) {
+          appendNonNull(builder, entry.getKey(), true);
+          appendNonNull(builder, entry.getValue());
         }
       }
 
@@ -3060,61 +3054,77 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  static String writeGrantInfo(List<HiveObjectPrivilege> privileges) {
+  static String writeGrantInfo(List<HiveObjectPrivilege> privileges, boolean testMode) {
     if (privileges == null || privileges.isEmpty()) {
       return "";
     }
-
     StringBuilder builder = new StringBuilder();
     for (HiveObjectPrivilege privilege : privileges) {
-      PrivilegeGrantInfo grantInfo = privilege.getGrantInfo();
       HiveObjectRef resource = privilege.getHiveObject();
-      String privName = grantInfo.getPrivilege();
-      long unixTimestamp = grantInfo.getCreateTime() * 1000L;
-      Date createTime = new Date(unixTimestamp);
-      String grantor = grantInfo.getGrantor();
+      PrivilegeGrantInfo grantInfo = privilege.getGrantInfo();
 
-      switch (resource.getObjectType()) {
-        case DATABASE:
-          writeKeyValuePair(builder, "database", resource.getDbName());
-          break;
-        case TABLE:
-          writeKeyValuePair(builder, "database", resource.getDbName());
-          writeKeyValuePair(builder, "table", resource.getObjectName());
-          break;
-        case PARTITION:
-          writeKeyValuePair(builder, "database", resource.getDbName());
-          writeKeyValuePair(builder, "table", resource.getObjectName());
-          writeKeyValuePair(builder, "partition", String.valueOf(resource.getPartValues()));
-          break;
-        case COLUMN:
-          writeKeyValuePair(builder, "database", resource.getDbName());
-          writeKeyValuePair(builder, "table", resource.getObjectName());
-          if (resource.getPartValues() != null && !resource.getPartValues().isEmpty()) {
-            writeKeyValuePair(builder, "partition", String.valueOf(resource.getPartValues()));
-          }
-          writeKeyValuePair(builder, "columnName", resource.getColumnName());
-          break;
-      }
-
-      writeKeyValuePair(builder, "principalName", privilege.getPrincipalName());
-      writeKeyValuePair(builder, "principalType", "" + privilege.getPrincipalType());
-      writeKeyValuePair(builder, "privilege", privName);
-      writeKeyValuePair(builder, "grantTime", "" + createTime);
-      if (grantor != null) {
-        writeKeyValuePair(builder, "grantor", grantor);
-      }
+      appendNonNull(builder, resource.getDbName(), true);
+      appendNonNull(builder, resource.getObjectName());
+      appendNonNull(builder, resource.getPartValues());
+      appendNonNull(builder, resource.getColumnName());
+      appendNonNull(builder, privilege.getPrincipalName());
+      appendNonNull(builder, privilege.getPrincipalType());
+      appendNonNull(builder, grantInfo.getPrivilege());
+      appendNonNull(builder, grantInfo.isGrantOption());
+      appendNonNull(builder, testMode ? -1 : grantInfo.getCreateTime() * 1000L);
+      appendNonNull(builder, grantInfo.getGrantor());
     }
     return builder.toString();
   }
 
-  private static void writeKeyValuePair(StringBuilder builder, String key, String value) {
-    if (builder.length() > 0) {
+  static String writeRoleInfo(List<Role> roles, boolean testMode) {
+    if (roles == null || roles.isEmpty()) {
+      return "";
+    }
+    StringBuilder builder = new StringBuilder();
+    for (Role role : roles) {
+      appendNonNull(builder, role.getRoleName(), true);
+      appendNonNull(builder, testMode ? -1 : role.getCreateTime() * 1000L);
+      appendNonNull(builder, role.getPrincipalName());
+      appendNonNull(builder, role.getPrincipalType());
+      appendNonNull(builder, role.isGrantOption());
+      appendNonNull(builder, testMode ? -1 : role.getGrantTime() * 1000L);
+      appendNonNull(builder, role.getGrantor());
+    }
+    return builder.toString();
+  }
+
+  static String writeHiveRoleInfo(List<HiveRole> roles, boolean testMode) {
+    if (roles == null || roles.isEmpty()) {
+      return "";
+    }
+    StringBuilder builder = new StringBuilder();
+    for (HiveRole role : roles) {
+      appendNonNull(builder, role.getRoleName(), true);
+      appendNonNull(builder, testMode ? -1 : role.getCreateTime() * 1000L);
+      appendNonNull(builder, role.getPrincipalName());
+      appendNonNull(builder, role.getPrincipalType());
+      appendNonNull(builder, role.isGrantOption());
+      appendNonNull(builder, testMode ? -1 : role.getGrantTime() * 1000L);
+      appendNonNull(builder, role.getGrantor());
+    }
+    return builder.toString();
+  }
+
+  static StringBuilder appendNonNull(StringBuilder builder, Object value) {
+    return appendNonNull(builder, value, false);
+  }
+
+  static StringBuilder appendNonNull(StringBuilder builder, Object value, boolean firstColumn) {
+    if (!firstColumn) {
+      builder.append((char)separator);
+    } else if (builder.length() > 0) {
       builder.append((char)terminator);
     }
-    builder.append(key);
-    builder.append((char)separator);
-    builder.append(value);
+    if (value != null) {
+      builder.append(value);
+    }
+    return builder;
   }
 
   private void setAlterProtectMode(boolean protectModeEnable,
