@@ -259,6 +259,7 @@
         <include>hcatcfg.py</include>
         <include>hcat.py</include>
         <include>templeton.cmd</include>
+        <include>common.sh</include>
       </includes>
       <outputDirectory>hcatalog/bin</outputDirectory>
     </fileSet>
