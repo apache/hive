@@ -67,7 +67,7 @@ done
 # check for hive in the path
 HIVE_IN_PATH=`which hive 2>/dev/null`
 # looks like [ -f '' ] is true...
-if [ -n ${HIVE_IN_PATH} ]; then
+if [ -n "$HIVE_IN_PATH" ]; then
   #dir of hive scrip
   HIVE_DIR=`dirname "$HIVE_IN_PATH"`
   #one level up for base dir
