@@ -111,6 +111,9 @@ if [ ! -d ${TEMPLETON_HOME}/share/webhcat ]; then
     die "TEMPLETON_HOME=${TEMPLETON_HOME} is invalid";
 fi
 
+source $WEBHCAT_PREFIX/bin/common.sh
+find_hadoop_home
+
 #====================================
 #determine where hadoop is
 #====================================
