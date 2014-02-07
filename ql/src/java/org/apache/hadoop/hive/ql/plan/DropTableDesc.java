@@ -30,14 +30,28 @@ import java.util.List;
 public class DropTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  public static class PartSpec {
+    public PartSpec(ExprNodeGenericFuncDesc partSpec, ArrayList<String> partSpecKeys) {
+      this.partSpec = partSpec;
+      this.partSpecKeys = partSpecKeys;
+    }
+    public ExprNodeGenericFuncDesc getPartSpec() {
+      return partSpec;
+    }
+    public ArrayList<String> getPartSpecKeys() {
+      return partSpecKeys;
+    }
+    private static final long serialVersionUID = 1L;
+    private ExprNodeGenericFuncDesc partSpec;
+    // TODO: see if we can get rid of this... used in one place to distinguish archived parts
+    private ArrayList<String> partSpecKeys;
+  }
+
   String tableName;
-  ArrayList<PartitionSpec> partSpecs;
+  ArrayList<PartSpec> partSpecs;
   boolean expectView;
   boolean ifExists;
   boolean ignoreProtection;
-  boolean stringPartitionColumns; // This is due to JDO not working very well with
-                                  // non-string partition columns.
-                                  // We need a different codepath for them
 
   public DropTableDesc() {
   }
@@ -45,28 +59,25 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   /**
    * @param tableName
    */
-  public DropTableDesc(String tableName, boolean expectView,
-                       boolean ifExists, boolean stringPartitionColumns) {
+  public DropTableDesc(String tableName, boolean expectView, boolean ifExists) {
     this.tableName = tableName;
-    partSpecs = null;
+    this.partSpecs = null;
     this.expectView = expectView;
     this.ifExists = ifExists;
     this.ignoreProtection = false;
-    this.stringPartitionColumns = stringPartitionColumns;
   }
 
-  public DropTableDesc(String tableName, List<PartitionSpec> partSpecs,
-                       boolean expectView, boolean stringPartitionColumns,
-                       boolean ignoreProtection) {
-
+  public DropTableDesc(String tableName, List<ExprNodeGenericFuncDesc> partSpecs,
+      List<List<String>> partSpecKeys, boolean expectView, boolean ignoreProtection) {
     this.tableName = tableName;
-    this.partSpecs = new ArrayList<PartitionSpec>(partSpecs.size());
-    for (int i = 0; i < partSpecs.size(); i++) {
-      this.partSpecs.add(partSpecs.get(i));
+    assert partSpecs.size() == partSpecKeys.size();
+    this.partSpecs = new ArrayList<PartSpec>(partSpecs.size());
+    for (int i = 0; i < partSpecs.size(); ++i) {
+      this.partSpecs.add(new PartSpec(
+          partSpecs.get(i), new ArrayList<String>(partSpecKeys.get(i))));
     }
     this.ignoreProtection = ignoreProtection;
     this.expectView = expectView;
-    this.stringPartitionColumns = stringPartitionColumns;
   }
 
   /**
@@ -88,16 +99,8 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the partSpecs
    */
-  public ArrayList<PartitionSpec> getPartSpecs() {
+  public ArrayList<PartSpec> getPartSpecs() {
     return partSpecs;
-  }
-
-  /**
-   * @param partSpecs
-   *          the partSpecs to set
-   */
-  public void setPartSpecs(ArrayList<PartitionSpec> partSpecs) {
-    this.partSpecs = partSpecs;
   }
 
   /**
@@ -143,13 +146,5 @@ public class DropTableDesc extends DDLDesc implements Serializable {
    */
   public void setIfExists(boolean ifExists) {
     this.ifExists = ifExists;
-  }
-
-  public boolean isStringPartitionColumns() {
-    return stringPartitionColumns;
-  }
-
-  public void setStringPartitionColumns(boolean stringPartitionColumns) {
-    this.stringPartitionColumns = stringPartitionColumns;
   }
 }

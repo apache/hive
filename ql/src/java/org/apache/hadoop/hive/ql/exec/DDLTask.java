@@ -131,7 +131,6 @@ import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
 import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
-import org.apache.hadoop.hive.ql.plan.PartitionSpec;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
@@ -177,6 +176,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.thrift.TException;
 import org.stringtemplate.v4.ST;
 
 /**
@@ -3570,26 +3570,24 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else {
       // This is actually an ALTER TABLE DROP PARTITION
       List<Partition> partsToDelete = new ArrayList<Partition>();
-      for (PartitionSpec partSpec : dropTbl.getPartSpecs()) {
-        List<Partition> partitions = null;
-        // getPartitionsByFilter only works for string columns.
-        // Till that is fixed, only equality will work for non-string columns.
-        if (dropTbl.isStringPartitionColumns()) {
-          try {
-            partitions = db.getPartitionsByFilter(tbl, partSpec.toString());
-          } catch (Exception e) {
-            throw new HiveException(e);
-          }
+      for (DropTableDesc.PartSpec partSpec : dropTbl.getPartSpecs()) {
+        List<Partition> partitions = new ArrayList<Partition>();
+        boolean hasUnknown;
+        try {
+          hasUnknown = db.getPartitionsByExpr(tbl, partSpec.getPartSpec(), conf, partitions);
+        } catch (TException e) {
+          throw new HiveException(e);
         }
-        else {
-          partitions = db.getPartitions(tbl, partSpec.getPartSpecWithoutOperator());
+        if (hasUnknown) {
+          throw new HiveException("Unexpected unknown partititions from "
+              + partSpec.getPartSpec().getExprString());
         }
 
         // this is to prevent dropping archived partition which is archived in a
         // different level the drop command specified.
         int partPrefixToDrop = 0;
         for (FieldSchema fs : tbl.getPartCols()) {
-          if (partSpec.existsKey(fs.getName())) {
+          if (partSpec.getPartSpecKeys().contains(fs.getName())) {
             partPrefixToDrop += 1;
           } else {
             break;

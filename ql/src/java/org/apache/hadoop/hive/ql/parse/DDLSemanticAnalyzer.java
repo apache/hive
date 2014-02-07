@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -92,6 +93,10 @@ import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -99,7 +104,6 @@ import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
-import org.apache.hadoop.hive.ql.plan.PartitionSpec;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
@@ -125,9 +129,12 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+
+import com.google.common.collect.Lists;
 
 /**
  * DDLSemanticAnalyzer.
@@ -700,8 +707,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       outputs.add(new WriteEntity(tab));
     }
 
-    DropTableDesc dropTblDesc = new DropTableDesc(
-        tableName, expectView, ifExists, true);
+    DropTableDesc dropTblDesc = new DropTableDesc(tableName, expectView, ifExists);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         dropTblDesc), conf));
   }
@@ -2390,31 +2396,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     String tblName = getUnescapedName((ASTNode) ast.getChild(0));
     // get table metadata
-    List<PartitionSpec> partSpecs = getFullPartitionSpecs(ast);
     Table tab = getTable(tblName, true);
+    List<ExprNodeGenericFuncDesc> partSpecs = new ArrayList<ExprNodeGenericFuncDesc>();
+    List<List<String>> names = new ArrayList<List<String>>();
+    getFullPartitionSpecs(ast, tab, partSpecs, names);
     validateAlterTableType(tab, AlterTableTypes.DROPPARTITION, expectView);
     inputs.add(new ReadEntity(tab));
-
-    // Find out if all partition columns are strings. This is needed for JDO
-    boolean stringPartitionColumns = true;
-    List<FieldSchema> partCols = tab.getPartCols();
-
-    for (FieldSchema partCol : partCols) {
-      if (!partCol.getType().toLowerCase().equals("string")) {
-        stringPartitionColumns = false;
-        break;
-      }
-    }
-
-    // Only equality is supported for non-string partition columns
-    if (!stringPartitionColumns) {
-      for (PartitionSpec partSpec : partSpecs) {
-        if (partSpec.isNonEqualityOperator()) {
-          throw new SemanticException(
-              ErrorMsg.DROP_PARTITION_NON_STRING_PARTCOLS_NONEQUALITY.getMsg());
-        }
-      }
-    }
 
     boolean ignoreProtection = (ast.getFirstChildWithType(HiveParser.TOK_IGNOREPROTECTION) != null);
     if (partSpecs != null) {
@@ -2423,11 +2410,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // configured not to fail silently
       boolean throwException =
           !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-      addTableDropPartsOutputs(tblName, partSpecs, throwException,
-                                stringPartitionColumns, ignoreProtection);
+      addTableDropPartsOutputs(tblName, partSpecs, throwException, ignoreProtection);
     }
     DropTableDesc dropTblDesc =
-        new DropTableDesc(tblName, partSpecs, expectView, stringPartitionColumns, ignoreProtection);
+        new DropTableDesc(tblName, partSpecs, names, expectView, ignoreProtection);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         dropTblDesc), conf));
@@ -2741,32 +2727,48 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    * @param ast
    *          Tree to extract partitions from.
-   * @return A list of PartitionSpec objects which contain the mapping from
-   *         key to operator and value.
    * @throws SemanticException
    */
-  private List<PartitionSpec> getFullPartitionSpecs(CommonTree ast)
-      throws SemanticException {
-    List<PartitionSpec> partSpecList = new ArrayList<PartitionSpec>();
+  private void getFullPartitionSpecs(CommonTree ast, Table tab,
+      List<ExprNodeGenericFuncDesc> exprs, List<List<String>> cols) throws SemanticException {
+    Map<String, String> colTypes = new HashMap<String, String>();
+    for (FieldSchema fs : tab.getPartitionKeys()) {
+      colTypes.put(fs.getName().toLowerCase(), fs.getType());
+    }
 
     for (int childIndex = 1; childIndex < ast.getChildCount(); childIndex++) {
       Tree partSpecTree = ast.getChild(childIndex);
-      if (partSpecTree.getType() == HiveParser.TOK_PARTSPEC) {
-        PartitionSpec partSpec = new PartitionSpec();
+      if (partSpecTree.getType() != HiveParser.TOK_PARTSPEC) continue;
+      ExprNodeGenericFuncDesc expr = null;
+      List<String> names = new ArrayList<String>(partSpecTree.getChildCount());
+      for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
+        CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
+        assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
+        String key = partSpecSingleKey.getChild(0).getText().toLowerCase();
+        String operator = partSpecSingleKey.getChild(1).getText();
+        String val = stripQuotes(partSpecSingleKey.getChild(2).getText());
 
-        for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
-          CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
-          assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
-          String key = partSpecSingleKey.getChild(0).getText().toLowerCase();
-          String operator = partSpecSingleKey.getChild(1).getText();
-          String val = partSpecSingleKey.getChild(2).getText();
-          partSpec.addPredicate(key, operator, val);
+        String type = colTypes.get(key);
+        if (type == null) {
+          throw new SemanticException("Column " + key + " not found");
         }
-
-        partSpecList.add(partSpec);
+        ExprNodeColumnDesc column = new ExprNodeColumnDesc(
+            TypeInfoFactory.getPrimitiveTypeInfo(type), key, null, true);
+        ExprNodeGenericFuncDesc op = new ExprNodeGenericFuncDesc(
+            TypeInfoFactory.booleanTypeInfo,
+            FunctionRegistry.getFunctionInfo(operator).getGenericUDF(),
+            Lists.newArrayList(column, new ExprNodeConstantDesc(val)));
+        expr = (expr == null) ? op : new ExprNodeGenericFuncDesc(
+              TypeInfoFactory.booleanTypeInfo,
+              FunctionRegistry.getGenericUDFForAnd(),
+              Lists.<ExprNodeDesc>newArrayList(expr, op));
+        names.add(key);
+      }
+      if (expr != null) {
+        exprs.add(expr);
+        cols.add(names);
       }
     }
-    return partSpecList;
   }
 
   /**
@@ -2857,34 +2859,31 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * pre-execution hook. If the partition does not exist, throw an error if
    * throwIfNonExistent is true, otherwise ignore it.
    */
-  private void addTableDropPartsOutputs(String tblName, List<PartitionSpec> partSpecs,
-      boolean throwIfNonExistent, boolean stringPartitionColumns, boolean ignoreProtection)
+  private void addTableDropPartsOutputs(String tblName, List<ExprNodeGenericFuncDesc> partSpecs,
+      boolean throwIfNonExistent, boolean ignoreProtection)
       throws SemanticException {
     Table tab = getTable(tblName);
 
-    Iterator<PartitionSpec> i;
-    int index;
-    for (i = partSpecs.iterator(), index = 1; i.hasNext(); ++index) {
-      PartitionSpec partSpec = i.next();
-      List<Partition> parts = null;
-      if (stringPartitionColumns) {
-        try {
-          parts = db.getPartitionsByFilter(tab, partSpec.toString());
-        } catch (Exception e) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()), e);
-        }
+    Iterator<ExprNodeGenericFuncDesc> i = partSpecs.iterator();
+    while (i.hasNext()) {
+      ExprNodeGenericFuncDesc partSpec = i.next();
+      List<Partition> parts = new ArrayList<Partition>();
+      boolean hasUnknown = false;
+      try {
+        hasUnknown = db.getPartitionsByExpr(tab, partSpec, conf, parts);
+      } catch (Exception e) {
+        throw new SemanticException(
+            ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()), e);
       }
-      else {
-        try {
-          parts = db.getPartitions(tab, partSpec.getPartSpecWithoutOperator());
-        } catch (Exception e) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()), e);
-        }
+      if (hasUnknown) {
+        throw new SemanticException(
+            "Unexpected unknown partitions for " + partSpec.getExprString());
       }
 
       if (parts.isEmpty()) {
         if (throwIfNonExistent) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()));
+          throw new SemanticException(
+              ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()));
         }
       }
       for (Partition p : parts) {
