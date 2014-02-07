@@ -186,6 +186,11 @@ public class UDFJson extends UDF {
     if (mKeyGroup1 == null) {
       if (mKey == null) {
         mKey = patternKey.matcher(path);
+        mKeyMatches = mKey.matches() ? Boolean.TRUE : Boolean.FALSE;
+        mKeyMatchesCache.put(path, mKeyMatches);
+        if (!mKeyMatches.booleanValue()) {
+          return null;
+        }
       }
       mKeyGroup1 = mKey.group(1);
       mKeyGroup1Cache.put(path, mKeyGroup1);
