@@ -459,8 +459,30 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    case HiveParser.TOK_EXCHANGEPARTITION:
       analyzeExchangePartition(ast);
       break;
+   case HiveParser.TOK_SHOW_SET_ROLE:
+     analyzeSetShowRole(ast);
+     break;
     default:
       throw new SemanticException("Unsupported command.");
+    }
+  }
+
+  private void analyzeSetShowRole(ASTNode ast) throws SemanticException {
+    switch (ast.getChildCount()) {
+      case 0:
+        ctx.setResFile(ctx.getLocalTmpPath());
+        rootTasks.add(hiveAuthorizationTaskFactory.createShowCurrentRoleTask(
+        getInputs(), getOutputs(), ctx.getResFile()));
+        setFetchTask(createFetchTask(RoleDDLDesc.getRoleNameSchema()));
+        break;
+      case 1:
+        rootTasks.add(hiveAuthorizationTaskFactory.createSetRoleTask(
+        BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText()),
+        getInputs(), getOutputs()));
+        break;
+      default:
+        throw new SemanticException("Internal error. ASTNode expected to have 0 or 1 child. "
+        + ast.dump());
     }
   }
 
@@ -940,7 +962,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_CREATEINDEX_INDEXTBLNAME:
         ASTNode ch = (ASTNode) child.getChild(0);
-        indexTableName = getUnescapedName((ASTNode) ch);
+        indexTableName = getUnescapedName(ch);
         break;
       case HiveParser.TOK_DEFERRED_REBUILDINDEX:
         deferredRebuild = true;
@@ -2120,7 +2142,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int i = 0; i < ast.getChildCount(); i++) {
         ASTNode child = (ASTNode) ast.getChild(i);
         if (child.getType() == HiveParser.TOK_TABTYPE) {
-          ASTNode tableTypeExpr = (ASTNode) child;
+          ASTNode tableTypeExpr = child;
           tableName =
             QualifiedNameUtil.getFullyQualifiedName((ASTNode) tableTypeExpr.getChild(0));
           // get partition metadata if partition specified
@@ -2345,7 +2367,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeAlterTableRenamePart(ASTNode ast, String tblName,
       HashMap<String, String> oldPartSpec) throws SemanticException {
-    Map<String, String> newPartSpec = extractPartitionSpecs((ASTNode) ast.getChild(0));
+    Map<String, String> newPartSpec = extractPartitionSpecs(ast.getChild(0));
     if (newPartSpec == null) {
       throw new SemanticException("RENAME PARTITION Missing Destination" + ast);
     }
@@ -2514,7 +2536,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         currentPart = getPartSpec(child);
         validatePartitionValues(currentPart); // validate reserved values
-        validatePartSpec(tab, currentPart, (ASTNode)child, conf, true);
+        validatePartSpec(tab, currentPart, child, conf, true);
         break;
       case HiveParser.TOK_PARTITIONLOCATION:
         // if location specified, set in partition

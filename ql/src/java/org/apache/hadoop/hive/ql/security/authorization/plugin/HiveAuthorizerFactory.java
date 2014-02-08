@@ -39,5 +39,5 @@ public interface HiveAuthorizerFactory {
    * @return new instance of HiveAuthorizer
    */
   HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
-      HiveConf conf, String hiveCurrentUser);
+      HiveConf conf, String hiveCurrentUser) throws HiveAuthorizationPluginException;
 }

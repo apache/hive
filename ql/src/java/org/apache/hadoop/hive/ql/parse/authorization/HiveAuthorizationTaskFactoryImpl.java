@@ -370,4 +370,21 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
   private String toMessage(ErrorMsg message, Object detail) {
     return detail == null ? message.getMsg() : message.getMsg(detail.toString());
   }
+
+  @Override
+  public Task<? extends Serializable> createSetRoleTask(String roleName,
+      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs)
+      throws SemanticException {
+    return TaskFactory.get(new DDLWork(inputs, outputs, new RoleDDLDesc(roleName,
+      RoleDDLDesc.RoleOperation.SET_ROLE)), conf);
+  }
+
+  @Override
+  public Task<? extends Serializable> createShowCurrentRoleTask(
+      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs, Path resFile)
+      throws SemanticException {
+    RoleDDLDesc ddlDesc = new RoleDDLDesc(null, RoleDDLDesc.RoleOperation.SHOW_CURRENT_ROLE);
+    ddlDesc.setResFile(resFile.toString());
+    return TaskFactory.get(new DDLWork(inputs, outputs, ddlDesc), conf);
+  }
 }
