@@ -216,7 +216,7 @@ public class CliDriver {
       }
     } else { // local mode
       try {
-        CommandProcessor proc = CommandProcessorFactory.get(tokens[0], (HiveConf) conf);
+        CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf);
         ret = processLocalCmd(cmd, proc, ss);
       } catch (SQLException e) {
         console.printError("Failed processing command " + tokens[0] + " " + e.getLocalizedMessage(),
@@ -579,8 +579,9 @@ public class CliDriver {
     // We stack a custom Completor on top of our ArgumentCompletor
     // to reverse this.
     Completor completor = new Completor () {
+      @Override
       public int complete (String buffer, int offset, List completions) {
-        List<String> comp = (List<String>) completions;
+        List<String> comp = completions;
         int ret = ac.complete(buffer, offset, completions);
         // ConsoleReader will do the substitution if and only if there
         // is exactly one valid completion, so we ignore other cases.

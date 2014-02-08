@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.metastore.api.Role;
+
 /**
  * Interface that is invoked by access control commands, including grant/revoke role/privileges,
  * create/drop roles, and commands to read the state of authorization rules.
@@ -57,4 +59,7 @@ public interface HiveAccessController {
   List<HivePrivilegeInfo> showPrivileges(HivePrincipal principal, HivePrivilegeObject privObj)
       throws HiveAuthorizationPluginException;
 
+  void setCurrentRole(String roleName) throws HiveAuthorizationPluginException;
+
+  List<HiveRole> getCurrentRoles() throws HiveAuthorizationPluginException;
 }

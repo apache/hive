@@ -281,6 +281,7 @@ TOK_GRANT_ROLE;
 TOK_REVOKE_ROLE;
 TOK_SHOW_ROLE_GRANT;
 TOK_SHOW_ROLES;
+TOK_SHOW_SET_ROLE;
 TOK_SHOWINDEXES;
 TOK_SHOWDBLOCKS;
 TOK_INDEXCOMMENT;
@@ -671,6 +672,8 @@ ddlStatement
     | showRoles
     | grantRole
     | revokeRole
+    | setRole
+    | showCurrentRole
     ;
 
 ifExists
@@ -1374,6 +1377,20 @@ showRoles
 @after {popMsg(state);}
     : KW_SHOW KW_ROLES
     -> ^(TOK_SHOW_ROLES)
+    ;
+
+showCurrentRole
+@init {pushMsg("show current role", state);}
+@after {popMsg(state);}
+    : KW_SHOW KW_CURRENT KW_ROLES
+    -> ^(TOK_SHOW_SET_ROLE)
+    ;
+
+setRole
+@init {pushMsg("set role", state);}
+@after {popMsg(state);}
+    : KW_SET KW_ROLE roleName=identifier
+    -> ^(TOK_SHOW_SET_ROLE $roleName)
     ;
 
 showGrants

@@ -657,7 +657,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         //only grantInfo is used
         HiveObjectPrivilege thriftObjectPriv = new HiveObjectPrivilege(new HiveObjectRef(
           AuthorizationUtils.getThriftHiveObjType(privObj.getType()),privObj.getDbname(),
-          privObj.getTableviewname(),null,null), principal.getName(), 
+          privObj.getTableviewname(),null,null), principal.getName(),
           AuthorizationUtils.getThriftPrincipalType(principal.getType()), grantInfo);
         privList.add(thriftObjectPriv);
       }
@@ -969,6 +969,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     case SHOW_ROLES:
       List<String> allRoles = authorizer.getAllRoles();
       writeListToFile(allRoles, roleDDLDesc.getResFile());
+      break;
+    case SHOW_CURRENT_ROLE:
+      List<HiveRole> currentRoles = authorizer.getCurrentRoles();
+      List<String> roleNames = new ArrayList<String>(currentRoles.size());
+      for (HiveRole role : currentRoles) {
+        roleNames.add(role.getRoleName());
+      }
+      writeListToFile(roleNames, roleDDLDesc.getResFile());
+      break;
+    case SET_ROLE:
+      authorizer.setCurrentRole(roleDDLDesc.getName());
       break;
     default:
       throw new HiveException("Unkown role operation "
