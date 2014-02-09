@@ -830,7 +830,7 @@ public class HiveConf extends Configuration {
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,delete,compile"),
 
-    HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list", ""),
+    HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list", "hive.security.authenticator.manager,hive.security.authorization.manager"),
 
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
@@ -880,7 +880,7 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_GROUPBY_CHECKINTERVAL("hive.vectorized.groupby.checkinterval", 100000),
     HIVE_VECTORIZATION_GROUPBY_MAXENTRIES("hive.vectorized.groupby.maxentries", 1000000),
     HIVE_VECTORIZATION_GROUPBY_FLUSH_PERCENT("hive.vectorized.groupby.flush.percent", (float) 0.1),
-    
+
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true),
 
@@ -895,7 +895,7 @@ public class HiveConf extends Configuration {
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false),
 
     HIVECOUNTERGROUP("hive.counters.group.name", "HIVE"),
-    
+
     // none, column
     // none is the default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.
     // column: implies column names can contain any character.

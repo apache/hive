@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
+import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -185,6 +186,7 @@ public class Driver implements CommandProcessor {
     }
   }
 
+  @Override
   public void init() {
     Operator.resetId();
   }
@@ -728,7 +730,7 @@ public class Driver implements CommandProcessor {
 
       //support for authorization on partitions or uri needs to be added
       HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType,
-          privObject.getDatabase() == null ? null : privObject.getDatabase().getName(),
+          getDataBaseName(privObject),
               privObject.getTable() == null ? null : privObject.getTable().getTableName());
       hivePrivobjs.add(hPrivObject);
     }
@@ -736,6 +738,13 @@ public class Driver implements CommandProcessor {
   }
 
 
+  private String getDataBaseName(Entity privObject) {
+    if(privObject.getType() == Type.DATABASE){
+      return privObject.getDatabase() == null ? null : privObject.getDatabase().getName();
+    } else {
+      return privObject.getTable() == null ? null : privObject.getTable().getDbName();
+    }
+  }
 
   private HiveOperationType getHiveOperationType(HiveOperation op) {
     return HiveOperationType.valueOf(op.name());
@@ -967,6 +976,7 @@ public class Driver implements CommandProcessor {
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
   }
 
+  @Override
   public CommandProcessorResponse run(String command)
       throws CommandNeedRetryException {
     return run(command, false);

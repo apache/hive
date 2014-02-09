@@ -197,4 +197,10 @@
   <value>0</value>
 </property>
 
+<property>
+  <name>hive.conf.restricted.list</name>
+  <value>dummy.config.value</value>
+  <description>Using dummy config value above because you cannot override config with empty value</description>
+</property>
+
 </configuration>

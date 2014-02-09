@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -931,6 +930,8 @@ public interface IMetaStoreClient {
       throws MetaException, TException;
 
   /**
+   * Return the privileges that the user, group have directly and indirectly through roles
+   * on the given hiveObject
    * @param hiveObject
    * @param user_name
    * @param group_names
@@ -943,6 +944,7 @@ public interface IMetaStoreClient {
       TException;
 
   /**
+   * Return the privileges that this principal has directly over the object (not through roles).
    * @param principal_name
    * @param principal_type
    * @param hiveObject

@@ -22,11 +22,12 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class DummyAuthenticator implements HiveAuthenticationProvider {
 
-  private List<String> groupNames;
-  private String userName;
+  private final List<String> groupNames;
+  private final String userName;
   private Configuration conf;
 
   public DummyAuthenticator() {
@@ -56,8 +57,14 @@ public class DummyAuthenticator implements HiveAuthenticationProvider {
     this.conf = conf;
   }
 
+  @Override
   public Configuration getConf() {
     return this.conf;
+  }
+
+  @Override
+  public void setSessionState(SessionState ss) {
+    //no op
   }
 
 }
