@@ -9740,7 +9740,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         break;
       default:
-        assert false;
+        throw new AssertionError("Unknown token: " + child.getToken());
       }
     }
 

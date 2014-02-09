@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -131,6 +132,12 @@ public class VirtualColumn implements Serializable {
         && this.typeInfo.getTypeName().equals(c.getTypeInfo().getTypeName());
   }
 
+  public static Collection<String> removeVirtualColumns(final Collection<String> columns) {
+    for(VirtualColumn vcol : VIRTUAL_COLUMNS) {
+      columns.remove(vcol.getName());
+    }
+    return columns;
+  }
 
   public static StructObjectInspector getVCSObjectInspector(List<VirtualColumn> vcs) {
     List<String> names = new ArrayList<String>(vcs.size());
