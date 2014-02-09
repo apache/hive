@@ -67,9 +67,7 @@ public enum PrivilegeType {
    * @return corresponding PrivilegeType
    */
   public static PrivilegeType getPrivTypeByToken(int token) {
-    if(token2Type == null){
-      populateToken2Type();
-    }
+    populateToken2Type();
     PrivilegeType privType = token2Type.get(token);
     if(privType != null){
       return privType;
@@ -93,9 +91,7 @@ public enum PrivilegeType {
    * @return corresponding PrivilegeType
    */
   public static PrivilegeType getPrivTypeByName(String privilegeName) {
-    if(name2Type == null){
-      populateName2Type();
-    }
+    populateName2Type();
     String canonicalizedName = privilegeName.toLowerCase();
     PrivilegeType privType = name2Type.get(canonicalizedName);
     if(privType != null){

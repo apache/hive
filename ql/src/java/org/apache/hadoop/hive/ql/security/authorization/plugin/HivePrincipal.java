@@ -17,13 +17,23 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+
 /**
  * Represents the user or role in grant/revoke statements
  */
+@LimitedPrivate(value = { "" })
+@Evolving
 public class HivePrincipal {
 
   public enum HivePrincipalType{
     USER, ROLE, UNKNOWN
+  }
+
+  @Override
+  public String toString() {
+    return "Principal [name=" + name + ", type=" + type + "]";
   }
 
   private final String name;
@@ -38,6 +48,34 @@ public class HivePrincipal {
   }
   public HivePrincipalType getType() {
     return type;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((type == null) ? 0 : type.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    HivePrincipal other = (HivePrincipal) obj;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    if (type != other.type)
+      return false;
+    return true;
   }
 
 }

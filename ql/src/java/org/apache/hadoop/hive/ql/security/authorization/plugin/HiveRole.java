@@ -17,9 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.metastore.api.Role;
 
 // same with thrift.Role
+@LimitedPrivate(value = { "" })
+@Evolving
 public class HiveRole {
 
   private String roleName;

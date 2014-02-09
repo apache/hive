@@ -18,29 +18,33 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * Exception thrown by the Authorization plugin api (v2)
+ * Exception thrown by the Authorization plugin api (v2). Indicates
+ * an error while performing authorization, and not a authorization being
+ * denied.
  */
-@Public
-public class HiveAuthorizationPluginException extends HiveException{
+@LimitedPrivate(value = { "" })
+@Evolving
+public class HiveAuthzPluginException extends HiveException{
 
   private static final long serialVersionUID = 1L;
 
-  public HiveAuthorizationPluginException(){
+  public HiveAuthzPluginException(){
   }
 
-  public HiveAuthorizationPluginException(String msg){
+  public HiveAuthzPluginException(String msg){
     super(msg);
   }
 
-  public HiveAuthorizationPluginException(String msg, Throwable cause){
+  public HiveAuthzPluginException(String msg, Throwable cause){
     super(msg, cause);
   }
 
-  public HiveAuthorizationPluginException(Throwable cause){
+  public HiveAuthzPluginException(Throwable cause){
     super(cause);
   }
 

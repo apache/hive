@@ -6,18 +6,18 @@ set hive.security.authorization.enabled=true;
 
 --table grant to user
 
-grant select on table src_autho_test to user hive_test_user;
+grant select on table src_autho_test to user user_sauth;
 
-show grant user hive_test_user on table src_autho_test;
+show grant user user_sauth on table src_autho_test;
 
 
-revoke select on table src_autho_test from user hive_test_user;
-show grant user hive_test_user on table src_autho_test;
+revoke select on table src_autho_test from user user_sauth;
+show grant user user_sauth on table src_autho_test;
 
 --role
 create role src_role;
-grant role src_role to user hive_test_user;
-show role grant user hive_test_user;
+grant role src_role to user user_sauth;
+show role grant user user_sauth;
 
 --table grant to role
 

@@ -1656,7 +1656,7 @@
 
 <property>
   <name>hive.conf.restricted.list</name>
-  <value></value>
+  <value>hive.security.authenticator.manager,hive.security.authorization.manager</value>
   <description>Comma separated list of configuration options which are immutable at runtime</description>
 </property>
 

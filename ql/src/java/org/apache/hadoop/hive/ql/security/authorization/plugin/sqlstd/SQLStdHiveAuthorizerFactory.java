@@ -19,20 +19,22 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationPluginException;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerImpl;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 
 @Private
 public class SQLStdHiveAuthorizerFactory implements HiveAuthorizerFactory{
   @Override
   public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
-      HiveConf conf, String hiveCurrentUser) throws HiveAuthorizationPluginException {
+      HiveConf conf, HiveAuthenticationProvider authenticator) throws HiveAuthzPluginException {
+
     return new HiveAuthorizerImpl(
-        new SQLStdHiveAccessController(metastoreClientFactory, conf, hiveCurrentUser),
-        new SQLStdHiveAuthorizationValidator()
+        new SQLStdHiveAccessController(metastoreClientFactory, conf, authenticator),
+        new SQLStdHiveAuthorizationValidator(metastoreClientFactory, conf, authenticator)
         );
   }
 }
