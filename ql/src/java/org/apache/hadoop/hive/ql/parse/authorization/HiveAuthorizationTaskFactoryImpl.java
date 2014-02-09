@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeRegistry;
+import org.apache.hadoop.hive.ql.security.authorization.PrivilegeType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Default implementation of HiveAuthorizationTaskFactory
@@ -322,7 +323,8 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       Privilege privObj = PrivilegeRegistry.getPrivilege(privilegeType.getType());
 
       if (privObj == null) {
-        throw new SemanticException("undefined privilege " + privilegeType.getText());
+        throw new SemanticException("Undefined privilege " + PrivilegeType.
+            getPrivTypeByToken(privilegeType.getType()));
       }
       List<String> cols = null;
       if (privilegeDef.getChildCount() > 1) {
