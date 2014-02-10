@@ -136,6 +136,14 @@ public class TestUDFMath {
   }
 
   @Test
+  public void testDegrees() throws HiveException {
+    UDFDegrees udf = new UDFDegrees();
+    input = createDecimal("0.7853981633974483");
+    DoubleWritable res = udf.evaluate(input);
+    Assert.assertEquals(45.0, res.get(), 0.000001);
+  }
+
+  @Test
   public void testSqrt() throws HiveException {
     UDFSqrt udf = new UDFSqrt();
     input = createDecimal("49.0");
