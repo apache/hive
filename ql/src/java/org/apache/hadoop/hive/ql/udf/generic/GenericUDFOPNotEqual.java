@@ -20,36 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColNotEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColNotEqualDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColNotEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColNotEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarNotEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarNotEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColNotEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColNotEqualDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColNotEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColNotEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleScalarNotEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleScalarNotEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColNotEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColNotEqualDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColNotEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColNotEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarNotEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarNotEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColNotEqualStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColNotEqualStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarNotEqualStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColNotEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColNotEqualDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColNotEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColNotEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarNotEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarNotEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColNotEqualStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColNotEqualStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringScalarNotEqualStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
@@ -71,7 +42,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
   FilterLongColNotEqualLongScalar.class, FilterLongColNotEqualDoubleScalar.class,
   FilterDoubleColNotEqualLongScalar.class, FilterDoubleColNotEqualDoubleScalar.class,
   FilterLongScalarNotEqualLongColumn.class, FilterLongScalarNotEqualDoubleColumn.class,
-  FilterDoubleScalarNotEqualLongColumn.class, FilterDoubleScalarNotEqualDoubleColumn.class})
+  FilterDoubleScalarNotEqualLongColumn.class, FilterDoubleScalarNotEqualDoubleColumn.class,
+  FilterDecimalColNotEqualDecimalColumn.class, FilterDecimalColNotEqualDecimalScalar.class,
+  FilterDecimalScalarNotEqualDecimalColumn.class})
 public class GenericUDFOPNotEqual extends GenericUDFBaseCompare {
   public GenericUDFOPNotEqual(){
     this.opName = "NOT EQUAL";

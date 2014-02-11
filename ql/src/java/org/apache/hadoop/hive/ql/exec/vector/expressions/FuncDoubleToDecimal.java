@@ -36,10 +36,12 @@ public abstract class FuncDoubleToDecimal extends VectorExpression {
   public FuncDoubleToDecimal(int inputColumn, int outputColumn) {
     this.inputColumn = inputColumn;
     this.outputColumn = outputColumn;
+    this.outputType = "decimal";
   }
 
   public FuncDoubleToDecimal() {
     super();
+    this.outputType = "decimal";
   }
 
   abstract protected void func(DecimalColumnVector outV, DoubleColumnVector inV, int i);
@@ -127,11 +129,6 @@ public abstract class FuncDoubleToDecimal extends VectorExpression {
 
   public void setInputColumn(int inputColumn) {
     this.inputColumn = inputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "decimal";
   }
 
   @Override

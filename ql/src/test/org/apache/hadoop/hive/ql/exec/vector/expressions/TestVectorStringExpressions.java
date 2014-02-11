@@ -1869,4 +1869,39 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(1, outV.vector[0]);
     Assert.assertEquals(true, outV.isRepeating);
   }
+
+  /**
+   * Test vectorized regex expression.
+   */
+  @Test
+  public void testRegex() throws HiveException {
+    VectorizedRowBatch b = makeStringBatch();
+    FilterStringColRegExpStringScalar expr = new FilterStringColRegExpStringScalar(0, "a.*".getBytes());
+    b.size = 5;
+    b.selectedInUse = false;
+    BytesColumnVector v = (BytesColumnVector) b.cols[0];
+    v.isRepeating = false;
+    v.noNulls = false;
+    String s1 = "4kMasVoB7lX1wc5i64bNk";
+    String s2 = "a27V63IL7jK3o";
+    String s3 = "27V63IL7jK3oa";
+    String s4 = "27V63IL7jK3o";
+    v.isNull[0] = false;
+    v.setRef(0, s1.getBytes(), 0, s1.getBytes().length);
+    v.isNull[1] = true;
+    v.vector[1] = null;
+    v.isNull[2] = false;
+    v.setRef(2, s2.getBytes(), 0, s2.getBytes().length);
+    v.isNull[3] = false;
+    v.setRef(3, s3.getBytes(), 0, s3.getBytes().length);
+    v.isNull[4] = false;
+    v.setRef(4, s4.getBytes(), 0, s4.getBytes().length);
+
+    expr.evaluate(b);
+    Assert.assertTrue(b.selectedInUse);
+    Assert.assertEquals(3,b.size);
+    Assert.assertEquals(0,b.selected[0]);
+    Assert.assertEquals(2,b.selected[1]);
+    Assert.assertEquals(3,b.selected[2]);
+  }
  }

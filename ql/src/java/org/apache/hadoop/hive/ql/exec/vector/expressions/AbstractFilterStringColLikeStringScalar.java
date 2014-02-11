@@ -42,7 +42,7 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
 
   private int colNum;
   private String pattern;
-  transient Checker checker;
+  transient Checker checker = null;
 
   public AbstractFilterStringColLikeStringScalar() {
     super();
@@ -72,7 +72,10 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
-    this.checker = createChecker(pattern);
+
+    if (checker == null) {
+      checker = createChecker(pattern);
+    }
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -349,7 +352,7 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
     public boolean check(byte[] byteS, int start, int len) {
       // Match the given bytes with the like pattern
       matcher.reset(decoder.decodeUnsafely(byteS, start, len));
-      return matcher.matches();
+      return matcher.find(0);
     }
   }
 

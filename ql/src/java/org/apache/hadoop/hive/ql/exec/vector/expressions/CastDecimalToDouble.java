@@ -25,6 +25,10 @@ public class CastDecimalToDouble extends FuncDecimalToDouble {
 
   private static final long serialVersionUID = 1L;
 
+  public CastDecimalToDouble() {
+    super();
+  }
+
   public CastDecimalToDouble(int inputCol, int outputCol) {
     super(inputCol, outputCol);
   }
