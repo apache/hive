@@ -43,7 +43,9 @@ import org.apache.hadoop.io.Text;
     FilterLongColLessLongScalar.class, FilterLongColLessDoubleScalar.class,
     FilterDoubleColLessLongScalar.class, FilterDoubleColLessDoubleScalar.class,
     FilterLongScalarLessLongColumn.class, FilterLongScalarLessDoubleColumn.class,
-    FilterDoubleScalarLessLongColumn.class, FilterDoubleScalarLessDoubleColumn.class})
+    FilterDoubleScalarLessLongColumn.class, FilterDoubleScalarLessDoubleColumn.class,
+    FilterDecimalColLessDecimalColumn.class, FilterDecimalColLessDecimalScalar.class,
+    FilterDecimalScalarLessDecimalColumn.class})
 public class GenericUDFOPLessThan extends GenericUDFBaseCompare {
   public GenericUDFOPLessThan(){
     this.opName = "LESS THAN";

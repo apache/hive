@@ -21,18 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColMultiplyDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColMultiplyDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColMultiplyLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColMultiplyLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarMultiplyDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarMultiplyLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarMultiplyDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarMultiplyLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -49,7 +38,9 @@ import org.apache.hadoop.io.LongWritable;
   LongColMultiplyLongScalar.class, LongColMultiplyDoubleScalar.class,
   DoubleColMultiplyLongScalar.class, DoubleColMultiplyDoubleScalar.class,
   LongScalarMultiplyLongColumn.class, LongScalarMultiplyDoubleColumn.class,
-  DoubleScalarMultiplyLongColumn.class, DoubleScalarMultiplyDoubleColumn.class})
+  DoubleScalarMultiplyLongColumn.class, DoubleScalarMultiplyDoubleColumn.class,
+  DecimalColMultiplyDecimalColumn.class, DecimalColMultiplyDecimalScalar.class,
+  DecimalScalarMultiplyDecimalColumn.class})
 public class GenericUDFOPMultiply extends GenericUDFBaseNumeric {
 
   public GenericUDFOPMultiply() {

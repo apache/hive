@@ -28,6 +28,10 @@ public class CastDoubleToDecimal extends FuncDoubleToDecimal {
 
   private static final long serialVersionUID = 1L;
 
+  public CastDoubleToDecimal() {
+    super();
+  }
+
   public CastDoubleToDecimal(int inputColumn, int outputColumn) {
     super(inputColumn, outputColumn);
   }

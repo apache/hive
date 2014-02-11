@@ -40,10 +40,12 @@ public class CastDecimalToDecimal extends VectorExpression {
   public CastDecimalToDecimal(int inputColumn, int outputColumn) {
     this.inputColumn = inputColumn;
     this.outputColumn = outputColumn;
+    this.outputType = "decimal";
   }
 
   public CastDecimalToDecimal() {
     super();
+    this.outputType = "decimal";
   }
 
   /**
@@ -145,11 +147,6 @@ public class CastDecimalToDecimal extends VectorExpression {
 
   public void setInputColumn(int inputColumn) {
     this.inputColumn = inputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "decimal";
   }
 
   @Override

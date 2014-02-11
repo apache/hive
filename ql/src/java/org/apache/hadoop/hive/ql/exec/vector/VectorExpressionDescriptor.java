@@ -48,7 +48,11 @@ public class VectorExpressionDescriptor {
     }
 
     public static ArgumentType getType(String inType) {
-      return valueOf(VectorizationContext.getNormalizedTypeName(inType).toUpperCase());
+      String type = VectorizationContext.getNormalizedTypeName(inType);
+      if (VectorizationContext.decimalTypePattern.matcher(type.toLowerCase()).matches()) {
+        type = "decimal";
+      }
+      return valueOf(type.toUpperCase());
     }
   }
 
@@ -185,6 +189,32 @@ public class VectorExpressionDescriptor {
       this.argTypes = argTypes.clone();
       this.exprTypes = exprTypes.clone();
       this.argCount = argCount;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder b = new StringBuilder("Argument Count = ");
+      b.append(argCount);
+      b.append(", mode = ");
+      b.append(mode);
+      b.append(", Argument Types = {");
+      for (int i = 0; i < argCount; i++) {
+        if (i == 0) {
+          b.append(",");
+        }
+        b.append(argTypes[i]);
+      }
+      b.append("}");
+
+      b.append(", Input Expression Types = {");
+      for (int i = 0; i < argCount; i++) {
+        if (i == 0) {
+          b.append(",");
+        }
+        b.append(exprTypes[i]);
+      }
+      b.append("}");
+      return b.toString();
     }
   }
 

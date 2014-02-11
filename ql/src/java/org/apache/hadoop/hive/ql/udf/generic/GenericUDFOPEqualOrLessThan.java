@@ -20,36 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColLessEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColLessEqualDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColLessEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColLessEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarLessEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarLessEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessEqualDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleScalarLessEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleScalarLessEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColLessEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColLessEqualDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColLessEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColLessEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarLessEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarLessEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessEqualStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessEqualStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarLessEqualStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColLessEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColLessEqualDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColLessEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColLessEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarLessEqualDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarLessEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColLessEqualStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColLessEqualStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringScalarLessEqualStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.Text;
@@ -72,7 +43,9 @@ import org.apache.hadoop.io.Text;
   FilterLongColLessEqualLongScalar.class, FilterLongColLessEqualDoubleScalar.class,
   FilterDoubleColLessEqualLongScalar.class, FilterDoubleColLessEqualDoubleScalar.class,
   FilterLongScalarLessEqualLongColumn.class, FilterLongScalarLessEqualDoubleColumn.class,
-  FilterDoubleScalarLessEqualLongColumn.class, FilterDoubleScalarLessEqualDoubleColumn.class})
+  FilterDoubleScalarLessEqualLongColumn.class, FilterDoubleScalarLessEqualDoubleColumn.class,
+  FilterDecimalColLessEqualDecimalColumn.class, FilterDecimalColLessEqualDecimalScalar.class,
+  FilterDecimalScalarLessEqualDecimalColumn.class})
 public class GenericUDFOPEqualOrLessThan extends GenericUDFBaseCompare {
   public GenericUDFOPEqualOrLessThan(){
     this.opName = "EQUAL OR LESS THAN";
