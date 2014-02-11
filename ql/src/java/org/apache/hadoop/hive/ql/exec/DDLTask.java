@@ -1837,6 +1837,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
+  private void msckAddPartitionsOneByOne(Hive db, Table table,
+      List<CheckResult.PartitionResult> partsNotInMs, List<String> repairOutput) {
+    for (CheckResult.PartitionResult part : partsNotInMs) {
+      try {
+        db.createPartition(table, Warehouse.makeSpecFromName(part.getPartitionName()));
+        repairOutput.add("Repair: Added partition to metastore "
+            + table.getTableName() + ':' + part.getPartitionName());
+      } catch (Exception e) {
+        LOG.warn("Repair error, could not add partition to metastore: ", e);
+      }
+    }
+  }
+
   /**
    * MetastoreCheck, see if the data in the metastore matches what is on the
    * dfs. Current version checks for tables and partitions that are either
@@ -1855,17 +1868,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db);
       Table t = db.newTable(msckDesc.getTableName());
       checker.checkMetastore(t.getDbName(), t.getTableName(), msckDesc.getPartSpecs(), result);
-      if (msckDesc.isRepairPartitions()) {
+      List<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
+      if (msckDesc.isRepairPartitions() && !partsNotInMs.isEmpty()) {
         Table table = db.getTable(msckDesc.getTableName());
-        for (CheckResult.PartitionResult part : result.getPartitionsNotInMs()) {
-          try {
-            db.createPartition(table, Warehouse.makeSpecFromName(part
-                .getPartitionName()));
+        AddPartitionDesc apd = new AddPartitionDesc(
+            table.getDbName(), table.getTableName(), false);
+        try {
+          for (CheckResult.PartitionResult part : partsNotInMs) {
+            apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
             repairOutput.add("Repair: Added partition to metastore "
                 + msckDesc.getTableName() + ':' + part.getPartitionName());
-          } catch (Exception e) {
-            LOG.warn("Repair error, could not add partition to metastore: ", e);
           }
+          db.createPartitions(apd);
+        } catch (Exception e) {
+          LOG.info("Could not bulk-add partitions to metastore; trying one by one", e);
+          repairOutput.clear();
+          msckAddPartitionsOneByOne(db, table, partsNotInMs, repairOutput);
         }
       }
     } catch (HiveException e) {
