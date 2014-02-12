@@ -2498,8 +2498,8 @@ public abstract class TestHiveMetaStore extends TestCase {
    */
   private void updateTableNameInDB(String oldTableName, String newTableName) throws SQLException {
     String connectionStr = HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
-    int interval= HiveConf.getIntVar(hiveConf, HiveConf.ConfVars.METASTOREINTERVAL);
-    int attempts = HiveConf.getIntVar(hiveConf, HiveConf.ConfVars.METASTOREATTEMPTS);
+    int interval= 1;
+    int attempts = 1;
 
 
     Utilities.SQLCommand<Void> execUpdate = new Utilities.SQLCommand<Void>() {

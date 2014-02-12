@@ -37,20 +37,16 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
-public class RetryingRawStore implements InvocationHandler {
-
-  private static final Log LOG = LogFactory.getLog(RetryingRawStore.class);
+public class RawStoreProxy implements InvocationHandler {
 
   private final RawStore base;
-  private int retryInterval = 0;
-  private int retryLimit = 0;
   private final MetaStoreInit.MetaStoreInitData metaStoreInitData =
     new MetaStoreInit.MetaStoreInitData();
   private final int id;
   private final HiveConf hiveConf;
   private final Configuration conf; // thread local conf from HMS
 
-  protected RetryingRawStore(HiveConf hiveConf, Configuration conf,
+  protected RawStoreProxy(HiveConf hiveConf, Configuration conf,
       Class<? extends RawStore> rawStoreClass, int id) throws MetaException {
     this.conf = conf;
     this.hiveConf = hiveConf;
@@ -68,10 +64,10 @@ public class RetryingRawStore implements InvocationHandler {
     Class<? extends RawStore> baseClass = (Class<? extends RawStore>) MetaStoreUtils.getClass(
         rawStoreClassName);
 
-    RetryingRawStore handler = new RetryingRawStore(hiveConf, conf, baseClass, id);
+    RawStoreProxy handler = new RawStoreProxy(hiveConf, conf, baseClass, id);
 
     // Look for interfaces on both the class and all base classes.
-    return (RawStore) Proxy.newProxyInstance(RetryingRawStore.class.getClassLoader(),
+    return (RawStore) Proxy.newProxyInstance(RawStoreProxy.class.getClassLoader(),
         getAllInterfaces(baseClass), handler);
   }
 
@@ -86,10 +82,6 @@ public class RetryingRawStore implements InvocationHandler {
   }
 
   private void init() throws MetaException {
-    retryInterval = HiveConf.getIntVar(hiveConf,
-        HiveConf.ConfVars.METASTOREINTERVAL);
-    retryLimit = HiveConf.getIntVar(hiveConf,
-        HiveConf.ConfVars.METASTOREATTEMPTS);
     // Using the hook on startup ensures that the hook always has priority
     // over settings in *.xml.  The thread local conf needs to be used because at this point
     // it has already been initialized using hiveConf.
@@ -104,60 +96,22 @@ public class RetryingRawStore implements InvocationHandler {
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     Object ret = null;
 
-    boolean gotNewConnectUrl = false;
     boolean reloadConf = HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.METASTOREFORCERELOADCONF);
 
     if (reloadConf) {
       MetaStoreInit.updateConnectionURL(hiveConf, getConf(), null, metaStoreInitData);
+      initMS();
     }
 
-    int retryCount = 0;
-    Exception caughtException = null;
-    while (true) {
-      try {
-        if (reloadConf || gotNewConnectUrl) {
-          initMS();
-        }
-        ret = method.invoke(base, args);
-        break;
-      } catch (javax.jdo.JDOException e) {
-        caughtException = e;
-      } catch (UndeclaredThrowableException e) {
-        throw e.getCause();
-      } catch (InvocationTargetException e) {
-        if (e.getCause() instanceof javax.jdo.JDOException) {
-          // Due to reflection, the jdo exception is wrapped in
-          // invocationTargetException
-          caughtException = (javax.jdo.JDOException) e.getCause();
-        } else {
-          throw e.getCause();
-        }
-      }
-
-      if (retryCount >= retryLimit ||
-          (method.getAnnotation(RawStore.CanNotRetry.class) != null)) {
-        throw  caughtException;
-      }
-
-      assert (retryInterval >= 0);
-      retryCount++;
-      LOG.error(
-          String.format(
-              "JDO datastore error. Retrying metastore command " +
-                  "after %d ms (attempt %d of %d)", retryInterval, retryCount, retryLimit));
-      Thread.sleep(retryInterval);
-      // If we have a connection error, the JDO connection URL hook might
-      // provide us with a new URL to access the datastore.
-      String lastUrl = MetaStoreInit.getConnectionURL(getConf());
-      gotNewConnectUrl = MetaStoreInit.updateConnectionURL(hiveConf, getConf(),
-        lastUrl, metaStoreInitData);
+    try {
+      ret = method.invoke(base, args);
+    } catch (UndeclaredThrowableException e) {
+      throw e.getCause();
+    } catch (InvocationTargetException e) {
+      throw e.getCause();
     }
     return ret;
-  }
-
-  private String addPrefix(String s) {
-    return id + ": " + s;
   }
 
   public Configuration getConf() {
