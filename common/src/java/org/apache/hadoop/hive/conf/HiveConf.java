@@ -94,8 +94,6 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTOREPWD,
       HiveConf.ConfVars.METASTORECONNECTURLHOOK,
       HiveConf.ConfVars.METASTORECONNECTURLKEY,
-      HiveConf.ConfVars.METASTOREATTEMPTS,
-      HiveConf.ConfVars.METASTOREINTERVAL,
       HiveConf.ConfVars.METASTOREFORCERELOADCONF,
       HiveConf.ConfVars.METASTORESERVERMINTHREADS,
       HiveConf.ConfVars.METASTORESERVERMAXTHREADS,
@@ -273,10 +271,6 @@ public class HiveConf extends Configuration {
     // Name of the connection url in the configuration
     METASTORECONNECTURLKEY("javax.jdo.option.ConnectionURL",
         "jdbc:derby:;databaseName=metastore_db;create=true"),
-    // Number of attempts to retry connecting after there is a JDO datastore err
-    METASTOREATTEMPTS("hive.metastore.ds.retry.attempts", 1),
-    // Number of miliseconds to wait between attepting
-    METASTOREINTERVAL("hive.metastore.ds.retry.interval", 1000),
     // Whether to force reloading of the metastore configuration (including
     // the connection URL, before the next metastore query that accesses the
     // datastore. Once reloaded, this value is reset to false. Used for
@@ -1258,8 +1252,14 @@ public class HiveConf extends Configuration {
 
     if(this.get("hive.metastore.local", null) != null) {
       l4j.warn("DEPRECATED: Configuration property hive.metastore.local no longer has any " +
-      		"effect. Make sure to provide a valid value for hive.metastore.uris if you are " +
-      		"connecting to a remote metastore.");
+          "effect. Make sure to provide a valid value for hive.metastore.uris if you are " +
+          "connecting to a remote metastore.");
+    }
+
+    if ((this.get("hive.metastore.ds.retry.attempts") != null) ||
+      this.get("hive.metastore.ds.retry.interval") != null) {
+        l4j.warn("DEPRECATED: hive.metastore.ds.retry.* no longer has any effect.  " +
+        "Use hive.hmshandler.retry.* instead");
     }
 
     // if the running class was loaded directly (through eclipse) rather than through a

@@ -39,6 +39,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.jdo.JDODataStoreException;
+import javax.jdo.JDOEnhanceException;
 import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
@@ -362,7 +363,10 @@ public class ObjectStore implements RawStore, Configurable {
       // currentTransaction is not active
       assert ((currentTransaction != null) && (currentTransaction.isActive()));
     }
-    return currentTransaction.isActive();
+
+    boolean result = currentTransaction.isActive();
+    debugLog("Open transaction: count = " + openTrasactionCalls + ", isActive = " + result);
+    return result;
   }
 
   /**
@@ -374,23 +378,31 @@ public class ObjectStore implements RawStore, Configurable {
   @SuppressWarnings("nls")
   public boolean commitTransaction() {
     if (TXN_STATUS.ROLLBACK == transactionStatus) {
+      debugLog("Commit transaction: rollback");
       return false;
     }
     if (openTrasactionCalls <= 0) {
-      throw new RuntimeException("commitTransaction was called but openTransactionCalls = "
+      RuntimeException e = new RuntimeException("commitTransaction was called but openTransactionCalls = "
           + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
-              "calls to openTransaction/commitTransaction");
+          "calls to openTransaction/commitTransaction");
+      LOG.error(e);
+      throw e;
     }
     if (!currentTransaction.isActive()) {
-      throw new RuntimeException(
-          "Commit is called, but transaction is not active. Either there are"
-              + " mismatching open and close calls or rollback was called in the same trasaction");
+      RuntimeException e = new RuntimeException("commitTransaction was called but openTransactionCalls = "
+          + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
+          "calls to openTransaction/commitTransaction");
+      LOG.error(e);
+      throw e;
     }
     openTrasactionCalls--;
+    debugLog("Commit transaction: count = " + openTrasactionCalls + ", isactive "+ currentTransaction.isActive());
+
     if ((openTrasactionCalls == 0) && currentTransaction.isActive()) {
       transactionStatus = TXN_STATUS.COMMITED;
       currentTransaction.commit();
     }
+
     return true;
   }
 
@@ -410,9 +422,11 @@ public class ObjectStore implements RawStore, Configurable {
    */
   public void rollbackTransaction() {
     if (openTrasactionCalls < 1) {
+      debugLog("rolling back transaction: no open transactions: " + openTrasactionCalls);
       return;
     }
     openTrasactionCalls = 0;
+    debugLog("Rollback transaction, isActive: " + currentTransaction.isActive());
     if (currentTransaction.isActive()
         && transactionStatus != TXN_STATUS.ROLLBACK) {
       transactionStatus = TXN_STATUS.ROLLBACK;
@@ -6151,27 +6165,24 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  /** Add this to code to debug lexer if needed. DebugTokenStream may also be added here. */
-  private void debugLexer(CommonTokenStream stream, FilterLexer lexer) {
-    try {
-      stream.fill();
-      List<?> tokens = stream.getTokens();
-      String report = "LEXER: tokens (" + ((tokens == null) ? "null" : tokens.size()) + "): ";
-      if (tokens != null) {
-        for (Object o : tokens) {
-          if (o == null || !(o instanceof Token)) {
-            report += "[not a token: " + o + "], ";
-          } else {
-            Token t = (Token)o;
-            report += "[at " + t.getCharPositionInLine() + ": "
-                + t.getType() + " " + t.getText() + "], ";
-          }
-        }
-      }
-      report += "; lexer error: " + lexer.errorMsg;
-      LOG.error(report);
-    } catch (Throwable t) {
-      LOG.error("LEXER: tokens (error)", t);
+
+  private void debugLog(String message) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(message + getCallStack());
     }
+  }
+
+  private static final int stackLimit = 5;
+
+  private String getCallStack() {
+    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    int thislimit = Math.min(stackLimit, stackTrace.length);
+    StringBuilder sb = new StringBuilder();
+    sb.append(" at:");
+    for (int i = 4; i < thislimit; i++) {
+      sb.append("\n\t");
+      sb.append(stackTrace[i].toString());
+    }
+    return sb.toString();
   }
 }
