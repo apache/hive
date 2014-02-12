@@ -183,7 +183,7 @@ functionName
 @init { gParent.pushMsg("function name", state); }
 @after { gParent.popMsg(state); }
     : // Keyword IF is also a function name
-    KW_IF | KW_ARRAY | KW_MAP | KW_STRUCT | KW_UNIONTYPE | identifier
+    KW_IF | KW_ARRAY | KW_MAP | KW_STRUCT | KW_UNIONTYPE | functionIdentifier
     ;
 
 castExpression
@@ -268,10 +268,10 @@ atomExpression
     KW_NULL -> TOK_NULL
     | dateLiteral
     | constant
-    | function
     | castExpression
     | caseExpression
     | whenExpression
+    | (functionName LPAREN) => function
     | tableOrColumn
     | LPAREN! expression RPAREN!
     ;
@@ -524,13 +524,22 @@ descFuncNames
     :
       sysFuncNames
     | StringLiteral
-    | identifier
+    | functionIdentifier
     ;
 
 identifier
     :
     Identifier
     | nonReserved -> Identifier[$nonReserved.text]
+    ;
+
+functionIdentifier
+@init { gParent.pushMsg("function identifier", state); }
+@after { gParent.popMsg(state); }
+    : db=identifier DOT fn=identifier
+    -> Identifier[$db.text + "." + $fn.text]
+    |
+    identifier
     ;
 
 nonReserved
