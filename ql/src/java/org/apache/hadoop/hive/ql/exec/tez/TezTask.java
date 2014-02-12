@@ -49,6 +49,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.TezSession;
+import org.apache.tez.common.counters.CounterGroup;
+import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
@@ -154,6 +156,14 @@ public class TezTask extends Task<TezWork> {
       Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
       counters = client.getDAGStatus(statusGetOpts).getDAGCounters();
 
+      if (LOG.isInfoEnabled()) {
+        for (CounterGroup group: counters) {
+          LOG.info(group.getDisplayName() +":");
+          for (TezCounter counter: group) {
+            LOG.info("   "+counter.getDisplayName()+": "+counter.getValue());
+          }
+        }
+      }
     } catch (Exception e) {
       LOG.error("Failed to execute tez graph.", e);
       // rc will be 1 at this point indicating failure.

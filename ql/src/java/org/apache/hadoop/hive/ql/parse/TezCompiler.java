@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
@@ -109,8 +110,10 @@ public class TezCompiler extends TaskCompiler {
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
 
+    GenTezUtils.getUtils().resetSequenceNumber();
+
     ParseContext tempParseContext = getParseContext(pCtx, rootTasks);
-    GenTezWork genTezWork = new GenTezWork();
+    GenTezWork genTezWork = new GenTezWork(GenTezUtils.getUtils());
 
     GenTezProcContext procCtx = new GenTezProcContext(
         conf, tempParseContext, mvTask, rootTasks, inputs, outputs);
@@ -130,6 +133,10 @@ public class TezCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp("Split Work + Move/Merge - FileSink",
         FileSinkOperator.getOperatorName() + "%"),
         new CompositeProcessor(new FileSinkProcessor(), genTezWork));
+
+    opRules.put(new RuleRegExp("Handle Potential Analyze Command",
+        TableScanOperator.getOperatorName() + "%"),
+        new ProcessAnalyzeTable(GenTezUtils.getUtils()));
 
     opRules.put(new RuleRegExp("Bail on Union",
         UnionOperator.getOperatorName() + "%"), new NodeProcessor()

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,12 +29,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.lang.StringBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -60,14 +63,18 @@ import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPruner;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
+import org.apache.hadoop.hive.ql.parse.QBParseInfo;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -1702,6 +1709,48 @@ public final class GenMapRedUtils {
     }
 
     return dest;
+  }
+
+  public static Set<Partition> getConfirmedPartitionsForScan(QBParseInfo parseInfo) {
+    Set<Partition> confirmedPartns = new HashSet<Partition>();
+    tableSpec tblSpec = parseInfo.getTableSpec();
+    if (tblSpec.specType == tableSpec.SpecType.STATIC_PARTITION) {
+      // static partition
+      if (tblSpec.partHandle != null) {
+        confirmedPartns.add(tblSpec.partHandle);
+      } else {
+        // partial partition spec has null partHandle
+        assert parseInfo.isNoScanAnalyzeCommand();
+        confirmedPartns.addAll(tblSpec.partitions);
+      }
+    } else if (tblSpec.specType == tableSpec.SpecType.DYNAMIC_PARTITION) {
+      // dynamic partition
+      confirmedPartns.addAll(tblSpec.partitions);
+    }
+    return confirmedPartns;
+  }
+
+  public static List<Path> getInputPathsForPartialScan(QBParseInfo parseInfo, StringBuffer aggregationKey) 
+    throws SemanticException {
+    List<Path> inputPaths = new ArrayList<Path>();
+    switch (parseInfo.getTableSpec().specType) {
+    case TABLE_ONLY:
+      inputPaths.add(parseInfo.getTableSpec().tableHandle.getPath());
+      break;
+    case STATIC_PARTITION:
+      Partition part = parseInfo.getTableSpec().partHandle;
+      try {
+        aggregationKey.append(Warehouse.makePartPath(part.getSpec()));
+      } catch (MetaException e) {
+        throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_AGGKEY.getMsg(
+            part.getDataLocation().toString() + e.getMessage()));
+      }
+      inputPaths.add(part.getDataLocation());
+      break;
+    default:
+      assert false;
+    }
+    return inputPaths;
   }
 
   private GenMapRedUtils() {

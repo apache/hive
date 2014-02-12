@@ -57,17 +57,21 @@ public class CounterStatsAggregatorTez implements StatsAggregator {
 
   @Override
   public String aggregateStats(String keyPrefix, String statType) {
-    if (delegate) {
-      return mrAggregator.aggregateStats(keyPrefix, statType);
-    }
+    String result;
 
-    long value = 0;
-    for (String groupName : counters.getGroupNames()) {
-      if (groupName.startsWith(keyPrefix)) {
-        value += counters.getGroup(groupName).findCounter(statType).getValue();
+    if (delegate) {
+      result = mrAggregator.aggregateStats(keyPrefix, statType);
+    } else {
+      long value = 0;
+      for (String groupName : counters.getGroupNames()) {
+        if (groupName.startsWith(keyPrefix)) {
+          value += counters.getGroup(groupName).findCounter(statType).getValue();
+        }
       }
+      result = String.valueOf(value);
     }
-    return String.valueOf(value);
+    LOG.info("Counter based stats for ("+keyPrefix+") are: "+result);
+    return result;
   }
 
   @Override

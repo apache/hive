@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.CounterStatsAggregator;
+import org.apache.hadoop.hive.ql.stats.CounterStatsAggregatorTez;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -154,7 +155,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       int maxPrefixLength = StatsFactory.getMaxPrefixLength(conf);
 
       // "counter" type does not need to collect stats per task
-      boolean counterStat = statsAggregator instanceof CounterStatsAggregator;
+      boolean counterStat = statsAggregator instanceof CounterStatsAggregator 
+        || statsAggregator instanceof CounterStatsAggregatorTez;
       if (partitions == null) {
         org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
         Map<String, String> parameters = tTable.getParameters();
