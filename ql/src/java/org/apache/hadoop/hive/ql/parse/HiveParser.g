@@ -1280,7 +1280,7 @@ showStatement
     | KW_SHOW KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tabname=tableName ((KW_FROM|KW_IN) db_name=identifier)? 
     -> ^(TOK_SHOWCOLUMNS $db_name? $tabname)
-    | KW_SHOW KW_FUNCTIONS showStmtIdentifier?  -> ^(TOK_SHOWFUNCTIONS showStmtIdentifier?)
+    | KW_SHOW KW_FUNCTIONS showFunctionIdentifier?  -> ^(TOK_SHOWFUNCTIONS showFunctionIdentifier?)
     | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec?) 
     | KW_SHOW KW_CREATE KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=identifier)? KW_LIKE showStmtIdentifier partitionSpec?
@@ -1496,15 +1496,15 @@ metastoreCheck
 createFunctionStatement
 @init { pushMsg("create function statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE KW_TEMPORARY KW_FUNCTION identifier KW_AS StringLiteral
-    -> ^(TOK_CREATEFUNCTION identifier StringLiteral)
+    : KW_CREATE KW_TEMPORARY KW_FUNCTION functionIdentifier KW_AS StringLiteral
+    -> ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral)
     ;
 
 dropFunctionStatement
 @init { pushMsg("drop temporary function statement", state); }
 @after { popMsg(state); }
-    : KW_DROP KW_TEMPORARY KW_FUNCTION ifExists? identifier
-    -> ^(TOK_DROPFUNCTION identifier ifExists?)
+    : KW_DROP KW_TEMPORARY KW_FUNCTION ifExists? functionIdentifier
+    -> ^(TOK_DROPFUNCTION functionIdentifier ifExists?)
     ;
 
 createMacroStatement
@@ -1553,6 +1553,13 @@ dropViewStatement
 @init { pushMsg("drop view statement", state); }
 @after { popMsg(state); }
     : KW_DROP KW_VIEW ifExists? viewName -> ^(TOK_DROPVIEW viewName ifExists?)
+    ;
+
+showFunctionIdentifier
+@init { pushMsg("identifier for show function statement", state); }
+@after { popMsg(state); }
+    : functionIdentifier
+    | StringLiteral
     ;
 
 showStmtIdentifier
