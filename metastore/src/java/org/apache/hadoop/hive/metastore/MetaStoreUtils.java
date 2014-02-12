@@ -1424,4 +1424,43 @@ public class MetaStoreUtils {
     return null;
   }
 
+  public static ProtectMode getProtectMode(Partition partition) {
+    return getProtectMode(partition.getParameters());
+  }
+
+  public static ProtectMode getProtectMode(Table table) {
+    return getProtectMode(table.getParameters());
+  }
+
+  private static ProtectMode getProtectMode(Map<String, String> parameters) {
+    if (parameters == null) {
+      return null;
+    }
+
+    if (!parameters.containsKey(ProtectMode.PARAMETER_NAME)) {
+      return new ProtectMode();
+    } else {
+      return ProtectMode.getProtectModeFromString(parameters.get(ProtectMode.PARAMETER_NAME));
+    }
+  }
+
+  public static boolean canDropPartition(Table table, Partition partition) {
+    ProtectMode mode = getProtectMode(partition);
+    ProtectMode parentMode = getProtectMode(table);
+    return (!mode.noDrop && !mode.offline && !mode.readOnly && !parentMode.noDropCascade);
+  }
+
+  public static String ARCHIVING_LEVEL = "archiving_level";
+  public static int getArchivingLevel(Partition part) throws MetaException {
+    if (!isArchived(part)) {
+      throw new MetaException("Getting level of unarchived partition");
+    }
+
+    String lv = part.getParameters().get(ARCHIVING_LEVEL);
+    if (lv != null) {
+      return Integer.parseInt(lv);
+    } else {  // partitions archived before introducing multiple archiving
+      return part.getValues().size();
+    }
+  }
 }

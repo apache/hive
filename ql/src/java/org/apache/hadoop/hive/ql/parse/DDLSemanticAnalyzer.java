@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -2416,29 +2417,31 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterTableDropParts(ASTNode ast, boolean expectView)
       throws SemanticException {
 
+    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null)
+        || HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
+    // If the drop has to fail on non-existent partitions, we cannot batch expressions.
+    // That is because we actually have to check each separate expression for existence.
+    // We could do a small optimization for the case where expr has all columns and all
+    // operators are equality, if we assume those would always match one partition (which
+    // may not be true with legacy, non-normalized column values). This is probably a
+    // popular case but that's kinda hacky. Let's not do it for now.
+    boolean canGroupExprs = ifExists;
+
     String tblName = getUnescapedName((ASTNode) ast.getChild(0));
-    // get table metadata
     Table tab = getTable(tblName, true);
-    List<ExprNodeGenericFuncDesc> partSpecs = new ArrayList<ExprNodeGenericFuncDesc>();
-    List<List<String>> names = new ArrayList<List<String>>();
-    getFullPartitionSpecs(ast, tab, partSpecs, names);
+    Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
+        getFullPartitionSpecs(ast, tab, canGroupExprs);
+    if (partSpecs.isEmpty()) return; // nothing to do
+
     validateAlterTableType(tab, AlterTableTypes.DROPPARTITION, expectView);
     inputs.add(new ReadEntity(tab));
 
-    boolean ignoreProtection = (ast.getFirstChildWithType(HiveParser.TOK_IGNOREPROTECTION) != null);
-    if (partSpecs != null) {
-      boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
-      // we want to signal an error if the partition doesn't exist and we're
-      // configured not to fail silently
-      boolean throwException =
-          !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-      addTableDropPartsOutputs(tblName, partSpecs, throwException, ignoreProtection);
-    }
-    DropTableDesc dropTblDesc =
-        new DropTableDesc(tblName, partSpecs, names, expectView, ignoreProtection);
+    boolean ignoreProtection = ast.getFirstChildWithType(HiveParser.TOK_IGNOREPROTECTION) != null;
+    addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists, ignoreProtection);
 
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        dropTblDesc), conf));
+    DropTableDesc dropTblDesc =
+        new DropTableDesc(tblName, partSpecs, expectView, ignoreProtection);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc), conf));
   }
 
   private void analyzeAlterTablePartColType(ASTNode ast)
@@ -2747,22 +2750,25 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * Get the partition specs from the tree. This stores the full specification
    * with the comparator operator into the output list.
    *
-   * @param ast
-   *          Tree to extract partitions from.
-   * @throws SemanticException
+   * @param ast Tree to extract partitions from.
+   * @param tab Table.
+   * @param result Map of partitions by prefix length. Most of the time prefix length will
+   *               be the same for all partition specs, so we can just OR the expressions.
    */
-  private void getFullPartitionSpecs(CommonTree ast, Table tab,
-      List<ExprNodeGenericFuncDesc> exprs, List<List<String>> cols) throws SemanticException {
+  private Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
+      CommonTree ast, Table tab, boolean canGroupExprs) throws SemanticException {
     Map<String, String> colTypes = new HashMap<String, String>();
     for (FieldSchema fs : tab.getPartitionKeys()) {
       colTypes.put(fs.getName().toLowerCase(), fs.getType());
     }
 
+    Map<Integer, List<ExprNodeGenericFuncDesc>> result =
+        new HashMap<Integer, List<ExprNodeGenericFuncDesc>>();
     for (int childIndex = 1; childIndex < ast.getChildCount(); childIndex++) {
       Tree partSpecTree = ast.getChild(childIndex);
       if (partSpecTree.getType() != HiveParser.TOK_PARTSPEC) continue;
       ExprNodeGenericFuncDesc expr = null;
-      List<String> names = new ArrayList<String>(partSpecTree.getChildCount());
+      HashSet<String> names = new HashSet<String>(partSpecTree.getChildCount());
       for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
         CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
         assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
@@ -2774,23 +2780,54 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (type == null) {
           throw new SemanticException("Column " + key + " not found");
         }
+        // Create the corresponding hive expression to filter on partition columns.
         ExprNodeColumnDesc column = new ExprNodeColumnDesc(
             TypeInfoFactory.getPrimitiveTypeInfo(type), key, null, true);
-        ExprNodeGenericFuncDesc op = new ExprNodeGenericFuncDesc(
-            TypeInfoFactory.booleanTypeInfo,
-            FunctionRegistry.getFunctionInfo(operator).getGenericUDF(),
-            Lists.newArrayList(column, new ExprNodeConstantDesc(val)));
-        expr = (expr == null) ? op : new ExprNodeGenericFuncDesc(
-              TypeInfoFactory.booleanTypeInfo,
-              FunctionRegistry.getGenericUDFForAnd(),
-              Lists.<ExprNodeDesc>newArrayList(expr, op));
+        ExprNodeGenericFuncDesc op = makeBinaryPredicate(
+            operator, column, new ExprNodeConstantDesc(val));
+        // If it's multi-expr filter (e.g. a='5', b='2012-01-02'), AND with previous exprs.
+        expr = (expr == null) ? op : makeBinaryPredicate("and", expr, op);
         names.add(key);
       }
-      if (expr != null) {
-        exprs.add(expr);
-        cols.add(names);
+      if (expr == null) continue;
+      // We got the expr for one full partition spec. Determine the prefix length.
+      int prefixLength = calculatePartPrefix(tab, names);
+      List<ExprNodeGenericFuncDesc> orExpr = result.get(prefixLength);
+      // We have to tell apart partitions resulting from spec with different prefix lengths.
+      // So, if we already have smth for the same prefix length, we can OR the two.
+      // If we don't, create a new separate filter. In most cases there will only be one.
+      if (orExpr == null) {
+        result.put(prefixLength, Lists.newArrayList(expr));
+      } else if (canGroupExprs) {
+        orExpr.set(0, makeBinaryPredicate("or", expr, orExpr.get(0)));
+      } else {
+        orExpr.add(expr);
       }
     }
+    return result;
+  }
+
+  private static ExprNodeGenericFuncDesc makeBinaryPredicate(
+      String fn, ExprNodeDesc left, ExprNodeDesc right) {
+    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+        FunctionRegistry.getFunctionInfo(fn).getGenericUDF(), Lists.newArrayList(left, right));
+  }
+
+  /**
+   * Calculates the partition prefix length based on the drop spec.
+   * This is used to avoid deleting archived partitions with lower level.
+   * For example, if, for A and B key cols, drop spec is A=5, B=6, we shouldn't drop
+   * archived A=5/, because it can contain B-s other than 6.
+   * @param tbl Table
+   * @param partSpecKeys Keys present in drop partition spec.
+   */
+  private int calculatePartPrefix(Table tbl, HashSet<String> partSpecKeys) {
+    int partPrefixToDrop = 0;
+    for (FieldSchema fs : tbl.getPartCols()) {
+      if (!partSpecKeys.contains(fs.getName())) break;
+      ++partPrefixToDrop;
+    }
+    return partPrefixToDrop;
   }
 
   /**
@@ -2881,39 +2918,42 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * pre-execution hook. If the partition does not exist, throw an error if
    * throwIfNonExistent is true, otherwise ignore it.
    */
-  private void addTableDropPartsOutputs(String tblName, List<ExprNodeGenericFuncDesc> partSpecs,
-      boolean throwIfNonExistent, boolean ignoreProtection)
-      throws SemanticException {
-    Table tab = getTable(tblName);
+  private void addTableDropPartsOutputs(Table tab,
+      Collection<List<ExprNodeGenericFuncDesc>> partSpecs, boolean throwIfNonExistent,
+      boolean ignoreProtection) throws SemanticException {
 
-    Iterator<ExprNodeGenericFuncDesc> i = partSpecs.iterator();
-    while (i.hasNext()) {
-      ExprNodeGenericFuncDesc partSpec = i.next();
-      List<Partition> parts = new ArrayList<Partition>();
-      boolean hasUnknown = false;
-      try {
-        hasUnknown = db.getPartitionsByExpr(tab, partSpec, conf, parts);
-      } catch (Exception e) {
-        throw new SemanticException(
-            ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()), e);
-      }
-      if (hasUnknown) {
-        throw new SemanticException(
-            "Unexpected unknown partitions for " + partSpec.getExprString());
-      }
+    for (List<ExprNodeGenericFuncDesc> specs : partSpecs) {
+      for (ExprNodeGenericFuncDesc partSpec : specs) {
+        List<Partition> parts = new ArrayList<Partition>();
+        boolean hasUnknown = false;
+        try {
+          hasUnknown = db.getPartitionsByExpr(tab, partSpec, conf, parts);
+        } catch (Exception e) {
+          throw new SemanticException(
+              ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()), e);
+        }
+        if (hasUnknown) {
+          throw new SemanticException(
+              "Unexpected unknown partitions for " + partSpec.getExprString());
+        }
 
-      if (parts.isEmpty()) {
-        if (throwIfNonExistent) {
-          throw new SemanticException(
-              ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()));
+        // TODO: ifExists could be moved to metastore. In fact it already supports that. Check it
+        //       for now since we get parts for output anyway, so we can get the error message
+        //       earlier... If we get rid of output, we can get rid of this.
+        if (parts.isEmpty()) {
+          if (throwIfNonExistent) {
+            throw new SemanticException(
+                ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()));
+          }
         }
-      }
-      for (Partition p : parts) {
-        if (!ignoreProtection && !p.canDrop()) {
-          throw new SemanticException(
-            ErrorMsg.DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION.getMsg(p.getCompleteName()));
+        for (Partition p : parts) {
+          // TODO: same thing, metastore already checks this but check here if we can.
+          if (!ignoreProtection && !p.canDrop()) {
+            throw new SemanticException(
+              ErrorMsg.DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION.getMsg(p.getCompleteName()));
+          }
+          outputs.add(new WriteEntity(p));
         }
-        outputs.add(new WriteEntity(p));
       }
     }
   }

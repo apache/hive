@@ -686,6 +686,10 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       throws InvalidObjectException, MetaException {
     return false;
   }
+
+  @Override
+  public void dropPartitions(String dbName, String tblName, List<String> partNames) {
+  }
 }
 
 

@@ -2452,6 +2452,267 @@ class AddPartitionsRequest {
 
 void swap(AddPartitionsRequest &a, AddPartitionsRequest &b);
 
+typedef struct _DropPartitionsResult__isset {
+  _DropPartitionsResult__isset() : partitions(false) {}
+  bool partitions;
+} _DropPartitionsResult__isset;
+
+class DropPartitionsResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "5A689D0823E7BFBB60C799BA60065C31";
+  static const uint8_t binary_fingerprint[16]; // = {0x5A,0x68,0x9D,0x08,0x23,0xE7,0xBF,0xBB,0x60,0xC7,0x99,0xBA,0x60,0x06,0x5C,0x31};
+
+  DropPartitionsResult() {
+  }
+
+  virtual ~DropPartitionsResult() throw() {}
+
+  std::vector<Partition>  partitions;
+
+  _DropPartitionsResult__isset __isset;
+
+  void __set_partitions(const std::vector<Partition> & val) {
+    partitions = val;
+    __isset.partitions = true;
+  }
+
+  bool operator == (const DropPartitionsResult & rhs) const
+  {
+    if (__isset.partitions != rhs.__isset.partitions)
+      return false;
+    else if (__isset.partitions && !(partitions == rhs.partitions))
+      return false;
+    return true;
+  }
+  bool operator != (const DropPartitionsResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DropPartitionsResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(DropPartitionsResult &a, DropPartitionsResult &b);
+
+typedef struct _DropPartitionsExpr__isset {
+  _DropPartitionsExpr__isset() : partArchiveLevel(false) {}
+  bool partArchiveLevel;
+} _DropPartitionsExpr__isset;
+
+class DropPartitionsExpr {
+ public:
+
+  static const char* ascii_fingerprint; // = "18B162B1D15D8D46509D3911A9F1C2AA";
+  static const uint8_t binary_fingerprint[16]; // = {0x18,0xB1,0x62,0xB1,0xD1,0x5D,0x8D,0x46,0x50,0x9D,0x39,0x11,0xA9,0xF1,0xC2,0xAA};
+
+  DropPartitionsExpr() : expr(), partArchiveLevel(0) {
+  }
+
+  virtual ~DropPartitionsExpr() throw() {}
+
+  std::string expr;
+  int32_t partArchiveLevel;
+
+  _DropPartitionsExpr__isset __isset;
+
+  void __set_expr(const std::string& val) {
+    expr = val;
+  }
+
+  void __set_partArchiveLevel(const int32_t val) {
+    partArchiveLevel = val;
+    __isset.partArchiveLevel = true;
+  }
+
+  bool operator == (const DropPartitionsExpr & rhs) const
+  {
+    if (!(expr == rhs.expr))
+      return false;
+    if (__isset.partArchiveLevel != rhs.__isset.partArchiveLevel)
+      return false;
+    else if (__isset.partArchiveLevel && !(partArchiveLevel == rhs.partArchiveLevel))
+      return false;
+    return true;
+  }
+  bool operator != (const DropPartitionsExpr &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DropPartitionsExpr & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(DropPartitionsExpr &a, DropPartitionsExpr &b);
+
+typedef struct _RequestPartsSpec__isset {
+  _RequestPartsSpec__isset() : names(false), exprs(false) {}
+  bool names;
+  bool exprs;
+} _RequestPartsSpec__isset;
+
+class RequestPartsSpec {
+ public:
+
+  static const char* ascii_fingerprint; // = "864492ECAB27996CD222AACDA10C292E";
+  static const uint8_t binary_fingerprint[16]; // = {0x86,0x44,0x92,0xEC,0xAB,0x27,0x99,0x6C,0xD2,0x22,0xAA,0xCD,0xA1,0x0C,0x29,0x2E};
+
+  RequestPartsSpec() {
+  }
+
+  virtual ~RequestPartsSpec() throw() {}
+
+  std::vector<std::string>  names;
+  std::vector<DropPartitionsExpr>  exprs;
+
+  _RequestPartsSpec__isset __isset;
+
+  void __set_names(const std::vector<std::string> & val) {
+    names = val;
+  }
+
+  void __set_exprs(const std::vector<DropPartitionsExpr> & val) {
+    exprs = val;
+  }
+
+  bool operator == (const RequestPartsSpec & rhs) const
+  {
+    if (!(names == rhs.names))
+      return false;
+    if (!(exprs == rhs.exprs))
+      return false;
+    return true;
+  }
+  bool operator != (const RequestPartsSpec &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RequestPartsSpec & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(RequestPartsSpec &a, RequestPartsSpec &b);
+
+typedef struct _DropPartitionsRequest__isset {
+  _DropPartitionsRequest__isset() : deleteData(false), ifExists(true), ignoreProtection(false), environmentContext(false), needResult(true) {}
+  bool deleteData;
+  bool ifExists;
+  bool ignoreProtection;
+  bool environmentContext;
+  bool needResult;
+} _DropPartitionsRequest__isset;
+
+class DropPartitionsRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "EB263FBA01215C480A9A24C11D69E672";
+  static const uint8_t binary_fingerprint[16]; // = {0xEB,0x26,0x3F,0xBA,0x01,0x21,0x5C,0x48,0x0A,0x9A,0x24,0xC1,0x1D,0x69,0xE6,0x72};
+
+  DropPartitionsRequest() : dbName(), tblName(), deleteData(0), ifExists(true), ignoreProtection(0), needResult(true) {
+  }
+
+  virtual ~DropPartitionsRequest() throw() {}
+
+  std::string dbName;
+  std::string tblName;
+  RequestPartsSpec parts;
+  bool deleteData;
+  bool ifExists;
+  bool ignoreProtection;
+  EnvironmentContext environmentContext;
+  bool needResult;
+
+  _DropPartitionsRequest__isset __isset;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_tblName(const std::string& val) {
+    tblName = val;
+  }
+
+  void __set_parts(const RequestPartsSpec& val) {
+    parts = val;
+  }
+
+  void __set_deleteData(const bool val) {
+    deleteData = val;
+    __isset.deleteData = true;
+  }
+
+  void __set_ifExists(const bool val) {
+    ifExists = val;
+    __isset.ifExists = true;
+  }
+
+  void __set_ignoreProtection(const bool val) {
+    ignoreProtection = val;
+    __isset.ignoreProtection = true;
+  }
+
+  void __set_environmentContext(const EnvironmentContext& val) {
+    environmentContext = val;
+    __isset.environmentContext = true;
+  }
+
+  void __set_needResult(const bool val) {
+    needResult = val;
+    __isset.needResult = true;
+  }
+
+  bool operator == (const DropPartitionsRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(parts == rhs.parts))
+      return false;
+    if (__isset.deleteData != rhs.__isset.deleteData)
+      return false;
+    else if (__isset.deleteData && !(deleteData == rhs.deleteData))
+      return false;
+    if (__isset.ifExists != rhs.__isset.ifExists)
+      return false;
+    else if (__isset.ifExists && !(ifExists == rhs.ifExists))
+      return false;
+    if (__isset.ignoreProtection != rhs.__isset.ignoreProtection)
+      return false;
+    else if (__isset.ignoreProtection && !(ignoreProtection == rhs.ignoreProtection))
+      return false;
+    if (__isset.environmentContext != rhs.__isset.environmentContext)
+      return false;
+    else if (__isset.environmentContext && !(environmentContext == rhs.environmentContext))
+      return false;
+    if (__isset.needResult != rhs.__isset.needResult)
+      return false;
+    else if (__isset.needResult && !(needResult == rhs.needResult))
+      return false;
+    return true;
+  }
+  bool operator != (const DropPartitionsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DropPartitionsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(DropPartitionsRequest &a, DropPartitionsRequest &b);
+
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}
   bool message;

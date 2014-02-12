@@ -21,30 +21,31 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DropTableDesc.
- *
+ * TODO: this is currently used for both drop table and drop partitions.
  */
 @Explain(displayName = "Drop Table")
 public class DropTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   public static class PartSpec {
-    public PartSpec(ExprNodeGenericFuncDesc partSpec, ArrayList<String> partSpecKeys) {
+    public PartSpec(ExprNodeGenericFuncDesc partSpec, int prefixLength) {
       this.partSpec = partSpec;
-      this.partSpecKeys = partSpecKeys;
+      this.prefixLength = prefixLength;
     }
     public ExprNodeGenericFuncDesc getPartSpec() {
       return partSpec;
     }
-    public ArrayList<String> getPartSpecKeys() {
-      return partSpecKeys;
+    public int getPrefixLength() {
+      return prefixLength;
     }
     private static final long serialVersionUID = 1L;
     private ExprNodeGenericFuncDesc partSpec;
     // TODO: see if we can get rid of this... used in one place to distinguish archived parts
-    private ArrayList<String> partSpecKeys;
+    private int prefixLength;
   }
 
   String tableName;
@@ -67,14 +68,15 @@ public class DropTableDesc extends DDLDesc implements Serializable {
     this.ignoreProtection = false;
   }
 
-  public DropTableDesc(String tableName, List<ExprNodeGenericFuncDesc> partSpecs,
-      List<List<String>> partSpecKeys, boolean expectView, boolean ignoreProtection) {
+  public DropTableDesc(String tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
+      boolean expectView, boolean ignoreProtection) {
     this.tableName = tableName;
-    assert partSpecs.size() == partSpecKeys.size();
     this.partSpecs = new ArrayList<PartSpec>(partSpecs.size());
-    for (int i = 0; i < partSpecs.size(); ++i) {
-      this.partSpecs.add(new PartSpec(
-          partSpecs.get(i), new ArrayList<String>(partSpecKeys.get(i))));
+    for (Map.Entry<Integer, List<ExprNodeGenericFuncDesc>> partSpec : partSpecs.entrySet()) {
+      int prefixLength = partSpec.getKey();
+      for (ExprNodeGenericFuncDesc expr : partSpec.getValue()) {
+        this.partSpecs.add(new PartSpec(expr, prefixLength));
+      }
     }
     this.ignoreProtection = ignoreProtection;
     this.expectView = expectView;

@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -202,13 +203,8 @@ public final class ArchiveUtils {
    * @return is it archived?
    */
   public static boolean isArchived(Partition p) {
-    Map<String, String> params = p.getParameters();
-    if ("true".equalsIgnoreCase(params.get(
-        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.IS_ARCHIVED))) {
-      return true;
-    } else {
-      return false;
-    }
+    return MetaStoreUtils.isArchived(p.getTPartition());
+
   }
 
   /**
@@ -216,16 +212,10 @@ public final class ArchiveUtils {
    * specification ARCHIVE was run for
    */
   public static int getArchivingLevel(Partition p) throws HiveException {
-    if(!isArchived(p)) {
-      throw new HiveException("Getting level of unarchived partition");
-    }
-
-    Map<String, String> params = p.getParameters();
-    String lv = params.get(ArchiveUtils.ARCHIVING_LEVEL);
-    if(lv != null) {
-      return Integer.parseInt(lv);
-    } else {  // partitions archived before introducing multiple archiving
-      return p.getValues().size();
+    try {
+      return MetaStoreUtils.getArchivingLevel(p.getTPartition());
+    } catch (MetaException ex) {
+      throw new HiveException(ex.getMessage(), ex);
     }
   }
 

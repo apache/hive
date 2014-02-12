@@ -454,6 +454,9 @@ public interface RawStore extends Configurable {
 
   public abstract void setMetaStoreSchemaVersion(String version, String comment) throws MetaException;
 
+  void dropPartitions(String dbName, String tblName, List<String> partNames)
+      throws MetaException, NoSuchObjectException;
+
   List<HiveObjectPrivilege> listPrincipalDBGrantsAll(
       String principalName, PrincipalType principalType);
 

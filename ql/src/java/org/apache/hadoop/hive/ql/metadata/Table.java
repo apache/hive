@@ -903,14 +903,7 @@ public class Table implements Serializable {
    * @return protect mode
    */
   public ProtectMode getProtectMode(){
-    Map<String, String> parameters = tTable.getParameters();
-
-    if (!parameters.containsKey(ProtectMode.PARAMETER_NAME)) {
-      return new ProtectMode();
-    } else {
-      return ProtectMode.getProtectModeFromString(
-          parameters.get(ProtectMode.PARAMETER_NAME));
-    }
+    return MetaStoreUtils.getProtectMode(tTable);
   }
 
   /**

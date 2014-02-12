@@ -294,7 +294,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       DropTableDesc dropTbl = work.getDropTblDesc();
       if (dropTbl != null) {
-        return dropTable(db, dropTbl);
+        dropTableOrPartitions(db, dropTbl);
+        return 0;
       }
 
       AlterTableDesc alterTbl = work.getAlterTblDesc();
@@ -3522,20 +3523,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Drop a given table.
+   * Drop a given table or some partitions. DropTableDesc is currently used for both.
    *
    * @param db
    *          The database in question.
    * @param dropTbl
    *          This is the table we're dropping.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int dropTable(Hive db, DropTableDesc dropTbl)
-      throws HiveException {
-    // We need to fetch the table before it is dropped so that it can be passed
-    // to
+  private void dropTableOrPartitions(Hive db, DropTableDesc dropTbl) throws HiveException {
+    // We need to fetch the table before it is dropped so that it can be passed to
     // post-execution hook
     Table tbl = null;
     try {
@@ -3545,112 +3543,74 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     if (dropTbl.getPartSpecs() == null) {
-      // This is a true DROP TABLE
-      if (tbl != null) {
-        if (tbl.isView()) {
-          if (!dropTbl.getExpectView()) {
-            if (dropTbl.getIfExists()) {
-              return 0;
-            }
-            throw new HiveException("Cannot drop a view with DROP TABLE");
-          }
-        } else {
-          if (dropTbl.getExpectView()) {
-            if (dropTbl.getIfExists()) {
-              return 0;
-            }
-            throw new HiveException(
-              "Cannot drop a base table with DROP VIEW");
-          }
-        }
-      }
-
-      if (tbl != null && !tbl.canDrop()) {
-        throw new HiveException("Table " + tbl.getTableName() +
-            " is protected from being dropped");
-      }
-
-      int partitionBatchSize = HiveConf.getIntVar(conf,
-        ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
-
-      // We should check that all the partitions of the table can be dropped
-      if (tbl != null && tbl.isPartitioned()) {
-        List<String> partitionNames = db.getPartitionNames(tbl.getTableName(), (short)-1);
-
-        for(int i=0; i < partitionNames.size(); i+= partitionBatchSize) {
-          List<String> partNames = partitionNames.subList(i, Math.min(i+partitionBatchSize,
-            partitionNames.size()));
-          List<Partition> listPartitions = db.getPartitionsByNames(tbl, partNames);
-          for (Partition p: listPartitions) {
-            if (!p.canDrop()) {
-              throw new HiveException("Table " + tbl.getTableName() +
-                " Partition" + p.getName() +
-                " is protected from being dropped");
-            }
-          }
-        }
-      }
-
-      // drop the table
-      db.dropTable(dropTbl.getTableName());
-      if (tbl != null) {
-        work.getOutputs().add(new WriteEntity(tbl));
-      }
+      dropTable(db, tbl, dropTbl);
     } else {
-      // This is actually an ALTER TABLE DROP PARTITION
-      List<Partition> partsToDelete = new ArrayList<Partition>();
-      for (DropTableDesc.PartSpec partSpec : dropTbl.getPartSpecs()) {
-        List<Partition> partitions = new ArrayList<Partition>();
-        boolean hasUnknown;
-        try {
-          hasUnknown = db.getPartitionsByExpr(tbl, partSpec.getPartSpec(), conf, partitions);
-        } catch (TException e) {
-          throw new HiveException(e);
-        }
-        if (hasUnknown) {
-          throw new HiveException("Unexpected unknown partititions from "
-              + partSpec.getPartSpec().getExprString());
-        }
+      dropPartitions(db, tbl, dropTbl);
+    }
+  }
 
-        // this is to prevent dropping archived partition which is archived in a
-        // different level the drop command specified.
-        int partPrefixToDrop = 0;
-        for (FieldSchema fs : tbl.getPartCols()) {
-          if (partSpec.getPartSpecKeys().contains(fs.getName())) {
-            partPrefixToDrop += 1;
-          } else {
-            break;
-          }
-        }
-        if (!dropTbl.getIgnoreProtection()) {
-          for (Partition p : partitions) {
-            if (!p.canDrop()) {
-              throw new HiveException("Table " + tbl.getTableName()
-                  + " Partition " + p.getName()
-                  + " is protected from being dropped");
-            } else if (ArchiveUtils.isArchived(p)) {
-              int partAchiveLevel = ArchiveUtils.getArchivingLevel(p);
-              // trying to drop partitions inside a har, disallow it.
-              if (partAchiveLevel < partPrefixToDrop) {
-                throw new HiveException(
-                    "Cannot drop a subset of partitions in an archive, partition "
-                        + p.getName());
-              }
-            }
-          }
-        }
-        partsToDelete.addAll(partitions);
-      }
+  private void dropPartitions(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
+    // ifExists is currently verified in DDLSemanticAnalyzer
+    List<Partition> droppedParts = db.dropPartitions(dropTbl.getTableName(),
+        dropTbl.getPartSpecs(), true, dropTbl.getIgnoreProtection(), true);
+    for (Partition partition : droppedParts) {
+      console.printInfo("Dropped the partition " + partition.getName());
+      work.getOutputs().add(new WriteEntity(partition));
+    };
+  }
 
-      // drop all existing partitions from the list
-      for (Partition partition : partsToDelete) {
-        console.printInfo("Dropping the partition " + partition.getName());
-        db.dropPartition(dropTbl.getTableName(), partition.getValues(), true);
-        work.getOutputs().add(new WriteEntity(partition));
+  private void dropTable(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
+    // This is a true DROP TABLE
+    if (tbl != null) {
+      if (tbl.isView()) {
+        if (!dropTbl.getExpectView()) {
+          if (dropTbl.getIfExists()) {
+            return;
+          }
+          throw new HiveException("Cannot drop a view with DROP TABLE");
+        }
+      } else {
+        if (dropTbl.getExpectView()) {
+          if (dropTbl.getIfExists()) {
+            return;
+          }
+          throw new HiveException(
+            "Cannot drop a base table with DROP VIEW");
+        }
       }
     }
 
-    return 0;
+    if (tbl != null && !tbl.canDrop()) {
+      throw new HiveException("Table " + tbl.getTableName() +
+          " is protected from being dropped");
+    }
+
+    int partitionBatchSize = HiveConf.getIntVar(conf,
+      ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
+
+    // We should check that all the partitions of the table can be dropped
+    if (tbl != null && tbl.isPartitioned()) {
+      List<String> partitionNames = db.getPartitionNames(tbl.getTableName(), (short)-1);
+
+      for(int i=0; i < partitionNames.size(); i+= partitionBatchSize) {
+        List<String> partNames = partitionNames.subList(i, Math.min(i+partitionBatchSize,
+          partitionNames.size()));
+        List<Partition> listPartitions = db.getPartitionsByNames(tbl, partNames);
+        for (Partition p: listPartitions) {
+          if (!p.canDrop()) {
+            throw new HiveException("Table " + tbl.getTableName() +
+              " Partition" + p.getName() +
+              " is protected from being dropped");
+          }
+        }
+      }
+    }
+
+    // drop the table
+    db.dropTable(dropTbl.getTableName());
+    if (tbl != null) {
+      work.getOutputs().add(new WriteEntity(tbl));
+    }
   }
 
   /**
