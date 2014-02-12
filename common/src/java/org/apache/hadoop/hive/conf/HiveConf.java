@@ -135,7 +135,8 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF,
       HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN,
       HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
-      HiveConf.ConfVars.USERS_IN_ADMIN_ROLE
+      HiveConf.ConfVars.USERS_IN_ADMIN_ROLE,
+      HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER
       };
 
   /**

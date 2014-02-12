@@ -62,7 +62,7 @@ public interface HiveAccessController {
   List<HivePrivilegeInfo> showPrivileges(HivePrincipal principal, HivePrivilegeObject privObj)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
-  void setCurrentRole(String roleName) throws HiveAuthzPluginException;
+  void setCurrentRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException;
 
   List<HiveRole> getCurrentRoles() throws HiveAuthzPluginException;
 }

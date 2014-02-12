@@ -160,13 +160,11 @@ public interface HiveAuthorizer {
   List<HivePrivilegeInfo> showPrivileges(HivePrincipal principal, HivePrivilegeObject privObj)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
-  void setCurrentRole(String roleName) throws HiveAuthzPluginException;
+  void setCurrentRole(String roleName) throws HiveAccessControlException, HiveAuthzPluginException;
 
   List<HiveRole> getCurrentRoles() throws HiveAuthzPluginException;
+
   //other functions to be added -
   //showUsersInRole(rolename)
-  //isSuperuser(username)
-
-
 }
 

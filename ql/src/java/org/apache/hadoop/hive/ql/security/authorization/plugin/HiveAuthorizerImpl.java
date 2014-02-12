@@ -105,7 +105,7 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
   }
 
   @Override
-  public void setCurrentRole(String roleName) throws HiveAuthzPluginException {
+  public void setCurrentRole(String roleName) throws HiveAccessControlException, HiveAuthzPluginException {
     accessController.setCurrentRole(roleName);
   }
 
@@ -113,10 +113,7 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
   public List<HiveRole> getCurrentRoles() throws HiveAuthzPluginException {
     return accessController.getCurrentRoles();
   }
-
-
  // other access control functions
-
 //   void validateAuthority(HiveAction, inputs, outputs){
 //     authValidator.validateAuthority(HiveAction, inputs, outputs);
 //   }

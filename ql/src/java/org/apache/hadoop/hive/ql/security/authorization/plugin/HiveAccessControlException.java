@@ -47,5 +47,4 @@ public class HiveAccessControlException extends HiveException{
   public HiveAccessControlException(Throwable cause){
     super(cause);
   }
-
 }

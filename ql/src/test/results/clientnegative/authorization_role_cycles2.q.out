@@ -1,3 +1,7 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: -- this is applicable to any security mode as check is in metastore
 
 create role role1
