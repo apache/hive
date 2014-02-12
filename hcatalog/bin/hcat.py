@@ -82,6 +82,11 @@ if 'HADOOP_CLASSPATH' not in os.environ:
 os.environ['HADOOP_CLASSPATH'] += os.pathsep + hcatJars[0]
 # done adding the hcatalog jar to the hadoop classpath
 
+# adding hbase storage-handler jars
+hbaseStorageJars =  glob.glob(os.path.join(hcatPrefix, 'share', 'hcatalog', 'storage-handlers', 'hbase', 'lib', 'hbase-storage-handler-*.jar'))
+if len(hbaseStorageJars) == 1:
+  os.environ['HADOOP_CLASSPATH'] += os.pathsep + hbaseStorageJars[0]
+
 # add all the other jars
 hcatLibJarFiles = os.path.join(hcatPrefix, 'share', 'hcatalog', 'lib', '*')
 os.environ['HADOOP_CLASSPATH'] += os.pathsep + hcatLibJarFiles
