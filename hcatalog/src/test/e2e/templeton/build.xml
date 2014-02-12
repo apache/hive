@@ -106,7 +106,6 @@
             <env key="WEBHDFS_URL" value="${harness.webhdfs.url}"/>
             <env key="TEMPLETON_URL" value="${harness.templeton.url}"/>
             <env key="USER_NAME" value="${test.user.name}"/>
-            <env key="OTHER_USER_NAME" value="${test.other.user.name}"/>
             <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
             <env key="SECURE_MODE" value="${secure.mode}"/>
             <env key="HADOOP_VERSION" value="${hadoopversion}"/>
@@ -114,13 +113,12 @@
             <arg value="${basedir}/tests/serverstatus.conf"/>
             <arg value="${basedir}/tests/jobsubmission_streaming.conf"/>
             <arg value="${basedir}/tests/ddl.conf"/>
-            <arg value="${basedir}/tests/jobstatus.conf"/>
             <arg value="${basedir}/tests/jobsubmission.conf"/>
             <arg value="${basedir}/tests/jobsubmission2.conf"/>
         </exec>
     </target>
 
-    <target name="test-hcat-authorization" depends="property-check, init-test">
+    <target name="test-multi-users" depends="property-check, init-test">
         <!-- fork (parallelization) factors for e2e tests execution.
              Defaults are 1, which means *no* parellelization: -->
         <property name="fork.factor.group" value="1"/>
@@ -149,6 +147,7 @@
             <env key="KEYTAB_DIR" value="${keytab.dir}"/>
             <arg line="${tests.to.run}"/>
             <arg value="${basedir}/tests/hcatperms.conf"/>
+            <arg value="${basedir}/tests/jobstatus.conf"/>
         </exec>
     </target>
     <target name="test-doas" depends="property-check, init-test" description="See README.txt for instructions">
