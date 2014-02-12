@@ -76,17 +76,19 @@ public class TestGenTezWork {
         (Set<ReadEntity>)Collections.EMPTY_SET,
         (Set<WriteEntity>)Collections.EMPTY_SET);
 
-    proc = new GenTezWork() {
+    proc = new GenTezWork(new GenTezUtils() {
       @Override
-      protected void setupMapWork(MapWork mapWork, GenTezProcContext context,
-          Operator<? extends OperatorDesc> root, String alias) throws SemanticException {
+        protected void setupMapWork(MapWork mapWork, GenTezProcContext context, 
+          PrunedPartitionList partitions, Operator<? extends OperatorDesc> root, String alias) 
+        throws SemanticException {
+        
         LinkedHashMap<String, Operator<? extends OperatorDesc>> map
           = new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
         map.put("foo", root);
         mapWork.setAliasToWork(map);
         return;
       }
-    };
+    });
 
     fs = new FileSinkOperator();
     fs.setConf(new FileSinkDesc());
