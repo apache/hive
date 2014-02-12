@@ -197,6 +197,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_partition_by_name_with_environment_context\n");
   }
 
+  void drop_partitions_req(DropPartitionsResult& _return, const DropPartitionsRequest& req) {
+    // Your implementation goes here
+    printf("drop_partitions_req\n");
+  }
+
   void get_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals) {
     // Your implementation goes here
     printf("get_partition\n");

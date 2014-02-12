@@ -566,18 +566,7 @@ public class Partition implements Serializable {
    * @return protect mode
    */
   public ProtectMode getProtectMode(){
-    Map<String, String> parameters = tPartition.getParameters();
-
-    if (parameters == null) {
-      return null;
-    }
-
-    if (!parameters.containsKey(ProtectMode.PARAMETER_NAME)) {
-      return new ProtectMode();
-    } else {
-      return ProtectMode.getProtectModeFromString(
-          parameters.get(ProtectMode.PARAMETER_NAME));
-    }
+    return MetaStoreUtils.getProtectMode(tPartition);
   }
 
   /**
@@ -597,9 +586,7 @@ public class Partition implements Serializable {
    * that it is OK to drop the table
    */
   public boolean canDrop() {
-    ProtectMode mode = getProtectMode();
-    ProtectMode parentMode = table.getProtectMode();
-    return (!mode.noDrop && !mode.offline && !mode.readOnly && !parentMode.noDropCascade);
+    return MetaStoreUtils.canDropPartition(table.getTTable(), tPartition);
   }
 
   /**

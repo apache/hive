@@ -50,6 +50,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -66,6 +67,9 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -89,6 +93,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -1398,6 +1403,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         tableDnsPath = wh.getDnsPath(tablePath);
       }
       List<Path> partPaths = new ArrayList<Path>();
+      Table tbl = ms.getTable(dbName, tableName);
 
       // call dropPartition on each of the table's partitions to follow the
       // procedure for cleanly dropping partitions.
@@ -1406,6 +1412,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (partsToDelete == null || partsToDelete.isEmpty()) {
           break;
         }
+        List<String> partNames = new ArrayList<String>();
         for (Partition part : partsToDelete) {
           if (checkLocation && part.getSd() != null &&
               part.getSd().getLocation() != null) {
@@ -1422,8 +1429,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               partPaths.add(partPath);
             }
           }
-          ms.dropPartition(dbName, tableName, part.getValues());
+          partNames.add(Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues()));
         }
+        ms.dropPartitions(dbName, tableName, partNames);
       }
 
       return partPaths;
@@ -2150,11 +2158,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         isArchived = MetaStoreUtils.isArchived(part);
         if (isArchived) {
           archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
-          if (!wh.isWritable(archiveParentDir.getParent())) {
-            throw new MetaException("Table partition not deleted since " +
-                archiveParentDir.getParent() + " is not writable by " +
-                hiveConf.getUser());
-          }
+          verifyIsWritablePath(archiveParentDir);
         }
         if (!ms.dropPartition(db_name, tbl_name, part_vals)) {
           throw new MetaException("Unable to drop partition");
@@ -2162,11 +2166,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         success = ms.commitTransaction();
         if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
           partPath = new Path(part.getSd().getLocation());
-          if (!wh.isWritable(partPath.getParent())) {
-            throw new MetaException("Table partition not deleted since " +
-                partPath.getParent() + " is not writable by " +
-                hiveConf.getUser());
-          }
+          verifyIsWritablePath(partPath);
         }
       } finally {
         if (!success) {
@@ -2209,6 +2209,162 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws NoSuchObjectException, MetaException, TException {
       return drop_partition_with_environment_context(db_name, tbl_name, part_vals, deleteData,
           null);
+    }
+
+    private static class PathAndPartValSize {
+      public PathAndPartValSize(Path path, int partValSize) {
+        this.path = path;
+        this.partValSize = partValSize;
+      }
+      public Path path;
+      public int partValSize;
+    }
+
+    @Override
+    public DropPartitionsResult drop_partitions_req(
+        DropPartitionsRequest request) throws MetaException, NoSuchObjectException, TException {
+      RawStore ms = getMS();
+      String dbName = request.getDbName(), tblName = request.getTblName();
+      boolean ifExists = request.isSetIfExists() && request.isIfExists();
+      boolean deleteData = request.isSetDeleteData() && request.isDeleteData();
+      boolean ignoreProtection = request.isSetIgnoreProtection() && request.isIgnoreProtection();
+      boolean needResult = !request.isSetNeedResult() || request.isNeedResult();
+      List<PathAndPartValSize> dirsToDelete = new ArrayList<PathAndPartValSize>();
+      List<Path> archToDelete = new ArrayList<Path>();
+      EnvironmentContext envContext = request.isSetEnvironmentContext()
+          ? request.getEnvironmentContext() : null;
+
+      boolean success = false;
+      ms.openTransaction();
+      Table tbl = null;
+      List<Partition> parts = null;
+      try {
+        // We need Partition-s for firing events and for result; DN needs MPartition-s to drop.
+        // Great... Maybe we could bypass fetching MPartitions by issuing direct SQL deletes.
+        tbl = get_table(dbName, tblName);
+        int minCount = 0;
+        RequestPartsSpec spec = request.getParts();
+        List<String> partNames = null;
+        if (spec.isSetExprs()) {
+          // Dropping by expressions.
+          parts = new ArrayList<Partition>(spec.getExprs().size());
+          for (DropPartitionsExpr expr : spec.getExprs()) {
+            ++minCount; // At least one partition per expression, if not ifExists
+            List<Partition> result = new ArrayList<Partition>();
+            boolean hasUnknown = ms.getPartitionsByExpr(
+                dbName, tblName, expr.getExpr(), null, (short)-1, result);
+            if (hasUnknown) {
+              // Expr is built by DDLSA, it should only contain part cols and simple ops
+              throw new MetaException("Unexpected unknown partitions to drop");
+            }
+            // this is to prevent dropping archived partition which is archived in a
+            // different level the drop command specified.
+            if (!ignoreProtection && expr.isSetPartArchiveLevel()) {
+              for (Partition part : parts) {
+                if (MetaStoreUtils.isArchived(part)
+                    && MetaStoreUtils.getArchivingLevel(part) < expr.getPartArchiveLevel()) {
+                  throw new MetaException("Cannot drop a subset of partitions "
+                      + " in an archive, partition " + part);
+                }
+              }
+            }
+            parts.addAll(result);
+          }
+        } else if (spec.isSetNames()) {
+          partNames = spec.getNames();
+          minCount = partNames.size();
+          parts = ms.getPartitionsByNames(dbName, tblName, partNames);
+        } else {
+          throw new MetaException("Partition spec is not set");
+        }
+
+        if ((parts.size() < minCount) && !ifExists) {
+          throw new NoSuchObjectException("Some partitions to drop are missing");
+        }
+
+        List<String> colNames = null;
+        if (partNames == null) {
+          partNames = new ArrayList<String>(parts.size());
+          colNames = new ArrayList<String>(tbl.getPartitionKeys().size());
+          for (FieldSchema col : tbl.getPartitionKeys()) {
+            colNames.add(col.getName());
+          }
+        }
+
+        for (Partition part : parts) {
+          if (!ignoreProtection && !MetaStoreUtils.canDropPartition(tbl, part)) {
+            throw new MetaException("Table " + tbl.getTableName()
+                + " Partition " + part + " is protected from being dropped");
+          }
+
+          firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
+          if (colNames != null) {
+            partNames.add(FileUtils.makePartName(colNames, part.getValues()));
+          }
+          // Preserve the old behavior of failing when we cannot write, even w/o deleteData,
+          // and even if the table is external. That might not make any sense.
+          if (MetaStoreUtils.isArchived(part)) {
+            Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
+            verifyIsWritablePath(archiveParentDir);
+            archToDelete.add(archiveParentDir);
+          }
+          if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
+            Path partPath = new Path(part.getSd().getLocation());
+            verifyIsWritablePath(partPath);
+            dirsToDelete.add(new PathAndPartValSize(partPath, part.getValues().size()));
+          }
+        }
+
+        ms.dropPartitions(dbName, tblName, partNames);
+        success = ms.commitTransaction();
+        DropPartitionsResult result = new DropPartitionsResult();
+        if (needResult) {
+          result.setPartitions(parts);
+        }
+        return result;
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        } else if (deleteData && !isExternal(tbl)) {
+          // Archived partitions have har:/to_har_file as their location.
+          // The original directory was saved in params
+          for (Path path : archToDelete) {
+            wh.deleteDir(path, true);
+          }
+          for (PathAndPartValSize p : dirsToDelete) {
+            wh.deleteDir(p.path, true);
+            try {
+              deleteParentRecursive(p.path.getParent(), p.partValSize - 1);
+            } catch (IOException ex) {
+              LOG.warn("Error from deleteParentRecursive", ex);
+              throw new MetaException("Failed to delete parent: " + ex.getMessage());
+            }
+          }
+        }
+        if (parts != null) {
+          for (Partition part : parts) {
+            for (MetaStoreEventListener listener : listeners) {
+              DropPartitionEvent dropPartitionEvent =
+                new DropPartitionEvent(tbl, part, success, deleteData, this);
+              dropPartitionEvent.setEnvironmentContext(envContext);
+              listener.onDropPartition(dropPartitionEvent);
+            }
+          }
+        }
+      }
+    }
+
+    private void verifyIsWritablePath(Path dir) throws MetaException {
+      try {
+        if (!wh.isWritable(dir.getParent())) {
+          throw new MetaException("Table partition not deleted since " + dir.getParent()
+              + " is not writable by " + hiveConf.getUser());
+        }
+      } catch (IOException ex) {
+        LOG.warn("Error from isWritable", ex);
+        throw new MetaException("Table partition not deleted since " + dir.getParent()
+            + " access cannot be checked: " + ex.getMessage());
+      }
     }
 
     @Override

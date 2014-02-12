@@ -57,6 +57,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -1322,7 +1323,7 @@ public class ObjectStore implements RawStore, Configurable {
         return null;
       }
       // Change the query to use part_vals instead of the name which is
-      // redundant
+      // redundant TODO: callers of this often get part_vals out of name for no reason...
       String name = Warehouse.makePartName(convertToFieldSchemas(mtbl
           .getPartitionKeys()), part_vals);
       Query query = pm.newQuery(MPartition.class,
@@ -1421,6 +1422,33 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
+  @Override
+  public void dropPartitions(String dbName, String tblName, List<String> partNames)
+      throws MetaException, NoSuchObjectException {
+    if (partNames.isEmpty()) return;
+    boolean success = false;
+    openTransaction();
+    try {
+      // Delete all things.
+      dropPartitionGrantsNoTxn(dbName, tblName, partNames);
+      dropPartitionAllColumnGrantsNoTxn(dbName, tblName, partNames);
+      dropPartitionColumnStatisticsNoTxn(dbName, tblName, partNames);
+
+      // CDs are reused; go thry partition SDs, detach all CDs from SDs, then remove unused CDs.
+      for (MColumnDescriptor mcd : detachCdsFromSdsNoTxn(dbName, tblName, partNames)) {
+        removeUnusedColumnDescriptor(mcd);
+      }
+      dropPartitionsNoTxn(dbName, tblName, partNames);
+      if (!(success = commitTransaction())) {
+        throw new MetaException("Failed to drop partitions"); // Should not happen?
+      }
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
   /**
    * Drop an MPartition and cascade deletes (e.g., delete partition privilege grants,
    *   drop the storage descriptor cleanly, etc.)
@@ -1447,7 +1475,7 @@ public class ObjectStore implements RawStore, Configurable {
         List<MPartitionPrivilege> partGrants = listPartitionGrants(
             part.getTable().getDatabase().getName(),
             part.getTable().getTableName(),
-            partName);
+            Lists.newArrayList(partName));
 
         if (partGrants != null && partGrants.size() > 0) {
           pm.deletePersistentAll(partGrants);
@@ -1456,7 +1484,7 @@ public class ObjectStore implements RawStore, Configurable {
         List<MPartitionColumnPrivilege> partColumnGrants = listPartitionAllColumnGrants(
             part.getTable().getDatabase().getName(),
             part.getTable().getTableName(),
-            partName);
+            Lists.newArrayList(partName));
         if (partColumnGrants != null && partColumnGrants.size() > 0) {
           pm.deletePersistentAll(partColumnGrants);
         }
@@ -1981,6 +2009,10 @@ public class ObjectStore implements RawStore, Configurable {
     return results;
   }
 
+  private static class Out<T> {
+    public T val;
+  }
+
   /**
    * Gets partition names from the table via ORM (JDOQL) name filter.
    * @param dbName Database name.
@@ -1993,6 +2025,70 @@ public class ObjectStore implements RawStore, Configurable {
     if (partNames.isEmpty()) {
       return new ArrayList<Partition>();
     }
+    Out<Query> query = new Out<Query>();
+    List<MPartition> mparts = null;
+    try {
+      mparts = getMPartitionsViaOrmFilter(dbName, tblName, partNames, query);
+      return convertToParts(dbName, tblName, mparts);
+    } finally {
+      if (query.val != null) {
+        query.val.closeAll();
+      }
+    }
+  }
+
+  private void dropPartitionsNoTxn(String dbName, String tblName, List<String> partNames) {
+    ObjectPair<Query, Map<String, String>> queryWithParams =
+        getPartQueryWithParams(dbName, tblName, partNames);
+    Query query = queryWithParams.getFirst();
+    query.setClass(MPartition.class);
+    long deleted = query.deletePersistentAll(queryWithParams.getSecond());
+    LOG.debug("Deleted " + deleted + " partition from store");
+    query.closeAll();
+  }
+
+  /**
+   * Detaches column descriptors from storage descriptors; returns the set of unique CDs
+   * thus detached. This is done before dropping partitions because CDs are reused between
+   * SDs; so, we remove the links to delete SDs and then check the returned CDs to see if
+   * they are referenced by other SDs.
+   */
+  private HashSet<MColumnDescriptor> detachCdsFromSdsNoTxn(
+      String dbName, String tblName, List<String> partNames) {
+    ObjectPair<Query, Map<String, String>> queryWithParams =
+        getPartQueryWithParams(dbName, tblName, partNames);
+    Query query = queryWithParams.getFirst();
+    query.setClass(MPartition.class);
+    query.setResult("sd");
+    @SuppressWarnings("unchecked")
+    List<MStorageDescriptor> sds = (List<MStorageDescriptor>)query.executeWithMap(
+        queryWithParams.getSecond());
+    HashSet<MColumnDescriptor> candidateCds = new HashSet<MColumnDescriptor>();
+    for (MStorageDescriptor sd : sds) {
+      if (sd != null && sd.getCD() != null) {
+        candidateCds.add(sd.getCD());
+        sd.setCD(null);
+      }
+    }
+    return candidateCds;
+  }
+
+  private List<MPartition> getMPartitionsViaOrmFilter(String dbName,
+      String tblName, List<String> partNames, Out<Query> out) {
+    ObjectPair<Query, Map<String, String>> queryWithParams =
+        getPartQueryWithParams(dbName, tblName, partNames);
+    Query query = out.val = queryWithParams.getFirst();
+    query.setResultClass(MPartition.class);
+    query.setClass(MPartition.class);
+    query.setOrdering("partitionName ascending");
+
+    @SuppressWarnings("unchecked")
+    List<MPartition> result = (List<MPartition>)query.executeWithMap(queryWithParams.getSecond());
+    return result;
+  }
+
+  private ObjectPair<Query, Map<String, String>> getPartQueryWithParams(
+      String dbName, String tblName, List<String> partNames) {
     StringBuilder sb = new StringBuilder(
         "table.tableName == t1 && table.database.name == t2 && (");
     int n = 0;
@@ -2008,24 +2104,15 @@ public class ObjectStore implements RawStore, Configurable {
     sb.setLength(sb.length() - 4); // remove the last " || "
     sb.append(')');
 
-    Query query = pm.newQuery(MPartition.class, sb.toString());
+    Query query = pm.newQuery();
+    query.setFilter(sb.toString());
 
     LOG.debug(" JDOQL filter is " + sb.toString());
-    params.put("t1", tblName.trim());
-    params.put("t2", dbName.trim());
+    params.put("t1", tblName.trim().toLowerCase());
+    params.put("t2", dbName.trim().toLowerCase());
 
-    String parameterDeclaration = makeParameterDeclarationString(params);
-
-    query.declareParameters(parameterDeclaration);
-    query.setOrdering("partitionName ascending");
-
-    @SuppressWarnings("unchecked")
-    List<MPartition> mparts = (List<MPartition>) query.executeWithMap(params);
-    // pm.retrieveAll(mparts); // retrieveAll is pessimistic. some fields may not be needed
-    List<Partition> results = convertToParts(dbName, tblName, mparts);
-    // pm.makeTransientAll(mparts); // makeTransient will prohibit future access of unfetched fields
-    query.closeAll();
-    return results;
+    query.declareParameters(makeParameterDeclarationString(params));
+    return new ObjectPair<Query, Map<String,String>>(query, params);
   }
 
   @Override
@@ -4182,7 +4269,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @SuppressWarnings("unchecked")
   public List<MPartitionColumnPrivilege> listPartitionAllColumnGrants(String dbName,
-      String tableName, String partName) {
+      String tableName, List<String> partNames) {
     boolean success = false;
     tableName = tableName.toLowerCase().trim();
     dbName = dbName.toLowerCase().trim();
@@ -4191,12 +4278,9 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listPartitionAllColumnGrants");
-      String queryStr = "partition.table.tableName == t1 && partition.table.database.name == t2 && partition.partitionName == t3";
-      Query query = pm.newQuery(MPartitionColumnPrivilege.class, queryStr);
-      query.declareParameters(
-          "java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      mSecurityColList = (List<MPartitionColumnPrivilege>) query
-          .executeWithArray(tableName, dbName, partName);
+      mSecurityColList = queryByPartitionNames(
+          dbName, tableName, partNames, MPartitionColumnPrivilege.class,
+          "partition.table.tableName", "partition.table.database.name", "partition.partitionName");
       LOG.debug("Done executing query for listPartitionAllColumnGrants");
       pm.retrieveAll(mSecurityColList);
       success = commitTransaction();
@@ -4207,6 +4291,14 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mSecurityColList;
+  }
+
+  public void dropPartitionAllColumnGrantsNoTxn(
+      String dbName, String tableName, List<String> partNames) {
+    ObjectPair<Query, Object[]> queryWithParams = makeQueryByPartitionNames(
+          dbName, tableName, partNames, MPartitionColumnPrivilege.class,
+          "partition.table.tableName", "partition.table.database.name", "partition.partitionName");
+    queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
   }
 
   @SuppressWarnings("unchecked")
@@ -4236,7 +4328,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @SuppressWarnings("unchecked")
   private List<MPartitionPrivilege> listPartitionGrants(String dbName, String tableName,
-      String partName) {
+      List<String> partNames) {
     tableName = tableName.toLowerCase().trim();
     dbName = dbName.toLowerCase().trim();
 
@@ -4245,12 +4337,9 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listPartitionGrants");
-      Query query = pm.newQuery(MPartitionPrivilege.class,
-          "partition.table.tableName == t1 && partition.table.database.name == t2 && partition.partitionName == t3");
-      query.declareParameters(
-          "java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      mSecurityTabPartList = (List<MPartitionPrivilege>) query
-          .executeWithArray(tableName, dbName, partName);
+      mSecurityTabPartList = queryByPartitionNames(
+          dbName, tableName, partNames, MPartitionPrivilege.class, "partition.table.tableName",
+          "partition.table.database.name", "partition.partitionName");
       LOG.debug("Done executing query for listPartitionGrants");
       pm.retrieveAll(mSecurityTabPartList);
       success = commitTransaction();
@@ -4261,6 +4350,42 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mSecurityTabPartList;
+  }
+
+  private void dropPartitionGrantsNoTxn(String dbName, String tableName, List<String> partNames) {
+    ObjectPair<Query, Object[]> queryWithParams = makeQueryByPartitionNames(
+          dbName, tableName, partNames,MPartitionPrivilege.class, "partition.table.tableName",
+          "partition.table.database.name", "partition.partitionName");
+    queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> List<T> queryByPartitionNames(String dbName, String tableName,
+      List<String> partNames, Class<T> clazz, String tbCol, String dbCol, String partCol) {
+    ObjectPair<Query, Object[]> queryAndParams = makeQueryByPartitionNames(
+        dbName, tableName, partNames, clazz, tbCol, dbCol, partCol);
+    return (List<T>)queryAndParams.getFirst().executeWithArray(queryAndParams.getSecond());
+  }
+
+  private ObjectPair<Query, Object[]> makeQueryByPartitionNames(
+      String dbName, String tableName, List<String> partNames, Class<?> clazz,
+      String tbCol, String dbCol, String partCol) {
+    String queryStr = tbCol + " == t1 && " + dbCol + " == t2";
+    String paramStr = "java.lang.String t1, java.lang.String t2";
+    Object[] params = new Object[2 + partNames.size()];
+    params[0] = tableName;
+    params[1] = dbName;
+    int index = 0;
+    for (String partName : partNames) {
+      params[index + 2] = partName;
+      queryStr += ((index == 0) ? " && (" : " || ") + partCol + " == p" + index;
+      paramStr += ", java.lang.String p" + index;
+      ++index;
+    }
+    queryStr += ")";
+    Query query = pm.newQuery(clazz, queryStr);
+    query.declareParameters(paramStr);
+    return new ObjectPair<Query, Object[]>(query, params);
   }
 
   @SuppressWarnings("unchecked")
@@ -5616,8 +5741,16 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private void dropPartitionColumnStatisticsNoTxn(
+      String dbName, String tableName, List<String> partNames) throws MetaException {
+    ObjectPair<Query, Object[]> queryWithParams = makeQueryByPartitionNames(
+        dbName, tableName, partNames, MPartitionColumnStatistics.class,
+        "tableName", "dbName", "partition.partitionName");
+    queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
+  }
+
   public boolean deletePartitionColumnStatistics(String dbName, String tableName,
-    String partName, List<String> partVals,String colName)
+    String partName, List<String> partVals, String colName)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean ret = false;
 
