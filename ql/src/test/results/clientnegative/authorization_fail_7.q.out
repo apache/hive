@@ -25,7 +25,7 @@ PREHOOK: query: show role grant user hive_test_user
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user hive_test_user
 POSTHOOK: type: SHOW_ROLE_GRANT
-hive_test_role_fail	-1	hive_test_user	USER	true	-1	hive_test_user
+hive_test_role_fail	-1	hive_test_user	USER	false	-1	hive_test_user
 PUBLIC	-1			false	-1	
 PREHOOK: query: show grant role hive_test_role_fail on table authorization_fail
 PREHOOK: type: SHOW_GRANT

@@ -38,7 +38,7 @@ PREHOOK: query: SHOW ROLE GRANT USER hive_test_user
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: SHOW ROLE GRANT USER hive_test_user
 POSTHOOK: type: SHOW_ROLE_GRANT
-db_test_role	-1	hive_test_user	USER	true	-1	hive_test_user
+db_test_role	-1	hive_test_user	USER	false	-1	hive_test_user
 PUBLIC	-1			false	-1	
 PREHOOK: query: GRANT drop ON DATABASE test_db TO ROLE db_test_role
 PREHOOK: type: GRANT_PRIVILEGE

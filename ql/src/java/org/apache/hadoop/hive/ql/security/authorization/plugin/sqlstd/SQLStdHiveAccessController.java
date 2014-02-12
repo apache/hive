@@ -57,7 +57,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
 public class SQLStdHiveAccessController implements HiveAccessController {
 
   private final HiveMetastoreClientFactory metastoreClientFactory;
-  private final HiveConf conf;
   private final HiveAuthenticationProvider authenticator;
   private String currentUserName;
   private List<HiveRole> currentRoles;
@@ -66,7 +65,6 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   SQLStdHiveAccessController(HiveMetastoreClientFactory metastoreClientFactory, HiveConf conf,
       HiveAuthenticationProvider authenticator) throws HiveAuthzPluginException {
     this.metastoreClientFactory = metastoreClientFactory;
-    this.conf = conf;
     this.authenticator = authenticator;
     initUserRoles();
   }
