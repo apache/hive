@@ -104,14 +104,6 @@ public final class OrcFile {
   public static final String ENABLE_INDEXES = "orc.create.index";
   public static final String BLOCK_PADDING = "orc.block.padding";
 
-  static final long DEFAULT_STRIPE_SIZE =
-      HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE.defaultLongVal;
-  static final CompressionKind DEFAULT_COMPRESSION_KIND =
-    CompressionKind.ZLIB;
-  static final int DEFAULT_BUFFER_SIZE = 256 * 1024;
-  static final int DEFAULT_ROW_INDEX_STRIDE = 10000;
-  static final boolean DEFAULT_BLOCK_PADDING = true;
-
   // unused
   private OrcFile() {}
 
@@ -140,10 +132,10 @@ public final class OrcFile {
     private FileSystem fileSystemValue = null;
     private ObjectInspector inspectorValue = null;
     private long stripeSizeValue;
-    private int rowIndexStrideValue = DEFAULT_ROW_INDEX_STRIDE;
-    private int bufferSizeValue = DEFAULT_BUFFER_SIZE;
-    private boolean blockPaddingValue = DEFAULT_BLOCK_PADDING;
-    private CompressionKind compressValue = DEFAULT_COMPRESSION_KIND;
+    private int rowIndexStrideValue;
+    private int bufferSizeValue;
+    private boolean blockPaddingValue;
+    private CompressionKind compressValue;
     private MemoryManager memoryManagerValue;
     private Version versionValue;
 
@@ -152,7 +144,22 @@ public final class OrcFile {
       memoryManagerValue = getMemoryManager(conf);
       stripeSizeValue =
           conf.getLong(HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE.varname,
-             DEFAULT_STRIPE_SIZE);
+              HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE.defaultLongVal);
+      rowIndexStrideValue =
+          conf.getInt(HiveConf.ConfVars.HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE
+              .varname, HiveConf.ConfVars.HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE.defaultIntVal);
+      bufferSizeValue =
+          conf.getInt(HiveConf.ConfVars.HIVE_ORC_DEFAULT_BUFFER_SIZE.varname,
+              HiveConf.ConfVars.HIVE_ORC_DEFAULT_BUFFER_SIZE.defaultIntVal);
+      blockPaddingValue =
+          conf.getBoolean(HiveConf.ConfVars.HIVE_ORC_DEFAULT_BLOCK_PADDING
+              .varname, HiveConf.ConfVars.HIVE_ORC_DEFAULT_BLOCK_PADDING
+              .defaultBoolVal);
+      compressValue = 
+          CompressionKind.valueOf(conf.get(HiveConf.ConfVars
+              .HIVE_ORC_DEFAULT_COMPRESS.varname,
+              HiveConf.ConfVars
+              .HIVE_ORC_DEFAULT_COMPRESS.defaultVal));
       String versionName =
         conf.get(HiveConf.ConfVars.HIVE_ORC_WRITE_FORMAT.varname);
       if (versionName == null) {

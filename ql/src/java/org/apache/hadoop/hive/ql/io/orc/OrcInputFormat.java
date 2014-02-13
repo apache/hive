@@ -44,9 +44,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.orc.Metadata;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.FileGenerator;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitGenerator;
 import org.apache.hadoop.hive.ql.io.orc.Reader.FileMetaInfo;
+import org.apache.hadoop.hive.ql.io.orc.RecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -63,7 +62,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.InvalidInputException;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
 
@@ -99,8 +97,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   private static final double MIN_INCLUDED_LOCATION = 0.80;
 
   private static class OrcRecordReader
-      implements RecordReader<NullWritable, OrcStruct> {
-    private final org.apache.hadoop.hive.ql.io.orc.RecordReader reader;
+      implements org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct> {
+    private final RecordReader reader;
     private final long offset;
     private final long length;
     private final int numColumns;
@@ -111,10 +109,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
                     long offset, long length) throws IOException {
       List<OrcProto.Type> types = file.getTypes();
       numColumns = (types.size() == 0) ? 0 : types.get(0).getSubtypesCount();
-      boolean[] includedColumns = findIncludedColumns(types, conf);
-      String[] columnNames = getIncludedColumnNames(types, includedColumns, conf);
-      SearchArgument sarg = createSarg(types, conf);
-      this.reader = file.rows(offset, length, includedColumns, sarg, columnNames);
+      this.reader = createReaderFromFile(file, conf, offset, length);
       this.offset = offset;
       this.length = length;
     }
@@ -154,6 +149,19 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     public float getProgress() throws IOException {
       return progress;
     }
+  }
+  
+  static RecordReader createReaderFromFile(
+      Reader file, Configuration conf, long offset, long length)
+      throws IOException {
+    List<OrcProto.Type> types = file.getTypes();
+    boolean[] includedColumns = findIncludedColumns(types, conf);
+    String[] columnNames = getIncludedColumnNames(types, includedColumns,
+        conf);
+    SearchArgument sarg = createSarg(types, conf);
+    RecordReader reader =
+        file.rows(offset, length, includedColumns, sarg, columnNames);
+    return reader;
   }
 
   private static final PathFilter hiddenFileFilter = new PathFilter(){
@@ -244,14 +252,15 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public RecordReader<NullWritable, OrcStruct>
+  public org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct>
       getRecordReader(InputSplit inputSplit, JobConf conf,
                       Reporter reporter) throws IOException {
     if (isVectorMode(conf)) {
-      RecordReader<NullWritable, VectorizedRowBatch> vorr = voif.getRecordReader(inputSplit, conf,
+      org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> vorr = voif.getRecordReader(inputSplit, conf,
           reporter);
-      return (RecordReader) vorr;
+      return (org.apache.hadoop.mapred.RecordReader) vorr;
     }
     FileSplit fSplit = (FileSplit)inputSplit;
     reporter.setStatus(fSplit.toString());
@@ -308,7 +317,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    * @param conf The configuration of the job
    * @return the list of input {@link Path}s for the map-reduce job.
    */
-  static Path[] getInputPaths(JobConf conf) throws IOException {
+  static Path[] getInputPaths(Configuration conf) throws IOException {
     String dirs = conf.get("mapred.input.dir");
     if (dirs == null) {
       throw new IOException("Configuration mapred.input.dir is not defined.");
@@ -326,10 +335,41 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    * the different worker threads.
    */
   static class Context {
+    static class FileSplitInfo {
+      FileSplitInfo(Path file, long start, long length, String[] hosts,
+          FileMetaInfo fileMetaInfo) {
+        this.file = file;
+        this.start = start;
+        this.length = length;
+        this.hosts = hosts;
+        this.fileMetaInfo = fileMetaInfo;
+      }
+      Path getPath() {
+        return file;
+      }
+      long getStart() {
+        return start;
+      }
+      long getLength() {
+        return length;
+      }
+      String[] getLocations() {
+        return hosts;
+      }
+      FileMetaInfo getFileMetaInfo() {
+        return fileMetaInfo;
+      }
+      private Path file;
+      private long start;
+      private long length;
+      private String[] hosts;
+      FileMetaInfo fileMetaInfo;
+    }
     private final Configuration conf;
     private static Cache<Path, FileInfo> footerCache;
     private final ExecutorService threadPool;
-    private final List<OrcSplit> splits = new ArrayList<OrcSplit>(10000);
+    private final List<FileSplitInfo> splits =
+        new ArrayList<FileSplitInfo>(10000);
     private final List<Throwable> errors = new ArrayList<Throwable>();
     private final HadoopShims shims = ShimLoader.getHadoopShims();
     private final long maxSize;
@@ -378,7 +418,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      *     the back.
      * @result the Nth file split
      */
-    OrcSplit getResult(int index) {
+    FileSplitInfo getResult(int index) {
       if (index >= 0) {
         return splits.get(index);
       } else {
@@ -556,8 +596,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       if(locations.length == 1 && file.getLen() < context.maxSize) {
         String[] hosts = locations[0].getHosts();
         synchronized (context.splits) {
-          context.splits.add(new OrcSplit(file.getPath(), 0, file.getLen(),
-                hosts, fileMetaInfo));
+          context.splits.add(new Context.FileSplitInfo(file.getPath(), 0,
+              file.getLen(), hosts, fileMetaInfo));
         }
       } else {
         // if it requires a compute task
@@ -643,8 +683,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         hostList.toArray(hosts);
       }
       synchronized (context.splits) {
-        context.splits.add(new OrcSplit(file.getPath(), offset, length,
-            hosts, fileMetaInfo));
+        context.splits.add(new Context.FileSplitInfo(file.getPath(), offset,
+            length, hosts, fileMetaInfo));
       }
     }
 
@@ -851,35 +891,45 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
-  @Override
-  public InputSplit[] getSplits(JobConf job,
-                                int numSplits) throws IOException {
-    // use threads to resolve directories into splits
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
-    Context context = new Context(job);
-    for(Path dir: getInputPaths(job)) {
-      FileSystem fs = dir.getFileSystem(job);
-      context.schedule(new FileGenerator(context, fs, dir));
-    }
-    context.waitForTasks();
-    // deal with exceptions
-    if (!context.errors.isEmpty()) {
-      List<IOException> errors =
-          new ArrayList<IOException>(context.errors.size());
-      for(Throwable th: context.errors) {
-        if (th instanceof IOException) {
-          errors.add((IOException) th);
-        } else {
-          throw new RuntimeException("serious problem", th);
-        }
-      }
-      throw new InvalidInputException(errors);
-    }
-    InputSplit[] result = new InputSplit[context.splits.size()];
-    context.splits.toArray(result);
+  static List<Context.FileSplitInfo> generateSplitsInfo(Configuration conf)
+      throws IOException {
+	  // use threads to resolve directories into splits
+	  Context context = new Context(conf);
+	  for(Path dir: getInputPaths(conf)) {
+	    FileSystem fs = dir.getFileSystem(conf);
+	    context.schedule(new FileGenerator(context, fs, dir));
+	  }
+	  context.waitForTasks();
+	  // deal with exceptions
+	  if (!context.errors.isEmpty()) {
+	    List<IOException> errors =
+	        new ArrayList<IOException>(context.errors.size());
+	    for(Throwable th: context.errors) {
+	      if (th instanceof IOException) {
+	        errors.add((IOException) th);
+	      } else {
+	        throw new RuntimeException("serious problem", th);
+	      }
+	    }
+	    throw new InvalidInputException(errors);
+	  }
     if (context.cacheStripeDetails) {
       LOG.info("FooterCacheHitRatio: " + context.cacheHitCounter.get() + "/"
           + context.numFilesCounter.get());
+    }
+	  return context.splits;
+  }
+  @Override
+  public InputSplit[] getSplits(JobConf job,
+                                int numSplits) throws IOException {
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
+    List<OrcInputFormat.Context.FileSplitInfo> splits =
+        OrcInputFormat.generateSplitsInfo(job);
+    InputSplit[] result = new InputSplit[splits.size()];
+    for (int i=0;i<splits.size();i++) {
+      OrcInputFormat.Context.FileSplitInfo split = splits.get(i);
+      result[i] = new OrcSplit(split.getPath(), split.getStart(),
+          split.getLength(), split.getLocations(), split.getFileMetaInfo());
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
     return result;
