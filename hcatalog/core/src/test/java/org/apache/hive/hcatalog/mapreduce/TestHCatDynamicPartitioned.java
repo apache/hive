@@ -101,7 +101,7 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
    */
   @Test
   public void testHCatDynamicPartitionedTable() throws Exception {
-    runHCatDynamicPartitionedTable(true);
+    runHCatDynamicPartitionedTable(true, null);
   }
 
   /**
@@ -110,12 +110,13 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
    */
   @Test
   public void testHCatDynamicPartitionedTableMultipleTask() throws Exception {
-    runHCatDynamicPartitionedTable(false);
+    runHCatDynamicPartitionedTable(false, null);
   }
 
-  protected void runHCatDynamicPartitionedTable(boolean asSingleMapTask) throws Exception {
+  protected void runHCatDynamicPartitionedTable(boolean asSingleMapTask,
+      String customDynamicPathPattern) throws Exception {
     generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
-    runMRCreate(null, dataColumns, writeRecords, NUM_RECORDS, true, asSingleMapTask);
+    runMRCreate(null, dataColumns, writeRecords, NUM_RECORDS, true, asSingleMapTask, customDynamicPathPattern);
 
     runMRRead(NUM_RECORDS);
 
@@ -142,7 +143,8 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     IOException exc = null;
     try {
       generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
-      Job job = runMRCreate(null, dataColumns, writeRecords, NUM_RECORDS, false);
+      Job job = runMRCreate(null, dataColumns, writeRecords, NUM_RECORDS, false,
+          true, customDynamicPathPattern);
 
       if (HCatUtil.isHadoop23()) {
         Assert.assertTrue(job.isSuccessful()==false);

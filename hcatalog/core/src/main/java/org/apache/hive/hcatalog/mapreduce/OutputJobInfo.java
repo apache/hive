@@ -50,6 +50,12 @@ public class OutputJobInfo implements Serializable {
   /** The location of the partition being written */
   private String location;
 
+  /** The root location of custom dynamic partitions being written */
+  private String customDynamicRoot;
+
+  /** The relative path of custom dynamic partitions being written */
+  private String customDynamicPath;
+
   /** The partition values to publish to, if used for output*/
   private Map<String, String> partitionValues;
 
@@ -160,6 +166,28 @@ public class OutputJobInfo implements Serializable {
    */
   public void setLocation(String location) {
     this.location = location;
+  }
+
+  /**
+   * @param customDynamicLocation the custom location for dynamic partitions
+   */
+  void setCustomDynamicLocation(String customDynamicRoot, String customDynamicPath) {
+    this.customDynamicRoot = customDynamicRoot;
+    this.customDynamicPath = customDynamicPath;
+  }
+
+  /**
+   * @return the root location for custom dynamic partitions
+   */
+  String getCustomDynamicRoot() {
+    return customDynamicRoot;
+  }
+
+  /**
+   * @return the relative path custom location for dynamic partitions
+   */
+  String getCustomDynamicPath() {
+    return customDynamicPath;
   }
 
   /**
