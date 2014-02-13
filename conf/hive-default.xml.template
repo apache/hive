@@ -1884,6 +1884,46 @@
 </property>
 
 <property>
+  <name>hive.exec.orc.default.stripe.size</name>
+  <value>268435456</value>
+  <description>
+    Define the default ORC stripe size.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.default.row.index.stride</name>
+  <value>10000</value>
+  <description>
+    Define the default ORC index stride in number of rows.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.default.buffer.size</name>
+  <value>262144</value>
+  <description>
+    Define the default ORC buffer size in bytes.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.default.block.padding</name>
+  <value>true</value>
+  <description>
+    Define the default block padding.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.default.compress</name>
+  <value>ZLIB</value>
+  <description>
+    Define the default compression codec for ORC file.
+  </description>
+</property>
+
+<property>
   <name>hive.exec.orc.dictionary.key.size.threshold</name>
   <value>0.8</value>
   <description>
