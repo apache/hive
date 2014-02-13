@@ -21,10 +21,12 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPri
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.metastore.api.Role;
 
+import com.google.common.collect.ComparisonChain;
+
 // same with thrift.Role
 @LimitedPrivate(value = { "" })
 @Evolving
-public class HiveRole {
+public class HiveRole implements Comparable<HiveRole> {
 
   private String roleName;
   private int createTime;
@@ -111,4 +113,22 @@ public class HiveRole {
   public void setGrantor(String grantor) {
     this.grantor = grantor;
   }
+
+  @Override
+  public int compareTo(HiveRole other) {
+    if(other == null){
+      return 1;
+    }
+    return ComparisonChain.start().compare(roleName, other.roleName)
+        .compare(createTime, other.createTime)
+        .compare(principalName, other.principalName)
+        .compare(principalType, other.principalType)
+        .compare(grantOption, other.grantOption)
+        .compare(grantTime, other.grantTime)
+        .compare(grantor, other.grantor)
+        .result();
+
+  }
+
+
 }
