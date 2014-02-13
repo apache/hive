@@ -69,10 +69,13 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
   private static final String TEMP_DIR_NAME = "_temporary";
   private static final String LOGS_DIR_NAME = "_logs";
+  /** The directory under which data is initially written for a partitioned table */
+  static final String DYNTEMP_DIR_NAME = "_DYN";
 
   private static final Logger LOG = LoggerFactory.getLogger(FileOutputCommitterContainer.class);
   private final boolean dynamicPartitioningUsed;
   private boolean partitionsDiscovered;
+  private final boolean customDynamicLocationUsed;
 
   private Map<String, Map<String, String>> partitionsDiscoveredByPath;
   private Map<String, JobContext> contextDiscoveredByPath;
@@ -97,6 +100,14 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
     this.partitionsDiscovered = !dynamicPartitioningUsed;
     cachedStorageHandler = HCatUtil.getStorageHandler(context.getConfiguration(), jobInfo.getTableInfo().getStorerInfo());
+    Table table = new Table(jobInfo.getTableInfo().getTable());
+    if (dynamicPartitioningUsed && Boolean.valueOf((String)table.getProperty("EXTERNAL"))
+        && jobInfo.getCustomDynamicPath() != null
+        && jobInfo.getCustomDynamicPath().length() > 0) {
+      customDynamicLocationUsed = true;
+    } else {
+      customDynamicLocationUsed = false;
+    }
   }
 
   @Override
@@ -164,8 +175,12 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       Path src;
       OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(jobContext);
       if (dynamicPartitioningUsed) {
-        src = new Path(getPartitionRootLocation(jobInfo.getLocation(), jobInfo.getTableInfo().getTable()
-            .getPartitionKeysSize()));
+        if (!customDynamicLocationUsed) {
+          src = new Path(getPartitionRootLocation(jobInfo.getLocation(), jobInfo.getTableInfo().getTable()
+              .getPartitionKeysSize()));
+        } else {
+          src = new Path(getCustomPartitionRootLocation(jobInfo, jobContext.getConfiguration()));
+        }
       } else {
         src = new Path(jobInfo.getLocation());
       }
@@ -235,7 +250,26 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     throw new IOException("The method cleanupJob is deprecated and should not be called.");
   }
 
+  private String getCustomPartitionRootLocation(OutputJobInfo jobInfo, Configuration conf) {
+    if (ptnRootLocation == null) {
+      // we only need to calculate it once, it'll be the same for other partitions in this job.
+      String parentPath = jobInfo.getTableInfo().getTableLocation();
+      if (jobInfo.getCustomDynamicRoot() != null
+          && jobInfo.getCustomDynamicRoot().length() > 0) {
+        parentPath = new Path(parentPath, jobInfo.getCustomDynamicRoot()).toString();
+      }
+      Path ptnRoot = new Path(parentPath, DYNTEMP_DIR_NAME +
+          conf.get(HCatConstants.HCAT_DYNAMIC_PTN_JOBID));
+      ptnRootLocation = ptnRoot.toString();
+    }
+    return ptnRootLocation;
+  }
+
   private String getPartitionRootLocation(String ptnLocn, int numPtnKeys) {
+    if (customDynamicLocationUsed) {
+      return null;
+    }
+
     if (ptnRootLocation == null) {
       // we only need to calculate it once, it'll be the same for other partitions in this job.
       Path ptnRoot = new Path(ptnLocn);
@@ -255,6 +289,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
    * @param jobInfo The OutputJobInfo.
    * @param partLocnRoot The table-equivalent location root of the partition
    *                       (temporary dir if dynamic partition, table dir if static)
+   * @param dynPartPath The path of dynamic partition which is created
    * @param partKVs The keyvalue pairs that form the partition
    * @param outputSchema The output schema for the partition
    * @param params The parameters to store inside the partition
@@ -268,7 +303,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
   private Partition constructPartition(
     JobContext context, OutputJobInfo jobInfo,
-    String partLocnRoot, Map<String, String> partKVs,
+    String partLocnRoot, String dynPartPath, Map<String, String> partKVs,
     HCatSchema outputSchema, Map<String, String> params,
     Table table, FileSystem fs,
     String grpName, FsPermission perms) throws IOException {
@@ -292,7 +327,10 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     // Sets permissions and group name on partition dirs and files.
 
     Path partPath;
-    if (Boolean.valueOf((String)table.getProperty("EXTERNAL"))
+    if (customDynamicLocationUsed) {
+      partPath = new Path(dynPartPath);
+    } else if (!dynamicPartitioningUsed
+         && Boolean.valueOf((String)table.getProperty("EXTERNAL"))
          && jobInfo.getLocation() != null && jobInfo.getLocation().length() > 0) {
       // honor external table that specifies the location
       partPath = new Path(jobInfo.getLocation());
@@ -315,7 +353,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
     // Set the location in the StorageDescriptor
     if (dynamicPartitioningUsed) {
-      String dynamicPartitionDestination = getFinalDynamicPartitionDestination(table, partKVs);
+      String dynamicPartitionDestination = getFinalDynamicPartitionDestination(table, partKVs, jobInfo);
       if (harProcessor.isEnabled()) {
         harProcessor.exec(context, partition, partPath);
         partition.getSd().setLocation(
@@ -344,14 +382,25 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     }
   }
 
-  private String getFinalDynamicPartitionDestination(Table table, Map<String, String> partKVs) {
-    // file:///tmp/hcat_junit_warehouse/employee/_DYN0.7770480401313761/emp_country=IN/emp_state=KA  ->
-    // file:///tmp/hcat_junit_warehouse/employee/emp_country=IN/emp_state=KA
+  private String getFinalDynamicPartitionDestination(Table table, Map<String, String> partKVs,
+      OutputJobInfo jobInfo) {
     Path partPath = new Path(table.getTTable().getSd().getLocation());
-    for (FieldSchema partKey : table.getPartitionKeys()) {
-      partPath = constructPartialPartPath(partPath, partKey.getName().toLowerCase(), partKVs);
+    if (!customDynamicLocationUsed) {
+      // file:///tmp/hcat_junit_warehouse/employee/_DYN0.7770480401313761/emp_country=IN/emp_state=KA  ->
+      // file:///tmp/hcat_junit_warehouse/employee/emp_country=IN/emp_state=KA
+      for (FieldSchema partKey : table.getPartitionKeys()) {
+        partPath = constructPartialPartPath(partPath, partKey.getName().toLowerCase(), partKVs);
+      }
+
+      return partPath.toString();
+    } else {
+      // if custom root specified, update the parent path
+      if (jobInfo.getCustomDynamicRoot() != null
+          && jobInfo.getCustomDynamicRoot().length() > 0) {
+        partPath = new Path(partPath, jobInfo.getCustomDynamicRoot());
+      }
+      return new Path(partPath, HCatFileUtil.resolveCustomPath(jobInfo, partKVs, false)).toString();
     }
-    return partPath.toString();
   }
 
   private Map<String, String> getStorerParameterMap(StorerInfo storer) {
@@ -480,8 +529,11 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
             if (LOG.isDebugEnabled()) {
               LOG.debug("Moving directory: " + file + " to " + parentDir);
             }
-            if (!fs.rename(file, parentDir)) {
-              final String msg = "Failed to move file: " + file + " to " + parentDir;
+
+            // If custom dynamic location provided, need to rename to final output path
+            Path dstPath = !customDynamicLocationUsed ? parentDir : finalOutputPath;
+            if (!fs.rename(file, dstPath)) {
+              final String msg = "Failed to move file: " + file + " to " + dstPath;
               LOG.error(msg);
               throw new HCatException(ErrorType.ERROR_MOVE_FAILED, msg);
             }
@@ -576,7 +628,12 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
         for (FileStatus st : status) {
           LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>();
-          Warehouse.makeSpecFromName(fullPartSpec, st.getPath());
+          if (!customDynamicLocationUsed) {
+            Warehouse.makeSpecFromName(fullPartSpec, st.getPath());
+          } else {
+            HCatFileUtil.getPartKeyValuesForCustomLocation(fullPartSpec, jobInfo,
+                st.getPath().toString());
+          }
           partitionsDiscoveredByPath.put(st.getPath().toString(), fullPartSpec);
           JobConf jobConf = (JobConf)context.getConfiguration();
           JobContext currContext = HCatMapRedUtil.createJobContext(
@@ -636,7 +693,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         partitionsToAdd.add(
             constructPartition(
                 context,jobInfo,
-                tblPath.toString(), jobInfo.getPartitionValues()
+                tblPath.toString(), null, jobInfo.getPartitionValues()
                 ,jobInfo.getOutputSchema(), getStorerParameterMap(storer)
                 ,table, fs
                 ,grpName,perms));
@@ -645,7 +702,8 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           partitionsToAdd.add(
               constructPartition(
                   context,jobInfo,
-                  getPartitionRootLocation(entry.getKey(),entry.getValue().size()), entry.getValue()
+                  getPartitionRootLocation(entry.getKey(),entry.getValue().size())
+                  ,entry.getKey(), entry.getValue()
                   ,jobInfo.getOutputSchema(), getStorerParameterMap(storer)
                   ,table, fs
                   ,grpName,perms));
@@ -659,13 +717,16 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
       //Publish the new partition(s)
       if (dynamicPartitioningUsed && harProcessor.isEnabled() && (!partitionsToAdd.isEmpty())){
-
-        Path src = new Path(ptnRootLocation);
-        // check here for each dir we're copying out, to see if it
-        // already exists, error out if so
-        moveTaskOutputs(fs, src, src, tblPath, true);
-        moveTaskOutputs(fs, src, src, tblPath, false);
-        fs.delete(src, true);
+        if (!customDynamicLocationUsed) {
+          Path src = new Path(ptnRootLocation);
+          // check here for each dir we're copying out, to see if it
+          // already exists, error out if so
+          moveTaskOutputs(fs, src, src, tblPath, true);
+          moveTaskOutputs(fs, src, src, tblPath, false);
+          fs.delete(src, true);
+        } else {
+          moveCustomLocationTaskOutputs(fs, table, hiveConf);
+        }
         try {
           updateTableSchema(client, table, jobInfo.getOutputSchema());
           LOG.info("HAR is being used. The table {} has new partitions {}.", table.getTableName(), ptnInfos);
@@ -687,10 +748,14 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         updateTableSchema(client, table, jobInfo.getOutputSchema());
         LOG.info("HAR not is not being used. The table {} has new partitions {}.", table.getTableName(), ptnInfos);
         if (dynamicPartitioningUsed && (partitionsToAdd.size()>0)){
-          Path src = new Path(ptnRootLocation);
-          moveTaskOutputs(fs, src, src, tblPath, true);
-          moveTaskOutputs(fs, src, src, tblPath, false);
-          fs.delete(src, true);
+          if (!customDynamicLocationUsed) {
+            Path src = new Path(ptnRootLocation);
+            moveTaskOutputs(fs, src, src, tblPath, true);
+            moveTaskOutputs(fs, src, src, tblPath, false);
+            fs.delete(src, true);
+          } else {
+            moveCustomLocationTaskOutputs(fs, table, hiveConf);
+          }
         }
         client.add_partitions(partitionsToAdd);
         partitionsAdded = partitionsToAdd;
@@ -717,6 +782,24 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       }
     } finally {
       HCatUtil.closeHiveClientQuietly(client);
+    }
+  }
+
+  private void moveCustomLocationTaskOutputs(FileSystem fs, Table table, Configuration conf)
+    throws IOException {
+    // in case of custom dynamic partitions, we can't just move the sub-tree of partition root
+    // directory since the partitions location contain regex pattern. We need to first find the
+    // final destination of each partition and move its output.
+    for (Entry<String, Map<String, String>> entry : partitionsDiscoveredByPath.entrySet()) {
+      Path src = new Path(entry.getKey());
+      Path destPath = new Path(getFinalDynamicPartitionDestination(table, entry.getValue(), jobInfo));
+      moveTaskOutputs(fs, src, src, destPath, true);
+      moveTaskOutputs(fs, src, src, destPath, false);
+    }
+    // delete the parent temp directory of all custom dynamic partitions
+    Path parentPath = new Path(getCustomPartitionRootLocation(jobInfo, conf));
+    if (fs.exists(parentPath)) {
+      fs.delete(parentPath, true);
     }
   }
 

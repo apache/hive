@@ -159,6 +159,11 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
           }
           conf.set(HCatConstants.HCAT_DYNAMIC_PTN_JOBID, dynHash);
 
+          // if custom pattern is set in case of dynamic partitioning, configure custom path
+          String customPattern = conf.get(HCatConstants.HCAT_DYNAMIC_CUSTOM_PATTERN);
+          if (customPattern != null) {
+            HCatFileUtil.setCustomPath(customPattern, outputJobInfo);
+          }
         }
 
         outputJobInfo.setPartitionValues(valueMap);
