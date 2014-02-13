@@ -258,11 +258,11 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public int getDatabaseMajorVersion() throws SQLException {
-    return Utils.getVersionPart(getDatabaseProductVersion(), 1);
+    return Utils.getVersionPart(getDatabaseProductVersion(), 0);
   }
 
   public int getDatabaseMinorVersion() throws SQLException {
-    return Utils.getVersionPart(getDatabaseProductVersion(), 2);
+    return Utils.getVersionPart(getDatabaseProductVersion(), 1);
   }
 
   public String getDatabaseProductName() throws SQLException {

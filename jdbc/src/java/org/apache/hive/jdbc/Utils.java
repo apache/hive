@@ -234,8 +234,8 @@ public class Utils {
    * @param fullVersion
    *          version string.
    * @param tokenPosition
-   *          position of version string to get starting at 1. eg, for a X.x.xxx
-   *          string, 1 will return the major version, 2 will return minor
+   *          position of version string to get starting at 0. eg, for a X.x.xxx
+   *          string, 0 will return the major version, 1 will return minor
    *          version.
    * @return version part, or -1 if version string was malformed.
    */
