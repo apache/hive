@@ -28,28 +28,40 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String name;
-  
+
   private PrincipalType principalType;
-  
+
   private boolean group;
 
   private RoleOperation operation;
-  
+
   private String resFile;
-  
+
   private String roleOwnerName;
+
+  /**
+   * thrift ddl for the result of show roles.
+   */
+  private static final String roleNameSchema = "role#string";
 
   /**
    * thrift ddl for the result of show role.
    */
-  private static String schema = "role#string";
+  private static final String roleDescSchema =
+      "role,create_time,principal_name,principal_type,grant_option,grant_time,grantor#" +
+      "string:bigint:string:string:boolean:bigint:string";
 
-  public static String getSchema() {
-    return schema;
+  public static String getRoleNameSchema() {
+    return roleNameSchema;
+  }
+
+  public static String getRoleDescSchema() {
+    return roleDescSchema;
   }
 
   public static enum RoleOperation {
-    DROP_ROLE("drop_role"), CREATE_ROLE("create_role"), SHOW_ROLE_GRANT("show_role_grant"), SHOW_ROLES("show_roles");
+    DROP_ROLE("drop_role"), CREATE_ROLE("create_role"), SHOW_ROLE_GRANT("show_role_grant"),
+    SHOW_ROLES("show_roles"), SET_ROLE("set_role"), SHOW_CURRENT_ROLE("show_current_role");
     private String operationName;
 
     private RoleOperation() {
@@ -63,11 +75,12 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
       return operationName;
     }
 
+    @Override
     public String toString () {
       return this.operationName;
     }
   }
-  
+
   public RoleDDLDesc(){
   }
 
@@ -91,7 +104,7 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
   public void setName(String roleName) {
     this.name = roleName;
   }
-  
+
   @Explain(displayName = "role operation")
   public RoleOperation getOperation() {
     return operation;
@@ -100,7 +113,7 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
   public void setOperation(RoleOperation operation) {
     this.operation = operation;
   }
-  
+
   public PrincipalType getPrincipalType() {
     return principalType;
   }
@@ -116,7 +129,7 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
   public void setGroup(boolean group) {
     this.group = group;
   }
-  
+
   public String getResFile() {
     return resFile;
   }
@@ -124,7 +137,7 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
   public void setResFile(String resFile) {
     this.resFile = resFile;
   }
-  
+
   public String getRoleOwnerName() {
     return roleOwnerName;
   }

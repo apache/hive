@@ -990,8 +990,8 @@ void swap(PrincipalPrivilegeSet &a, PrincipalPrivilegeSet &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* Role::ascii_fingerprint = "70563A0628F75DF9555F4D24690B1E26";
-const uint8_t Role::binary_fingerprint[16] = {0x70,0x56,0x3A,0x06,0x28,0xF7,0x5D,0xF9,0x55,0x5F,0x4D,0x24,0x69,0x0B,0x1E,0x26};
+const char* Role::ascii_fingerprint = "8DEBC3096AEF414FFF38C357ECEEA8BC";
+const uint8_t Role::binary_fingerprint[16] = {0x8D,0xEB,0xC3,0x09,0x6A,0xEF,0x41,0x4F,0xFF,0x38,0xC3,0x57,0xEC,0xEE,0xA8,0xBC};
 
 uint32_t Role::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -1037,6 +1037,46 @@ uint32_t Role::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->principalName);
+          this->__isset.principalName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->principalType);
+          this->__isset.principalType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->grantOption);
+          this->__isset.grantOption = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->grantTime);
+          this->__isset.grantTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->grantor);
+          this->__isset.grantor = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -1065,6 +1105,31 @@ uint32_t Role::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeString(this->ownerName);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.principalName) {
+    xfer += oprot->writeFieldBegin("principalName", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->principalName);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.principalType) {
+    xfer += oprot->writeFieldBegin("principalType", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->principalType);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.grantOption) {
+    xfer += oprot->writeFieldBegin("grantOption", ::apache::thrift::protocol::T_BOOL, 6);
+    xfer += oprot->writeBool(this->grantOption);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.grantTime) {
+    xfer += oprot->writeFieldBegin("grantTime", ::apache::thrift::protocol::T_I32, 7);
+    xfer += oprot->writeI32(this->grantTime);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.grantor) {
+    xfer += oprot->writeFieldBegin("grantor", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->grantor);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -1075,6 +1140,11 @@ void swap(Role &a, Role &b) {
   swap(a.roleName, b.roleName);
   swap(a.createTime, b.createTime);
   swap(a.ownerName, b.ownerName);
+  swap(a.principalName, b.principalName);
+  swap(a.principalType, b.principalType);
+  swap(a.grantOption, b.grantOption);
+  swap(a.grantTime, b.grantTime);
+  swap(a.grantor, b.grantor);
   swap(a.__isset, b.__isset);
 }
 
@@ -4630,6 +4700,450 @@ void swap(AddPartitionsRequest &a, AddPartitionsRequest &b) {
   swap(a.tblName, b.tblName);
   swap(a.parts, b.parts);
   swap(a.ifNotExists, b.ifNotExists);
+  swap(a.needResult, b.needResult);
+  swap(a.__isset, b.__isset);
+}
+
+const char* DropPartitionsResult::ascii_fingerprint = "5A689D0823E7BFBB60C799BA60065C31";
+const uint8_t DropPartitionsResult::binary_fingerprint[16] = {0x5A,0x68,0x9D,0x08,0x23,0xE7,0xBF,0xBB,0x60,0xC7,0x99,0xBA,0x60,0x06,0x5C,0x31};
+
+uint32_t DropPartitionsResult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->partitions.clear();
+            uint32_t _size257;
+            ::apache::thrift::protocol::TType _etype260;
+            xfer += iprot->readListBegin(_etype260, _size257);
+            this->partitions.resize(_size257);
+            uint32_t _i261;
+            for (_i261 = 0; _i261 < _size257; ++_i261)
+            {
+              xfer += this->partitions[_i261].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.partitions = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t DropPartitionsResult::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("DropPartitionsResult");
+
+  if (this->__isset.partitions) {
+    xfer += oprot->writeFieldBegin("partitions", ::apache::thrift::protocol::T_LIST, 1);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->partitions.size()));
+      std::vector<Partition> ::const_iterator _iter262;
+      for (_iter262 = this->partitions.begin(); _iter262 != this->partitions.end(); ++_iter262)
+      {
+        xfer += (*_iter262).write(oprot);
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DropPartitionsResult &a, DropPartitionsResult &b) {
+  using ::std::swap;
+  swap(a.partitions, b.partitions);
+  swap(a.__isset, b.__isset);
+}
+
+const char* DropPartitionsExpr::ascii_fingerprint = "18B162B1D15D8D46509D3911A9F1C2AA";
+const uint8_t DropPartitionsExpr::binary_fingerprint[16] = {0x18,0xB1,0x62,0xB1,0xD1,0x5D,0x8D,0x46,0x50,0x9D,0x39,0x11,0xA9,0xF1,0xC2,0xAA};
+
+uint32_t DropPartitionsExpr::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_expr = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->expr);
+          isset_expr = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->partArchiveLevel);
+          this->__isset.partArchiveLevel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_expr)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t DropPartitionsExpr::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("DropPartitionsExpr");
+
+  xfer += oprot->writeFieldBegin("expr", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeBinary(this->expr);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.partArchiveLevel) {
+    xfer += oprot->writeFieldBegin("partArchiveLevel", ::apache::thrift::protocol::T_I32, 2);
+    xfer += oprot->writeI32(this->partArchiveLevel);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DropPartitionsExpr &a, DropPartitionsExpr &b) {
+  using ::std::swap;
+  swap(a.expr, b.expr);
+  swap(a.partArchiveLevel, b.partArchiveLevel);
+  swap(a.__isset, b.__isset);
+}
+
+const char* RequestPartsSpec::ascii_fingerprint = "864492ECAB27996CD222AACDA10C292E";
+const uint8_t RequestPartsSpec::binary_fingerprint[16] = {0x86,0x44,0x92,0xEC,0xAB,0x27,0x99,0x6C,0xD2,0x22,0xAA,0xCD,0xA1,0x0C,0x29,0x2E};
+
+uint32_t RequestPartsSpec::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->names.clear();
+            uint32_t _size263;
+            ::apache::thrift::protocol::TType _etype266;
+            xfer += iprot->readListBegin(_etype266, _size263);
+            this->names.resize(_size263);
+            uint32_t _i267;
+            for (_i267 = 0; _i267 < _size263; ++_i267)
+            {
+              xfer += iprot->readString(this->names[_i267]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.names = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->exprs.clear();
+            uint32_t _size268;
+            ::apache::thrift::protocol::TType _etype271;
+            xfer += iprot->readListBegin(_etype271, _size268);
+            this->exprs.resize(_size268);
+            uint32_t _i272;
+            for (_i272 = 0; _i272 < _size268; ++_i272)
+            {
+              xfer += this->exprs[_i272].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.exprs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t RequestPartsSpec::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("RequestPartsSpec");
+
+  xfer += oprot->writeFieldBegin("names", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->names.size()));
+    std::vector<std::string> ::const_iterator _iter273;
+    for (_iter273 = this->names.begin(); _iter273 != this->names.end(); ++_iter273)
+    {
+      xfer += oprot->writeString((*_iter273));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("exprs", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->exprs.size()));
+    std::vector<DropPartitionsExpr> ::const_iterator _iter274;
+    for (_iter274 = this->exprs.begin(); _iter274 != this->exprs.end(); ++_iter274)
+    {
+      xfer += (*_iter274).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(RequestPartsSpec &a, RequestPartsSpec &b) {
+  using ::std::swap;
+  swap(a.names, b.names);
+  swap(a.exprs, b.exprs);
+  swap(a.__isset, b.__isset);
+}
+
+const char* DropPartitionsRequest::ascii_fingerprint = "EB263FBA01215C480A9A24C11D69E672";
+const uint8_t DropPartitionsRequest::binary_fingerprint[16] = {0xEB,0x26,0x3F,0xBA,0x01,0x21,0x5C,0x48,0x0A,0x9A,0x24,0xC1,0x1D,0x69,0xE6,0x72};
+
+uint32_t DropPartitionsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_dbName = false;
+  bool isset_tblName = false;
+  bool isset_parts = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          isset_dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->tblName);
+          isset_tblName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->parts.read(iprot);
+          isset_parts = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->deleteData);
+          this->__isset.deleteData = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->ifExists);
+          this->__isset.ifExists = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->ignoreProtection);
+          this->__isset.ignoreProtection = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->environmentContext.read(iprot);
+          this->__isset.environmentContext = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->needResult);
+          this->__isset.needResult = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_dbName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_tblName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_parts)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t DropPartitionsRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("DropPartitionsRequest");
+
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tblName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->tblName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("parts", ::apache::thrift::protocol::T_STRUCT, 3);
+  xfer += this->parts.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.deleteData) {
+    xfer += oprot->writeFieldBegin("deleteData", ::apache::thrift::protocol::T_BOOL, 4);
+    xfer += oprot->writeBool(this->deleteData);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.ifExists) {
+    xfer += oprot->writeFieldBegin("ifExists", ::apache::thrift::protocol::T_BOOL, 5);
+    xfer += oprot->writeBool(this->ifExists);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.ignoreProtection) {
+    xfer += oprot->writeFieldBegin("ignoreProtection", ::apache::thrift::protocol::T_BOOL, 6);
+    xfer += oprot->writeBool(this->ignoreProtection);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.environmentContext) {
+    xfer += oprot->writeFieldBegin("environmentContext", ::apache::thrift::protocol::T_STRUCT, 7);
+    xfer += this->environmentContext.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.needResult) {
+    xfer += oprot->writeFieldBegin("needResult", ::apache::thrift::protocol::T_BOOL, 8);
+    xfer += oprot->writeBool(this->needResult);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DropPartitionsRequest &a, DropPartitionsRequest &b) {
+  using ::std::swap;
+  swap(a.dbName, b.dbName);
+  swap(a.tblName, b.tblName);
+  swap(a.parts, b.parts);
+  swap(a.deleteData, b.deleteData);
+  swap(a.ifExists, b.ifExists);
+  swap(a.ignoreProtection, b.ignoreProtection);
+  swap(a.environmentContext, b.environmentContext);
   swap(a.needResult, b.needResult);
   swap(a.__isset, b.__isset);
 }

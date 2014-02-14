@@ -37,7 +37,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr:
+            filterExpr: ((key > 80) and (key < 100)) (type: boolean)
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > 80) and (key < 100)) (type: boolean)
@@ -115,7 +115,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr:
+            filterExpr: ((key > 80) and (key < 100)) (type: boolean)
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > 80) and (key < 100)) (type: boolean)
@@ -193,7 +193,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr:
+            filterExpr: ((key < 10) or (key > 480)) (type: boolean)
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < 10) or (key > 480)) (type: boolean)
@@ -316,7 +316,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr:
+            filterExpr: ((key > 80) and (key < 100)) (type: boolean)
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > 80) and (key < 100)) (type: boolean)
@@ -443,7 +443,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
-            filterExpr:
+            filterExpr: (((ds = '2008-04-09') and (hr = 12)) and (key < 10)) (type: boolean)
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 10) (type: boolean)

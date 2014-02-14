@@ -26,6 +26,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -45,6 +51,8 @@ import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.util.ObjectSerializer;
 import org.apache.pig.impl.util.UDFContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HCatStorer.
@@ -53,6 +61,7 @@ import org.apache.pig.impl.util.UDFContext;
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
 public class HCatStorer extends HCatBaseStorer {
+  private static final Logger LOG = LoggerFactory.getLogger(HCatStorer.class);
 
   // Signature for wrapped storer, see comments in LoadFuncBasedInputDriver.initialize
   final public static String INNER_SIGNATURE = "hcatstorer.inner.signature";
@@ -60,18 +69,50 @@ public class HCatStorer extends HCatBaseStorer {
   // A hash map which stores job credentials. The key is a signature passed by Pig, which is
   //unique to the store func and out file name (table, in our case).
   private static Map<String, Credentials> jobCredentials = new HashMap<String, Credentials>();
-
-
-  public HCatStorer(String partSpecs, String schema) throws Exception {
-    super(partSpecs, schema);
+  private final static Options validOptions = new Options();
+  static {
+    try {
+      populateValidOptions();
+    }
+    catch(Throwable t) {
+      LOG.error("Failed to build option list: ", t);
+      throw new RuntimeException(t);
+    }
   }
+  private final static CommandLineParser parser = new GnuParser();
 
+  /**
+   * @param optString may empty str (not null), in which case it's no-op
+   */
+  public HCatStorer(String partSpecs, String pigSchema, String optString) throws Exception {
+    super(partSpecs, pigSchema);
+    String[] optsArr = optString.split(" ");
+    CommandLine configuredOptions;
+    try {
+      configuredOptions = parser.parse(validOptions, optsArr);
+    } catch (ParseException e) {
+      HelpFormatter formatter = new HelpFormatter();
+      formatter.printHelp( "[-" + ON_OOR_VALUE_OPT + "]", validOptions );
+      throw e;
+    }
+    Properties udfProps = UDFContext.getUDFContext().getUDFProperties(this.getClass(), new String[]{sign});
+    //'Throw' is the default for backwards compatibility
+    //downstream code expects it to be set to a valid value
+    udfProps.put(ON_OORA_VALUE_PROP, configuredOptions.getOptionValue(ON_OOR_VALUE_OPT, getDefaultValue().name()));
+    if(LOG.isDebugEnabled()) {
+      LOG.debug("setting " + configuredOptions.getOptionValue(ON_OOR_VALUE_OPT));
+    }
+    isValidOOROption((String)udfProps.get(ON_OORA_VALUE_PROP));
+  }
+  public HCatStorer(String partSpecs, String pigSchema) throws Exception {
+    this(partSpecs, pigSchema, "");
+  }
   public HCatStorer(String partSpecs) throws Exception {
-    this(partSpecs, null);
+    this(partSpecs, null, "");
   }
 
   public HCatStorer() throws Exception {
-    this(null, null);
+    this(null, null, "");
   }
 
   @Override
@@ -79,6 +120,33 @@ public class HCatStorer extends HCatBaseStorer {
     return new HCatOutputFormat();
   }
 
+  /**
+   * makes a list of all options that HCatStorer understands
+   */
+  private static void populateValidOptions() {
+    validOptions.addOption(ON_OOR_VALUE_OPT, true, 
+      "Controls how store operation handles Pig values which are out of range for the target column" +
+      "in Hive table.  Default is to throw an exception.");
+  }
+  /**
+   * check that onOutOfRangeValue handling is configured properly
+   * @throws FrontendException
+   */
+  private static void isValidOOROption(String optVal) throws FrontendException {
+    boolean found = false;
+    for(OOR_VALUE_OPT_VALUES v : OOR_VALUE_OPT_VALUES.values()) {
+      if(v.name().equalsIgnoreCase(optVal)) {
+        found = true;
+        break;
+      }
+    }
+    if(!found) {
+      throw new FrontendException("Unexpected value for '" + ON_OOR_VALUE_OPT + "' found: " + optVal);
+    }
+  }
+  /**
+   * @param location databaseName.tableName
+   */
   @Override
   public void setStoreLocation(String location, Job job) throws IOException {
     HCatContext.INSTANCE.setConf(job.getConfiguration()).getConf().get()

@@ -134,7 +134,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     server.registerQuery("data = load '" + data +
       "' using PigStorage('\t') as (my_small_int:int, my_tiny_int:int);");
     server.registerQuery(
-      "store data into 'test_tbl' using org.apache.hive.hcatalog.pig.HCatStorer();");
+      "store data into 'test_tbl' using org.apache.hive.hcatalog.pig.HCatStorer('','','-onOutOfRangeValue Throw');");
     List<ExecJob> jobs = server.executeBatch();
     Assert.assertEquals(expectedStatus, jobs.get(0).getStatus());
   }

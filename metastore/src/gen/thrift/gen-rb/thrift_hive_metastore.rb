@@ -612,6 +612,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'drop_partition_by_name_with_environment_context failed: unknown result')
     end
 
+    def drop_partitions_req(req)
+      send_drop_partitions_req(req)
+      return recv_drop_partitions_req()
+    end
+
+    def send_drop_partitions_req(req)
+      send_message('drop_partitions_req', Drop_partitions_req_args, :req => req)
+    end
+
+    def recv_drop_partitions_req()
+      result = receive_message(Drop_partitions_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'drop_partitions_req failed: unknown result')
+    end
+
     def get_partition(db_name, tbl_name, part_vals)
       send_get_partition(db_name, tbl_name, part_vals)
       return recv_get_partition()
@@ -1961,6 +1978,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'drop_partition_by_name_with_environment_context', seqid)
+    end
+
+    def process_drop_partitions_req(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_partitions_req_args)
+      result = Drop_partitions_req_result.new()
+      begin
+        result.success = @handler.drop_partitions_req(args.req)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'drop_partitions_req', seqid)
     end
 
     def process_get_partition(seqid, iprot, oprot)
@@ -3985,6 +4015,42 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_partitions_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::DropPartitionsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_partitions_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::DropPartitionsResult},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }

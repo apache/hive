@@ -59,6 +59,9 @@ import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -137,6 +140,10 @@ public abstract class BaseSemanticAnalyzer {
       .getName();
   protected static final String ORCFILE_SERDE = OrcSerde.class
       .getName();
+
+  protected static final String PARQUETFILE_INPUT = MapredParquetInputFormat.class.getName();
+  protected static final String PARQUETFILE_OUTPUT = MapredParquetOutputFormat.class.getName();
+  protected static final String PARQUETFILE_SERDE = ParquetHiveSerDe.class.getName();
 
   class RowFormatParams {
     String fieldDelim = null;
@@ -225,6 +232,12 @@ public abstract class BaseSemanticAnalyzer {
         shared.serde = ORCFILE_SERDE;
         storageFormat = true;
         break;
+      case HiveParser.TOK_TBLPARQUETFILE:
+        inputFormat = PARQUETFILE_INPUT;
+        outputFormat = PARQUETFILE_OUTPUT;
+        shared.serde = PARQUETFILE_SERDE;
+        storageFormat = true;
+        break;
       case HiveParser.TOK_TABLEFILEFORMAT:
         inputFormat = unescapeSQLString(child.getChild(0).getText());
         outputFormat = unescapeSQLString(child.getChild(1).getText());
@@ -256,6 +269,10 @@ public abstract class BaseSemanticAnalyzer {
           inputFormat = ORCFILE_INPUT;
           outputFormat = ORCFILE_OUTPUT;
           shared.serde = ORCFILE_SERDE;
+        } else if ("PARQUET".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
+          inputFormat = PARQUETFILE_INPUT;
+          outputFormat = PARQUETFILE_OUTPUT;
+          shared.serde = PARQUETFILE_SERDE;
         } else {
           inputFormat = TEXTFILE_INPUT;
           outputFormat = TEXTFILE_OUTPUT;
@@ -947,7 +964,7 @@ public abstract class BaseSemanticAnalyzer {
    * @return true if the specification is prefix; never returns false, but throws
    * @throws HiveException
    */
-  final public boolean isValidPrefixSpec(Table tTable, Map<String, String> spec)
+  public final boolean isValidPrefixSpec(Table tTable, Map<String, String> spec)
  throws HiveException {
 
     // TODO - types need to be checked.

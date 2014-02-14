@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.io.RCFile.KeyBuffer;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileKeyBufferWrapper;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileValueBufferWrapper;
@@ -59,6 +60,7 @@ public class PartialScanMapper extends MapReduceBase implements
   private long uncompressedFileSize = 0;
   private long rowNo = 0;
   private boolean exception = false;
+  private Reporter rp = null;
 
   public final static Log LOG = LogFactory.getLog("PartialScanMapper");
 
@@ -68,6 +70,7 @@ public class PartialScanMapper extends MapReduceBase implements
   @Override
   public void configure(JobConf job) {
     jc = job;
+    MapredContext.init(true, new JobConf(jc));
     statsAggKeyPrefix = HiveConf.getVar(job,
         HiveConf.ConfVars.HIVE_STATS_KEY_PREFIX);
   }
@@ -77,6 +80,12 @@ public class PartialScanMapper extends MapReduceBase implements
   public void map(Object k, RCFileValueBufferWrapper value,
       OutputCollector<Object, Object> output, Reporter reporter)
       throws IOException {
+
+    if (rp == null) {
+      this.rp = reporter;
+      MapredContext.get().setReporter(reporter);
+    }
+
     try {
       //CombineHiveInputFormat is set in PartialScanTask.
       RCFileKeyBufferWrapper key = (RCFileKeyBufferWrapper) ((CombineHiveKey) k).getKey();
@@ -114,6 +123,8 @@ public class PartialScanMapper extends MapReduceBase implements
     } catch (HiveException e) {
       this.exception = true;
       throw new RuntimeException(e);
+    } finally {
+      MapredContext.close();
     }
   }
 

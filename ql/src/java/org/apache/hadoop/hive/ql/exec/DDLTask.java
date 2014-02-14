@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -132,7 +131,6 @@ import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
 import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
-import org.apache.hadoop.hive.ql.plan.PartitionSpec;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
@@ -164,6 +162,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -177,6 +176,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.thrift.TException;
 import org.stringtemplate.v4.ST;
 
 /**
@@ -294,7 +294,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       DropTableDesc dropTbl = work.getDropTblDesc();
       if (dropTbl != null) {
-        return dropTable(db, dropTbl);
+        dropTableOrPartitions(db, dropTbl);
+        return 0;
       }
 
       AlterTableDesc alterTbl = work.getAlterTblDesc();
@@ -622,7 +623,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           }
         }
       }
-      writeToFile(writeGrantInfo(privs), showGrantDesc.getResFile());
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
+      writeToFile(writeGrantInfo(privs, testMode), showGrantDesc.getResFile());
     } catch (FileNotFoundException e) {
       LOG.info("show table status: " + stringifyException(e));
       return 1;
@@ -656,11 +658,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         //only grantInfo is used
         HiveObjectPrivilege thriftObjectPriv = new HiveObjectPrivilege(new HiveObjectRef(
           AuthorizationUtils.getThriftHiveObjType(privObj.getType()),privObj.getDbname(),
-          privObj.getTableviewname(),null,null), principal.getName(), 
+          privObj.getTableviewname(),null,null), principal.getName(),
           AuthorizationUtils.getThriftPrincipalType(principal.getType()), grantInfo);
         privList.add(thriftObjectPriv);
       }
-      writeToFile(writeGrantInfo(privList), showGrantDesc.getResFile());
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
+      writeToFile(writeGrantInfo(privList, testMode), showGrantDesc.getResFile());
     } catch (IOException e) {
       throw new HiveException("Error in show grant statement", e);
     }
@@ -914,21 +917,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } else if (operation.equals(RoleDDLDesc.RoleOperation.DROP_ROLE)) {
         db.dropRole(roleDDLDesc.getName());
       } else if (operation.equals(RoleDDLDesc.RoleOperation.SHOW_ROLE_GRANT)) {
-        List<Role> roles = db.showRoleGrant(roleDDLDesc.getName(), roleDDLDesc
-            .getPrincipalType());
-        if (roles != null && roles.size() > 0) {
-          Path resFile = new Path(roleDDLDesc.getResFile());
-          FileSystem fs = resFile.getFileSystem(conf);
-          outStream = fs.create(resFile);
-          for (Role role : roles) {
-            outStream.writeBytes(role.getRoleName());
-            outStream.write(terminator);
-          }
-          outStream.close();
-          outStream = null;
-        }
+        boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
+        List<Role> roles = db.showRoleGrant(roleDDLDesc.getName(), roleDDLDesc.getPrincipalType());
+        writeToFile(writeRoleInfo(roles, testMode), roleDDLDesc.getResFile());
       } else if (operation.equals(RoleDDLDesc.RoleOperation.SHOW_ROLES)) {
         List<String> roleNames = db.getAllRoleNames();
+        //sort the list to get sorted (deterministic) output (for ease of testing)
+        Collections.sort(roleNames);
         Path resFile = new Path(roleDDLDesc.getResFile());
         FileSystem fs = resFile.getFileSystem(conf);
         outStream = fs.create(resFile);
@@ -969,13 +964,25 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       authorizer.dropRole(roleDDLDesc.getName());
       break;
     case SHOW_ROLE_GRANT:
-      List<String> roles = authorizer.getRoles(new HivePrincipal(roleDDLDesc.getName(),
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
+      List<HiveRole> roles = authorizer.getRoles(new HivePrincipal(roleDDLDesc.getName(),
           getHivePrincipalType(roleDDLDesc.getPrincipalType())));
-      writeListToFile(roles, roleDDLDesc.getResFile());
+      writeToFile(writeHiveRoleInfo(roles, testMode), roleDDLDesc.getResFile());
       break;
     case SHOW_ROLES:
       List<String> allRoles = authorizer.getAllRoles();
       writeListToFile(allRoles, roleDDLDesc.getResFile());
+      break;
+    case SHOW_CURRENT_ROLE:
+      List<HiveRole> currentRoles = authorizer.getCurrentRoles();
+      List<String> roleNames = new ArrayList<String>(currentRoles.size());
+      for (HiveRole role : currentRoles) {
+        roleNames.add(role.getRoleName());
+      }
+      writeListToFile(roleNames, roleDDLDesc.getResFile());
+      break;
+    case SET_ROLE:
+      authorizer.setCurrentRole(roleDDLDesc.getName());
       break;
     default:
       throw new HiveException("Unkown role operation "
@@ -1833,6 +1840,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
+  private void msckAddPartitionsOneByOne(Hive db, Table table,
+      List<CheckResult.PartitionResult> partsNotInMs, List<String> repairOutput) {
+    for (CheckResult.PartitionResult part : partsNotInMs) {
+      try {
+        db.createPartition(table, Warehouse.makeSpecFromName(part.getPartitionName()));
+        repairOutput.add("Repair: Added partition to metastore "
+            + table.getTableName() + ':' + part.getPartitionName());
+      } catch (Exception e) {
+        LOG.warn("Repair error, could not add partition to metastore: ", e);
+      }
+    }
+  }
+
   /**
    * MetastoreCheck, see if the data in the metastore matches what is on the
    * dfs. Current version checks for tables and partitions that are either
@@ -1851,17 +1871,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db);
       Table t = db.newTable(msckDesc.getTableName());
       checker.checkMetastore(t.getDbName(), t.getTableName(), msckDesc.getPartSpecs(), result);
-      if (msckDesc.isRepairPartitions()) {
+      List<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
+      if (msckDesc.isRepairPartitions() && !partsNotInMs.isEmpty()) {
         Table table = db.getTable(msckDesc.getTableName());
-        for (CheckResult.PartitionResult part : result.getPartitionsNotInMs()) {
-          try {
-            db.createPartition(table, Warehouse.makeSpecFromName(part
-                .getPartitionName()));
+        AddPartitionDesc apd = new AddPartitionDesc(
+            table.getDbName(), table.getTableName(), false);
+        try {
+          for (CheckResult.PartitionResult part : partsNotInMs) {
+            apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
             repairOutput.add("Repair: Added partition to metastore "
                 + msckDesc.getTableName() + ':' + part.getPartitionName());
-          } catch (Exception e) {
-            LOG.warn("Repair error, could not add partition to metastore: ", e);
           }
+          db.createPartitions(apd);
+        } catch (Exception e) {
+          LOG.info("Could not bulk-add partitions to metastore; trying one by one", e);
+          repairOutput.clear();
+          msckAddPartitionsOneByOne(db, table, partsNotInMs, repairOutput);
         }
       }
     } catch (HiveException e) {
@@ -2498,23 +2523,23 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       Collections.sort(locks, new Comparator<HiveLock>() {
 
-          @Override
-            public int compare(HiveLock o1, HiveLock o2) {
-            int cmp = o1.getHiveLockObject().getName().compareTo(o2.getHiveLockObject().getName());
-            if (cmp == 0) {
-              if (o1.getHiveLockMode() == o2.getHiveLockMode()) {
-                return cmp;
-              }
-              // EXCLUSIVE locks occur before SHARED locks
-              if (o1.getHiveLockMode() == HiveLockMode.EXCLUSIVE) {
-                return -1;
-              }
-              return +1;
+        @Override
+        public int compare(HiveLock o1, HiveLock o2) {
+          int cmp = o1.getHiveLockObject().getName().compareTo(o2.getHiveLockObject().getName());
+          if (cmp == 0) {
+            if (o1.getHiveLockMode() == o2.getHiveLockMode()) {
+              return cmp;
             }
-            return cmp;
+            // EXCLUSIVE locks occur before SHARED locks
+            if (o1.getHiveLockMode() == HiveLockMode.EXCLUSIVE) {
+              return -1;
+            }
+            return +1;
           }
+          return cmp;
+        }
 
-        });
+      });
 
       Iterator<HiveLock> locksIter = locks.iterator();
 
@@ -2923,8 +2948,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       else {
         Map<String, String> properties = tbl.getParameters();
-        for (String key : properties.keySet()) {
-          writeKeyValuePair(builder, key, properties.get(key));
+        for (Entry<String, String> entry : properties.entrySet()) {
+          appendNonNull(builder, entry.getKey(), true);
+          appendNonNull(builder, entry.getValue());
         }
       }
 
@@ -3060,61 +3086,84 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  static String writeGrantInfo(List<HiveObjectPrivilege> privileges) {
+  static String writeGrantInfo(List<HiveObjectPrivilege> privileges, boolean testMode) {
     if (privileges == null || privileges.isEmpty()) {
       return "";
     }
-
     StringBuilder builder = new StringBuilder();
+    //sort the list to get sorted (deterministic) output (for ease of testing)
+    Collections.sort(privileges);
+
     for (HiveObjectPrivilege privilege : privileges) {
-      PrivilegeGrantInfo grantInfo = privilege.getGrantInfo();
       HiveObjectRef resource = privilege.getHiveObject();
-      String privName = grantInfo.getPrivilege();
-      long unixTimestamp = grantInfo.getCreateTime() * 1000L;
-      Date createTime = new Date(unixTimestamp);
-      String grantor = grantInfo.getGrantor();
+      PrivilegeGrantInfo grantInfo = privilege.getGrantInfo();
 
-      switch (resource.getObjectType()) {
-        case DATABASE:
-          writeKeyValuePair(builder, "database", resource.getDbName());
-          break;
-        case TABLE:
-          writeKeyValuePair(builder, "database", resource.getDbName());
-          writeKeyValuePair(builder, "table", resource.getObjectName());
-          break;
-        case PARTITION:
-          writeKeyValuePair(builder, "database", resource.getDbName());
-          writeKeyValuePair(builder, "table", resource.getObjectName());
-          writeKeyValuePair(builder, "partition", String.valueOf(resource.getPartValues()));
-          break;
-        case COLUMN:
-          writeKeyValuePair(builder, "database", resource.getDbName());
-          writeKeyValuePair(builder, "table", resource.getObjectName());
-          if (resource.getPartValues() != null && !resource.getPartValues().isEmpty()) {
-            writeKeyValuePair(builder, "partition", String.valueOf(resource.getPartValues()));
-          }
-          writeKeyValuePair(builder, "columnName", resource.getColumnName());
-          break;
-      }
-
-      writeKeyValuePair(builder, "principalName", privilege.getPrincipalName());
-      writeKeyValuePair(builder, "principalType", "" + privilege.getPrincipalType());
-      writeKeyValuePair(builder, "privilege", privName);
-      writeKeyValuePair(builder, "grantTime", "" + createTime);
-      if (grantor != null) {
-        writeKeyValuePair(builder, "grantor", grantor);
-      }
+      appendNonNull(builder, resource.getDbName(), true);
+      appendNonNull(builder, resource.getObjectName());
+      appendNonNull(builder, resource.getPartValues());
+      appendNonNull(builder, resource.getColumnName());
+      appendNonNull(builder, privilege.getPrincipalName());
+      appendNonNull(builder, privilege.getPrincipalType());
+      appendNonNull(builder, grantInfo.getPrivilege());
+      appendNonNull(builder, grantInfo.isGrantOption());
+      appendNonNull(builder, testMode ? -1 : grantInfo.getCreateTime() * 1000L);
+      appendNonNull(builder, grantInfo.getGrantor());
     }
     return builder.toString();
   }
 
-  private static void writeKeyValuePair(StringBuilder builder, String key, String value) {
-    if (builder.length() > 0) {
+  static String writeRoleInfo(List<Role> roles, boolean testMode) {
+    if (roles == null || roles.isEmpty()) {
+      return "";
+    }
+    StringBuilder builder = new StringBuilder();
+    //sort the list to get sorted (deterministic) output (for ease of testing)
+    Collections.sort(roles);
+    for (Role role : roles) {
+      appendNonNull(builder, role.getRoleName(), true);
+      appendNonNull(builder, testMode ? -1 : role.getCreateTime() * 1000L);
+      appendNonNull(builder, role.getPrincipalName());
+      appendNonNull(builder, role.getPrincipalType());
+      appendNonNull(builder, role.isGrantOption());
+      appendNonNull(builder, testMode ? -1 : role.getGrantTime() * 1000L);
+      appendNonNull(builder, role.getGrantor());
+    }
+    return builder.toString();
+  }
+
+  static String writeHiveRoleInfo(List<HiveRole> roles, boolean testMode) {
+    if (roles == null || roles.isEmpty()) {
+      return "";
+    }
+    StringBuilder builder = new StringBuilder();
+    //sort the list to get sorted (deterministic) output (for ease of testing)
+    Collections.sort(roles);
+    for (HiveRole role : roles) {
+      appendNonNull(builder, role.getRoleName(), true);
+      appendNonNull(builder, testMode ? -1 : role.getCreateTime() * 1000L);
+      appendNonNull(builder, role.getPrincipalName());
+      appendNonNull(builder, role.getPrincipalType());
+      appendNonNull(builder, role.isGrantOption());
+      appendNonNull(builder, testMode ? -1 : role.getGrantTime() * 1000L);
+      appendNonNull(builder, role.getGrantor());
+    }
+    return builder.toString();
+  }
+
+  static StringBuilder appendNonNull(StringBuilder builder, Object value) {
+    return appendNonNull(builder, value, false);
+  }
+
+  static StringBuilder appendNonNull(StringBuilder builder, Object value, boolean firstColumn) {
+    if (!firstColumn) {
+      builder.append((char)separator);
+    } else if (builder.length() > 0) {
       builder.append((char)terminator);
     }
-    builder.append(key);
-    builder.append((char)separator);
-    builder.append(value);
+    if (value != null) {
+      builder.append(value);
+    }
+    return builder;
   }
 
   private void setAlterProtectMode(boolean protectModeEnable,
@@ -3483,20 +3532,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Drop a given table.
+   * Drop a given table or some partitions. DropTableDesc is currently used for both.
    *
    * @param db
    *          The database in question.
    * @param dropTbl
    *          This is the table we're dropping.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int dropTable(Hive db, DropTableDesc dropTbl)
-      throws HiveException {
-    // We need to fetch the table before it is dropped so that it can be passed
-    // to
+  private void dropTableOrPartitions(Hive db, DropTableDesc dropTbl) throws HiveException {
+    // We need to fetch the table before it is dropped so that it can be passed to
     // post-execution hook
     Table tbl = null;
     try {
@@ -3506,114 +3552,74 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     if (dropTbl.getPartSpecs() == null) {
-      // This is a true DROP TABLE
-      if (tbl != null) {
-        if (tbl.isView()) {
-          if (!dropTbl.getExpectView()) {
-            if (dropTbl.getIfExists()) {
-              return 0;
-            }
-            throw new HiveException("Cannot drop a view with DROP TABLE");
-          }
-        } else {
-          if (dropTbl.getExpectView()) {
-            if (dropTbl.getIfExists()) {
-              return 0;
-            }
-            throw new HiveException(
-              "Cannot drop a base table with DROP VIEW");
-          }
-        }
-      }
-
-      if (tbl != null && !tbl.canDrop()) {
-        throw new HiveException("Table " + tbl.getTableName() +
-            " is protected from being dropped");
-      }
-
-      int partitionBatchSize = HiveConf.getIntVar(conf,
-        ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
-
-      // We should check that all the partitions of the table can be dropped
-      if (tbl != null && tbl.isPartitioned()) {
-        List<String> partitionNames = db.getPartitionNames(tbl.getTableName(), (short)-1);
-
-        for(int i=0; i < partitionNames.size(); i+= partitionBatchSize) {
-          List<String> partNames = partitionNames.subList(i, Math.min(i+partitionBatchSize,
-            partitionNames.size()));
-          List<Partition> listPartitions = db.getPartitionsByNames(tbl, partNames);
-          for (Partition p: listPartitions) {
-            if (!p.canDrop()) {
-              throw new HiveException("Table " + tbl.getTableName() +
-                " Partition" + p.getName() +
-                " is protected from being dropped");
-            }
-          }
-        }
-      }
-
-      // drop the table
-      db.dropTable(dropTbl.getTableName());
-      if (tbl != null) {
-        work.getOutputs().add(new WriteEntity(tbl));
-      }
+      dropTable(db, tbl, dropTbl);
     } else {
-      // This is actually an ALTER TABLE DROP PARTITION
-      List<Partition> partsToDelete = new ArrayList<Partition>();
-      for (PartitionSpec partSpec : dropTbl.getPartSpecs()) {
-        List<Partition> partitions = null;
-        // getPartitionsByFilter only works for string columns.
-        // Till that is fixed, only equality will work for non-string columns.
-        if (dropTbl.isStringPartitionColumns()) {
-          try {
-            partitions = db.getPartitionsByFilter(tbl, partSpec.toString());
-          } catch (Exception e) {
-            throw new HiveException(e);
-          }
-        }
-        else {
-          partitions = db.getPartitions(tbl, partSpec.getPartSpecWithoutOperator());
-        }
+      dropPartitions(db, tbl, dropTbl);
+    }
+  }
 
-        // this is to prevent dropping archived partition which is archived in a
-        // different level the drop command specified.
-        int partPrefixToDrop = 0;
-        for (FieldSchema fs : tbl.getPartCols()) {
-          if (partSpec.existsKey(fs.getName())) {
-            partPrefixToDrop += 1;
-          } else {
-            break;
-          }
-        }
-        if (!dropTbl.getIgnoreProtection()) {
-          for (Partition p : partitions) {
-            if (!p.canDrop()) {
-              throw new HiveException("Table " + tbl.getTableName()
-                  + " Partition " + p.getName()
-                  + " is protected from being dropped");
-            } else if (ArchiveUtils.isArchived(p)) {
-              int partAchiveLevel = ArchiveUtils.getArchivingLevel(p);
-              // trying to drop partitions inside a har, disallow it.
-              if (partAchiveLevel < partPrefixToDrop) {
-                throw new HiveException(
-                    "Cannot drop a subset of partitions in an archive, partition "
-                        + p.getName());
-              }
-            }
-          }
-        }
-        partsToDelete.addAll(partitions);
-      }
+  private void dropPartitions(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
+    // ifExists is currently verified in DDLSemanticAnalyzer
+    List<Partition> droppedParts = db.dropPartitions(dropTbl.getTableName(),
+        dropTbl.getPartSpecs(), true, dropTbl.getIgnoreProtection(), true);
+    for (Partition partition : droppedParts) {
+      console.printInfo("Dropped the partition " + partition.getName());
+      work.getOutputs().add(new WriteEntity(partition));
+    };
+  }
 
-      // drop all existing partitions from the list
-      for (Partition partition : partsToDelete) {
-        console.printInfo("Dropping the partition " + partition.getName());
-        db.dropPartition(dropTbl.getTableName(), partition.getValues(), true);
-        work.getOutputs().add(new WriteEntity(partition));
+  private void dropTable(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
+    // This is a true DROP TABLE
+    if (tbl != null) {
+      if (tbl.isView()) {
+        if (!dropTbl.getExpectView()) {
+          if (dropTbl.getIfExists()) {
+            return;
+          }
+          throw new HiveException("Cannot drop a view with DROP TABLE");
+        }
+      } else {
+        if (dropTbl.getExpectView()) {
+          if (dropTbl.getIfExists()) {
+            return;
+          }
+          throw new HiveException(
+            "Cannot drop a base table with DROP VIEW");
+        }
       }
     }
 
-    return 0;
+    if (tbl != null && !tbl.canDrop()) {
+      throw new HiveException("Table " + tbl.getTableName() +
+          " is protected from being dropped");
+    }
+
+    int partitionBatchSize = HiveConf.getIntVar(conf,
+      ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
+
+    // We should check that all the partitions of the table can be dropped
+    if (tbl != null && tbl.isPartitioned()) {
+      List<String> partitionNames = db.getPartitionNames(tbl.getTableName(), (short)-1);
+
+      for(int i=0; i < partitionNames.size(); i+= partitionBatchSize) {
+        List<String> partNames = partitionNames.subList(i, Math.min(i+partitionBatchSize,
+          partitionNames.size()));
+        List<Partition> listPartitions = db.getPartitionsByNames(tbl, partNames);
+        for (Partition p: listPartitions) {
+          if (!p.canDrop()) {
+            throw new HiveException("Table " + tbl.getTableName() +
+              " Partition" + p.getName() +
+              " is protected from being dropped");
+          }
+        }
+      }
+    }
+
+    // drop the table
+    db.dropTable(dropTbl.getTableName());
+    if (tbl != null) {
+      work.getOutputs().add(new WriteEntity(tbl));
+    }
   }
 
   /**

@@ -20,36 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColGreaterDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColGreaterDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColGreaterLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarGreaterDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColGreaterDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColGreaterDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColGreaterLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleScalarGreaterDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleScalarGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarGreaterDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarGreaterStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColGreaterDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColGreaterDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColGreaterLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarGreaterDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColGreaterStringColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColGreaterStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringScalarGreaterStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.Text;
@@ -72,7 +43,9 @@ import org.apache.hadoop.io.Text;
   FilterLongColGreaterLongScalar.class, FilterLongColGreaterDoubleScalar.class,
   FilterDoubleColGreaterLongScalar.class, FilterDoubleColGreaterDoubleScalar.class,
   FilterLongScalarGreaterLongColumn.class, FilterLongScalarGreaterDoubleColumn.class,
-  FilterDoubleScalarGreaterLongColumn.class, FilterDoubleScalarGreaterDoubleColumn.class})
+  FilterDoubleScalarGreaterLongColumn.class, FilterDoubleScalarGreaterDoubleColumn.class,
+  FilterDecimalColGreaterDecimalColumn.class, FilterDecimalColGreaterDecimalScalar.class,
+  FilterDecimalScalarGreaterDecimalColumn.class})
 public class GenericUDFOPGreaterThan extends GenericUDFBaseCompare {
   public GenericUDFOPGreaterThan(){
     this.opName = "GREATER THAN";

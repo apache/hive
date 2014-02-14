@@ -35,6 +35,11 @@ public abstract class VectorExpression implements Serializable {
   protected VectorExpression [] childExpressions = null;
 
   /**
+   * Output type of the expression.
+   */
+  protected String outputType;
+
+  /**
    * This is the primary method to implement expression logic.
    * @param batch
    */
@@ -50,7 +55,16 @@ public abstract class VectorExpression implements Serializable {
   /**
    * Returns type of the output column.
    */
-  public abstract String getOutputType();
+  public String getOutputType() {
+    return outputType;
+  }
+
+  /**
+   * Set type of the output column.
+   */
+  public void setOutputType(String type) {
+    this.outputType = type;
+  }
 
   /**
    * Initialize the child expressions.

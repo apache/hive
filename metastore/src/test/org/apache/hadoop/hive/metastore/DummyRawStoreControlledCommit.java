@@ -656,4 +656,10 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
       throws InvalidObjectException, MetaException {
     return objectStore.addPartitions(dbName, tblName, parts);
   }
+
+  @Override
+  public void dropPartitions(String dbName, String tblName, List<String> partNames)
+      throws MetaException, NoSuchObjectException {
+    objectStore.dropPartitions(dbName, tblName, partNames);
+  }
 }

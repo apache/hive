@@ -326,7 +326,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
     if (environmentVariables.get(HIVE_DEBUG_RECURSIVE).equals("y")) {
       // swap debug options in HADOOP_CLIENT_OPTS to those that the child JVM should have
       assert environmentVariables.containsKey(HIVE_CHILD_CLIENT_DEBUG_OPTS)
-          && environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS) != null : HIVE_CHILD_CLIENT_DEBUG_OPTS
+          && environmentVariables.get(HIVE_CHILD_CLIENT_DEBUG_OPTS) != null : HIVE_CHILD_CLIENT_DEBUG_OPTS
           + " environment variable must be set when JVM in debug mode";
       String newHadoopClientOpts = hadoopClientOpts.replace(
           environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS),

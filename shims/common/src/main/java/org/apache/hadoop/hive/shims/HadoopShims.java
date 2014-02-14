@@ -587,4 +587,9 @@ public interface HadoopShims {
   }
 
   public DirectDecompressorShim getDirectDecompressor(DirectCompressionType codec);
+  
+  /**
+   * Get configuration from JobContext
+   */
+  public Configuration getConfiguration(JobContext context);
 }

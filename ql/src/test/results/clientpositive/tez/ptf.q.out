@@ -766,6 +766,7 @@ sum(p_retailprice) as s
 from part 
 group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@part
 POSTHOOK: query: -- 16. testViewAsTableInputToPTF
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
@@ -773,6 +774,7 @@ sum(p_retailprice) as s
 from part 
 group by p_mfgr, p_brand
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@part
 POSTHOOK: Output: default@mfgr_price_view
 PREHOOK: query: select p_mfgr, p_brand, s, 
 sum(s) over w1  as s1

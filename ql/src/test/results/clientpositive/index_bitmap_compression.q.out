@@ -37,7 +37,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: default__src_src_index__
-            filterExpr:
+            filterExpr: (((key > 80) and (key < 100)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
             Filter Operator
               predicate: (((key > 80) and (key < 100)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
               Select Operator
@@ -80,7 +80,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr:
+            filterExpr: ((key > 80) and (key < 100)) (type: boolean)
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > 80) and (key < 100)) (type: boolean)

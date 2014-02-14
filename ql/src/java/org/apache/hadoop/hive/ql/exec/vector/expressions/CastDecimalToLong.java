@@ -27,6 +27,10 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 public class CastDecimalToLong extends FuncDecimalToLong {
   private static final long serialVersionUID = 1L;
 
+  public CastDecimalToLong() {
+    super();
+  }
+
   public CastDecimalToLong(int inputColumn, int outputColumn) {
     super(inputColumn, outputColumn);
   }

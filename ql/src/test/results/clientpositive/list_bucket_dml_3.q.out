@@ -22,7 +22,37 @@ explain extended
 insert overwrite table list_bucketing_static_part partition (ds='2008-04-08', hr='11') select key, value from srcpart where ds='2008-04-08'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME list_bucketing_static_part) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr '11')))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08'))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            srcpart
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_TAB
+            TOK_TABNAME
+               list_bucketing_static_part
+            TOK_PARTSPEC
+               TOK_PARTVAL
+                  ds
+                  '2008-04-08'
+               TOK_PARTVAL
+                  hr
+                  '11'
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               key
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               value
+      TOK_WHERE
+         =
+            TOK_TABLE_OR_COL
+               ds
+            '2008-04-08'
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -32,30 +62,22 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        srcpart 
+      Map Operator Tree:
           TableScan
             alias: srcpart
-            Statistics:
-                numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+              expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics:
-                  numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
+              Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Static Partition Specification: ds=2008-04-08/hr=11/
-                Statistics:
-                    numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -191,7 +213,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.list_bucketing_static_part
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -310,7 +331,39 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME list_bucketing_static_part))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL ds) '2008-04-08') (= (TOK_TABLE_OR_COL hr) '11')) (= (TOK_TABLE_OR_COL key) "484")))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            list_bucketing_static_part
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               key
+         TOK_SELEXPR
+            TOK_TABLE_OR_COL
+               value
+      TOK_WHERE
+         and
+            and
+               =
+                  TOK_TABLE_OR_COL
+                     ds
+                  '2008-04-08'
+               =
+                  TOK_TABLE_OR_COL
+                     hr
+                  '11'
+            =
+               TOK_TABLE_OR_COL
+                  key
+               "484"
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -319,36 +372,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        list_bucketing_static_part 
+      Map Operator Tree:
           TableScan
             alias: list_bucketing_static_part
-            Statistics:
-                numRows: 1000 dataSize: 10624 basicStatsState: COMPLETE colStatsState: NONE
+            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate:
-                  expr: (key = '484')
-                  type: boolean
-              Statistics:
-                  numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
+              predicate: (key = '484') (type: boolean)
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+                expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics:
-                    numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics:
-                      numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

@@ -17,15 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 
 /**
  * Represents a privilege granted for an object to a principal
  */
-@Public
+@LimitedPrivate(value = { "" })
 @Evolving
-
 public class HivePrivilegeInfo{
   private final HivePrincipal principal;
   private final HivePrivilege privilege;

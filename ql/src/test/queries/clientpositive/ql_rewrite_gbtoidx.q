@@ -1,4 +1,5 @@
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S, 0.23)
+set hive.stats.dbclass=counter;
+set hive.stats.autogather=true;
 
 DROP TABLE lineitem;
 CREATE TABLE lineitem (L_ORDERKEY      INT,

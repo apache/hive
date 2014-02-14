@@ -91,7 +91,7 @@ import org.apache.log4j.varia.NullAppender;
 
 /**
  * ExecDriver is the central class in co-ordinating execution of any map-reduce task.
- * It's main responsabilities are:
+ * It's main responsibilities are:
  *
  * - Converting the plan (MapredWork) into a MR Job (JobConf)
  * - Submitting a MR job to the cluster via JobClient and ExecHelper
@@ -394,7 +394,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, "HIVE");
       }
       JobClient jc = new JobClient(job);
-      // make this client wait if job trcker is not behaving well.
+      // make this client wait if job tracker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
 
       if (mWork.isGatheringStats() || (rWork != null && rWork.isGatheringStats())) {
@@ -505,7 +505,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     if (mWork.getSamplingType() == MapWork.SAMPLING_ON_PREV_MR) {
       console.printInfo("Use sampling data created in previous MR");
-      // merges sampling data from previous MR and make paritition keys for total sort
+      // merges sampling data from previous MR and make partition keys for total sort
       for (Path path : inputPaths) {
         FileSystem fs = path.getFileSystem(job);
         for (FileStatus status : fs.globStatus(new Path(path, ".sampling*"))) {
@@ -547,7 +547,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   protected void setInputAttributes(Configuration conf) {
     MapWork mWork = work.getMapWork();
     if (mWork.getInputformat() != null) {
-      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEINPUTFORMAT, mWork.getInputformat());
+      HiveConf.setVar(conf, ConfVars.HIVEINPUTFORMAT, mWork.getInputformat());
     }
     if (mWork.getIndexIntermediateFile() != null) {
       conf.set("hive.index.compact.file", mWork.getIndexIntermediateFile());
@@ -556,6 +556,18 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     // Intentionally overwrites anything the user may have put here
     conf.setBoolean("hive.input.format.sorted", mWork.isInputFormatSorted());
+
+    if (HiveConf.getVar(conf, ConfVars.HIVE_CURRENT_DATABASE, null) == null) {
+      HiveConf.setVar(conf, ConfVars.HIVE_CURRENT_DATABASE, getCurrentDB());
+    }
+  }
+
+  public static String getCurrentDB() {
+    String currentDB = null;
+    if (SessionState.get() != null) {
+      currentDB = SessionState.get().getCurrentDatabase();
+    }
+    return currentDB == null ? "default" : currentDB;
   }
 
   public boolean mapStarted() {

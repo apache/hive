@@ -65,6 +65,20 @@ import org.apache.thrift.TException;
 // code for the script-based testing
 public class TestCliDriverMethods extends TestCase {
 
+  SecurityManager securityManager;
+
+  // Some of these tests require intercepting System.exit() using the SecurityManager.
+  // It is safer to  register/unregister our SecurityManager during setup/teardown instead
+  // of doing it within the individual test cases.
+  public void setUp() {
+    securityManager = System.getSecurityManager();
+    System.setSecurityManager(new NoExitSecurityManager(securityManager));
+  }
+
+  public void tearDown() {
+    System.setSecurityManager(securityManager);
+  }
+
   // If the command has an associated schema, make sure it gets printed to use
   public void testThatCliDriverPrintsHeaderForCommandsWithSchema() throws CommandNeedRetryException {
     Schema mockSchema = mock(Schema.class);
@@ -192,7 +206,6 @@ public class TestCliDriverMethods extends TestCase {
     ss.err = System.err;
     ss.out = System.out;
 
-    NoExitSecurityManager newSecurityManager = new NoExitSecurityManager();
     try {
       CliSessionState.start(ss);
       CliDriver cliDriver = new CliDriver();
@@ -202,7 +215,6 @@ public class TestCliDriverMethods extends TestCase {
       assertEquals(0, e.getStatus());
 
     } catch (Exception e) {
-      newSecurityManager.resetSecurityManager();
       throw e;
     }
 
@@ -214,8 +226,6 @@ public class TestCliDriverMethods extends TestCase {
     } catch (ExitException e) {
       assertEquals(0, e.getStatus());
 
-    } finally {
-      newSecurityManager.resetSecurityManager();
     }
 
   }
@@ -287,16 +297,15 @@ public class TestCliDriverMethods extends TestCase {
     sessinState.err = new PrintStream(data);
     sessinState.database = "database";
     CliDriver driver = new CliDriver();
-    NoExitSecurityManager securityManager = new NoExitSecurityManager();
+
     try {
       driver.processSelectDatabase(sessinState);
       fail("shuld be exit");
     } catch (ExitException e) {
       e.printStackTrace();
       assertEquals(40000, e.getStatus());
-    } finally {
-      securityManager.resetSecurityManager();
     }
+
     assertTrue(data.toString().contains(
         "FAILED: ParseException line 1:4 cannot recognize input near 'database'"));
   }
@@ -319,7 +328,6 @@ public class TestCliDriverMethods extends TestCase {
     CliSessionState sessionState = new CliSessionState(new HiveConf());
 
     ByteArrayOutputStream data = new ByteArrayOutputStream();
-    NoExitSecurityManager securityManager = new NoExitSecurityManager();
 
     sessionState.err = new PrintStream(data);
     sessionState.out = System.out;
@@ -364,8 +372,6 @@ public class TestCliDriverMethods extends TestCase {
       assertEquals(40000, e.getStatus());
       assertTrue(data.toString().contains("cannot recognize input near 'bla' 'bla' 'bla'"));
 
-    } finally {
-      securityManager.resetSecurityManager();
     }
   }
 
@@ -451,9 +457,9 @@ public class TestCliDriverMethods extends TestCase {
 
     public SecurityManager parentSecurityManager;
 
-    public NoExitSecurityManager() {
+    public NoExitSecurityManager(SecurityManager parent) {
       super();
-      parentSecurityManager = System.getSecurityManager();
+      parentSecurityManager = parent;
       System.setSecurityManager(this);
     }
 
@@ -474,10 +480,6 @@ public class TestCliDriverMethods extends TestCase {
     @Override
     public void checkExit(int status) {
       throw new ExitException(status);
-    }
-
-    public void resetSecurityManager() {
-      System.setSecurityManager(parentSecurityManager);
     }
   }
 

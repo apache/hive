@@ -65,6 +65,9 @@ if [ -f "${HCAT_CONF_DIR}/hcat-env.sh" ]; then
   . "${HCAT_CONF_DIR}/hcat-env.sh"
 fi
 
+source $HCAT_PREFIX/bin/common.sh
+find_hadoop_home
+
 #determine where hadoop is
 #check HADOOP_HOME and then check HADOOP_PREFIX
 if [ -f ${HADOOP_HOME}/bin/hadoop ]; then

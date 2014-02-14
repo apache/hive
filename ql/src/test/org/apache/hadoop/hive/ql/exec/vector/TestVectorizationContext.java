@@ -319,13 +319,12 @@ public class TestVectorizationContext {
     ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(new Integer(10));
 
     GenericUDFOPPlus udf = new GenericUDFOPPlus();
-    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
-    exprDesc.setGenericUDF(udf);
 
     List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
     children1.add(col1Expr);
     children1.add(constDesc);
-    exprDesc.setChildren(children1);
+    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.doubleTypeInfo, udf,
+        children1);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 0);
@@ -588,9 +587,7 @@ public class TestVectorizationContext {
 
   @Test
   public void testVectorizeScalarColumnExpression() throws HiveException {
-    ExprNodeGenericFuncDesc scalarMinusConstant = new ExprNodeGenericFuncDesc();
     GenericUDFOPMinus gudf = new GenericUDFOPMinus();
-    scalarMinusConstant.setGenericUDF(gudf);
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
     ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, 20);
     ExprNodeColumnDesc colDesc = new ExprNodeColumnDesc(Long.class, "a", "table", false);
@@ -598,7 +595,8 @@ public class TestVectorizationContext {
     children.add(constDesc);
     children.add(colDesc);
 
-    scalarMinusConstant.setChildren(children);
+    ExprNodeGenericFuncDesc scalarMinusConstant = new ExprNodeGenericFuncDesc(TypeInfoFactory.longTypeInfo,
+        gudf, children);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("a", 0);
@@ -636,12 +634,11 @@ public class TestVectorizationContext {
   @Test
   public void testUnaryMinusColumnLong() throws HiveException {
     ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Integer.class, "col1", "table", false);
-    ExprNodeGenericFuncDesc negExprDesc = new ExprNodeGenericFuncDesc();
     GenericUDF gudf = new GenericUDFOPNegative();
-    negExprDesc.setGenericUDF(gudf);
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(1);
     children.add(col1Expr);
-    negExprDesc.setChildren(children);
+    ExprNodeGenericFuncDesc negExprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.longTypeInfo, gudf,
+        children);
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 1);
     VectorizationContext vc = new VectorizationContext(columnMap, 1);
@@ -654,12 +651,11 @@ public class TestVectorizationContext {
   @Test
   public void testUnaryMinusColumnDouble() throws HiveException {
     ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Float.class, "col1", "table", false);
-    ExprNodeGenericFuncDesc negExprDesc = new ExprNodeGenericFuncDesc();
     GenericUDF gudf = new GenericUDFOPNegative();
-    negExprDesc.setGenericUDF(gudf);
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(1);
     children.add(col1Expr);
-    negExprDesc.setChildren(children);
+    ExprNodeGenericFuncDesc negExprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.doubleTypeInfo, gudf,
+        children);
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 1);
     VectorizationContext vc = new VectorizationContext(columnMap, 1);
@@ -914,14 +910,13 @@ public class TestVectorizationContext {
 
     // string BETWEEN
     GenericUDFBetween udf = new GenericUDFBetween();
-    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
-    exprDesc.setGenericUDF(udf);
     List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>();
     children1.add(new ExprNodeConstantDesc(new Boolean(false))); // no NOT keyword
     children1.add(col1Expr);
     children1.add(constDesc);
     children1.add(constDesc2);
-    exprDesc.setChildren(children1);
+    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, udf,
+        children1);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 1);
@@ -984,13 +979,12 @@ public class TestVectorizationContext {
 
     // string IN
     GenericUDFIn udf = new GenericUDFIn();
-    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
-    exprDesc.setGenericUDF(udf);
     List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>();
     children1.add(col1Expr);
     children1.add(constDesc);
     children1.add(constDesc2);
-    exprDesc.setChildren(children1);
+    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+        udf, children1);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 1);
@@ -1038,13 +1032,12 @@ public class TestVectorizationContext {
 
     // long column/column IF
     GenericUDFIf udf = new GenericUDFIf();
-    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
-    exprDesc.setGenericUDF(udf);
     List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>();
     children1.add(col1Expr);
     children1.add(col2Expr);
     children1.add(col3Expr);
-    exprDesc.setChildren(children1);
+    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, udf,
+        children1);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 1);

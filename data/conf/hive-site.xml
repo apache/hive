@@ -19,6 +19,12 @@
 
 <configuration>
 
+<property>
+  <name>hive.in.test</name>
+  <value>true</value>
+  <description>Internal marker for test. Used for masking env-dependent values</description>
+</property>
+
 <!-- Hive Configuration can either be stored in this file or in the hadoop configuration files  -->
 <!-- that are implied by Hadoop setup variables.                                                -->
 <!-- Aside from Hadoop setup variables - this file is provided as a convenience so that Hive    -->
@@ -189,6 +195,12 @@
 <property>
   <name>hive.stats.key.prefix.reserve.length</name>
   <value>0</value>
+</property>
+
+<property>
+  <name>hive.conf.restricted.list</name>
+  <value>dummy.config.value</value>
+  <description>Using dummy config value above because you cannot override config with empty value</description>
 </property>
 
 </configuration>

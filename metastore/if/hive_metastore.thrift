@@ -107,6 +107,11 @@ struct Role {
   1: string roleName,
   2: i32 createTime,
   3: string ownerName,
+  4: optional string principalName,
+  5: optional string principalType,
+  6: optional bool grantOption,
+  7: optional i32 grantTime,
+  8: optional string grantor
 }
 
 // namespace for tables
@@ -321,6 +326,34 @@ struct AddPartitionsRequest {
   5: optional bool needResult=true
 }
 
+// Return type for drop_partitions_req
+struct DropPartitionsResult {
+  1: optional list<Partition> partitions,
+}
+
+struct DropPartitionsExpr {
+  1: required binary expr;
+  2: optional i32 partArchiveLevel;
+}
+
+union RequestPartsSpec {
+  1: list<string> names;
+  2: list<DropPartitionsExpr> exprs;
+}
+
+// Request type for drop_partitions_req
+// TODO: we might want to add "bestEffort" flag; where a subset can fail
+struct DropPartitionsRequest {
+  1: required string dbName,
+  2: required string tblName,
+  3: required RequestPartsSpec parts,
+  4: optional bool deleteData,
+  5: optional bool ifExists=true, // currently verified on client
+  6: optional bool ignoreProtection,
+  7: optional EnvironmentContext environmentContext,
+  8: optional bool needResult=true
+}
+
 exception MetaException {
   1: string message
 }
@@ -500,6 +533,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   bool drop_partition_by_name_with_environment_context(1:string db_name, 2:string tbl_name,
       3:string part_name, 4:bool deleteData, 5:EnvironmentContext environment_context)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  DropPartitionsResult drop_partitions_req(1: DropPartitionsRequest req)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+
   Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
   Partition exchange_partition(1:map<string, string> partitionSpecs, 2:string source_db,

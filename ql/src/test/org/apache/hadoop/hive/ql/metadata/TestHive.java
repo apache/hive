@@ -232,6 +232,11 @@ public class TestHive extends TestCase {
     Warehouse wh = new Warehouse(hiveConf);
     Table ft = null;
     try {
+      // hm.getTable result will not have privileges set (it does not retrieve
+      // that part from metastore), so unset privileges to null before comparing
+      // (create table sets it to empty (non null) structures)
+      tbl.getTTable().setPrivilegesIsSet(false);
+
       ft = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       assertNotNull("Unable to fetch table", ft);
       ft.checkValidity();

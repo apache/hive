@@ -20,6 +20,8 @@ package org.apache.hive.hcatalog.data;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +33,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -46,13 +51,19 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -75,9 +86,6 @@ public class JsonSerDe implements SerDe {
 
   private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe.class);
   private List<String> columnNames;
-  private List<TypeInfo> columnTypes;
-
-  private StructTypeInfo rowTypeInfo;
   private HCatSchema schema;
 
   private JsonFactory jsonFactory = null;
@@ -87,6 +95,8 @@ public class JsonSerDe implements SerDe {
   @Override
   public void initialize(Configuration conf, Properties tbl)
     throws SerDeException {
+    List<TypeInfo> columnTypes;
+    StructTypeInfo rowTypeInfo;
 
 
     LOG.debug("Initializing JsonSerDe");
@@ -195,7 +205,7 @@ public class JsonSerDe implements SerDe {
       // column mapping, and we're about to proceed.
     }
     HCatFieldSchema hcatFieldSchema = s.getFields().get(fpos);
-    Object currField = extractCurrentField(p, null, hcatFieldSchema, false);
+    Object currField = extractCurrentField(p, hcatFieldSchema, false);
     r.set(fpos, currField);
   }
 
@@ -241,17 +251,12 @@ public class JsonSerDe implements SerDe {
   /**
    * Utility method to extract current expected field from given JsonParser
    *
-   * To get the field, we need either a type or a hcatFieldSchema(necessary for complex types)
-   * It is possible that one of them can be null, and so, if so, the other is instantiated
-   * from the other
-   *
    * isTokenCurrent is a boolean variable also passed in, which determines
    * if the JsonParser is already at the token we expect to read next, or
    * needs advancing to the next before we read.
    */
-  private Object extractCurrentField(JsonParser p, Type t,
-                     HCatFieldSchema hcatFieldSchema, boolean isTokenCurrent) throws IOException, JsonParseException,
-    HCatException {
+  private Object extractCurrentField(JsonParser p, HCatFieldSchema hcatFieldSchema,
+                                     boolean isTokenCurrent) throws IOException {
     Object val = null;
     JsonToken valueToken;
     if (isTokenCurrent) {
@@ -259,11 +264,7 @@ public class JsonSerDe implements SerDe {
     } else {
       valueToken = p.nextToken();
     }
-
-    if (hcatFieldSchema != null) {
-      t = hcatFieldSchema.getType();
-    }
-    switch (t) {
+    switch (hcatFieldSchema.getType()) {
     case INT:
       val = (valueToken == JsonToken.VALUE_NULL) ? null : p.getIntValue();
       break;
@@ -295,6 +296,23 @@ public class JsonSerDe implements SerDe {
       break;
     case BINARY:
       throw new IOException("JsonSerDe does not support BINARY type");
+    case DATE:
+      val = (valueToken == JsonToken.VALUE_NULL) ? null : Date.valueOf(p.getText());
+      break;
+    case TIMESTAMP:
+      val = (valueToken == JsonToken.VALUE_NULL) ? null : Timestamp.valueOf(p.getText());
+      break;
+    case DECIMAL:
+      val = (valueToken == JsonToken.VALUE_NULL) ? null : HiveDecimal.create(p.getText());
+      break;
+    case VARCHAR:
+      int vLen = ((BaseCharTypeInfo)hcatFieldSchema.getTypeInfo()).getLength();
+      val = (valueToken == JsonToken.VALUE_NULL) ? null : new HiveVarchar(p.getText(), vLen);
+      break;
+    case CHAR:
+      int cLen = ((BaseCharTypeInfo)hcatFieldSchema.getTypeInfo()).getLength();
+      val = (valueToken == JsonToken.VALUE_NULL) ? null : new HiveChar(p.getText(), cLen);
+      break;
     case ARRAY:
       if (valueToken == JsonToken.VALUE_NULL) {
         val = null;
@@ -305,7 +323,7 @@ public class JsonSerDe implements SerDe {
       }
       List<Object> arr = new ArrayList<Object>();
       while ((valueToken = p.nextToken()) != JsonToken.END_ARRAY) {
-        arr.add(extractCurrentField(p, null, hcatFieldSchema.getArrayElementSchema().get(0), true));
+        arr.add(extractCurrentField(p, hcatFieldSchema.getArrayElementSchema().get(0), true));
       }
       val = arr;
       break;
@@ -318,15 +336,14 @@ public class JsonSerDe implements SerDe {
         throw new IOException("Start of Object expected");
       }
       Map<Object, Object> map = new LinkedHashMap<Object, Object>();
-      Type keyType = hcatFieldSchema.getMapKeyType();
       HCatFieldSchema valueSchema = hcatFieldSchema.getMapValueSchema().get(0);
       while ((valueToken = p.nextToken()) != JsonToken.END_OBJECT) {
-        Object k = getObjectOfCorrespondingPrimitiveType(p.getCurrentName(), keyType);
+        Object k = getObjectOfCorrespondingPrimitiveType(p.getCurrentName(), hcatFieldSchema.getMapKeyTypeInfo());
         Object v;
         if (valueSchema.getType() == HCatFieldSchema.Type.STRUCT) {
-          v = extractCurrentField(p, null, valueSchema, false);
+          v = extractCurrentField(p, valueSchema, false);
         } else {
-          v = extractCurrentField(p, null, valueSchema, true);
+          v = extractCurrentField(p, valueSchema, true);
         }
 
         map.put(k, v);
@@ -350,12 +367,16 @@ public class JsonSerDe implements SerDe {
       }
       val = struct;
       break;
+    default:
+      LOG.error("Unknown type found: " + hcatFieldSchema.getType());
+      return null;
     }
     return val;
   }
 
-  private Object getObjectOfCorrespondingPrimitiveType(String s, Type t) throws IOException {
-    switch (t) {
+  private Object getObjectOfCorrespondingPrimitiveType(String s, PrimitiveTypeInfo mapKeyType)
+    throws IOException {
+    switch (Type.getPrimitiveHType(mapKeyType)) {
     case INT:
       return Integer.valueOf(s);
     case TINYINT:
@@ -374,8 +395,18 @@ public class JsonSerDe implements SerDe {
       return s;
     case BINARY:
       throw new IOException("JsonSerDe does not support BINARY type");
+    case DATE:
+      return Date.valueOf(s);
+    case TIMESTAMP:
+      return Timestamp.valueOf(s);
+    case DECIMAL:
+      return HiveDecimal.create(s);
+    case VARCHAR:
+      return new HiveVarchar(s, ((BaseCharTypeInfo)mapKeyType).getLength());
+    case CHAR:
+      return new HiveChar(s, ((BaseCharTypeInfo)mapKeyType).getLength());
     }
-    throw new IOException("Could not convert from string to map type " + t);
+    throw new IOException("Could not convert from string to map type " + mapKeyType.getTypeName());
   }
 
   /**
@@ -399,9 +430,7 @@ public class JsonSerDe implements SerDe {
           if (i > 0) {
             sb.append(SerDeUtils.COMMA);
           }
-          sb.append(SerDeUtils.QUOTE);
-          sb.append(columnNames.get(i));
-          sb.append(SerDeUtils.QUOTE);
+          appendWithQuotes(sb, columnNames.get(i));
           sb.append(SerDeUtils.COLON);
           buildJSONString(sb, soi.getStructFieldData(obj, structFields.get(i)),
             structFields.get(i).getFieldObjectInspector());
@@ -415,7 +444,9 @@ public class JsonSerDe implements SerDe {
     }
     return new Text(sb.toString());
   }
-
+  private static StringBuilder appendWithQuotes(StringBuilder sb, String value) {
+    return sb == null ? null : sb.append(SerDeUtils.QUOTE).append(value).append(SerDeUtils.QUOTE);
+  }
   // TODO : code section copied over from SerDeUtils because of non-standard json production there
   // should use quotes for all field names. We should fix this there, and then remove this copy.
   // See http://jackson.codehaus.org/1.7.3/javadoc/org/codehaus/jackson/JsonParser.Feature.html#ALLOW_UNQUOTED_FIELD_NAMES
@@ -461,25 +492,37 @@ public class JsonSerDe implements SerDe {
           break;
         }
         case STRING: {
-          sb.append('"');
-          sb.append(SerDeUtils.escapeString(((StringObjectInspector) poi)
-            .getPrimitiveJavaObject(o)));
-          sb.append('"');
-          break;
-        }
-        case TIMESTAMP: {
-          sb.append('"');
-          sb.append(((TimestampObjectInspector) poi)
-            .getPrimitiveWritableObject(o));
-          sb.append('"');
+          String s = 
+                  SerDeUtils.escapeString(((StringObjectInspector) poi).getPrimitiveJavaObject(o));
+          appendWithQuotes(sb, s);
           break;
         }
         case BINARY: {
           throw new IOException("JsonSerDe does not support BINARY type");
         }
+        case DATE:
+          Date d = ((DateObjectInspector)poi).getPrimitiveJavaObject(o);
+          appendWithQuotes(sb, d.toString());
+          break;
+        case TIMESTAMP: {
+          Timestamp t = ((TimestampObjectInspector) poi).getPrimitiveJavaObject(o);
+          appendWithQuotes(sb, t.toString());
+          break;
+        }
+        case DECIMAL:
+          sb.append(((HiveDecimalObjectInspector)poi).getPrimitiveJavaObject(o));
+          break;
+        case VARCHAR:
+          appendWithQuotes(sb, 
+                  ((HiveVarcharObjectInspector)poi).getPrimitiveJavaObject(o).toString());
+          break;
+        case CHAR:
+          //this should use HiveChar.getPaddedValue() but it's protected; currently (v0.13)
+          // HiveChar.toString() returns getPaddedValue()
+          appendWithQuotes(sb, ((HiveCharObjectInspector)poi).getPrimitiveJavaObject(o).toString());
+          break;
         default:
-          throw new RuntimeException("Unknown primitive type: "
-            + poi.getPrimitiveCategory());
+          throw new RuntimeException("Unknown primitive type: " + poi.getPrimitiveCategory());
         }
       }
       break;
@@ -524,13 +567,11 @@ public class JsonSerDe implements SerDe {
           StringBuilder keyBuilder = new StringBuilder();
           buildJSONString(keyBuilder, e.getKey(), mapKeyObjectInspector);
           String keyString = keyBuilder.toString().trim();
-          boolean doQuoting = (!keyString.isEmpty()) && (keyString.charAt(0) != SerDeUtils.QUOTE);
-          if (doQuoting) {
-            sb.append(SerDeUtils.QUOTE);
+          if((!keyString.isEmpty()) && (keyString.charAt(0) != SerDeUtils.QUOTE)) {
+            appendWithQuotes(sb, keyString);
           }
-          sb.append(keyString);
-          if (doQuoting) {
-            sb.append(SerDeUtils.QUOTE);
+          else {
+            sb.append(keyString);
           }
           sb.append(SerDeUtils.COLON);
           buildJSONString(sb, e.getValue(), mapValueObjectInspector);
@@ -550,9 +591,7 @@ public class JsonSerDe implements SerDe {
           if (i > 0) {
             sb.append(SerDeUtils.COMMA);
           }
-          sb.append(SerDeUtils.QUOTE);
-          sb.append(structFields.get(i).getFieldName());
-          sb.append(SerDeUtils.QUOTE);
+          appendWithQuotes(sb, structFields.get(i).getFieldName());
           sb.append(SerDeUtils.COLON);
           buildJSONString(sb, soi.getStructFieldData(o, structFields.get(i)),
             structFields.get(i).getFieldObjectInspector());

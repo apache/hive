@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -588,6 +588,10 @@ public interface IMetaStoreClient {
       List<String> part_vals, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException;
 
+  List<Partition> dropPartitions(String dbName, String tblName,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      boolean ifExists) throws NoSuchObjectException, MetaException, TException;
+
   public boolean dropPartition(String db_name, String tbl_name,
       String name, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException;
@@ -931,6 +935,8 @@ public interface IMetaStoreClient {
       throws MetaException, TException;
 
   /**
+   * Return the privileges that the user, group have directly and indirectly through roles
+   * on the given hiveObject
    * @param hiveObject
    * @param user_name
    * @param group_names
@@ -943,6 +949,7 @@ public interface IMetaStoreClient {
       TException;
 
   /**
+   * Return the privileges that this principal has directly over the object (not through roles).
    * @param principal_name
    * @param principal_type
    * @param hiveObject

@@ -183,6 +183,7 @@ TOK_TABLEROWFORMATMAPKEYS;
 TOK_TABLEROWFORMATLINES;
 TOK_TABLEROWFORMATNULL;
 TOK_TBLORCFILE;
+TOK_TBLPARQUETFILE;
 TOK_TBLSEQUENCEFILE;
 TOK_TBLTEXTFILE;
 TOK_TBLRCFILE;
@@ -281,6 +282,7 @@ TOK_GRANT_ROLE;
 TOK_REVOKE_ROLE;
 TOK_SHOW_ROLE_GRANT;
 TOK_SHOW_ROLES;
+TOK_SHOW_SET_ROLE;
 TOK_SHOWINDEXES;
 TOK_SHOWDBLOCKS;
 TOK_INDEXCOMMENT;
@@ -317,6 +319,7 @@ TOK_SUBQUERY_OP_NOTIN;
 TOK_SUBQUERY_OP_NOTEXISTS;
 TOK_DB_TYPE;
 TOK_TABLE_TYPE;
+TOK_CTE;
 }
 
 
@@ -670,6 +673,8 @@ ddlStatement
     | showRoles
     | grantRole
     | revokeRole
+    | setRole
+    | showCurrentRole
     ;
 
 ifExists
@@ -787,7 +792,7 @@ createTableStatement
          tableFileFormat?
          tableLocation?
          tablePropertiesPrefixed?
-         (KW_AS selectStatement[true])?
+         (KW_AS selectStatementWithCTE)?
       )
     -> ^(TOK_CREATETABLE $name $ext? ifNotExists?
          ^(TOK_LIKETABLE $likeName?)
@@ -800,7 +805,7 @@ createTableStatement
          tableFileFormat?
          tableLocation?
          tablePropertiesPrefixed?
-         selectStatement?
+         selectStatementWithCTE?
         )
     ;
 
@@ -939,8 +944,8 @@ alterViewStatementSuffix
         -> ^(TOK_ALTERVIEW_ADDPARTS alterStatementSuffixAddPartitions)
     | alterStatementSuffixDropPartitions
         -> ^(TOK_ALTERVIEW_DROPPARTS alterStatementSuffixDropPartitions)
-    | name=tableName KW_AS selectStatement[true]
-        -> ^(TOK_ALTERVIEW_AS $name selectStatement)
+    | name=tableName KW_AS selectStatementWithCTE
+        -> ^(TOK_ALTERVIEW_AS $name selectStatementWithCTE)
     ;
 
 alterIndexStatementSuffix
@@ -1222,6 +1227,7 @@ fileFormat
     | KW_TEXTFILE  -> ^(TOK_TBLTEXTFILE)
     | KW_RCFILE  -> ^(TOK_TBLRCFILE)
     | KW_ORCFILE -> ^(TOK_TBLORCFILE)
+    | KW_PARQUETFILE -> ^(TOK_TBLPARQUETFILE)
     | KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
     | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
@@ -1274,7 +1280,7 @@ showStatement
     | KW_SHOW KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tabname=tableName ((KW_FROM|KW_IN) db_name=identifier)? 
     -> ^(TOK_SHOWCOLUMNS $db_name? $tabname)
-    | KW_SHOW KW_FUNCTIONS showStmtIdentifier?  -> ^(TOK_SHOWFUNCTIONS showStmtIdentifier?)
+    | KW_SHOW KW_FUNCTIONS showFunctionIdentifier?  -> ^(TOK_SHOWFUNCTIONS showFunctionIdentifier?)
     | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec?) 
     | KW_SHOW KW_CREATE KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=identifier)? KW_LIKE showStmtIdentifier partitionSpec?
@@ -1373,6 +1379,20 @@ showRoles
 @after {popMsg(state);}
     : KW_SHOW KW_ROLES
     -> ^(TOK_SHOW_ROLES)
+    ;
+
+showCurrentRole
+@init {pushMsg("show current role", state);}
+@after {popMsg(state);}
+    : KW_SHOW KW_CURRENT KW_ROLES
+    -> ^(TOK_SHOW_SET_ROLE)
+    ;
+
+setRole
+@init {pushMsg("set role", state);}
+@after {popMsg(state);}
+    : KW_SET KW_ROLE roleName=identifier
+    -> ^(TOK_SHOW_SET_ROLE $roleName)
     ;
 
 showGrants
@@ -1476,15 +1496,15 @@ metastoreCheck
 createFunctionStatement
 @init { pushMsg("create function statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE KW_TEMPORARY KW_FUNCTION identifier KW_AS StringLiteral
-    -> ^(TOK_CREATEFUNCTION identifier StringLiteral)
+    : KW_CREATE KW_TEMPORARY KW_FUNCTION functionIdentifier KW_AS StringLiteral
+    -> ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral)
     ;
 
 dropFunctionStatement
 @init { pushMsg("drop temporary function statement", state); }
 @after { popMsg(state); }
-    : KW_DROP KW_TEMPORARY KW_FUNCTION ifExists? identifier
-    -> ^(TOK_DROPFUNCTION identifier ifExists?)
+    : KW_DROP KW_TEMPORARY KW_FUNCTION ifExists? functionIdentifier
+    -> ^(TOK_DROPFUNCTION functionIdentifier ifExists?)
     ;
 
 createMacroStatement
@@ -1511,14 +1531,14 @@ createViewStatement
         (LPAREN columnNameCommentList RPAREN)? tableComment? viewPartition?
         tablePropertiesPrefixed?
         KW_AS
-        selectStatement[true]
+        selectStatementWithCTE
     -> ^(TOK_CREATEVIEW $name orReplace?
          ifNotExists?
          columnNameCommentList?
          tableComment?
          viewPartition?
          tablePropertiesPrefixed?
-         selectStatement
+         selectStatementWithCTE
         )
     ;
 
@@ -1533,6 +1553,13 @@ dropViewStatement
 @init { pushMsg("drop view statement", state); }
 @after { popMsg(state); }
     : KW_DROP KW_VIEW ifExists? viewName -> ^(TOK_DROPVIEW viewName ifExists?)
+    ;
+
+showFunctionIdentifier
+@init { pushMsg("identifier for show function statement", state); }
+@after { popMsg(state); }
+    : functionIdentifier
+    | StringLiteral
     ;
 
 showStmtIdentifier
@@ -1703,6 +1730,7 @@ tableFileFormat
       | KW_STORED KW_AS KW_TEXTFILE  -> TOK_TBLTEXTFILE
       | KW_STORED KW_AS KW_RCFILE  -> TOK_TBLRCFILE
       | KW_STORED KW_AS KW_ORCFILE -> TOK_TBLORCFILE
+      | KW_STORED KW_AS KW_PARQUETFILE -> TOK_TBLPARQUETFILE
       | KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
       | KW_STORED KW_BY storageHandler=StringLiteral
@@ -1910,10 +1938,36 @@ setOperator
 
 queryStatementExpression[boolean topLevel]
     :
+    /* Would be nice to do this as a gated semantic perdicate
+       But the predicate gets pushed as a lookahead decision.
+       Calling rule doesnot know about topLevel
+    */
+    (w=withClause {topLevel}?)?
+    queryStatementExpressionBody[topLevel] {
+      if ($w.tree != null) {
+      adaptor.addChild($queryStatementExpressionBody.tree, $w.tree);
+      }
+    }
+    ->  queryStatementExpressionBody
+    ;
+
+queryStatementExpressionBody[boolean topLevel]
+    :
     fromStatement[topLevel]
     | regularBody[topLevel]
     ;
-    
+
+withClause
+  :
+  KW_WITH cteStatement (COMMA cteStatement)* -> ^(TOK_CTE cteStatement+)
+;
+
+cteStatement
+   :
+   identifier KW_AS LPAREN queryStatementExpression[false] RPAREN
+   -> ^(TOK_SUBQUERY queryStatementExpression identifier)
+;
+
 fromStatement[boolean topLevel]
 : (singleFromStatement  -> singleFromStatement)
 	(u=setOperator r=singleFromStatement
@@ -1973,7 +2027,7 @@ regularBody[boolean topLevel]
 singleSelectStatement
    :
    selectClause
-   fromClause
+   fromClause?
    whereClause?
    groupByClause?
    havingClause?
@@ -1982,10 +2036,21 @@ singleSelectStatement
    distributeByClause?
    sortByClause?
    window_clause?
-   limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+   limitClause? -> ^(TOK_QUERY fromClause? ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? window_clause? limitClause?))
    ;
+
+selectStatementWithCTE
+    :
+    (w=withClause)?
+    selectStatement[true] {
+      if ($w.tree != null) {
+      adaptor.addChild($selectStatement.tree, $w.tree);
+      }
+    }
+    ->  selectStatement
+    ;
 
 body
    :

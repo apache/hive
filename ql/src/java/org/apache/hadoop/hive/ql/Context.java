@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.velocity.runtime.parser.node.GetExecutor;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for

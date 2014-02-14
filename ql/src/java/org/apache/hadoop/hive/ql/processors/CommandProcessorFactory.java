@@ -45,13 +45,13 @@ public final class CommandProcessorFactory {
 
   public static CommandProcessor get(String cmd)
       throws SQLException {
-    return get(cmd, null);
+    return get(new String[]{cmd}, null);
   }
 
-  public static CommandProcessor getForHiveCommand(String cmd, HiveConf conf)
+  public static CommandProcessor getForHiveCommand(String[] cmd, HiveConf conf)
       throws SQLException {
     HiveCommand hiveCommand = HiveCommand.find(cmd);
-    if (hiveCommand == null || isBlank(cmd)) {
+    if (hiveCommand == null || isBlank(cmd[0])) {
       return null;
     }
     if (conf == null) {
@@ -61,8 +61,8 @@ public final class CommandProcessorFactory {
     for (String availableCommand : conf.getVar(HiveConf.ConfVars.HIVE_SECURITY_COMMAND_WHITELIST).split(",")) {
       availableCommands.add(availableCommand.toLowerCase().trim());
     }
-    if (!availableCommands.contains(cmd.trim().toLowerCase())) {
-      throw new SQLException("Insufficient privileges to execute " + cmd, "42000");
+    if (!availableCommands.contains(cmd[0].trim().toLowerCase())) {
+      throw new SQLException("Insufficient privileges to execute " + cmd[0], "42000");
     }
     switch (hiveCommand) {
       case SET:
@@ -83,13 +83,13 @@ public final class CommandProcessorFactory {
     }
   }
 
-  public static CommandProcessor get(String cmd, HiveConf conf)
+  public static CommandProcessor get(String[] cmd, HiveConf conf)
       throws SQLException {
     CommandProcessor result = getForHiveCommand(cmd, conf);
     if (result != null) {
       return result;
     }
-    if (isBlank(cmd)) {
+    if (isBlank(cmd[0])) {
       return null;
     } else {
       if (conf == null) {

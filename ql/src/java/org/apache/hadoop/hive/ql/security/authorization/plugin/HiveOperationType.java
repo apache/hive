@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 
 /**
  * List of hive operations types.
  */
-@Public
+@LimitedPrivate(value = { "" })
+@Evolving
 public enum HiveOperationType {
   EXPLAIN,
   LOAD,

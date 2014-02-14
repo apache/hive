@@ -28,6 +28,10 @@ public class CastDecimalToString extends DecimalToStringUnaryUDF {
 
   private static final long serialVersionUID = 1L;
 
+  public CastDecimalToString() {
+    super();
+  }
+
   public CastDecimalToString(int inputColumn, int outputColumn) {
     super(inputColumn, outputColumn);
   }

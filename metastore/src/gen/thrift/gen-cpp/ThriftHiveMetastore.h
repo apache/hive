@@ -51,6 +51,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual bool drop_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData, const EnvironmentContext& environment_context) = 0;
   virtual bool drop_partition_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData) = 0;
   virtual bool drop_partition_by_name_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData, const EnvironmentContext& environment_context) = 0;
+  virtual void drop_partitions_req(DropPartitionsResult& _return, const DropPartitionsRequest& req) = 0;
   virtual void get_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals) = 0;
   virtual void exchange_partition(Partition& _return, const std::map<std::string, std::string> & partitionSpecs, const std::string& source_db, const std::string& source_table_name, const std::string& dest_db, const std::string& dest_table_name) = 0;
   virtual void get_partition_with_auth(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const std::string& user_name, const std::vector<std::string> & group_names) = 0;
@@ -242,6 +243,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   bool drop_partition_by_name_with_environment_context(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* part_name */, const bool /* deleteData */, const EnvironmentContext& /* environment_context */) {
     bool _return = false;
     return _return;
+  }
+  void drop_partitions_req(DropPartitionsResult& /* _return */, const DropPartitionsRequest& /* req */) {
+    return;
   }
   void get_partition(Partition& /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<std::string> & /* part_vals */) {
     return;
@@ -5337,6 +5341,134 @@ class ThriftHiveMetastore_drop_partition_by_name_with_environment_context_presul
   MetaException o2;
 
   _ThriftHiveMetastore_drop_partition_by_name_with_environment_context_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_partitions_req_args__isset {
+  _ThriftHiveMetastore_drop_partitions_req_args__isset() : req(false) {}
+  bool req;
+} _ThriftHiveMetastore_drop_partitions_req_args__isset;
+
+class ThriftHiveMetastore_drop_partitions_req_args {
+ public:
+
+  ThriftHiveMetastore_drop_partitions_req_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_partitions_req_args() throw() {}
+
+  DropPartitionsRequest req;
+
+  _ThriftHiveMetastore_drop_partitions_req_args__isset __isset;
+
+  void __set_req(const DropPartitionsRequest& val) {
+    req = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_drop_partitions_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_partitions_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_partitions_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_drop_partitions_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_partitions_req_pargs() throw() {}
+
+  const DropPartitionsRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_partitions_req_result__isset {
+  _ThriftHiveMetastore_drop_partitions_req_result__isset() : success(false), o1(false), o2(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_drop_partitions_req_result__isset;
+
+class ThriftHiveMetastore_drop_partitions_req_result {
+ public:
+
+  ThriftHiveMetastore_drop_partitions_req_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_partitions_req_result() throw() {}
+
+  DropPartitionsResult success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_drop_partitions_req_result__isset __isset;
+
+  void __set_success(const DropPartitionsResult& val) {
+    success = val;
+  }
+
+  void __set_o1(const NoSuchObjectException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const MetaException& val) {
+    o2 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_drop_partitions_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_partitions_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_partitions_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_partitions_req_presult__isset {
+  _ThriftHiveMetastore_drop_partitions_req_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_drop_partitions_req_presult__isset;
+
+class ThriftHiveMetastore_drop_partitions_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_partitions_req_presult() throw() {}
+
+  DropPartitionsResult* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_drop_partitions_req_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -12752,6 +12884,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool drop_partition_by_name_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData, const EnvironmentContext& environment_context);
   void send_drop_partition_by_name_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData, const EnvironmentContext& environment_context);
   bool recv_drop_partition_by_name_with_environment_context();
+  void drop_partitions_req(DropPartitionsResult& _return, const DropPartitionsRequest& req);
+  void send_drop_partitions_req(const DropPartitionsRequest& req);
+  void recv_drop_partitions_req(DropPartitionsResult& _return);
   void get_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals);
   void send_get_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals);
   void recv_get_partition(Partition& _return);
@@ -12950,6 +13085,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_drop_partition_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_partition_by_name(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_partition_by_name_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_drop_partitions_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_exchange_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_partition_with_auth(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -13040,6 +13176,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["drop_partition_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_drop_partition_with_environment_context;
     processMap_["drop_partition_by_name"] = &ThriftHiveMetastoreProcessor::process_drop_partition_by_name;
     processMap_["drop_partition_by_name_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_drop_partition_by_name_with_environment_context;
+    processMap_["drop_partitions_req"] = &ThriftHiveMetastoreProcessor::process_drop_partitions_req;
     processMap_["get_partition"] = &ThriftHiveMetastoreProcessor::process_get_partition;
     processMap_["exchange_partition"] = &ThriftHiveMetastoreProcessor::process_exchange_partition;
     processMap_["get_partition_with_auth"] = &ThriftHiveMetastoreProcessor::process_get_partition_with_auth;
@@ -13456,6 +13593,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->drop_partition_by_name_with_environment_context(db_name, tbl_name, part_name, deleteData, environment_context);
     }
     return ifaces_[i]->drop_partition_by_name_with_environment_context(db_name, tbl_name, part_name, deleteData, environment_context);
+  }
+
+  void drop_partitions_req(DropPartitionsResult& _return, const DropPartitionsRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->drop_partitions_req(_return, req);
+    }
+    ifaces_[i]->drop_partitions_req(_return, req);
+    return;
   }
 
   void get_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals) {

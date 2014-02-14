@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeRegistry;
+import org.apache.hadoop.hive.ql.security.authorization.PrivilegeType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Default implementation of HiveAuthorizationTaskFactory
@@ -235,9 +236,10 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     //check if admin option has been specified
     int rolesStartPos = 1;
     ASTNode wAdminOption = (ASTNode) ast.getChild(1);
+    boolean isAdmin = false;
     if(wAdminOption.getToken().getType() == HiveParser.TOK_GRANT_WITH_ADMIN_OPTION){
       rolesStartPos = 2; //start reading role names from next postion
-      //TODO: use the admin option
+      isAdmin = true;
     }
 
     List<String> roles = new ArrayList<String>();
@@ -252,7 +254,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     }
 
     //until change is made to use the admin option. Default to false with V2 authorization
-    boolean isAdmin = SessionState.get().isAuthorizationModeV2() ? false : true;
+
 
     GrantRevokeRoleDDL grantRevokeRoleDDL = new GrantRevokeRoleDDL(isGrant,
         roles, principalDesc, roleOwnerName, PrincipalType.USER, isAdmin);
@@ -322,7 +324,8 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       Privilege privObj = PrivilegeRegistry.getPrivilege(privilegeType.getType());
 
       if (privObj == null) {
-        throw new SemanticException("undefined privilege " + privilegeType.getType());
+        throw new SemanticException("Undefined privilege " + PrivilegeType.
+            getPrivTypeByToken(privilegeType.getType()));
       }
       List<String> cols = null;
       if (privilegeDef.getChildCount() > 1) {
@@ -369,5 +372,22 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
   }
   private String toMessage(ErrorMsg message, Object detail) {
     return detail == null ? message.getMsg() : message.getMsg(detail.toString());
+  }
+
+  @Override
+  public Task<? extends Serializable> createSetRoleTask(String roleName,
+      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs)
+      throws SemanticException {
+    return TaskFactory.get(new DDLWork(inputs, outputs, new RoleDDLDesc(roleName,
+      RoleDDLDesc.RoleOperation.SET_ROLE)), conf);
+  }
+
+  @Override
+  public Task<? extends Serializable> createShowCurrentRoleTask(
+      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs, Path resFile)
+      throws SemanticException {
+    RoleDDLDesc ddlDesc = new RoleDDLDesc(null, RoleDDLDesc.RoleOperation.SHOW_CURRENT_ROLE);
+    ddlDesc.setResFile(resFile.toString());
+    return TaskFactory.get(new DDLWork(inputs, outputs, ddlDesc), conf);
   }
 }

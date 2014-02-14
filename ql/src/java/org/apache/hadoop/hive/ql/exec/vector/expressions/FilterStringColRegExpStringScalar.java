@@ -36,12 +36,7 @@ public class FilterStringColRegExpStringScalar extends AbstractFilterStringColLi
   private static final String LITERAL_CHAR_GROUP = "(" + LITERAL_CHAR + "+)";
 
   private transient static List<CheckerFactory> checkerFactories = Arrays.asList(
-      new BeginCheckerFactory(),
-      new EndCheckerFactory(),
-      new MiddleCheckerFactory(),
-      new PhoneNumberCheckerFactory(),
-      new NoneCheckerFactory(),
-      new ComplexCheckerFactory());
+      new CheckerFactory [] { new ComplexCheckerFactory() });
 
   public FilterStringColRegExpStringScalar() {
     super();

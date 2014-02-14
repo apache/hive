@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.data;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -87,14 +88,23 @@ public class HCatDataCheckUtil {
 
 
   public static boolean recordsEqual(HCatRecord first, HCatRecord second) {
-    return (compareRecords(first, second) == 0);
+    return recordsEqual(first, second, null);
+  }
+  public static boolean recordsEqual(HCatRecord first, HCatRecord second, 
+                                     StringBuilder debugDetail) {
+    return (compareRecords(first, second, debugDetail) == 0);
   }
 
   public static int compareRecords(HCatRecord first, HCatRecord second) {
-    return compareRecordContents(first.getAll(), second.getAll());
+    return compareRecords(first, second, null);
+  }
+  public static int compareRecords(HCatRecord first, HCatRecord second, 
+                                   StringBuilder debugDetail) {
+    return compareRecordContents(first.getAll(), second.getAll(), debugDetail);
   }
 
-  public static int compareRecordContents(List<Object> first, List<Object> second) {
+  public static int compareRecordContents(List<Object> first, List<Object> second, 
+                                          StringBuilder debugDetail) {
     int mySz = first.size();
     int urSz = second.size();
     if (mySz != urSz) {
@@ -103,6 +113,22 @@ public class HCatDataCheckUtil {
       for (int i = 0; i < first.size(); i++) {
         int c = DataType.compare(first.get(i), second.get(i));
         if (c != 0) {
+          if(debugDetail != null) {
+            String msg = "first.get(" + i + "}='" + first.get(i) + "' second.get(" +
+                    i + ")='" + second.get(i) + "' compared as " + c + "\n" +
+            "Types 1st/2nd=" + DataType.findType(first.get(i)) + "/" +DataType.findType(
+                    second.get(i)) + '\n' + 
+                    "first='" + first.get(i) + "' second='" + second.get(i) + "'";
+            if(first.get(i) instanceof Date) {
+              msg += "\n((Date)first.get(i)).getTime()=" + ((Date)first.get(i)).getTime();
+            }
+            if(second.get(i) instanceof Date) {
+              msg += "\n((Date)second.get(i)).getTime()=" + ((Date)second.get(i)).getTime();
+            }
+
+            debugDetail.append(msg);
+            throw new RuntimeException(debugDetail.toString());
+          }
           return c;
         }
       }

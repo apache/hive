@@ -35,8 +35,7 @@ public class TaskCompilerFactory {
    * into executable units.
    */
   public static TaskCompiler getCompiler(HiveConf conf, ParseContext parseContext) {
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
-        && !parseContext.getQB().getParseInfo().isAnalyzeCommand()) {
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       return new TezCompiler();
     } else {
       return new MapReduceCompiler();

@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 
 /**
  * Constant is represented as a vector with repeating values.
@@ -30,14 +32,15 @@ public class ConstantVectorExpression extends VectorExpression {
   private static enum Type {
     LONG,
     DOUBLE,
-    BYTES
+    BYTES,
+    DECIMAL
   }
 
   private int outputColumn;
   protected long longValue = 0;
   private double doubleValue = 0;
   private byte[] bytesValue = null;
-  private String typeString;
+  private Decimal128 decimalValue = null;
 
   private Type type;
   private int bytesValueLength = 0;
@@ -67,6 +70,11 @@ public class ConstantVectorExpression extends VectorExpression {
     setBytesValue(value);
   }
 
+  public ConstantVectorExpression(int outputColumn, Decimal128 value) {
+    this(outputColumn, "decimal");
+    setDecimalValue(value);
+  }
+
   private void evaluateLong(VectorizedRowBatch vrg) {
     LongColumnVector cv = (LongColumnVector) vrg.cols[outputColumn];
     cv.isRepeating = true;
@@ -88,6 +96,13 @@ public class ConstantVectorExpression extends VectorExpression {
     cv.setRef(0, bytesValue, 0, bytesValueLength);
   }
 
+  private void evaluateDecimal(VectorizedRowBatch vrg) {
+    DecimalColumnVector dcv = (DecimalColumnVector) vrg.cols[outputColumn];
+    dcv.isRepeating = true;
+    dcv.noNulls = true;
+    dcv.vector[0] = decimalValue;
+  }
+
   @Override
   public void evaluate(VectorizedRowBatch vrg) {
     switch (type) {
@@ -99,6 +114,9 @@ public class ConstantVectorExpression extends VectorExpression {
       break;
     case BYTES:
       evaluateBytes(vrg);
+      break;
+    case DECIMAL:
+      evaluateDecimal(vrg);
       break;
     }
   }
@@ -138,16 +156,22 @@ public class ConstantVectorExpression extends VectorExpression {
     this.bytesValueLength = bytesValue.length;
   }
 
+  public void setDecimalValue(Decimal128 decimalValue) {
+    this.decimalValue = decimalValue;
+  }
+
   public String getTypeString() {
-    return typeString;
+    return getOutputType();
   }
 
   public void setTypeString(String typeString) {
-    this.typeString = typeString;
+    this.outputType = typeString;
     if ("string".equalsIgnoreCase(typeString)) {
       this.type = Type.BYTES;
     } else if ("double".equalsIgnoreCase(typeString)) {
       this.type = Type.DOUBLE;
+    } else if (VectorizationContext.decimalTypePattern.matcher(typeString).matches()){
+      this.type = Type.DECIMAL;
     } else {
       this.type = Type.LONG;
     }
@@ -163,6 +187,11 @@ public class ConstantVectorExpression extends VectorExpression {
 
   public void setType(Type type) {
     this.type = type;
+  }
+
+  @Override
+  public void setOutputType(String type) {
+    setTypeString(type);
   }
 
   @Override

@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,18 +27,13 @@ import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
+import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -141,6 +138,21 @@ public final class VectorExpressionWriterFactory {
      * The base implementation must be overridden by the Bytes specialization
      */
     public Object setValue(Object field, byte[] value, int start, int length) throws HiveException {
+      throw new HiveException("Internal error: should not reach here");
+    }
+
+    /**
+     * The base implementation must be overridden by the Decimal specialization
+     */
+    @Override
+    public Object writeValue(Decimal128 value) throws HiveException {
+      throw new HiveException("Internal error: should not reach here");
+    }
+
+    /**
+     * The base implementation must be overridden by the Decimal specialization
+     */
+    public Object setValue(Object field, Decimal128 value) throws HiveException {
       throw new HiveException("Internal error: should not reach here");
     }
   }
@@ -272,7 +284,7 @@ public final class VectorExpressionWriterFactory {
           "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
           row, bcv.noNulls, bcv.isRepeating, bcv.isNull[row], bcv.isNull[0]));
     }
-    
+
     @Override
     public Object setValue(Object field, ColumnVector column, int row) throws HiveException {
       BytesColumnVector bcv = (BytesColumnVector) column;
@@ -294,7 +306,58 @@ public final class VectorExpressionWriterFactory {
           "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
           row, bcv.noNulls, bcv.isRepeating, bcv.isNull[row], bcv.isNull[0]));
     }    
-   }
+  }
+
+
+  /**
+   * Specialized writer for DecimalColumnVector. Will throw cast exception
+   * if the wrong vector column is used.
+   */
+  private static abstract class VectorExpressionWriterDecimal extends VectorExpressionWriterBase {
+    @Override
+    public Object writeValue(ColumnVector column, int row) throws HiveException {
+      DecimalColumnVector dcv = (DecimalColumnVector) column;
+      if (dcv.noNulls && !dcv.isRepeating) {
+        return writeValue(dcv.vector[row]);
+      } else if (dcv.noNulls && dcv.isRepeating) {
+        return writeValue(dcv.vector[0]);
+      } else if (!dcv.noNulls && !dcv.isRepeating && !dcv.isNull[row]) {
+        return writeValue(dcv.vector[row]);
+      } else if (!dcv.noNulls && dcv.isRepeating && !dcv.isNull[0]) {
+        return writeValue(dcv.vector[0]);
+      } else if (!dcv.noNulls && dcv.isRepeating && dcv.isNull[0]) {
+        return null;
+      } else if (!dcv.noNulls && !dcv.isRepeating && dcv.isNull[row]) {
+        return null;
+      }
+      throw new HiveException(
+          String.format(
+              "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
+              row, dcv.noNulls, dcv.isRepeating, dcv.isNull[row], dcv.isNull[0]));
+    }
+
+    @Override
+    public Object setValue(Object field, ColumnVector column, int row) throws HiveException {
+      DecimalColumnVector dcv = (DecimalColumnVector) column;
+      if (dcv.noNulls && !dcv.isRepeating) {
+        return setValue(field, dcv.vector[row]);
+      } else if (dcv.noNulls && dcv.isRepeating) {
+        return setValue(field, dcv.vector[0]);
+      } else if (!dcv.noNulls && !dcv.isRepeating && !dcv.isNull[row]) {
+        return setValue(field, dcv.vector[row]);
+      } else if (!dcv.noNulls && !dcv.isRepeating && dcv.isNull[row]) {
+        return null;
+      } else if (!dcv.noNulls && dcv.isRepeating && !dcv.isNull[0]) {
+        return setValue(field, dcv.vector[0]);
+      } else if (!dcv.noNulls && dcv.isRepeating && dcv.isNull[0]) {
+        return null;
+      }
+      throw new HiveException(
+          String.format(
+              "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
+              row, dcv.noNulls, dcv.isRepeating, dcv.isNull[row], dcv.isNull[0]));
+    }
+  }
 
     /**
      * Compiles the appropriate vector expression writer based on an expression info (ExprNodeDesc)
@@ -381,17 +444,78 @@ public final class VectorExpressionWriterFactory {
   }
 
   private static VectorExpressionWriter genVectorExpressionWritableDecimal(
-        SettableHiveDecimalObjectInspector fieldObjInspector) throws HiveException {
-    
-      // We should never reach this, the compile validation should guard us
-      throw new HiveException("DECIMAL primitive type not supported in vectorization.");
-    }
+      SettableHiveDecimalObjectInspector fieldObjInspector) throws HiveException {
+
+    return new VectorExpressionWriterDecimal() {
+      private HiveDecimal hd;
+      private Object obj;
+
+      public VectorExpressionWriter init(SettableHiveDecimalObjectInspector objInspector) throws HiveException {
+        super.init(objInspector);
+        hd = HiveDecimal.create(BigDecimal.ZERO);
+        obj = initValue(null);
+        return this;
+      }
+
+      @Override
+      public Object writeValue(Decimal128 value) throws HiveException {
+        hd.setNormalize(value.toBigDecimal());
+        ((SettableHiveDecimalObjectInspector) this.objectInspector).set(obj, hd);
+        return obj;
+      }
+
+      @Override
+      public Object setValue(Object field, Decimal128 value) {
+        hd.setNormalize(value.toBigDecimal());
+        ((SettableHiveDecimalObjectInspector) this.objectInspector).set(field, hd);
+        return field;
+      }
+
+      @Override
+      public Object initValue(Object ignored) throws HiveException {
+        return ((SettableHiveDecimalObjectInspector) this.objectInspector).create(
+            HiveDecimal.create(BigDecimal.ZERO));
+      }
+    }.init(fieldObjInspector);
+  }
 
   private static VectorExpressionWriter genVectorExpressionWritableDate(
-        SettableDateObjectInspector fieldObjInspector) throws HiveException {
-    // We should never reach this, the compile validation should guard us
-    throw new HiveException("DATE primitive type not supported in vectorization.");
-    }
+      SettableDateObjectInspector fieldObjInspector) throws HiveException {
+    return new VectorExpressionWriterLong() {
+      private Date dt;
+      private Object obj;
+
+      public VectorExpressionWriter init(SettableDateObjectInspector objInspector) throws HiveException {
+        super.init(objInspector);
+        dt = new Date(0);
+        obj = initValue(null);
+        return this;
+      }
+
+      @Override
+      public Object writeValue(long value) {
+        dt.setTime(DateWritable.daysToMillis((int) value));
+        ((SettableDateObjectInspector) this.objectInspector).set(obj, dt);
+        return obj;
+      }
+
+      @Override
+      public Object setValue(Object field, long value) {
+        if (null == field) {
+          field = initValue(null);
+        }
+        dt.setTime(DateWritable.daysToMillis((int) value));
+        ((SettableDateObjectInspector) this.objectInspector).set(field, dt);
+        return field;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableDateObjectInspector) this.objectInspector).create(new Date(0));
+      }
+
+    }.init(fieldObjInspector);
+  }
 
   private static VectorExpressionWriter genVectorExpressionWritableTimestamp(
         SettableTimestampObjectInspector fieldObjInspector) throws HiveException {

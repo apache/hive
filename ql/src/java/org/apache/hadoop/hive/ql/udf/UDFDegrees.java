@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncDegreesDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncDegreesLongToDouble;
@@ -34,7 +33,7 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
         "  -1\n"
     )
 @VectorizedExpressions({FuncDegreesLongToDouble.class, FuncDegreesDoubleToDouble.class})
-public class UDFDegrees extends UDF{
+public class UDFDegrees extends UDFMath {
 
   @SuppressWarnings("unused")
   private static Log LOG = LogFactory.getLog(UDFDegrees.class.getName());

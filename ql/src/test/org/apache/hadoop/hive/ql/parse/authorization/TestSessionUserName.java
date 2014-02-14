@@ -22,6 +22,7 @@ import junit.framework.Assert;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerImpl;
@@ -106,8 +107,8 @@ public class TestSessionUserName {
 
     @Override
     public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
-        HiveConf conf, String hiveCurrentUser) {
-      username = hiveCurrentUser;
+        HiveConf conf, HiveAuthenticationProvider authenticator) {
+      username = authenticator.getUserName();
       return new HiveAuthorizerImpl(null, null);
     }
   }

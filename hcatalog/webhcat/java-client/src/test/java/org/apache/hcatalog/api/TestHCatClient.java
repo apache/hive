@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
+import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
@@ -51,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
@@ -178,6 +180,24 @@ public class TestHCatClient {
     assertTrue(table3.getSerdeLib().equalsIgnoreCase(
       OrcSerde.class.getName()));
     assertTrue(table1.getCols().equals(cols));
+
+    // Check that serDe settings stick.
+    String tableFour = "table4";
+    String nonDefaultSerDe = "com.my.custom.SerDe";
+    HCatCreateTableDesc tableDesc4 = 
+        HCatCreateTableDesc.create(db, tableFour, cols).serDe(nonDefaultSerDe).build();
+    client.createTable(tableDesc4);
+    HCatTable table4 = client.getTable(db, tableFour);
+    assertEquals("SerDe libraries don't match!", nonDefaultSerDe, table4.getSerdeLib());
+    client.dropTable(db, tableFour, true);
+
+    // Check that serDe settings don't stick when a storageHandler is used.
+    tableDesc4 = HCatCreateTableDesc.create(db, tableFour, cols).
+        serDe(nonDefaultSerDe).storageHandler(DefaultStorageHandler.class.getName()).build();
+    client.createTable(tableDesc4);
+    table4 = client.getTable(db, tableFour);
+    assertNotSame("SerDe libraries shouldn't have matched!", nonDefaultSerDe, table4.getSerdeLib());
+    client.dropTable(db, tableFour, true);
 
     client.close();
   }

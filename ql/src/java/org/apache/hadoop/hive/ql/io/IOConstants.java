@@ -15,33 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.io;
 
-package org.apache.hadoop.hive.ql.security.authorization.plugin;
+public final class IOConstants {
+  public static final String COLUMNS = "columns";
+  public static final String COLUMNS_TYPES = "columns.types";
+  public static final String MAPRED_TASK_ID = "mapred.task.id";
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-
-/**
- * Exception thrown by the Authorization plugin api (v2)
- */
-@Public
-public class HiveAuthorizationPluginException extends HiveException{
-
-  private static final long serialVersionUID = 1L;
-
-  public HiveAuthorizationPluginException(){
+  private IOConstants() {
+    // prevent instantiation
   }
-
-  public HiveAuthorizationPluginException(String msg){
-    super(msg);
-  }
-
-  public HiveAuthorizationPluginException(String msg, Throwable cause){
-    super(msg, cause);
-  }
-
-  public HiveAuthorizationPluginException(Throwable cause){
-    super(cause);
-  }
-
 }

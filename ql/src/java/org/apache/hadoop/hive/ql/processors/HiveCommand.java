@@ -38,11 +38,18 @@ public enum HiveCommand {
       COMMANDS.add(command.name());
     }
   }
-  public static HiveCommand find(String command) {
-    if (command != null) {
-      command = command.trim().toUpperCase();
-      if (COMMANDS.contains(command)) {
-        return HiveCommand.valueOf(command);
+  public static HiveCommand find(String[] command) {
+    if (null == command){
+      return null;
+    }
+    String cmd = command[0];
+    if (cmd != null) {
+      cmd = cmd.trim().toUpperCase();
+      if (command.length > 1 && "role".equalsIgnoreCase(command[1])) {
+        // special handling for set role r1 statement
+        return null;
+      } else if (COMMANDS.contains(cmd)) {
+        return HiveCommand.valueOf(cmd);
       }
     }
     return null;

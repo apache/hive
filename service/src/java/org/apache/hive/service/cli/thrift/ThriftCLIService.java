@@ -59,7 +59,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   protected int portNum;
   protected InetSocketAddress serverAddress;
   protected TServer server;
-  protected org.mortbay.jetty.Server httpServer;
+  protected org.eclipse.jetty.server.Server httpServer;
 
   private boolean isStarted = false;
   protected boolean isEmbedded = false;

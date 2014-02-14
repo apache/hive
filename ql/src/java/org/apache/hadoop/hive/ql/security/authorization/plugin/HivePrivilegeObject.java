@@ -17,15 +17,21 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 
 /**
  * Represents the object on which privilege is being granted/revoked
  */
-@Public
+@LimitedPrivate(value = { "" })
 @Unstable
 public class HivePrivilegeObject {
+
+  @Override
+  public String toString() {
+    return "Hive Object [type=" + type + ", dbname=" + dbname + ", table/viewname="
+        + tableviewname + "]";
+  }
 
   public enum HivePrivilegeObjectType { DATABASE, TABLE, VIEW, PARTITION, URI};
   private final HivePrivilegeObjectType type;

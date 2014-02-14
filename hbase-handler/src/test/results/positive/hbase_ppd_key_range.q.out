@@ -35,7 +35,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_pushdown
-            filterExpr:
+            filterExpr: (key > '90') (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (key > '90') (type: boolean)
@@ -189,7 +189,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_pushdown
-            filterExpr:
+            filterExpr: (key >= UDFToString((40 + 50))) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (key >= UDFToString((40 + 50))) (type: boolean)
@@ -242,7 +242,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_pushdown
-            filterExpr:
+            filterExpr: (key > '90') (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (value like '%9%') (type: boolean)
@@ -296,7 +296,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_pushdown
-            filterExpr:
+            filterExpr: (key >= '90') (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: ((value like '%9%') and (key = UDFToInteger(value))) (type: boolean)
@@ -347,7 +347,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_pushdown
-            filterExpr:
+            filterExpr: ((key < '80') and (key > '90')) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (value like '%90%') (type: boolean)
@@ -505,7 +505,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_pushdown
-            filterExpr:
+            filterExpr: ((key > '281') and (key < '287')) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: ((key > '281') and (key < '287')) (type: boolean)

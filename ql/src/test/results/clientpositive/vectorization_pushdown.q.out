@@ -13,7 +13,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            filterExpr:
+            filterExpr: (cbigint < cdouble) (type: boolean)
             Statistics: Num rows: 23577 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (cbigint < cdouble) (type: boolean)

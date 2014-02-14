@@ -1,23 +1,26 @@
+set hive.users.in.admin.role=hive_admin_user;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
+set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
+set user.name=hive_admin_user;
 
 create table src_autho_test (key STRING, value STRING) ;
 
 set hive.security.authorization.enabled=true;
-
+set  role ADMIN; 
 --table grant to user
 
-grant select on table src_autho_test to user hive_test_user;
+grant select on table src_autho_test to user user_sauth;
 
-show grant user hive_test_user on table src_autho_test;
+show grant user user_sauth on table src_autho_test;
 
 
-revoke select on table src_autho_test from user hive_test_user;
-show grant user hive_test_user on table src_autho_test;
+revoke select on table src_autho_test from user user_sauth;
+show grant user user_sauth on table src_autho_test;
 
 --role
 create role src_role;
-grant role src_role to user hive_test_user;
-show role grant user hive_test_user;
+grant role src_role to user user_sauth;
+show role grant user user_sauth;
 
 --table grant to role
 

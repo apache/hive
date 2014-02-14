@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -73,6 +74,12 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("unchecked")
   private void analyzeCreateMacro(ASTNode ast) throws SemanticException {
     String functionName = ast.getChild(0).getText();
+
+    // Temp macros are not allowed to have qualified names.
+    if (FunctionUtils.isQualifiedFunctionName(functionName)) {
+      throw new SemanticException("Temporary macro cannot be created with a qualified name.");
+    }
+
     List<FieldSchema> arguments =
       BaseSemanticAnalyzer.getColumns((ASTNode)ast.getChild(1), true);
     boolean isNoArgumentMacro = arguments.size() == 0;
@@ -80,6 +87,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<String> macroColNames = new ArrayList<String>(arguments.size());
     ArrayList<TypeInfo> macroColTypes = new ArrayList<TypeInfo>(arguments.size());
     final Set<String> actualColumnNames = new HashSet<String>();
+
     if(!isNoArgumentMacro) {
       /*
        * Walk down expression to see which arguments are actually used.

@@ -42,9 +42,11 @@ public class <ClassName> extends VectorExpression {
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
     this.outputColumn = outputColumn;
+    this.outputType = "decimal";
   }
 
   public <ClassName>() {
+    this.outputType = "decimal";
   }
 
   @Override
@@ -142,11 +144,6 @@ public class <ClassName> extends VectorExpression {
   @Override
   public int getOutputColumn() {
     return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "decimal";
   }
 
   public int getColNum1() {

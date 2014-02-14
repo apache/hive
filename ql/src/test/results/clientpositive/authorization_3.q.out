@@ -25,20 +25,8 @@ PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table src_autho_test
 POSTHOOK: type: SHOW_GRANT
-database	default
-table	src_autho_test
-principalName	hive_test_user
-principalType	USER
-privilege	Drop
-#### A masked pattern was here ####
-grantor	hive_test_user
-database	default
-table	src_autho_test
-principalName	hive_test_user
-principalType	USER
-privilege	Select
-#### A masked pattern was here ####
-grantor	hive_test_user
+default	src_autho_test			hive_test_user	USER	Drop	false	-1	hive_test_user
+default	src_autho_test			hive_test_user	USER	Select	false	-1	hive_test_user
 PREHOOK: query: revoke select on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@src_autho_test
@@ -61,20 +49,8 @@ PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table src_autho_test
 POSTHOOK: type: SHOW_GRANT
-database	default
-table	src_autho_test
-principalName	hive_test_user
-principalType	USER
-privilege	Drop
-#### A masked pattern was here ####
-grantor	hive_test_user
-database	default
-table	src_autho_test
-principalName	hive_test_user
-principalType	USER
-privilege	Select
-#### A masked pattern was here ####
-grantor	hive_test_user
+default	src_autho_test			hive_test_user	USER	Drop	false	-1	hive_test_user
+default	src_autho_test			hive_test_user	USER	Select	false	-1	hive_test_user
 PREHOOK: query: revoke drop,select on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@src_autho_test
@@ -91,13 +67,7 @@ PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table src_autho_test
 POSTHOOK: type: SHOW_GRANT
-database	default
-table	src_autho_test
-principalName	hive_test_user
-principalType	USER
-privilege	Drop
-#### A masked pattern was here ####
-grantor	hive_test_user
+default	src_autho_test			hive_test_user	USER	Drop	false	-1	hive_test_user
 PREHOOK: query: revoke drop,select(key), select(value) on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@src_autho_test

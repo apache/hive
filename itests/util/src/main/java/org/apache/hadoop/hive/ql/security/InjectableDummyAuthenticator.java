@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  *
@@ -80,7 +81,7 @@ public class InjectableDummyAuthenticator implements HiveMetastoreAuthentication
   @Override
   public void setConf(Configuration config) {
     try {
-      hmap = (HiveMetastoreAuthenticationProvider) hmapClass.newInstance();
+      hmap = hmapClass.newInstance();
     } catch (InstantiationException e) {
       throw new RuntimeException("Whoops, could not create an Authenticator of class " +
           hmapClass.getName());
@@ -100,6 +101,11 @@ public class InjectableDummyAuthenticator implements HiveMetastoreAuthentication
   @Override
   public void destroy() throws HiveException {
     hmap.destroy();
+  }
+
+  @Override
+  public void setSessionState(SessionState arg0) {
+    //no-op
   }
 
 }
