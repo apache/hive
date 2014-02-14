@@ -558,6 +558,19 @@ public class SessionState {
     }
   }
 
+  /**
+   *
+   * @return username from current SessionState authenticator. username will be
+   *         null if there is no current SessionState object or authenticator is
+   *         null.
+   */
+  public static String getUserFromAuthenticator() {
+    if (SessionState.get() != null && SessionState.get().getAuthenticator() != null) {
+      return SessionState.get().getAuthenticator().getUserName();
+    }
+    return null;
+  }
+
   public static boolean registerJar(String newJar) {
     LogHelper console = getConsole();
     try {

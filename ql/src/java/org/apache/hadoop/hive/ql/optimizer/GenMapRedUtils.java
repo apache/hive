@@ -44,8 +44,8 @@ import org.apache.hadoop.hive.ql.exec.DemuxOperator;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -102,7 +102,6 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.mapred.InputFormat;
 
 /**
  * General utility common functions for the Processor to convert operator into
@@ -562,14 +561,18 @@ public final class GenMapRedUtils {
 
     // The table should also be considered a part of inputs, even if the table is a
     // partitioned table and whether any partition is selected or not
+
+    //This read entity is a direct read entity and not an indirect read (that is when
+    // this is being read because it is a dependency of a view).
+    boolean isDirectRead = (parentViewInfo == null);
     PlanUtils.addInput(inputs,
-        new ReadEntity(parseCtx.getTopToTable().get(topOp), parentViewInfo));
+        new ReadEntity(parseCtx.getTopToTable().get(topOp), parentViewInfo, isDirectRead));
 
     for (Partition part : parts) {
       if (part.getTable().isPartitioned()) {
-        PlanUtils.addInput(inputs, new ReadEntity(part, parentViewInfo));
+        PlanUtils.addInput(inputs, new ReadEntity(part, parentViewInfo, isDirectRead));
       } else {
-        PlanUtils.addInput(inputs, new ReadEntity(part.getTable(), parentViewInfo));
+        PlanUtils.addInput(inputs, new ReadEntity(part.getTable(), parentViewInfo, isDirectRead));
       }
 
       // Later the properties have to come from the partition as opposed
@@ -1236,7 +1239,7 @@ public final class GenMapRedUtils {
       // Check if InputFormatClass is valid
       String inputFormatClass = conf.getVar(ConfVars.HIVEMERGEINPUTFORMATBLOCKLEVEL);
       try {
-        Class c = (Class<? extends InputFormat>) Class.forName(inputFormatClass);
+        Class c = Class.forName(inputFormatClass);
 
         LOG.info("RCFile format- Using block level merge");
         cplan = GenMapRedUtils.createRCFileMergeTask(fsInputDesc, finalName,
@@ -1633,7 +1636,7 @@ public final class GenMapRedUtils {
           // merge for a map-only job
           // or for a map-reduce job
           if (currTask.getWork() instanceof TezWork) {
-            return hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) || 
+            return hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) ||
                 hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES);
           } else if (currTask.getWork() instanceof MapredWork) {
             ReduceWork reduceWork = ((MapredWork) currTask.getWork()).getReduceWork();
@@ -1680,9 +1683,9 @@ public final class GenMapRedUtils {
       Context baseCtx = parseCtx.getContext();
   	  // if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
       // to final location /user/hive/warehouse/ will fail later, so instead pick tmp dir
-      // on same namespace as tbl dir. 
-      Path tmpDir = dest.toUri().getScheme().equals("viewfs") ? 
-        baseCtx.getExtTmpPathRelTo(dest.toUri()) : 
+      // on same namespace as tbl dir.
+      Path tmpDir = dest.toUri().getScheme().equals("viewfs") ?
+        baseCtx.getExtTmpPathRelTo(dest.toUri()) :
         baseCtx.getExternalTmpPath(dest.toUri());
 
       FileSinkDesc fileSinkDesc = fsOp.getConf();

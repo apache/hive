@@ -4,7 +4,7 @@ set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.Sessi
 set user.name=user1;
 -- current user has been set (comment line before the set cmd is resulting in parse error!!)
 
-CREATE TABLE  table_priv_rev(i int);
+CREATE TABLE table_priv_rev(i int);
 
 -- grant insert privilege to user2
 GRANT INSERT ON table_priv_rev TO USER user2;
@@ -48,3 +48,10 @@ SHOW GRANT USER user2 ON TABLE table_priv_rev;
 REVOKE SELECT ON TABLE table_priv_rev FROM USER user2;
 SHOW GRANT USER user2 ON TABLE table_priv_rev;
 
+
+-- grant all followed by revoke all
+GRANT ALL ON table_priv_rev TO USER user2;
+SHOW GRANT USER user2 ON TABLE table_priv_rev;
+
+REVOKE ALL ON TABLE table_priv_rev FROM USER user2;
+SHOW GRANT USER user2 ON TABLE table_priv_rev;

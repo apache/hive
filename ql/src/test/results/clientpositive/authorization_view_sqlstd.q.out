@@ -1,0 +1,98 @@
+PREHOOK: query: create table t1(i int, j int, k int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table t1(i int, j int, k int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t1
+PREHOOK: query: -- protecting certain columns
+create view vt1 as select i,k from t1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+POSTHOOK: query: -- protecting certain columns
+create view vt1 as select i,k from t1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@vt1
+PREHOOK: query: -- protecting certain rows
+create view vt2 as select * from t1 where i > 1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+POSTHOOK: query: -- protecting certain rows
+create view vt2 as select * from t1 where i > 1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@vt2
+PREHOOK: query: --view grant to user
+
+grant select on view vt1 to user user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@vt1
+POSTHOOK: query: --view grant to user
+
+grant select on view vt1 to user user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@vt1
+PREHOOK: query: grant insert on view vt1 to user user3
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@vt1
+POSTHOOK: query: grant insert on view vt1 to user user3
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@vt1
+PREHOOK: query: show grant user user2 on table vt1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user2 on table vt1
+POSTHOOK: type: SHOW_GRANT
+default	vt1			user2	USER	SELECT	false	-1	user1
+PREHOOK: query: show grant user user3 on table vt1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user3 on table vt1
+POSTHOOK: type: SHOW_GRANT
+default	vt1			user3	USER	INSERT	false	-1	user1
+PREHOOK: query: select * from vt1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@vt1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from vt1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@vt1
+#### A masked pattern was here ####
+PREHOOK: query: grant all on view vt2 to user user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@vt2
+POSTHOOK: query: grant all on view vt2 to user user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@vt2
+PREHOOK: query: show grant user user2 on table vt2
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user2 on table vt2
+POSTHOOK: type: SHOW_GRANT
+default	vt2			user2	USER	DELETE	false	-1	user1
+default	vt2			user2	USER	INSERT	false	-1	user1
+default	vt2			user2	USER	SELECT	false	-1	user1
+default	vt2			user2	USER	UPDATE	false	-1	user1
+PREHOOK: query: revoke all on view vt2 from user user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@vt2
+POSTHOOK: query: revoke all on view vt2 from user user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@vt2
+PREHOOK: query: show grant user user2 on table vt2
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user2 on table vt2
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: revoke select on view vt1 from user user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@vt1
+POSTHOOK: query: revoke select on view vt1 from user user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@vt1
+PREHOOK: query: show grant user user2 on table vt1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user2 on table vt1
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant user user3 on table vt1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user3 on table vt1
+POSTHOOK: type: SHOW_GRANT
+default	vt1			user3	USER	INSERT	false	-1	user1
