@@ -409,7 +409,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    private Configuration getConf() {
+    public Configuration getConf() {
       Configuration conf = threadLocalConf.get();
       if (conf == null) {
         conf = new Configuration(hiveConf);
