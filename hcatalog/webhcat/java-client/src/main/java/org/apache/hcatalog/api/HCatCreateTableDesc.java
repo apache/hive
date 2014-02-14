@@ -345,6 +345,7 @@ public class HCatCreateTableDesc {
     private String fileFormat;
     private String location;
     private String storageHandler;
+    private String serDe;
     private Map<String, String> tblProps;
     private boolean ifNotExists;
     private String dbName;
@@ -472,6 +473,17 @@ public class HCatCreateTableDesc {
     }
 
     /**
+     * SerDe.
+     *
+     * @param serDe the SerDe implementation's class-name.
+     * @return the builder
+     */
+    public Builder serDe(String serDe) {
+        this.serDe = serDe;
+        return this;
+    }
+
+    /**
      * Builds the HCatCreateTableDesc.
      *
      * @return HCatCreateTableDesc
@@ -494,7 +506,7 @@ public class HCatCreateTableDesc {
       desc.location = this.location;
       desc.tblProps = this.tblProps;
       desc.sortCols = this.sortCols;
-      desc.serde = null;
+      desc.serde = this.serDe;
       if (!StringUtils.isEmpty(fileFormat)) {
         desc.fileFormat = fileFormat;
         if ("SequenceFile".equalsIgnoreCase(fileFormat)) {
