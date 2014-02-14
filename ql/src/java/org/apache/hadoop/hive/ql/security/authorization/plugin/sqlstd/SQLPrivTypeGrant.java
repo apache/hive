@@ -29,8 +29,8 @@ public enum SQLPrivTypeGrant {
   UPDATE_WGRANT(SQLPrivilegeType.UPDATE, true),
   DELETE_NOGRANT(SQLPrivilegeType.DELETE, false),
   DELETE_WGRANT(SQLPrivilegeType.DELETE, true),
-  OWNER_PRIV("Object ownership"),
-  ADMIN_PRIV("Admin privilege"); // This one can be used to deny permission for performing the operation
+  OWNER_PRIV("OBJECT OWNERSHIP"),
+  ADMIN_PRIV("ADMIN PRIVILEGE"); // This one can be used to deny permission for performing the operation
 
   private final SQLPrivilegeType privType;
   private final boolean withGrant;

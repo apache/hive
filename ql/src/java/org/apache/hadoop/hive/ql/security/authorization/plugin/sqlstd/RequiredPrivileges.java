@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginEx
 /**
  * Captures privilege sets, and can be used to compare required and available privileges
  * to find missing privileges (if any).
+ * ADMIN_PRIV is considered a special privilege, if the user has that, then no privilege is
+ * missing.
  */
 public class RequiredPrivileges {
 
@@ -56,6 +58,12 @@ public class RequiredPrivileges {
    */
   public Collection<SQLPrivTypeGrant> findMissingPrivs(RequiredPrivileges availPrivs) {
     MissingPrivilegeCapturer missingPrivCapturer = new MissingPrivilegeCapturer();
+
+    if(availPrivs.privilegeGrantSet.contains(SQLPrivTypeGrant.ADMIN_PRIV)){
+      //you are an admin! You have all privileges, no missing privileges
+      return missingPrivCapturer.getMissingPrivileges();
+    }
+    // check the mere mortals!
     for (SQLPrivTypeGrant requiredPriv : privilegeGrantSet) {
       if (!availPrivs.privilegeGrantSet.contains(requiredPriv)) {
         missingPrivCapturer.addMissingPrivilege(requiredPriv);

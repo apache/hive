@@ -1,0 +1,77 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: -- the test verifies that authorization is happening with privileges of the current roles
+
+-- grant privileges with grant option for table to role2 
+create role role2
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: -- the test verifies that authorization is happening with privileges of the current roles
+
+-- grant privileges with grant option for table to role2 
+create role role2
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant role role2 to user user2
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role role2 to user user2
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: create table tpriv_current_role(i int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tpriv_current_role(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tpriv_current_role
+PREHOOK: query: grant all on table tpriv_current_role to role role2 with grant option
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@tpriv_current_role
+POSTHOOK: query: grant all on table tpriv_current_role to role role2 with grant option
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@tpriv_current_role
+PREHOOK: query: -- switch to user2
+
+-- by default all roles should be in current roles, and grant to new user should work
+show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: -- switch to user2
+
+-- by default all roles should be in current roles, and grant to new user should work
+show current roles
+POSTHOOK: type: SHOW_ROLES
+role2
+PUBLIC
+
+PREHOOK: query: grant all on table tpriv_current_role to user user3
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@tpriv_current_role
+POSTHOOK: query: grant all on table tpriv_current_role to user user3
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@tpriv_current_role
+PREHOOK: query: set role role2
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role role2
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: -- switch to role2, grant should work
+grant all on table tpriv_current_role to user user4
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@tpriv_current_role
+POSTHOOK: query: -- switch to role2, grant should work
+grant all on table tpriv_current_role to user user4
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@tpriv_current_role
+PREHOOK: query: show grant user user4 on table tpriv_current_role
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user4 on table tpriv_current_role
+POSTHOOK: type: SHOW_GRANT
+default	tpriv_current_role			user4	USER	DELETE	false	-1	user2
+default	tpriv_current_role			user4	USER	INSERT	false	-1	user2
+default	tpriv_current_role			user4	USER	SELECT	false	-1	user2
+default	tpriv_current_role			user4	USER	UPDATE	false	-1	user2
+PREHOOK: query: set role PUBLIC
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role PUBLIC
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: -- set role to public, should fail as role2 is not one of the current roles
+grant all on table tpriv_current_role to user user5
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@tpriv_current_role
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Permission denied. Principal [name=user2, type=USER] does not have following privileges on Object [type=TABLE_OR_VIEW, name=default.tpriv_current_role] : [SELECT with grant, INSERT with grant, UPDATE with grant, DELETE with grant]

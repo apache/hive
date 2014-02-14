@@ -22,6 +22,11 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 /**
  * Factory for getting current valid instance of IMetaStoreClient
+ * Metastore client cannot be cached in authorization interface as that
+ * can get invalidated between the calls with the logic in Hive class.
+ * The standard way of getting metastore client object is through Hive.get().getMSC().
+ * But Hive class is not a public interface, so this factory helps in hiding Hive
+ * class from the authorization interface users.
  */
 @LimitedPrivate(value = { "" })
 @Evolving

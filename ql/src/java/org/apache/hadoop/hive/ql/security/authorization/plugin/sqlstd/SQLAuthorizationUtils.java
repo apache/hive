@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
 import org.apache.thrift.TException;
 
 public class SQLAuthorizationUtils {
@@ -121,7 +123,7 @@ public class SQLAuthorizationUtils {
     case DATABASE:
       return HivePrivilegeObjectType.DATABASE;
     case TABLE:
-      return HivePrivilegeObjectType.TABLE;
+      return HivePrivilegeObjectType.TABLE_OR_VIEW;
     case COLUMN:
     case GLOBAL:
     case PARTITION:
@@ -151,16 +153,22 @@ public class SQLAuthorizationUtils {
 
   /**
    * Get the privileges this user(userName argument) has on the object
-   * (hivePrivObject argument)
+   * (hivePrivObject argument) If isAdmin is true, adds an admin privilege as
+   * well.
    *
    * @param metastoreClient
    * @param userName
    * @param hivePrivObject
+   * @param curRoles
+   *          current active roles for user
+   * @param isAdmin
+   *          if user can run as admin user
    * @return
    * @throws HiveAuthzPluginException
    */
   static RequiredPrivileges getPrivilegesFromMetaStore(IMetaStoreClient metastoreClient,
-      String userName, HivePrivilegeObject hivePrivObject) throws HiveAuthzPluginException {
+      String userName, HivePrivilegeObject hivePrivObject, List<HiveRole> curRoles, boolean isAdmin)
+          throws HiveAuthzPluginException {
 
     // get privileges for this user and its role on this object
     PrincipalPrivilegeSet thrifPrivs = null;
@@ -175,6 +183,8 @@ public class SQLAuthorizationUtils {
       throwGetPrivErr(e, hivePrivObject, userName);
     }
 
+    filterPrivsByCurrentRoles(thrifPrivs, curRoles);
+
     // convert to RequiredPrivileges
     RequiredPrivileges privs = getRequiredPrivsFromThrift(thrifPrivs);
 
@@ -182,8 +192,39 @@ public class SQLAuthorizationUtils {
     if (isOwner(metastoreClient, userName, hivePrivObject)) {
       privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
     }
+    if (isAdmin) {
+      privs.addPrivilege(SQLPrivTypeGrant.ADMIN_PRIV);
+    }
 
     return privs;
+  }
+
+  /**
+   * Remove any role privileges that don't belong to the roles in curRoles
+   * @param thriftPrivs
+   * @param curRoles
+   * @return
+   */
+  private static void filterPrivsByCurrentRoles(PrincipalPrivilegeSet thriftPrivs,
+      List<HiveRole> curRoles) {
+    // check if there are privileges to be filtered
+    if(thriftPrivs == null || thriftPrivs.getRolePrivileges() == null
+        || thriftPrivs.getRolePrivilegesSize() == 0
+        ){
+      // no privileges to filter
+      return;
+    }
+
+    // add the privs for roles in curRoles to new role-to-priv map
+    Map<String, List<PrivilegeGrantInfo>> filteredRolePrivs = new HashMap<String, List<PrivilegeGrantInfo>>();
+    for(HiveRole role : curRoles){
+      String roleName = role.getRoleName();
+      List<PrivilegeGrantInfo> privs = thriftPrivs.getRolePrivileges().get(roleName);
+      if(privs != null){
+        filteredRolePrivs.put(roleName, privs);
+      }
+    }
+    thriftPrivs.setRolePrivileges(filteredRolePrivs);
   }
 
   /**
@@ -200,10 +241,10 @@ public class SQLAuthorizationUtils {
   private static boolean isOwner(IMetaStoreClient metastoreClient, String userName,
       HivePrivilegeObject hivePrivObject) throws HiveAuthzPluginException {
     //for now, check only table
-    if(hivePrivObject.getType() == HivePrivilegeObjectType.TABLE){
+    if(hivePrivObject.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW){
       Table thriftTableObj = null;
       try {
-        thriftTableObj = metastoreClient.getTable(hivePrivObject.getDbname(), hivePrivObject.getTableviewname());
+        thriftTableObj = metastoreClient.getTable(hivePrivObject.getDbname(), hivePrivObject.getTableViewURI());
       } catch (MetaException e) {
         throwGetTableErr(e, hivePrivObject);
       } catch (NoSuchObjectException e) {
@@ -224,7 +265,8 @@ public class SQLAuthorizationUtils {
 
   private static void throwGetPrivErr(Exception e, HivePrivilegeObject hivePrivObject,
       String userName) throws HiveAuthzPluginException {
-    String msg = "Error getting privileges on " + hivePrivObject + " for " + userName;
+    String msg = "Error getting privileges on " + hivePrivObject + " for " + userName + ": "
+      + e.getMessage();
     throw new HiveAuthzPluginException(msg, e);
   }
 

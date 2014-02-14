@@ -19,4 +19,4 @@ PREHOOK: query: -- try grant insert to user3
 GRANT INSERT ON table_priv_gfail1 TO USER user3
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv_gfail1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Permission denied. Principal [name=user2, type=USER] does not have following privileges on Hive Object [type=TABLE, dbname=default, table/viewname=table_priv_gfail1] : [INSERT with grant]
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Permission denied. Principal [name=user2, type=USER] does not have following privileges on Object [type=TABLE_OR_VIEW, name=default.table_priv_gfail1] : [INSERT with grant]

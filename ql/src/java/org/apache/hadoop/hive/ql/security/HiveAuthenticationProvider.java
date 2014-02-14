@@ -36,6 +36,11 @@ public interface HiveAuthenticationProvider extends Configurable{
 
   public void destroy() throws HiveException;
 
+  /**
+   * This function is meant to be used only for hive internal implementations of this interface.
+   * SessionState is not a public interface.
+   * @param ss SessionState that created this instance
+   */
   public void setSessionState(SessionState ss);
 
 }
