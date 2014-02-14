@@ -2168,6 +2168,22 @@
 </property>
 
 <property>
+  <name>hive.prewarm.enabled</name>
+  <value>false</value>
+  <description>
+    Enables container prewarm for tez (hadoop 2 only)
+  </description>
+</property>
+
+<property>
+  <name>hive.prewarm.numcontainers</name>
+  <value>10</value>
+  <description>
+    Controls the number of containers to prewarm for tez (hadoop 2 only)
+  </description>
+</property>
+
+<property>
   <name>hive.server2.table.type.mapping</name>
   <value>CLASSIC</value>
   <description>

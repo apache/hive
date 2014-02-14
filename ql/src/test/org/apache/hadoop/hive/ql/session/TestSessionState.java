@@ -20,20 +20,43 @@ package org.apache.hadoop.hive.ql.session;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Test SessionState
  */
+@RunWith(value = Parameterized.class)
 public class TestSessionState {
 
+  private final boolean prewarm;
+
+  public TestSessionState(Boolean mode) {
+    this.prewarm = mode.booleanValue();
+  }
+
+  @Parameters
+  public static Collection<Boolean[]> data() {
+    return Arrays.asList(new Boolean[][] { {false}, {true}});
+  }
 
   @Before
-  public void setup(){
-    SessionState.start(new HiveConf());
+  public void setup() {
+    HiveConf conf = new HiveConf();
+    if (prewarm) {
+      HiveConf.setBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED, true);
+      HiveConf.setIntVar(conf, ConfVars.HIVE_PREWARM_NUM_CONTAINERS, 1);
+    }
+    SessionState.start(conf);
   }
 
   /**
