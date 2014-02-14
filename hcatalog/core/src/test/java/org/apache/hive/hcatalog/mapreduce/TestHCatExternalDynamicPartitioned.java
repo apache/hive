@@ -19,11 +19,30 @@
 
 package org.apache.hive.hcatalog.mapreduce;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 public class TestHCatExternalDynamicPartitioned extends TestHCatDynamicPartitioned {
 
   @Override
   protected Boolean isTableExternal() {
     return true;
+  }
+
+  @BeforeClass
+  public static void generateInputData() throws Exception {
+    tableName = "testHCatExternalDynamicPartitionedTable";
+    generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
+    generateDataColumns();
+  }
+
+  /**
+   * Run the external dynamic partitioning test but with single map task
+   * @throws Exception
+   */
+  @Test
+  public void testHCatExternalDynamicCustomLocation() throws Exception {
+    runHCatDynamicPartitionedTable(true, "mapred/externalDynamicOutput/${p1}");
   }
 
 }

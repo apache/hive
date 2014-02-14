@@ -21,23 +21,86 @@ package org.apache.hive.hcatalog.data.schema;
 import java.io.Serializable;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatUtil;
 
+@InterfaceAudience.Public
+@InterfaceStability.Evolving
 public class HCatFieldSchema implements Serializable {
-
+/*the implementation of HCatFieldSchema is a bit messy since with the addition of parametrized 
+types (e.g. char(7)) we need to represent something richer than an enum but for backwards 
+compatibility (and effort required to do full refactoring) this class has both 'type' and 'typeInfo';
+similarly for mapKeyType/mapKeyTypeInfo */
+  
   public enum Type {
-    INT,
-    TINYINT,
-    SMALLINT,
-    BIGINT,
-    BOOLEAN,
-    FLOAT,
-    DOUBLE,
-    STRING,
-    ARRAY,
-    MAP,
-    STRUCT,
-    BINARY,
+    /*this captures mapping of Hive type names to HCat type names; in the long run
+    * we should just use Hive types directly but that is a larger refactoring effort
+    * For HCat->Pig mapping see PigHCatUtil.getPigType(Type)
+    * For Pig->HCat mapping see HCatBaseStorer#validateSchema(...)*/
+    BOOLEAN(PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN),
+    TINYINT(PrimitiveObjectInspector.PrimitiveCategory.BYTE),
+    SMALLINT(PrimitiveObjectInspector.PrimitiveCategory.SHORT),
+    INT(PrimitiveObjectInspector.PrimitiveCategory.INT),
+    BIGINT(PrimitiveObjectInspector.PrimitiveCategory.LONG),
+    FLOAT(PrimitiveObjectInspector.PrimitiveCategory.FLOAT),
+    DOUBLE(PrimitiveObjectInspector.PrimitiveCategory.DOUBLE),
+    DECIMAL(PrimitiveObjectInspector.PrimitiveCategory.DECIMAL),
+    STRING(PrimitiveObjectInspector.PrimitiveCategory.STRING),
+    CHAR(PrimitiveObjectInspector.PrimitiveCategory.CHAR),
+    VARCHAR(PrimitiveObjectInspector.PrimitiveCategory.VARCHAR),
+    BINARY(PrimitiveObjectInspector.PrimitiveCategory.BINARY),
+    DATE(PrimitiveObjectInspector.PrimitiveCategory.DATE), 
+    TIMESTAMP(PrimitiveObjectInspector.PrimitiveCategory.TIMESTAMP), 
+
+    ARRAY(ObjectInspector.Category.LIST),
+    MAP(ObjectInspector.Category.MAP),
+    STRUCT(ObjectInspector.Category.STRUCT);
+
+    
+    private final ObjectInspector.Category category;
+    private final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory;
+    private Type(ObjectInspector.Category cat) {
+      category = cat;
+      primitiveCategory = null;
+      assert category != ObjectInspector.Category.PRIMITIVE : 
+              "This c'tor should be used for complex category types";
+    }
+    private Type(PrimitiveObjectInspector.PrimitiveCategory primCat) {
+      category = ObjectInspector.Category.PRIMITIVE;
+      primitiveCategory = primCat;
+    }
+    public ObjectInspector.Category getCategory() {
+      return category;
+    }
+    /**
+     * May return {@code null}
+     */
+    public PrimitiveObjectInspector.PrimitiveCategory getPrimitiveCategory() {
+      return primitiveCategory;
+    }
+    public static Type getPrimitiveHType(PrimitiveTypeInfo basePrimitiveTypeInfo) {
+      for(Type t : values()) {
+        if(t.getPrimitiveCategory() == basePrimitiveTypeInfo.getPrimitiveCategory()) {
+          return t;
+        }
+      }
+      throw new TypeNotPresentException(basePrimitiveTypeInfo.getTypeName(), null);
+    }
+    //aid in testing
+    public static int numPrimitiveTypes() {
+      int numPrimitives = 0;
+      for(Type t : values()) {
+        if(t.category == ObjectInspector.Category.PRIMITIVE) {
+          numPrimitives++;
+        }
+      }
+      return numPrimitives;
+    }
   }
 
   public enum Category {
@@ -59,10 +122,8 @@ public class HCatFieldSchema implements Serializable {
     }
   }
 
-  ;
-
   public boolean isComplex() {
-    return (category == Category.PRIMITIVE) ? false : true;
+    return category != Category.PRIMITIVE;
   }
 
   /**
@@ -72,6 +133,9 @@ public class HCatFieldSchema implements Serializable {
 
   String fieldName = null;
   String comment = null;
+  /**
+   * @deprecated use {@link #typeInfo}
+   */
   Type type = null;
   Category category = null;
 
@@ -82,9 +146,18 @@ public class HCatFieldSchema implements Serializable {
   HCatSchema subSchema = null;
 
   // populated if column is Map type
+  @Deprecated
   Type mapKeyType = null;
 
   private String typeString = null;
+  /**
+   * This is needed for parametrized types such as decimal(8,9), char(7), varchar(6)
+   */
+  private PrimitiveTypeInfo typeInfo;
+  /**
+   * represents key type for a Map; currently Hive only supports primitive keys
+   */
+  private PrimitiveTypeInfo mapKeyTypeInfo;
 
   @SuppressWarnings("unused")
   private HCatFieldSchema() {
@@ -94,6 +167,7 @@ public class HCatFieldSchema implements Serializable {
   /**
    * Returns type of the field
    * @return type of the field
+   * @deprecated use {@link #getTypeInfo()}
    */
   public Type getType() {
     return type;
@@ -118,18 +192,35 @@ public class HCatFieldSchema implements Serializable {
   public String getComment() {
     return comment;
   }
-
+  /**
+   * May return {@code null}
+   */
+  public PrimitiveTypeInfo getTypeInfo() {
+    return typeInfo;
+  }
   /**
    * Constructor constructing a primitive datatype HCatFieldSchema
    * @param fieldName Name of the primitive field
    * @param type Type of the primitive field
    * @throws HCatException if call made on non-primitive types
+   * @deprecated as of Hive 0.13; use {@link #HCatFieldSchema(String, org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo, String)}
    */
   public HCatFieldSchema(String fieldName, Type type, String comment) throws HCatException {
     assertTypeInCategory(type, Category.PRIMITIVE, fieldName);
     this.fieldName = fieldName;
     this.type = type;
     this.category = Category.PRIMITIVE;
+    this.comment = comment;
+  }
+  public HCatFieldSchema(String fieldName, PrimitiveTypeInfo typeInfo, String comment)
+          throws HCatException {
+    this.fieldName = fieldName;
+    //HCatUtil.assertNotNull(fieldName, "fieldName cannot be null");//seems sometimes it can be 
+    // null, for ARRAY types in particular (which may be a complex type)
+    this.category = Category.PRIMITIVE;
+    this.typeInfo = typeInfo;
+    HCatUtil.assertNotNull(typeInfo, "typeInfo cannot be null; fieldName=" + fieldName, null);
+    type = Type.getPrimitiveHType(typeInfo);
     this.comment = comment;
   }
 
@@ -164,9 +255,12 @@ public class HCatFieldSchema implements Serializable {
    * @param mapKeyType - key type of the Map
    * @param mapValueSchema - subschema of the value of the Map
    * @throws HCatException if call made on non-Map types
+   * @deprecated use {@link #createMapTypeFieldSchema(String, org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo, HCatSchema, String)}
    */
   public HCatFieldSchema(String fieldName, Type type, Type mapKeyType, HCatSchema mapValueSchema, String comment) throws HCatException {
     assertTypeInCategory(type, Category.MAP, fieldName);
+    //Hive only supports primitive map keys: 
+    //https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Types#LanguageManualTypes-ComplexTypes
     assertTypeInCategory(mapKeyType, Category.PRIMITIVE, fieldName);
     this.fieldName = fieldName;
     this.type = Type.MAP;
@@ -176,6 +270,16 @@ public class HCatFieldSchema implements Serializable {
     this.subSchema.get(0).setName(null);
     this.comment = comment;
   }
+  public static HCatFieldSchema createMapTypeFieldSchema(String fieldName, PrimitiveTypeInfo mapKeyType, 
+                                                         HCatSchema mapValueSchema, 
+                                                         String comment) throws HCatException {
+    HCatFieldSchema mapSchema = new HCatFieldSchema(fieldName, Type.MAP,  
+            Type.getPrimitiveHType(mapKeyType), 
+            mapValueSchema, comment);
+    mapSchema.mapKeyTypeInfo = mapKeyType;
+    return mapSchema;
+  }
+  
 
   public HCatSchema getStructSubSchema() throws HCatException {
     assertTypeInCategory(this.type, Category.STRUCT, this.fieldName);
@@ -186,12 +290,17 @@ public class HCatFieldSchema implements Serializable {
     assertTypeInCategory(this.type, Category.ARRAY, this.fieldName);
     return subSchema;
   }
-
+  /**
+   * @deprecated use {@link #getMapKeyTypeInfo()}
+   */
   public Type getMapKeyType() throws HCatException {
     assertTypeInCategory(this.type, Category.MAP, this.fieldName);
     return mapKeyType;
   }
-
+  public PrimitiveTypeInfo getMapKeyTypeInfo() throws HCatException {
+    assertTypeInCategory(this.type, Category.MAP, this.fieldName);
+    return mapKeyTypeInfo;
+  }
   public HCatSchema getMapValueSchema() throws HCatException {
     assertTypeInCategory(this.type, Category.MAP, this.fieldName);
     return subSchema;
@@ -227,8 +336,8 @@ public class HCatFieldSchema implements Serializable {
     }
 
     StringBuilder sb = new StringBuilder();
-    if (Category.PRIMITIVE == category) {
-      sb.append(type);
+    if (!isComplex()) {
+      sb.append(typeInfo == null ? type : typeInfo.getTypeName());
     } else if (Category.STRUCT == category) {
       sb.append("struct<");
       sb.append(subSchema.getSchemaAsTypeString());
@@ -239,7 +348,7 @@ public class HCatFieldSchema implements Serializable {
       sb.append(">");
     } else if (Category.MAP == category) {
       sb.append("map<");
-      sb.append(mapKeyType);
+      sb.append(mapKeyTypeInfo == null ? mapKeyType : mapKeyTypeInfo.getTypeName());
       sb.append(",");
       sb.append(subSchema.getSchemaAsTypeString());
       sb.append(">");

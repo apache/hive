@@ -43,6 +43,7 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
@@ -52,6 +53,9 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -71,6 +75,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
@@ -632,6 +637,27 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       MetaException, TException {
     return client.drop_partition_with_environment_context(db_name, tbl_name, part_vals, deleteData,
         envContext);
+  }
+
+  @Override
+  public List<Partition> dropPartitions(String dbName, String tblName,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      boolean ifExists) throws NoSuchObjectException, MetaException, TException {
+    RequestPartsSpec rps = new RequestPartsSpec();
+    List<DropPartitionsExpr> exprs = new ArrayList<DropPartitionsExpr>(partExprs.size());
+    for (ObjectPair<Integer, byte[]> partExpr : partExprs) {
+      DropPartitionsExpr dpe = new DropPartitionsExpr();
+      dpe.setExpr(partExpr.getSecond());
+      dpe.setPartArchiveLevel(partExpr.getFirst());
+      exprs.add(dpe);
+    }
+    rps.setExprs(exprs);
+    DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
+    req.setDeleteData(deleteData);
+    req.setIgnoreProtection(ignoreProtection);
+    req.setNeedResult(true);
+    req.setIfExists(ifExists);
+    return client.drop_partitions_req(req).getPartitions();
   }
 
   /**

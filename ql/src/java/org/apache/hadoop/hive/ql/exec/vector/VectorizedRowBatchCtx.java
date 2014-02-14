@@ -24,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -41,6 +43,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
 
@@ -233,7 +236,8 @@ public class VectorizedRowBatchCtx {
         case PRIMITIVE: {
           PrimitiveObjectInspector poi = (PrimitiveObjectInspector) foi;
           // Vectorization currently only supports the following data types:
-          // BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING and TIMESTAMP
+          // BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING, TIMESTAMP,
+          // DATE and DECIMAL
           switch (poi.getPrimitiveCategory()) {
           case BOOLEAN:
           case BYTE:
@@ -241,6 +245,7 @@ public class VectorizedRowBatchCtx {
           case INT:
           case LONG:
           case TIMESTAMP:
+          case DATE:
             result.cols[j] = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
             break;
           case FLOAT:
@@ -249,6 +254,11 @@ public class VectorizedRowBatchCtx {
             break;
           case STRING:
             result.cols[j] = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+            break;
+          case DECIMAL:
+            DecimalTypeInfo tInfo = (DecimalTypeInfo) poi.getTypeInfo();
+            result.cols[j] = new DecimalColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+                tInfo.precision(), tInfo.scale());
             break;
           default:
             throw new RuntimeException("Vectorizaton is not supported for datatype:"
@@ -362,11 +372,31 @@ public class VectorizedRowBatchCtx {
     }
   }
 
+  /**
+   * Get the scale and precision for the given decimal type string. The decimal type is assumed to be
+   * of the format decimal(precision,scale) e.g. decimal(20,10).
+   * @param decimalType The given decimal type string.
+   * @return An integer array of size 2 with first element set to precision and second set to scale.
+   */
+  private int[] getScalePrecisionFromDecimalType(String decimalType) {
+    Pattern p = Pattern.compile("\\d+");
+    Matcher m = p.matcher(decimalType);
+    m.find();
+    int precision = Integer.parseInt(m.group());
+    m.find();
+    int scale = Integer.parseInt(m.group());
+    int [] precScale = { precision, scale };
+    return precScale;
+  }
+
   private ColumnVector allocateColumnVector(String type, int defaultSize) {
     if (type.equalsIgnoreCase("double")) {
       return new DoubleColumnVector(defaultSize);
     } else if (type.equalsIgnoreCase("string")) {
       return new BytesColumnVector(defaultSize);
+    } else if (VectorizationContext.decimalTypePattern.matcher(type.toLowerCase()).matches()){
+      int [] precisionScale = getScalePrecisionFromDecimalType(type);
+      return new DecimalColumnVector(defaultSize, precisionScale[0], precisionScale[1]);
     } else {
       return new LongColumnVector(defaultSize);
     }

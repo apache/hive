@@ -788,4 +788,9 @@ public class Hadoop20Shims implements HadoopShims {
     /* not supported */
     return null;
   }
+
+  @Override
+  public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
+    return context.getConfiguration();
+  }
 }

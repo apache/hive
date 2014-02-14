@@ -49,9 +49,6 @@ import java.util.Map;
 public class FosterStorageHandler extends DefaultStorageHandler {
 
   public Configuration conf;
-  /** The directory under which data is initially written for a partitioned table */
-  protected static final String DYNTEMP_DIR_NAME = "_DYN";
-
   /** The directory under which data is initially written for a non partitioned table */
   protected static final String TEMP_DIR_NAME = "_TEMP";
 
@@ -118,17 +115,28 @@ public class FosterStorageHandler extends DefaultStorageHandler {
       // For dynamic partitioned writes without all keyvalues specified,
       // we create a temp dir for the associated write job
       if (dynHash != null) {
-        parentPath = new Path(parentPath,
-          DYNTEMP_DIR_NAME + dynHash).toString();
+        // if external table and custom root specified, update the parent path
+        if (Boolean.valueOf((String)tableDesc.getProperties().get("EXTERNAL"))
+            && jobInfo.getCustomDynamicRoot() != null
+            && jobInfo.getCustomDynamicRoot().length() > 0) {
+          parentPath = new Path(parentPath, jobInfo.getCustomDynamicRoot()).toString();
+        }
+        parentPath = new Path(parentPath, FileOutputCommitterContainer.DYNTEMP_DIR_NAME + dynHash).toString();
       }
 
       String outputLocation;
 
-      if ((dynHash == null)
+      if ((dynHash != null)
+          && Boolean.valueOf((String)tableDesc.getProperties().get("EXTERNAL"))
+          && jobInfo.getCustomDynamicPath() != null
+          && jobInfo.getCustomDynamicPath().length() > 0) {
+        // dynamic partitioning with custom path; resolve the custom path
+        // using partition column values
+        outputLocation = HCatFileUtil.resolveCustomPath(jobInfo, null, true);
+      } else if ((dynHash == null)
            && Boolean.valueOf((String)tableDesc.getProperties().get("EXTERNAL"))
            && jobInfo.getLocation() != null && jobInfo.getLocation().length() > 0) {
         // honor custom location for external table apart from what metadata specifies
-        // only if we're not using dynamic partitioning - see HIVE-5011
         outputLocation = jobInfo.getLocation();
       } else if (dynHash == null && jobInfo.getPartitionValues().size() == 0) {
         // For non-partitioned tables, we send them to the temp dir

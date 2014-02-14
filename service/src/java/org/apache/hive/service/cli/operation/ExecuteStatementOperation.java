@@ -51,10 +51,9 @@ public abstract class ExecuteStatementOperation extends Operation {
       HiveSession parentSession, String statement, Map<String, String> confOverlay, boolean runAsync)
       throws HiveSQLException {
     String[] tokens = statement.trim().split("\\s+");
-    String command = tokens[0].toLowerCase();
     CommandProcessor processor = null;
     try {
-      processor = CommandProcessorFactory.getForHiveCommand(tokens[0], parentSession.getHiveConf());
+      processor = CommandProcessorFactory.getForHiveCommand(tokens, parentSession.getHiveConf());
     } catch (SQLException e) {
       throw new HiveSQLException(e.getMessage(), e.getSQLState(), e);
     }

@@ -192,6 +192,14 @@
           <version>${pig.version}</version>
           <scope>test</scope>
         </dependency>
+        <dependency>
+          <!--this should be automatically brought in by Pig, it's not in Pig 0.12 due to a bug
+              in Pig which requires it This is fixed in Pig's pom file in ASF trunk (pig 13)-->
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+          <version>2.2</version>
+          <scope>test</scope>
+        </dependency>
       </dependencies>
     </profile>
    <profile>
@@ -330,6 +338,14 @@
           <artifactId>pig</artifactId>
           <version>${pig.version}</version>
           <classifier>h2</classifier>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <!--this should be automatically brought in by Pig, it's not in Pig 0.12 due to a bug
+              in Pig which requires it This is fixed in Pig's pom file in ASF trunk (pig 13)-->
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+          <version>2.2</version>
           <scope>test</scope>
         </dependency>
       </dependencies>

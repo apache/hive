@@ -24,18 +24,8 @@ PREHOOK: query: SHOW GRANT USER hive_test_user ON DATABASE test_db
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT USER hive_test_user ON DATABASE test_db
 POSTHOOK: type: SHOW_GRANT
-database	test_db
-principalName	hive_test_user
-principalType	USER
-privilege	Drop
-#### A masked pattern was here ####
-grantor	hive_test_user
-database	test_db
-principalName	hive_test_user
-principalType	USER
-privilege	Select
-#### A masked pattern was here ####
-grantor	hive_test_user
+test_db				hive_test_user	USER	Drop	false	-1	hive_test_user
+test_db				hive_test_user	USER	Select	false	-1	hive_test_user
 PREHOOK: query: CREATE ROLE db_test_role
 PREHOOK: type: CREATEROLE
 POSTHOOK: query: CREATE ROLE db_test_role
@@ -48,8 +38,8 @@ PREHOOK: query: SHOW ROLE GRANT USER hive_test_user
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: SHOW ROLE GRANT USER hive_test_user
 POSTHOOK: type: SHOW_ROLE_GRANT
-db_test_role
-PUBLIC
+db_test_role	-1	hive_test_user	USER	false	-1	hive_test_user
+PUBLIC	-1			false	-1	
 PREHOOK: query: GRANT drop ON DATABASE test_db TO ROLE db_test_role
 PREHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: query: GRANT drop ON DATABASE test_db TO ROLE db_test_role
@@ -62,18 +52,8 @@ PREHOOK: query: SHOW GRANT ROLE db_test_role ON DATABASE test_db
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT ROLE db_test_role ON DATABASE test_db
 POSTHOOK: type: SHOW_GRANT
-database	test_db
-principalName	db_test_role
-principalType	ROLE
-privilege	Drop
-#### A masked pattern was here ####
-grantor	hive_test_user
-database	test_db
-principalName	db_test_role
-principalType	ROLE
-privilege	Select
-#### A masked pattern was here ####
-grantor	hive_test_user
+test_db				db_test_role	ROLE	Drop	false	-1	hive_test_user
+test_db				db_test_role	ROLE	Select	false	-1	hive_test_user
 PREHOOK: query: DROP DATABASE IF EXISTS test_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_db

@@ -35,11 +35,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
-*
-* TestThriftHttpCLIService.
-* This tests ThriftCLIService started in http mode.
-*
-*/
+ *
+ * TestThriftHttpCLIService.
+ * This tests ThriftCLIService started in http mode.
+ *
+ */
 
 public class TestThriftHttpCLIService extends ThriftCLIServiceTest {
 

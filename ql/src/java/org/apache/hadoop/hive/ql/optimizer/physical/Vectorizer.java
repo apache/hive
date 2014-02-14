@@ -23,13 +23,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -121,51 +120,13 @@ import org.apache.hadoop.hive.ql.udf.UDFToShort;
 import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCeil;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFloor;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLTrim;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPDivide;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMultiply;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNegative;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPositive;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFPower;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFRound;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFPosMod;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFRTrim;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTrim;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
+import org.apache.hadoop.hive.ql.udf.generic.*;
 
 public class Vectorizer implements PhysicalPlanResolver {
 
   protected static transient final Log LOG = LogFactory.getLog(Vectorizer.class);
 
-  Set<String> supportedDataTypes = new HashSet<String>();
+  Pattern supportedDataTypesPattern;
   List<Task<? extends Serializable>> vectorizableTasks =
       new ArrayList<Task<? extends Serializable>>();
   Set<Class<?>> supportedGenericUDFs = new HashSet<Class<?>>();
@@ -175,19 +136,29 @@ public class Vectorizer implements PhysicalPlanResolver {
   private PhysicalContext physicalContext = null;;
 
   public Vectorizer() {
-    supportedDataTypes.add("int");
-    supportedDataTypes.add("smallint");
-    supportedDataTypes.add("tinyint");
-    supportedDataTypes.add("bigint");
-    supportedDataTypes.add("integer");
-    supportedDataTypes.add("long");
-    supportedDataTypes.add("short");
-    supportedDataTypes.add("timestamp");
-    supportedDataTypes.add("boolean");
-    supportedDataTypes.add("string");
-    supportedDataTypes.add("byte");
-    supportedDataTypes.add("float");
-    supportedDataTypes.add("double");
+
+    StringBuilder patternBuilder = new StringBuilder();
+    patternBuilder.append("int");
+    patternBuilder.append("|smallint");
+    patternBuilder.append("|tinyint");
+    patternBuilder.append("|bigint");
+    patternBuilder.append("|integer");
+    patternBuilder.append("|long");
+    patternBuilder.append("|short");
+    patternBuilder.append("|timestamp");
+    patternBuilder.append("|boolean");
+    patternBuilder.append("|string");
+    patternBuilder.append("|byte");
+    patternBuilder.append("|float");
+    patternBuilder.append("|double");
+    patternBuilder.append("|date");
+
+    // Decimal types can be specified with different precision and scales e.g. decimal(10,5),
+    // as opposed to other data types which can be represented by constant strings.
+    // The regex matches only the "decimal" prefix of the type.
+    patternBuilder.append("|decimal.*");
+
+    supportedDataTypesPattern = Pattern.compile(patternBuilder.toString());
 
     supportedGenericUDFs.add(GenericUDFOPPlus.class);
     supportedGenericUDFs.add(GenericUDFOPMinus.class);
@@ -270,6 +241,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFToDouble.class);
     supportedGenericUDFs.add(UDFToString.class);
     supportedGenericUDFs.add(GenericUDFTimestamp.class);
+    supportedGenericUDFs.add(GenericUDFToDecimal.class);
 
     // For conditional expressions
     supportedGenericUDFs.add(GenericUDFIf.class);
@@ -747,7 +719,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateDataType(String type) {
-    return supportedDataTypes.contains(type.toLowerCase());
+    return supportedDataTypesPattern.matcher(type.toLowerCase()).matches();
   }
 
   private VectorizationContext getVectorizationContext(Operator<? extends OperatorDesc> op,

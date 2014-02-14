@@ -267,7 +267,7 @@ public class QTestUtil {
                   (new Path(dfsUriString,
                             "/build/ql/test/data/warehouse/")).toString());
     }
-    
+
     // Windows paths should be converted after MiniMrShim.setupConfiguration()
     // since setupConfiguration may overwrite configuration values.
     if (Shell.WINDOWS) {
@@ -330,12 +330,12 @@ public class QTestUtil {
     }
   }
 
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, String hadoopVer) 
+  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, String hadoopVer)
     throws Exception {
     this(outDir, logDir, clusterType, null, hadoopVer);
   }
 
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, 
+  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
       String confDir, String hadoopVer)
     throws Exception {
     this.outDir = outDir;
@@ -589,7 +589,7 @@ public class QTestUtil {
 
     List<String> roleNames = db.getAllRoleNames();
       for (String roleName : roleNames) {
-        if (!"PUBLIC".equals(roleName)) {
+        if (!"PUBLIC".equalsIgnoreCase(roleName) && !"ADMIN".equalsIgnoreCase(roleName)) {
           db.dropRole(roleName);
         }
     }
@@ -1376,7 +1376,7 @@ public class QTestUtil {
   }
 
   private static int executeCmd(Collection<String> args, String outFile, String errFile) throws Exception {
-    String[] cmdArray = (String[]) args.toArray(new String[args.size()]);
+    String[] cmdArray = args.toArray(new String[args.size()]);
     return executeCmd(cmdArray, outFile, errFile);
   }
 
@@ -1520,6 +1520,7 @@ public class QTestUtil {
       this.fname = fname;
     }
 
+    @Override
     public void run() {
       try {
         // assumption is that environment has already been cleaned once globally

@@ -20,14 +20,27 @@
 package org.apache.hive.hcatalog.pig;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.RecordWriter;
@@ -52,6 +65,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 import org.apache.pig.impl.util.ObjectSerializer;
 import org.apache.pig.impl.util.UDFContext;
 import org.apache.pig.impl.util.Utils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +89,22 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
   private RecordWriter<WritableComparable<?>, HCatRecord> writer;
   protected HCatSchema computedSchema;
   protected static final String PIG_SCHEMA = "hcat.pig.store.schema";
+  /**
+   * Controls what happens when incoming Pig value is out-of-range for target Hive column
+   */
+  static final String ON_OOR_VALUE_OPT = "onOutOfRangeValue";
+  /**
+   * prop name in Configuration/context
+   */
+  static final String ON_OORA_VALUE_PROP = "hcat.pig.store.onoutofrangevalue";
+  /**
+   * valid values for ON_OOR_VALUE_OPT
+   */
+  public static enum  OOR_VALUE_OPT_VALUES {Null, Throw}
   protected String sign;
+  //it's key that this is a per HCatStorer instance object
+  private final DataLossLogger dataLossLogger = new DataLossLogger();
+  private final OOR_VALUE_OPT_VALUES onOutOfRange;
 
   public HCatBaseStorer(String partSpecs, String schema) throws Exception {
 
@@ -95,12 +124,15 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
       }
     }
 
-    if (schema != null) {
+    if (schema != null && !schema.trim().isEmpty()) {
       pigSchema = Utils.getSchemaFromString(schema);
     }
-
+    Properties udfProps = UDFContext.getUDFContext().getUDFProperties(this.getClass(), new String[]{sign});
+    onOutOfRange = OOR_VALUE_OPT_VALUES.valueOf(udfProps.getProperty(ON_OORA_VALUE_PROP, getDefaultValue().name()));
   }
-
+  static OOR_VALUE_OPT_VALUES getDefaultValue() {
+    return OOR_VALUE_OPT_VALUES.Null;
+  }
   @Override
   public void checkSchema(ResourceSchema resourceSchema) throws IOException {
 
@@ -123,17 +155,26 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
    * schema of the table in metastore.
    */
   protected HCatSchema convertPigSchemaToHCatSchema(Schema pigSchema, HCatSchema tableSchema) throws FrontendException {
+    if(LOG.isDebugEnabled()) {
+      LOG.debug("convertPigSchemaToHCatSchema(pigSchema,tblSchema)=(" + pigSchema + "," + tableSchema + ")");
+    }
     List<HCatFieldSchema> fieldSchemas = new ArrayList<HCatFieldSchema>(pigSchema.size());
     for (FieldSchema fSchema : pigSchema.getFields()) {
       try {
         HCatFieldSchema hcatFieldSchema = getColFromSchema(fSchema.alias, tableSchema);
-
-        fieldSchemas.add(getHCatFSFromPigFS(fSchema, hcatFieldSchema));
+        //if writing to a partitioned table, then pigSchema will have more columns than tableSchema
+        //partition columns are not part of tableSchema... e.g. TestHCatStorer#testPartColsInData()
+//        HCatUtil.assertNotNull(hcatFieldSchema, "Nothing matching '" + fSchema.alias + "' found " +
+//                "in target table schema", LOG);
+        fieldSchemas.add(getHCatFSFromPigFS(fSchema, hcatFieldSchema, pigSchema, tableSchema));
       } catch (HCatException he) {
         throw new FrontendException(he.getMessage(), PigHCatUtil.PIG_EXCEPTION_CODE, he);
       }
     }
-    return new HCatSchema(fieldSchemas);
+    
+    HCatSchema s = new HCatSchema(fieldSchemas);
+    LOG.debug("convertPigSchemaToHCatSchema(computed)=(" + s + ")");
+    return s;
   }
 
   public static boolean removeTupleFromBag(HCatFieldSchema hcatFieldSchema, FieldSchema bagFieldSchema) throws HCatException {
@@ -147,42 +188,60 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
     }
     return false;
   }
-
-
-  private HCatFieldSchema getHCatFSFromPigFS(FieldSchema fSchema, HCatFieldSchema hcatFieldSchema) throws FrontendException, HCatException {
+  /**
+   * Here we are processing HCat table schema as derived from metastore, 
+   * thus it should have information about all fields/sub-fields, but not for partition columns
+   */
+  private HCatFieldSchema getHCatFSFromPigFS(FieldSchema fSchema, HCatFieldSchema hcatFieldSchema,
+                                             Schema pigSchema, HCatSchema tableSchema)
+          throws FrontendException, HCatException {
+    if(hcatFieldSchema == null) {
+      if(LOG.isDebugEnabled()) {
+        LOG.debug("hcatFieldSchema is null for fSchema '" + fSchema.alias + "'");
+        //throw new IllegalArgumentException("hcatFiledSchema is null; fSchema=" + fSchema + " " +
+        //      "(pigSchema, tableSchema)=(" + pigSchema + "," + tableSchema + ")");
+      }
+    }
     byte type = fSchema.type;
     switch (type) {
 
     case DataType.CHARARRAY:
     case DataType.BIGCHARARRAY:
-      return new HCatFieldSchema(fSchema.alias, Type.STRING, null);
-
+      if(hcatFieldSchema != null && hcatFieldSchema.getTypeInfo() != null) {
+        return new HCatFieldSchema(fSchema.alias, hcatFieldSchema.getTypeInfo(), null);
+      }
+      return new HCatFieldSchema(fSchema.alias, TypeInfoFactory.stringTypeInfo, null);
     case DataType.INTEGER:
       if (hcatFieldSchema != null) {
         if (!SUPPORTED_INTEGER_CONVERSIONS.contains(hcatFieldSchema.getType())) {
           throw new FrontendException("Unsupported type: " + type + "  in Pig's schema",
             PigHCatUtil.PIG_EXCEPTION_CODE);
         }
-        return new HCatFieldSchema(fSchema.alias, hcatFieldSchema.getType(), null);
-      } else {
-        return new HCatFieldSchema(fSchema.alias, Type.INT, null);
+        return new HCatFieldSchema(fSchema.alias, hcatFieldSchema.getTypeInfo(), null);
       }
-
+      return new HCatFieldSchema(fSchema.alias, TypeInfoFactory.intTypeInfo, null);
     case DataType.LONG:
-      return new HCatFieldSchema(fSchema.alias, Type.BIGINT, null);
-
+      return new HCatFieldSchema(fSchema.alias, TypeInfoFactory.longTypeInfo, null);
     case DataType.FLOAT:
-      return new HCatFieldSchema(fSchema.alias, Type.FLOAT, null);
-
+      return new HCatFieldSchema(fSchema.alias, TypeInfoFactory.floatTypeInfo, null);
     case DataType.DOUBLE:
-      return new HCatFieldSchema(fSchema.alias, Type.DOUBLE, null);
-
+      return new HCatFieldSchema(fSchema.alias, TypeInfoFactory.doubleTypeInfo, null);
     case DataType.BYTEARRAY:
-      return new HCatFieldSchema(fSchema.alias, Type.BINARY, null);
-
+      return new HCatFieldSchema(fSchema.alias, TypeInfoFactory.binaryTypeInfo, null);
     case DataType.BOOLEAN:
-      return new HCatFieldSchema(fSchema.alias, Type.BOOLEAN, null);
-
+      return new HCatFieldSchema(fSchema.alias, TypeInfoFactory.booleanTypeInfo, null);
+    case DataType.DATETIME:
+      //Pig DATETIME can map to DATE or TIMESTAMP (see HCatBaseStorer#validateSchema()) which
+      //is controlled by Hive target table information
+      if(hcatFieldSchema != null && hcatFieldSchema.getTypeInfo() != null) {
+        return new HCatFieldSchema(fSchema.alias, hcatFieldSchema.getTypeInfo(), null);
+      }
+      return new HCatFieldSchema(fSchema.alias, TypeInfoFactory.timestampTypeInfo, null);
+    case DataType.BIGDECIMAL:
+      if(hcatFieldSchema != null && hcatFieldSchema.getTypeInfo() != null) {
+        return new HCatFieldSchema(fSchema.alias, hcatFieldSchema.getTypeInfo(), null);
+      }
+      return new HCatFieldSchema(fSchema.alias, TypeInfoFactory.decimalTypeInfo, null);
     case DataType.BAG:
       Schema bagSchema = fSchema.schema;
       List<HCatFieldSchema> arrFields = new ArrayList<HCatFieldSchema>(1);
@@ -193,21 +252,18 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
       } else {
         field = bagSchema.getField(0);
       }
-      arrFields.add(getHCatFSFromPigFS(field, hcatFieldSchema == null ? null : hcatFieldSchema.getArrayElementSchema().get(0)));
+      arrFields.add(getHCatFSFromPigFS(field, hcatFieldSchema == null ? null : hcatFieldSchema
+              .getArrayElementSchema().get(0), pigSchema, tableSchema));
       return new HCatFieldSchema(fSchema.alias, Type.ARRAY, new HCatSchema(arrFields), "");
-
     case DataType.TUPLE:
-      List<String> fieldNames = new ArrayList<String>();
       List<HCatFieldSchema> hcatFSs = new ArrayList<HCatFieldSchema>();
       HCatSchema structSubSchema = hcatFieldSchema == null ? null : hcatFieldSchema.getStructSubSchema();
       List<FieldSchema> fields = fSchema.schema.getFields();
       for (int i = 0; i < fields.size(); i++) {
         FieldSchema fieldSchema = fields.get(i);
-        fieldNames.add(fieldSchema.alias);
-        hcatFSs.add(getHCatFSFromPigFS(fieldSchema, structSubSchema == null ? null : structSubSchema.get(i)));
+        hcatFSs.add(getHCatFSFromPigFS(fieldSchema, structSubSchema == null ? null : structSubSchema.get(i), pigSchema, tableSchema));
       }
       return new HCatFieldSchema(fSchema.alias, Type.STRUCT, new HCatSchema(hcatFSs), "");
-
     case DataType.MAP: {
       // Pig's schema contain no type information about map's keys and
       // values. So, if its a new column assume <string,string> if its existing
@@ -217,15 +273,18 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
       List<HCatFieldSchema> valFSList = new ArrayList<HCatFieldSchema>(1);
 
       if (hcatFieldSchema != null) {
-        return new HCatFieldSchema(fSchema.alias, Type.MAP, Type.STRING, hcatFieldSchema.getMapValueSchema(), "");
+        return HCatFieldSchema.createMapTypeFieldSchema(fSchema.alias, hcatFieldSchema.getMapKeyTypeInfo(), 
+          hcatFieldSchema.getMapValueSchema(), "");
       }
 
       // Column not found in target table. Its a new column. Its schema is map<string,string>
-      valFS = new HCatFieldSchema(fSchema.alias, Type.STRING, "");
+      valFS = new HCatFieldSchema(fSchema.alias, TypeInfoFactory.stringTypeInfo, "");
       valFSList.add(valFS);
-      return new HCatFieldSchema(fSchema.alias, Type.MAP, Type.STRING, new HCatSchema(valFSList), "");
+      return HCatFieldSchema.createMapTypeFieldSchema(fSchema.alias,
+        TypeInfoFactory.stringTypeInfo, new HCatSchema(valFSList), "");
     }
-
+    case DataType.BIGINTEGER:
+      //fall through; doesn't map to Hive/Hcat type; here for completeness
     default:
       throw new FrontendException("Unsupported type: " + type + "  in Pig's schema", PigHCatUtil.PIG_EXCEPTION_CODE);
     }
@@ -253,24 +312,22 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
     }
   }
 
+  /**
+   * Convert from Pig value object to Hive value object
+   * This method assumes that {@link #validateSchema(org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema, org.apache.hive.hcatalog.data.schema.HCatFieldSchema, org.apache.pig.impl.logicalLayer.schema.Schema, org.apache.hive.hcatalog.data.schema.HCatSchema, int)}
+   * which checks the types in Pig schema are compatible with target Hive table, has been called.
+   */
   private Object getJavaObj(Object pigObj, HCatFieldSchema hcatFS) throws HCatException, BackendException {
     try {
-
+      if(pigObj == null) return null;
       // The real work-horse. Spend time and energy in this method if there is
       // need to keep HCatStorer lean and go fast.
       Type type = hcatFS.getType();
       switch (type) {
-
       case BINARY:
-        if (pigObj == null) {
-          return null;
-        }
         return ((DataByteArray) pigObj).get();
 
       case STRUCT:
-        if (pigObj == null) {
-          return null;
-        }
         HCatSchema structSubSchema = hcatFS.getStructSubSchema();
         // Unwrap the tuple.
         List<Object> all = ((Tuple) pigObj).getAll();
@@ -281,9 +338,6 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
         return converted;
 
       case ARRAY:
-        if (pigObj == null) {
-          return null;
-        }
         // Unwrap the bag.
         DataBag pigBag = (DataBag) pigObj;
         HCatFieldSchema tupFS = hcatFS.getArrayElementSchema().get(0);
@@ -298,9 +352,6 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
         }
         return bagContents;
       case MAP:
-        if (pigObj == null) {
-          return null;
-        }
         Map<?, ?> pigMap = (Map<?, ?>) pigObj;
         Map<Object, Object> typeMap = new HashMap<Object, Object>();
         for (Entry<?, ?> entry : pigMap.entrySet()) {
@@ -318,29 +369,18 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
       case DOUBLE:
         return pigObj;
       case SMALLINT:
-        if (pigObj == null) {
-          return null;
-        }
         if ((Integer) pigObj < Short.MIN_VALUE || (Integer) pigObj > Short.MAX_VALUE) {
-          throw new BackendException("Value " + pigObj + " is outside the bounds of column " +
-            hcatFS.getName() + " with type " + hcatFS.getType(), PigHCatUtil.PIG_EXCEPTION_CODE);
+          handleOutOfRangeValue(pigObj, hcatFS);
+          return null;
         }
         return ((Integer) pigObj).shortValue();
       case TINYINT:
-        if (pigObj == null) {
-          return null;
-        }
         if ((Integer) pigObj < Byte.MIN_VALUE || (Integer) pigObj > Byte.MAX_VALUE) {
-          throw new BackendException("Value " + pigObj + " is outside the bounds of column " +
-            hcatFS.getName() + " with type " + hcatFS.getType(), PigHCatUtil.PIG_EXCEPTION_CODE);
+          handleOutOfRangeValue(pigObj, hcatFS);
+          return null;
         }
         return ((Integer) pigObj).byteValue();
       case BOOLEAN:
-        if (pigObj == null) {
-          LOG.debug( "HCatBaseStorer.getJavaObj(BOOLEAN): obj null, bailing early" );
-          return null;
-        }
-
         if( pigObj instanceof String ) {
           if( ((String)pigObj).trim().compareTo("0") == 0 ) {
             return Boolean.FALSE;
@@ -348,24 +388,86 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
           if( ((String)pigObj).trim().compareTo("1") == 0 ) {
             return Boolean.TRUE;
           }
-
-          throw new BackendException(
-            "Unexpected type " + type + " for value " + pigObj
-            + (pigObj == null ? "" : " of class "
-            + pigObj.getClass().getName()), PigHCatUtil.PIG_EXCEPTION_CODE);
+          throw new BackendException("Unexpected type " + type + " for value " + pigObj
+            + " of class " + pigObj.getClass().getName(), PigHCatUtil.PIG_EXCEPTION_CODE);
         }
-
         return Boolean.parseBoolean( pigObj.toString() );
+      case DECIMAL:
+        BigDecimal bd = (BigDecimal)pigObj;
+        DecimalTypeInfo dti = (DecimalTypeInfo)hcatFS.getTypeInfo();
+        if(bd.precision() > dti.precision() || bd.scale() > dti.scale()) {
+          handleOutOfRangeValue(pigObj, hcatFS);
+          return null;
+        }
+        return HiveDecimal.create(bd);
+      case CHAR:
+        String charVal = (String)pigObj;
+        CharTypeInfo cti = (CharTypeInfo)hcatFS.getTypeInfo(); 
+        if(charVal.length() > cti.getLength()) {
+          handleOutOfRangeValue(pigObj, hcatFS);
+          return null;
+        }
+        return new HiveChar(charVal, cti.getLength());
+      case VARCHAR:
+        String varcharVal = (String)pigObj;
+        VarcharTypeInfo vti = (VarcharTypeInfo)hcatFS.getTypeInfo();
+        if(varcharVal.length() > vti.getLength()) {
+          handleOutOfRangeValue(pigObj, hcatFS);
+          return null;
+        }
+        return new HiveVarchar(varcharVal, vti.getLength());
+      case TIMESTAMP:
+        DateTime dt = (DateTime)pigObj;
+        return new Timestamp(dt.getMillis());//getMillis() returns UTC time regardless of TZ
+      case DATE:
+        /**
+         * We ignore any TZ setting on Pig value since java.sql.Date doesn't have it (in any
+         * meaningful way).  So the assumption is that if Pig value has 0 time component (midnight)
+         * we assume it reasonably 'fits' into a Hive DATE.  If time part is not 0, it's considered
+         * out of range for target type.
+         */
+        DateTime dateTime = ((DateTime)pigObj);
+        if(dateTime.getMillisOfDay() != 0) {
+          handleOutOfRangeValue(pigObj, hcatFS, "Time component must be 0 (midnight) in local timezone; Local TZ val='" + pigObj + "'");
+          return null;
+        }
+        /*java.sql.Date is a poorly defined API.  Some (all?) SerDes call toString() on it
+        [e.g. LazySimpleSerDe, uses LazyUtils.writePrimitiveUTF8()],  which automatically adjusts
+          for local timezone.  Date.valueOf() also uses local timezone (as does Date(int,int,int).
+          Also see PigHCatUtil#extractPigObject() for corresponding read op.  This way a DATETIME from Pig,
+          when stored into Hive and read back comes back with the same value.*/
+        return new Date(dateTime.getYear() - 1900, dateTime.getMonthOfYear() - 1, dateTime.getDayOfMonth());
       default:
-        throw new BackendException("Unexpected type " + type + " for value " + pigObj
-          + (pigObj == null ? "" : " of class "
-          + pigObj.getClass().getName()), PigHCatUtil.PIG_EXCEPTION_CODE);
+        throw new BackendException("Unexpected HCat type " + type + " for value " + pigObj
+          + " of class " + pigObj.getClass().getName(), PigHCatUtil.PIG_EXCEPTION_CODE);
       }
     } catch (BackendException e) {
       // provide the path to the field in the error message
       throw new BackendException(
-        (hcatFS.getName() == null ? " " : hcatFS.getName() + ".") + e.getMessage(),
-        e.getCause() == null ? e : e.getCause());
+        (hcatFS.getName() == null ? " " : hcatFS.getName() + ".") + e.getMessage(), e);
+    }
+  }
+
+  private void handleOutOfRangeValue(Object pigObj, HCatFieldSchema hcatFS) throws BackendException {
+    handleOutOfRangeValue(pigObj, hcatFS, null);
+  }
+  /**
+   * depending on user config, throws an exception or logs a msg if the incoming Pig value is
+   * out-of-range for target type.
+   * @param additionalMsg may be {@code null} 
+   */
+  private void handleOutOfRangeValue(Object pigObj, HCatFieldSchema hcatFS, String additionalMsg) throws BackendException {
+    String msg = "Pig value '" + pigObj + "' is outside the bounds of column " + hcatFS.getName() +
+      " with type " + (hcatFS.getTypeInfo() == null ? hcatFS.getType() : hcatFS.getTypeInfo().getTypeName()) +
+      (additionalMsg == null ? "" : "[" + additionalMsg + "]");
+    switch (onOutOfRange) {
+      case Throw:
+        throw new BackendException(msg, PigHCatUtil.PIG_EXCEPTION_CODE);
+      case Null:
+        dataLossLogger.logDataLossMsg(hcatFS, pigObj, msg);
+        break;
+      default:
+        throw new BackendException("Unexpected " + ON_OOR_VALUE_OPT + " value: '" + onOutOfRange + "'");
     }
   }
 
@@ -387,10 +489,10 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
 
     // Iterate through all the elements in Pig Schema and do validations as
     // dictated by semantics, consult HCatSchema of table when need be.
-
+    int columnPos = 0;//helps with debug messages
     for (FieldSchema pigField : pigSchema.getFields()) {
       HCatFieldSchema hcatField = getColFromSchema(pigField.alias, tblSchema);
-      validateSchema(pigField, hcatField);
+      validateSchema(pigField, hcatField, pigSchema, tblSchema, columnPos++);
     }
 
     try {
@@ -400,8 +502,14 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
     }
   }
 
-
-  private void validateSchema(FieldSchema pigField, HCatFieldSchema hcatField)
+  /**
+   * This method encodes which Pig type can map (be stored in) to which HCat type.
+   * @throws HCatException
+   * @throws FrontendException
+   */
+  private void validateSchema(FieldSchema pigField, HCatFieldSchema hcatField, 
+                              Schema topLevelPigSchema, HCatSchema topLevelHCatSchema, 
+                              int columnPos)
     throws HCatException, FrontendException {
     validateAlias(pigField.alias);
     byte type = pigField.type;
@@ -420,20 +528,82 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
       case DataType.BAG:
         HCatSchema arrayElementSchema = hcatField == null ? null : hcatField.getArrayElementSchema();
         for (FieldSchema innerField : pigField.schema.getField(0).schema.getFields()) {
-          validateSchema(innerField, getColFromSchema(pigField.alias, arrayElementSchema));
+          validateSchema(innerField, getColFromSchema(pigField.alias, arrayElementSchema), 
+                  topLevelPigSchema, topLevelHCatSchema, columnPos);
         }
         break;
 
       case DataType.TUPLE:
         HCatSchema structSubSchema = hcatField == null ? null : hcatField.getStructSubSchema();
         for (FieldSchema innerField : pigField.schema.getFields()) {
-          validateSchema(innerField, getColFromSchema(pigField.alias, structSubSchema));
+          validateSchema(innerField, getColFromSchema(pigField.alias, structSubSchema),
+                  topLevelPigSchema, topLevelHCatSchema, columnPos);
         }
         break;
 
       default:
         throw new FrontendException("Internal Error.", PigHCatUtil.PIG_EXCEPTION_CODE);
       }
+    }
+    else if(hcatField != null) {
+      //there is no point trying to validate further if we have no type info about target field
+      switch (type) {
+        case DataType.BIGDECIMAL:
+          throwTypeMismatchException(type, Lists.newArrayList(Type.DECIMAL), hcatField, columnPos);
+          break;
+        case DataType.DATETIME:
+          throwTypeMismatchException(type, Lists.newArrayList(Type.TIMESTAMP, Type.DATE), hcatField, columnPos);
+          break;
+        case DataType.BYTEARRAY:
+          throwTypeMismatchException(type, Lists.newArrayList(Type.BINARY), hcatField, columnPos);
+          break;
+        case DataType.BIGINTEGER:
+          throwTypeMismatchException(type, Collections.<Type>emptyList(), hcatField, columnPos);
+          break;
+        case DataType.BOOLEAN:
+          throwTypeMismatchException(type, Lists.newArrayList(Type.BOOLEAN), hcatField, columnPos);
+          break;
+        case DataType.CHARARRAY:
+          throwTypeMismatchException(type, Lists.newArrayList(Type.STRING, Type.CHAR, Type.VARCHAR), 
+                  hcatField, columnPos);
+          break;
+        case DataType.DOUBLE:
+          throwTypeMismatchException(type, Lists.newArrayList(Type.DOUBLE), hcatField, columnPos);
+          break;
+        case DataType.FLOAT:
+          throwTypeMismatchException(type, Lists.newArrayList(Type.FLOAT), hcatField, columnPos);
+          break;
+        case DataType.INTEGER:
+          throwTypeMismatchException(type, Lists.newArrayList(Type.INT, Type.BIGINT, 
+                  Type.TINYINT, Type.SMALLINT), hcatField, columnPos);
+          break;
+        case DataType.LONG:
+          throwTypeMismatchException(type, Lists.newArrayList(Type.BIGINT), hcatField, columnPos);
+          break;
+        default:
+          throw new FrontendException("'" + type + 
+                  "' Pig datatype in column " + columnPos + "(0-based) is not supported by HCat", 
+                  PigHCatUtil.PIG_EXCEPTION_CODE);
+      }
+    }
+    else {
+      if(false) {
+        //see HIVE-6194
+      throw new FrontendException("(pigSch,hcatSchema)=(" + pigField + "," +
+              "" + hcatField + ") (topPig, topHcat)=(" + topLevelPigSchema + "," +
+              "" + topLevelHCatSchema + ")");
+      }
+    }
+  }
+  private static void throwTypeMismatchException(byte pigDataType,
+      List<Type> hcatRequiredType, HCatFieldSchema hcatActualField, 
+      int columnPos) throws FrontendException {
+    if(!hcatRequiredType.contains(hcatActualField.getType())) {
+      throw new FrontendException( 
+              "Pig '" + DataType.findTypeName(pigDataType) + "' type in column " + 
+              columnPos + "(0-based) cannot map to HCat '" + 
+              hcatActualField.getType() + "'type.  Target filed must be of HCat type {" +
+              StringUtils.join(hcatRequiredType, " or ") + "}");
     }
   }
 
@@ -466,5 +636,24 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
 
   @Override
   public void storeStatistics(ResourceStatistics stats, String arg1, Job job) throws IOException {
+  }
+
+  /**
+   * todo: when job is complete, should print the msgCount table to log 
+   */
+  private static final class DataLossLogger {
+    private static final Map<String, Integer> msgCount = new HashMap<String, Integer>();
+    private static String getColumnTypeKey(HCatFieldSchema fieldSchema) {
+      return fieldSchema.getName() + "_" + (fieldSchema.getTypeInfo() == null ?
+        fieldSchema.getType() : fieldSchema.getTypeInfo());
+    }
+    private void logDataLossMsg(HCatFieldSchema fieldSchema, Object pigOjb, String msg) {
+      String key = getColumnTypeKey(fieldSchema);
+      if(!msgCount.containsKey(key)) {
+        msgCount.put(key, 0);
+        LOG.warn(msg + " " + "Will write NULL instead.  Only 1 such message per type/column is emitted.");
+      }
+      msgCount.put(key, msgCount.get(key) + 1);
+    }
   }
 }

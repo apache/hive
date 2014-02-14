@@ -183,6 +183,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
+import com.esotericsoftware.shaded.org.objenesis.strategy.StdInstantiatorStrategy;
 
 /**
  * Utilities.
@@ -920,6 +921,7 @@ public final class Utilities {
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
       kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
       kryo.register(Path.class, new PathSerializer());
+      kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
       removeField(kryo, Operator.class, "colExprMap");
       removeField(kryo, ColumnInfo.class, "objectInspector");
       removeField(kryo, MapWork.class, "opParseCtxMap");
@@ -942,6 +944,7 @@ public final class Utilities {
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
       kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
       kryo.register(Path.class, new PathSerializer());
+      kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
       return kryo;
     };
   };

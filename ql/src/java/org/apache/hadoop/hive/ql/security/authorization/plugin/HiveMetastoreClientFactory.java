@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-import java.io.IOException;
-
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 /**
  * Factory for getting current valid instance of IMetaStoreClient
  */
-@Public
+@LimitedPrivate(value = { "" })
+@Evolving
 public interface HiveMetastoreClientFactory {
-  IMetaStoreClient getHiveMetastoreClient() throws IOException;
+  IMetaStoreClient getHiveMetastoreClient() throws HiveAuthzPluginException;
 }

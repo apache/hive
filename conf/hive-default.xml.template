@@ -1656,7 +1656,7 @@
 
 <property>
   <name>hive.conf.restricted.list</name>
-  <value></value>
+  <value>hive.security.authenticator.manager,hive.security.authorization.manager</value>
   <description>Comma separated list of configuration options which are immutable at runtime</description>
 </property>
 
@@ -1880,6 +1880,46 @@
     If this is set the header for RCFiles will simply be RCF.  If this is not
     set the header will be that borrowed from sequence files, e.g. SEQ- followed
     by the input and output RCFile formats.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.default.stripe.size</name>
+  <value>268435456</value>
+  <description>
+    Define the default ORC stripe size.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.default.row.index.stride</name>
+  <value>10000</value>
+  <description>
+    Define the default ORC index stride in number of rows.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.default.buffer.size</name>
+  <value>262144</value>
+  <description>
+    Define the default ORC buffer size in bytes.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.default.block.padding</name>
+  <value>true</value>
+  <description>
+    Define the default block padding.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.default.compress</name>
+  <value>ZLIB</value>
+  <description>
+    Define the default compression codec for ORC file.
   </description>
 </property>
 

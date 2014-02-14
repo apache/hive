@@ -24,15 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarDivideLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarDivideDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarDivideLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColDivideDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColDivideDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarDivideDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -51,7 +43,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
   LongColDivideLongScalar.class, LongColDivideDoubleScalar.class,
   DoubleColDivideLongScalar.class, DoubleColDivideDoubleScalar.class,
   LongScalarDivideLongColumn.class, LongScalarDivideDoubleColumn.class,
-  DoubleScalarDivideLongColumn.class, DoubleScalarDivideDoubleColumn.class})
+  DoubleScalarDivideLongColumn.class, DoubleScalarDivideDoubleColumn.class,
+  DecimalColDivideDecimalColumn.class, DecimalColDivideDecimalScalar.class,
+  DecimalScalarDivideDecimalColumn.class})
 public class GenericUDFOPDivide extends GenericUDFBaseNumeric {
 
   public GenericUDFOPDivide() {

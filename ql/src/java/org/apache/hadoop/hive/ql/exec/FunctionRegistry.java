@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDAFPercentile;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
@@ -167,7 +168,6 @@ public final class FunctionRegistry {
 
   static Map<String, WindowFunctionInfo> windowFunctions = Collections.synchronizedMap(new LinkedHashMap<String, WindowFunctionInfo>());
 
-
   static {
     registerGenericUDF("concat", GenericUDFConcat.class);
     registerUDF("substr", UDFSubstr.class, false);
@@ -282,6 +282,8 @@ public final class FunctionRegistry {
     registerUDF("|", UDFOPBitOr.class, true);
     registerUDF("^", UDFOPBitXor.class, true);
     registerUDF("~", UDFOPBitNot.class, true);
+
+    registerGenericUDF("current_database", UDFCurrentDB.class);
 
     registerGenericUDF("isnull", GenericUDFOPNull.class);
     registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
@@ -417,8 +419,8 @@ public final class FunctionRegistry {
     registerGenericUDTF("stack", GenericUDTFStack.class);
 
     //PTF declarations
-    registerGenericUDF(true, LEAD_FUNC_NAME, GenericUDFLead.class);
-    registerGenericUDF(true, LAG_FUNC_NAME, GenericUDFLag.class);
+    registerGenericUDF(LEAD_FUNC_NAME, GenericUDFLead.class);
+    registerGenericUDF(LAG_FUNC_NAME, GenericUDFLag.class);
 
     registerWindowFunction("row_number", new GenericUDAFRowNumber());
     registerWindowFunction("rank", new GenericUDAFRank());
@@ -517,8 +519,32 @@ public final class FunctionRegistry {
     }
   }
 
+  private static <T> T getQualifiedFunctionInfo(Map<String, T> mFunctions, String functionName) {
+    T functionInfo =  mFunctions.get(functionName);
+    // Eventually this would check metastore for registered functions.
+    return functionInfo;
+  }
+
+  private static <T> T getFunctionInfo(Map<String, T> mFunctions, String functionName) {
+    functionName = functionName.toLowerCase();
+    T functionInfo = null;
+    if (FunctionUtils.isQualifiedFunctionName(functionName)) {
+      functionInfo = getQualifiedFunctionInfo(mFunctions, functionName);
+    } else {
+      // First try without qualifiers - would resolve builtin/temp functions.
+      // Otherwise try qualifying with current db name.
+      functionInfo =  mFunctions.get(functionName);
+      if (functionInfo == null && !FunctionUtils.isQualifiedFunctionName(functionName)) {
+        String qualifiedName = FunctionUtils.qualifyFunctionName(functionName,
+            SessionState.get().getCurrentDatabase());
+        functionInfo = getQualifiedFunctionInfo(mFunctions, qualifiedName);
+      }
+    }
+    return functionInfo;
+  }
+
   public static FunctionInfo getFunctionInfo(String functionName) {
-    return mFunctions.get(functionName.toLowerCase());
+    return getFunctionInfo(mFunctions, functionName);
   }
 
   /**
@@ -1047,7 +1073,7 @@ public final class FunctionRegistry {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Looking up GenericUDAF: " + functionName);
     }
-    FunctionInfo finfo = mFunctions.get(functionName.toLowerCase());
+    FunctionInfo finfo = getFunctionInfo(functionName);
     if (finfo == null) {
       return null;
     }
@@ -1693,9 +1719,8 @@ public final class FunctionRegistry {
     }
   }
 
-  public static WindowFunctionInfo getWindowFunctionInfo(String name)
-  {
-    return windowFunctions.get(name.toLowerCase());
+  public static WindowFunctionInfo getWindowFunctionInfo(String functionName) {
+    return getFunctionInfo(windowFunctions, functionName);
   }
 
   /**
@@ -1708,7 +1733,7 @@ public final class FunctionRegistry {
    */
   public static boolean impliesOrder(String functionName) {
 
-    FunctionInfo info = mFunctions.get(functionName.toLowerCase());
+    FunctionInfo info = getFunctionInfo(functionName);
     if (info != null) {
       if (info.isGenericUDF()) {
         UDFType type = info.getGenericUDF().getClass().getAnnotation(UDFType.class);
@@ -1717,7 +1742,7 @@ public final class FunctionRegistry {
         }
       }
     }
-    WindowFunctionInfo windowInfo = windowFunctions.get(functionName.toLowerCase());
+    WindowFunctionInfo windowInfo = getWindowFunctionInfo(functionName);
     if (windowInfo != null) {
       return windowInfo.isImpliesOrder();
     }
@@ -1733,13 +1758,13 @@ public final class FunctionRegistry {
 
   public static boolean isTableFunction(String name)
   {
-    FunctionInfo tFInfo = mFunctions.get(name.toLowerCase());
+    FunctionInfo tFInfo = getFunctionInfo(name);
     return tFInfo != null && !tFInfo.isInternalTableFunction() && tFInfo.isTableFunction();
   }
 
   public static TableFunctionResolver getTableFunctionResolver(String name)
   {
-    FunctionInfo tfInfo = mFunctions.get(name.toLowerCase());
+    FunctionInfo tfInfo = getFunctionInfo(name);
     if(tfInfo.isTableFunction()) {
       return (TableFunctionResolver) ReflectionUtils.newInstance(tfInfo.getFunctionClass(), null);
     }
@@ -1772,7 +1797,7 @@ public final class FunctionRegistry {
    *         confirms a ranking function, false otherwise
    */
   public static boolean isRankingFunction(String name){
-    FunctionInfo info = mFunctions.get(name.toLowerCase());
+    FunctionInfo info = getFunctionInfo(name);
     GenericUDAFResolver res = info.getGenericUDAFResolver();
     if (res != null){
       WindowFunctionDescription desc = res.getClass().getAnnotation(WindowFunctionDescription.class);

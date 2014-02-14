@@ -71,7 +71,30 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: test_tab PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test_tab))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL part) '1') (= (TOK_TABLE_OR_COL key) '484')))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            test_tab
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+      TOK_WHERE
+         AND
+            =
+               TOK_TABLE_OR_COL
+                  part
+               '1'
+            =
+               TOK_TABLE_OR_COL
+                  key
+               '484'
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -80,30 +103,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        test_tab 
+      Map Operator Tree:
           TableScan
             alias: test_tab
+            Statistics: Num rows: 8 Data size: 1761 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate:
-                  expr: (key = '484')
-                  type: boolean
+              predicate: (key = '484') (type: boolean)
+              Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: part
-                      type: string
+                expressions: key (type: string), value (type: string), part (type: string)
                 outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -174,7 +192,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM test_tab WHERE part = '1' AND key = '484'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
@@ -195,7 +212,30 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: test_tab PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test_tab))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL part) '1') (= (TOK_TABLE_OR_COL key) '0')))))
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            test_tab
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+      TOK_WHERE
+         AND
+            =
+               TOK_TABLE_OR_COL
+                  part
+               '1'
+            =
+               TOK_TABLE_OR_COL
+                  key
+               '0'
+
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -204,30 +244,25 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        test_tab 
+      Map Operator Tree:
           TableScan
             alias: test_tab
+            Statistics: Num rows: 8 Data size: 1761 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate:
-                  expr: (key = '0')
-                  type: boolean
+              predicate: (key = '0') (type: boolean)
+              Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: part
-                      type: string
+                expressions: key (type: string), value (type: string), part (type: string)
                 outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -297,7 +332,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT * FROM test_tab WHERE part = '1' AND key = '0'
 PREHOOK: type: QUERY

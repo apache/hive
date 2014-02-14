@@ -31,9 +31,9 @@ import org.apache.hadoop.util.StringUtils;
 public final class ColumnProjectionUtils {
 
   public static final String READ_COLUMN_IDS_CONF_STR = "hive.io.file.readcolumn.ids";
+  public static final String READ_ALL_COLUMNS = "hive.io.file.read.all.columns";
   public static final String READ_COLUMN_NAMES_CONF_STR = "hive.io.file.readcolumn.names";
   private static final String READ_COLUMN_IDS_CONF_STR_DEFAULT = "";
-  private static final String READ_ALL_COLUMNS = "hive.io.file.read.all.columns";
   private static final boolean READ_ALL_COLUMNS_DEFAULT = true;
 
   /**

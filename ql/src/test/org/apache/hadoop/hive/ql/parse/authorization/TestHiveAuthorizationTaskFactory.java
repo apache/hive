@@ -222,7 +222,7 @@ public class TestHiveAuthorizationTaskFactory {
     GrantRevokeRoleDDL grantDesc = work.getGrantRevokeRoleDDL();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertTrue("Expected grant ", grantDesc.getGrant());
-    Assert.assertTrue("Grant option is always true ", grantDesc.isGrantOption());
+    Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
     Assert.assertEquals(currentUser, grantDesc.getGrantor());
     Assert.assertEquals(PrincipalType.USER, grantDesc.getGrantorType());
     for(String role : ListSizeMatcher.inList(grantDesc.getRoles()).ofSize(1)) {
@@ -242,7 +242,7 @@ public class TestHiveAuthorizationTaskFactory {
     GrantRevokeRoleDDL grantDesc = work.getGrantRevokeRoleDDL();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertTrue("Expected grant ", grantDesc.getGrant());
-    Assert.assertTrue("Grant option is always true ", grantDesc.isGrantOption());
+    Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
     Assert.assertEquals(currentUser, grantDesc.getGrantor());
     Assert.assertEquals(PrincipalType.USER, grantDesc.getGrantorType());
     for(String role : ListSizeMatcher.inList(grantDesc.getRoles()).ofSize(1)) {
@@ -262,7 +262,7 @@ public class TestHiveAuthorizationTaskFactory {
     GrantRevokeRoleDDL grantDesc = work.getGrantRevokeRoleDDL();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertTrue("Expected grant ", grantDesc.getGrant());
-    Assert.assertTrue("Grant option is always true ", grantDesc.isGrantOption());
+    Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
     Assert.assertEquals(currentUser, grantDesc.getGrantor());
     Assert.assertEquals(PrincipalType.USER, grantDesc.getGrantorType());
     for(String role : ListSizeMatcher.inList(grantDesc.getRoles()).ofSize(1)) {
@@ -282,7 +282,7 @@ public class TestHiveAuthorizationTaskFactory {
     GrantRevokeRoleDDL grantDesc = work.getGrantRevokeRoleDDL();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertFalse("Did not expect grant ", grantDesc.getGrant());
-    Assert.assertTrue("Grant option is always true ", grantDesc.isGrantOption());
+    Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
     Assert.assertEquals(currentUser, grantDesc.getGrantor());
     Assert.assertEquals(PrincipalType.USER, grantDesc.getGrantorType());
     for(String role : ListSizeMatcher.inList(grantDesc.getRoles()).ofSize(1)) {
@@ -302,7 +302,7 @@ public class TestHiveAuthorizationTaskFactory {
     GrantRevokeRoleDDL grantDesc = work.getGrantRevokeRoleDDL();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertFalse("Did not expect grant ", grantDesc.getGrant());
-    Assert.assertTrue("Grant option is always true ", grantDesc.isGrantOption());
+    Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
     Assert.assertEquals(currentUser, grantDesc.getGrantor());
     Assert.assertEquals(PrincipalType.USER, grantDesc.getGrantorType());
     for(String role : ListSizeMatcher.inList(grantDesc.getRoles()).ofSize(1)) {
@@ -322,7 +322,7 @@ public class TestHiveAuthorizationTaskFactory {
     GrantRevokeRoleDDL grantDesc = work.getGrantRevokeRoleDDL();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertFalse("Did not expect grant ", grantDesc.getGrant());
-    Assert.assertTrue("Grant option is always true ", grantDesc.isGrantOption());
+    Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
     Assert.assertEquals(currentUser, grantDesc.getGrantor());
     Assert.assertEquals(PrincipalType.USER, grantDesc.getGrantorType());
     for(String role : ListSizeMatcher.inList(grantDesc.getRoles()).ofSize(1)) {

@@ -35,7 +35,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_pushdown
-            filterExpr:
+            filterExpr: (key = 90) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (key = 90) (type: boolean)
@@ -83,7 +83,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_pushdown
-            filterExpr:
+            filterExpr: (key = 90) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (value like '%90%') (type: boolean)
@@ -133,7 +133,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_pushdown
-            filterExpr:
+            filterExpr: (key = 90) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: ((value like '%90%') and (key = UDFToInteger(value))) (type: boolean)

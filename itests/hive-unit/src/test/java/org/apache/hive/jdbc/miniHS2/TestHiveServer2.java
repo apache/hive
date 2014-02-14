@@ -47,12 +47,12 @@ public class TestHiveServer2 {
 
   @Before
   public void setUp() throws Exception {
-    miniHS2.start();
     confOverlay = new HashMap<String, String>();
+    miniHS2.start(confOverlay);
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws Exception {
     miniHS2.stop();
   }
 

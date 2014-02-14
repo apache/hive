@@ -374,8 +374,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	10                  
+	rawDataSize         	96                  
 	totalSize           	106                 
 #### A masked pattern was here ####
 	 	 
@@ -540,8 +540,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	10                  
+	rawDataSize         	120                 
 	totalSize           	199                 
 #### A masked pattern was here ####
 	 	 
@@ -603,8 +603,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	10                  
+	rawDataSize         	120                 
 	totalSize           	199                 
 #### A masked pattern was here ####
 	 	 
@@ -791,8 +791,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	10                  
+	rawDataSize         	96                  
 	totalSize           	106                 
 #### A masked pattern was here ####
 	 	 

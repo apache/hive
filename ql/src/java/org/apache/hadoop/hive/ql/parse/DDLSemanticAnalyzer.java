@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,6 +57,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -92,6 +94,10 @@ import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -99,7 +105,6 @@ import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
-import org.apache.hadoop.hive.ql.plan.PartitionSpec;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
@@ -125,9 +130,12 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+
+import com.google.common.collect.Lists;
 
 /**
  * DDLSemanticAnalyzer.
@@ -452,8 +460,30 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    case HiveParser.TOK_EXCHANGEPARTITION:
       analyzeExchangePartition(ast);
       break;
+   case HiveParser.TOK_SHOW_SET_ROLE:
+     analyzeSetShowRole(ast);
+     break;
     default:
       throw new SemanticException("Unsupported command.");
+    }
+  }
+
+  private void analyzeSetShowRole(ASTNode ast) throws SemanticException {
+    switch (ast.getChildCount()) {
+      case 0:
+        ctx.setResFile(ctx.getLocalTmpPath());
+        rootTasks.add(hiveAuthorizationTaskFactory.createShowCurrentRoleTask(
+        getInputs(), getOutputs(), ctx.getResFile()));
+        setFetchTask(createFetchTask(RoleDDLDesc.getRoleNameSchema()));
+        break;
+      case 1:
+        rootTasks.add(hiveAuthorizationTaskFactory.createSetRoleTask(
+        BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText()),
+        getInputs(), getOutputs()));
+        break;
+      default:
+        throw new SemanticException("Internal error. ASTNode expected to have 0 or 1 child. "
+        + ast.dump());
     }
   }
 
@@ -515,7 +545,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         createShowRoleGrantTask(ast, ctx.getResFile(), getInputs(), getOutputs());
     if(task != null) {
       rootTasks.add(task);
-      setFetchTask(createFetchTask(RoleDDLDesc.getSchema()));
+      setFetchTask(createFetchTask(RoleDDLDesc.getRoleDescSchema()));
     }
   }
 
@@ -525,7 +555,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     showRolesDesc.setResFile(ctx.getResFile().toString());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showRolesDesc), conf));
-    setFetchTask(createFetchTask(RoleDDLDesc.getSchema()));
+    setFetchTask(createFetchTask(RoleDDLDesc.getRoleNameSchema()));
   }
 
   private void analyzeAlterDatabase(ASTNode ast) throws SemanticException {
@@ -700,8 +730,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       outputs.add(new WriteEntity(tab));
     }
 
-    DropTableDesc dropTblDesc = new DropTableDesc(
-        tableName, expectView, ifExists, true);
+    DropTableDesc dropTblDesc = new DropTableDesc(tableName, expectView, ifExists);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         dropTblDesc), conf));
   }
@@ -934,7 +963,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_CREATEINDEX_INDEXTBLNAME:
         ASTNode ch = (ASTNode) child.getChild(0);
-        indexTableName = getUnescapedName((ASTNode) ch);
+        indexTableName = getUnescapedName(ch);
         break;
       case HiveParser.TOK_DEFERRED_REBUILDINDEX:
         deferredRebuild = true;
@@ -2114,7 +2143,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int i = 0; i < ast.getChildCount(); i++) {
         ASTNode child = (ASTNode) ast.getChild(i);
         if (child.getType() == HiveParser.TOK_TABTYPE) {
-          ASTNode tableTypeExpr = (ASTNode) child;
+          ASTNode tableTypeExpr = child;
           tableName =
             QualifiedNameUtil.getFullyQualifiedName((ASTNode) tableTypeExpr.getChild(0));
           // get partition metadata if partition specified
@@ -2339,7 +2368,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeAlterTableRenamePart(ASTNode ast, String tblName,
       HashMap<String, String> oldPartSpec) throws SemanticException {
-    Map<String, String> newPartSpec = extractPartitionSpecs((ASTNode) ast.getChild(0));
+    Map<String, String> newPartSpec = extractPartitionSpecs(ast.getChild(0));
     if (newPartSpec == null) {
       throw new SemanticException("RENAME PARTITION Missing Destination" + ast);
     }
@@ -2388,49 +2417,31 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterTableDropParts(ASTNode ast, boolean expectView)
       throws SemanticException {
 
+    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null)
+        || HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
+    // If the drop has to fail on non-existent partitions, we cannot batch expressions.
+    // That is because we actually have to check each separate expression for existence.
+    // We could do a small optimization for the case where expr has all columns and all
+    // operators are equality, if we assume those would always match one partition (which
+    // may not be true with legacy, non-normalized column values). This is probably a
+    // popular case but that's kinda hacky. Let's not do it for now.
+    boolean canGroupExprs = ifExists;
+
     String tblName = getUnescapedName((ASTNode) ast.getChild(0));
-    // get table metadata
-    List<PartitionSpec> partSpecs = getFullPartitionSpecs(ast);
     Table tab = getTable(tblName, true);
+    Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
+        getFullPartitionSpecs(ast, tab, canGroupExprs);
+    if (partSpecs.isEmpty()) return; // nothing to do
+
     validateAlterTableType(tab, AlterTableTypes.DROPPARTITION, expectView);
     inputs.add(new ReadEntity(tab));
 
-    // Find out if all partition columns are strings. This is needed for JDO
-    boolean stringPartitionColumns = true;
-    List<FieldSchema> partCols = tab.getPartCols();
+    boolean ignoreProtection = ast.getFirstChildWithType(HiveParser.TOK_IGNOREPROTECTION) != null;
+    addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists, ignoreProtection);
 
-    for (FieldSchema partCol : partCols) {
-      if (!partCol.getType().toLowerCase().equals("string")) {
-        stringPartitionColumns = false;
-        break;
-      }
-    }
-
-    // Only equality is supported for non-string partition columns
-    if (!stringPartitionColumns) {
-      for (PartitionSpec partSpec : partSpecs) {
-        if (partSpec.isNonEqualityOperator()) {
-          throw new SemanticException(
-              ErrorMsg.DROP_PARTITION_NON_STRING_PARTCOLS_NONEQUALITY.getMsg());
-        }
-      }
-    }
-
-    boolean ignoreProtection = (ast.getFirstChildWithType(HiveParser.TOK_IGNOREPROTECTION) != null);
-    if (partSpecs != null) {
-      boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
-      // we want to signal an error if the partition doesn't exist and we're
-      // configured not to fail silently
-      boolean throwException =
-          !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-      addTableDropPartsOutputs(tblName, partSpecs, throwException,
-                                stringPartitionColumns, ignoreProtection);
-    }
     DropTableDesc dropTblDesc =
-        new DropTableDesc(tblName, partSpecs, expectView, stringPartitionColumns, ignoreProtection);
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        dropTblDesc), conf));
+        new DropTableDesc(tblName, partSpecs, expectView, ignoreProtection);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc), conf));
   }
 
   private void analyzeAlterTablePartColType(ASTNode ast)
@@ -2528,7 +2539,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         currentPart = getPartSpec(child);
         validatePartitionValues(currentPart); // validate reserved values
-        validatePartSpec(tab, currentPart, (ASTNode)child, conf, true);
+        validatePartSpec(tab, currentPart, child, conf, true);
         break;
       case HiveParser.TOK_PARTITIONLOCATION:
         // if location specified, set in partition
@@ -2739,34 +2750,84 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * Get the partition specs from the tree. This stores the full specification
    * with the comparator operator into the output list.
    *
-   * @param ast
-   *          Tree to extract partitions from.
-   * @return A list of PartitionSpec objects which contain the mapping from
-   *         key to operator and value.
-   * @throws SemanticException
+   * @param ast Tree to extract partitions from.
+   * @param tab Table.
+   * @param result Map of partitions by prefix length. Most of the time prefix length will
+   *               be the same for all partition specs, so we can just OR the expressions.
    */
-  private List<PartitionSpec> getFullPartitionSpecs(CommonTree ast)
-      throws SemanticException {
-    List<PartitionSpec> partSpecList = new ArrayList<PartitionSpec>();
+  private Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
+      CommonTree ast, Table tab, boolean canGroupExprs) throws SemanticException {
+    Map<String, String> colTypes = new HashMap<String, String>();
+    for (FieldSchema fs : tab.getPartitionKeys()) {
+      colTypes.put(fs.getName().toLowerCase(), fs.getType());
+    }
 
+    Map<Integer, List<ExprNodeGenericFuncDesc>> result =
+        new HashMap<Integer, List<ExprNodeGenericFuncDesc>>();
     for (int childIndex = 1; childIndex < ast.getChildCount(); childIndex++) {
       Tree partSpecTree = ast.getChild(childIndex);
-      if (partSpecTree.getType() == HiveParser.TOK_PARTSPEC) {
-        PartitionSpec partSpec = new PartitionSpec();
+      if (partSpecTree.getType() != HiveParser.TOK_PARTSPEC) continue;
+      ExprNodeGenericFuncDesc expr = null;
+      HashSet<String> names = new HashSet<String>(partSpecTree.getChildCount());
+      for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
+        CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
+        assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
+        String key = partSpecSingleKey.getChild(0).getText().toLowerCase();
+        String operator = partSpecSingleKey.getChild(1).getText();
+        String val = stripQuotes(partSpecSingleKey.getChild(2).getText());
 
-        for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
-          CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
-          assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
-          String key = partSpecSingleKey.getChild(0).getText().toLowerCase();
-          String operator = partSpecSingleKey.getChild(1).getText();
-          String val = partSpecSingleKey.getChild(2).getText();
-          partSpec.addPredicate(key, operator, val);
+        String type = colTypes.get(key);
+        if (type == null) {
+          throw new SemanticException("Column " + key + " not found");
         }
-
-        partSpecList.add(partSpec);
+        // Create the corresponding hive expression to filter on partition columns.
+        ExprNodeColumnDesc column = new ExprNodeColumnDesc(
+            TypeInfoFactory.getPrimitiveTypeInfo(type), key, null, true);
+        ExprNodeGenericFuncDesc op = makeBinaryPredicate(
+            operator, column, new ExprNodeConstantDesc(val));
+        // If it's multi-expr filter (e.g. a='5', b='2012-01-02'), AND with previous exprs.
+        expr = (expr == null) ? op : makeBinaryPredicate("and", expr, op);
+        names.add(key);
+      }
+      if (expr == null) continue;
+      // We got the expr for one full partition spec. Determine the prefix length.
+      int prefixLength = calculatePartPrefix(tab, names);
+      List<ExprNodeGenericFuncDesc> orExpr = result.get(prefixLength);
+      // We have to tell apart partitions resulting from spec with different prefix lengths.
+      // So, if we already have smth for the same prefix length, we can OR the two.
+      // If we don't, create a new separate filter. In most cases there will only be one.
+      if (orExpr == null) {
+        result.put(prefixLength, Lists.newArrayList(expr));
+      } else if (canGroupExprs) {
+        orExpr.set(0, makeBinaryPredicate("or", expr, orExpr.get(0)));
+      } else {
+        orExpr.add(expr);
       }
     }
-    return partSpecList;
+    return result;
+  }
+
+  private static ExprNodeGenericFuncDesc makeBinaryPredicate(
+      String fn, ExprNodeDesc left, ExprNodeDesc right) {
+    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+        FunctionRegistry.getFunctionInfo(fn).getGenericUDF(), Lists.newArrayList(left, right));
+  }
+
+  /**
+   * Calculates the partition prefix length based on the drop spec.
+   * This is used to avoid deleting archived partitions with lower level.
+   * For example, if, for A and B key cols, drop spec is A=5, B=6, we shouldn't drop
+   * archived A=5/, because it can contain B-s other than 6.
+   * @param tbl Table
+   * @param partSpecKeys Keys present in drop partition spec.
+   */
+  private int calculatePartPrefix(Table tbl, HashSet<String> partSpecKeys) {
+    int partPrefixToDrop = 0;
+    for (FieldSchema fs : tbl.getPartCols()) {
+      if (!partSpecKeys.contains(fs.getName())) break;
+      ++partPrefixToDrop;
+    }
+    return partPrefixToDrop;
   }
 
   /**
@@ -2857,42 +2918,42 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * pre-execution hook. If the partition does not exist, throw an error if
    * throwIfNonExistent is true, otherwise ignore it.
    */
-  private void addTableDropPartsOutputs(String tblName, List<PartitionSpec> partSpecs,
-      boolean throwIfNonExistent, boolean stringPartitionColumns, boolean ignoreProtection)
-      throws SemanticException {
-    Table tab = getTable(tblName);
+  private void addTableDropPartsOutputs(Table tab,
+      Collection<List<ExprNodeGenericFuncDesc>> partSpecs, boolean throwIfNonExistent,
+      boolean ignoreProtection) throws SemanticException {
 
-    Iterator<PartitionSpec> i;
-    int index;
-    for (i = partSpecs.iterator(), index = 1; i.hasNext(); ++index) {
-      PartitionSpec partSpec = i.next();
-      List<Partition> parts = null;
-      if (stringPartitionColumns) {
+    for (List<ExprNodeGenericFuncDesc> specs : partSpecs) {
+      for (ExprNodeGenericFuncDesc partSpec : specs) {
+        List<Partition> parts = new ArrayList<Partition>();
+        boolean hasUnknown = false;
         try {
-          parts = db.getPartitionsByFilter(tab, partSpec.toString());
+          hasUnknown = db.getPartitionsByExpr(tab, partSpec, conf, parts);
         } catch (Exception e) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()), e);
-        }
-      }
-      else {
-        try {
-          parts = db.getPartitions(tab, partSpec.getPartSpecWithoutOperator());
-        } catch (Exception e) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()), e);
-        }
-      }
-
-      if (parts.isEmpty()) {
-        if (throwIfNonExistent) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()));
-        }
-      }
-      for (Partition p : parts) {
-        if (!ignoreProtection && !p.canDrop()) {
           throw new SemanticException(
-            ErrorMsg.DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION.getMsg(p.getCompleteName()));
+              ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()), e);
         }
-        outputs.add(new WriteEntity(p));
+        if (hasUnknown) {
+          throw new SemanticException(
+              "Unexpected unknown partitions for " + partSpec.getExprString());
+        }
+
+        // TODO: ifExists could be moved to metastore. In fact it already supports that. Check it
+        //       for now since we get parts for output anyway, so we can get the error message
+        //       earlier... If we get rid of output, we can get rid of this.
+        if (parts.isEmpty()) {
+          if (throwIfNonExistent) {
+            throw new SemanticException(
+                ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()));
+          }
+        }
+        for (Partition p : parts) {
+          // TODO: same thing, metastore already checks this but check here if we can.
+          if (!ignoreProtection && !p.canDrop()) {
+            throw new SemanticException(
+              ErrorMsg.DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION.getMsg(p.getCompleteName()));
+          }
+          outputs.add(new WriteEntity(p));
+        }
       }
     }
   }

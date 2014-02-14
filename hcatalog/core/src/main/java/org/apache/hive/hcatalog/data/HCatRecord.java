@@ -19,11 +19,16 @@
 
 package org.apache.hive.hcatalog.data;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 
@@ -149,5 +154,43 @@ public abstract class HCatRecord implements HCatRecordable {
   public void setMap(String fieldName, HCatSchema recordSchema, Map<?, ?> value) throws HCatException {
     set(fieldName, recordSchema, value);
   }
+  public void setChar(String fieldName, HCatSchema recordSchema, HiveChar value)
+          throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
+  public HiveChar getChar(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (HiveChar) get(fieldName, recordSchema, HiveChar.class);
+  }
+  public void setVarchar(String fieldName, HCatSchema recordSchema, HiveVarchar value)
+          throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
+  public HiveVarchar getVarchar(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (HiveVarchar) get(fieldName, recordSchema, HiveVarchar.class);
+  }
+  public void setDecimal(String fieldName, HCatSchema recordSchema, HiveDecimal value)
+          throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
+  public HiveDecimal getDecimal(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (HiveDecimal) get(fieldName, recordSchema, HiveDecimal.class);
+  }
 
+  /**
+   * Note that the proper way to construct a java.sql.Date for use with this object is 
+   * Date.valueOf("1999-12-31").  
+   */
+  public void setDate(String fieldName, HCatSchema recordSchema, Date value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
+  public Date getDate(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (Date) get(fieldName, recordSchema, Date.class);
+  }
+  public void setTimestamp(String fieldName, HCatSchema recordSchema, Timestamp value)
+          throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
+  public Timestamp getTimestamp(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (Timestamp) get(fieldName, recordSchema, Timestamp.class);
+  }
 }

@@ -30,6 +30,10 @@ public class CastLongToDecimal extends FuncLongToDecimal {
 
   private static final long serialVersionUID = 1L;
 
+  public CastLongToDecimal() {
+    super();
+  }
+
   public CastLongToDecimal(int inputColumn, int outputColumn) {
     super(inputColumn, outputColumn);
   }

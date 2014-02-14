@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
@@ -55,6 +56,12 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeCreateFunction(ASTNode ast) throws SemanticException {
     String functionName = ast.getChild(0).getText();
     String className = unescapeSQLString(ast.getChild(1).getText());
+
+    // Temp functions are not allowed to have qualified names.
+    if (FunctionUtils.isQualifiedFunctionName(functionName)) {
+      throw new SemanticException("Temporary function cannot be created with a qualified name.");
+    }
+
     CreateFunctionDesc desc = new CreateFunctionDesc(functionName, className);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
   }

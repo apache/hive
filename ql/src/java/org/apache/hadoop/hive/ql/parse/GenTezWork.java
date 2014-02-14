@@ -49,8 +49,15 @@ public class GenTezWork implements NodeProcessor {
 
   static final private Log LOG = LogFactory.getLog(GenTezWork.class.getName());
 
-  // sequence number is used to name vertices (e.g.: Map 1, Reduce 14, ...)
-  private int sequenceNumber = 0;
+  // instance of shared utils
+  private GenTezUtils utils = null;
+
+  /**
+   * Constructor takes utils as parameter to facilitate testing
+   */
+  public GenTezWork(GenTezUtils utils) {
+    this.utils = utils;
+  }
 
   @Override
   public Object process(Node nd, Stack<Node> stack,
@@ -92,9 +99,9 @@ public class GenTezWork implements NodeProcessor {
     } else {
       // create a new vertex
       if (context.preceedingWork == null) {
-        work = createMapWork(context, root, tezWork);
+        work = utils.createMapWork(context, root, tezWork, null);
       } else {
-        work = createReduceWork(context, root, tezWork);
+        work = utils.createReduceWork(context, root, tezWork);
       }
       context.rootToWorkMap.put(root, work);
     }
@@ -185,75 +192,5 @@ public class GenTezWork implements NodeProcessor {
     }
 
     return null;
-  }
-
-  protected ReduceWork createReduceWork(GenTezProcContext context, Operator<?> root,
-      TezWork tezWork) {
-    assert !root.getParentOperators().isEmpty();
-    ReduceWork reduceWork = new ReduceWork("Reducer "+ (++sequenceNumber));
-    LOG.debug("Adding reduce work (" + reduceWork.getName() + ") for " + root);
-    reduceWork.setReducer(root);
-    reduceWork.setNeedsTagging(GenMapRedUtils.needsTagging(reduceWork));
-
-    // All parents should be reduce sinks. We pick the one we just walked
-    // to choose the number of reducers. In the join/union case they will
-    // all be -1. In sort/order case where it matters there will be only
-    // one parent.
-    assert context.parentOfRoot instanceof ReduceSinkOperator;
-    ReduceSinkOperator reduceSink = (ReduceSinkOperator) context.parentOfRoot;
-
-    reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
-
-    setupReduceSink(context, reduceWork, reduceSink);
-
-    tezWork.add(reduceWork);
-    tezWork.connect(
-        context.preceedingWork,
-        reduceWork, EdgeType.SIMPLE_EDGE);
-
-    return reduceWork;
-  }
-
-  protected void setupReduceSink(GenTezProcContext context, ReduceWork reduceWork,
-      ReduceSinkOperator reduceSink) {
-
-    LOG.debug("Setting up reduce sink: " + reduceSink
-        + " with following reduce work: " + reduceWork.getName());
-
-    // need to fill in information about the key and value in the reducer
-    GenMapRedUtils.setKeyAndValueDesc(reduceWork, reduceSink);
-
-    // remember which parent belongs to which tag
-    reduceWork.getTagToInput().put(reduceSink.getConf().getTag(),
-         context.preceedingWork.getName());
-
-    // remember the output name of the reduce sink
-    reduceSink.getConf().setOutputName(reduceWork.getName());
-  }
-
-  protected MapWork createMapWork(GenTezProcContext context, Operator<?> root,
-      TezWork tezWork) throws SemanticException {
-    assert root.getParentOperators().isEmpty();
-    MapWork mapWork = new MapWork("Map "+ (++sequenceNumber));
-    LOG.debug("Adding map work (" + mapWork.getName() + ") for " + root);
-
-    // map work starts with table scan operators
-    assert root instanceof TableScanOperator;
-    String alias = ((TableScanOperator)root).getConf().getAlias();
-
-    setupMapWork(mapWork, context, root, alias);
-
-    // add new item to the tez work
-    tezWork.add(mapWork);
-
-    return mapWork;
-  }
-
-  // this method's main use is to help unit testing this class
-  protected void setupMapWork(MapWork mapWork, GenTezProcContext context,
-      Operator<? extends OperatorDesc> root, String alias) throws SemanticException {
-    // All the setup is done in GenMapRedUtils
-    GenMapRedUtils.setMapWork(mapWork, context.parseContext,
-        context.inputs, null, root, alias, context.conf, false);
   }
 }

@@ -1,0 +1,525 @@
+PREHOOK: query: -- partitioned table analyze 
+
+create table dummy (key string, value string) partitioned by (ds string, hr string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- partitioned table analyze 
+
+create table dummy (key string, value string) partitioned by (ds string, hr string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dummy
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table dummy partition (ds='2008',hr='12')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@dummy
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table dummy partition (ds='2008',hr='12')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@dummy
+POSTHOOK: Output: default@dummy@ds=2008/hr=12
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table dummy partition (ds='2008',hr='11')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@dummy
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table dummy partition (ds='2008',hr='11')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@dummy
+POSTHOOK: Output: default@dummy@ds=2008/hr=11
+PREHOOK: query: analyze table dummy partition (ds,hr) compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy
+PREHOOK: Input: default@dummy@ds=2008/hr=11
+PREHOOK: Input: default@dummy@ds=2008/hr=12
+PREHOOK: Output: default@dummy
+PREHOOK: Output: default@dummy@ds=2008/hr=11
+PREHOOK: Output: default@dummy@ds=2008/hr=12
+POSTHOOK: query: analyze table dummy partition (ds,hr) compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy
+POSTHOOK: Input: default@dummy@ds=2008/hr=11
+POSTHOOK: Input: default@dummy@ds=2008/hr=12
+POSTHOOK: Output: default@dummy
+POSTHOOK: Output: default@dummy@ds=2008/hr=11
+POSTHOOK: Output: default@dummy@ds=2008/hr=12
+PREHOOK: query: describe formatted dummy partition (ds='2008', hr='11')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted dummy partition (ds='2008', hr='11')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008, 11]          	 
+Database:           	default             	 
+Table:              	dummy               	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted dummy partition (ds='2008', hr='12')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted dummy partition (ds='2008', hr='12')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008, 12]          	 
+Database:           	default             	 
+Table:              	dummy               	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table dummy
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dummy
+PREHOOK: Output: default@dummy
+POSTHOOK: query: drop table dummy
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dummy
+POSTHOOK: Output: default@dummy
+PREHOOK: query: -- static partitioned table on insert
+
+create table dummy (key string, value string) partitioned by (ds string, hr string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- static partitioned table on insert
+
+create table dummy (key string, value string) partitioned by (ds string, hr string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dummy
+PREHOOK: query: insert overwrite table dummy partition (ds='10',hr='11') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dummy@ds=10/hr=11
+POSTHOOK: query: insert overwrite table dummy partition (ds='10',hr='11') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dummy@ds=10/hr=11
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table dummy partition (ds='10',hr='12') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dummy@ds=10/hr=12
+POSTHOOK: query: insert overwrite table dummy partition (ds='10',hr='12') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dummy@ds=10/hr=12
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted dummy partition (ds='10', hr='11')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted dummy partition (ds='10', hr='11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[10, 11]            	 
+Database:           	default             	 
+Table:              	dummy               	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted dummy partition (ds='10', hr='12')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted dummy partition (ds='10', hr='12')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[10, 12]            	 
+Database:           	default             	 
+Table:              	dummy               	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table dummy
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dummy
+PREHOOK: Output: default@dummy
+POSTHOOK: query: drop table dummy
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dummy
+POSTHOOK: Output: default@dummy
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- dynamic partitioned table on insert
+
+create table dummy (key int) partitioned by (hr int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- dynamic partitioned table on insert
+
+create table dummy (key int) partitioned by (hr int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dummy
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tbl
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tbl.txt' OVERWRITE INTO TABLE tbl
+PREHOOK: type: LOAD
+PREHOOK: Output: default@tbl
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tbl.txt' OVERWRITE INTO TABLE tbl
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tbl
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table dummy partition (hr) select * from tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl
+PREHOOK: Output: default@dummy
+POSTHOOK: query: insert overwrite table dummy partition (hr) select * from tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl
+POSTHOOK: Output: default@dummy@hr=1994
+POSTHOOK: Output: default@dummy@hr=1996
+POSTHOOK: Output: default@dummy@hr=1997
+POSTHOOK: Output: default@dummy@hr=1998
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: describe formatted dummy partition (hr=1997)
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted dummy partition (hr=1997)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+hr                  	int                 	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1997]              	 
+Database:           	default             	 
+Table:              	dummy               	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	6                   
+	rawDataSize         	6                   
+	totalSize           	12                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted dummy partition (hr=1994)
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted dummy partition (hr=1994)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+hr                  	int                 	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1994]              	 
+Database:           	default             	 
+Table:              	dummy               	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	1                   
+	totalSize           	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted dummy partition (hr=1998)
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted dummy partition (hr=1998)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+hr                  	int                 	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1998]              	 
+Database:           	default             	 
+Table:              	dummy               	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	2                   
+	totalSize           	4                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted dummy partition (hr=1996)
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted dummy partition (hr=1996)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+hr                  	int                 	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1996]              	 
+Database:           	default             	 
+Table:              	dummy               	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	1                   
+	totalSize           	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table tbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl
+PREHOOK: Output: default@tbl
+POSTHOOK: query: drop table tbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl
+POSTHOOK: Output: default@tbl
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: drop table dummy
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dummy
+PREHOOK: Output: default@dummy
+POSTHOOK: query: drop table dummy
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dummy
+POSTHOOK: Output: default@dummy
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]

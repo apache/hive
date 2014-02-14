@@ -51,7 +51,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: default__srcpart_src_part_index__
-            filterExpr:
+            filterExpr: ((key = 86) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
             Filter Operator
               predicate: ((key = 86) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
               Select Operator
@@ -94,7 +94,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
-            filterExpr:
+            filterExpr: ((key = 86) and (ds = '2008-04-09')) (type: boolean)
             Statistics: Num rows: 58 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)

@@ -25,7 +25,7 @@ public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthentica
 
   @Override
   public void setMetaStoreHandler(HMSHandler handler) {
-    setConf(handler.getHiveConf());
+    setConf(handler.getConf());
   }
 
 }

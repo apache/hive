@@ -239,7 +239,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: default__srcpart_srcpart_index__
-            filterExpr:
+            filterExpr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
             Filter Operator
               predicate: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
               Select Operator
@@ -272,7 +272,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            filterExpr:
+            filterExpr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
             Statistics: Num rows: 232 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
@@ -284,7 +284,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
-            filterExpr:
+            filterExpr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
@@ -368,7 +368,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: default__src_src_index__
-            filterExpr:
+            filterExpr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
             Filter Operator
               predicate: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
               Select Operator

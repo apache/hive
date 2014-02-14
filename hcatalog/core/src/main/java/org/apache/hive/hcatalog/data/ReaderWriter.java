@@ -22,6 +22,7 @@ package org.apache.hive.hcatalog.data;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,10 +30,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.VIntWritable;
 import org.apache.hadoop.io.VLongWritable;
 
-
+/*
+ * when adding support for new types, we should try to use classes of Hive value system to keep 
+ * things more readable (though functionally it should not make a difference). 
+ */
 public abstract class ReaderWriter {
 
   private static final String UTF8 = "UTF-8";
@@ -96,7 +108,26 @@ public abstract class ReaderWriter {
         list.add(readDatum(in));
       }
       return list;
-
+    case DataType.CHAR:
+      HiveCharWritable hcw = new HiveCharWritable();
+      hcw.readFields(in);
+      return hcw.getHiveChar();
+    case DataType.VARCHAR:
+      HiveVarcharWritable hvw = new HiveVarcharWritable();
+      hvw.readFields(in);
+      return hvw.getHiveVarchar();
+    case DataType.DECIMAL:
+      HiveDecimalWritable hdw = new HiveDecimalWritable();
+      hdw.readFields(in);
+      return hdw.getHiveDecimal();
+    case DataType.DATE:
+      DateWritable dw = new DateWritable();
+      dw.readFields(in);
+      return dw.get();
+    case DataType.TIMESTAMP:
+      TimestampWritable tw = new TimestampWritable();
+      tw.readFields(in);
+      return tw.getTimestamp();
     default:
       throw new IOException("Unexpected data type " + type +
         " found in stream.");
@@ -106,9 +137,9 @@ public abstract class ReaderWriter {
   public static void writeDatum(DataOutput out, Object val) throws IOException {
     // write the data type
     byte type = DataType.findType(val);
+    out.write(type);
     switch (type) {
     case DataType.LIST:
-      out.writeByte(DataType.LIST);
       List<?> list = (List<?>) val;
       int sz = list.size();
       out.writeInt(sz);
@@ -118,7 +149,6 @@ public abstract class ReaderWriter {
       return;
 
     case DataType.MAP:
-      out.writeByte(DataType.MAP);
       Map<?, ?> m = (Map<?, ?>) val;
       out.writeInt(m.size());
       Iterator<?> i =
@@ -131,59 +161,64 @@ public abstract class ReaderWriter {
       return;
 
     case DataType.INTEGER:
-      out.writeByte(DataType.INTEGER);
       new VIntWritable((Integer) val).write(out);
       return;
 
     case DataType.LONG:
-      out.writeByte(DataType.LONG);
       new VLongWritable((Long) val).write(out);
       return;
 
     case DataType.FLOAT:
-      out.writeByte(DataType.FLOAT);
       out.writeFloat((Float) val);
       return;
 
     case DataType.DOUBLE:
-      out.writeByte(DataType.DOUBLE);
       out.writeDouble((Double) val);
       return;
 
     case DataType.BOOLEAN:
-      out.writeByte(DataType.BOOLEAN);
       out.writeBoolean((Boolean) val);
       return;
 
     case DataType.BYTE:
-      out.writeByte(DataType.BYTE);
       out.writeByte((Byte) val);
       return;
 
     case DataType.SHORT:
-      out.writeByte(DataType.SHORT);
       out.writeShort((Short) val);
       return;
 
     case DataType.STRING:
       String s = (String) val;
       byte[] utfBytes = s.getBytes(ReaderWriter.UTF8);
-      out.writeByte(DataType.STRING);
       out.writeInt(utfBytes.length);
       out.write(utfBytes);
       return;
 
     case DataType.BINARY:
       byte[] ba = (byte[]) val;
-      out.writeByte(DataType.BINARY);
       out.writeInt(ba.length);
       out.write(ba);
       return;
 
     case DataType.NULL:
-      out.writeByte(DataType.NULL);
+      //for NULL we just write out the type
       return;
-
+    case DataType.CHAR:
+      new HiveCharWritable((HiveChar)val).write(out);
+      return;
+    case DataType.VARCHAR:
+      new HiveVarcharWritable((HiveVarchar)val).write(out);
+      return;
+    case DataType.DECIMAL:
+      new HiveDecimalWritable((HiveDecimal)val).write(out);
+      return;
+    case DataType.DATE:
+      new DateWritable((Date)val).write(out);
+      return;
+    case DataType.TIMESTAMP:
+      new TimestampWritable((java.sql.Timestamp)val).write(out);
+      return;
     default:
       throw new IOException("Unexpected data type " + type +
         " found in stream.");

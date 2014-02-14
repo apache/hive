@@ -28,6 +28,10 @@ public class CastTimestampToDecimal extends FuncLongToDecimal {
 
   private static final long serialVersionUID = 1L;
 
+  public CastTimestampToDecimal() {
+    super();
+  }
+
   public CastTimestampToDecimal(int inputColumn, int outputColumn) {
     super(inputColumn, outputColumn);
   }

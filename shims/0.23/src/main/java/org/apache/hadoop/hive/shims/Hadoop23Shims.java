@@ -595,4 +595,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     /* not supported */
     return null;
   }
+  
+  @Override
+  public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
+    return context.getConfiguration();
+  }
 }

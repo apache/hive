@@ -33,7 +33,10 @@ public class ShowGrantDesc {
   /**
    * thrift ddl for the result of show grant.
    */
-  private static final String schema = "property,value#string:string";
+  private static final String tabularSchema =
+      "database,table,partition,column,principal_name,principal_type,privilege," +
+      "grant_option,grant_time,grantor#" +
+      "string:string:string:string:string:string:string:boolean:bigint:string";
 
   public ShowGrantDesc(){
   }
@@ -47,7 +50,7 @@ public class ShowGrantDesc {
   }
 
   public static String getSchema() {
-    return schema;
+    return tabularSchema;
   }
 
   @Explain(displayName="principal desc")
@@ -83,5 +86,4 @@ public class ShowGrantDesc {
   public void setColumns(List<String> columns) {
     this.columns = columns;
   }
-  
 }
