@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.DisallowTransformHook;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
@@ -370,6 +371,14 @@ public class SessionState {
             getConf(), authenticator);
         // grant all privileges for table to its owner
         getConf().setVar(ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS, "insert,select,update,delete");
+        String hooks = getConf().getVar(ConfVars.PREEXECHOOKS).trim();
+        if (hooks.isEmpty()) {
+          hooks = DisallowTransformHook.class.getName();
+        } else {
+          hooks = hooks + "," +DisallowTransformHook.class.getName();
+        }
+        LOG.debug("Configuring hooks : " + hooks);
+        getConf().setVar(ConfVars.PREEXECHOOKS, hooks);
       }
 
       createTableGrants = CreateTableAutomaticGrant.create(getConf());
