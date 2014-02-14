@@ -886,6 +886,9 @@ public class HiveConf extends Configuration {
     // Whether to generate the splits locally or in the AM (tez only)
     HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true),
 
+    HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false),
+    HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10),
+
     // none, idonly, traverse, execution
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none"),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false),

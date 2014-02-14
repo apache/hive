@@ -86,6 +86,10 @@ import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.Vertex;
+import org.apache.tez.dag.api.VertexLocationHint;
+import org.apache.tez.dag.api.TezException;
+import org.apache.tez.client.PreWarmContext;
+import org.apache.tez.client.TezSessionConfiguration;
 import org.apache.tez.mapreduce.common.MRInputAMSplitGenerator;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
@@ -404,6 +408,49 @@ public class DagUtils {
     lr.setTimestamp(resourceModificationTime);
 
     return lr;
+  }
+
+  /**
+   * @param sessionConfig session configuration
+   * @param numContainers number of containers to pre-warm
+   * @param localResources additional resources to pre-warm with
+   * @return prewarm context object
+   */
+  public PreWarmContext createPreWarmContext(TezSessionConfiguration sessionConfig, int numContainers,
+               Map<String, LocalResource> localResources) throws IOException, TezException {
+
+    Configuration conf = sessionConfig.getTezConfiguration();
+
+    ProcessorDescriptor prewarmProcDescriptor = new ProcessorDescriptor(HivePreWarmProcessor.class.getName());
+    prewarmProcDescriptor.setUserPayload(MRHelpers.createUserPayloadFromConf(conf));
+
+    PreWarmContext context = new PreWarmContext(prewarmProcDescriptor, MRHelpers.getMapResource(conf),
+        new VertexLocationHint(numContainers, null));
+
+    Map<String, LocalResource> combinedResources = new HashMap<String, LocalResource>();
+
+    combinedResources.putAll(sessionConfig.getSessionResources());
+
+    try {
+      for(LocalResource lr : localizeTempFiles(conf)) {
+        combinedResources.put(getBaseName(lr), lr);
+      }
+    } catch(LoginException le) {
+      throw new IOException(le);
+    }
+
+    if(localResources != null) {
+       combinedResources.putAll(localResources);
+    }
+
+    context.setLocalResources(combinedResources);
+
+    /* boiler plate task env */
+    Map<String, String> environment = new HashMap<String, String>();
+    MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
+    context.setEnvironment(environment);
+    context.setJavaOpts(MRHelpers.getMapJavaOpts(conf));
+    return context;
   }
 
   /**

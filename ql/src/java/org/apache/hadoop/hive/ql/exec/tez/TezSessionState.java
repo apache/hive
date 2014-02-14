@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.AMConfiguration;
@@ -43,7 +44,7 @@ import org.apache.tez.client.TezSessionConfiguration;
 import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
-import org.apache.tez.mapreduce.hadoop.MRHelpers;
+import org.apache.tez.client.PreWarmContext;
 
 /**
  * Holds session state related to Tez
@@ -134,7 +135,23 @@ public class TezSessionState {
     session = new TezSession("HIVE-"+sessionId, sessionConfig);
 
     LOG.info("Opening new Tez Session (id: "+sessionId+", scratch dir: "+tezScratchDir+")");
+
     session.start();
+
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {
+      int n = HiveConf.getIntVar(conf, ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
+      LOG.info("Prewarming " + n + " containers  (id: " + sessionId
+          + ", scratch dir: " + tezScratchDir + ")");
+      PreWarmContext context = utils.createPreWarmContext(sessionConfig, n,
+          commonLocalResources);
+      try {
+        session.preWarm(context);
+      } catch (InterruptedException ie) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Hive Prewarm threw an exception ", ie);
+        }
+      }
+    }
 
     // In case we need to run some MR jobs, we'll run them under tez MR emulation. The session
     // id is used for tez to reuse the current session rather than start a new one.
