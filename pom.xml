@@ -744,6 +744,29 @@
           </systemPropertyVariables>
         </configuration>
       </plugin>
+      <plugin>
+	<groupId>org.apache.rat</groupId>
+	<artifactId>apache-rat-plugin</artifactId>
+	<version>0.10</version>
+	<configuration>
+	  <excludes>
+	    <exclude>data/**</exclude>
+	    <exclude>conf/**</exclude>
+	    <exclude>checkstyle/**</exclude>
+	    <exclude>bin/**</exclude>
+	    <exclude>itests/**</exclude>
+	    <exclude>docs/**</exclude>
+	    <exclude>**/*.txt</exclude>
+	    <exclude>**/*.log</exclude>
+	    <exclude>**/*.arcconfig</exclude>
+	    <exclude>**/package-info.java</exclude>
+	    <exclude>**/*.properties</exclude>
+	    <exclude>**/*.q</exclude>
+	    <exclude>**/*.q.out</exclude>
+	    <exclude>**/*.xml</exclude>
+	  </excludes>
+	</configuration>
+      </plugin>
     </plugins>
   </build>
 
