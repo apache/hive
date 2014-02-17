@@ -142,5 +142,19 @@ public abstract class ColumnVector {
       preFlattenIsRepeating = isRepeating;
       preFlattenNoNulls = noNulls;
     }
+
+    /**
+     * Set the element in this column vector from the given input vector.
+     */
+    public abstract void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector);
+
+    /**
+     * Initialize the column vector. This method can be overridden by specific column vector types.
+     * Use this method only if the individual type of the column vector is not known, otherwise its
+     * preferable to call specific initialization methods.
+     */
+    public void init() {
+      // Do nothing by default
+    }
   }
 
