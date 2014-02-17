@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -62,9 +63,11 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
+import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
@@ -923,6 +926,8 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       Database db = new Database();
       db.setName(TEST_DB1_NAME);
+      db.setOwnerName(SessionState.getUserFromAuthenticator());
+      db.setOwnerType(PrincipalType.USER);
       client.createDatabase(db);
 
       db = client.getDatabase(TEST_DB1_NAME);
@@ -931,7 +936,8 @@ public abstract class TestHiveMetaStore extends TestCase {
           TEST_DB1_NAME, db.getName());
       assertEquals("location of the returned db is different from that of inserted db",
           warehouse.getDatabasePath(db).toString(), db.getLocationUri());
-
+      assertEquals(db.getOwnerName(), SessionState.getUserFromAuthenticator());
+      assertEquals(db.getOwnerType(), PrincipalType.USER);
       Database db2 = new Database();
       db2.setName(TEST_DB2_NAME);
       client.createDatabase(db2);
@@ -2659,4 +2665,11 @@ public abstract class TestHiveMetaStore extends TestCase {
 
     createPartitions(dbName, tbl, values);
   }
+
+    @Test
+    public void testDBOwner() throws NoSuchObjectException, MetaException, TException {
+      Database db = client.getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME);
+      assertEquals(db.getOwnerName(), HiveMetaStore.PUBLIC);
+      assertEquals(db.getOwnerType(), PrincipalType.ROLE);
+    }
 }

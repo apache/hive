@@ -29,6 +29,8 @@ class serdeConstants {
   std::string MAPKEY_DELIM;
   std::string QUOTE_CHAR;
   std::string ESCAPE_CHAR;
+  std::string HEADER_COUNT;
+  std::string FOOTER_COUNT;
   std::string VOID_TYPE_NAME;
   std::string BOOLEAN_TYPE_NAME;
   std::string TINYINT_TYPE_NAME;

@@ -120,7 +120,9 @@ struct Database {
   2: string description,
   3: string locationUri,
   4: map<string, string> parameters, // properties associated with the database
-  5: optional PrincipalPrivilegeSet privileges
+  5: optional PrincipalPrivilegeSet privileges,
+  6: optional string ownerName,
+  7: optional PrincipalType ownerType
 }
 
 // This object holds the information needed by SerDes

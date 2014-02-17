@@ -184,6 +184,7 @@ public class ObjectStore implements RawStore, Configurable {
   public ObjectStore() {
   }
 
+  @Override
   public Configuration getConf() {
     return hiveConf;
   }
@@ -193,6 +194,7 @@ public class ObjectStore implements RawStore, Configurable {
    * on connection retries. In cases of connection retries, conf will usually
    * contain modified values.
    */
+  @Override
   @SuppressWarnings("nls")
   public void setConf(Configuration conf) {
     // Although an instance of ObjectStore is accessed by one thread, there may
@@ -267,7 +269,7 @@ public class ObjectStore implements RawStore, Configurable {
       @SuppressWarnings("unchecked")
       Class<? extends PartitionExpressionProxy> clazz =
           (Class<? extends PartitionExpressionProxy>)MetaStoreUtils.getClass(className);
-      return (PartitionExpressionProxy)MetaStoreUtils.newInstance(
+      return MetaStoreUtils.newInstance(
           clazz, new Class<?>[0], new Object[0]);
     } catch (MetaException e) {
       LOG.error("Error loading PartitionExpressionProxy", e);
@@ -340,6 +342,7 @@ public class ObjectStore implements RawStore, Configurable {
     return getPMF().getPersistenceManager();
   }
 
+  @Override
   public void shutdown() {
     if (pm != null) {
       pm.close();
@@ -353,6 +356,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @return an active transaction
    */
 
+  @Override
   public boolean openTransaction() {
     openTrasactionCalls++;
     if (openTrasactionCalls == 1) {
@@ -376,6 +380,7 @@ public class ObjectStore implements RawStore, Configurable {
    *
    * @return Always returns true
    */
+  @Override
   @SuppressWarnings("nls")
   public boolean commitTransaction() {
     if (TXN_STATUS.ROLLBACK == transactionStatus) {
@@ -421,6 +426,7 @@ public class ObjectStore implements RawStore, Configurable {
   /**
    * Rolls back the current transaction if it is active
    */
+  @Override
   public void rollbackTransaction() {
     if (openTrasactionCalls < 1) {
       debugLog("rolling back transaction: no open transactions: " + openTrasactionCalls);
@@ -440,6 +446,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
   public void createDatabase(Database db) throws InvalidObjectException, MetaException {
     boolean commited = false;
     MDatabase mdb = new MDatabase();
@@ -447,6 +454,9 @@ public class ObjectStore implements RawStore, Configurable {
     mdb.setLocationUri(db.getLocationUri());
     mdb.setDescription(db.getDescription());
     mdb.setParameters(db.getParameters());
+    mdb.setOwnerName(db.getOwnerName());
+    PrincipalType ownerType = db.getOwnerType();
+    mdb.setOwnerType((null == ownerType ? PrincipalType.USER.name() : ownerType.name()));
     try {
       openTransaction();
       pm.makePersistent(mdb);
@@ -482,6 +492,7 @@ public class ObjectStore implements RawStore, Configurable {
     return mdb;
   }
 
+  @Override
   public Database getDatabase(String name) throws NoSuchObjectException {
     MDatabase mdb = null;
     boolean commited = false;
@@ -499,6 +510,9 @@ public class ObjectStore implements RawStore, Configurable {
     db.setDescription(mdb.getDescription());
     db.setLocationUri(mdb.getLocationUri());
     db.setParameters(mdb.getParameters());
+    db.setOwnerName(mdb.getOwnerName());
+    String type = mdb.getOwnerType();
+    db.setOwnerType((null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
     return db;
   }
 
@@ -510,6 +524,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @throws MetaException
    * @throws NoSuchObjectException
    */
+  @Override
   public boolean alterDatabase(String dbName, Database db)
     throws MetaException, NoSuchObjectException {
 
@@ -531,6 +546,7 @@ public class ObjectStore implements RawStore, Configurable {
     return true;
   }
 
+  @Override
   public boolean dropDatabase(String dbname) throws NoSuchObjectException, MetaException {
     boolean success = false;
     LOG.info("Dropping database " + dbname + " along with all tables");
@@ -558,6 +574,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
 
+  @Override
   public List<String> getDatabases(String pattern) throws MetaException {
     boolean commited = false;
     List<String> databases = null;
@@ -595,6 +612,7 @@ public class ObjectStore implements RawStore, Configurable {
     return databases;
   }
 
+  @Override
   public List<String> getAllDatabases() throws MetaException {
     return getDatabases(".*");
   }
@@ -626,6 +644,7 @@ public class ObjectStore implements RawStore, Configurable {
     return ret;
   }
 
+  @Override
   public boolean createType(Type type) {
     boolean success = false;
     MType mtype = getMType(type);
@@ -643,6 +662,7 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
+  @Override
   public Type getType(String typeName) {
     Type type = null;
     boolean commited = false;
@@ -665,6 +685,7 @@ public class ObjectStore implements RawStore, Configurable {
     return type;
   }
 
+  @Override
   public boolean dropType(String typeName) {
     boolean success = false;
     try {
@@ -689,6 +710,7 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
+  @Override
   public void createTable(Table tbl) throws InvalidObjectException, MetaException {
     boolean commited = false;
     try {
@@ -751,6 +773,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
   public boolean dropTable(String dbName, String tableName) throws MetaException,
     NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean success = false;
@@ -801,6 +824,7 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
+  @Override
   public Table getTable(String dbName, String tableName) throws MetaException {
     boolean commited = false;
     Table tbl = null;
@@ -816,6 +840,7 @@ public class ObjectStore implements RawStore, Configurable {
     return tbl;
   }
 
+  @Override
   public List<String> getTables(String dbName, String pattern)
       throws MetaException {
     boolean commited = false;
@@ -858,6 +883,7 @@ public class ObjectStore implements RawStore, Configurable {
     return tbls;
   }
 
+  @Override
   public List<String> getAllTables(String dbName) throws MetaException {
     return getTables(dbName, ".*");
   }
@@ -883,6 +909,7 @@ public class ObjectStore implements RawStore, Configurable {
     return mtbl;
   }
 
+  @Override
   public List<Table> getTableObjectsByName(String db, List<String> tbl_names)
       throws MetaException, UnknownDBException {
     List<Table> tables = new ArrayList<Table>();
@@ -1296,6 +1323,7 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
+  @Override
   public Partition getPartition(String dbName, String tableName,
       List<String> part_vals) throws NoSuchObjectException, MetaException {
     openTransaction();
@@ -1511,6 +1539,7 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
+  @Override
   public List<Partition> getPartitions(
       String dbName, String tableName, int maxParts) throws MetaException, NoSuchObjectException {
     return getPartitionsInternal(dbName, tableName, maxParts, true, true);
@@ -1520,10 +1549,12 @@ public class ObjectStore implements RawStore, Configurable {
       String dbName, String tblName, final int maxParts, boolean allowSql, boolean allowJdo)
           throws MetaException, NoSuchObjectException {
     return new GetListHelper<Partition>(dbName, tblName, allowSql, allowJdo) {
+      @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
         Integer max = (maxParts < 0) ? null : maxParts;
         return directSql.getPartitions(dbName, tblName, max);
       }
+      @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
         return convertToParts(listMPartitions(dbName, tblName, maxParts));
@@ -1626,6 +1657,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   // TODO:pc implement max
+  @Override
   public List<String> listPartitionNames(String dbName, String tableName,
       short max) throws MetaException {
     List<String> pns = null;
@@ -1824,9 +1856,11 @@ public class ObjectStore implements RawStore, Configurable {
       final List<String> partNames, boolean allowSql, boolean allowJdo)
           throws MetaException, NoSuchObjectException {
     return new GetListHelper<Partition>(dbName, tblName, allowSql, allowJdo) {
+      @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
         return directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames, null);
       }
+      @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
         return getPartitionsViaOrmFilter(dbName, tblName, partNames);
@@ -1865,6 +1899,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     final AtomicBoolean hasUnknownPartitions = new AtomicBoolean(false);
     result.addAll(new GetListHelper<Partition>(dbName, tblName, allowSql, allowJdo) {
+      @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
         // If we have some sort of expression tree, try SQL filter pushdown.
         List<Partition> result = null;
@@ -1880,6 +1915,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
         return result;
       }
+      @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
         // If we have some sort of expression tree, try JDOQL filter pushdown.
@@ -2271,6 +2307,7 @@ public class ObjectStore implements RawStore, Configurable {
         ? getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
 
     return new GetListHelper<Partition>(dbName, tblName, allowSql, allowJdo) {
+      @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
         List<Partition> parts = directSql.getPartitionsViaSqlFilter(
             ctx.getTable(), tree, (maxParts < 0) ? null : (int)maxParts);
@@ -2281,6 +2318,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
         return parts;
       }
+      @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
         return getPartitionsViaOrmFilter(ctx.getTable(), tree, maxParts, true);
@@ -2499,6 +2537,7 @@ public class ObjectStore implements RawStore, Configurable {
     return partNames;
   }
 
+  @Override
   public void alterTable(String dbname, String name, Table newTable)
       throws InvalidObjectException, MetaException {
     boolean success = false;
@@ -2540,6 +2579,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
   public void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
       throws InvalidObjectException, MetaException {
     boolean success = false;
@@ -2593,6 +2633,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
   public void alterPartition(String dbname, String name, List<String> part_vals, Partition newPart)
       throws InvalidObjectException, MetaException {
     boolean success = false;
@@ -2617,6 +2658,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
   public void alterPartitions(String dbname, String name, List<List<String>> part_vals,
       List<Partition> newParts) throws InvalidObjectException, MetaException {
     boolean success = false;
@@ -3187,6 +3229,7 @@ public class ObjectStore implements RawStore, Configurable {
     return mRoleMemebership;
   }
 
+  @Override
   public Role getRole(String roleName) throws NoSuchObjectException {
     MRole mRole = this.getMRole(roleName);
     if (mRole == null) {
@@ -3216,6 +3259,7 @@ public class ObjectStore implements RawStore, Configurable {
     return mrole;
   }
 
+  @Override
   public List<String> listRoleNames() {
     boolean success = false;
     try {
@@ -4388,6 +4432,7 @@ public class ObjectStore implements RawStore, Configurable {
     return new ObjectPair<Query, Object[]>(query, params);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<MTablePrivilege> listAllTableGrants(
       String principalName, PrincipalType principalType, String dbName,
@@ -4489,6 +4534,7 @@ public class ObjectStore implements RawStore, Configurable {
     return mSecurityColList;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<MPartitionColumnPrivilege> listPrincipalPartitionColumnGrants(
       String principalName, PrincipalType principalType, String dbName,
@@ -5493,6 +5539,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
   public boolean updateTableColumnStatistics(ColumnStatistics colStats)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
@@ -5520,6 +5567,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
   public boolean updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
@@ -5611,6 +5659,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
   public ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
       List<String> colNames) throws MetaException, NoSuchObjectException {
     return getTableColumnStatisticsInternal(dbName, tableName, colNames, true, true);
@@ -5620,9 +5669,11 @@ public class ObjectStore implements RawStore, Configurable {
       String dbName, String tableName, final List<String> colNames, boolean allowSql,
       boolean allowJdo) throws MetaException, NoSuchObjectException {
     return new GetStatHelper(dbName.toLowerCase(), tableName.toLowerCase(), allowSql, allowJdo) {
+      @Override
       protected ColumnStatistics getSqlResult(GetHelper<ColumnStatistics> ctx) throws MetaException {
         return directSql.getTableStats(dbName, tblName, colNames);
       }
+      @Override
       protected ColumnStatistics getJdoResult(
           GetHelper<ColumnStatistics> ctx) throws MetaException, NoSuchObjectException {
         List<MTableColumnStatistics> mStats = getMTableColumnStatistics(getTable(), colNames);
@@ -5642,6 +5693,7 @@ public class ObjectStore implements RawStore, Configurable {
     }.run(true);
   }
 
+  @Override
   public List<ColumnStatistics> getPartitionColumnStatistics(String dbName, String tableName,
       List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException {
     return getPartitionColumnStatisticsInternal(
@@ -5652,10 +5704,12 @@ public class ObjectStore implements RawStore, Configurable {
       String dbName, String tableName, final List<String> partNames, final List<String> colNames,
       boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
     return new GetListHelper<ColumnStatistics>(dbName, tableName, allowSql, allowJdo) {
+      @Override
       protected List<ColumnStatistics> getSqlResult(
           GetHelper<List<ColumnStatistics>> ctx) throws MetaException {
         return directSql.getPartitionStats(dbName, tblName, partNames, colNames);
       }
+      @Override
       protected List<ColumnStatistics> getJdoResult(
           GetHelper<List<ColumnStatistics>> ctx) throws MetaException, NoSuchObjectException {
         List<MPartitionColumnStatistics> mStats =
@@ -5749,6 +5803,7 @@ public class ObjectStore implements RawStore, Configurable {
     queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
   }
 
+  @Override
   public boolean deletePartitionColumnStatistics(String dbName, String tableName,
     String partName, List<String> partVals, String colName)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -5837,6 +5892,7 @@ public class ObjectStore implements RawStore, Configurable {
     return ret;
   }
 
+  @Override
   public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException
   {

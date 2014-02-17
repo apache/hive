@@ -39,6 +39,10 @@ serdeConstants::serdeConstants() {
 
   ESCAPE_CHAR = "escape.delim";
 
+  HEADER_COUNT = "skip.header.line.count";
+
+  FOOTER_COUNT = "skip.footer.line.count";
+
   VOID_TYPE_NAME = "void";
 
   BOOLEAN_TYPE_NAME = "boolean";

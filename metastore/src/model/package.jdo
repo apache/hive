@@ -53,6 +53,12 @@
            <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
         </value>
       </field>
+      <field name="ownerName">	
+        <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+       <field name="ownerType">
+        <column name="OWNER_TYPE" length="10" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
     </class>
 
     <class name="MFieldSchema" embedded-only="true" table="TYPE_FIELDS" detachable="true">

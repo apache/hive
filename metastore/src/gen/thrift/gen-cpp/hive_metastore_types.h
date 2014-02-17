@@ -667,21 +667,23 @@ class Role {
 void swap(Role &a, Role &b);
 
 typedef struct _Database__isset {
-  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false) {}
+  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false) {}
   bool name;
   bool description;
   bool locationUri;
   bool parameters;
   bool privileges;
+  bool ownerName;
+  bool ownerType;
 } _Database__isset;
 
 class Database {
  public:
 
-  static const char* ascii_fingerprint; // = "213967572143E49C9F1A23F7A866E2F5";
-  static const uint8_t binary_fingerprint[16]; // = {0x21,0x39,0x67,0x57,0x21,0x43,0xE4,0x9C,0x9F,0x1A,0x23,0xF7,0xA8,0x66,0xE2,0xF5};
+  static const char* ascii_fingerprint; // = "553495CAE243A1C583D5C3DD990AED53";
+  static const uint8_t binary_fingerprint[16]; // = {0x55,0x34,0x95,0xCA,0xE2,0x43,0xA1,0xC5,0x83,0xD5,0xC3,0xDD,0x99,0x0A,0xED,0x53};
 
-  Database() : name(), description(), locationUri() {
+  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0) {
   }
 
   virtual ~Database() throw() {}
@@ -691,6 +693,8 @@ class Database {
   std::string locationUri;
   std::map<std::string, std::string>  parameters;
   PrincipalPrivilegeSet privileges;
+  std::string ownerName;
+  PrincipalType::type ownerType;
 
   _Database__isset __isset;
 
@@ -715,6 +719,16 @@ class Database {
     __isset.privileges = true;
   }
 
+  void __set_ownerName(const std::string& val) {
+    ownerName = val;
+    __isset.ownerName = true;
+  }
+
+  void __set_ownerType(const PrincipalType::type val) {
+    ownerType = val;
+    __isset.ownerType = true;
+  }
+
   bool operator == (const Database & rhs) const
   {
     if (!(name == rhs.name))
@@ -728,6 +742,14 @@ class Database {
     if (__isset.privileges != rhs.__isset.privileges)
       return false;
     else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.ownerName != rhs.__isset.ownerName)
+      return false;
+    else if (__isset.ownerName && !(ownerName == rhs.ownerName))
+      return false;
+    if (__isset.ownerType != rhs.__isset.ownerType)
+      return false;
+    else if (__isset.ownerType && !(ownerType == rhs.ownerType))
       return false;
     return true;
   }
