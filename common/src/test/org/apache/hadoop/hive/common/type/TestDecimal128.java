@@ -51,39 +51,19 @@ public class TestDecimal128 {
   }
 
   @Test
-  public void testCalculateTenThirtyEight() {
+  public void testCalculateTenThirtySeven() {
 
-    // find 10^38
+    // find 10^37
     Decimal128 ten = new Decimal128(10, (short) 0);
     Decimal128 val = new Decimal128(1, (short) 0);
-    for (int i = 0; i < 38; ++i) {
+    for (int i = 0; i < 37; ++i) {
       val.multiplyDestructive(ten, (short) 0);
     }
 
     // verify it
     String s = val.toFormalString();
-    assertEquals("100000000000000000000000000000000000000", s);
+    assertEquals("10000000000000000000000000000000000000", s);
     boolean overflow = false;
-
-    // show that it is is an overflow for precision 38
-    try {
-      val.checkPrecisionOverflow(38);
-    } catch (Exception e) {
-      overflow = true;
-    }
-    assertTrue(overflow);
-
-    // subtract one
-    val.subtractDestructive(one, (short) 0);
-    overflow = false;
-
-    // show that it does not overflow for precision 38
-    try {
-      val.checkPrecisionOverflow(38);
-    } catch (Exception e) {
-      overflow = true;
-    }
-    assertFalse(overflow);
   }
 
   @Test
@@ -377,6 +357,13 @@ public class TestDecimal128 {
     long a = 213474114411690L;
     long b = 5062120663L;
     verifyMultiplyDivideInverse(a, b);
+
+    // Regression test for defect reported in HIVE-6399
+    String a2 = "-605044214913338382";  // 18 digits
+    String b2 = "55269579109718297360"; // 20 digits
+
+    // -33440539101030154945490585226577271520 is expected result
+    verifyHighPrecisionMultiplySingle(a2, b2);
   }
 
   // Test a set of random adds at high precision.
@@ -415,7 +402,8 @@ public class TestDecimal128 {
     String res2 = bdR.toPlainString();
 
     // Compare the results
-    assertEquals(res1, res2);
+    String message = "For operation " + a.toFormalString() + " + " + b.toFormalString();
+    assertEquals(message, res2, res1);
   }
 
   // Test a set of random subtracts at high precision.
@@ -454,7 +442,8 @@ public class TestDecimal128 {
     String res2 = bdR.toPlainString();
 
     // Compare the results
-    assertEquals(res1, res2);
+    String message = "For operation " + a.toFormalString() + " - " + b.toFormalString();
+    assertEquals(message, res2, res1);
   }
 
   // Test a set of random multiplications at high precision.
@@ -490,7 +479,7 @@ public class TestDecimal128 {
 
     String res1 = r.toFormalString();
 
-    // Now do the add with Java BigDecimal
+    // Now do the operation with Java BigDecimal
     BigDecimal bdA = new BigDecimal(sA);
     BigDecimal bdB = new BigDecimal(sB);
     BigDecimal bdR = bdA.multiply(bdB);
@@ -498,8 +487,51 @@ public class TestDecimal128 {
     String res2 = bdR.toPlainString();
 
     // Compare the results
-    assertEquals(res1, res2);
+    String message = "For operation " + a.toFormalString() + " * " + b.toFormalString();
+    assertEquals(message, res2, res1);
   }
+
+  // Test a single, high-precision multiply of random inputs.
+  // Arguments must be integers with optional - sign, represented as strings.
+  // Arguments must have 1 to 37 digits and the number of total digits
+  // must be <= 38.
+  private void verifyHighPrecisionMultiplySingle(String argA, String argB) {
+
+    Decimal128 a, b, r;
+    String sA, sB;
+
+    // verify number of digits is <= 38 and each number has 1 or more digits
+    int aDigits = argA.length();
+    aDigits -= argA.charAt(0) == '-' ? 1 : 0;
+    int bDigits = argB.length();
+    bDigits -= argB.charAt(0) == '-' ? 1 : 0;
+    assertTrue(aDigits + bDigits <= 38 && aDigits > 0 && bDigits > 0);
+
+    a = new Decimal128();
+    sA = argA;
+    a.update(sA, (short) 0);
+    b = new Decimal128();
+    sB = argB;
+    b.update(sB, (short) 0);
+
+    r = new Decimal128();
+    r.addDestructive(a, (short) 0);
+    r.multiplyDestructive(b, (short) 0);
+
+    String res1 = r.toFormalString();
+
+    // Now do the operation with Java BigDecimal
+    BigDecimal bdA = new BigDecimal(sA);
+    BigDecimal bdB = new BigDecimal(sB);
+    BigDecimal bdR = bdA.multiply(bdB);
+
+    String res2 = bdR.toPlainString();
+
+    // Compare the results
+    String message = "For operation " + a.toFormalString() + " * " + b.toFormalString();
+    assertEquals(message, res2, res1);
+  }
+
 
   // Test a set of random divisions at high precision.
   @Test
@@ -558,7 +590,8 @@ public class TestDecimal128 {
     String res2 = bdR.toPlainString();
 
     // Compare the results
-    assertEquals(res1, res2);
+    String message = "For operation " + a.toFormalString() + " / " + b.toFormalString();
+    assertEquals(message, res2, res1);
   }
 
   /* Return a random number with length digits, as a string. Results may be
