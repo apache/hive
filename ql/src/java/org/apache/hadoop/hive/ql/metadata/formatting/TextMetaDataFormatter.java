@@ -430,13 +430,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
      * Describe a database
      */
     @Override
-    public void showDatabaseDescription(DataOutputStream outStream,
-                                        String database,
-                                        String comment,
-                                        String location,
-                                        Map<String, String> params)
-        throws HiveException
-    {
+    public void showDatabaseDescription(DataOutputStream outStream, String database, String comment,
+      String location, String ownerName, String ownerType, Map<String, String> params)
+      throws HiveException {
         try {
             outStream.writeBytes(database);
             outStream.write(separator);
@@ -446,6 +442,14 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             outStream.write(separator);
             if (location != null) {
               outStream.writeBytes(location);
+            }
+            outStream.write(separator);
+            if (ownerName != null) {
+              outStream.writeBytes(ownerName);
+            }
+            outStream.write(separator);
+            if (ownerType != null) {
+              outStream.writeBytes(ownerType);
             }
             outStream.write(separator);
             if (params != null && !params.isEmpty()) {

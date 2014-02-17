@@ -836,7 +836,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
                 struct.lint = new ArrayList<Integer>(_list0.size);
                 for (int _i1 = 0; _i1 < _list0.size; ++_i1)
                 {
-                  int _elem2; // optional
+                  int _elem2; // required
                   _elem2 = iprot.readI32();
                   struct.lint.add(_elem2);
                 }
@@ -854,7 +854,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
                 struct.lString = new ArrayList<String>(_list3.size);
                 for (int _i4 = 0; _i4 < _list3.size; ++_i4)
                 {
-                  String _elem5; // optional
+                  String _elem5; // required
                   _elem5 = iprot.readString();
                   struct.lString.add(_elem5);
                 }
@@ -872,7 +872,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
                 struct.lintString = new ArrayList<IntString>(_list6.size);
                 for (int _i7 = 0; _i7 < _list6.size; ++_i7)
                 {
-                  IntString _elem8; // optional
+                  IntString _elem8; // required
                   _elem8 = new IntString();
                   _elem8.read(iprot);
                   struct.lintString.add(_elem8);
@@ -1074,7 +1074,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
           struct.lint = new ArrayList<Integer>(_list21.size);
           for (int _i22 = 0; _i22 < _list21.size; ++_i22)
           {
-            int _elem23; // optional
+            int _elem23; // required
             _elem23 = iprot.readI32();
             struct.lint.add(_elem23);
           }
@@ -1087,7 +1087,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
           struct.lString = new ArrayList<String>(_list24.size);
           for (int _i25 = 0; _i25 < _list24.size; ++_i25)
           {
-            String _elem26; // optional
+            String _elem26; // required
             _elem26 = iprot.readString();
             struct.lString.add(_elem26);
           }
@@ -1100,7 +1100,7 @@ public class Complex implements org.apache.thrift.TBase<Complex, Complex._Fields
           struct.lintString = new ArrayList<IntString>(_list27.size);
           for (int _i28 = 0; _i28 < _list27.size; ++_i28)
           {
-            IntString _elem29; // optional
+            IntString _elem29; // required
             _elem29 = new IntString();
             _elem29.read(iprot);
             struct.lintString.add(_elem29);

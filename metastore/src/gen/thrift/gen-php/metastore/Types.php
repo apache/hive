@@ -1494,6 +1494,8 @@ class Database {
   public $locationUri = null;
   public $parameters = null;
   public $privileges = null;
+  public $ownerName = null;
+  public $ownerType = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1527,6 +1529,14 @@ class Database {
           'type' => TType::STRUCT,
           'class' => '\metastore\PrincipalPrivilegeSet',
           ),
+        6 => array(
+          'var' => 'ownerName',
+          'type' => TType::STRING,
+          ),
+        7 => array(
+          'var' => 'ownerType',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -1544,6 +1554,12 @@ class Database {
       }
       if (isset($vals['privileges'])) {
         $this->privileges = $vals['privileges'];
+      }
+      if (isset($vals['ownerName'])) {
+        $this->ownerName = $vals['ownerName'];
+      }
+      if (isset($vals['ownerType'])) {
+        $this->ownerType = $vals['ownerType'];
       }
     }
   }
@@ -1616,6 +1632,20 @@ class Database {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ownerName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->ownerType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -1668,6 +1698,16 @@ class Database {
       }
       $xfer += $output->writeFieldBegin('privileges', TType::STRUCT, 5);
       $xfer += $this->privileges->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ownerName !== null) {
+      $xfer += $output->writeFieldBegin('ownerName', TType::STRING, 6);
+      $xfer += $output->writeString($this->ownerName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ownerType !== null) {
+      $xfer += $output->writeFieldBegin('ownerType', TType::I32, 7);
+      $xfer += $output->writeI32($this->ownerType);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

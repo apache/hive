@@ -2834,12 +2834,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           if(descDatabase.isExt()) {
             params = database.getParameters();
           }
-
-          formatter.showDatabaseDescription(outStream,
-                                            database.getName(),
-                                            database.getDescription(),
-                                            database.getLocationUri(),
-                                            params);
+          PrincipalType ownerType = database.getOwnerType();
+          formatter.showDatabaseDescription(outStream, database.getName(),
+            database.getDescription(), database.getLocationUri(),
+            database.getOwnerName(), (null == ownerType) ? null : ownerType.name(), params);
       }
       outStream.close();
       outStream = null;
@@ -3666,6 +3664,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     database.setDescription(crtDb.getComment());
     database.setLocationUri(crtDb.getLocationUri());
     database.setParameters(crtDb.getDatabaseProperties());
+    database.setOwnerName(SessionState.getUserFromAuthenticator());
+    database.setOwnerType(PrincipalType.USER);
     try {
       db.createDatabase(database, crtDb.getIfNotExists());
     }

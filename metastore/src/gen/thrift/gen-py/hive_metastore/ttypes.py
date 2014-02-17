@@ -1015,6 +1015,8 @@ class Database:
    - locationUri
    - parameters
    - privileges
+   - ownerName
+   - ownerType
   """
 
   thrift_spec = (
@@ -1024,14 +1026,18 @@ class Database:
     (3, TType.STRING, 'locationUri', None, None, ), # 3
     (4, TType.MAP, 'parameters', (TType.STRING,None,TType.STRING,None), None, ), # 4
     (5, TType.STRUCT, 'privileges', (PrincipalPrivilegeSet, PrincipalPrivilegeSet.thrift_spec), None, ), # 5
+    (6, TType.STRING, 'ownerName', None, None, ), # 6
+    (7, TType.I32, 'ownerType', None, None, ), # 7
   )
 
-  def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None,):
+  def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None,):
     self.name = name
     self.description = description
     self.locationUri = locationUri
     self.parameters = parameters
     self.privileges = privileges
+    self.ownerName = ownerName
+    self.ownerType = ownerType
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1074,6 +1080,16 @@ class Database:
           self.privileges.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.ownerName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.I32:
+          self.ownerType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1107,6 +1123,14 @@ class Database:
     if self.privileges is not None:
       oprot.writeFieldBegin('privileges', TType.STRUCT, 5)
       self.privileges.write(oprot)
+      oprot.writeFieldEnd()
+    if self.ownerName is not None:
+      oprot.writeFieldBegin('ownerName', TType.STRING, 6)
+      oprot.writeString(self.ownerName)
+      oprot.writeFieldEnd()
+    if self.ownerType is not None:
+      oprot.writeFieldBegin('ownerType', TType.I32, 7)
+      oprot.writeI32(self.ownerType)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
