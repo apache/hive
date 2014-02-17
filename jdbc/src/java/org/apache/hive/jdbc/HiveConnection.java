@@ -667,10 +667,19 @@ public class HiveConnection implements java.sql.Connection {
     throw new SQLException("Method not supported");
   }
 
-
   public String getSchema() throws SQLException {
-    // JDK 1.7
-    throw new SQLException("Method not supported");
+    if (isClosed) {
+      throw new SQLException("Connection is closed");
+    }
+    Statement stmt = createStatement();
+    ResultSet res = stmt.executeQuery("SELECT current_database()");
+    if (!res.next()) {
+      throw new SQLException("Failed to get schema information");
+    }
+    String schemaName = res.getString(1);
+    res.close();
+    stmt.close();
+    return schemaName;
   }
 
   /*
@@ -923,8 +932,12 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public void setCatalog(String catalog) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    // Per JDBC spec, if the driver does not support catalogs,
+    // it will silently ignore this request.
+    if (isClosed) {
+      throw new SQLException("Connection is closed");
+    }
+    return;
   }
 
   /*
@@ -1008,7 +1021,15 @@ public class HiveConnection implements java.sql.Connection {
 
   public void setSchema(String schema) throws SQLException {
     // JDK 1.7
-    throw new SQLException("Method not supported");
+    if (isClosed) {
+      throw new SQLException("Connection is closed");
+    }
+    if (schema == null || schema.isEmpty()) {
+      throw new SQLException("Schema name is null or empty");
+    }
+    Statement stmt = createStatement();
+    stmt.execute("use " + schema);
+    stmt.close();
   }
 
   /*

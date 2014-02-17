@@ -192,6 +192,37 @@ import org.junit.Test;
      hs2Conn.close();
      }
 
+     @Test
+     public void testConnectionSchemaAPIs() throws Exception {
+       String db1 = "DB1";
+       /**
+        * get/set Schema are new in JDK7 and not available in java.sql.Connection in JDK6.
+        * Hence the test uses HiveConnection object to call these methods so that test will run with older JDKs
+        */
+       HiveConnection hiveConn = (HiveConnection)hs2Conn;
+
+       assertEquals("default", hiveConn.getSchema());
+       Statement stmt = hs2Conn.createStatement();
+       stmt.execute("DROP DATABASE IF EXISTS " + db1 + " CASCADE");
+       stmt.execute("CREATE DATABASE " + db1);
+       assertEquals("default", hiveConn.getSchema());
+
+       stmt.execute("USE " + db1);
+       assertEquals(db1, hiveConn.getSchema());
+
+       stmt.execute("USE default");
+       assertEquals("default", hiveConn.getSchema());
+
+       hiveConn.setSchema(db1);
+       assertEquals(db1, hiveConn.getSchema());
+       hiveConn.setSchema("default");
+       assertEquals("default", hiveConn.getSchema());
+
+       assertTrue(hiveConn.getCatalog().isEmpty());
+       hiveConn.setCatalog("foo");
+       assertTrue(hiveConn.getCatalog().isEmpty());
+     }
+
    /**
     * verify that the current db is the one expected. first create table as <db>.tab and then 
     * describe that table to check if <db> is the current database
@@ -208,4 +239,4 @@ import org.junit.Test;
      stmt.execute("DROP TABLE IF EXISTS " + expectedDbName + "." + verifyTab);
      stmt.close();
    }
-}
+  }
