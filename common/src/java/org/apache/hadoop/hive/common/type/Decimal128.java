@@ -1053,6 +1053,12 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
   }
 
   /**
+   * As of 2/11/2014 this has a known bug in multiplication. See
+   * TestDecimal128.testKnownPriorErrors(). Keeping this source
+   * code available since eventually it is better to fix this.
+   * The fix employed now is to replace this code with code that
+   * uses Java BigDecimal multiply.
+   *
    * Performs multiplication, changing the scale of this object to the specified
    * value.
    *
@@ -1061,7 +1067,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    * @param newScale
    *          scale of the result. must be 0 or positive.
    */
-  public void multiplyDestructive(Decimal128 right, short newScale) {
+  public void multiplyDestructiveNativeDecimal128(Decimal128 right, short newScale) {
     if (this.signum == 0 || right.signum == 0) {
       this.zeroClear();
       this.scale = newScale;
@@ -1098,6 +1104,31 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     if (this.unscaledValue.isZero()) {
       this.signum = 0; // because of scaling down, this could happen
     }
+    this.unscaledValue.throwIfExceedsTenToThirtyEight();
+  }
+
+  /**
+   * Performs multiplication, changing the scale of this object to the specified
+   * value.
+   *
+   * @param right
+   *          right operand. this object is not modified.
+   * @param newScale
+   *          scale of the result. must be 0 or positive.
+   */
+  public void multiplyDestructive(Decimal128 right, short newScale) {
+    HiveDecimal rightHD = HiveDecimal.create(right.toBigDecimal());
+    HiveDecimal thisHD = HiveDecimal.create(this.toBigDecimal());
+    HiveDecimal result = thisHD.multiply(rightHD);
+
+    /* If the result is null, throw an exception. This can be caught
+     * by calling code in the vectorized code path and made to yield
+     * a SQL NULL value.
+     */
+    if (result == null) {
+      throw new ArithmeticException("null multiply result");
+    }
+    this.update(result.bigDecimalValue().toPlainString(), newScale);
     this.unscaledValue.throwIfExceedsTenToThirtyEight();
   }
 
