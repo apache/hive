@@ -26,12 +26,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.tez.ReduceRecordProcessor;
 import org.apache.hadoop.io.BinaryComparable;
+import org.apache.tez.runtime.api.Input;
+import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.library.api.KeyValuesReader;
-import org.apache.tez.runtime.library.input.ShuffledMergedInput;
 
 /**
  * A KeyValuesReader implementation that returns a sorted stream of key-values
- * by doing a sorted merge of the key-value in ShuffledMergedInputs.
+ * by doing a sorted merge of the key-value in LogicalInputs.
  * Tags are in the last byte of the key, so no special handling for tags is required.
  * Uses a priority queue to pick the KeyValuesReader of the input that is next in
  * sort order.
@@ -42,12 +43,12 @@ public class InputMerger implements KeyValuesReader {
   private PriorityQueue<KeyValuesReader> pQueue = null;
   private KeyValuesReader nextKVReader = null;
 
-  public InputMerger(List<ShuffledMergedInput> shuffleInputs) throws IOException {
-    //get KeyValuesReaders from the ShuffledMergedInput and add them to priority queue
+  public InputMerger(List<? extends Input> shuffleInputs) throws Exception {
+    //get KeyValuesReaders from the LogicalInput and add them to priority queue
     int initialCapacity = shuffleInputs.size();
     pQueue = new PriorityQueue<KeyValuesReader>(initialCapacity, new KVReaderComparator());
-    for(ShuffledMergedInput input : shuffleInputs){
-      addToQueue(input.getReader());
+    for(Input input : shuffleInputs){
+      addToQueue((KeyValuesReader)input.getReader());
     }
   }
 

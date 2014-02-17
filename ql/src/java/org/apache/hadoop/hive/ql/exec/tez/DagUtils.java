@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
+import org.apache.hadoop.hive.ql.exec.tez.tools.TezMergedLogicalInput;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -82,6 +83,7 @@ import org.apache.tez.dag.api.EdgeProperty;
 import org.apache.tez.dag.api.EdgeProperty.DataMovementType;
 import org.apache.tez.dag.api.EdgeProperty.DataSourceType;
 import org.apache.tez.dag.api.EdgeProperty.SchedulingType;
+import org.apache.tez.dag.api.GroupInputEdge;
 import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
@@ -90,6 +92,7 @@ import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.client.PreWarmContext;
 import org.apache.tez.client.TezSessionConfiguration;
+import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.mapreduce.common.MRInputAMSplitGenerator;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
@@ -98,6 +101,8 @@ import org.apache.tez.mapreduce.hadoop.MultiStageMRConfToTezTranslator;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.partition.MRPartitioner;
+import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValueInput;
+import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValuesInput;
 import org.apache.tez.runtime.library.input.ShuffledMergedInputLegacy;
 import org.apache.tez.runtime.library.input.ShuffledUnorderedKVInput;
 import org.apache.tez.runtime.library.output.OnFileSortedOutput;
@@ -189,9 +194,56 @@ public class DagUtils {
   }
 
   /**
+   * Given a Vertex group and a vertex createEdge will create an
+   * Edge between them.
+   *
+   * @param group The parent VertexGroup
+   * @param wConf The job conf of the child vertex
+   * @param w The child vertex
+   * @param edgeType the type of connection between the two
+   * endpoints.
+   */
+  public GroupInputEdge createEdge(VertexGroup group, JobConf wConf,
+      Vertex w, EdgeType edgeType)
+      throws IOException {
+    
+    Class mergeInputClass;
+    
+    LOG.info("Creating Edge between " + group.getGroupName() + " and " + w.getVertexName());
+    w.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(wConf));
+
+    switch (edgeType) {
+    case BROADCAST_EDGE:
+      mergeInputClass = ConcatenatedMergedKeyValueInput.class;
+      break;
+
+    case SIMPLE_EDGE:
+    default:
+      mergeInputClass = TezMergedLogicalInput.class;
+      break;
+    }
+
+    return new GroupInputEdge(group, w, createEdgeProperty(edgeType),
+         new InputDescriptor(mergeInputClass.getName()));
+  }
+
+  /**
+   * Given two vertices a, b update their configurations to be used in an Edge a-b
+   */
+  public void updateConfigurationForEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w) 
+    throws IOException {
+
+    // Tez needs to setup output subsequent input pairs correctly
+    MultiStageMRConfToTezTranslator.translateVertexConfToTez(wConf, vConf);
+
+    // update payloads (configuration for the vertices might have changed)
+    v.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(vConf));
+    w.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(wConf));
+  }
+
+  /**
    * Given two vertices and their respective configuration objects createEdge
-   * will create an Edge object that connects the two. Currently the edge will
-   * always be a stable bi-partite edge.
+   * will create an Edge object that connects the two.
    *
    * @param vConf JobConf of the first vertex
    * @param v The first vertex (source)
@@ -203,13 +255,15 @@ public class DagUtils {
       EdgeType edgeType)
       throws IOException {
 
-    // Tez needs to setup output subsequent input pairs correctly
-    MultiStageMRConfToTezTranslator.translateVertexConfToTez(wConf, vConf);
+    updateConfigurationForEdge(vConf, v, wConf, w);
 
-    // update payloads (configuration for the vertices might have changed)
-    v.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(vConf));
-    w.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(wConf));
+    return new Edge(v, w, createEdgeProperty(edgeType));
+  }
 
+  /*
+   * Helper function to create an edge property from an edge type.
+   */
+  private EdgeProperty createEdgeProperty(EdgeType edgeType) {
     DataMovementType dataMovementType;
     Class logicalInputClass;
     Class logicalOutputClass;
@@ -235,7 +289,8 @@ public class DagUtils {
             SchedulingType.SEQUENTIAL,
             new OutputDescriptor(logicalOutputClass.getName()),
             new InputDescriptor(logicalInputClass.getName()));
-    return new Edge(v, w, edgeProperty);
+
+    return edgeProperty;
   }
 
   /*
