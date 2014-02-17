@@ -45,7 +45,8 @@ public class TezWork extends AbstractOperatorDesc {
 
   public enum EdgeType {
     SIMPLE_EDGE,
-    BROADCAST_EDGE
+    BROADCAST_EDGE,
+    CONTAINS
   }
 
   private static transient final Log LOG = LogFactory.getLog(TezWork.class);

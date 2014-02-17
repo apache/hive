@@ -777,6 +777,14 @@ public final class Utilities {
     }
   }
 
+  public static Set<Operator<?>> cloneOperatorTree(Configuration conf, Set<Operator<?>> roots) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+    serializePlan(roots, baos, conf, true);
+    Set<Operator<?>> result = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
+        roots.getClass(), conf, true);
+    return result;
+  }
+
   private static void serializePlan(Object plan, OutputStream out, Configuration conf, boolean cloningPlan) {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);

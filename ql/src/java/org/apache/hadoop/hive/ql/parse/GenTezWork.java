@@ -19,15 +19,21 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -37,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
 
 /**
@@ -106,6 +113,41 @@ public class GenTezWork implements NodeProcessor {
       context.rootToWorkMap.put(root, work);
     }
 
+    // This is where we cut the tree as described above. We also remember that
+    // we might have to connect parent work with this work later.
+    for (Operator<?> parent: new ArrayList<Operator<?>>(root.getParentOperators())) {
+      context.leafOperatorToFollowingWork.put(parent, work);
+      LOG.debug("Removing " + parent + " as parent from " + root);
+      root.removeParent(parent);
+    }
+
+    if (!context.currentUnionOperators.isEmpty()) {      
+      // if there are union all operators we need to add the work to the set
+      // of union operators.
+
+      UnionWork unionWork;
+      if (context.unionWorkMap.containsKey(operator)) {
+        // we've seen this terminal before and have created a union work object.
+        // just need to add this work to it. There will be no children of this one
+        // since we've passed this operator before.
+        assert operator.getChildOperators().isEmpty();
+        unionWork = (UnionWork) context.unionWorkMap.get(operator);
+
+      } else {
+        // first time through. we need to create a union work object and add this
+        // work to it. Subsequent work should reference the union and not the actual
+        // work.
+        unionWork = utils.createUnionWork(context, operator, tezWork);
+      }
+
+      // finally hook everything up
+      tezWork.connect(unionWork, work, EdgeType.CONTAINS);
+      unionWork.addUnionOperators(context.currentUnionOperators);
+      context.currentUnionOperators.clear();
+      context.workWithUnionOperators.add(work);
+      work = unionWork;
+    }
+
     // We're scanning a tree from roots to leaf (this is not technically
     // correct, demux and mux operators might form a diamond shape, but
     // we will only scan one path and ignore the others, because the
@@ -134,16 +176,10 @@ public class GenTezWork implements NodeProcessor {
       // remember the output name of the reduce sink
       rs.getConf().setOutputName(rWork.getName());
 
-      // add dependency between the two work items
-      tezWork.connect(work, rWork, EdgeType.SIMPLE_EDGE);
-    }
-
-    // This is where we cut the tree as described above. We also remember that
-    // we might have to connect parent work with this work later.
-    for (Operator<?> parent: new ArrayList<Operator<?>>(root.getParentOperators())) {
-      context.leafOperatorToFollowingWork.put(parent, work);
-      LOG.debug("Removing " + parent + " as parent from " + root);
-      root.removeParent(parent);
+      if (!context.unionWorkMap.containsKey(operator)) {
+        // add dependency between the two work items
+        tezWork.connect(work, rWork, EdgeType.SIMPLE_EDGE);
+      }
     }
 
     // No children means we're at the bottom. If there are more operators to scan
@@ -182,7 +218,7 @@ public class GenTezWork implements NodeProcessor {
       for (BaseWork parentWork : linkWorkList) {
         tezWork.connect(parentWork, work, EdgeType.BROADCAST_EDGE);
 
-        // need to set up output name for reduce sink not that we know the name
+        // need to set up output name for reduce sink now that we know the name
         // of the downstream work
         for (ReduceSinkOperator r:
                context.linkWorkWithReduceSinkMap.get(parentWork)) {

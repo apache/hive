@@ -55,7 +55,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.library.api.KeyValuesReader;
-import org.apache.tez.runtime.library.input.ShuffledMergedInput;
 
 /**
  * Process input from tez LogicalInput and write output - for a map plan
@@ -184,15 +183,19 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
   @Override
   void run() throws IOException{
-    List<ShuffledMergedInput> shuffleInputs = getShuffleInputs(inputs);
+    List<LogicalInput> shuffleInputs = getShuffleInputs(inputs);
     KeyValuesReader kvsReader;
 
-    if(shuffleInputs.size() == 1){
-      //no merging of inputs required
-      kvsReader = shuffleInputs.get(0).getReader();
-    }else {
-      //get a sort merged input
-      kvsReader = new InputMerger(shuffleInputs);
+    try {
+      if(shuffleInputs.size() == 1){
+        //no merging of inputs required
+        kvsReader = (KeyValuesReader) shuffleInputs.get(0).getReader();
+      }else {
+        //get a sort merged input
+        kvsReader = new InputMerger(shuffleInputs);
+      }
+    } catch (Exception e) {
+      throw new IOException(e);
     }
 
     while(kvsReader.next()){
@@ -211,12 +214,12 @@ public class ReduceRecordProcessor  extends RecordProcessor{
    * @param inputs
    * @return
    */
-  private List<ShuffledMergedInput> getShuffleInputs(Map<String, LogicalInput> inputs) {
+  private List<LogicalInput> getShuffleInputs(Map<String, LogicalInput> inputs) {
     //the reduce plan inputs have tags, add all inputs that have tags
     Map<Integer, String> tag2input = redWork.getTagToInput();
-    ArrayList<ShuffledMergedInput> shuffleInputs = new ArrayList<ShuffledMergedInput>();
+    ArrayList<LogicalInput> shuffleInputs = new ArrayList<LogicalInput>();
     for(String inpStr : tag2input.values()){
-      shuffleInputs.add((ShuffledMergedInput)inputs.get(inpStr));
+      shuffleInputs.add((LogicalInput)inputs.get(inpStr));
     }
     return shuffleInputs;
   }
