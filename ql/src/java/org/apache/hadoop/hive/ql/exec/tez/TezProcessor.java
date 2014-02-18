@@ -124,6 +124,12 @@ public class TezProcessor implements LogicalIOProcessor {
     // (possibly asynchronously)
 
     LOG.info("Running map: " + processorContext.getUniqueIdentifier());
+    for (LogicalInput input : inputs.values()) {
+      input.start();
+    }
+    for (LogicalOutput output : outputs.values()) {
+      output.start();
+    }
 
     Map<String, OutputCollector> outMap = new HashMap<String, OutputCollector>();
 

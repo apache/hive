@@ -480,7 +480,7 @@ public class DagUtils {
     prewarmProcDescriptor.setUserPayload(MRHelpers.createUserPayloadFromConf(conf));
 
     PreWarmContext context = new PreWarmContext(prewarmProcDescriptor, MRHelpers.getMapResource(conf),
-        new VertexLocationHint(numContainers, null));
+        numContainers, new VertexLocationHint(null));
 
     Map<String, LocalResource> combinedResources = new HashMap<String, LocalResource>();
 
