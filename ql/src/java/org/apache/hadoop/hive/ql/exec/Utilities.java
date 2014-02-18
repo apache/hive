@@ -72,7 +72,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
-import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;

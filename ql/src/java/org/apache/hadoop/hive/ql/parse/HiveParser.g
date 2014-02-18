@@ -163,6 +163,7 @@ TOK_SHOW_CREATETABLE;
 TOK_SHOW_TABLESTATUS;
 TOK_SHOW_TBLPROPERTIES;
 TOK_SHOWLOCKS;
+TOK_SHOWCONF;
 TOK_LOCKTABLE;
 TOK_UNLOCKTABLE;
 TOK_LOCKDB;
@@ -1290,6 +1291,8 @@ showStatement
     | KW_SHOW KW_LOCKS KW_DATABASE (dbName=Identifier) (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWDBLOCKS $dbName $isExtended?)
     | KW_SHOW (showOptions=KW_FORMATTED)? (KW_INDEX|KW_INDEXES) KW_ON showStmtIdentifier ((KW_FROM|KW_IN) db_name=identifier)?
     -> ^(TOK_SHOWINDEXES showStmtIdentifier $showOptions? $db_name?)
+    | KW_SHOW KW_CONF StringLiteral
+    -> ^(TOK_SHOWCONF StringLiteral)
     ;
 
 lockStatement
