@@ -74,6 +74,8 @@ public class DDLWork implements Serializable {
   private RevokeDesc revokeDesc;
   private GrantRevokeRoleDDL grantRevokeRoleDDL;
 
+  private ShowConfDesc showConfDesc;
+
   boolean needLock = false;
 
   /**
@@ -135,6 +137,12 @@ public class DDLWork implements Serializable {
       TruncateTableDesc truncateTblDesc) {
     this(inputs, outputs);
     this.truncateTblDesc = truncateTblDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      ShowConfDesc showConfDesc) {
+    this(inputs, outputs);
+    this.showConfDesc = showConfDesc;
   }
 
   public DescDatabaseDesc getDescDatabaseDesc() {
@@ -1084,5 +1092,13 @@ public class DDLWork implements Serializable {
   public void setAlterTableExchangePartition(
       AlterTableExchangePartition alterTableExchangePartition) {
     this.alterTableExchangePartition = alterTableExchangePartition;
+  }
+
+  public ShowConfDesc getShowConfDesc() {
+    return showConfDesc;
+  }
+
+  public void setShowConfDesc(ShowConfDesc showConfDesc) {
+    this.showConfDesc = showConfDesc;
   }
 }

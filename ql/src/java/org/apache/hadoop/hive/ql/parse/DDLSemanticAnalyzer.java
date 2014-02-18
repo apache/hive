@@ -109,6 +109,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
@@ -309,6 +310,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOWDBLOCKS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowDbLocks(ast);
+      break;
+    case HiveParser.TOK_SHOWCONF:
+      ctx.setResFile(ctx.getLocalTmpPath());
+      analyzeShowConf(ast);
       break;
     case HiveParser.TOK_DESCFUNCTION:
       ctx.setResFile(ctx.getLocalTmpPath());
@@ -2188,6 +2193,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);
+  }
+
+  private void analyzeShowConf(ASTNode ast) throws SemanticException {
+    String confName = stripQuotes(ast.getChild(0).getText());
+    ShowConfDesc showConfDesc = new ShowConfDesc(ctx.getResFile(), confName);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showConfDesc), conf));
+    setFetchTask(createFetchTask(showConfDesc.getSchema()));
   }
 
   /**

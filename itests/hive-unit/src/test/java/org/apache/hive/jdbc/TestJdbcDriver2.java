@@ -19,7 +19,7 @@
 package org.apache.hive.jdbc;
 
 import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
-import static org.apache.hadoop.hive.ql.processors.SetProcessor.SET_COLUMN_NAME;
+import static org.apache.hive.common.util.SystemVariables.SET_COLUMN_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -1855,7 +1855,7 @@ public class TestJdbcDriver2 {
    * @throws Exception
    */
   public void testFetchFirstSetCmds() throws Exception {
-    execFetchFirst("set -v", SetProcessor.SET_COLUMN_NAME, false);
+    execFetchFirst("set -v", SET_COLUMN_NAME, false);
   }
 
   /**
