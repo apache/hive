@@ -160,7 +160,6 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.SHOWINDEXES, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.SHOWPARTITIONS, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.SHOWLOCKS, new InOutPrivs(null, null));
-    op2Priv.put(HiveOperationType.SHOWCONF, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.CREATEFUNCTION, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.DROPFUNCTION, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.CREATEMACRO, new InOutPrivs(null, null));
