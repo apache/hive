@@ -70,6 +70,12 @@ public class HivePreWarmProcessor implements LogicalIOProcessor {
       /* container reuse */
       return;
     }
+    for (LogicalInput input : inputs.values()) {
+      input.start();
+    }
+    for (LogicalOutput output : outputs.values()) {
+      output.start();
+    }
     /* these are things that goes through singleton initialization on most queries */
     FileSystem fs = FileSystem.get(conf);
     Mac mac = Mac.getInstance("HmacSHA1");
