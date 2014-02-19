@@ -49,7 +49,11 @@ public class <ClassName> extends VectorAggregateExpression {
       private static final long serialVersionUID = 1L;
 
       transient private <ValueType> value;
-      transient private boolean isNull;
+
+      /**
+      * Value is explicitly (re)initialized in reset()
+      */
+      transient private boolean isNull = true;
 
       public void checkValue(<ValueType> value) {
         if (isNull) {

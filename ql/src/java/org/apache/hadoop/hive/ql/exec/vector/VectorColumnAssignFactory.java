@@ -23,9 +23,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -141,6 +144,23 @@ public class VectorColumnAssignFactory {
     }
   }
 
+  private static abstract class VectorDecimalColumnAssign
+  extends VectorColumnAssignVectorBase<DecimalColumnVector> {
+    protected void assignDecimal(HiveDecimal value, int index) {
+      outCol.vector[index].update(value.unscaledValue(), (byte) value.scale());
+    }
+  
+    protected void assignDecimal(Decimal128 value, int index) {
+      outCol.vector[index].update(value);
+    }
+    protected void assignDecimal(HiveDecimalWritable hdw, int index) {
+        byte[] internalStorage = hdw.getInternalStorage();
+        int scale = hdw.getScale();
+  
+        outCol.vector[index].fastUpdateFromInternalStorage(internalStorage, (short)scale);
+    }
+  }
+
 
   public static VectorColumnAssign[] buildAssigners(VectorizedRowBatch outputBatch)
       throws HiveException {
@@ -174,6 +194,14 @@ public class VectorColumnAssignFactory {
             assignBytes(src.vector[srcIndex], src.start[srcIndex], src.length[srcIndex], destIndex);
           }
         }.init(outputBatch,  (BytesColumnVector) cv);
+      }
+      else if (cv instanceof DecimalColumnVector) {
+      vca[i] = new VectorDecimalColumnAssign() {
+        @Override
+            protected void copyValue(DecimalColumnVector src, int srcIndex, int destIndex) {
+          assignDecimal(src.vector[srcIndex], destIndex);
+        }
+      };
       }
       else {
         throw new HiveException("Unimplemented vector column type: " + cv.getClass().getName());
@@ -335,6 +363,27 @@ public class VectorColumnAssignFactory {
         throw new HiveException("Incompatible Bytes vector column and primitive category " +
             poi.getPrimitiveCategory());
       }
+    }
+    else if (destCol instanceof DecimalColumnVector) {
+      switch(poi.getPrimitiveCategory()) {
+      case DECIMAL:
+        outVCA = new VectorDecimalColumnAssign() {
+          @Override
+          public void assignObjectValue(Object val, int destIndex) throws HiveException {
+              if (val == null) {
+                assignNull(destIndex);
+              }
+              else {
+                HiveDecimalWritable hdw = (HiveDecimalWritable) val;
+                assignDecimal(hdw, destIndex);
+              }
+            }
+          }.init(outputBatch, (DecimalColumnVector) destCol);
+          break;
+        default:
+          throw new HiveException("Incompatible Decimal vector column and primitive category " +
+              poi.getPrimitiveCategory());
+        }
     }
     else {
       throw new HiveException("Unknown vector column type " + destCol.getClass().getName());

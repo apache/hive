@@ -16,98 +16,142 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
+package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hive.common.util.Decimal128FastBuffer;
 
 /**
  * Generated from template VectorUDAFAvg.txt.
  */
 @Description(name = "avg",
-    value = "_FUNC_(expr) - Returns the average value of expr (vectorized, type: <ValueType>)")
-public class <ClassName> extends VectorAggregateExpression {
+    value = "_FUNC_(AVG) - Returns the average value of expr (vectorized, type: decimal)")
+public class VectorUDAFAvgDecimal extends VectorAggregateExpression {
 
     private static final long serialVersionUID = 1L;
-    
+
     /** class for storing the current aggregate value. */
     static class Aggregation implements AggregationBuffer {
 
       private static final long serialVersionUID = 1L;
 
-      transient private double sum;
+      transient private final Decimal128 sum = new Decimal128();
       transient private long count;
+      transient private boolean isNull;
 
-      /**
-      * Value is explicitly (re)initialized in reset()
-      */
-      transient private boolean isNull = true;
-      
-      public void sumValue(<ValueType> value) {
+      public void sumValueWithCheck(Decimal128 value, short scale) {
         if (isNull) {
-          sum = value; 
+          sum.update(value);
+          sum.changeScaleDestructive(scale);
           count = 1;
           isNull = false;
         } else {
-          sum += value;
+          sum.addDestructive(value, scale);
           count++;
         }
       }
+
+      public void sumValueNoCheck(Decimal128 value, short scale) {
+        sum.addDestructive(value, scale);
+        count++;
+      }
+
 
       @Override
       public int getVariableSize() {
         throw new UnsupportedOperationException();
       }
     }
-    
+
     private VectorExpression inputExpression;
     transient private Object[] partialResult;
     transient private LongWritable resultCount;
-    transient private DoubleWritable resultSum;
+    transient private HiveDecimalWritable resultSum;
     transient private StructObjectInspector soi;
-        
-    public <ClassName>(VectorExpression inputExpression) {
+
+    transient private final Decimal128FastBuffer scratch;
+
+    /**
+     * The scale of the SUM in the partial output
+     */
+    private short sumScale;
+
+    /**
+     * The precision of the SUM in the partial output
+     */
+    private short sumPrecision;
+
+    /**
+     * the scale of the input expression
+     */
+    private short inputScale;
+
+    /**
+     * the precision of the input expression
+     */
+    private short inputPrecision;
+
+    /**
+     * A value used as scratch to avoid allocating at runtime.
+     * Needed by computations like vector[0] * batchSize
+     */
+    transient private Decimal128 scratchDecimal = new Decimal128();
+
+    public VectorUDAFAvgDecimal(VectorExpression inputExpression) {
       this();
       this.inputExpression = inputExpression;
     }
 
-    public <ClassName>() {
+    public VectorUDAFAvgDecimal() {
       super();
       partialResult = new Object[2];
       resultCount = new LongWritable();
-      resultSum = new DoubleWritable();
+      resultSum = new HiveDecimalWritable();
       partialResult[0] = resultCount;
       partialResult[1] = resultSum;
-      initPartialResultInspector();
+      scratch = new Decimal128FastBuffer();
+
     }
 
     private void initPartialResultInspector() {
-        List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        List<String> fname = new ArrayList<String>();
-        fname.add("count");
-        fname.add("sum");
-        soi = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
+      // the output type of the vectorized partial aggregate must match the
+      // expected type for the row-mode aggregation
+      // For decimal, the type is "same number of integer digits and 4 more decimal digits"
+      
+      DecimalTypeInfo dtiSum = GenericUDAFAverage.deriveSumTypeInfo(inputScale, inputPrecision);
+      this.sumScale = (short) dtiSum.scale();
+      this.sumPrecision = (short) dtiSum.precision();
+      
+      List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
+      foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
+      foi.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(dtiSum));
+      List<String> fname = new ArrayList<String>();
+      fname.add("count");
+      fname.add("sum");
+      soi = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
     }
-    
+
     private Aggregation getCurrentAggregationBuffer(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int bufferIndex,
@@ -116,24 +160,24 @@ public class <ClassName> extends VectorAggregateExpression {
       Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(bufferIndex);
       return myagg;
     }
-    
+
     @Override
     public void aggregateInputSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int bufferIndex, 
+      int bufferIndex,
       VectorizedRowBatch batch) throws HiveException {
-      
+
       int batchSize = batch.size;
-      
+
       if (batchSize == 0) {
         return;
       }
-      
+
       inputExpression.evaluate(batch);
-      
-       <InputColumnVectorType> inputVector = ( <InputColumnVectorType>)batch.
+
+       DecimalColumnVector inputVector = ( DecimalColumnVector)batch.
         cols[this.inputExpression.getOutputColumn()];
-      <ValueType>[] vector = inputVector.vector;
+      Decimal128[] vector = inputVector.vector;
 
       if (inputVector.noNulls) {
         if (inputVector.isRepeating) {
@@ -179,82 +223,82 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateNoNullsRepeatingWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      <ValueType> value,
+      Decimal128 value,
       int batchSize) {
 
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets, 
+          aggregationBufferSets,
           bufferIndex,
           i);
-        myagg.sumValue(value);
+        myagg.sumValueWithCheck(value, this.sumScale);
       }
-    } 
+    }
 
     private void iterateNoNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      <ValueType>[] values,
+      Decimal128[] values,
       int[] selection,
       int batchSize) {
-      
+
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets, 
+          aggregationBufferSets,
           bufferIndex,
           i);
-        myagg.sumValue(values[selection[i]]);
+        myagg.sumValueWithCheck(values[selection[i]], this.sumScale);
       }
     }
 
     private void iterateNoNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      <ValueType>[] values,
+      Decimal128[] values,
       int batchSize) {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets, 
+          aggregationBufferSets,
           bufferIndex,
           i);
-        myagg.sumValue(values[i]);
+        myagg.sumValueWithCheck(values[i], this.sumScale);
       }
     }
 
     private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      <ValueType> value,
+      Decimal128 value,
       int batchSize,
       int[] selection,
       boolean[] isNull) {
-      
+
       for (int i=0; i < batchSize; ++i) {
         if (!isNull[selection[i]]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets, 
+            aggregationBufferSets,
             bufferIndex,
             i);
-          myagg.sumValue(value);
+          myagg.sumValueWithCheck(value, this.sumScale);
         }
       }
-      
+
     }
 
     private void iterateHasNullsRepeatingWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      <ValueType> value,
+      Decimal128 value,
       int batchSize,
       boolean[] isNull) {
 
       for (int i=0; i < batchSize; ++i) {
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets, 
+            aggregationBufferSets,
             bufferIndex,
             i);
-          myagg.sumValue(value);
+          myagg.sumValueWithCheck(value, this.sumScale);
         }
       }
     }
@@ -262,7 +306,7 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateHasNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      <ValueType>[] values,
+      Decimal128[] values,
       int batchSize,
       int[] selection,
       boolean[] isNull) {
@@ -271,10 +315,10 @@ public class <ClassName> extends VectorAggregateExpression {
         int i = selection[j];
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets, 
+            aggregationBufferSets,
             bufferIndex,
             j);
-          myagg.sumValue(values[i]);
+          myagg.sumValueWithCheck(values[i], this.sumScale);
         }
       }
    }
@@ -282,54 +326,56 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateHasNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      <ValueType>[] values,
+      Decimal128[] values,
       int batchSize,
       boolean[] isNull) {
 
       for (int i=0; i < batchSize; ++i) {
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets, 
+            aggregationBufferSets,
             bufferIndex,
             i);
-          myagg.sumValue(values[i]);
+          myagg.sumValueWithCheck(values[i], this.sumScale);
         }
       }
    }
 
-    
+
     @Override
-    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch) 
+    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch)
         throws HiveException {
-        
+
         inputExpression.evaluate(batch);
-        
-        <InputColumnVectorType> inputVector = 
-            (<InputColumnVectorType>)batch.cols[this.inputExpression.getOutputColumn()];
-        
+
+        DecimalColumnVector inputVector =
+            (DecimalColumnVector)batch.cols[this.inputExpression.getOutputColumn()];
+
         int batchSize = batch.size;
-        
+
         if (batchSize == 0) {
           return;
         }
-        
+
         Aggregation myagg = (Aggregation)agg;
-  
-        <ValueType>[] vector = inputVector.vector;
-        
+
+        Decimal128[] vector = inputVector.vector;
+
         if (inputVector.isRepeating) {
           if (inputVector.noNulls) {
             if (myagg.isNull) {
               myagg.isNull = false;
-              myagg.sum = 0;
+              myagg.sum.zeroClear();
               myagg.count = 0;
             }
-            myagg.sum += vector[0]*batchSize;
+            scratchDecimal.update(batchSize);
+            scratchDecimal.multiplyDestructive(vector[0], vector[0].getScale());
+            myagg.sum.update(scratchDecimal);
             myagg.count += batchSize;
           }
           return;
         }
-        
+
         if (!batch.selectedInUse && inputVector.noNulls) {
           iterateNoSelectionNoNulls(myagg, vector, batchSize);
         }
@@ -343,82 +389,68 @@ public class <ClassName> extends VectorAggregateExpression {
           iterateSelectionHasNulls(myagg, vector, batchSize, inputVector.isNull, batch.selected);
         }
     }
-  
+
     private void iterateSelectionHasNulls(
-        Aggregation myagg, 
-        <ValueType>[] vector, 
+        Aggregation myagg,
+        Decimal128[] vector,
         int batchSize,
-        boolean[] isNull, 
+        boolean[] isNull,
         int[] selected) {
-      
+
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          <ValueType> value = vector[i];
-          if (myagg.isNull) {
-            myagg.isNull = false;
-            myagg.sum = 0;
-            myagg.count = 0;
-          }
-          myagg.sum += value;
-          myagg.count += 1;
+          Decimal128 value = vector[i];
+          myagg.sumValueWithCheck(value, this.sumScale);
         }
       }
     }
 
     private void iterateSelectionNoNulls(
-        Aggregation myagg, 
-        <ValueType>[] vector, 
-        int batchSize, 
+        Aggregation myagg,
+        Decimal128[] vector,
+        int batchSize,
         int[] selected) {
-      
+
       if (myagg.isNull) {
         myagg.isNull = false;
-        myagg.sum = 0;
+        myagg.sum.zeroClear();
         myagg.count = 0;
       }
-      
+
       for (int i=0; i< batchSize; ++i) {
-        <ValueType> value = vector[selected[i]];
-        myagg.sum += value;
-        myagg.count += 1;
+        Decimal128 value = vector[selected[i]];
+        myagg.sumValueNoCheck(value, this.sumScale);
       }
     }
 
     private void iterateNoSelectionHasNulls(
-        Aggregation myagg, 
-        <ValueType>[] vector, 
+        Aggregation myagg,
+        Decimal128[] vector,
         int batchSize,
         boolean[] isNull) {
-      
+
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          <ValueType> value = vector[i];
-          if (myagg.isNull) { 
-            myagg.isNull = false;
-            myagg.sum = 0;
-            myagg.count = 0;
-          }
-          myagg.sum += value;
-          myagg.count += 1;
+          Decimal128 value = vector[i];
+          myagg.sumValueWithCheck(value, this.sumScale);
         }
       }
     }
 
     private void iterateNoSelectionNoNulls(
-        Aggregation myagg, 
-        <ValueType>[] vector, 
+        Aggregation myagg,
+        Decimal128[] vector,
         int batchSize) {
       if (myagg.isNull) {
         myagg.isNull = false;
-        myagg.sum = 0;
+        myagg.sum.zeroClear();
         myagg.count = 0;
       }
-      
+
       for (int i=0;i<batchSize;++i) {
-        <ValueType> value = vector[i];
-        myagg.sum += value;
-        myagg.count += 1;
+        Decimal128 value = vector[i];
+        myagg.sumValueNoCheck(value, this.sumScale);
       }
     }
 
@@ -443,15 +475,16 @@ public class <ClassName> extends VectorAggregateExpression {
       else {
         assert(0 < myagg.count);
         resultCount.set (myagg.count);
-        resultSum.set (myagg.sum);
+        int bufferIndex = myagg.sum.fastSerializeForHiveDecimal(scratch);
+        resultSum.set(scratch.getBytes(bufferIndex), (int) sumScale);
         return partialResult;
       }
     }
-    
+
   @Override
     public ObjectInspector getOutputObjectInspector() {
     return soi;
-  }     
+  }
 
   @Override
   public int getAggregationBufferFixedSize() {
@@ -464,9 +497,14 @@ public class <ClassName> extends VectorAggregateExpression {
 
   @Override
   public void init(AggregationDesc desc) throws HiveException {
-    // No-op
+    ExprNodeDesc inputExpr = desc.getParameters().get(0);
+    DecimalTypeInfo tiInput = (DecimalTypeInfo) inputExpr.getTypeInfo();
+    this.inputScale = (short) tiInput.scale();
+    this.inputPrecision = (short) tiInput.precision();
+
+    initPartialResultInspector();
   }
-  
+
   public VectorExpression getInputExpression() {
     return inputExpression;
   }

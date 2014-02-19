@@ -40,28 +40,37 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.ArgumentType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.InputExpressionType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Mode;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFAvgDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCount;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFSumDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToBooleanViaLongToLong;
@@ -114,7 +123,8 @@ public class VectorizationContext {
   private final Map<String, Integer> columnMap;
   private final int firstOutputColumnIndex;
 
-  public static final Pattern decimalTypePattern = Pattern.compile("decimal.*");
+  public static final Pattern decimalTypePattern = Pattern.compile("decimal.*",
+      Pattern.CASE_INSENSITIVE);
 
   //Map column number to type
   private final OutputColumnManager ocm;
@@ -869,7 +879,7 @@ public class VectorizationContext {
     ExprNodeDesc colExpr = childExpr.get(0);
     TypeInfo colTypeInfo = colExpr.getTypeInfo();
     String colType = colExpr.getTypeString();
-
+    
     // prepare arguments for createVectorExpression
     List<ExprNodeDesc> childrenForInList =
         foldConstantsForUnaryExprs(childExpr.subList(1, childExpr.size()));
@@ -1111,7 +1121,7 @@ public class VectorizationContext {
     String colType = colExpr.getTypeString();
 
     // prepare arguments for createVectorExpression
-    List<ExprNodeDesc> childrenAfterNot = foldConstantsForUnaryExprs(childExpr.subList(1, 4));
+    List<ExprNodeDesc> childrenAfterNot = foldConstantsForUnaryExprs(childExpr.subList(1, 4));;
 
     // determine class
     Class<?> cl = null;
@@ -1241,6 +1251,10 @@ public class VectorizationContext {
         || resultType.equalsIgnoreCase("long");
   }
 
+  public static boolean isDecimalFamily(String colType) {
+      return decimalTypePattern.matcher(colType).matches();
+  }
+
   private Object getScalarValue(ExprNodeConstantDesc constDesc)
       throws HiveException {
     if (constDesc.getTypeString().equalsIgnoreCase("String")) {
@@ -1353,14 +1367,13 @@ public class VectorizationContext {
     }
   }
 
-  static String getNormalizedTypeName(String colType) {
+  static String getNormalizedTypeName(String colType){
     String normalizedType = null;
     if (colType.equalsIgnoreCase("Double") || colType.equalsIgnoreCase("Float")) {
       normalizedType = "Double";
     } else if (colType.equalsIgnoreCase("String")) {
       normalizedType = "String";
-    } else if (decimalTypePattern.matcher(colType.toLowerCase()).matches()) {
-
+   } else if (decimalTypePattern.matcher(colType).matches()) {
       //Return the decimal type as is, it includes scale and precision.
       normalizedType = colType;
     } else {
@@ -1373,31 +1386,43 @@ public class VectorizationContext {
     {"min",       "Long",   VectorUDAFMinLong.class},
     {"min",       "Double", VectorUDAFMinDouble.class},
     {"min",       "String", VectorUDAFMinString.class},
+    {"min",       "Decimal",VectorUDAFMinDecimal.class},
     {"max",       "Long",   VectorUDAFMaxLong.class},
     {"max",       "Double", VectorUDAFMaxDouble.class},
     {"max",       "String", VectorUDAFMaxString.class},
+    {"max",       "Decimal",VectorUDAFMaxDecimal.class},
     {"count",     null,     VectorUDAFCountStar.class},
     {"count",     "Long",   VectorUDAFCount.class},
     {"count",     "Double", VectorUDAFCount.class},
     {"count",     "String", VectorUDAFCount.class},
+    {"count",     "Decimal",VectorUDAFCount.class},
     {"sum",       "Long",   VectorUDAFSumLong.class},
     {"sum",       "Double", VectorUDAFSumDouble.class},
+    {"sum",       "Decimal",VectorUDAFSumDecimal.class},
     {"avg",       "Long",   VectorUDAFAvgLong.class},
     {"avg",       "Double", VectorUDAFAvgDouble.class},
+    {"avg",       "Decimal",VectorUDAFAvgDecimal.class},
     {"variance",  "Long",   VectorUDAFVarPopLong.class},
     {"var_pop",   "Long",   VectorUDAFVarPopLong.class},
     {"variance",  "Double", VectorUDAFVarPopDouble.class},
     {"var_pop",   "Double", VectorUDAFVarPopDouble.class},
+    {"variance",  "Decimal",VectorUDAFVarPopDecimal.class},
+    {"var_pop",   "Decimal",VectorUDAFVarPopDecimal.class},
     {"var_samp",  "Long",   VectorUDAFVarSampLong.class},
     {"var_samp" , "Double", VectorUDAFVarSampDouble.class},
+    {"var_samp" , "Decimal",VectorUDAFVarSampDecimal.class},
     {"std",       "Long",   VectorUDAFStdPopLong.class},
     {"stddev",    "Long",   VectorUDAFStdPopLong.class},
     {"stddev_pop","Long",   VectorUDAFStdPopLong.class},
     {"std",       "Double", VectorUDAFStdPopDouble.class},
     {"stddev",    "Double", VectorUDAFStdPopDouble.class},
     {"stddev_pop","Double", VectorUDAFStdPopDouble.class},
+    {"std",       "Decimal",VectorUDAFStdPopDecimal.class},
+    {"stddev",    "Decimal",VectorUDAFStdPopDecimal.class},
+    {"stddev_pop","Decimal",VectorUDAFStdPopDecimal.class},
     {"stddev_samp","Long",  VectorUDAFStdSampLong.class},
     {"stddev_samp","Double",VectorUDAFStdSampDouble.class},
+    {"stddev_samp","Decimal",VectorUDAFStdSampDecimal.class},
   };
 
   public VectorAggregateExpression getAggregatorExpression(AggregationDesc desc)
@@ -1417,6 +1442,9 @@ public class VectorizationContext {
     if (paramDescList.size() > 0) {
       ExprNodeDesc inputExpr = paramDescList.get(0);
       inputType = getNormalizedTypeName(inputExpr.getTypeString());
+      if (decimalTypePattern.matcher(inputType).matches()) {
+        inputType = "Decimal";
+      }
     }
 
     for (Object[] aggDef : aggregatesDefinition) {

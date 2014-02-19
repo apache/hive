@@ -50,7 +50,11 @@ public class <ClassName> extends VectorAggregateExpression {
       private static final long serialVersionUID = 1L;
 
       transient private <ValueType> sum;
-      transient private boolean isNull;
+
+      /**
+      * Value is explicitly (re)initialized in reset()
+      */
+      transient private boolean isNull = true;
       
       public void sumValue(<ValueType> value) {
         if (isNull) {
