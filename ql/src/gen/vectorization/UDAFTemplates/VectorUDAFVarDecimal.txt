@@ -21,13 +21,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -53,26 +54,56 @@ public class <ClassName> extends VectorAggregateExpression {
 
       private static final long serialVersionUID = 1L;
 
-      transient private double sum;
+      transient private final Decimal128 sum;
       transient private long count;
       transient private double variance;
 
       /**
-      * Value is explicitly (re)initialized in reset() (despite the init() bellow...)
+      * Value is explicitly (re)initialized in reset()
       */
       transient private boolean isNull = true;
 
+      public Aggregation() {
+        sum = new Decimal128();
+      }
+
       public void init() {
         isNull = false;
-        sum = 0;
+        sum.zeroClear();
         count = 0;
-        variance = 0;
+        variance = 0f;
       }
 
       @Override
       public int getVariableSize() {
         throw new UnsupportedOperationException();
       }
+
+      public void updateValueWithCheckAndInit(Decimal128 scratch, Decimal128 value) {
+        if (this.isNull) {
+          this.init();
+        }
+        this.sum.addDestructive(value, value.getScale());
+        this.count += 1;
+        if(this.count > 1) {
+           scratch.update(count);
+           scratch.multiplyDestructive(value, value.getScale());
+           scratch.subtractDestructive(sum, sum.getScale());
+           double t = scratch.doubleValue();
+           this.variance += (t*t) / ((double)this.count*(this.count-1));
+        }
+      }
+
+      public void updateValueNoCheck(Decimal128 scratch, Decimal128 value) {
+        this.sum.addDestructive(value, value.getScale());
+        this.count += 1;
+        scratch.update(count);
+        scratch.multiplyDestructive(value, value.getScale());
+        scratch.subtractDestructive(sum, sum.getScale());
+        double t = scratch.doubleValue();
+        this.variance += (t*t) / ((double)this.count*(this.count-1));
+      }
+
     }
 
     private VectorExpression inputExpression;
@@ -82,6 +113,8 @@ public class <ClassName> extends VectorAggregateExpression {
     transient private Object[] partialResult;
 
     transient private ObjectInspector soi;
+
+    transient private final Decimal128 scratchDecimal;
 
 
     public <ClassName>(VectorExpression inputExpression) {
@@ -99,6 +132,7 @@ public class <ClassName> extends VectorAggregateExpression {
       partialResult[1] = resultSum;
       partialResult[2] = resultVariance;
       initPartialResultInspector();
+      scratchDecimal = new Decimal128();
     }
 
   private void initPartialResultInspector() {
@@ -133,7 +167,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       inputExpression.evaluate(batch);
 
-      <InputColumnVectorType> inputVector = (<InputColumnVectorType>)batch.
+      DecimalColumnVector inputVector = (DecimalColumnVector)batch.
         cols[this.inputExpression.getOutputColumn()];
 
       int batchSize = batch.size;
@@ -142,7 +176,7 @@ public class <ClassName> extends VectorAggregateExpression {
         return;
       }
 
-      <ValueType>[] vector = inputVector.vector;
+      Decimal128[] vector = inputVector.vector;
 
       if (inputVector.isRepeating) {
         if (inputVector.noNulls || !inputVector.isNull[0]) {
@@ -173,7 +207,7 @@ public class <ClassName> extends VectorAggregateExpression {
     private void  iterateRepeatingNoNullsWithAggregationSelection(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregateIndex,
-        double value,
+        Decimal128 value,
         int batchSize) {
 
       for (int i=0; i<batchSize; ++i) {
@@ -181,22 +215,14 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        if (myagg.isNull) {
-          myagg.init ();
-        }
-        myagg.sum += value;
-        myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+        myagg.updateValueWithCheckAndInit(scratchDecimal, value);
       }
     }
 
     private void iterateSelectionHasNullsWithAggregationSelection(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregateIndex,
-        <ValueType>[] vector,
+        Decimal128[] vector,
         int batchSize,
         boolean[] isNull,
         int[] selected) {
@@ -208,16 +234,8 @@ public class <ClassName> extends VectorAggregateExpression {
           j);
         int i = selected[j];
         if (!isNull[i]) {
-          double value = vector[i];
-          if (myagg.isNull) {
-            myagg.init ();
-          }
-          myagg.sum += value;
-          myagg.count += 1;
-          if(myagg.count > 1) {
-            double t = myagg.count*value - myagg.sum;
-            myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-          }
+          Decimal128 value = vector[i];
+          myagg.updateValueWithCheckAndInit(scratchDecimal, value);
         }
       }
     }
@@ -225,7 +243,7 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateSelectionNoNullsWithAggregationSelection(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregateIndex,
-        <ValueType>[] vector,
+        Decimal128[] vector,
         int batchSize,
         int[] selected) {
 
@@ -234,23 +252,15 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        double value = vector[selected[i]];
-        if (myagg.isNull) {
-          myagg.init ();
-        }
-        myagg.sum += value;
-        myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+        Decimal128 value = vector[selected[i]];
+        myagg.updateValueWithCheckAndInit(scratchDecimal, value);
       }
     }
 
     private void iterateNoSelectionHasNullsWithAggregationSelection(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregateIndex,
-        <ValueType>[] vector,
+        Decimal128[] vector,
         int batchSize,
         boolean[] isNull) {
 
@@ -260,16 +270,8 @@ public class <ClassName> extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregateIndex,
           i);
-          double value = vector[i];
-          if (myagg.isNull) {
-            myagg.init ();
-          }
-          myagg.sum += value;
-          myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+          Decimal128 value = vector[i];
+          myagg.updateValueWithCheckAndInit(scratchDecimal, value);
         }
       }
     }
@@ -277,7 +279,7 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateNoSelectionNoNullsWithAggregationSelection(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregateIndex,
-        <ValueType>[] vector,
+        Decimal128[] vector,
         int batchSize) {
 
       for (int i=0; i<batchSize; ++i) {
@@ -285,16 +287,8 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        if (myagg.isNull) {
-          myagg.init ();
-        }
-        double value = vector[i];
-        myagg.sum += value;
-        myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+        Decimal128 value = vector[i];
+        myagg.updateValueWithCheckAndInit(scratchDecimal, value);
       }
     }
 
@@ -304,7 +298,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       inputExpression.evaluate(batch);
 
-      <InputColumnVectorType> inputVector = (<InputColumnVectorType>)batch.
+      DecimalColumnVector inputVector = (DecimalColumnVector)batch.
         cols[this.inputExpression.getOutputColumn()];
 
       int batchSize = batch.size;
@@ -315,7 +309,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       Aggregation myagg = (Aggregation)agg;
 
-      <ValueType>[] vector = inputVector.vector;
+      Decimal128[] vector = inputVector.vector;
 
       if (inputVector.isRepeating) {
         if (inputVector.noNulls) {
@@ -338,35 +332,23 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void  iterateRepeatingNoNulls(
         Aggregation myagg,
-        double value,
+        Decimal128 value,
         int batchSize) {
-
-      if (myagg.isNull) {
-        myagg.init ();
-      }
 
       // TODO: conjure a formula w/o iterating
       //
 
-      myagg.sum += value;
-      myagg.count += 1;
-      if(myagg.count > 1) {
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-      }
+      myagg.updateValueWithCheckAndInit(scratchDecimal, value);
 
       // We pulled out i=0 so we can remove the count > 1 check in the loop
       for (int i=1; i<batchSize; ++i) {
-        myagg.sum += value;
-        myagg.count += 1;
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+        myagg.updateValueNoCheck(scratchDecimal, value);
       }
     }
 
     private void iterateSelectionHasNulls(
         Aggregation myagg,
-        <ValueType>[] vector,
+        Decimal128[] vector,
         int batchSize,
         boolean[] isNull,
         int[] selected) {
@@ -374,23 +356,15 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          double value = vector[i];
-          if (myagg.isNull) {
-            myagg.init ();
-          }
-          myagg.sum += value;
-          myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+          Decimal128 value = vector[i];
+          myagg.updateValueWithCheckAndInit(scratchDecimal, value);
         }
       }
     }
 
     private void iterateSelectionNoNulls(
         Aggregation myagg,
-        <ValueType>[] vector,
+        Decimal128[] vector,
         int batchSize,
         int[] selected) {
 
@@ -398,72 +372,47 @@ public class <ClassName> extends VectorAggregateExpression {
         myagg.init ();
       }
 
-      double value = vector[selected[0]];
-      myagg.sum += value;
-      myagg.count += 1;
-      if(myagg.count > 1) {
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-      }
+      Decimal128 value = vector[selected[0]];
+      myagg.updateValueWithCheckAndInit(scratchDecimal, value);
 
       // i=0 was pulled out to remove the count > 1 check in the loop
       //
       for (int i=1; i< batchSize; ++i) {
         value = vector[selected[i]];
-        myagg.sum += value;
-        myagg.count += 1;
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+        myagg.updateValueNoCheck(scratchDecimal, value);
       }
     }
 
     private void iterateNoSelectionHasNulls(
         Aggregation myagg,
-        <ValueType>[] vector,
+        Decimal128[] vector,
         int batchSize,
         boolean[] isNull) {
 
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          double value = vector[i];
-          if (myagg.isNull) {
-            myagg.init ();
-          }
-          myagg.sum += value;
-          myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+          Decimal128 value = vector[i];
+          myagg.updateValueWithCheckAndInit(scratchDecimal, value);
         }
       }
     }
 
     private void iterateNoSelectionNoNulls(
         Aggregation myagg,
-        <ValueType>[] vector,
+        Decimal128[] vector,
         int batchSize) {
 
       if (myagg.isNull) {
         myagg.init ();
       }
 
-      double value = vector[0];
-      myagg.sum += value;
-      myagg.count += 1;
-
-      if(myagg.count > 1) {
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-      }
+      Decimal128 value = vector[0];
+      myagg.updateValueWithCheckAndInit(scratchDecimal, value);
 
       // i=0 was pulled out to remove count > 1 check
       for (int i=1; i<batchSize; ++i) {
         value = vector[i];
-        myagg.sum += value;
-        myagg.count += 1;
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+        myagg.updateValueNoCheck(scratchDecimal, value);
       }
     }
 
@@ -488,7 +437,7 @@ public class <ClassName> extends VectorAggregateExpression {
       else {
         assert(0 < myagg.count);
         resultCount.set (myagg.count);
-        resultSum.set (myagg.sum);
+        resultSum.set (myagg.sum.doubleValue());
         resultVariance.set (myagg.variance);
         return partialResult;
       }
@@ -521,4 +470,3 @@ public class <ClassName> extends VectorAggregateExpression {
     this.inputExpression = inputExpression;
   }
 }
-

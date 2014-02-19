@@ -16,8 +16,11 @@
 package org.apache.hadoop.hive.common.type;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
+
+import org.apache.hive.common.util.Decimal128FastBuffer;
 
 /**
  * This code was originally written for Microsoft PolyBase.
@@ -1373,6 +1376,30 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
   }
 
   /**
+   * Divides this value with the given value. This version is destructive,
+   * meaning it modifies this object.
+   *
+   * @param right
+   *          the value to divide
+   * @return remainder
+   */
+  public long divideDestructive(long right) {
+    assert (right >= 0);
+
+    long quotient;
+    long remainder = 0;
+
+    for (int i = INT_COUNT - 1; i >= 0; --i) {
+      remainder = ((this.v[i] & SqlMathUtil.LONG_MASK) + (remainder << 32));
+      quotient = remainder / right;
+      remainder %= right;
+      this.v[i] = (int) quotient;
+    }
+    updateCount();
+    return remainder;
+  }
+
+  /**
    * Right-shift for the given number of bits. This version is destructive,
    * meaning it modifies this object.
    *
@@ -2405,4 +2432,206 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
       this.count = (byte) 0;
     }
   }
+  
+   /*(non-Javadoc)
+   * Serializes one int part into the given @{link #ByteBuffer} 
+   *  considering two's complement for negatives.
+   */
+    private static void fastSerializeIntPartForHiveDecimal(ByteBuffer buf, 
+        int pos, int value, byte signum, boolean isFirstNonZero) {
+      if (signum == -1 && value != 0) {
+        value = (isFirstNonZero ? -value : ~value);
+      }
+      buf.putInt(pos, value);
+    }
+
+    /* (non-Javadoc)
+     * Serializes this value into the format used by @{link #java.math.BigInteger}
+     * This is used for fast assignment of a Decimal128 to a HiveDecimalWritable internal storage.
+     * See OpenJDK BigInteger.toByteArray for a reference implementation. 
+     * @param scratch
+     * @param signum
+     * @return
+     */
+  public int fastSerializeForHiveDecimal(Decimal128FastBuffer scratch, byte signum) {
+    int bufferUsed = this.count;
+    ByteBuffer buf = scratch.getByteBuffer(bufferUsed);
+    buf.put(0, (byte) (signum == 1 ? 0 : signum));
+    int pos = 1;
+    int firstNonZero = 0;
+    while(firstNonZero < this.count && v[firstNonZero] == 0) {
+        ++firstNonZero;
+    }
+    switch(this.count) {
+    case 4:
+      fastSerializeIntPartForHiveDecimal(buf, pos, v[3], signum, firstNonZero == 3);
+      pos+=4;
+      // intentional fall through
+    case 3:
+      fastSerializeIntPartForHiveDecimal(buf, pos, v[2], signum, firstNonZero == 2);
+      pos+=4;
+      // intentional fall through
+    case 2:
+      fastSerializeIntPartForHiveDecimal(buf, pos, v[1], signum, firstNonZero == 1);
+      pos+=4;
+      // intentional fall through
+    case 1:
+      fastSerializeIntPartForHiveDecimal(buf, pos, v[0], signum, true);
+    }
+    return bufferUsed;
+  }
+
+  /**
+   * Updates this value from a serialized unscaled {@link java.math.BigInteger} representation.
+   * This is used for fast update of a Decimal128 from a HiveDecimalWritable internal storage.
+   * @param internalStorage
+   * @return
+   */
+    public byte fastUpdateFromInternalStorage(byte[] internalStorage) {
+        byte signum = 0;
+        int skip = 0;
+        this.count = 0;
+        // Skip over any leading 0s or 0xFFs
+        byte firstByte = internalStorage[0];
+        if (firstByte == 0 || firstByte == -1) {
+            while((skip < internalStorage.length) &&
+              (internalStorage[skip] == firstByte)) {
+                ++skip;
+            }
+        }
+        if (skip == internalStorage.length) {
+          // The entire storage is 0x00s or 0xFFs
+          // 0x00s means is 0
+          // 0xFFs means is -1
+          assert (firstByte == 0 || firstByte == -1);
+          if (firstByte == -1) {
+             signum = -1;
+             this.count = 1;
+             this.v[0] = 1;
+          }
+          else {
+            signum = 0;
+          }
+        }
+        else {
+            // We skipped over leading 0x00s and 0xFFs
+            // Important, signum is given by the firstByte, not by byte[keep]!
+            signum = (firstByte < 0) ? (byte) -1 : (byte) 1;
+
+            // Now we read the big-endian compacted two's complement int parts
+            // Compacted means they are stripped of leading 0x00s and 0xFFs
+            // This is why we do the intLength/pos tricks bellow
+            // 'length' is all the bytes we have to read, after we skip 'skip'
+            // 'pos' is where to start reading the current int
+            // 'intLength' is how many bytes we read for the current int
+
+            int length = internalStorage.length - skip;
+            int pos = skip;
+            int intLength = 0;
+            switch(length) {
+            case 16: ++intLength; //intentional fall through
+            case 15: ++intLength;
+            case 14: ++intLength;
+            case 13: ++intLength;
+                v[3] = fastUpdateIntFromInternalStorage(internalStorage, signum, pos, intLength);
+                ++this.count;
+                pos += intLength;
+                intLength = 0;
+                //intentional fall through
+            case 12: ++intLength; //intentional fall through
+            case 11: ++intLength;
+            case 10: ++intLength;
+            case 9: ++intLength;
+                v[2] = fastUpdateIntFromInternalStorage(internalStorage, signum, pos, intLength);
+                ++this.count;
+                pos += intLength;
+                intLength = 0;
+                //intentional fall through
+            case 8: ++intLength; //intentional fall through
+            case 7: ++intLength;
+            case 6: ++intLength;
+            case 5: ++intLength;
+                v[1] = fastUpdateIntFromInternalStorage(internalStorage, signum, pos, intLength);
+                ++this.count;
+                pos += intLength;
+                intLength = 0;
+                //intentional fall through
+            case 4: ++intLength; //intentional fall through
+            case 3: ++intLength;
+            case 2: ++intLength;
+            case 1: ++intLength;
+                v[0] = fastUpdateIntFromInternalStorage(internalStorage, signum, pos, intLength);
+                ++this.count;
+                break;
+            default:
+                // This should not happen
+                throw new RuntimeException("Impossible HiveDecimal internal storage length!");
+            }
+            if (signum == -1) {
+                // So far we've read the one's complement
+                // add 1 to turn it into two's complement
+                for(int i = 0; i < this.count; ++i) {
+                    if (v[i] != 0) {
+                        v[i] = (int)((v[i] & 0xFFFFFFFFL) + 1);
+                        if (v[i] != 0) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return signum;
+    }
+
+    /**
+     * reads one int part from the two's complement Big-Endian compacted representation,
+     * starting from index pos
+     * @param internalStorage {@link java.math.BigInteger} serialized representation
+     * @param pos
+     * @return
+     */
+    private int fastUpdateIntFromInternalStorage(byte[] internalStorage,
+            byte signum, int pos, int length) {
+      // due to the way we use the allocation-free cast from HiveDecimalWriter to decimal128,
+      // we do not have the luxury of a ByteBuffer...
+      byte b0, b1, b2, b3;
+      if (signum == -1) {
+          b1=b2=b3 = (byte)-1;
+      }
+      else {
+          b1=b2=b3=0;
+      }
+      switch(length) {
+      case 4:
+          b3 = internalStorage[pos];
+          ++pos;
+          //intentional fall through
+      case 3:
+          b2 = internalStorage[pos];
+          ++pos;
+          //intentional fall through
+      case 2:
+          b1 = internalStorage[pos];
+          ++pos;
+          //intentional fall through
+      case 1:
+          b0 = internalStorage[pos];
+          break;
+      default:
+          // this should never happen
+          throw new RuntimeException("Impossible HiveDecimal internal storage position!");
+      }
+
+      int value = ((int)b0        & 0x000000FF) |
+              (((int)b1 <<  8) & 0x0000FF00) |
+              (((int)b2 << 16) & 0x00FF0000) |
+              (((int)b3 << 24) & 0xFF000000);
+
+      if (signum == -1 && value != 0) {
+          // Make one's complement, masked only for the bytes read
+          int mask = -1 >>> (8*(4-length));
+          value = ~value & mask;
+      }
+      return value;
+    }
 }

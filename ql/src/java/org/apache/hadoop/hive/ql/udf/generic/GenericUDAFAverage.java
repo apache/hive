@@ -174,15 +174,9 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo);
     }
 
-    /**
-     * The result type has the same number of integer digits and 4 more decimal digits.
-     */
     private DecimalTypeInfo deriveResultDecimalTypeInfo() {
       if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
-        int scale = inputOI.scale();
-        int intPart = inputOI.precision() - scale;
-        scale = Math.min(scale + 4, HiveDecimal.MAX_SCALE - intPart);
-        return TypeInfoFactory.getDecimalTypeInfo(intPart + scale, scale);
+        return GenericUDAFAverage.deriveSumTypeInfo(inputOI.scale(), inputOI.precision());
       } else {
         PrimitiveObjectInspector sfOI = (PrimitiveObjectInspector) sumFieldOI;
         return (DecimalTypeInfo) sfOI.getTypeInfo();
@@ -366,5 +360,18 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     public Object terminate(AggregationBuffer aggregation) throws HiveException {
       return doTerminate((AverageAggregationBuffer<TYPE>)aggregation);
     }
+  }
+
+  /**
+   * The result type has the same number of integer digits and 4 more decimal digits
+   * This is exposed as static so that the vectorized AVG operator use the same logic
+   * @param scale
+   * @param precision
+   * @return
+   */
+  public static DecimalTypeInfo deriveSumTypeInfo(int scale, int precision) {
+      int intPart = precision - scale;
+      scale = Math.min(scale + 4, HiveDecimal.MAX_SCALE - intPart);
+      return TypeInfoFactory.getDecimalTypeInfo(intPart + scale, scale);
   }
 }

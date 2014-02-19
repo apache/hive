@@ -18,21 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.Text;
 
 /**
 * <ClassName>. Vectorized implementation for MIN/MAX aggregates.
@@ -50,43 +49,34 @@ public class <ClassName> extends VectorAggregateExpression {
 
       private static final long serialVersionUID = 1L;
 
-      transient private final static int MIN_BUFFER_SIZE = 16;
-      transient private byte[] bytes = new byte[MIN_BUFFER_SIZE];
-      transient private int length;
+      transient private final Decimal128 value;
 
       /**
       * Value is explicitly (re)initialized in reset()
       */
       transient private boolean isNull = true;
 
-      public void checkValue(byte[] bytes, int start, int length) {
+      public Aggregation() {
+        value = new Decimal128();
+      }
+
+      public void checkValue(Decimal128 value) {
         if (isNull) {
           isNull = false;
-          assign(bytes, start, length);
-        } else if (StringExpr.compare(
-                bytes, start, length,
-                this.bytes, 0, this.length) <OperatorSymbol> 0) {
-          assign(bytes, start, length);
+          this.value.update(value);
+        } else if (this.value.compareTo(value) <OperatorSymbol> 0) {
+          this.value.update(value);
         }
       }
 
-      public void assign(byte[] bytes, int start, int length) {
-        // Avoid new allocation if possible
-        if (this.bytes.length < length) {
-          this.bytes = new byte[length];
-        }
-        System.arraycopy(bytes, start, this.bytes, 0, length);
-        this.length = length;
-      }
       @Override
       public int getVariableSize() {
-        JavaDataModel model = JavaDataModel.get();
-        return model.lengthForByteArrayOfSize(bytes.length);
+        throw new UnsupportedOperationException();
       }
     }
 
     private VectorExpression inputExpression;
-    transient private Text result;
+    private transient VectorExpressionWriter resultWriter;
 
     public <ClassName>(VectorExpression inputExpression) {
       this();
@@ -95,7 +85,12 @@ public class <ClassName> extends VectorAggregateExpression {
 
     public <ClassName>() {
       super();
-      result = new Text();
+    }
+
+    @Override
+    public void init(AggregationDesc desc) throws HiveException {
+      resultWriter = VectorExpressionWriterFactory.genVectorExpressionWritable(
+          desc.getParameters().get(0));
     }
 
     private Aggregation getCurrentAggregationBuffer(
@@ -107,7 +102,7 @@ public class <ClassName> extends VectorAggregateExpression {
       return myagg;
     }
 
-@Override
+    @Override
     public void aggregateInputSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex,
@@ -121,37 +116,46 @@ public class <ClassName> extends VectorAggregateExpression {
 
       inputExpression.evaluate(batch);
 
-      BytesColumnVector inputColumn = (BytesColumnVector)batch.
+      DecimalColumnVector inputVector = (DecimalColumnVector)batch.
         cols[this.inputExpression.getOutputColumn()];
+      Decimal128[] vector = inputVector.vector;
 
-      if (inputColumn.noNulls) {
-        if (inputColumn.isRepeating) {
+      if (inputVector.noNulls) {
+        if (inputVector.isRepeating) {
           iterateNoNullsRepeatingWithAggregationSelection(
             aggregationBufferSets, aggregrateIndex,
-            inputColumn, batchSize);
+            vector[0], batchSize);
         } else {
           if (batch.selectedInUse) {
             iterateNoNullsSelectionWithAggregationSelection(
               aggregationBufferSets, aggregrateIndex,
-              inputColumn, batch.selected, batchSize);
+              vector, batch.selected, batchSize);
           } else {
             iterateNoNullsWithAggregationSelection(
               aggregationBufferSets, aggregrateIndex,
-              inputColumn, batchSize);
+              vector, batchSize);
           }
         }
       } else {
-        if (inputColumn.isRepeating) {
-          // All nulls, no-op for min/max
+        if (inputVector.isRepeating) {
+          if (batch.selectedInUse) {
+            iterateHasNullsRepeatingSelectionWithAggregationSelection(
+              aggregationBufferSets, aggregrateIndex,
+              vector[0], batchSize, batch.selected, inputVector.isNull);
+          } else {
+            iterateHasNullsRepeatingWithAggregationSelection(
+              aggregationBufferSets, aggregrateIndex,
+              vector[0], batchSize, inputVector.isNull);
+          }
         } else {
           if (batch.selectedInUse) {
             iterateHasNullsSelectionWithAggregationSelection(
               aggregationBufferSets, aggregrateIndex,
-              inputColumn, batchSize, batch.selected);
+              vector, batchSize, batch.selected, inputVector.isNull);
           } else {
             iterateHasNullsWithAggregationSelection(
               aggregationBufferSets, aggregrateIndex,
-              inputColumn, batchSize);
+              vector, batchSize, inputVector.isNull);
           }
         }
       }
@@ -160,73 +164,102 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateNoNullsRepeatingWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex,
-      BytesColumnVector inputColumn,
+      Decimal128 value,
       int batchSize) {
 
-      byte[] bytes = inputColumn.vector[0];
-      int start = inputColumn.start[0];
-      int length = inputColumn.length[0];
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(bytes, start, length);
+        myagg.checkValue(value);
       }
     }
 
     private void iterateNoNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex,
-      BytesColumnVector inputColumn,
+      Decimal128[] values,
       int[] selection,
       int batchSize) {
 
       for (int i=0; i < batchSize; ++i) {
-        int row = selection[i];
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(inputColumn.vector[row],
-          inputColumn.start[row],
-          inputColumn.length[row]);
+        myagg.checkValue(values[selection[i]]);
       }
     }
 
     private void iterateNoNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex,
-      BytesColumnVector inputColumn,
+      Decimal128[] values,
       int batchSize) {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(inputColumn.vector[i],
-          inputColumn.start[i],
-          inputColumn.length[i]);
+        myagg.checkValue(values[i]);
+      }
+    }
+
+    private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int aggregrateIndex,
+      Decimal128 value,
+      int batchSize,
+      int[] selection,
+      boolean[] isNull) {
+
+      for (int i=0; i < batchSize; ++i) {
+        if (!isNull[selection[i]]) {
+          Aggregation myagg = getCurrentAggregationBuffer(
+            aggregationBufferSets,
+            aggregrateIndex,
+            i);
+          myagg.checkValue(value);
+        }
+      }
+
+    }
+
+    private void iterateHasNullsRepeatingWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int aggregrateIndex,
+      Decimal128 value,
+      int batchSize,
+      boolean[] isNull) {
+
+      for (int i=0; i < batchSize; ++i) {
+        if (!isNull[i]) {
+          Aggregation myagg = getCurrentAggregationBuffer(
+            aggregationBufferSets,
+            aggregrateIndex,
+            i);
+          myagg.checkValue(value);
+        }
       }
     }
 
     private void iterateHasNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex,
-      BytesColumnVector inputColumn,
+      Decimal128[] values,
       int batchSize,
-      int[] selection) {
+      int[] selection,
+      boolean[] isNull) {
 
-      for (int i=0; i < batchSize; ++i) {
-        int row = selection[i];
-        if (!inputColumn.isNull[row]) {
+      for (int j=0; j < batchSize; ++j) {
+        int i = selection[j];
+        if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
             aggregationBufferSets,
             aggregrateIndex,
-            i);
-          myagg.checkValue(inputColumn.vector[row],
-            inputColumn.start[row],
-            inputColumn.length[row]);
+            j);
+          myagg.checkValue(values[i]);
         }
       }
    }
@@ -234,18 +267,17 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateHasNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex,
-      BytesColumnVector inputColumn,
-      int batchSize) {
+      Decimal128[] values,
+      int batchSize,
+      boolean[] isNull) {
 
       for (int i=0; i < batchSize; ++i) {
-        if (!inputColumn.isNull[i]) {
+        if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
             aggregationBufferSets,
             aggregrateIndex,
             i);
-          myagg.checkValue(inputColumn.vector[i],
-            inputColumn.start[i],
-            inputColumn.length[i]);
+          myagg.checkValue(values[i]);
         }
       }
    }
@@ -256,7 +288,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
         inputExpression.evaluate(batch);
 
-        BytesColumnVector inputColumn = (BytesColumnVector)batch.
+        DecimalColumnVector inputVector = (DecimalColumnVector)batch.
             cols[this.inputExpression.getOutputColumn()];
 
         int batchSize = batch.size;
@@ -267,80 +299,106 @@ public class <ClassName> extends VectorAggregateExpression {
 
         Aggregation myagg = (Aggregation)agg;
 
-        if (inputColumn.isRepeating) {
-          if (inputColumn.noNulls) {
-            myagg.checkValue(inputColumn.vector[0],
-              inputColumn.start[0],
-              inputColumn.length[0]);
+        Decimal128[] vector = inputVector.vector;
+
+        if (inputVector.isRepeating) {
+          if (inputVector.noNulls &&
+            (myagg.isNull || (myagg.value.compareTo(vector[0]) <OperatorSymbol> 0))) {
+            myagg.isNull = false;
+            myagg.value.update(vector[0]);
           }
           return;
         }
 
-        if (!batch.selectedInUse && inputColumn.noNulls) {
-          iterateNoSelectionNoNulls(myagg, inputColumn, batchSize);
+        if (!batch.selectedInUse && inputVector.noNulls) {
+          iterateNoSelectionNoNulls(myagg, vector, batchSize);
         }
         else if (!batch.selectedInUse) {
-          iterateNoSelectionHasNulls(myagg, inputColumn, batchSize);
+          iterateNoSelectionHasNulls(myagg, vector, batchSize, inputVector.isNull);
         }
-        else if (inputColumn.noNulls){
-          iterateSelectionNoNulls(myagg, inputColumn, batchSize, batch.selected);
+        else if (inputVector.noNulls){
+          iterateSelectionNoNulls(myagg, vector, batchSize, batch.selected);
         }
         else {
-          iterateSelectionHasNulls(myagg, inputColumn, batchSize, batch.selected);
+          iterateSelectionHasNulls(myagg, vector, batchSize, inputVector.isNull, batch.selected);
         }
     }
 
     private void iterateSelectionHasNulls(
         Aggregation myagg,
-        BytesColumnVector inputColumn,
+        Decimal128[] vector,
         int batchSize,
+        boolean[] isNull,
         int[] selected) {
 
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
-        if (!inputColumn.isNull[i]) {
-          myagg.checkValue(inputColumn.vector[i],
-            inputColumn.start[i],
-            inputColumn.length[i]);
+        if (!isNull[i]) {
+          Decimal128 value = vector[i];
+          if (myagg.isNull) {
+            myagg.isNull = false;
+            myagg.value.update(value);
+          }
+          else if (myagg.value.compareTo(value) <OperatorSymbol> 0) {
+            myagg.value.update(value);
+          }
         }
       }
     }
 
     private void iterateSelectionNoNulls(
         Aggregation myagg,
-        BytesColumnVector inputColumn,
+        Decimal128[] vector,
         int batchSize,
         int[] selected) {
 
+      if (myagg.isNull) {
+        myagg.value.update(vector[selected[0]]);
+        myagg.isNull = false;
+      }
+
       for (int i=0; i< batchSize; ++i) {
-        myagg.checkValue(inputColumn.vector[i],
-          inputColumn.start[i],
-          inputColumn.length[i]);
+        Decimal128 value = vector[selected[i]];
+        if (myagg.value.compareTo(value) <OperatorSymbol> 0) {
+          myagg.value.update(value);
+        }
       }
     }
 
     private void iterateNoSelectionHasNulls(
         Aggregation myagg,
-        BytesColumnVector inputColumn,
-        int batchSize) {
+        Decimal128[] vector,
+        int batchSize,
+        boolean[] isNull) {
 
-      for (int i=0; i< batchSize; ++i) {
-        if (!inputColumn.isNull[i]) {
-          myagg.checkValue(inputColumn.vector[i],
-            inputColumn.start[i],
-            inputColumn.length[i]);
+      for(int i=0;i<batchSize;++i) {
+        if (!isNull[i]) {
+          Decimal128 value = vector[i];
+          if (myagg.isNull) {
+            myagg.value.update(value);
+            myagg.isNull = false;
+          }
+          else if (myagg.value.compareTo(value) <OperatorSymbol> 0) {
+            myagg.value.update(value);
+          }
         }
       }
     }
 
     private void iterateNoSelectionNoNulls(
         Aggregation myagg,
-        BytesColumnVector inputColumn,
+        Decimal128[] vector,
         int batchSize) {
-      for (int i=0; i< batchSize; ++i) {
-        myagg.checkValue(inputColumn.vector[i],
-          inputColumn.start[i],
-          inputColumn.length[i]);
+      if (myagg.isNull) {
+        myagg.value.update(vector[0]);
+        myagg.isNull = false;
+      }
+
+      for (int i=0;i<batchSize;++i) {
+        Decimal128 value = vector[i];
+        if (myagg.value.compareTo(value) <OperatorSymbol> 0) {
+          myagg.value.update(value);
+        }
       }
     }
 
@@ -363,42 +421,30 @@ public class <ClassName> extends VectorAggregateExpression {
         return null;
       }
       else {
-        result.set(myagg.bytes, 0, myagg.length);
-        return result;
+        return resultWriter.writeValue(myagg.value);
       }
     }
 
     @Override
     public ObjectInspector getOutputObjectInspector() {
-      return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+      return resultWriter.getObjectInspector();
     }
 
     @Override
     public int getAggregationBufferFixedSize() {
-      JavaDataModel model = JavaDataModel.get();
-      return JavaDataModel.alignUp(
-        model.object() +
-        model.ref()+
-        model.primitive1()*2,
-        model.memoryAlign());
-    }
+    JavaDataModel model = JavaDataModel.get();
+    return JavaDataModel.alignUp(
+      model.object() +
+      model.primitive2(),
+      model.memoryAlign());
+  }
 
-    @Override
-    public boolean hasVariableSize() {
-      return true;
-    }
+  public VectorExpression getInputExpression() {
+    return inputExpression;
+  }
 
-    @Override
-    public void init(AggregationDesc desc) throws HiveException {
-      // No-op
-    }
-
-    public VectorExpression getInputExpression() {
-      return inputExpression;
-    }
-
-    public void setInputExpression(VectorExpression inputExpression) {
-      this.inputExpression = inputExpression;
-    }
+  public void setInputExpression(VectorExpression inputExpression) {
+    this.inputExpression = inputExpression;
+  }
 }
 
