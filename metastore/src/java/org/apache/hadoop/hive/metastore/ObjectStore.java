@@ -71,6 +71,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -103,6 +105,7 @@ import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MDelegationToken;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
+import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
@@ -6374,4 +6377,188 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return sb.toString();
   }
+
+  private Function convertToFunction(MFunction mfunc) {
+    if (mfunc == null) {
+      return null;
+    }
+
+    Function func = new Function(mfunc.getFunctionName(),
+        mfunc.getDatabase().getName(),
+        mfunc.getClassName(),
+        mfunc.getOwnerName(),
+        PrincipalType.valueOf(mfunc.getOwnerType()),
+        mfunc.getCreateTime(),
+        FunctionType.findByValue(mfunc.getFunctionType()));
+    return func;
+  }
+
+  private MFunction convertToMFunction(Function func) throws InvalidObjectException {
+    if (func == null) {
+      return null;
+    }
+
+    MDatabase mdb = null;
+    try {
+      mdb = getMDatabase(func.getDbName());
+    } catch (NoSuchObjectException e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new InvalidObjectException("Database " + func.getDbName() + " doesn't exist.");
+    }
+
+    MFunction mfunc = new MFunction(func.getFunctionName(),
+        mdb,
+        func.getClassName(),
+        func.getOwnerName(),
+        func.getOwnerType().name(),
+        func.getCreateTime(),
+        func.getFunctionType().getValue());
+    return mfunc;
+  }
+
+  public void createFunction(Function func) throws InvalidObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MFunction mfunc = convertToMFunction(func);
+      pm.makePersistent(mfunc);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  public void alterFunction(String dbName, String funcName, Function newFunction)
+      throws InvalidObjectException, MetaException {
+    boolean success = false;
+    try {
+      openTransaction();
+      funcName = funcName.toLowerCase();
+      dbName = dbName.toLowerCase();
+      MFunction newf = convertToMFunction(newFunction);
+      if (newf == null) {
+        throw new InvalidObjectException("new function is invalid");
+      }
+
+      MFunction oldf = getMFunction(dbName, funcName);
+      if (oldf == null) {
+        throw new MetaException("function " + funcName + " doesn't exist");
+      }
+
+      // For now only alter name, owner, class name, type
+      oldf.setFunctionName(newf.getFunctionName().toLowerCase());
+      oldf.setDatabase(newf.getDatabase());
+      oldf.setOwnerName(newf.getOwnerName());
+      oldf.setOwnerType(newf.getOwnerType());
+      oldf.setClassName(newf.getClassName());
+      oldf.setFunctionType(newf.getFunctionType());
+
+      // commit the changes
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  public void dropFunction(String dbName, String funcName) throws MetaException,
+  NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean success = false;
+    try {
+      openTransaction();
+      MFunction mfunc = getMFunction(dbName, funcName);
+      pm.retrieve(mfunc);
+      if (mfunc != null) {
+        // TODO: When function privileges are implemented, they should be deleted here.
+        pm.deletePersistentAll(mfunc);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MFunction getMFunction(String db, String function) {
+    MFunction mfunc = null;
+    boolean commited = false;
+    try {
+      openTransaction();
+      db = db.toLowerCase().trim();
+      function = function.toLowerCase().trim();
+      Query query = pm.newQuery(MFunction.class, "functionName == function && database.name == db");
+      query.declareParameters("java.lang.String function, java.lang.String db");
+      query.setUnique(true);
+      mfunc = (MFunction) query.execute(function, db);
+      pm.retrieve(mfunc);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return mfunc;
+  }
+
+  public Function getFunction(String dbName, String funcName) throws MetaException {
+    boolean commited = false;
+    Function func = null;
+    try {
+      openTransaction();
+      func = convertToFunction(getMFunction(dbName, funcName));
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return func;
+  }
+
+  public List<String> getFunctions(String dbName, String pattern)
+      throws MetaException {
+    boolean commited = false;
+    List<String> funcs = null;
+    try {
+      openTransaction();
+      dbName = dbName.toLowerCase().trim();
+      // Take the pattern and split it on the | to get all the composing
+      // patterns
+      String[] subpatterns = pattern.trim().split("\\|");
+      String query =
+        "select functionName from org.apache.hadoop.hive.metastore.model.MFunction "
+        + "where database.name == dbName && (";
+      boolean first = true;
+      for (String subpattern : subpatterns) {
+        subpattern = "(?i)" + subpattern.replaceAll("\\*", ".*");
+        if (!first) {
+          query = query + " || ";
+        }
+        query = query + " functionName.matches(\"" + subpattern + "\")";
+        first = false;
+      }
+      query = query + ")";
+
+      Query q = pm.newQuery(query);
+      q.declareParameters("java.lang.String dbName");
+      q.setResult("functionName");
+      q.setOrdering("functionName ascending");
+      Collection names = (Collection) q.execute(dbName);
+      funcs = new ArrayList<String>();
+      for (Iterator i = names.iterator(); i.hasNext();) {
+        funcs.add((String) i.next());
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return funcs;
+  }
+
 }

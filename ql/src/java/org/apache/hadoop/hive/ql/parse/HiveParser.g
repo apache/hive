@@ -215,6 +215,7 @@ TOK_CREATEFUNCTION;
 TOK_DROPFUNCTION;
 TOK_CREATEMACRO;
 TOK_DROPMACRO;
+TOK_TEMPORARY;
 TOK_CREATEVIEW;
 TOK_DROPVIEW;
 TOK_ALTERVIEW_AS;
@@ -1496,15 +1497,17 @@ metastoreCheck
 createFunctionStatement
 @init { pushMsg("create function statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE KW_TEMPORARY KW_FUNCTION functionIdentifier KW_AS StringLiteral
-    -> ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral)
+    : KW_CREATE (temp=KW_TEMPORARY)? KW_FUNCTION functionIdentifier KW_AS StringLiteral
+    -> {$temp != null}? ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral TOK_TEMPORARY)
+    ->                  ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral)
     ;
 
 dropFunctionStatement
-@init { pushMsg("drop temporary function statement", state); }
+@init { pushMsg("drop function statement", state); }
 @after { popMsg(state); }
-    : KW_DROP KW_TEMPORARY KW_FUNCTION ifExists? functionIdentifier
-    -> ^(TOK_DROPFUNCTION functionIdentifier ifExists?)
+    : KW_DROP (temp=KW_TEMPORARY)? KW_FUNCTION ifExists? functionIdentifier
+    -> {$temp != null}? ^(TOK_DROPFUNCTION functionIdentifier ifExists? TOK_TEMPORARY)
+    ->                  ^(TOK_DROPFUNCTION functionIdentifier ifExists?)
     ;
 
 createMacroStatement

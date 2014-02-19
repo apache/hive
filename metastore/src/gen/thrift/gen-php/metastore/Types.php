@@ -49,6 +49,13 @@ final class PartitionEventType {
   );
 }
 
+final class FunctionType {
+  const JAVA = 1;
+  static public $__names = array(
+    1 => 'JAVA',
+  );
+}
+
 class Version {
   static $_TSPEC;
 
@@ -6681,6 +6688,198 @@ class DropPartitionsRequest {
     if ($this->needResult !== null) {
       $xfer += $output->writeFieldBegin('needResult', TType::BOOL, 8);
       $xfer += $output->writeBool($this->needResult);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class Function {
+  static $_TSPEC;
+
+  public $functionName = null;
+  public $dbName = null;
+  public $className = null;
+  public $ownerName = null;
+  public $ownerType = null;
+  public $createTime = null;
+  public $functionType = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'functionName',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'dbName',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'className',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'ownerName',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'ownerType',
+          'type' => TType::I32,
+          ),
+        6 => array(
+          'var' => 'createTime',
+          'type' => TType::I32,
+          ),
+        7 => array(
+          'var' => 'functionType',
+          'type' => TType::I32,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['functionName'])) {
+        $this->functionName = $vals['functionName'];
+      }
+      if (isset($vals['dbName'])) {
+        $this->dbName = $vals['dbName'];
+      }
+      if (isset($vals['className'])) {
+        $this->className = $vals['className'];
+      }
+      if (isset($vals['ownerName'])) {
+        $this->ownerName = $vals['ownerName'];
+      }
+      if (isset($vals['ownerType'])) {
+        $this->ownerType = $vals['ownerType'];
+      }
+      if (isset($vals['createTime'])) {
+        $this->createTime = $vals['createTime'];
+      }
+      if (isset($vals['functionType'])) {
+        $this->functionType = $vals['functionType'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Function';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->functionName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->className);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ownerName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->ownerType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->createTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->functionType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Function');
+    if ($this->functionName !== null) {
+      $xfer += $output->writeFieldBegin('functionName', TType::STRING, 1);
+      $xfer += $output->writeString($this->functionName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->dbName !== null) {
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 2);
+      $xfer += $output->writeString($this->dbName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->className !== null) {
+      $xfer += $output->writeFieldBegin('className', TType::STRING, 3);
+      $xfer += $output->writeString($this->className);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ownerName !== null) {
+      $xfer += $output->writeFieldBegin('ownerName', TType::STRING, 4);
+      $xfer += $output->writeString($this->ownerName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ownerType !== null) {
+      $xfer += $output->writeFieldBegin('ownerType', TType::I32, 5);
+      $xfer += $output->writeI32($this->ownerType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->createTime !== null) {
+      $xfer += $output->writeFieldBegin('createTime', TType::I32, 6);
+      $xfer += $output->writeI32($this->createTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->functionType !== null) {
+      $xfer += $output->writeFieldBegin('functionType', TType::I32, 7);
+      $xfer += $output->writeI32($this->functionType);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

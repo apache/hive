@@ -1,0 +1,3 @@
+PREHOOK: query: create function nonexistentdb.badfunc as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+PREHOOK: type: CREATEFUNCTION
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask. NoSuchObjectException(message:There is no database named nonexistentdb)

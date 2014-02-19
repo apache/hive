@@ -1403,7 +1403,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
                 struct.partitionKeys = new ArrayList<FieldSchema>(_list174.size);
                 for (int _i175 = 0; _i175 < _list174.size; ++_i175)
                 {
-                  FieldSchema _elem176; // required
+                  FieldSchema _elem176; // optional
                   _elem176 = new FieldSchema();
                   _elem176.read(iprot);
                   struct.partitionKeys.add(_elem176);
@@ -1708,7 +1708,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           struct.partitionKeys = new ArrayList<FieldSchema>(_list185.size);
           for (int _i186 = 0; _i186 < _list185.size; ++_i186)
           {
-            FieldSchema _elem187; // required
+            FieldSchema _elem187; // optional
             _elem187 = new FieldSchema();
             _elem187.read(iprot);
             struct.partitionKeys.add(_elem187);

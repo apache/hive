@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
@@ -486,4 +487,56 @@ public interface RawStore extends Configurable {
 
   List<HiveObjectPrivilege> listTableColumnGrantsAll(
       String dbName, String tableName, String columnName);
+
+  /**
+   * Register a user-defined function based on the function specification passed in.
+   * @param func
+   * @throws InvalidObjectException
+   * @throws MetaException
+   */
+  public void createFunction(Function func)
+      throws InvalidObjectException, MetaException;
+
+  /**
+   * Alter function based on new function specs.
+   * @param dbName
+   * @param name
+   * @param newFunction
+   * @throws InvalidObjectException
+   * @throws MetaException
+   */
+  public void alterFunction(String dbName, String funcName, Function newFunction)
+      throws InvalidObjectException, MetaException;
+
+  /**
+   * Drop a function definition.
+   * @param dbName
+   * @param functionName
+   * @return
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws InvalidObjectException
+   * @throws InvalidInputException
+   */
+  public void dropFunction(String dbName, String funcName)
+      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
+
+  /**
+   * Retrieve function by name.
+   * @param dbName
+   * @param functionName
+   * @return
+   * @throws MetaException
+   */
+  public Function getFunction(String dbName, String funcName) throws MetaException;
+
+  /**
+   * Retrieve list of function names based on name pattern.
+   * @param dbName
+   * @param pattern
+   * @return
+   * @throws MetaException
+   */
+  public List<String> getFunctions(String dbName, String pattern) throws MetaException;
+
 }

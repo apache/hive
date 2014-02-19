@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -1003,6 +1004,21 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   public void cancelDelegationToken(String tokenStrForm) throws MetaException, TException;
+
+  public void createFunction(Function func)
+      throws InvalidObjectException, MetaException, TException;
+
+  public void alterFunction(String dbName, String funcName, Function newFunction)
+      throws InvalidObjectException, MetaException, TException;
+
+  public void dropFunction(String dbName, String funcName) throws MetaException,
+      NoSuchObjectException, InvalidObjectException, InvalidInputException, TException;
+
+  public Function getFunction(String dbName, String funcName)
+      throws MetaException, TException;
+
+  public List<String> getFunctions(String dbName, String pattern)
+      throws MetaException, TException;
 
 
   public class IncompatibleMetastoreException extends MetaException {

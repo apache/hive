@@ -346,7 +346,7 @@ public class AddPartitionsResult implements org.apache.thrift.TBase<AddPartition
                 struct.partitions = new ArrayList<Partition>(_list314.size);
                 for (int _i315 = 0; _i315 < _list314.size; ++_i315)
                 {
-                  Partition _elem316; // required
+                  Partition _elem316; // optional
                   _elem316 = new Partition();
                   _elem316.read(iprot);
                   struct.partitions.add(_elem316);
@@ -428,7 +428,7 @@ public class AddPartitionsResult implements org.apache.thrift.TBase<AddPartition
           struct.partitions = new ArrayList<Partition>(_list319.size);
           for (int _i320 = 0; _i320 < _list319.size; ++_i320)
           {
-            Partition _elem321; // required
+            Partition _elem321; // optional
             _elem321 = new Partition();
             _elem321.read(iprot);
             struct.partitions.add(_elem321);

@@ -1,0 +1,91 @@
+PREHOOK: query: -- qtest_get_java_boolean should already be created during test initialization
+select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- qtest_get_java_boolean should already be created during test initialization
+select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true	false
+PREHOOK: query: create database mydb
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database mydb
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: show functions mydb.func1
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: show functions mydb.func1
+POSTHOOK: type: SHOWFUNCTIONS
+mydb.func1
+PREHOOK: query: select mydb.func1('abc') from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select mydb.func1('abc') from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+ABC
+PREHOOK: query: drop function mydb.func1
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: drop function mydb.func1
+POSTHOOK: type: DROPFUNCTION
+PREHOOK: query: -- function should now be gone
+show functions mydb.func1
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: -- function should now be gone
+show functions mydb.func1
+POSTHOOK: type: SHOWFUNCTIONS
+PREHOOK: query: -- To test function name resolution
+create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: -- To test function name resolution
+create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: -- unqualified function should resolve to one in default db
+select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- unqualified function should resolve to one in default db
+select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	NULL	ABC
+PREHOOK: query: use mydb
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use mydb
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: -- unqualified function should resolve to one in mydb db
+select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- unqualified function should resolve to one in mydb db
+select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+ABC	NULL	ABC
+PREHOOK: query: drop function mydb.qtest_get_java_boolean
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: drop function mydb.qtest_get_java_boolean
+POSTHOOK: type: DROPFUNCTION
+PREHOOK: query: drop database mydb cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:mydb
+PREHOOK: Output: database:mydb
+POSTHOOK: query: drop database mydb cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:mydb
+POSTHOOK: Output: database:mydb

@@ -356,6 +356,21 @@ struct DropPartitionsRequest {
   8: optional bool needResult=true
 }
 
+enum FunctionType {
+  JAVA = 1,
+}
+
+// User-defined function
+struct Function {
+  1: string           functionName,
+  2: string           dbName,
+  3: string           className,
+  4: string           ownerName,
+  5: PrincipalType    ownerType,
+  6: i32              createTime,
+  7: FunctionType     functionType,
+}
+
 exception MetaException {
   1: string message
 }
@@ -692,6 +707,27 @@ service ThriftHiveMetastore extends fb303.FacebookService
   bool delete_table_column_statistics(1:string db_name, 2:string tbl_name, 3:string col_name) throws
               (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
                4:InvalidInputException o4)
+
+  //
+  // user-defined functions
+  //
+
+  void create_function(1:Function func)
+      throws (1:AlreadyExistsException o1,
+              2:InvalidObjectException o2,
+              3:MetaException o3,
+              4:NoSuchObjectException o4)
+
+  void drop_function(1:string dbName, 2:string funcName)
+      throws (1:NoSuchObjectException o1, 2:MetaException o3)
+
+  void alter_function(1:string dbName, 2:string funcName, 3:Function newFunc)
+      throws (1:InvalidOperationException o1, 2:MetaException o2)
+
+  list<string> get_functions(1:string dbName, 2:string pattern)
+      throws (1:MetaException o1)
+  Function get_function(1:string dbName, 2:string funcName)
+      throws (1:MetaException o1, 2:NoSuchObjectException o2)
 
   //authorization privileges
 

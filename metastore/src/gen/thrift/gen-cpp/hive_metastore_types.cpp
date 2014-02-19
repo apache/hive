@@ -46,6 +46,14 @@ const char* _kPartitionEventTypeNames[] = {
 };
 const std::map<int, const char*> _PartitionEventType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(1, _kPartitionEventTypeValues, _kPartitionEventTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
+int _kFunctionTypeValues[] = {
+  FunctionType::JAVA
+};
+const char* _kFunctionTypeNames[] = {
+  "JAVA"
+};
+const std::map<int, const char*> _FunctionType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(1, _kFunctionTypeValues, _kFunctionTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
 const char* Version::ascii_fingerprint = "07A9615F837F7D0A952B595DD3020972";
 const uint8_t Version::binary_fingerprint[16] = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
 
@@ -5175,6 +5183,150 @@ void swap(DropPartitionsRequest &a, DropPartitionsRequest &b) {
   swap(a.ignoreProtection, b.ignoreProtection);
   swap(a.environmentContext, b.environmentContext);
   swap(a.needResult, b.needResult);
+  swap(a.__isset, b.__isset);
+}
+
+const char* Function::ascii_fingerprint = "86DDA615E907A95BA1CF7EDB4925A7F5";
+const uint8_t Function::binary_fingerprint[16] = {0x86,0xDD,0xA6,0x15,0xE9,0x07,0xA9,0x5B,0xA1,0xCF,0x7E,0xDB,0x49,0x25,0xA7,0xF5};
+
+uint32_t Function::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->functionName);
+          this->__isset.functionName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          this->__isset.dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->className);
+          this->__isset.className = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->ownerName);
+          this->__isset.ownerName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast276;
+          xfer += iprot->readI32(ecast276);
+          this->ownerType = (PrincipalType::type)ecast276;
+          this->__isset.ownerType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->createTime);
+          this->__isset.createTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast277;
+          xfer += iprot->readI32(ecast277);
+          this->functionType = (FunctionType::type)ecast277;
+          this->__isset.functionType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Function::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("Function");
+
+  xfer += oprot->writeFieldBegin("functionName", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->functionName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("className", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->className);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("ownerName", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->ownerName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("ownerType", ::apache::thrift::protocol::T_I32, 5);
+  xfer += oprot->writeI32((int32_t)this->ownerType);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("createTime", ::apache::thrift::protocol::T_I32, 6);
+  xfer += oprot->writeI32(this->createTime);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("functionType", ::apache::thrift::protocol::T_I32, 7);
+  xfer += oprot->writeI32((int32_t)this->functionType);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(Function &a, Function &b) {
+  using ::std::swap;
+  swap(a.functionName, b.functionName);
+  swap(a.dbName, b.dbName);
+  swap(a.className, b.className);
+  swap(a.ownerName, b.ownerName);
+  swap(a.ownerType, b.ownerType);
+  swap(a.createTime, b.createTime);
+  swap(a.functionType, b.functionType);
   swap(a.__isset, b.__isset);
 }
 

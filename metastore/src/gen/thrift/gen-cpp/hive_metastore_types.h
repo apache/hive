@@ -47,6 +47,14 @@ struct PartitionEventType {
 
 extern const std::map<int, const char*> _PartitionEventType_VALUES_TO_NAMES;
 
+struct FunctionType {
+  enum type {
+    JAVA = 1
+  };
+};
+
+extern const std::map<int, const char*> _FunctionType_VALUES_TO_NAMES;
+
 typedef struct _Version__isset {
   _Version__isset() : version(false), comments(false) {}
   bool version;
@@ -2734,6 +2742,97 @@ class DropPartitionsRequest {
 };
 
 void swap(DropPartitionsRequest &a, DropPartitionsRequest &b);
+
+typedef struct _Function__isset {
+  _Function__isset() : functionName(false), dbName(false), className(false), ownerName(false), ownerType(false), createTime(false), functionType(false) {}
+  bool functionName;
+  bool dbName;
+  bool className;
+  bool ownerName;
+  bool ownerType;
+  bool createTime;
+  bool functionType;
+} _Function__isset;
+
+class Function {
+ public:
+
+  static const char* ascii_fingerprint; // = "86DDA615E907A95BA1CF7EDB4925A7F5";
+  static const uint8_t binary_fingerprint[16]; // = {0x86,0xDD,0xA6,0x15,0xE9,0x07,0xA9,0x5B,0xA1,0xCF,0x7E,0xDB,0x49,0x25,0xA7,0xF5};
+
+  Function() : functionName(), dbName(), className(), ownerName(), ownerType((PrincipalType::type)0), createTime(0), functionType((FunctionType::type)0) {
+  }
+
+  virtual ~Function() throw() {}
+
+  std::string functionName;
+  std::string dbName;
+  std::string className;
+  std::string ownerName;
+  PrincipalType::type ownerType;
+  int32_t createTime;
+  FunctionType::type functionType;
+
+  _Function__isset __isset;
+
+  void __set_functionName(const std::string& val) {
+    functionName = val;
+  }
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_className(const std::string& val) {
+    className = val;
+  }
+
+  void __set_ownerName(const std::string& val) {
+    ownerName = val;
+  }
+
+  void __set_ownerType(const PrincipalType::type val) {
+    ownerType = val;
+  }
+
+  void __set_createTime(const int32_t val) {
+    createTime = val;
+  }
+
+  void __set_functionType(const FunctionType::type val) {
+    functionType = val;
+  }
+
+  bool operator == (const Function & rhs) const
+  {
+    if (!(functionName == rhs.functionName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(className == rhs.className))
+      return false;
+    if (!(ownerName == rhs.ownerName))
+      return false;
+    if (!(ownerType == rhs.ownerType))
+      return false;
+    if (!(createTime == rhs.createTime))
+      return false;
+    if (!(functionType == rhs.functionType))
+      return false;
+    return true;
+  }
+  bool operator != (const Function &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Function & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(Function &a, Function &b);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

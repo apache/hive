@@ -387,6 +387,31 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("delete_table_column_statistics\n");
   }
 
+  void create_function(const Function& func) {
+    // Your implementation goes here
+    printf("create_function\n");
+  }
+
+  void drop_function(const std::string& dbName, const std::string& funcName) {
+    // Your implementation goes here
+    printf("drop_function\n");
+  }
+
+  void alter_function(const std::string& dbName, const std::string& funcName, const Function& newFunc) {
+    // Your implementation goes here
+    printf("alter_function\n");
+  }
+
+  void get_functions(std::vector<std::string> & _return, const std::string& dbName, const std::string& pattern) {
+    // Your implementation goes here
+    printf("get_functions\n");
+  }
+
+  void get_function(Function& _return, const std::string& dbName, const std::string& funcName) {
+    // Your implementation goes here
+    printf("get_function\n");
+  }
+
   bool create_role(const Role& role) {
     // Your implementation goes here
     printf("create_role\n");

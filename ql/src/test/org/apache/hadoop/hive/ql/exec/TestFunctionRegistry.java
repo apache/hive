@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,6 +28,8 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -73,6 +76,7 @@ public class TestFunctionRegistry extends TestCase {
     varchar5 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(5)");
     char10 = TypeInfoFactory.getPrimitiveTypeInfo("char(10)");
     char5 = TypeInfoFactory.getPrimitiveTypeInfo("char(5)");
+    SessionState.start(new HiveConf());
   }
 
   private void implicit(TypeInfo a, TypeInfo b, boolean convertible) {
