@@ -729,7 +729,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           idx++;
 
           // eliminate stripes that doesn't satisfy the predicate condition
-          if (sarg != null && !isStripeSatisfyPredicate(stripeStats.get(idx), sarg, filterColumns)) {
+          if (sarg != null &&
+              stripeStats != null &&
+              idx < stripeStats.size() &&
+              !isStripeSatisfyPredicate(stripeStats.get(idx), sarg, filterColumns)) {
 
             // if a stripe doesn't satisfy predicate condition then skip it
             if (LOG.isDebugEnabled()) {
@@ -757,7 +760,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             currentOffset = stripe.getOffset();
             currentLength = stripe.getLength();
           } else {
-            currentLength += stripe.getLength();
+            currentLength = (stripe.getOffset() + stripe.getLength()) - currentOffset;
           }
           if (currentLength >= context.maxSize) {
             createSplit(currentOffset, currentLength, fileMetaInfo);
