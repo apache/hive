@@ -917,6 +917,37 @@
       </field>
     </class>
 
+    <class name="MFunction" table="FUNCS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="FUNC_ID"/>
+      </datastore-identity>
+      <index name="UniqueFunction" unique="true">
+        <column name="FUNC_NAME"/>
+        <column name="DB_ID"/>
+      </index>
+      <field name="functionName">
+        <column name="FUNC_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="database">
+        <column name="DB_ID"/>
+      </field>
+      <field name="functionType">
+        <column name="FUNC_TYPE" jdbc-type="integer"/>
+      </field>
+      <field name="className">
+        <column name="CLASS_NAME" length="4000" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="ownerName">	
+        <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+       <field name="ownerType">
+        <column name="OWNER_TYPE" length="10" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+    </class>
+
   </package>
 </jdo>
 

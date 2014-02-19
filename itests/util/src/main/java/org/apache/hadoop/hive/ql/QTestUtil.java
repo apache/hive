@@ -582,7 +582,8 @@ public class QTestUtil {
         }
       }
       if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
-        db.dropDatabase(dbName);
+        // Drop cascade, may need to drop functions
+        db.dropDatabase(dbName, true, true, true);
       }
     }
     SessionState.get().setCurrentDatabase(DEFAULT_DATABASE_NAME);
@@ -647,6 +648,17 @@ public class QTestUtil {
           + " failed with exit code= " + ecode);
     }
 
+    return;
+  }
+
+  private void runCmd(String cmd) throws Exception {
+    int ecode = 0;
+    ecode = drv.run(cmd).getResponseCode();
+    drv.close();
+    if (ecode != 0) {
+      throw new Exception("command: " + cmd
+          + " failed with exit code= " + ecode);
+    }
     return;
   }
 
@@ -757,6 +769,10 @@ public class QTestUtil {
     runCreateTableCmd(AllVectorTypesRecord.TABLE_CREATE_COMMAND);
     runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath()
         + "' INTO  TABLE "+AllVectorTypesRecord.TABLE_NAME);
+
+    runCmd("DROP FUNCTION IF EXISTS qtest_get_java_boolean ");
+    runCmd("CREATE FUNCTION qtest_get_java_boolean "
+        + " AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean'");
 
     conf.setBoolean("hive.test.init.phase", false);
 

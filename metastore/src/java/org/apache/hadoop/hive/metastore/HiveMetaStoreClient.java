@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -1289,6 +1290,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return copy;
   }
 
+  private Function deepCopy(Function func) {
+    Function copy = null;
+    if (func != null) {
+      copy = new Function(func);
+    }
+    return copy;
+  }
+
   private List<Partition> deepCopyPartitions(List<Partition> partitions) {
     return deepCopyPartitions(partitions, null);
   }
@@ -1490,5 +1499,36 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     assert tbl_name != null;
     assert partKVs != null;
     return client.isPartitionMarkedForEvent(db_name, tbl_name, partKVs, eventType);
+  }
+
+  @Override
+  public void createFunction(Function func) throws InvalidObjectException,
+      MetaException, TException {
+    client.create_function(func);
+  }
+
+  @Override
+  public void alterFunction(String dbName, String funcName, Function newFunction)
+      throws InvalidObjectException, MetaException, TException {
+    client.alter_function(dbName, funcName, newFunction);
+  }
+
+  @Override
+  public void dropFunction(String dbName, String funcName)
+      throws MetaException, NoSuchObjectException, InvalidObjectException,
+      InvalidInputException, TException {
+    client.drop_function(dbName, funcName);
+  }
+
+  @Override
+  public Function getFunction(String dbName, String funcName)
+      throws MetaException, TException {
+    return deepCopy(client.get_function(dbName, funcName));
+  }
+
+  @Override
+  public List<String> getFunctions(String dbName, String pattern)
+      throws MetaException, TException {
+    return client.get_functions(dbName, pattern);
   }
 }

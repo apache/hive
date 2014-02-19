@@ -21,13 +21,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * FunctionSemanticAnalyzer.
@@ -54,30 +58,40 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeCreateFunction(ASTNode ast) throws SemanticException {
-    String functionName = ast.getChild(0).getText();
+    // ^(TOK_CREATEFUNCTION identifier StringLiteral ({isTempFunction}? => TOK_TEMPORARY))
+    String functionName = ast.getChild(0).getText().toLowerCase();
+    boolean isTemporaryFunction = (ast.getFirstChildWithType(HiveParser.TOK_TEMPORARY) != null);
     String className = unescapeSQLString(ast.getChild(1).getText());
 
     // Temp functions are not allowed to have qualified names.
-    if (FunctionUtils.isQualifiedFunctionName(functionName)) {
+    if (isTemporaryFunction && FunctionUtils.isQualifiedFunctionName(functionName)) {
       throw new SemanticException("Temporary function cannot be created with a qualified name.");
     }
 
-    CreateFunctionDesc desc = new CreateFunctionDesc(functionName, className);
+    CreateFunctionDesc desc = new CreateFunctionDesc(functionName, isTemporaryFunction, className);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
   }
 
   private void analyzeDropFunction(ASTNode ast) throws SemanticException {
+    // ^(TOK_DROPFUNCTION identifier ifExists? $temp?)
     String functionName = ast.getChild(0).getText();
     boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
     // we want to signal an error if the function doesn't exist and we're
     // configured not to ignore this
     boolean throwException =
       !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-    if (throwException && FunctionRegistry.getFunctionInfo(functionName) == null) {
-      throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
+
+    if (FunctionRegistry.getFunctionInfo(functionName) == null) {
+      if (throwException) {
+        throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
+      } else {
+        // Fail silently
+        return;
+      }
     }
 
-    DropFunctionDesc desc = new DropFunctionDesc(functionName);
+    boolean isTemporaryFunction = (ast.getFirstChildWithType(HiveParser.TOK_TEMPORARY) != null);
+    DropFunctionDesc desc = new DropFunctionDesc(functionName, isTemporaryFunction);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
   }
 }

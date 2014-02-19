@@ -29,6 +29,7 @@ public class DropFunctionDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String functionName;
+  private boolean isTemp;
 
   /**
    * For serialization only.
@@ -36,8 +37,9 @@ public class DropFunctionDesc implements Serializable {
   public DropFunctionDesc() {
   }
   
-  public DropFunctionDesc(String functionName) {
+  public DropFunctionDesc(String functionName, boolean isTemp) {
     this.functionName = functionName;
+    this.isTemp = isTemp;
   }
 
   @Explain(displayName = "name")
@@ -47,6 +49,14 @@ public class DropFunctionDesc implements Serializable {
 
   public void setFunctionName(String functionName) {
     this.functionName = functionName;
+  }
+
+  public boolean isTemp() {
+    return isTemp;
+  }
+
+  public void setTemp(boolean isTemp) {
+    this.isTemp = isTemp;
   }
 
 }

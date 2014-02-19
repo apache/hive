@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -2569,6 +2570,48 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private static String[] getQualifiedNames(String qualifiedName) {
     return qualifiedName.split("\\.");
+  }
+
+  public void createFunction(Function func) throws HiveException {
+    try {
+      getMSC().createFunction(func);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
+  public void alterFunction(String dbName, String funcName, Function newFunction)
+      throws HiveException {
+    try {
+      getMSC().alterFunction(dbName, funcName, newFunction);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
+  public void dropFunction(String dbName, String funcName)
+      throws HiveException {
+    try {
+      getMSC().dropFunction(dbName, funcName);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
+  public Function getFunction(String dbName, String funcName) throws HiveException {
+    try {
+      return getMSC().getFunction(dbName, funcName);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
+  public List<String> getFunctions(String dbName, String pattern) throws HiveException {
+    try {
+      return getMSC().getFunctions(dbName, pattern);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
   }
 
 };

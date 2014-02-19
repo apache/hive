@@ -32,6 +32,12 @@ module PartitionEventType
   VALID_VALUES = Set.new([LOAD_DONE]).freeze
 end
 
+module FunctionType
+  JAVA = 1
+  VALUE_MAP = {1 => "JAVA"}
+  VALID_VALUES = Set.new([JAVA]).freeze
+end
+
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1
@@ -1009,6 +1015,40 @@ class DropPartitionsRequest
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field parts is unset!') unless @parts
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class Function
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FUNCTIONNAME = 1
+  DBNAME = 2
+  CLASSNAME = 3
+  OWNERNAME = 4
+  OWNERTYPE = 5
+  CREATETIME = 6
+  FUNCTIONTYPE = 7
+
+  FIELDS = {
+    FUNCTIONNAME => {:type => ::Thrift::Types::STRING, :name => 'functionName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    CLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'className'},
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
+    OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :enum_class => ::PrincipalType},
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
+    FUNCTIONTYPE => {:type => ::Thrift::Types::I32, :name => 'functionType', :enum_class => ::FunctionType}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @ownerType.nil? || ::PrincipalType::VALID_VALUES.include?(@ownerType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field ownerType!')
+    end
+    unless @functionType.nil? || ::FunctionType::VALID_VALUES.include?(@functionType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field functionType!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -62,6 +63,7 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -2489,6 +2491,66 @@ public abstract class TestHiveMetaStore extends TestCase {
     }
   }
 
+  public void testSimpleFunction() throws Exception {
+    String dbName = "test_db";
+    String funcName = "test_func";
+    String className = "org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper";
+    String owner = "test_owner";
+    PrincipalType ownerType = PrincipalType.USER;
+    int createTime = (int) (System.currentTimeMillis() / 1000);
+    FunctionType funcType = FunctionType.JAVA;
+
+    try {
+      cleanUp(dbName, null, null);
+
+      createDb(dbName);
+
+      createFunction(dbName, funcName, className, owner, ownerType, createTime, funcType);
+
+      // Try the different getters
+
+      // getFunction()
+      Function func = client.getFunction(dbName, funcName);
+      assertEquals("function db name", dbName, func.getDbName());
+      assertEquals("function name", funcName, func.getFunctionName());
+      assertEquals("function class name", className, func.getClassName());
+      assertEquals("function owner name", owner, func.getOwnerName());
+      assertEquals("function owner type", PrincipalType.USER, func.getOwnerType());
+      assertEquals("function type", funcType, func.getFunctionType());
+
+      boolean gotException = false;
+      try {
+        func = client.getFunction(dbName, "nonexistent_func");
+      } catch (MetaException e) {
+        // expected failure
+        gotException = true;
+      }
+      assertEquals(true, gotException);
+
+      // getFunctions()
+      List<String> funcs = client.getFunctions(dbName, "*_func");
+      assertEquals(1, funcs.size());
+      assertEquals(funcName, funcs.get(0));
+
+      funcs = client.getFunctions(dbName, "nonexistent_func");
+      assertEquals(0, funcs.size());
+
+      // dropFunction()
+      client.dropFunction(dbName, funcName);
+
+      // Confirm that the function is now gone
+      funcs = client.getFunctions(dbName, funcName);
+      assertEquals(0, funcs.size());
+
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testConcurrentMetastores() failed.");
+      throw e;
+    } finally {
+      silentDropDatabase(dbName);
+    }
+  }
+
 
 
   /**
@@ -2672,4 +2734,12 @@ public abstract class TestHiveMetaStore extends TestCase {
       assertEquals(db.getOwnerName(), HiveMetaStore.PUBLIC);
       assertEquals(db.getOwnerType(), PrincipalType.ROLE);
     }
+
+  private void createFunction(String dbName, String funcName, String className,
+      String ownerName, PrincipalType ownerType, int createTime,
+      org.apache.hadoop.hive.metastore.api.FunctionType functionType) throws Exception {
+    Function func = new Function(funcName, dbName, className,
+        ownerName, ownerType, createTime, functionType);
+    client.createFunction(func);
+  }
 }

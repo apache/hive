@@ -51,6 +51,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -72,6 +73,7 @@ import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -797,8 +799,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         firePreEvent(new PreDropDatabaseEvent(db, this));
 
         List<String> allTables = get_all_tables(db.getName());
-        if (!cascade && !allTables.isEmpty()) {
-          throw new InvalidOperationException("Database " + db.getName() + " is not empty");
+        List<String> allFunctions = get_functions(db.getName(), "*");
+
+        if (!cascade) {
+          if (!allTables.isEmpty()) {
+            throw new InvalidOperationException(
+                "Database " + db.getName() + " is not empty. One or more tables exist.");
+          }
+          if (!allFunctions.isEmpty()) {
+            throw new InvalidOperationException(
+                "Database " + db.getName() + " is not empty. One or more functions exist.");
+          }
         }
         Path path = new Path(db.getLocationUri()).getParent();
         if (!wh.isWritable(path)) {
@@ -809,7 +820,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         Path databasePath = wh.getDnsPath(wh.getDatabasePath(db));
 
-        // first drop tables
+        // drop any functions before dropping db
+        for (String funcName : allFunctions) {
+          drop_function(name, funcName);
+        }
+
+        // drop tables before dropping db
         int tableBatchSize = HiveConf.getIntVar(hiveConf,
             ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
 
@@ -4556,6 +4572,149 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       MetaException me = new MetaException(e.toString());
       me.initCause(e);
       return me;
+    }
+
+    private void validateFunctionInfo(Function func) throws InvalidObjectException, MetaException {
+      if (!MetaStoreUtils.validateName(func.getFunctionName())) {
+        throw new InvalidObjectException(func.getFunctionName() + " is not a valid object name");
+      }
+      String className = func.getClassName();
+      if (className == null) {
+        throw new InvalidObjectException("Function class name cannot be null");
+      }
+
+      // Not sure if we can verify that the class is actually a UDF,
+      // since from metastore we do not have access to ql where UDF classes live.
+      // We can at least verify that the class name is a valid class.
+      try {
+        Class<?> functionClass = Class.forName(className, true, JavaUtils.getClassLoader());
+        if (functionClass == null) {
+          throw new ClassNotFoundException(className + " was null");
+        }
+      } catch (ClassNotFoundException e) {
+        throw new MetaException("Cannot load class " + className + " for function "
+            + func.getDbName() + "." + func.getFunctionName() + ": " + e);
+      }
+    }
+
+    @Override
+    public void create_function(Function func) throws AlreadyExistsException,
+        InvalidObjectException, MetaException, NoSuchObjectException,
+        TException {
+      validateFunctionInfo(func);
+
+      boolean success = false;
+      RawStore ms = getMS();
+      try {
+        ms.openTransaction();
+
+        Database db = ms.getDatabase(func.getDbName());
+        if (db == null) {
+          throw new NoSuchObjectException("The database " + func.getDbName() + " does not exist");
+        }
+        Function existingFunc = ms.getFunction(func.getDbName(), func.getFunctionName());
+        if (existingFunc != null) {
+          throw new AlreadyExistsException(
+              "Function " + func.getFunctionName() + " already exists");
+        }
+
+        // set create time
+        long time = System.currentTimeMillis() / 1000;
+        func.setCreateTime((int) time);
+        ms.createFunction(func);
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+      }
+    }
+
+    @Override
+    public void drop_function(String dbName, String funcName)
+        throws NoSuchObjectException, MetaException,
+        InvalidObjectException, InvalidInputException {
+      boolean success = false;
+      Function func = null;
+      RawStore ms = getMS();
+
+      try {
+        ms.openTransaction();
+
+        func = ms.getFunction(dbName, funcName);
+        if (func == null) {
+          throw new NoSuchObjectException("Function " + funcName + " does not exist");
+        }
+        ms.dropFunction(dbName, funcName);
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+      }
+    }
+
+    @Override
+    public void alter_function(String dbName, String funcName, Function newFunc)
+        throws InvalidOperationException, MetaException, TException {
+      validateFunctionInfo(newFunc);
+      boolean success = false;
+      RawStore ms = getMS();
+      try {
+        ms.openTransaction();
+        ms.alterFunction(dbName, funcName, newFunc);
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+      }
+    }
+
+    @Override
+    public List<String> get_functions(String dbName, String pattern)
+        throws MetaException {
+      startFunction("get_functions", ": db=" + dbName + " pat=" + pattern);
+
+      RawStore ms = getMS();
+      Exception ex = null;
+      List<String> funcNames = null;
+
+      try {
+        funcNames = ms.getFunctions(dbName, pattern);
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("get_functions", funcNames != null, ex);
+      }
+
+      return funcNames;
+    }
+
+    @Override
+    public Function get_function(String dbName, String funcName)
+        throws MetaException, NoSuchObjectException, TException {
+      startFunction("get_function", ": " + dbName + "." + funcName);
+
+      RawStore ms = getMS();
+      Function func = null;
+      Exception ex = null;
+
+      try {
+        func = ms.getFunction(dbName, funcName);
+        if (func == null) {
+          throw new NoSuchObjectException(
+              "Function " + dbName + "." + funcName + " does not exist");
+        }
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("get_database", func != null, ex);
+      }
+
+      return func;
     }
   }
 

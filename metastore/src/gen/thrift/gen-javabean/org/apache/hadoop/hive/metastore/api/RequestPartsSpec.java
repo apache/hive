@@ -169,7 +169,7 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
               names = new ArrayList<String>(_list338.size);
               for (int _i339 = 0; _i339 < _list338.size; ++_i339)
               {
-                String _elem340; // required
+                String _elem340; // optional
                 _elem340 = iprot.readString();
                 names.add(_elem340);
               }
@@ -188,7 +188,7 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
               exprs = new ArrayList<DropPartitionsExpr>(_list341.size);
               for (int _i342 = 0; _i342 < _list341.size; ++_i342)
               {
-                DropPartitionsExpr _elem343; // required
+                DropPartitionsExpr _elem343; // optional
                 _elem343 = new DropPartitionsExpr();
                 _elem343.read(iprot);
                 exprs.add(_elem343);
@@ -250,7 +250,7 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
             names = new ArrayList<String>(_list346.size);
             for (int _i347 = 0; _i347 < _list346.size; ++_i347)
             {
-              String _elem348; // required
+              String _elem348; // optional
               _elem348 = iprot.readString();
               names.add(_elem348);
             }
@@ -264,7 +264,7 @@ public class RequestPartsSpec extends org.apache.thrift.TUnion<RequestPartsSpec,
             exprs = new ArrayList<DropPartitionsExpr>(_list349.size);
             for (int _i350 = 0; _i350 < _list349.size; ++_i350)
             {
-              DropPartitionsExpr _elem351; // required
+              DropPartitionsExpr _elem351; // optional
               _elem351 = new DropPartitionsExpr();
               _elem351.read(iprot);
               exprs.add(_elem351);
