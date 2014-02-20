@@ -9,32 +9,40 @@ POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: CREATE TABLE table1 (key STRING, value STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
 POSTHOOK: query: CREATE TABLE table1 (key STRING, value STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@table1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE table1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: db1@table1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE table1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: db1@table1
 PREHOOK: query: CREATE TABLE table2 (key STRING, value STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
 POSTHOOK: query: CREATE TABLE table2 (key STRING, value STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@table2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE table2
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: db1@table2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE table2
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: db1@table2
 PREHOOK: query: -- relative reference, no alias
 CREATE VIEW v1 AS SELECT * FROM table1

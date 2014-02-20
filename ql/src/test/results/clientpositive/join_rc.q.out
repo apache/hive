@@ -1,12 +1,16 @@
 PREHOOK: query: create table join_rc1(key string, value string) stored as RCFile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table join_rc1(key string, value string) stored as RCFile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@join_rc1
 PREHOOK: query: create table join_rc2(key string, value string) stored as RCFile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table join_rc2(key string, value string) stored as RCFile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@join_rc2
 PREHOOK: query: insert overwrite table join_rc1 select * from src
 PREHOOK: type: QUERY

@@ -28,6 +28,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- verify that new joins bring in correct schemas (including evolved schemas)
 CREATE TABLE episodes
 ROW FORMAT
@@ -58,12 +59,15 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@episodes
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@episodes
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@episodes
 PREHOOK: query: CREATE TABLE episodes_partitioned
 PARTITIONED BY (doctor_pt INT)
@@ -95,6 +99,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE episodes_partitioned
 PARTITIONED BY (doctor_pt INT)
 ROW FORMAT
@@ -125,6 +130,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@episodes_partitioned
 PREHOOK: query: INSERT OVERWRITE TABLE episodes_partitioned PARTITION (doctor_pt) SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes
 PREHOOK: type: QUERY

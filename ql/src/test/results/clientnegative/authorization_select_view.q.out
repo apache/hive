@@ -1,9 +1,11 @@
 PREHOOK: query: -- check create view without select privileges
 create table t1(i int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- check create view without select privileges
 create table t1(i int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: create view v1 as select * from t1
 PREHOOK: type: CREATEVIEW

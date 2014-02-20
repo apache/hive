@@ -6,6 +6,8 @@ PARTITIONED BY (part STRING)
 STORED AS RCFILE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This test verifies that if a partition exists outside the table's current location when the
 -- table is dropped the partition's location is dropped as well.
 
@@ -14,15 +16,19 @@ PARTITIONED BY (part STRING)
 STORED AS RCFILE
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: ALTER TABLE test_table ADD PARTITION (part = '1')
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@test_table
+#### A masked pattern was here ####
+PREHOOK: Output: default@test_table
 POSTHOOK: query: ALTER TABLE test_table ADD PARTITION (part = '1')
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@test_table
+#### A masked pattern was here ####
+POSTHOOK: Output: default@test_table
 POSTHOOK: Output: default@test_table@part=1
 PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1')
 SELECT * FROM src

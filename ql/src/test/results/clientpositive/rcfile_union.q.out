@@ -3,11 +3,13 @@ ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE table rcfile_unionTable (b STRING, c STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_unionTable
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE rcfile_unionTable SELECT src.key, src.value LIMIT 10

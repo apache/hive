@@ -4,15 +4,18 @@ PREHOOK: query: -- test for loading into tables with the correct file format
 
 CREATE TABLE T1(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- test for loading into tables with the correct file format
 -- test for loading into partitions with the correct file format
 
 
 CREATE TABLE T1(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.seq' INTO TABLE T1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@t1
 Failed with exception Wrong file format. Please check the file's format.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask

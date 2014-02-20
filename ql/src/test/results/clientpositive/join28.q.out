@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_j1
 PREHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
 

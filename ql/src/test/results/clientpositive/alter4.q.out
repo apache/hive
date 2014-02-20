@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@set_bucketing_test
 PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
@@ -68,9 +70,11 @@ POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 PREHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:alter4_db
 POSTHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: alter4_db@set_bucketing_test
+POSTHOOK: Output: database:alter4_db
 PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test

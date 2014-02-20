@@ -13,41 +13,53 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE x (name STRING, id INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE x (name STRING, id INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x
 PREHOOK: query: CREATE TABLE y (id INT, name STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE y (id INT, name STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@y
 PREHOOK: query: CREATE TABLE z (id INT, name STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE z (id INT, name STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@z
 PREHOOK: query: load data local inpath '../../data/files/x.txt' INTO TABLE x
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@x
 POSTHOOK: query: load data local inpath '../../data/files/x.txt' INTO TABLE x
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@x
 PREHOOK: query: load data local inpath '../../data/files/y.txt' INTO TABLE y
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@y
 POSTHOOK: query: load data local inpath '../../data/files/y.txt' INTO TABLE y
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@y
 PREHOOK: query: load data local inpath '../../data/files/z.txt' INTO TABLE z
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@z
 POSTHOOK: query: load data local inpath '../../data/files/z.txt' INTO TABLE z
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@z
 PREHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
 

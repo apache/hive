@@ -3,11 +3,13 @@ PREHOOK: query: -- Tests trying to archive a partition group with custom locatio
 
 CREATE TABLE tstsrcpart LIKE srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Tests trying to archive a partition group with custom locations.
 -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
 
 CREATE TABLE tstsrcpart LIKE srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrcpart
 PREHOOK: query: INSERT OVERWRITE TABLE tstsrcpart PARTITION (ds='2008-04-08', hr='11')
 SELECT key, value FROM srcpart WHERE ds='2008-04-08' AND hr='11'
@@ -26,11 +28,13 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcp
 PREHOOK: query: ALTER TABLE tstsrcpart ADD PARTITION (ds='2008-04-08', hr='12')
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tstsrcpart
+#### A masked pattern was here ####
+PREHOOK: Output: default@tstsrcpart
 POSTHOOK: query: ALTER TABLE tstsrcpart ADD PARTITION (ds='2008-04-08', hr='12')
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tstsrcpart
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tstsrcpart
 POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

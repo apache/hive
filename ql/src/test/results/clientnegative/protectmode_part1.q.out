@@ -8,27 +8,31 @@ drop table tbl_protectmode5
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_protectmode5_1 (col string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tbl_protectmode5_1 (col string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_protectmode5_1
 PREHOOK: query: create table tbl_protectmode5  (col string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tbl_protectmode5  (col string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_protectmode5
 PREHOOK: query: alter table tbl_protectmode5 add partition (p='p1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tbl_protectmode5
+PREHOOK: Output: default@tbl_protectmode5
 POSTHOOK: query: alter table tbl_protectmode5 add partition (p='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tbl_protectmode5
+POSTHOOK: Output: default@tbl_protectmode5
 POSTHOOK: Output: default@tbl_protectmode5@p=p1
 PREHOOK: query: alter table tbl_protectmode5 add partition (p='p2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tbl_protectmode5
+PREHOOK: Output: default@tbl_protectmode5
 POSTHOOK: query: alter table tbl_protectmode5 add partition (p='p2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tbl_protectmode5
+POSTHOOK: Output: default@tbl_protectmode5
 POSTHOOK: Output: default@tbl_protectmode5@p=p2
 PREHOOK: query: insert overwrite table tbl_protectmode5_1
 select col from tbl_protectmode5 where p='p1'

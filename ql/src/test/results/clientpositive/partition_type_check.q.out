@@ -1,15 +1,19 @@
 PREHOOK: query: -- begin part(string, string) pass(string, int)
 CREATE TABLE tab1 (id1 int,id2 string) PARTITIONED BY(month string,day string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- begin part(string, string) pass(string, int)
 CREATE TABLE tab1 (id1 int,id2 string) PARTITIONED BY(month string,day string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1 PARTITION(month='June', day=2)
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tab1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1 PARTITION(month='June', day=2)
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tab1
 POSTHOOK: Output: default@tab1@month=June/day=2
 PREHOOK: query: select * from tab1
@@ -39,15 +43,19 @@ POSTHOOK: Output: default@tab1
 PREHOOK: query: -- begin part(string, int) pass(string, string)
 CREATE TABLE tab1 (id1 int,id2 string) PARTITIONED BY(month string,day int) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- begin part(string, int) pass(string, string)
 CREATE TABLE tab1 (id1 int,id2 string) PARTITIONED BY(month string,day int) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1 PARTITION(month='June', day='2')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tab1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1 PARTITION(month='June', day='2')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tab1
 POSTHOOK: Output: default@tab1@month=June/day=2
 PREHOOK: query: select * from tab1
@@ -77,22 +85,26 @@ POSTHOOK: Output: default@tab1
 PREHOOK: query: -- begin part(string, date) pass(string, date)
 create table tab1 (id1 int, id2 string) PARTITIONED BY(month string,day date) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- begin part(string, date) pass(string, date)
 create table tab1 (id1 int, id2 string) PARTITIONED BY(month string,day date) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab1
 PREHOOK: query: alter table tab1 add partition (month='June', day='2008-01-01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tab1
+PREHOOK: Output: default@tab1
 POSTHOOK: query: alter table tab1 add partition (month='June', day='2008-01-01')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tab1
+POSTHOOK: Output: default@tab1
 POSTHOOK: Output: default@tab1@month=June/day=2008-01-01
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1 PARTITION(month='June', day='2008-01-01')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tab1@month=June/day=2008-01-01
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1 PARTITION(month='June', day='2008-01-01')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tab1@month=June/day=2008-01-01
 PREHOOK: query: select id1, id2, day from tab1 where day='2008-01-01'
 PREHOOK: type: QUERY

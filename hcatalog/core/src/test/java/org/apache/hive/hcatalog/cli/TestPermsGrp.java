@@ -20,6 +20,8 @@ package org.apache.hive.hcatalog.cli;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -45,7 +47,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.hcatalog.ExitException;
 import org.apache.hive.hcatalog.NoExitSecurityManager;
-
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.thrift.TException;
@@ -72,8 +73,8 @@ public class TestPermsGrp extends TestCase {
     if (isServerRunning) {
       return;
     }
-    
-    
+
+
     msPort = MetaStoreUtils.findFreePort();
     MetaStoreUtils.startMetaStore(msPort, ShimLoader.getHadoopThriftAuthBridge());
 
@@ -94,6 +95,7 @@ public class TestPermsGrp extends TestCase {
     hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hcatConf.set(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT.varname, "60");
+    hcatConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     clientWH = new Warehouse(hcatConf);
     msc = new HiveMetaStoreClient(hcatConf, null);
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
@@ -117,7 +119,7 @@ public class TestPermsGrp extends TestCase {
 
       // Next user did specify perms.
       try {
-        HCatCli.main(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rwx-wx---"});
+        callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rwx-wx---"});
       } catch (Exception e) {
         assertTrue(e instanceof ExitException);
         assertEquals(((ExitException) e).getStatus(), 0);
@@ -131,7 +133,7 @@ public class TestPermsGrp extends TestCase {
       hcatConf.set(HCatConstants.HCAT_PERMS, "rwx");
       // make sure create table fails.
       try {
-        HCatCli.main(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rwx"});
+        callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rwx"});
         assert false;
       } catch (Exception me) {
         assertTrue(me instanceof ExitException);
@@ -160,7 +162,7 @@ public class TestPermsGrp extends TestCase {
 
       try {
         // create table must fail.
-        HCatCli.main(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rw-rw-rw-", "-g", "THIS_CANNOT_BE_A_VALID_GRP_NAME_EVER"});
+        callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rw-rw-rw-", "-g", "THIS_CANNOT_BE_A_VALID_GRP_NAME_EVER"});
         assert false;
       } catch (Exception me) {
         assertTrue(me instanceof SecurityException);
@@ -186,6 +188,13 @@ public class TestPermsGrp extends TestCase {
       LOG.error("testCustomPerms failed.", e);
       throw e;
     }
+  }
+
+  private void callHCatCli(String[] args) {
+    List<String> argsList = new ArrayList<String>();
+    argsList.add("-Dhive.support.concurrency=false");
+    argsList.addAll(Arrays.asList(args));
+    HCatCli.main(argsList.toArray(new String[]{}));
   }
 
   private void silentDropDatabase(String dbName) throws MetaException, TException {

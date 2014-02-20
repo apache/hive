@@ -1,6 +1,8 @@
 PREHOOK: query: CREATE EXTERNAL TABLE external_table (key int, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE EXTERNAL TABLE external_table (key int, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@external_table
 FAILED: SemanticException [Error 10231]: ANALYZE TABLE PARTIALSCAN doesn't support external table:  external_table

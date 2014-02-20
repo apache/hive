@@ -15,51 +15,63 @@ PREHOOK: query: create table  char_union1_ch1 (
   c2 char(10)
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table  char_union1_ch1 (
   c1 int,
   c2 char(10)
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_union1_ch1
 PREHOOK: query: create table  char_union1_ch2 (
   c1 int,
   c2 char(20)
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table  char_union1_ch2 (
   c1 int,
   c2 char(20)
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_union1_ch2
 PREHOOK: query: create table  char_union1_str (
   c1 int,
   c2 string
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table  char_union1_str (
   c1 int,
   c2 string
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_union1_str
 PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_union1_ch1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@char_union1_ch1
 POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_union1_ch1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@char_union1_ch1
 PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_union1_ch2
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@char_union1_ch2
 POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_union1_ch2
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@char_union1_ch2
 PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_union1_str
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@char_union1_str
 POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_union1_str
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@char_union1_str
 PREHOOK: query: -- union char with same length char
 select * from (

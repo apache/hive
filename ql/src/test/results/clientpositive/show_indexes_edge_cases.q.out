@@ -8,13 +8,17 @@ POSTHOOK: query: DROP TABLE show_idx_full
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE show_idx_empty(KEY STRING, VALUE STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE show_idx_empty(KEY STRING, VALUE STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@show_idx_empty
 PREHOOK: query: CREATE TABLE show_idx_full(KEY STRING, VALUE1 STRING, VALUE2 STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE show_idx_full(KEY STRING, VALUE1 STRING, VALUE2 STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@show_idx_full
 PREHOOK: query: CREATE INDEX idx_1 ON TABLE show_idx_full(KEY) AS "COMPACT" WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX

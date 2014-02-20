@@ -35,6 +35,7 @@ with serdeproperties (
 )
 stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- RegexSerDe
 --
@@ -48,12 +49,15 @@ with serdeproperties (
 )
 stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_serde_regex
 PREHOOK: query: load data local inpath '../../data/files/srcbucket0.txt' overwrite into table varchar_serde_regex
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@varchar_serde_regex
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket0.txt' overwrite into table varchar_serde_regex
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@varchar_serde_regex
 PREHOOK: query: select * from varchar_serde_regex limit 5
 PREHOOK: type: QUERY
@@ -89,6 +93,7 @@ create table  varchar_serde_lb (
   value varchar(20)
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- LazyBinary
 --
@@ -97,6 +102,7 @@ create table  varchar_serde_lb (
   value varchar(20)
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_serde_lb
 PREHOOK: query: alter table varchar_serde_lb set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
@@ -156,6 +162,7 @@ create table  varchar_serde_ls (
   value varchar(20)
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- LazySimple
 --
@@ -164,6 +171,7 @@ create table  varchar_serde_ls (
   value varchar(20)
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_serde_ls
 POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:from deserializer), ]
 POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:from deserializer), ]
@@ -233,6 +241,7 @@ create table  varchar_serde_c (
   value varchar(20)
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- Columnar
 --
@@ -241,6 +250,7 @@ create table  varchar_serde_c (
   value varchar(20)
 ) stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_serde_c
 POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:from deserializer), ]
 POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:from deserializer), ]
@@ -320,6 +330,7 @@ create table varchar_serde_lbc (
   value varchar(20)
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- LazyBinaryColumnar
 --
@@ -328,6 +339,7 @@ create table varchar_serde_lbc (
   value varchar(20)
 ) stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_serde_lbc
 POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:from deserializer), ]
 POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:from deserializer), ]
@@ -417,6 +429,7 @@ create table varchar_serde_orc (
   value varchar(20)
 ) stored as orc
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- ORC
 --
@@ -425,6 +438,7 @@ create table varchar_serde_orc (
   value varchar(20)
 ) stored as orc
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_serde_orc
 POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:from deserializer), ]
 POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:from deserializer), ]

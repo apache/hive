@@ -1,7 +1,9 @@
 PREHOOK: query: create table alter_partition_format_test (key int, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table alter_partition_format_test (key int, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_partition_format_test
 PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
@@ -34,6 +36,7 @@ PREHOOK: Output: default@alter_partition_format_test
 POSTHOOK: type: ALTERTABLE_LOCATION
 POSTHOOK: Input: default@alter_partition_format_test
 POSTHOOK: Output: default@alter_partition_format_test
+#### A masked pattern was here ####
 PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
@@ -53,16 +56,18 @@ POSTHOOK: Output: default@alter_partition_format_test
 PREHOOK: query: --partitioned table
 create table alter_partition_format_test (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --partitioned table
 create table alter_partition_format_test (key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_partition_format_test
 PREHOOK: query: alter table alter_partition_format_test add partition(ds='2010')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@alter_partition_format_test
+PREHOOK: Output: default@alter_partition_format_test
 POSTHOOK: query: alter table alter_partition_format_test add partition(ds='2010')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@alter_partition_format_test
+POSTHOOK: Output: default@alter_partition_format_test
 POSTHOOK: Output: default@alter_partition_format_test@ds=2010
 PREHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 PREHOOK: type: DESCTABLE
@@ -109,6 +114,7 @@ POSTHOOK: type: ALTERPARTITION_LOCATION
 POSTHOOK: Input: default@alter_partition_format_test
 POSTHOOK: Input: default@alter_partition_format_test@ds=2010
 POSTHOOK: Output: default@alter_partition_format_test@ds=2010
+#### A masked pattern was here ####
 PREHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
@@ -166,6 +172,7 @@ PREHOOK: Output: default@alter_partition_format_test
 POSTHOOK: type: ALTERTABLE_LOCATION
 POSTHOOK: Input: default@alter_partition_format_test
 POSTHOOK: Output: default@alter_partition_format_test
+#### A masked pattern was here ####
 PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test

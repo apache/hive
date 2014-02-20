@@ -8,8 +8,10 @@ POSTHOOK: query: use lockneg2
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: create table tstsrcpart like default.srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:lockneg2
 POSTHOOK: query: create table tstsrcpart like default.srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:lockneg2
 POSTHOOK: Output: lockneg2@tstsrcpart
 PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='11')
 select key, value from default.srcpart where ds='2008-04-08' and hr='11'

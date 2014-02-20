@@ -152,8 +152,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: create table srcpart_serdeprops like srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table srcpart_serdeprops like srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_serdeprops
 PREHOOK: query: alter table srcpart_serdeprops set serdeproperties('xyz'='0')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES

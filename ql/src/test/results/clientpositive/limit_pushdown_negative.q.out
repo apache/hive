@@ -204,14 +204,18 @@ STAGE PLANS:
 PREHOOK: query: -- negative, RS + forward + multi-groupby
 CREATE TABLE dest_2(key STRING, c1 INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- negative, RS + forward + multi-groupby
 CREATE TABLE dest_2(key STRING, c1 INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_2
 PREHOOK: query: CREATE TABLE dest_3(key STRING, c1 INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest_3(key STRING, c1 INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_3
 PREHOOK: query: EXPLAIN FROM src
 INSERT OVERWRITE TABLE dest_2 SELECT value, sum(key) GROUP BY value

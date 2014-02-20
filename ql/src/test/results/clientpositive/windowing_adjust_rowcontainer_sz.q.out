@@ -15,6 +15,7 @@ CREATE TABLE part(
     p_comment STRING
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- data setup
 CREATE TABLE part( 
     p_partkey INT,
@@ -28,12 +29,15 @@ CREATE TABLE part(
     p_comment STRING
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@part
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@part
 PREHOOK: query: select p_mfgr, p_name, p_size,
 rank() over(distribute by p_mfgr sort by p_name) as r,

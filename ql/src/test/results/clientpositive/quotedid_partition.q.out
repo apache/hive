@@ -1,7 +1,9 @@
 PREHOOK: query: create table src_p(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_p(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_p
 PREHOOK: query: insert overwrite table src_p partition(`!@#$%^&*()_q`='a') select * from src
 PREHOOK: type: QUERY
@@ -82,8 +84,10 @@ STAGE PLANS:
 
 PREHOOK: query: create table src_p2(`x+1` string) partitioned by (`!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_p2(`x+1` string) partitioned by (`!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_p2
 POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

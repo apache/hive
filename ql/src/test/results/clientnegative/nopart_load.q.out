@@ -1,6 +1,8 @@
 PREHOOK: query: CREATE TABLE nopart_load(a STRING, b STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE nopart_load(a STRING, b STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nopart_load
 FAILED: SemanticException [Error 10062]: Need to specify partition columns because the destination table is partitioned

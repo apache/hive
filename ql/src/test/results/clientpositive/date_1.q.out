@@ -4,8 +4,10 @@ POSTHOOK: query: drop table date_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table date_1 (d date)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table date_1 (d date)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_1
 PREHOOK: query: insert overwrite table date_1 
   select cast('2011-01-01' as date) from src tablesample (1 rows)

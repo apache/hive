@@ -2,10 +2,12 @@ PREHOOK: query: -- SORT_BEFORE_DIFF
 
 create table dummy (key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- SORT_BEFORE_DIFF
 
 create table dummy (key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dummy
 PREHOOK: query: grant select on database default to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE

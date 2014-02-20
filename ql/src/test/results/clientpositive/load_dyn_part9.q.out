@@ -8,8 +8,10 @@ ds=2008-04-09/hr=11
 ds=2008-04-09/hr=12
 PREHOOK: query: create table if not exists nzhang_part9 like srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists nzhang_part9 like srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part9
 PREHOOK: query: describe extended nzhang_part9
 PREHOOK: type: DESCTABLE

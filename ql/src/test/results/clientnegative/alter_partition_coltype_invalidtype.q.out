@@ -1,9 +1,11 @@
 PREHOOK: query: -- create testing table
 create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- create testing table
 create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_coltype
 PREHOOK: query: -- insert and create a partition
 insert overwrite table alter_coltype partition(dt='100x', ts='6:30pm') select * from src1

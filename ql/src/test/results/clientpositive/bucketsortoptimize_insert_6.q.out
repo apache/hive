@@ -2,24 +2,30 @@ PREHOOK: query: -- Create two bucketed and sorted tables
 CREATE TABLE test_table1 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Create two bucketed and sorted tables
 CREATE TABLE test_table1 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
 PREHOOK: query: CREATE TABLE test_table2 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table2 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
 PREHOOK: query: CREATE TABLE test_table3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table3
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT key, key+1, value where key < 10
@@ -1177,9 +1183,11 @@ POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.
 PREHOOK: query: CREATE TABLE test_table4 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key DESC, key2 DESC) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table4 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key DESC, key2 DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table4
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -1,12 +1,16 @@
 PREHOOK: query: CREATE TABLE testTable1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE testTable1(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testTable1
 PREHOOK: query: CREATE TABLE testTable2(key INT, val1 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE testTable2(key INT, val1 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testTable2
 PREHOOK: query: -- Position Alias in GROUP BY and ORDER BY
 

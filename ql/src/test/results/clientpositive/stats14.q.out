@@ -1,7 +1,9 @@
 PREHOOK: query: create table stats_src like src
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table stats_src like src
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_src
 PREHOOK: query: insert overwrite table stats_src select * from src
 PREHOOK: type: QUERY
@@ -61,8 +63,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: create table stats_part like srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table stats_part like srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_part
 POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

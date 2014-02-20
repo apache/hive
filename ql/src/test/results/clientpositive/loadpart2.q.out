@@ -1,20 +1,26 @@
 PREHOOK: query: create table hive_test ( col1 string ) partitioned by ( pcol1 string , pcol2 string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table hive_test ( col1 string ) partitioned by ( pcol1 string , pcol2 string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive_test
 PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test partition (pcol1='part1',pcol2='part1')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@hive_test
 POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test partition (pcol1='part1',pcol2='part1')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@hive_test
 POSTHOOK: Output: default@hive_test@pcol1=part1/pcol2=part1
 PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test partition (pcol2='part2',pcol1='part2')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@hive_test
 POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test partition (pcol2='part2',pcol1='part2')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@hive_test
 POSTHOOK: Output: default@hive_test@pcol1=part2/pcol2=part2
 PREHOOK: query: select * from hive_test where pcol1='part1' and pcol2='part1'

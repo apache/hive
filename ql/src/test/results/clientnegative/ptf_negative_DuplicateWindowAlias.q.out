@@ -14,6 +14,7 @@ PREHOOK: query: CREATE TABLE part(
     p_comment STRING
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
@@ -26,5 +27,6 @@ POSTHOOK: query: CREATE TABLE part(
     p_comment STRING
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part
 FAILED: SemanticException 10:7 Duplicate definition of window w2 is not allowed. Error encountered near token 'w2'

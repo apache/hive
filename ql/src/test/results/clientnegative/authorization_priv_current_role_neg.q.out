@@ -18,8 +18,10 @@ POSTHOOK: query: grant role role2 to user user2
 POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: create table tpriv_current_role(i int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tpriv_current_role(i int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tpriv_current_role
 PREHOOK: query: grant all on table tpriv_current_role to role role2 with grant option
 PREHOOK: type: GRANT_PRIVILEGE

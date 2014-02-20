@@ -1,12 +1,16 @@
 PREHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes
 PREHOOK: query: create table pokes2(foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table pokes2(foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes2
 PREHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -43,13 +47,17 @@ POSTHOOK: Input: default@pokes2
 POSTHOOK: Output: default@pokes2
 PREHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes
 PREHOOK: query: create table pokes2(foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table pokes2(foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes2
 PREHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -86,13 +94,17 @@ POSTHOOK: Input: default@pokes2
 POSTHOOK: Output: default@pokes2
 PREHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes
 PREHOOK: query: create table pokes2(foo INT, bar STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table pokes2(foo INT, bar STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes2
 PREHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
 PREHOOK: type: CREATETABLE_AS_SELECT

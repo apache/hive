@@ -1,63 +1,65 @@
 PREHOOK: query: create table ppr_test (key string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table ppr_test (key string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ppr_test
 PREHOOK: query: alter table ppr_test add partition (ds = '1234')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ppr_test
+PREHOOK: Output: default@ppr_test
 POSTHOOK: query: alter table ppr_test add partition (ds = '1234')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test
 POSTHOOK: Output: default@ppr_test@ds=1234
 PREHOOK: query: alter table ppr_test add partition (ds = '1224')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ppr_test
+PREHOOK: Output: default@ppr_test
 POSTHOOK: query: alter table ppr_test add partition (ds = '1224')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test
 POSTHOOK: Output: default@ppr_test@ds=1224
 PREHOOK: query: alter table ppr_test add partition (ds = '1214')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ppr_test
+PREHOOK: Output: default@ppr_test
 POSTHOOK: query: alter table ppr_test add partition (ds = '1214')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test
 POSTHOOK: Output: default@ppr_test@ds=1214
 PREHOOK: query: alter table ppr_test add partition (ds = '12+4')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ppr_test
+PREHOOK: Output: default@ppr_test
 POSTHOOK: query: alter table ppr_test add partition (ds = '12+4')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test
 POSTHOOK: Output: default@ppr_test@ds=12+4
 PREHOOK: query: alter table ppr_test add partition (ds = '12.4')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ppr_test
+PREHOOK: Output: default@ppr_test
 POSTHOOK: query: alter table ppr_test add partition (ds = '12.4')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test
 POSTHOOK: Output: default@ppr_test@ds=12.4
 PREHOOK: query: alter table ppr_test add partition (ds = '12:4')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ppr_test
+PREHOOK: Output: default@ppr_test
 POSTHOOK: query: alter table ppr_test add partition (ds = '12:4')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test
 POSTHOOK: Output: default@ppr_test@ds=12%3A4
 PREHOOK: query: alter table ppr_test add partition (ds = '12%4')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ppr_test
+PREHOOK: Output: default@ppr_test
 POSTHOOK: query: alter table ppr_test add partition (ds = '12%4')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test
 POSTHOOK: Output: default@ppr_test@ds=12%254
 PREHOOK: query: alter table ppr_test add partition (ds = '12*4')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ppr_test
+PREHOOK: Output: default@ppr_test
 POSTHOOK: query: alter table ppr_test add partition (ds = '12*4')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test
 POSTHOOK: Output: default@ppr_test@ds=12%2A4
 PREHOOK: query: insert overwrite table ppr_test partition(ds = '1234') select * from (select '1234' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
 PREHOOK: type: QUERY

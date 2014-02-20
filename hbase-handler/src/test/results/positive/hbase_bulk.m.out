@@ -14,6 +14,7 @@ INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.hbase.HiveHFileOutputFormat'
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- this is a dummy table used for controlling how the HFiles are
 -- created
 create table hbsort(key string, val string, val2 string)
@@ -22,6 +23,7 @@ INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.hbase.HiveHFileOutputFormat'
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbsort
 PREHOOK: query: -- this is a dummy table used for controlling how the input file
 -- for TotalOrderPartitioner is created
@@ -35,6 +37,8 @@ outputformat
 'org.apache.hadoop.hive.ql.io.HiveNullValueSequenceFileOutputFormat'
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
 POSTHOOK: query: -- this is a dummy table used for controlling how the input file
 -- for TotalOrderPartitioner is created
 create table hbpartition(part_break string)
@@ -47,6 +51,8 @@ outputformat
 'org.apache.hadoop.hive.ql.io.HiveNullValueSequenceFileOutputFormat'
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbpartition
 PREHOOK: query: -- this should produce one file, but we do not
 -- know what it will be called, so we will copy it to a well known

@@ -24,8 +24,10 @@ POSTHOOK: query: drop view r3
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create table t (id int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t (id int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: create view r0 as select * from t
 PREHOOK: type: CREATEVIEW

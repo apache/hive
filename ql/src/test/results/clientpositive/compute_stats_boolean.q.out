@@ -1,15 +1,19 @@
 PREHOOK: query: create table tab_bool(a boolean)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tab_bool(a boolean)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_bool
 PREHOOK: query: -- insert some data
 LOAD DATA LOCAL INPATH "../../data/files/bool.txt" INTO TABLE tab_bool
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tab_bool
 POSTHOOK: query: -- insert some data
 LOAD DATA LOCAL INPATH "../../data/files/bool.txt" INTO TABLE tab_bool
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tab_bool
 PREHOOK: query: select count(*) from tab_bool
 PREHOOK: type: QUERY

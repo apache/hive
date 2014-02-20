@@ -4,12 +4,14 @@ PREHOOK: query: -- This tests inferring how data is bucketed/sorted from the ope
 
 CREATE TABLE test_table (key STRING, value STRING) PARTITIONED BY (part STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This tests inferring how data is bucketed/sorted from the operators in the reducer
 -- and populating that information in partitions' metadata, it also verifies that the
 -- number of reducers chosen will be a power of two
 
 CREATE TABLE test_table (key STRING, value STRING) PARTITIONED BY (part STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: -- Test group by, should be bucketed and sorted by group by key
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 

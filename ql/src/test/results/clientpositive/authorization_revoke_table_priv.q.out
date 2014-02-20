@@ -2,10 +2,12 @@ PREHOOK: query: -- current user has been set (comment line before the set cmd is
 
 CREATE TABLE table_priv_rev(i int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
 
 CREATE TABLE table_priv_rev(i int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_priv_rev
 PREHOOK: query: -- grant insert privilege to user2
 GRANT INSERT ON table_priv_rev TO USER user2

@@ -1,7 +1,9 @@
 PREHOOK: query: create table smallTbl1(key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table smallTbl1(key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smallTbl1
 PREHOOK: query: insert overwrite table smallTbl1 select * from src where key < 10
 PREHOOK: type: QUERY
@@ -15,8 +17,10 @@ POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table smallTbl2(key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table smallTbl2(key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smallTbl2
 POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -34,8 +38,10 @@ POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table smallTbl3(key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table smallTbl3(key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smallTbl3
 POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -57,8 +63,10 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table smallTbl4(key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table smallTbl4(key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smallTbl4
 POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -84,8 +92,10 @@ POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table bigTbl(key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table bigTbl(key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bigTbl
 POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -653,8 +663,10 @@ POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table bigTbl(key1 string, key2 string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table bigTbl(key1 string, key2 string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bigTbl
 POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]

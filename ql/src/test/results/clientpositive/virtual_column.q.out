@@ -350,8 +350,10 @@ POSTHOOK: Input: default@src
 97	val_97
 PREHOOK: query: CREATE TABLE src_index_test_rc (key int, value string) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE src_index_test_rc (key int, value string) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_index_test_rc
 PREHOOK: query: INSERT OVERWRITE TABLE src_index_test_rc SELECT * FROM src
 PREHOOK: type: QUERY

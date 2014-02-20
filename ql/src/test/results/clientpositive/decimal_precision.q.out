@@ -7,17 +7,21 @@ ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE DECIMAL_PRECISION(dec decimal(20,10))
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL_PRECISION
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv8.txt' INTO TABLE DECIMAL_PRECISION
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@decimal_precision
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv8.txt' INTO TABLE DECIMAL_PRECISION
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@decimal_precision
 PREHOOK: query: SELECT * FROM DECIMAL_PRECISION ORDER BY dec
 PREHOOK: type: QUERY

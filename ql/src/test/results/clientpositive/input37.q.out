@@ -1,13 +1,17 @@
 PREHOOK: query: create table documents(contents string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table documents(contents string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@documents
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/docurl.txt' INTO TABLE documents
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@documents
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/docurl.txt' INTO TABLE documents
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@documents
 PREHOOK: query: select url, count(1) 
 FROM

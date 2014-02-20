@@ -6,10 +6,12 @@ PREHOOK: query: -- All the tests of ba_table1.q + test for a group-by and aggreg
 
 create table ba_test (ba_key binary, ba_val binary)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- All the tests of ba_table1.q + test for a group-by and aggregation on a binary key.
 
 create table ba_test (ba_key binary, ba_val binary)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ba_test
 PREHOOK: query: from src insert overwrite table ba_test select cast (src.key as binary), cast (src.value as binary)
 PREHOOK: type: QUERY

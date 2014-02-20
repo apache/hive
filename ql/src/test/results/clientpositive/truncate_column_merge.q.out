@@ -2,10 +2,12 @@ PREHOOK: query: -- Tests truncating a column from a table with multiple files, t
 
 CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Tests truncating a column from a table with multiple files, then merging those files
 
 CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_tab
 PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (5 rows)
 PREHOOK: type: QUERY

@@ -6,10 +6,12 @@ PREHOOK: query: create table date_3 (
   c1 int
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table date_3 (
   c1 int
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_3
 PREHOOK: query: alter table date_3 add columns (c2 date)
 PREHOOK: type: ALTERTABLE_ADDCOLS

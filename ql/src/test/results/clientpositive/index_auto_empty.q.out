@@ -3,11 +3,13 @@ PREHOOK: query: -- Test to ensure that an empty index result is propagated corre
 -- Create temp, and populate it with some values in src.
 CREATE TABLE temp(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Test to ensure that an empty index result is propagated correctly
 
 -- Create temp, and populate it with some values in src.
 CREATE TABLE temp(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp
 PREHOOK: query: -- Build an index on temp.
 CREATE INDEX temp_index ON TABLE temp(key) as 'COMPACT' WITH DEFERRED REBUILD

@@ -4,12 +4,14 @@ PREHOOK: query: create table exim_employee ( emp_id int comment "employee id")
 	stored as textfile	
 	tblproperties("creator"="krishna")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
 	comment "employee table"
 	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
 	stored as textfile	
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_employee
 #### A masked pattern was here ####
 PREHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'

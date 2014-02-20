@@ -1,6 +1,8 @@
 PREHOOK: query: CREATE TABLE skewedtable (key STRING, value STRING) SKEWED BY (key) ON (1,5,6)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE skewedtable (key STRING, value STRING) SKEWED BY (key) ON (1,5,6)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@skewedtable
 FAILED: SemanticException key is a skewed column. It's not allowed to rename skewed column or change skewed column type.

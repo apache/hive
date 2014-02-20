@@ -1,7 +1,9 @@
 PREHOOK: query: create table tmptable(key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tmptable(key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptable
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE tmptable
@@ -208,12 +210,14 @@ PREHOOK: query: -- Load a file into a existing table
 -- Some other stats (numRows, rawDataSize) should be cleared
 load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE tmptable
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tmptable
 POSTHOOK: query: -- Load a file into a existing table
 -- Some stats (numFiles, totalSize) should be updated correctly
 -- Some other stats (numRows, rawDataSize) should be cleared
 load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE tmptable
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tmptable
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]

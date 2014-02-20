@@ -3,11 +3,13 @@ PREHOOK: query: -- Tests trying to unarchive outer partition group containing ot
 
 CREATE TABLE tstsrcpart LIKE srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Tests trying to unarchive outer partition group containing other partition inside.
 -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
 
 CREATE TABLE tstsrcpart LIKE srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrcpart
 PREHOOK: query: INSERT OVERWRITE TABLE tstsrcpart PARTITION (ds='2008-04-08', hr='11')
 SELECT key, value FROM srcpart WHERE ds='2008-04-08' AND hr='11'

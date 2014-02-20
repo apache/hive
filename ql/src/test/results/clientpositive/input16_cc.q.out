@@ -10,14 +10,18 @@ DROP TABLE INPUT16_CC
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE INPUT16_CC(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe'  with serdeproperties ('testserde.default.serialization.format'='\003', 'dummy.prop.not.used'='dummyy.val') STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE INPUT16_CC(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe'  with serdeproperties ('testserde.default.serialization.format'='\003', 'dummy.prop.not.used'='dummyy.val') STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@INPUT16_CC
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1_cc.txt' INTO TABLE INPUT16_CC
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@input16_cc
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1_cc.txt' INTO TABLE INPUT16_CC
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@input16_cc
 PREHOOK: query: SELECT INPUT16_CC.VALUE, INPUT16_CC.KEY FROM INPUT16_CC
 PREHOOK: type: QUERY

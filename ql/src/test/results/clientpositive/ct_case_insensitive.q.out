@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE tmp_pyang_bucket3 (userId INT) CLUSTERED BY (userid) INTO 32 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE tmp_pyang_bucket3 (userId INT) CLUSTERED BY (userid) INTO 32 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_pyang_bucket3
 PREHOOK: query: DROP TABLE tmp_pyang_bucket3
 PREHOOK: type: DROPTABLE
@@ -13,6 +15,8 @@ POSTHOOK: Input: default@tmp_pyang_bucket3
 POSTHOOK: Output: default@tmp_pyang_bucket3
 PREHOOK: query: CREATE TABLE tmp_pyang_bucket3 (userId INT) CLUSTERED BY (userid) SORTED BY (USERID) INTO 32 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE tmp_pyang_bucket3 (userId INT) CLUSTERED BY (userid) SORTED BY (USERID) INTO 32 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_pyang_bucket3

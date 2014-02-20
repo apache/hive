@@ -4,8 +4,10 @@ POSTHOOK: query: DROP TABLE insert
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE insert (key INT, as STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE insert (key INT, as STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY

@@ -2,15 +2,20 @@ PREHOOK: query: -- This test is used for testing the ColumnAccessAnalyzer
 
 CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@t1
 PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE T4(key STRING, val STRING) PARTITIONED BY (p STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 PREHOOK: query: -- Simple select queries
 SELECT key FROM T1 ORDER BY key
 PREHOOK: type: QUERY

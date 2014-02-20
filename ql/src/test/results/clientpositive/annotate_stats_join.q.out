@@ -3,22 +3,26 @@ PREHOOK: query: create table if not exists emp_staging (
   deptid int
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists emp_staging (
   lastname string,
   deptid int
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emp_staging
 PREHOOK: query: create table if not exists dept_staging (
   deptid int,
   deptname string
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists dept_staging (
   deptid int,
   deptname string
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dept_staging
 PREHOOK: query: create table if not exists loc_staging (
   state string,
@@ -27,6 +31,7 @@ PREHOOK: query: create table if not exists loc_staging (
   year int
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists loc_staging (
   state string,
   locid int,
@@ -34,11 +39,14 @@ POSTHOOK: query: create table if not exists loc_staging (
   year int
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@loc_staging
 PREHOOK: query: create table if not exists emp_orc like emp_staging
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists emp_orc like emp_staging
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emp_orc
 PREHOOK: query: alter table emp_orc set fileformat orc
 PREHOOK: type: ALTERTABLE_FILEFORMAT
@@ -50,8 +58,10 @@ POSTHOOK: Input: default@emp_orc
 POSTHOOK: Output: default@emp_orc
 PREHOOK: query: create table if not exists dept_orc like dept_staging
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists dept_orc like dept_staging
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dept_orc
 PREHOOK: query: alter table dept_orc set fileformat orc
 PREHOOK: type: ALTERTABLE_FILEFORMAT
@@ -63,8 +73,10 @@ POSTHOOK: Input: default@dept_orc
 POSTHOOK: Output: default@dept_orc
 PREHOOK: query: create table loc_orc like loc_staging
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table loc_orc like loc_staging
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@loc_orc
 PREHOOK: query: alter table loc_orc set fileformat orc
 PREHOOK: type: ALTERTABLE_FILEFORMAT
@@ -76,21 +88,27 @@ POSTHOOK: Input: default@loc_orc
 POSTHOOK: Output: default@loc_orc
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@emp_staging
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@emp_staging
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dept.txt' OVERWRITE INTO TABLE dept_staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dept_staging
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dept.txt' OVERWRITE INTO TABLE dept_staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dept_staging
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc_staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@loc_staging
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc_staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@loc_staging
 PREHOOK: query: insert overwrite table emp_orc select * from emp_staging
 PREHOOK: type: QUERY

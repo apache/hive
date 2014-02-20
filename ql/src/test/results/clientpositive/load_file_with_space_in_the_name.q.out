@@ -3,21 +3,27 @@ PREHOOK: query: -- test for loading into tables with the file with space in the 
 
 CREATE TABLE load_file_with_space_in_the_name(name STRING, age INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- test for loading into tables with the file with space in the name
 
 
 CREATE TABLE load_file_with_space_in_the_name(name STRING, age INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load_file_with_space_in_the_name
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person age.txt' INTO TABLE load_file_with_space_in_the_name
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@load_file_with_space_in_the_name
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person age.txt' INTO TABLE load_file_with_space_in_the_name
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@load_file_with_space_in_the_name
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person+age.txt' INTO TABLE load_file_with_space_in_the_name
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@load_file_with_space_in_the_name
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person+age.txt' INTO TABLE load_file_with_space_in_the_name
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@load_file_with_space_in_the_name

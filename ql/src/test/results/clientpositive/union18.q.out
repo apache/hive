@@ -1,12 +1,16 @@
 PREHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST1
 PREHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST2
 PREHOOK: query: -- union case:map-reduce sub-queries followed by multi-table insert 
 

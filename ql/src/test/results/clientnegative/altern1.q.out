@@ -1,7 +1,9 @@
 PREHOOK: query: create table altern1(a int, b int) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table altern1(a int, b int) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@altern1
 PREHOOK: query: alter table altern1 replace columns(a int, b int, ds string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS

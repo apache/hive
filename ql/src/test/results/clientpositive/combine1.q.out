@@ -1,7 +1,9 @@
 PREHOOK: query: create table combine1_1(key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table combine1_1(key string, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@combine1_1
 PREHOOK: query: insert overwrite table combine1_1
 select * from src

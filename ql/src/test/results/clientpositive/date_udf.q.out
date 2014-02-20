@@ -12,13 +12,17 @@ POSTHOOK: query: drop table date_udf_flight
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table date_udf (d date)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table date_udf (d date)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_udf
 PREHOOK: query: create table date_udf_string (d string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table date_udf_string (d string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_udf_string
 PREHOOK: query: from src
   insert overwrite table date_udf 
@@ -48,6 +52,7 @@ PREHOOK: query: create table date_udf_flight (
   FL_NUM int
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table date_udf_flight (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,
@@ -56,14 +61,17 @@ POSTHOOK: query: create table date_udf_flight (
   FL_NUM int
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_udf_flight
 POSTHOOK: Lineage: date_udf.d EXPRESSION []
 POSTHOOK: Lineage: date_udf_string.d SIMPLE []
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE date_udf_flight
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@date_udf_flight
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE date_udf_flight
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@date_udf_flight
 POSTHOOK: Lineage: date_udf.d EXPRESSION []
 POSTHOOK: Lineage: date_udf_string.d SIMPLE []

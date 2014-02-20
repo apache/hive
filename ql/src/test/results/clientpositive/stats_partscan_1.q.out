@@ -10,6 +10,7 @@ CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
 partitioned by (ds string, hr string)
 stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
 -- This test uses mapred.max.split.size/mapred.max.split.size for controlling
 -- number of input splits, which is not effective in hive 0.20.
@@ -22,6 +23,7 @@ CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
 partitioned by (ds string, hr string)
 stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_srcpart_partial_scan
 PREHOOK: query: insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null
 PREHOOK: type: QUERY

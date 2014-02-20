@@ -6,8 +6,10 @@ drop table array_valued_src
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table array_valued_src (key string, value array<string>)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table array_valued_src (key string, value array<string>)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@array_valued_src
 PREHOOK: query: insert overwrite table array_valued_src select key, array(value) from src
 PREHOOK: type: QUERY

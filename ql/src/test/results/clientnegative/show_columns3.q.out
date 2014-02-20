@@ -8,8 +8,10 @@ POSTHOOK: query: USE test_db
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: CREATE TABLE foo(a INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: CREATE TABLE foo(a INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@foo
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE

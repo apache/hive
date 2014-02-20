@@ -7,11 +7,13 @@ PREHOOK: query: create table varchar_2 (
   value varchar(20)
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table varchar_2 (
   key varchar(10),
   value varchar(20)
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_2
 PREHOOK: query: insert overwrite table varchar_2 select * from src
 PREHOOK: type: QUERY

@@ -1,6 +1,8 @@
 PREHOOK: query: create table mp (a int) partitioned by (b int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table mp (a int) partitioned by (b int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mp
 FAILED: SemanticException Partition spec {b=1, c=1} contains non-partition columns

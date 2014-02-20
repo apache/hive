@@ -1,7 +1,9 @@
 PREHOOK: query: create table alter2(a int, b int) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table alter2(a int, b int) partitioned by (insertdate string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter2
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
@@ -23,10 +25,12 @@ POSTHOOK: query: show partitions alter2
 POSTHOOK: type: SHOWPARTITIONS
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@alter2
+PREHOOK: Input: 2008/01/01
+PREHOOK: Output: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@alter2
+POSTHOOK: Input: 2008/01/01
+POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-01
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
@@ -49,10 +53,12 @@ POSTHOOK: type: SHOWPARTITIONS
 insertdate=2008-01-01
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@alter2
+PREHOOK: Input: 2008/01/02
+PREHOOK: Output: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@alter2
+POSTHOOK: Input: 2008/01/02
+POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-02
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
@@ -84,8 +90,10 @@ POSTHOOK: Input: default@alter2
 POSTHOOK: Output: default@alter2
 PREHOOK: query: create external table alter2(a int, b int) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create external table alter2(a int, b int) partitioned by (insertdate string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter2
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
@@ -107,10 +115,12 @@ POSTHOOK: query: show partitions alter2
 POSTHOOK: type: SHOWPARTITIONS
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@alter2
+PREHOOK: Input: 2008/01/01
+PREHOOK: Output: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@alter2
+POSTHOOK: Input: 2008/01/01
+POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-01
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
@@ -133,10 +143,12 @@ POSTHOOK: type: SHOWPARTITIONS
 insertdate=2008-01-01
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@alter2
+PREHOOK: Input: 2008/01/02
+PREHOOK: Output: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@alter2
+POSTHOOK: Input: 2008/01/02
+POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-02
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
@@ -199,9 +211,11 @@ POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 PREHOOK: query: CREATE TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:alter2_db
 POSTHOOK: query: CREATE TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: database:alter2_db
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
@@ -222,10 +236,12 @@ POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: alter2_db@alter2
+PREHOOK: Input: 2008/01/01
+PREHOOK: Output: alter2_db@alter2
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: alter2_db@alter2
+POSTHOOK: Input: 2008/01/01
+POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
@@ -248,10 +264,12 @@ POSTHOOK: type: SHOWPARTITIONS
 insertdate=2008-01-01
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: alter2_db@alter2
+PREHOOK: Input: 2008/01/02
+PREHOOK: Output: alter2_db@alter2
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: alter2_db@alter2
+POSTHOOK: Input: 2008/01/02
+POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
@@ -283,9 +301,11 @@ POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2
 PREHOOK: query: CREATE EXTERNAL TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:alter2_db
 POSTHOOK: query: CREATE EXTERNAL TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: database:alter2_db
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
@@ -306,10 +326,12 @@ POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: alter2_db@alter2
+PREHOOK: Input: 2008/01/01
+PREHOOK: Output: alter2_db@alter2
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: alter2_db@alter2
+POSTHOOK: Input: 2008/01/01
+POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
@@ -332,10 +354,12 @@ POSTHOOK: type: SHOWPARTITIONS
 insertdate=2008-01-01
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: alter2_db@alter2
+PREHOOK: Input: 2008/01/02
+PREHOOK: Output: alter2_db@alter2
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: alter2_db@alter2
+POSTHOOK: Input: 2008/01/02
+POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
 PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE

@@ -2,6 +2,7 @@ PREHOOK: query: drop table dest1
 PREHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 PREHOOK: query: INSERT OVERWRITE TABLE dest1 
 SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 PREHOOK: type: QUERY

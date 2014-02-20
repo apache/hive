@@ -15,8 +15,10 @@ POSTHOOK: query: USE db_drop_non_empty_restrict
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: CREATE TABLE t(a INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db_drop_non_empty_restrict
 POSTHOOK: query: CREATE TABLE t(a INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db_drop_non_empty_restrict
 POSTHOOK: Output: db_drop_non_empty_restrict@t
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE

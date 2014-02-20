@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -217,7 +218,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // make sure the arguments make sense
     applyConstraints(fromURI, toURI, fromTree, isLocal);
-
+    inputs.add(new ReadEntity(new Path(fromURI), isLocal));
     Task<? extends Serializable> rTask = null;
 
     // create copy work

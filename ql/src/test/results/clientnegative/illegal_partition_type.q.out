@@ -1,8 +1,10 @@
 PREHOOK: query: -- begin part(string, int) pass(string, string)
 CREATE TABLE tab1 (id1 int,id2 string) PARTITIONED BY(month string,day int) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- begin part(string, int) pass(string, string)
 CREATE TABLE tab1 (id1 int,id2 string) PARTITIONED BY(month string,day int) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab1
 FAILED: SemanticException [Error 10248]: Cannot add partition column day of type string as it cannot be converted to type int

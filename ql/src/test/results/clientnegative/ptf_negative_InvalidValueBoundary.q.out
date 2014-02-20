@@ -15,6 +15,7 @@ PREHOOK: query: CREATE TABLE part(
     p_complex array<int>
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
@@ -28,6 +29,7 @@ POSTHOOK: query: CREATE TABLE part(
     p_complex array<int>
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part
 FAILED: SemanticException Failed to breakup Windowing invocations into Groups. At least 1 group must only depend on input columns. Also check for circular dependencies.
 Underlying error: Value Boundary expression must be of primitve type. Found: array<int>

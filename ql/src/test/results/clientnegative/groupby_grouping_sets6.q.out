@@ -1,6 +1,8 @@
 PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
 FAILED: SemanticException [Error 10226]: An additional MR job is introduced since the cardinality of grouping sets is more than hive.new.job.grouping.set.cardinality. This functionality is not supported with distincts. Either set hive.new.job.grouping.set.cardinality to a high number (higher than the number of rows per input row due to grouping sets in the query), or rewrite the query to not use distincts. The number of rows per input row due to grouping sets is 4

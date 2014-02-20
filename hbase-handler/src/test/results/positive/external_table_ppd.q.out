@@ -15,6 +15,7 @@ WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:binarykey#-,cf:binarybyte#-,
 TBLPROPERTIES ("hbase.table.name" = "t_hive",
                "hbase.table.default.storage.type" = "binary")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE t_hbase(key STRING,
                      tinyint_col TINYINT,
                      smallint_col SMALLINT,
@@ -28,6 +29,7 @@ WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:binarykey#-,cf:binarybyte#-,
 TBLPROPERTIES ("hbase.table.name" = "t_hive",
                "hbase.table.default.storage.type" = "binary")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase
 PREHOOK: query: DESCRIBE FORMATTED t_hbase
 PREHOOK: type: DESCTABLE

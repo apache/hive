@@ -1,7 +1,9 @@
 PREHOOK: query: create table fileformat_mix_test (src int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table fileformat_mix_test (src int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fileformat_mix_test
 PREHOOK: query: alter table fileformat_mix_test set fileformat Sequencefile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
@@ -25,10 +27,10 @@ POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).src EXPRESSION [(src)src.
 POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: alter table fileformat_mix_test add partition (ds='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@fileformat_mix_test
+PREHOOK: Output: default@fileformat_mix_test
 POSTHOOK: query: alter table fileformat_mix_test add partition (ds='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@fileformat_mix_test
+POSTHOOK: Output: default@fileformat_mix_test
 POSTHOOK: Output: default@fileformat_mix_test@ds=2
 POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).src EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

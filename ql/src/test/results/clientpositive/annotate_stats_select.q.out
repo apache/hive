@@ -18,6 +18,7 @@ PREHOOK: query: create table if not exists alltypes (
 collection items terminated by ','
 map keys terminated by ':' stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists alltypes (
  bo1 boolean,
  ti1 tinyint,
@@ -38,11 +39,14 @@ POSTHOOK: query: create table if not exists alltypes (
 collection items terminated by ','
 map keys terminated by ':' stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypes
 PREHOOK: query: create table alltypes_orc like alltypes
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table alltypes_orc like alltypes
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypes_orc
 PREHOOK: query: alter table alltypes_orc set fileformat orc
 PREHOOK: type: ALTERTABLE_FILEFORMAT
@@ -54,9 +58,11 @@ POSTHOOK: Input: default@alltypes_orc
 POSTHOOK: Output: default@alltypes_orc
 PREHOOK: query: load data local inpath '../../data/files/alltypes.txt' overwrite into table alltypes
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@alltypes
 POSTHOOK: query: load data local inpath '../../data/files/alltypes.txt' overwrite into table alltypes
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@alltypes
 PREHOOK: query: insert overwrite table alltypes_orc select * from alltypes
 PREHOOK: type: QUERY

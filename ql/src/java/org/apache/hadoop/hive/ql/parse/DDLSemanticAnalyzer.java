@@ -42,6 +42,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -666,6 +667,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case TOK_DATABASELOCATION:
         dbLocation = unescapeSQLString(childNode.getChild(0).getText());
+        addLocationToOutputs(dbLocation);
         break;
       default:
         throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
@@ -970,6 +972,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_TABLELOCATION:
         location = unescapeSQLString(child.getChild(0).getText());
+        addLocationToOutputs(location);
         break;
       case HiveParser.TOK_TABLEPROPERTIES:
         tblProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
@@ -1342,12 +1345,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       HashMap<String, String> partSpec) throws SemanticException {
 
     String newLocation = unescapeSQLString(ast.getChild(0).getText());
-
+    addLocationToOutputs(newLocation);
     AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, newLocation, partSpec);
 
     addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
+
   }
 
   private void analyzeAlterTableProtectMode(ASTNode ast, String tableName,
@@ -2520,7 +2524,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Table tab = getTable(tblName, true);
     boolean isView = tab.isView();
     validateAlterTableType(tab, AlterTableTypes.ADDPARTITION, expectView);
-    inputs.add(new ReadEntity(tab));
+    outputs.add(new WriteEntity(tab));
 
     int numCh = ast.getChildCount();
     int start = ifNotExists ? 2 : 1;
@@ -2547,6 +2551,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("LOCATION clause illegal for view partition");
         }
         currentLocation = unescapeSQLString(child.getChild(0).getText());
+        boolean isLocal = false;
+        try {
+          // do best effor to determine if this is a local file
+          String scheme = new URI(currentLocation).getScheme();
+          if (scheme != null) {
+            isLocal = FileUtils.isLocalFile(conf, currentLocation);
+          }
+        } catch (URISyntaxException e) {
+          LOG.warn("Unable to create URI from " + currentLocation, e);
+        }
+        inputs.add(new ReadEntity(new Path(currentLocation), isLocal));
         break;
       default:
         throw new SemanticException("Unknown child: " + child);
@@ -3159,6 +3174,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
                           .getText()));
                   validateSkewedLocationString(newLocation);
                   locations.put(keyList, newLocation);
+                  addLocationToOutputs(newLocation);
                 }
               }
             }
@@ -3170,6 +3186,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     addInputsOutputsAlterTable(tableName, partSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
+  }
+
+  private void addLocationToOutputs(String newLocation) {
+    outputs.add(new WriteEntity(new Path(newLocation), FileUtils.isLocalFile(conf, newLocation)));
   }
 
   /**

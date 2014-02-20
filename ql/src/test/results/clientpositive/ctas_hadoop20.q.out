@@ -2,10 +2,12 @@ PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 
 create table nzhang_Tmp(a int, b string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 
 create table nzhang_Tmp(a int, b string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_Tmp
 PREHOOK: query: select * from nzhang_Tmp
 PREHOOK: type: QUERY
@@ -880,8 +882,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@nzhang_ctas5
 PREHOOK: query: create table nzhang_ctas6 (key string, `to` string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table nzhang_ctas6 (key string, `to` string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_ctas6
 PREHOOK: query: insert overwrite table nzhang_ctas6 select key, value from src limit 10
 PREHOOK: type: QUERY

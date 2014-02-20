@@ -67,6 +67,7 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
@@ -84,18 +85,23 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@serde_regex
 PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/apache.access.log" INTO TABLE serde_regex
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@serde_regex
 POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/apache.access.log" INTO TABLE serde_regex
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@serde_regex
 PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/apache.access.2.log" INTO TABLE serde_regex
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@serde_regex
 POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/apache.access.2.log" INTO TABLE serde_regex
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@serde_regex
 PREHOOK: query: SELECT * FROM serde_regex ORDER BY time
 PREHOOK: type: QUERY

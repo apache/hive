@@ -3,10 +3,12 @@ PREHOOK: query: create table exim_department ( dep_id int comment "department id
 	stored by "org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler"	
 	tblproperties("creator"="krishna")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table exim_department ( dep_id int comment "department id") 	
 	clustered by (dep_id) sorted by (dep_id desc) into 10 buckets
 	stored by "org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler"	
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_department
 FAILED: SemanticException [Error 10121]: Export/Import cannot be done for a non-native table. 

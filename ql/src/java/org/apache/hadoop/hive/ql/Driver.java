@@ -593,7 +593,7 @@ public class Driver implements CommandProcessor {
           continue;
         }
         Table tbl = read.getTable();
-        if ((read.getPartition() != null) || (tbl.isPartitioned())) {
+        if ((read.getPartition() != null) || (tbl != null && tbl.isPartitioned())) {
           String tblName = tbl.getTableName();
           if (tableUsePartLevelAuth.get(tblName) == null) {
             boolean usePartLevelPriv = (tbl.getParameters().get(
@@ -732,6 +732,10 @@ public class Driver implements CommandProcessor {
         // and are not used for authorization checks.
         // This ReadEntity represents one of the underlying tables/views, so skip it.
         // See description of the isDirect in ReadEntity
+        continue;
+      }
+      if(privObject instanceof WriteEntity && ((WriteEntity)privObject).isTempURI()){
+        //do not authorize temporary uris
         continue;
       }
 

@@ -5,6 +5,7 @@ PREHOOK: query: create table exim_employee (emp_id int comment 'employee id', em
  row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" with serdeproperties ('serialization.format'='1')
  stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table exim_employee (emp_id int comment 'employee id', emp_name string, emp_dob string comment 'employee date of birth', emp_sex string comment 'M/F') 
  comment 'employee table' 
  partitioned by (emp_country string comment '2-char code', emp_state string comment '2-char code')
@@ -12,6 +13,7 @@ POSTHOOK: query: create table exim_employee (emp_id int comment 'employee id', e
  row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" with serdeproperties ('serialization.format'='1')
  stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_employee
 PREHOOK: query: alter table exim_employee add columns (emp_dept int)
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -31,10 +33,10 @@ POSTHOOK: Input: default@exim_employee
 POSTHOOK: Output: default@exim_employee
 PREHOOK: query: alter table exim_employee add partition (emp_country='in', emp_state='tn')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@exim_employee
+PREHOOK: Output: default@exim_employee
 POSTHOOK: query: alter table exim_employee add partition (emp_country='in', emp_state='tn')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@exim_employee
+POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=tn
 PREHOOK: query: alter table exim_employee set serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe" with serdeproperties ('serialization.format'='2')
 PREHOOK: type: ALTERTABLE_SERIALIZER
@@ -58,10 +60,10 @@ POSTHOOK: Input: default@exim_employee
 POSTHOOK: Output: default@exim_employee
 PREHOOK: query: alter table exim_employee add partition (emp_country='in', emp_state='ka')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@exim_employee
+PREHOOK: Output: default@exim_employee
 POSTHOOK: query: alter table exim_employee add partition (emp_country='in', emp_state='ka')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@exim_employee
+POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=ka
 #### A masked pattern was here ####
 PREHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'

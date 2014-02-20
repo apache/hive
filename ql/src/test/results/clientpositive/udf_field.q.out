@@ -70,14 +70,18 @@ POSTHOOK: Input: default@src
 1	2	3	4	4
 PREHOOK: query: CREATE TABLE test_table(col1 STRING, col2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table(col1 STRING, col2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test_table
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test_table
 PREHOOK: query: select col1,col2,
   field("66",col1),
@@ -113,14 +117,18 @@ POSTHOOK: Input: default@test_table
 66	val_66	1	1	0	0	0	1	0	0	2	2
 PREHOOK: query: CREATE TABLE test_table1(col1 int, col2 string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table1(col1 int, col2 string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test_table1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test_table1
 PREHOOK: query: select col1,col2,
   field(66,col1),

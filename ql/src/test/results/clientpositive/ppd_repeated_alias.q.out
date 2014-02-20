@@ -8,13 +8,17 @@ POSTHOOK: query: drop table pokes2
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table pokes (foo int, bar int, blah int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table pokes (foo int, bar int, blah int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes
 PREHOOK: query: create table pokes2 (foo int, bar int, blah int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table pokes2 (foo int, bar int, blah int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes2
 PREHOOK: query: -- Q1: predicate should not be pushed on the right side of a left outer join
 explain
