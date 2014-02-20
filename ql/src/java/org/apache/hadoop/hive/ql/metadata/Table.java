@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
@@ -399,6 +400,11 @@ public class Table implements Serializable {
 
   public String getProperty(String name) {
     return tTable.getParameters().get(name);
+  }
+
+  public boolean isImmutable(){
+    return (tTable.getParameters().containsKey(hive_metastoreConstants.IS_IMMUTABLE)
+        && tTable.getParameters().get(hive_metastoreConstants.IS_IMMUTABLE).equalsIgnoreCase("true"));
   }
 
   public void setTableType(TableType tableType) {

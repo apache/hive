@@ -778,6 +778,12 @@ const string IS_ARCHIVED = "is_archived",
 // is dropped, this directory will be deleted
 const string ORIGINAL_LOCATION = "original_location",
 
+// Whether or not the table is considered immutable - immutable tables can only be
+// overwritten or created if unpartitioned, or if partitioned, partitions inside them
+// can only be overwritten or created. Immutability supports write-once and replace
+// semantics, but not append.
+const string IS_IMMUTABLE = "immutable",
+
 // these should be needed only for backward compatibility with filestore
 const string META_TABLE_COLUMNS   = "columns",
 const string META_TABLE_COLUMN_TYPES   = "columns.types",
