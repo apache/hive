@@ -23,6 +23,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   ORIGINAL_LOCATION = "original_location";
 
+  IS_IMMUTABLE = "immutable";
+
   META_TABLE_COLUMNS = "columns";
 
   META_TABLE_COLUMN_TYPES = "columns.types";

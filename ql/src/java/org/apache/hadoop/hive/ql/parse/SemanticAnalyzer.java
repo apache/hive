@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -5435,6 +5436,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Map<String, String> partSpec = qbm.getPartSpecForAlias(dest);
       dest_path = dest_tab.getPath();
 
+      // If the query here is an INSERT_INTO and the target is an immutable table,
+      // verify that our destination is empty before proceeding
+      if (dest_tab.isImmutable() &&
+          qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),dest_tab.getTableName())){
+        try {
+          FileSystem fs = dest_path.getFileSystem(conf);
+          if (! MetaStoreUtils.isDirEmpty(fs,dest_path)){
+            LOG.warn("Attempted write into an immutable table : "
+                + dest_tab.getTableName() + " : " + dest_path);
+            throw new SemanticException(
+                ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(dest_tab.getTableName()));
+          }
+        } catch (IOException ioe) {
+            LOG.warn("Error while trying to determine if immutable table has any data : "
+                + dest_tab.getTableName() + " : " + dest_path);
+          throw new SemanticException(ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(ioe.getMessage()));
+        }
+      }
+
       // check for partition
       List<FieldSchema> parts = dest_tab.getPartitionKeys();
       if (parts != null && parts.size() > 0) { // table is partitioned
@@ -5569,6 +5589,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Path tabPath = dest_tab.getPath();
       Path partPath = dest_part.getDataLocation();
+
+      // If the query here is an INSERT_INTO and the target is an immutable table,
+      // verify that our destination is empty before proceeding
+      if (dest_tab.isImmutable() &&
+          qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),dest_tab.getTableName())){
+        qb.getParseInfo().isInsertToTable();
+        try {
+          FileSystem fs = partPath.getFileSystem(conf);
+          if (! MetaStoreUtils.isDirEmpty(fs,partPath)){
+            LOG.warn("Attempted write into an immutable table partition : "
+                + dest_tab.getTableName() + " : " + partPath);
+            throw new SemanticException(
+                ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(dest_tab.getTableName()));
+          }
+        } catch (IOException ioe) {
+            LOG.warn("Error while trying to determine if immutable table partition has any data : "
+                + dest_tab.getTableName() + " : " + partPath);
+          throw new SemanticException(ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(ioe.getMessage()));
+        }
+      }
 
       // if the table is in a different dfs than the partition,
       // replace the partition's dfs with the table's dfs.

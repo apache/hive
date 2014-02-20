@@ -19,6 +19,8 @@ IS_ARCHIVED = %q"is_archived"
 
 ORIGINAL_LOCATION = %q"original_location"
 
+IS_IMMUTABLE = %q"immutable"
+
 META_TABLE_COLUMNS = %q"columns"
 
 META_TABLE_COLUMN_TYPES = %q"columns.types"
