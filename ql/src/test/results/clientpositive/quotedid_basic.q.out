@@ -1,9 +1,11 @@
 PREHOOK: query: -- basic
 create table t1(`x+1` string, `y&y` string, `!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- basic
 create table t1(`x+1` string, `y&y` string, `!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: describe t1
 PREHOOK: type: DESCTABLE
@@ -302,9 +304,11 @@ STAGE PLANS:
 PREHOOK: query: -- escaped back ticks
 create table t4(`x+1``` string, `y&y` string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- escaped back ticks
 create table t4(`x+1``` string, `y&y` string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t4
 PREHOOK: query: describe t4
 PREHOOK: type: DESCTABLE

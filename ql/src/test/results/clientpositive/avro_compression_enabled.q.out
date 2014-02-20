@@ -35,6 +35,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- verify that new joins bring in correct schemas (including evolved schemas)
 
 CREATE TABLE doctors4
@@ -72,12 +73,15 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@doctors4
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@doctors4
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@doctors4
 PREHOOK: query: select count(*) from src
 PREHOOK: type: QUERY

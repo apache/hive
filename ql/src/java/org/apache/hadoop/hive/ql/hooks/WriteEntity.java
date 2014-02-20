@@ -22,8 +22,8 @@ import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.ql.metadata.Table;
  * object may be a table, partition, dfs directory or a local directory.
  */
 public class WriteEntity extends Entity implements Serializable {
+
+  private boolean isTempURI = false;
 
   /**
    * Only used by serialization.
@@ -50,7 +52,7 @@ public class WriteEntity extends Entity implements Serializable {
    *          Table that is written to.
    */
   public WriteEntity(Table t) {
-    super(t, true);
+    this(t, true);
   }
 
   public WriteEntity(Table t, boolean complete) {
@@ -80,7 +82,22 @@ public class WriteEntity extends Entity implements Serializable {
    *          Flag to decide whether this directory is local or in dfs.
    */
   public WriteEntity(Path d, boolean islocal) {
+    this(d, islocal, false);
+  }
+
+  /**
+   * Constructor for a file.
+   *
+   * @param d
+   *          The name of the directory that is being written to.
+   * @param islocal
+   *          Flag to decide whether this directory is local or in dfs.
+   * @param isTemp
+   *          True if this is a temporary location such as scratch dir
+   */
+  public WriteEntity(Path d, boolean islocal, boolean isTemp) {
     super(d.toString(), islocal, true);
+    this.isTempURI = isTemp;
   }
 
   /**
@@ -99,4 +116,9 @@ public class WriteEntity extends Entity implements Serializable {
       return false;
     }
   }
+
+  public boolean isTempURI() {
+    return isTempURI;
+  }
+
 }

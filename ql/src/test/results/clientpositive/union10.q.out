@@ -2,10 +2,12 @@ PREHOOK: query: -- union case: all subqueries are a map-reduce jobs, 3 way union
 
 create table tmptable(key string, value int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- union case: all subqueries are a map-reduce jobs, 3 way union, same input for all sub-queries, followed by filesink
 
 create table tmptable(key string, value int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptable
 PREHOOK: query: explain 
 insert overwrite table tmptable

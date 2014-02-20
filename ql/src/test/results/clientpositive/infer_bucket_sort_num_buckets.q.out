@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE test_table (key INT, value STRING) PARTITIONED BY (ds STRING, hr STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table (key INT, value STRING) PARTITIONED BY (ds STRING, hr STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: -- Tests dynamic partitions where bucketing/sorting can be inferred, but not all reducers write
 -- all partitions.  The subquery produces rows as follows

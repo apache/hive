@@ -2,10 +2,12 @@ PREHOOK: query: -- This tests that the schema can be changed for binary serde da
 create table partition_test_partitioned(key string, value string)
 partitioned by (dt string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This tests that the schema can be changed for binary serde data
 create table partition_test_partitioned(key string, value string)
 partitioned by (dt string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_test_partitioned
 PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt='1')
 select * from src where key = 238

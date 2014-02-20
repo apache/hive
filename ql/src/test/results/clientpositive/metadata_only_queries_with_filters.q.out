@@ -13,6 +13,7 @@ PREHOOK: query: create table over10k(
        row format delimited
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table over10k(
            t tinyint,
            si smallint,
@@ -28,12 +29,15 @@ POSTHOOK: query: create table over10k(
        row format delimited
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over10k
 PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@over10k
 POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@over10k
 PREHOOK: query: create table stats_tbl_part(
            t tinyint,
@@ -48,6 +52,7 @@ PREHOOK: query: create table stats_tbl_part(
            dec decimal,  
            bin binary) partitioned by (dt int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table stats_tbl_part(
            t tinyint,
            si smallint,
@@ -61,6 +66,7 @@ POSTHOOK: query: create table stats_tbl_part(
            dec decimal,  
            bin binary) partitioned by (dt int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_tbl_part
 PREHOOK: query: from over10k 
 insert overwrite table stats_tbl_part partition (dt=2010) select t,si,i,b,f,d,bo,s,ts,dec,bin where t>0 and t<30 

@@ -24,11 +24,13 @@ ADD PARTITION (value='val_86')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@src
 PREHOOK: Input: default@view_partitioned
+PREHOOK: Output: default@view_partitioned
 POSTHOOK: query: ALTER VIEW view_partitioned
 ADD PARTITION (value='val_86')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@view_partitioned
+POSTHOOK: Output: default@view_partitioned
 POSTHOOK: Output: default@view_partitioned@value=val_86
 PREHOOK: query: DESCRIBE FORMATTED view_partitioned PARTITION (value='val_86')
 PREHOOK: type: DESCTABLE

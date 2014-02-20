@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,6 +29,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -321,6 +328,43 @@ public class SQLAuthorizationUtils {
           + " does not have following privileges on " + hivePrivObject + " : " + sortedmissingPrivs;
       throw new HiveAccessControlException(errMsg.toString());
     }
+  }
+
+  /**
+   * Map permissions for this uri to SQL Standard privileges
+   * @param filePath
+   * @param conf
+   * @param userName
+   * @return
+   * @throws HiveAuthzPluginException
+   */
+  public static RequiredPrivileges getPrivilegesFromFS(Path filePath, HiveConf conf,
+      String userName) throws HiveAuthzPluginException {
+    // get the 'available privileges' from file system
+
+
+    RequiredPrivileges availPrivs = new RequiredPrivileges();
+    // check file system permission
+    FileSystem fs;
+    try {
+      fs = FileSystem.get(filePath.toUri(), conf);
+      Path path = FileUtils.getPathOrParentThatExists(fs, filePath);
+      FileStatus fileStatus = fs.getFileStatus(path);
+      if (FileUtils.isOwnerOfFileHierarchy(fs, fileStatus, userName)) {
+        availPrivs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
+      }
+      if (FileUtils.isActionPermittedForFileHierarchy(fs, fileStatus, userName, FsAction.WRITE)) {
+        availPrivs.addPrivilege(SQLPrivTypeGrant.INSERT_NOGRANT);
+        availPrivs.addPrivilege(SQLPrivTypeGrant.DELETE_NOGRANT);
+      }
+      if (FileUtils.isActionPermittedForFileHierarchy(fs, fileStatus, userName, FsAction.READ)) {
+        availPrivs.addPrivilege(SQLPrivTypeGrant.SELECT_NOGRANT);
+      }
+    } catch (IOException e) {
+      String msg = "Error getting permissions for " + filePath + ": " + e.getMessage();
+      throw new HiveAuthzPluginException(msg, e);
+    }
+    return availPrivs;
   }
 
 

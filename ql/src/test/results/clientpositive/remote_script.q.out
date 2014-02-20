@@ -1,7 +1,9 @@
 PREHOOK: query: create table tmp_tmp(key string, value string) stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tmp_tmp(key string, value string) stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_tmp
 PREHOOK: query: insert overwrite table tmp_tmp
 SELECT TRANSFORM(key, value) USING

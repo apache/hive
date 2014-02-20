@@ -13,24 +13,36 @@ POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
+PREHOOK: Output: database:default
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@target
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
+PREHOOK: Output: database:default
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table temp
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@temp
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table temp
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@temp
 #### A masked pattern was here ####
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@target
 #### A masked pattern was here ####
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@target
 PREHOOK: query: select count(*) from target
 PREHOOK: type: QUERY
@@ -43,15 +55,19 @@ POSTHOOK: Input: default@target
 500
 PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table temp
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@temp
 POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table temp
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@temp
 #### A masked pattern was here ####
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@target
 #### A masked pattern was here ####
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@target
 PREHOOK: query: select count(*) from target
 PREHOOK: type: QUERY

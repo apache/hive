@@ -1,22 +1,30 @@
 PREHOOK: query: create table kv_fileformat_check_txt (key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table kv_fileformat_check_txt (key string, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@kv_fileformat_check_txt
 PREHOOK: query: load data local inpath '../../data/files/kv1.seq' overwrite into table kv_fileformat_check_txt
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@kv_fileformat_check_txt
 POSTHOOK: query: load data local inpath '../../data/files/kv1.seq' overwrite into table kv_fileformat_check_txt
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@kv_fileformat_check_txt
 PREHOOK: query: create table kv_fileformat_check_seq (key string, value string) stored as sequencefile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table kv_fileformat_check_seq (key string, value string) stored as sequencefile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@kv_fileformat_check_seq
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table kv_fileformat_check_seq
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@kv_fileformat_check_seq
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table kv_fileformat_check_seq
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@kv_fileformat_check_seq

@@ -13,6 +13,7 @@ PREHOOK: query: CREATE TABLE parquet_partitioned_staging (
 ) ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE parquet_partitioned_staging (
     id int,
     str string,
@@ -20,6 +21,7 @@ POSTHOOK: query: CREATE TABLE parquet_partitioned_staging (
 ) ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_partitioned_staging
 PREHOOK: query: CREATE TABLE parquet_partitioned (
     id int,
@@ -27,12 +29,14 @@ PREHOOK: query: CREATE TABLE parquet_partitioned (
 ) PARTITIONED BY (part string)
 STORED AS PARQUET
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE parquet_partitioned (
     id int,
     str string
 ) PARTITIONED BY (part string)
 STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_partitioned
 PREHOOK: query: DESCRIBE FORMATTED parquet_partitioned
 PREHOOK: type: DESCTABLE
@@ -70,9 +74,11 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partitioned.txt' OVERWRITE INTO TABLE parquet_partitioned_staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@parquet_partitioned_staging
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partitioned.txt' OVERWRITE INTO TABLE parquet_partitioned_staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@parquet_partitioned_staging
 PREHOOK: query: SELECT * FROM parquet_partitioned_staging
 PREHOOK: type: QUERY

@@ -22,6 +22,7 @@ WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "info:state,info:country,info:country_id"
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- From HIVE-1257
 
 CREATE TABLE users(key string, state string, country string, country_id int)
@@ -30,6 +31,7 @@ WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "info:state,info:country,info:country_id"
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@users
 PREHOOK: query: CREATE TABLE states(key string, name string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
@@ -37,12 +39,14 @@ WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "state:name"
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE states(key string, name string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "state:name"
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@states
 PREHOOK: query: CREATE TABLE countries(key string, name string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
@@ -50,12 +54,14 @@ WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "info:name,info:country,info:country_id"
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE countries(key string, name string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "info:name,info:country,info:country_id"
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@countries
 PREHOOK: query: INSERT OVERWRITE TABLE users SELECT 'user1', 'IA', 'USA', 0
 FROM src WHERE key=100
@@ -217,19 +223,23 @@ PREHOOK: query: CREATE TABLE users(key int, userid int, username string, created
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,f:userid,f:nickname,f:created")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE users(key int, userid int, username string, created int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,f:userid,f:nickname,f:created")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@users
 PREHOOK: query: CREATE TABLE users_level(key int, userid int, level int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,f:userid,f:level")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE users_level(key int, userid int, level int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,f:userid,f:level")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@users_level
 PREHOOK: query: -- HIVE-1903:  the problem fixed here showed up even without any data,
 -- so no need to load any to test it

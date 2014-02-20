@@ -3,11 +3,13 @@ PREHOOK: query: -- Tests that when overwriting a partition in a table after alte
 
 CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Tests that when overwriting a partition in a table after altering the serde properties
 -- the partition metadata is updated as well.
 
 CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tst1
 PREHOOK: query: DESCRIBE FORMATTED tst1
 PREHOOK: type: DESCTABLE

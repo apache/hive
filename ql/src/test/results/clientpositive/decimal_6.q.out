@@ -15,34 +15,42 @@ ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE DECIMAL_6_1(key decimal(10,5), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL_6_1
 PREHOOK: query: CREATE TABLE DECIMAL_6_2(key decimal(17,4), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE DECIMAL_6_2(key decimal(17,4), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL_6_2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv9.txt' INTO TABLE DECIMAL_6_1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@decimal_6_1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv9.txt' INTO TABLE DECIMAL_6_1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@decimal_6_1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv9.txt' INTO TABLE DECIMAL_6_2
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@decimal_6_2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv9.txt' INTO TABLE DECIMAL_6_2
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@decimal_6_2
 PREHOOK: query: SELECT T.key from (
   SELECT key, value from DECIMAL_6_1

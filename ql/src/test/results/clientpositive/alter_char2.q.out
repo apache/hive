@@ -8,10 +8,12 @@ PREHOOK: query: create table alter_char2 (
   c1 char(255)
 ) partitioned by (hr int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table alter_char2 (
   c1 char(255)
 ) partitioned by (hr int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_char2
 PREHOOK: query: insert overwrite table alter_char2 partition (hr=1)
   select value from src limit 1

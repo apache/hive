@@ -1,7 +1,11 @@
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
+PREHOOK: Output: database:default
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@spacetest
 PREHOOK: query: SELECT * FROM spacetest
 PREHOOK: type: QUERY
@@ -33,15 +37,19 @@ POSTHOOK: Input: default@spacetest
 POSTHOOK: Output: default@spacetest
 PREHOOK: query: CREATE EXTERNAL TABLE spacetestpartition (id int, message string) PARTITIONED BY (day int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE EXTERNAL TABLE spacetestpartition (id int, message string) PARTITIONED BY (day int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@spacetestpartition
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@spacetestpartition
+#### A masked pattern was here ####
+PREHOOK: Output: default@spacetestpartition
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@spacetestpartition
+#### A masked pattern was here ####
+POSTHOOK: Output: default@spacetestpartition
 POSTHOOK: Output: default@spacetestpartition@day=10
 PREHOOK: query: SELECT * FROM spacetestpartition
 PREHOOK: type: QUERY

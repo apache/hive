@@ -1,9 +1,11 @@
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_1 (key INT, value STRING) PARTITIONED BY (part STRING) 
 CLUSTERED BY (key) SORTED BY (key DESC) INTO 1 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_1 (key INT, value STRING) PARTITIONED BY (part STRING) 
 CLUSTERED BY (key) SORTED BY (key DESC) INTO 1 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1
 PREHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='1') SELECT * FROM src
 PREHOOK: type: QUERY
@@ -18,9 +20,11 @@ POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=1).value SIMPLE [(src
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2 (key INT, value STRING) PARTITIONED BY (part STRING) 
 CLUSTERED BY (key) SORTED BY (key DESC) INTO 1 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2 (key INT, value STRING) PARTITIONED BY (part STRING) 
 CLUSTERED BY (key) SORTED BY (key DESC) INTO 1 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
 POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

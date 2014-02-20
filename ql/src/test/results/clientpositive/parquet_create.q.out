@@ -17,6 +17,7 @@ FIELDS TERMINATED BY '|'
 COLLECTION ITEMS TERMINATED BY ','
 MAP KEYS TERMINATED BY ':'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE parquet_create_staging (
     id int,
     str string,
@@ -28,6 +29,7 @@ FIELDS TERMINATED BY '|'
 COLLECTION ITEMS TERMINATED BY ','
 MAP KEYS TERMINATED BY ':'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_create_staging
 PREHOOK: query: CREATE TABLE parquet_create (
     id int,
@@ -37,6 +39,7 @@ PREHOOK: query: CREATE TABLE parquet_create (
     strct STRUCT<A:STRING,B:STRING>
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE parquet_create (
     id int,
     str string,
@@ -45,6 +48,7 @@ POSTHOOK: query: CREATE TABLE parquet_create (
     strct STRUCT<A:STRING,B:STRING>
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_create
 PREHOOK: query: DESCRIBE FORMATTED parquet_create
 PREHOOK: type: DESCTABLE
@@ -80,9 +84,11 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_create.txt' OVERWRITE INTO TABLE parquet_create_staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@parquet_create_staging
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_create.txt' OVERWRITE INTO TABLE parquet_create_staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@parquet_create_staging
 PREHOOK: query: SELECT * FROM parquet_create_staging
 PREHOOK: type: QUERY

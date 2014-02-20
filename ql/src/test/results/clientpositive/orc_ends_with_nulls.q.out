@@ -3,11 +3,13 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_orc (key STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_orc
 PREHOOK: query: ALTER TABLE test_orc SET SERDEPROPERTIES ('orc.row.index.stride' = '1000')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
@@ -23,18 +25,22 @@ PREHOOK: query: -- nulls.txt is a file containing a non-null string row followed
 
 CREATE TABLE src_null(a STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- nulls.txt is a file containing a non-null string row followed by 1000 null string rows
 -- this produces the effect that the number of non-null rows between the last and second
 -- to last index stride are the same (there's only two index strides)
 
 CREATE TABLE src_null(a STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_null
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@src_null
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@src_null
 PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT a FROM src_null
 PREHOOK: type: QUERY

@@ -18,11 +18,13 @@ ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@src
 PREHOOK: Input: default@testviewpart
+PREHOOK: Output: default@testviewpart
 POSTHOOK: query: ALTER VIEW testViewPart 
 ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@testviewpart
+POSTHOOK: Output: default@testviewpart
 POSTHOOK: Output: default@testviewpart@value=val_86
 POSTHOOK: Output: default@testviewpart@value=val_xyz
 PREHOOK: query: DESCRIBE FORMATTED testViewPart

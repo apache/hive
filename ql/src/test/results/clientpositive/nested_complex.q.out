@@ -11,6 +11,7 @@ WITH SERDEPROPERTIES (
    'line.delim'='\n'
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table nestedcomplex (
 simple_int int,
 max_nested_array  array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<int>>>>>>>>>>>>>>>>>>>>>>>,
@@ -24,6 +25,7 @@ WITH SERDEPROPERTIES (
    'line.delim'='\n'
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nestedcomplex
 PREHOOK: query: describe nestedcomplex
 PREHOOK: type: DESCTABLE
@@ -47,9 +49,11 @@ simple_string       	string              	None
 #### A masked pattern was here ####
 PREHOOK: query: load data local inpath '../../data/files/nested_complex.txt' overwrite into table nestedcomplex
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@nestedcomplex
 POSTHOOK: query: load data local inpath '../../data/files/nested_complex.txt' overwrite into table nestedcomplex
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@nestedcomplex
 PREHOOK: query: select * from nestedcomplex sort by simple_int
 PREHOOK: type: QUERY

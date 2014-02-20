@@ -1,14 +1,16 @@
 PREHOOK: query: create table alter_table_partition_clusterby_sortby (a int, b int) partitioned by (c string) clustered by (a, b) sorted by (a desc, b asc) into 4 buckets
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table alter_table_partition_clusterby_sortby (a int, b int) partitioned by (c string) clustered by (a, b) sorted by (a desc, b asc) into 4 buckets
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_table_partition_clusterby_sortby
 PREHOOK: query: alter table alter_table_partition_clusterby_sortby add partition(c='abc')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@alter_table_partition_clusterby_sortby
+PREHOOK: Output: default@alter_table_partition_clusterby_sortby
 POSTHOOK: query: alter table alter_table_partition_clusterby_sortby add partition(c='abc')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
+POSTHOOK: Output: default@alter_table_partition_clusterby_sortby
 POSTHOOK: Output: default@alter_table_partition_clusterby_sortby@c=abc
 PREHOOK: query: -- Turn off sorting for a partition
 

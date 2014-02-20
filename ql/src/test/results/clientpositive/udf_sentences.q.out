@@ -1,12 +1,16 @@
 PREHOOK: query: CREATE TABLE sent_tmp (val array<string>)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE sent_tmp (val array<string>)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sent_tmp
 PREHOOK: query: CREATE TABLE sent_tmp2 (val string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE sent_tmp2 (val string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sent_tmp2
 PREHOOK: query: INSERT OVERWRITE TABLE sent_tmp
 SELECT explode(sentences(decode(unhex("486976652065737420756E20657863656C6C656E74206F7574696C20706F7572206C65732072657175C3AA74657320646520646F6E6EC3A965732C20657420706575742DC3AA74726520706C757320706F6C7976616C656E7420717565206C612074726164756374696F6E206175746F6D61746971756521206C6120706F6E6374756174696F6E206D756C7469706C65732C206465732070687261736573206D616C20666F726DC3A96573202E2E2E20636F6E667573696F6E202D20657420706F757274616E742063652055444620666F6E6374696F6E6E6520656E636F72652121"), "UTF-8"), "fr")) AS val FROM src LIMIT 3
@@ -113,15 +117,19 @@ POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val, type:array<string>, comment:null), ]
 PREHOOK: query: CREATE TABLE sent_tmp (val array<string>)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE sent_tmp (val array<string>)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sent_tmp
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val, type:array<string>, comment:null), ]
 PREHOOK: query: CREATE TABLE sent_tmp2 (val string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE sent_tmp2 (val string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sent_tmp2
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val, type:array<string>, comment:null), ]

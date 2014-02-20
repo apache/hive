@@ -7,6 +7,7 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Test SHOW CREATE TABLE on a table with serde.
 
 -- without a storage handler
@@ -16,6 +17,7 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_showcrt1
 PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 PREHOOK: type: SHOW_CREATETABLE
@@ -52,12 +54,14 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
 WITH SERDEPROPERTIES ('field.delim'=',', 'serialization.format'='$')
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- with a storage handler and serde properties
 CREATE EXTERNAL TABLE tmp_showcrt1 (key string, value boolean)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
 WITH SERDEPROPERTIES ('field.delim'=',', 'serialization.format'='$')
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_showcrt1
 PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 PREHOOK: type: SHOW_CREATETABLE

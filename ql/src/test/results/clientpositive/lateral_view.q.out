@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE tmp_pyang_lv (inputs string) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE tmp_pyang_lv (inputs string) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_pyang_lv
 PREHOOK: query: INSERT OVERWRITE TABLE tmp_pyang_lv SELECT key FROM src
 PREHOOK: type: QUERY
@@ -574,8 +576,10 @@ POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, ty
 3
 PREHOOK: query: CREATE TABLE tmp_pyang_src_rcfile (key string, value array<string>) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE tmp_pyang_src_rcfile (key string, value array<string>) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_pyang_src_rcfile
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE tmp_pyang_src_rcfile SELECT key, array(value) FROM src ORDER BY key LIMIT 20

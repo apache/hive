@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE shcol_test(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE shcol_test(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@shcol_test
 PREHOOK: query: EXPLAIN
 SHOW COLUMNS from shcol_test
@@ -43,8 +45,10 @@ POSTHOOK: query: USE test_db
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: CREATE TABLE foo(a INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: CREATE TABLE foo(a INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@foo
 PREHOOK: query: -- SHOW COLUMNS basic syntax tests
 USE test_db
@@ -78,8 +82,10 @@ POSTHOOK: query: USE `database`
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: CREATE TABLE foo(a INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:database
 POSTHOOK: query: CREATE TABLE foo(a INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:database
 POSTHOOK: Output: database@foo
 PREHOOK: query: SHOW COLUMNS from foo
 PREHOOK: type: SHOWCOLUMNS

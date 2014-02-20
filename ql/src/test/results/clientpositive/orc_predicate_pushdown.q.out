@@ -11,6 +11,7 @@ PREHOOK: query: CREATE TABLE orc_pred(t tinyint,
            bin binary)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE orc_pred(t tinyint,
            si smallint,
            i int,
@@ -24,6 +25,7 @@ POSTHOOK: query: CREATE TABLE orc_pred(t tinyint,
            bin binary)
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_pred
 PREHOOK: query: ALTER TABLE orc_pred SET SERDEPROPERTIES ('orc.row.index.stride' = '1000')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
@@ -47,6 +49,7 @@ PREHOOK: query: CREATE TABLE staging(t tinyint,
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE staging(t tinyint,
            si smallint,
            i int,
@@ -61,12 +64,15 @@ POSTHOOK: query: CREATE TABLE staging(t tinyint,
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@staging
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@staging
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@staging
 PREHOOK: query: INSERT INTO TABLE orc_pred select * from staging
 PREHOOK: type: QUERY

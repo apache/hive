@@ -4,8 +4,10 @@ POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE table1 (a STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe' STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE table1 (a STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe' STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT NULL FROM SRC
 PREHOOK: type: QUERY

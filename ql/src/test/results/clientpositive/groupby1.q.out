@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE dest_g1(key INT, value DOUBLE) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest_g1(key INT, value DOUBLE) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g1
 PREHOOK: query: EXPLAIN
 FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key

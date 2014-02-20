@@ -14,6 +14,7 @@ PREHOOK: query: create table union_date_1 (
   FL_NUM int
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table union_date_1 (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,
@@ -22,6 +23,7 @@ POSTHOOK: query: create table union_date_1 (
   FL_NUM int
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_date_1
 PREHOOK: query: create table union_date_2 (
   ORIGIN_CITY_NAME string,
@@ -31,6 +33,7 @@ PREHOOK: query: create table union_date_2 (
   FL_NUM int
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table union_date_2 (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,
@@ -39,18 +42,23 @@ POSTHOOK: query: create table union_date_2 (
   FL_NUM int
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_date_2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_join.txt' OVERWRITE INTO TABLE union_date_1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@union_date_1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_join.txt' OVERWRITE INTO TABLE union_date_1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@union_date_1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_join.txt' OVERWRITE INTO TABLE union_date_2
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@union_date_2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_join.txt' OVERWRITE INTO TABLE union_date_2
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@union_date_2
 PREHOOK: query: select * from (
   select fl_num, fl_date from union_date_1

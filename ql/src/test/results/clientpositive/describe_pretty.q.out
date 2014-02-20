@@ -16,6 +16,7 @@ adipiscing tortor. Integer venenatis',
 COMMENT 'table comment
 two lines'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- test comment indent processing for multi-line comments
 
 CREATE TABLE test_table(
@@ -34,6 +35,7 @@ adipiscing tortor. Integer venenatis',
 COMMENT 'table comment
 two lines'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: -- There will be an extra tab at the end of each comment line in the output.
 -- This is because DESCRIBE <table_name> command separates the column, type and
@@ -200,6 +202,7 @@ three lines
 comment',
     col4 STRING COMMENT 'col4 very long comment that is greater than 80 chars and is likely to spill into multiple lines')
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table_very_long_column_name(
     col1 INT COMMENT 'col1 one line comment',
     col2_abcdefghiklmnopqrstuvxyz STRING COMMENT 'col2
@@ -209,6 +212,7 @@ three lines
 comment',
     col4 STRING COMMENT 'col4 very long comment that is greater than 80 chars and is likely to spill into multiple lines')
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_very_long_column_name
 PREHOOK: query: DESCRIBE PRETTY test_table_very_long_column_name
 PREHOOK: type: DESCTABLE
@@ -271,6 +275,7 @@ COMMENT 'table comment
 two lines'
 PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table_partitioned(
     col1 INT COMMENT 'col1 one line comment',
     col2 STRING COMMENT 'col2
@@ -288,6 +293,7 @@ COMMENT 'table comment
 two lines'
 PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_partitioned
 PREHOOK: query: DESCRIBE PRETTY test_table_partitioned
 PREHOOK: type: DESCTABLE

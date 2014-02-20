@@ -6,6 +6,7 @@ PREHOOK: query: create table aa ( test STRING )
   ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
   WITH SERDEPROPERTIES ("input.regex" = "[^\\](.*)", "output.format.string" = "$1s")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. java.util.regex.PatternSyntaxException: Unclosed character class near index 7
 [^\](.*)
        ^

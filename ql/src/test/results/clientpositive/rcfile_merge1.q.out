@@ -9,16 +9,20 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE rcfile_merge1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE rcfile_merge1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_merge1
 PREHOOK: query: CREATE TABLE rcfile_merge1b (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE rcfile_merge1b (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_merge1b
 PREHOOK: query: -- Use non block-level merge
 EXPLAIN

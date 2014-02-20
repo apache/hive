@@ -28,6 +28,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
     { "name":"fixed1", "type":{"type":"fixed", "name":"threebytes", "size":3} }
   ] }')
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE avro1
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -58,6 +59,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
     { "name":"fixed1", "type":{"type":"fixed", "name":"threebytes", "size":3} }
   ] }')
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro1
 PREHOOK: query: DESCRIBE avro1
 PREHOOK: type: DESCTABLE

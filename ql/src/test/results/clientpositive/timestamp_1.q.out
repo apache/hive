@@ -4,8 +4,10 @@ POSTHOOK: query: drop table timestamp_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table timestamp_1 (t timestamp)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table timestamp_1 (t timestamp)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamp_1
 PREHOOK: query: alter table timestamp_1 set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER

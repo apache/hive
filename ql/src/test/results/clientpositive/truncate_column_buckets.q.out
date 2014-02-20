@@ -2,10 +2,12 @@ PREHOOK: query: -- Tests truncating columns from a bucketed table, table should 
 
 CREATE TABLE test_tab (key STRING, value STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Tests truncating columns from a bucketed table, table should remain bucketed
 
 CREATE TABLE test_tab (key STRING, value STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_tab
 PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src
 PREHOOK: type: QUERY

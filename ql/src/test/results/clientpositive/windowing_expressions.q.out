@@ -15,6 +15,7 @@ CREATE TABLE part(
     p_comment STRING
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- data setup
 CREATE TABLE part( 
     p_partkey INT,
@@ -28,12 +29,15 @@ CREATE TABLE part(
     p_comment STRING
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@part
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@part
 PREHOOK: query: drop table over10k
 PREHOOK: type: DROPTABLE
@@ -54,6 +58,7 @@ PREHOOK: query: create table over10k(
        row format delimited
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table over10k(
            t tinyint,
            si smallint,
@@ -69,12 +74,15 @@ POSTHOOK: query: create table over10k(
        row format delimited
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over10k
 PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@over10k
 POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@over10k
 PREHOOK: query: select p_mfgr, p_retailprice, p_size,
 round(sum(p_retailprice) over w1 , 2) = round(sum(lag(p_retailprice,1,0.0)) over w1 + last_value(p_retailprice) over w1 , 2), 
@@ -663,14 +671,18 @@ Manufacturer#5	1534.532
 PREHOOK: query: -- multi table insert test
 create table t1 (a1 int, b1 string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- multi table insert test
 create table t1 (a1 int, b1 string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: create table t2 (a1 int, b1 string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t2 (a1 int, b1 string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
 PREHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
 PREHOOK: type: QUERY

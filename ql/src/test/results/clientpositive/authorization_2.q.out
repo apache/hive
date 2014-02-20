@@ -2,10 +2,12 @@ PREHOOK: query: -- SORT_BEFORE_DIFF
 
 create table authorization_part (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- SORT_BEFORE_DIFF
 
 create table authorization_part (key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@authorization_part
 PREHOOK: query: create table src_auth_tmp as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -53,14 +55,14 @@ PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table authorization_part
 POSTHOOK: type: SHOW_GRANT
 default	authorization_part			hive_test_user	USER	Create	false	-1	hive_test_user
-default	authorization_part			hive_test_user	USER	Update	false	-1	hive_test_user
 default	authorization_part			hive_test_user	USER	Drop	false	-1	hive_test_user
+default	authorization_part			hive_test_user	USER	Update	false	-1	hive_test_user
 PREHOOK: query: alter table authorization_part add partition (ds='2010')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@authorization_part
+PREHOOK: Output: default@authorization_part
 POSTHOOK: query: alter table authorization_part add partition (ds='2010')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@authorization_part
+POSTHOOK: Output: default@authorization_part
 POSTHOOK: Output: default@authorization_part@ds=2010
 PREHOOK: query: show grant user hive_test_user on table authorization_part partition (ds='2010')
 PREHOOK: type: SHOW_GRANT
@@ -225,14 +227,14 @@ POSTHOOK: type: SHOW_GRANT
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 default	authorization_part			hive_test_user	USER	Create	false	-1	hive_test_user
-default	authorization_part			hive_test_user	USER	Update	false	-1	hive_test_user
 default	authorization_part			hive_test_user	USER	Drop	false	-1	hive_test_user
+default	authorization_part			hive_test_user	USER	Update	false	-1	hive_test_user
 PREHOOK: query: alter table authorization_part add partition (ds='2010')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@authorization_part
+PREHOOK: Output: default@authorization_part
 POSTHOOK: query: alter table authorization_part add partition (ds='2010')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@authorization_part
+POSTHOOK: Output: default@authorization_part
 POSTHOOK: Output: default@authorization_part@ds=2010
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
@@ -296,9 +298,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 default	authorization_part			hive_test_user	USER	Create	false	-1	hive_test_user
-default	authorization_part			hive_test_user	USER	Update	false	-1	hive_test_user
 default	authorization_part			hive_test_user	USER	Drop	false	-1	hive_test_user
 default	authorization_part			hive_test_user	USER	Select	false	-1	hive_test_user
+default	authorization_part			hive_test_user	USER	Update	false	-1	hive_test_user
 PREHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part
@@ -352,8 +354,8 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 default	authorization_part			hive_test_user	USER	Create	false	-1	hive_test_user
-default	authorization_part			hive_test_user	USER	Update	false	-1	hive_test_user
 default	authorization_part			hive_test_user	USER	Drop	false	-1	hive_test_user
+default	authorization_part			hive_test_user	USER	Update	false	-1	hive_test_user
 PREHOOK: query: show grant user hive_test_user on table authorization_part partition (ds='2010')
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table authorization_part partition (ds='2010')
@@ -447,10 +449,10 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: alter table authorization_part add partition (ds='2010')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@authorization_part
+PREHOOK: Output: default@authorization_part
 POSTHOOK: query: alter table authorization_part add partition (ds='2010')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@authorization_part
+POSTHOOK: Output: default@authorization_part
 POSTHOOK: Output: default@authorization_part@ds=2010
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
@@ -677,10 +679,10 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_au
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: alter table authorization_part add partition (ds='2010')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@authorization_part
+PREHOOK: Output: default@authorization_part
 POSTHOOK: query: alter table authorization_part add partition (ds='2010')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@authorization_part
+POSTHOOK: Output: default@authorization_part
 POSTHOOK: Output: default@authorization_part@ds=2010
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]

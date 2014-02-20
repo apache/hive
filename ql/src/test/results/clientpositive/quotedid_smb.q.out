@@ -1,9 +1,11 @@
 PREHOOK: query: create table src_b(`x+1` string, `!@#$%^&*()_q` string)  
 clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_b(`x+1` string, `!@#$%^&*()_q` string)  
 clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_b
 PREHOOK: query: insert overwrite table src_b
 select * from src
@@ -20,9 +22,11 @@ POSTHOOK: Lineage: src_b.x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string,
 PREHOOK: query: create table src_b2(`x+1` string, `!@#$%^&*()_q` string)  
 clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_b2(`x+1` string, `!@#$%^&*()_q` string)  
 clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_b2
 POSTHOOK: Lineage: src_b.!@#$%^&*()_q SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_b.x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

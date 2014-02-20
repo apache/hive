@@ -2,10 +2,12 @@ PREHOOK: query: -- Test timestamp functions in vectorized mode to verify they ru
 
 CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORED AS ORC
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
 
 CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORED AS ORC
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypesorc_string
 PREHOOK: query: INSERT OVERWRITE TABLE alltypesorc_string
 SELECT
@@ -29,8 +31,10 @@ POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)allty
 POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
 PREHOOK: query: CREATE TABLE alltypesorc_wrong(stimestamp1 string) STORED AS ORC
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE alltypesorc_wrong(stimestamp1 string) STORED AS ORC
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypesorc_wrong
 POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
 POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]

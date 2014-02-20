@@ -1,7 +1,9 @@
 PREHOOK: query: create table tmpfoo (a String)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tmpfoo (a String)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmpfoo
 PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES

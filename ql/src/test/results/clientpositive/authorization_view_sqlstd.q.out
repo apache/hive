@@ -1,7 +1,9 @@
 PREHOOK: query: create table t1(i int, j int, k int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t1(i int, j int, k int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: -- protecting certain columns
 create view vt1 as select i,k from t1

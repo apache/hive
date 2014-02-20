@@ -1,12 +1,16 @@
 PREHOOK: query: create table insert1(key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table insert1(key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert1
 PREHOOK: query: create table insert2(key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table insert2(key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert2
 PREHOOK: query: insert overwrite table insert1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 PREHOOK: type: QUERY
@@ -210,8 +214,10 @@ POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int
 POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create table x.insert1(key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x
 POSTHOOK: query: create table x.insert1(key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x
 POSTHOOK: Output: x@insert1
 POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]
@@ -584,8 +590,10 @@ POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int
 POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE result(col1 STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db2
 POSTHOOK: query: CREATE TABLE result(col1 STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db2
 POSTHOOK: Output: db2@result
 POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]
@@ -644,8 +652,10 @@ POSTHOOK: Lineage: result.col1 SIMPLE []
 POSTHOOK: Lineage: result.col1 SIMPLE []
 PREHOOK: query: CREATE TABLE db1.result(col1 STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
 POSTHOOK: query: CREATE TABLE db1.result(col1 STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@result
 POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]

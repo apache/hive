@@ -4,8 +4,10 @@ POSTHOOK: query: drop table decimal_2
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table decimal_2 (t decimal(18,9))
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table decimal_2 (t decimal(18,9))
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_2
 PREHOOK: query: alter table decimal_2 set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER

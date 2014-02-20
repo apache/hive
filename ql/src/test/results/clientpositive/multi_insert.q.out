@@ -1,12 +1,16 @@
 PREHOOK: query: create table src_multi1 like src
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_multi1 like src
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_multi1
 PREHOOK: query: create table src_multi2 like src
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_multi2 like src
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_multi2
 PREHOOK: query: explain
 from src

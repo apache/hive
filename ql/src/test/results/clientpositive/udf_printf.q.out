@@ -78,9 +78,11 @@ Color red, String Null: null, number1 123456, number2 00089, Integer Null: null,
 PREHOOK: query: -- Test Timestamp
 create table timestamp_udf (t timestamp)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Test Timestamp
 create table timestamp_udf (t timestamp)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamp_udf
 PREHOOK: query: from (select * from src tablesample (1 rows)) s
   insert overwrite table timestamp_udf
@@ -120,25 +122,31 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '9'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Test Binary
 CREATE TABLE binay_udf(key binary, value int)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '9'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@binay_udf
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/string.txt' INTO TABLE binay_udf
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@binay_udf
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/string.txt' INTO TABLE binay_udf
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@binay_udf
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 PREHOOK: query: create table dest1 (key binary, value int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table dest1 (key binary, value int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 PREHOOK: query: insert overwrite table dest1 select transform(*) using 'cat' as key binary, value int from binay_udf

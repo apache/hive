@@ -13,8 +13,10 @@ Example:
   'www.facebook.com'
 PREHOOK: query: CREATE TABLE dest1(c1 STRING, c2 STRING, c3 STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest1(c1 STRING, c2 STRING, c3 STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT 'abc', 'xyz', '8675309'  WHERE src.key = 86
 PREHOOK: type: QUERY

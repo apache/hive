@@ -8,15 +8,17 @@ drop table tbl_protectmode_tbl7
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_protectmode_tbl7  (col string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tbl_protectmode_tbl7  (col string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_protectmode_tbl7
 PREHOOK: query: alter table tbl_protectmode_tbl7 add partition (p='p1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tbl_protectmode_tbl7
+PREHOOK: Output: default@tbl_protectmode_tbl7
 POSTHOOK: query: alter table tbl_protectmode_tbl7 add partition (p='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tbl_protectmode_tbl7
+POSTHOOK: Output: default@tbl_protectmode_tbl7
 POSTHOOK: Output: default@tbl_protectmode_tbl7@p=p1
 PREHOOK: query: alter table tbl_protectmode_tbl7 enable no_drop
 PREHOOK: type: ALTERTABLE_PROTECTMODE
@@ -36,10 +38,10 @@ POSTHOOK: Input: default@tbl_protectmode_tbl7
 POSTHOOK: Output: default@tbl_protectmode_tbl7@p=p1
 PREHOOK: query: alter table tbl_protectmode_tbl7 add partition (p='p1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tbl_protectmode_tbl7
+PREHOOK: Output: default@tbl_protectmode_tbl7
 POSTHOOK: query: alter table tbl_protectmode_tbl7 add partition (p='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tbl_protectmode_tbl7
+POSTHOOK: Output: default@tbl_protectmode_tbl7
 POSTHOOK: Output: default@tbl_protectmode_tbl7@p=p1
 PREHOOK: query: alter table tbl_protectmode_tbl7 enable no_drop cascade
 PREHOOK: type: ALTERTABLE_PROTECTMODE

@@ -5,6 +5,7 @@ PREHOOK: query: create table if not exists loc_staging (
   year string
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists loc_staging (
   state string,
   locid int,
@@ -12,12 +13,15 @@ POSTHOOK: query: create table if not exists loc_staging (
   year string
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@loc_staging
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc_staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@loc_staging
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc_staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@loc_staging
 PREHOOK: query: create table if not exists loc_orc (
   state string,
@@ -25,12 +29,14 @@ PREHOOK: query: create table if not exists loc_orc (
   zip bigint
 ) partitioned by(year string) stored as orc
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists loc_orc (
   state string,
   locid int,
   zip bigint
 ) partitioned by(year string) stored as orc
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@loc_orc
 PREHOOK: query: -- basicStatState: NONE colStatState: NONE
 explain extended select * from loc_orc

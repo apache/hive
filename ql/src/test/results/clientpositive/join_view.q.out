@@ -8,13 +8,17 @@ POSTHOOK: query: drop table invites2
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table invites (foo int, bar string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table invites (foo int, bar string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@invites
 PREHOOK: query: create table invites2 (foo int, bar string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table invites2 (foo int, bar string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@invites2
 PREHOOK: query: -- test join views: see HIVE-1989
 

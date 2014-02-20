@@ -22,13 +22,17 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t2
 PREHOOK: query: create table t3(key string, cnt int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t3(key string, cnt int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t3
 PREHOOK: query: create table t4(value string, cnt int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t4(value string, cnt int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t4
 PREHOOK: query: explain
 from
@@ -292,8 +296,10 @@ val_8	2
 val_9	2
 PREHOOK: query: create table t5(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t5(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t5
 POSTHOOK: Lineage: t3.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
 POSTHOOK: Lineage: t3.key EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), (t1)t1.FieldSchema(name:key, type:string, comment:null), ]
@@ -301,8 +307,10 @@ POSTHOOK: Lineage: t4.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
 POSTHOOK: Lineage: t4.value EXPRESSION [(t2)t2.FieldSchema(name:value, type:string, comment:null), (t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create table t6(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t6(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t6
 POSTHOOK: Lineage: t3.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
 POSTHOOK: Lineage: t3.key EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), (t1)t1.FieldSchema(name:key, type:string, comment:null), ]
@@ -667,8 +675,10 @@ POSTHOOK: Lineage: t6.c1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, c
 POSTHOOK: Lineage: t6.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
 PREHOOK: query: create table t7(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t7(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t7
 POSTHOOK: Lineage: t3.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
 POSTHOOK: Lineage: t3.key EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), (t1)t1.FieldSchema(name:key, type:string, comment:null), ]
@@ -680,8 +690,10 @@ POSTHOOK: Lineage: t6.c1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, c
 POSTHOOK: Lineage: t6.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
 PREHOOK: query: create table t8(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t8(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t8
 POSTHOOK: Lineage: t3.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
 POSTHOOK: Lineage: t3.key EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), (t1)t1.FieldSchema(name:key, type:string, comment:null), ]

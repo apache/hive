@@ -4,18 +4,22 @@ fields terminated by '\t'
 lines terminated by '\n'
 stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table impressions (imp string, msg string)
 row format delimited
 fields terminated by '\t'
 lines terminated by '\n'
 stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@impressions
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in7.txt' INTO TABLE impressions
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@impressions
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in7.txt' INTO TABLE impressions
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@impressions
 PREHOOK: query: select * from impressions
 PREHOOK: type: QUERY

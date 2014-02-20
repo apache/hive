@@ -1,24 +1,30 @@
 PREHOOK: query: -- Create table
 create table if not exists alter_part_nodrop_part(key string, value string ) partitioned by (year string, month string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Create table
 create table if not exists alter_part_nodrop_part(key string, value string ) partitioned by (year string, month string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_part_nodrop_part
 PREHOOK: query: -- Load data
 load data local inpath '../../data/files/T1.txt' overwrite into table alter_part_nodrop_part partition (year='1996', month='10')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@alter_part_nodrop_part
 POSTHOOK: query: -- Load data
 load data local inpath '../../data/files/T1.txt' overwrite into table alter_part_nodrop_part partition (year='1996', month='10')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@alter_part_nodrop_part
 POSTHOOK: Output: default@alter_part_nodrop_part@year=1996/month=10
 PREHOOK: query: load data local inpath '../../data/files/T1.txt' overwrite into table alter_part_nodrop_part partition (year='1996', month='12')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@alter_part_nodrop_part
 POSTHOOK: query: load data local inpath '../../data/files/T1.txt' overwrite into table alter_part_nodrop_part partition (year='1996', month='12')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@alter_part_nodrop_part
 POSTHOOK: Output: default@alter_part_nodrop_part@year=1996/month=12
 PREHOOK: query: alter table alter_part_nodrop_part partition (year='1996') enable no_drop

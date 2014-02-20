@@ -8,21 +8,27 @@ POSTHOOK: query: drop table char1_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table char1 (key char(10), value char(20))
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table char1 (key char(10), value char(20))
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char1
 PREHOOK: query: create table char1_1 (key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table char1_1 (key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char1_1
 PREHOOK: query: -- load from file
 load data local inpath '../../data/files/srcbucket0.txt' overwrite into table char1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@char1
 POSTHOOK: query: -- load from file
 load data local inpath '../../data/files/srcbucket0.txt' overwrite into table char1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@char1
 PREHOOK: query: select * from char1 order by key, value limit 2
 PREHOOK: type: QUERY

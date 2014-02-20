@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -105,6 +106,17 @@ public class ReadEntity extends Entity implements Serializable {
     this.isDirect = isDirect;
   }
 
+  /**
+   * Constructor for a file.
+   *
+   * @param d
+   *          The name of the directory that is being written to.
+   * @param islocal
+   *          Flag to decide whether this directory is local or in dfs.
+   */
+  public ReadEntity(Path d, boolean islocal) {
+    super(d.toString(), islocal, true);
+  }
 
   public Set<ReadEntity> getParents() {
     return parents;
@@ -134,6 +146,7 @@ public class ReadEntity extends Entity implements Serializable {
   public void setDirect(boolean isDirect) {
     this.isDirect = isDirect;
   }
+
 
 
 }

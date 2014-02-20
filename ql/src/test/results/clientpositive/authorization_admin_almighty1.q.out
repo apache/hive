@@ -2,10 +2,12 @@ PREHOOK: query: -- actions from admin should work as if admin has all privileges
 
 create table t1(i int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- actions from admin should work as if admin has all privileges
 
 create table t1(i int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES

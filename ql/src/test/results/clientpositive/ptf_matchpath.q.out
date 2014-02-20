@@ -12,6 +12,7 @@ ARR_DELAY float,
 FL_NUM string 
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table flights_tiny ( 
 ORIGIN_CITY_NAME string, 
 DEST_CITY_NAME string, 
@@ -22,12 +23,15 @@ ARR_DELAY float,
 FL_NUM string 
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@flights_tiny
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@flights_tiny
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@flights_tiny
 PREHOOK: query: -- 1. basic Matchpath test
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 

@@ -1,13 +1,15 @@
 PREHOOK: query: create table hive_test_src ( col1 string ) partitioned by (pcol1 string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table hive_test_src ( col1 string ) partitioned by (pcol1 string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive_test_src
 PREHOOK: query: alter table hive_test_src add partition (pcol1 = 'test_part')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@hive_test_src
+PREHOOK: Output: default@hive_test_src
 POSTHOOK: query: alter table hive_test_src add partition (pcol1 = 'test_part')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@hive_test_src
+POSTHOOK: Output: default@hive_test_src
 POSTHOOK: Output: default@hive_test_src@pcol1=test_part
 Authorization failed:No privilege 'Update' found for outputs { database:default, table:hive_test_src}. Use SHOW GRANT to get more details.

@@ -54,8 +54,10 @@ POSTHOOK: type: QUERY
 {"input_partitions":[],"input_tables":[{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}]}
 PREHOOK: query: create table tstsrcpart like srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tstsrcpart like srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrcpart
 PREHOOK: query: -- select from a partitioned table with no partitions which does not involve a map-reduce job
 EXPLAIN DEPENDENCY SELECT * FROM tstsrcpart where ds is not null

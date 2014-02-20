@@ -8,13 +8,17 @@ POSTHOOK: query: drop table timestamp_udf_string
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table timestamp_udf (t timestamp)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table timestamp_udf (t timestamp)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamp_udf
 PREHOOK: query: create table timestamp_udf_string (t string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table timestamp_udf_string (t string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamp_udf_string
 PREHOOK: query: from (select * from src tablesample (1 rows)) s
   insert overwrite table timestamp_udf 

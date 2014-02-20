@@ -13,8 +13,10 @@ Example:
   'koobecaF'
 PREHOOK: query: CREATE TABLE dest1(len STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest1(len STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
 PREHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT reverse(src1.value)
 PREHOOK: type: QUERY
@@ -159,18 +161,22 @@ PREHOOK: query: -- Test with non-ascii characters
 -- 0xE993AEE982B5
 CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Test with non-ascii characters
 -- kv4.txt contains the text 0xE982B5E993AE, which should be reversed to
 -- 0xE993AEE982B5
 CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv4.txt' INTO TABLE dest1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dest1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv4.txt' INTO TABLE dest1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT count(1) FROM dest1 WHERE reverse(dest1.name) = _UTF-8 0xE993AEE982B5

@@ -1,26 +1,34 @@
 PREHOOK: query: CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (ds string,hr string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (ds string,hr string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sourceTable
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE sourceTable partition(ds='2011-11-11', hr='11')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@sourcetable
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE sourceTable partition(ds='2011-11-11', hr='11')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@sourcetable
 POSTHOOK: Output: default@sourcetable@ds=2011-11-11/hr=11
 PREHOOK: query: load data local inpath '../../data/files/kv3.txt' INTO TABLE sourceTable partition(ds='2011-11-11', hr='12')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@sourcetable
 POSTHOOK: query: load data local inpath '../../data/files/kv3.txt' INTO TABLE sourceTable partition(ds='2011-11-11', hr='12')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@sourcetable
 POSTHOOK: Output: default@sourcetable@ds=2011-11-11/hr=12
 PREHOOK: query: CREATE TABLE destinTable (one string,two string) PARTITIONED BY (ds string,hr string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE destinTable (one string,two string) PARTITIONED BY (ds string,hr string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destinTable
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
@@ -159,8 +167,10 @@ POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourc
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE destinTable (one string,two string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE destinTable (one string,two string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destinTable
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]

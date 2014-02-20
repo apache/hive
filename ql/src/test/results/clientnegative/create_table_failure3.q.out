@@ -1,3 +1,1 @@
-PREHOOK: query: create table table_in_database_creation_not_exist.test (a string)
-PREHOOK: type: CREATETABLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidObjectException(message:There is no database named table_in_database_creation_not_exist)
+FAILED: SemanticException [Error 10072]: Database does not exist: table_in_database_creation_not_exist

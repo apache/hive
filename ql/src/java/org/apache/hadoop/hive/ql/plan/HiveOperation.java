@@ -40,7 +40,8 @@ public enum HiveOperation {
   ALTERTABLE_RENAMEPART("ALTERTABLE_RENAMEPART", new Privilege[]{Privilege.DROP}, new Privilege[]{Privilege.CREATE}),
   ALTERTABLE_RENAME("ALTERTABLE_RENAME", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_DROPPARTS("ALTERTABLE_DROPPARTS", new Privilege[]{Privilege.DROP}, null),
-  ALTERTABLE_ADDPARTS("ALTERTABLE_ADDPARTS", new Privilege[]{Privilege.CREATE}, null),
+  // The location is input and table is output for alter-table add partitions
+  ALTERTABLE_ADDPARTS("ALTERTABLE_ADDPARTS", null, new Privilege[]{Privilege.CREATE}),
   ALTERTABLE_TOUCH("ALTERTABLE_TOUCH", null, null),
   ALTERTABLE_ARCHIVE("ALTERTABLE_ARCHIVE", new Privilege[]{Privilege.ALTER_DATA}, null),
   ALTERTABLE_UNARCHIVE("ALTERTABLE_UNARCHIVE", new Privilege[]{Privilege.ALTER_DATA}, null),

@@ -58,6 +58,9 @@ public class RequiredPrivileges {
    */
   public Collection<SQLPrivTypeGrant> findMissingPrivs(RequiredPrivileges availPrivs) {
     MissingPrivilegeCapturer missingPrivCapturer = new MissingPrivilegeCapturer();
+    if(availPrivs == null ){
+      availPrivs = new RequiredPrivileges(); //create an empty priv set
+    }
 
     if(availPrivs.privilegeGrantSet.contains(SQLPrivTypeGrant.ADMIN_PRIV)){
       //you are an admin! You have all privileges, no missing privileges
@@ -72,7 +75,7 @@ public class RequiredPrivileges {
     return missingPrivCapturer.getMissingPrivileges();
   }
 
-  void addPrivilege(SQLPrivTypeGrant requiredPriv) {
+  public void addPrivilege(SQLPrivTypeGrant requiredPriv) {
     privilegeGrantSet.add(requiredPriv);
   }
 

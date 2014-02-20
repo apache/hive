@@ -4,12 +4,14 @@ PREHOOK: query: -- This tests inferring how data is bucketed/sorted from the ope
 
 CREATE TABLE test_table LIKE srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This tests inferring how data is bucketed/sorted from the operators in the reducer
 -- and populating that information in partitions' metadata.  In particular, those cases
 -- where dynamic partitioning is used.
 
 CREATE TABLE test_table LIKE srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: ALTER TABLE test_table SET FILEFORMAT RCFILE
 PREHOOK: type: ALTERTABLE_FILEFORMAT
@@ -404,8 +406,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: CREATE TABLE srcpart_merge_dp LIKE srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE srcpart_merge_dp LIKE srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -421,8 +425,10 @@ POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
 PREHOOK: query: CREATE TABLE srcpart_merge_dp_rc LIKE srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE srcpart_merge_dp_rc LIKE srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_merge_dp_rc
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -458,9 +464,11 @@ POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -477,9 +485,11 @@ POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -495,9 +505,11 @@ POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -513,9 +525,11 @@ POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -531,9 +545,11 @@ POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=12)
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=12)
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

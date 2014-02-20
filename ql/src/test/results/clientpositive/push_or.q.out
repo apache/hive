@@ -4,8 +4,10 @@ POSTHOOK: query: drop table push_or
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table push_or (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table push_or (key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@push_or
 PREHOOK: query: insert overwrite table push_or partition (ds='2000-04-08') select * from src where key < 20 order by key
 PREHOOK: type: QUERY

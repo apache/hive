@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE src1_rc(key STRING, value STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE src1_rc(key STRING, value STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src1_rc
 PREHOOK: query: INSERT OVERWRITE TABLE src1_rc SELECT * FROM src1
 PREHOOK: type: QUERY
@@ -50,8 +52,10 @@ POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type
 	
 PREHOOK: query: CREATE TABLE dest1_rc(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest1_rc(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_rc
 POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]

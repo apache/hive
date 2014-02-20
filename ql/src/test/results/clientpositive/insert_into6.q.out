@@ -8,13 +8,17 @@ POSTHOOK: query: DROP TABLE insert_into6b
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE insert_into6a (key int, value string) PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE insert_into6a (key int, value string) PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into6a
 PREHOOK: query: CREATE TABLE insert_into6b (key int, value string) PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE insert_into6b (key int, value string) PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into6b
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into6a PARTITION (ds='1') 
     SELECT * FROM src LIMIT 150

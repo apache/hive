@@ -19,20 +19,21 @@
 package org.apache.hive.jdbc;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -50,6 +51,7 @@ import org.junit.Test;
     public static void beforeTest() throws Exception {
       Class.forName(MiniHS2.getJdbcDriverName());
       HiveConf conf = new HiveConf();
+      conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
       miniHS2 = new MiniHS2(conf);
       String dataFileDir = conf.get("test.data.files").replace('\\', '/')
           .replace("c:", "");
@@ -60,8 +62,13 @@ import org.junit.Test;
 
     @Before
     public void setUp() throws Exception {
-      hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
-      hs2Conn.createStatement().execute("set hive.support.concurrency = false");
+      hs2Conn = getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
+    }
+
+    private Connection getConnection(String jdbcURL, String user, String pwd) throws SQLException {
+      Connection conn = DriverManager.getConnection(jdbcURL, user, pwd);
+      conn.createStatement().execute("set hive.support.concurrency = false");
+      return conn;
     }
 
     @After
@@ -113,7 +120,7 @@ import org.junit.Test;
 
      String  jdbcUri  = miniHS2.getJdbcURL().substring(0, miniHS2.getJdbcURL().indexOf("default"));
 
-     hs2Conn= DriverManager.getConnection(jdbcUri+"default",System.getProperty("user.name"),"bar");
+     hs2Conn= getConnection(jdbcUri+"default",System.getProperty("user.name"),"bar");
      String dbName="test_connection_non_default_db";
      String tableInNonDefaultSchema="table_in_non_default_schema";
      Statement stmt = hs2Conn.createStatement();
@@ -121,13 +128,13 @@ import org.junit.Test;
      stmt.close();
      hs2Conn.close();
 
-     hs2Conn = DriverManager.getConnection(jdbcUri+dbName,System.getProperty("user.name"),"bar");
+     hs2Conn = getConnection(jdbcUri+dbName,System.getProperty("user.name"),"bar");
      stmt = hs2Conn .createStatement();
      boolean expected = stmt.execute(" create table "+tableInNonDefaultSchema +" (x int)");
      stmt.close();
      hs2Conn .close();
 
-     hs2Conn  = DriverManager.getConnection(jdbcUri+dbName,System.getProperty("user.name"),"bar");
+     hs2Conn  = getConnection(jdbcUri+dbName,System.getProperty("user.name"),"bar");
      stmt = hs2Conn .createStatement();
      ResultSet res = stmt.executeQuery("show tables");
      boolean testTableExists = false;
@@ -142,7 +149,7 @@ import org.junit.Test;
      stmt.close();
      hs2Conn .close();
 
-     hs2Conn  = DriverManager.getConnection(jdbcUri+"default",System.getProperty("user.name"),"bar");
+     hs2Conn  = getConnection(jdbcUri+"default",System.getProperty("user.name"),"bar");
      stmt = hs2Conn .createStatement();
      res = stmt.executeQuery("show tables");
      testTableExists = false;
@@ -158,7 +165,7 @@ import org.junit.Test;
      stmt.close();
      hs2Conn .close();
 
-     hs2Conn  = DriverManager.getConnection(jdbcUri+dbName,System.getProperty("user.name"),"bar");
+     hs2Conn  = getConnection(jdbcUri+dbName,System.getProperty("user.name"),"bar");
      stmt = hs2Conn .createStatement();
      stmt.execute("set hive.support.concurrency = false");
      res = stmt.executeQuery("show tables");
@@ -166,8 +173,8 @@ import org.junit.Test;
      stmt.execute(" drop table if exists table_in_non_default_schema");
      expected = stmt.execute("DROP DATABASE "+ dbName);
      stmt.close();
-     
-     hs2Conn  = DriverManager.getConnection(jdbcUri+"default",System.getProperty("user.name"),"bar");
+
+     hs2Conn  = getConnection(jdbcUri+"default",System.getProperty("user.name"),"bar");
      stmt = hs2Conn .createStatement();
      res = stmt.executeQuery("show tables");
      testTableExists = false;
@@ -179,15 +186,15 @@ import org.junit.Test;
      }
 
      // test URI with no dbName
-     hs2Conn  = DriverManager.getConnection(jdbcUri, System.getProperty("user.name"),"bar");
+     hs2Conn  = getConnection(jdbcUri, System.getProperty("user.name"),"bar");
      verifyCurrentDB("default", hs2Conn);
      hs2Conn.close();
 
-     hs2Conn  = DriverManager.getConnection(jdbcUri + ";", System.getProperty("user.name"),"bar");
+     hs2Conn  = getConnection(jdbcUri + ";", System.getProperty("user.name"),"bar");
      verifyCurrentDB("default", hs2Conn);
      hs2Conn.close();
 
-     hs2Conn  = DriverManager.getConnection(jdbcUri + ";/foo=bar;foo1=bar1", System.getProperty("user.name"),"bar");
+     hs2Conn  = getConnection(jdbcUri + ";/foo=bar;foo1=bar1", System.getProperty("user.name"),"bar");
      verifyCurrentDB("default", hs2Conn);
      hs2Conn.close();
      }
@@ -224,7 +231,7 @@ import org.junit.Test;
      }
 
    /**
-    * verify that the current db is the one expected. first create table as <db>.tab and then 
+    * verify that the current db is the one expected. first create table as <db>.tab and then
     * describe that table to check if <db> is the current database
     * @param expectedDbName
     * @param hs2Conn

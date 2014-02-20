@@ -6,10 +6,12 @@ PREHOOK: query: -- Tests everything in binary_table_colserde.q + uses LazyBinary
 
 create table ba_test (ba_key binary, ba_val binary) stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Tests everything in binary_table_colserde.q + uses LazyBinaryColumnarSerde
 
 create table ba_test (ba_key binary, ba_val binary) stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ba_test
 PREHOOK: query: alter table ba_test set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
