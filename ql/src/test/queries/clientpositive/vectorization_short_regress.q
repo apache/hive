@@ -395,10 +395,8 @@ WHERE  (((197 > ctinyint)
         OR (cbigint = 359)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
-               AND (cfloat <= ctinyint))
-              OR ((16558 != ctimestamp1)
-                  AND ((0 >= ctimestamp2)
-                       AND (2563.58 < csmallint))));
+               AND (cfloat <= ctinyint)));
+
 SELECT cint,
        cbigint,
        cstring1,
@@ -430,10 +428,7 @@ WHERE  (((197 > ctinyint)
         OR (cbigint = 359)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
-               AND (cfloat <= ctinyint))
-              OR ((16558 != ctimestamp1)
-                  AND ((0 >= ctimestamp2)
-                       AND (2563.58 < csmallint))));
+               AND (cfloat <= ctinyint)));
 
 -- TargetTypeClasses: String, Bool, Double, Long, Timestamp
 -- Functions: Sum, Max, Avg, Var, StDevP, VarP
