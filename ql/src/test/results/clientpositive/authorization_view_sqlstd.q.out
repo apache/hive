@@ -24,19 +24,21 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@vt2
 PREHOOK: query: --view grant to user
+-- try with and without table keyword
 
-grant select on view vt1 to user user2
+grant select on vt1 to user user2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@vt1
 POSTHOOK: query: --view grant to user
+-- try with and without table keyword
 
-grant select on view vt1 to user user2
+grant select on vt1 to user user2
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@vt1
-PREHOOK: query: grant insert on view vt1 to user user3
+PREHOOK: query: grant insert on table vt1 to user user3
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@vt1
-POSTHOOK: query: grant insert on view vt1 to user user3
+POSTHOOK: query: grant insert on table vt1 to user user3
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@vt1
 PREHOOK: query: show grant user user2 on table vt1
@@ -59,10 +61,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@vt1
 #### A masked pattern was here ####
-PREHOOK: query: grant all on view vt2 to user user2
+PREHOOK: query: grant all on table vt2 to user user2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@vt2
-POSTHOOK: query: grant all on view vt2 to user user2
+POSTHOOK: query: grant all on table vt2 to user user2
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@vt2
 PREHOOK: query: show grant user user2 on table vt2
@@ -73,28 +75,89 @@ default	vt2			user2	USER	DELETE	false	-1	user1
 default	vt2			user2	USER	INSERT	false	-1	user1
 default	vt2			user2	USER	SELECT	false	-1	user1
 default	vt2			user2	USER	UPDATE	false	-1	user1
-PREHOOK: query: revoke all on view vt2 from user user2
+PREHOOK: query: revoke all on vt2 from user user2
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@vt2
-POSTHOOK: query: revoke all on view vt2 from user user2
+POSTHOOK: query: revoke all on vt2 from user user2
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Output: default@vt2
 PREHOOK: query: show grant user user2 on table vt2
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user2 on table vt2
 POSTHOOK: type: SHOW_GRANT
-PREHOOK: query: revoke select on view vt1 from user user2
+PREHOOK: query: revoke select on table vt1 from user user2
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@vt1
-POSTHOOK: query: revoke select on view vt1 from user user2
+POSTHOOK: query: revoke select on table vt1 from user user2
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Output: default@vt1
 PREHOOK: query: show grant user user2 on table vt1
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user2 on table vt1
 POSTHOOK: type: SHOW_GRANT
-PREHOOK: query: show grant user user3 on table vt1
+PREHOOK: query: -- grant privileges on roles for view, after next statement
+show grant user user3 on table vt1
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user user3 on table vt1
+POSTHOOK: query: -- grant privileges on roles for view, after next statement
+show grant user user3 on table vt1
 POSTHOOK: type: SHOW_GRANT
 default	vt1			user3	USER	INSERT	false	-1	user1
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+PUBLIC
+
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create role role_v
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role role_v
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant  role_v to user user4
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant  role_v to user user4
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: show role grant user user4
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user4
+POSTHOOK: type: SHOW_ROLE_GRANT
+PUBLIC	-1			false	-1	
+role_v	-1	user4	USER	false	-1	hive_admin_user
+PREHOOK: query: show roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show roles
+POSTHOOK: type: SHOW_ROLES
+ADMIN
+PUBLIC
+role_v
+
+PREHOOK: query: grant all on table vt2 to role role_v
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@vt2
+POSTHOOK: query: grant all on table vt2 to role role_v
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@vt2
+PREHOOK: query: show grant role role_v on table vt2
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role role_v on table vt2
+POSTHOOK: type: SHOW_GRANT
+default	vt2			role_v	ROLE	DELETE	false	-1	hive_admin_user
+default	vt2			role_v	ROLE	INSERT	false	-1	hive_admin_user
+default	vt2			role_v	ROLE	SELECT	false	-1	hive_admin_user
+default	vt2			role_v	ROLE	UPDATE	false	-1	hive_admin_user
+PREHOOK: query: revoke delete on table vt2 from role role_v
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@vt2
+POSTHOOK: query: revoke delete on table vt2 from role role_v
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@vt2
+PREHOOK: query: show grant role role_v on table vt2
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role role_v on table vt2
+POSTHOOK: type: SHOW_GRANT
+default	vt2			role_v	ROLE	INSERT	false	-1	hive_admin_user
+default	vt2			role_v	ROLE	SELECT	false	-1	hive_admin_user
+default	vt2			role_v	ROLE	UPDATE	false	-1	hive_admin_user
