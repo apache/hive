@@ -409,6 +409,13 @@ public class GenVectorCode extends Task {
       {"ColumnUnaryFunc", "FuncSign", "double", "double", "MathExpr.sign", "", "", ""},
       {"ColumnUnaryFunc", "FuncSign", "double", "long", "MathExpr.sign", "(double)", "", ""},
 
+      {"DecimalColumnUnaryFunc", "FuncFloor", "decimal", "DecimalUtil.floor"},
+      {"DecimalColumnUnaryFunc", "FuncCeil", "decimal", "DecimalUtil.ceiling"},
+      {"DecimalColumnUnaryFunc", "FuncAbs", "decimal", "DecimalUtil.abs"},
+      {"DecimalColumnUnaryFunc", "FuncSign", "long", "DecimalUtil.sign"},
+      {"DecimalColumnUnaryFunc", "FuncRound", "decimal", "DecimalUtil.round"},
+      {"DecimalColumnUnaryFunc", "FuncNegate", "decimal", "DecimalUtil.negate"},
+
       // Casts
       {"ColumnUnaryFunc", "Cast", "long", "double", "", "", "(long)", ""},
       {"ColumnUnaryFunc", "Cast", "double", "long", "", "", "(double)", ""},
@@ -632,6 +639,8 @@ public class GenVectorCode extends Task {
         generateColumnUnaryMinus(tdesc);
       } else if (tdesc[0].equals("ColumnUnaryFunc")) {
         generateColumnUnaryFunc(tdesc);
+      } else if (tdesc[0].equals("DecimalColumnUnaryFunc")) {
+        generateDecimalColumnUnaryFunc(tdesc);
       } else if (tdesc[0].equals("VectorUDAFMinMax")) {
         generateVectorUDAFMinMax(tdesc);
       } else if (tdesc[0].equals("VectorUDAFMinMaxString")) {
@@ -1025,6 +1034,25 @@ public class GenVectorCode extends Task {
         className, templateString);
   }
 
+  // template, <ClassNamePrefix>, <ReturnType>, <FuncName>
+  private void generateDecimalColumnUnaryFunc(String [] tdesc) throws Exception {
+    String classNamePrefix = tdesc[1];
+    String returnType = tdesc[2];
+    String operandType = "decimal";
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
+    String className = classNamePrefix + getCamelCaseType(operandType) + "To"
+        + getCamelCaseType(returnType);
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    String funcName = tdesc[3];
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<FuncName>", funcName);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
   // template, <ClassNamePrefix>, <ReturnType>, <OperandType>, <FuncName>, <OperandCast>, <ResultCast>
   private void generateColumnUnaryFunc(String[] tdesc) throws Exception {
     String classNamePrefix = tdesc[1];
@@ -1405,6 +1433,8 @@ public class GenVectorCode extends Task {
       return "Long";
     } else if (type.equals("double")) {
       return "Double";
+    } else if (type.equals("decimal")) {
+      return "Decimal";
     } else {
       return type;
     }
@@ -1429,12 +1459,14 @@ public class GenVectorCode extends Task {
   }
 
   private String getColumnVectorType(String primitiveType) throws Exception {
-    if(primitiveType!=null && primitiveType.equals("double")) {
+    if(primitiveType.equals("double")) {
       return "DoubleColumnVector";
     } else if (primitiveType.equals("long")) {
         return "LongColumnVector";
     } else if (primitiveType.equals("decimal")) {
         return "DecimalColumnVector";
+    } else if (primitiveType.equals("string")) {
+      return "BytesColumnVector";
     }
     throw new Exception("Unimplemented primitive column vector type: " + primitiveType);
   }

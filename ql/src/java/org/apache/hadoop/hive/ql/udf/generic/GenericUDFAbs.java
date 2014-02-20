@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncAbsDecimalToDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncAbsDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncAbsLongToLong;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -48,7 +49,7 @@ import org.apache.hadoop.io.LongWritable;
         + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n"
         + "  0\n"
         + "  > SELECT _FUNC_(-5) FROM src LIMIT 1;\n" + "  5")
-@VectorizedExpressions({FuncAbsLongToLong.class, FuncAbsDoubleToDouble.class})
+@VectorizedExpressions({FuncAbsLongToLong.class, FuncAbsDoubleToDouble.class, FuncAbsDecimalToDecimal.class})
 public class GenericUDFAbs extends GenericUDF {
   private transient PrimitiveCategory inputType;
   private final DoubleWritable resultDouble = new DoubleWritable();

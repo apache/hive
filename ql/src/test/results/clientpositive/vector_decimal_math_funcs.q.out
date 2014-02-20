@@ -1,0 +1,203 @@
+PREHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+POSTHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@decimal_test
+PREHOOK: query: -- Test math functions in vectorized mode to verify they run correctly end-to-end.
+
+explain 
+select
+   cdecimal1
+  ,Round(cdecimal1, 2)
+  ,Round(cdecimal1)
+  ,Floor(cdecimal1)
+  ,Ceil(cdecimal1)
+  ,Exp(cdecimal1)
+  ,Ln(cdecimal1)  
+  ,Log10(cdecimal1)
+  -- Use log2 as a representative function to test all input types.
+  ,Log2(cdecimal1)
+  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+  ,Log2(cdecimal1 - 15601.0)
+  ,Log(2.0, cdecimal1)
+  ,Pow(log2(cdecimal1), 2.0)  
+  ,Power(log2(cdecimal1), 2.0)
+  ,Sqrt(cdecimal1)
+  ,Abs(cdecimal1)
+  ,Sin(cdecimal1)
+  ,Asin(cdecimal1)
+  ,Cos(cdecimal1)
+  ,ACos(cdecimal1)
+  ,Atan(cdecimal1)
+  ,Degrees(cdecimal1)
+  ,Radians(cdecimal1)
+  ,Positive(cdecimal1)
+  ,Negative(cdecimal1)
+  ,Sign(cdecimal1)
+  -- Test nesting
+  ,cos(-sin(log(cdecimal1)) + 3.14159)
+from decimal_test
+-- limit output to a reasonably small number of rows
+where cbigint % 500 = 0
+-- test use of a math function in the WHERE clause
+and sin(cdecimal1) >= -1.0
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Test math functions in vectorized mode to verify they run correctly end-to-end.
+
+explain 
+select
+   cdecimal1
+  ,Round(cdecimal1, 2)
+  ,Round(cdecimal1)
+  ,Floor(cdecimal1)
+  ,Ceil(cdecimal1)
+  ,Exp(cdecimal1)
+  ,Ln(cdecimal1)  
+  ,Log10(cdecimal1)
+  -- Use log2 as a representative function to test all input types.
+  ,Log2(cdecimal1)
+  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+  ,Log2(cdecimal1 - 15601.0)
+  ,Log(2.0, cdecimal1)
+  ,Pow(log2(cdecimal1), 2.0)  
+  ,Power(log2(cdecimal1), 2.0)
+  ,Sqrt(cdecimal1)
+  ,Abs(cdecimal1)
+  ,Sin(cdecimal1)
+  ,Asin(cdecimal1)
+  ,Cos(cdecimal1)
+  ,ACos(cdecimal1)
+  ,Atan(cdecimal1)
+  ,Degrees(cdecimal1)
+  ,Radians(cdecimal1)
+  ,Positive(cdecimal1)
+  ,Negative(cdecimal1)
+  ,Sign(cdecimal1)
+  -- Test nesting
+  ,cos(-sin(log(cdecimal1)) + 3.14159)
+from decimal_test
+-- limit output to a reasonably small number of rows
+where cbigint % 500 = 0
+-- test use of a math function in the WHERE clause
+and sin(cdecimal1) >= -1.0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_test
+            Statistics: Num rows: 12288 Data size: 2201752 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((cbigint % 500) = 0) and (sin(cdecimal1) >= (- 1.0))) (type: boolean)
+              Statistics: Num rows: 2048 Data size: 366958 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: cdecimal1 (type: decimal(20,10)), round(cdecimal1, 2) (type: decimal(13,2)), round(cdecimal1) (type: decimal(11,0)), floor(cdecimal1) (type: decimal(11,0)), ceil(cdecimal1) (type: decimal(11,0)), exp(cdecimal1) (type: double), ln(cdecimal1) (type: double), log10(cdecimal1) (type: double), log2(cdecimal1) (type: double), log2((cdecimal1 - 15601.0)) (type: double), log(2.0, cdecimal1) (type: double), power(log2(cdecimal1), 2.0) (type: double), power(log2(cdecimal1), 2.0) (type: double), sqrt(cdecimal1) (type: double), abs(cdecimal1) (type: decimal(38,18)), sin(cdecimal1) (type: double), asin(cdecimal1) (type: double), cos(cdecimal1) (type: double), acos(cdecimal1) (type: double), atan(cdecimal1) (type: double), degrees(cdecimal1) (type: double), radians(cdecimal1) (type: double), cdecimal1 (type: decimal(20,10)), (- cdecimal1) (type: decimal(20,10)), sign(cdecimal1) (type: int), cos(((- sin(log(cdecimal1))) + 3.14159)) (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
+                Statistics: Num rows: 2048 Data size: 366958 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2048 Data size: 366958 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: select
+   cdecimal1
+  ,Round(cdecimal1, 2)
+  ,Round(cdecimal1)
+  ,Floor(cdecimal1)
+  ,Ceil(cdecimal1)
+  ,Exp(cdecimal1)
+  ,Ln(cdecimal1)  
+  ,Log10(cdecimal1)
+  -- Use log2 as a representative function to test all input types.
+  ,Log2(cdecimal1)
+  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+  ,Log2(cdecimal1 - 15601.0)
+  ,Log(2.0, cdecimal1)
+  ,Pow(log2(cdecimal1), 2.0)  
+  ,Power(log2(cdecimal1), 2.0)
+  ,Sqrt(cdecimal1)
+  ,Abs(cdecimal1)
+  ,Sin(cdecimal1)
+  ,Asin(cdecimal1)
+  ,Cos(cdecimal1)
+  ,ACos(cdecimal1)
+  ,Atan(cdecimal1)
+  ,Degrees(cdecimal1)
+  ,Radians(cdecimal1)
+  ,Positive(cdecimal1)
+  ,Negative(cdecimal1)
+  ,Sign(cdecimal1)
+  -- Test nesting
+  ,cos(-sin(log(cdecimal1)) + 3.14159)
+from decimal_test
+-- limit output to a reasonably small number of rows
+where cbigint % 500 = 0
+-- test use of a math function in the WHERE clause
+and sin(cdecimal1) >= -1.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: select
+   cdecimal1
+  ,Round(cdecimal1, 2)
+  ,Round(cdecimal1)
+  ,Floor(cdecimal1)
+  ,Ceil(cdecimal1)
+  ,Exp(cdecimal1)
+  ,Ln(cdecimal1)  
+  ,Log10(cdecimal1)
+  -- Use log2 as a representative function to test all input types.
+  ,Log2(cdecimal1)
+  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+  ,Log2(cdecimal1 - 15601.0)
+  ,Log(2.0, cdecimal1)
+  ,Pow(log2(cdecimal1), 2.0)  
+  ,Power(log2(cdecimal1), 2.0)
+  ,Sqrt(cdecimal1)
+  ,Abs(cdecimal1)
+  ,Sin(cdecimal1)
+  ,Asin(cdecimal1)
+  ,Cos(cdecimal1)
+  ,ACos(cdecimal1)
+  ,Atan(cdecimal1)
+  ,Degrees(cdecimal1)
+  ,Radians(cdecimal1)
+  ,Positive(cdecimal1)
+  ,Negative(cdecimal1)
+  ,Sign(cdecimal1)
+  -- Test nesting
+  ,cos(-sin(log(cdecimal1)) + 3.14159)
+from decimal_test
+-- limit output to a reasonably small number of rows
+where cbigint % 500 = 0
+-- test use of a math function in the WHERE clause
+and sin(cdecimal1) >= -1.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
+-119.4594594595	-119.46	-119	-120	-119	1.3164850923493003E-52	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	119.4594594595	-0.07885666683797002	NaN	0.9968859644388647	NaN	-1.5624254815943668	-6844.522849943508	-2.0849608902209606	-119.4594594595	119.4594594595	-1	NULL
+9318.4351351351	9318.44	9318	9318	9319	Infinity	9.13974998962673	3.969342986470191	13.185871984999437	NULL	13.185871984999437	173.867220004793	173.867220004793	96.53204201266593	9318.4351351351	0.4540668481851705	NaN	0.8909676185918236	NaN	1.5706890126394983	533907.0049096602	162.63737424163023	9318.4351351351	-9318.4351351351	1	-0.9607267417229353
+9318.4351351351	9318.44	9318	9318	9319	Infinity	9.13974998962673	3.969342986470191	13.185871984999437	NULL	13.185871984999437	173.867220004793	173.867220004793	96.53204201266593	9318.4351351351	0.4540668481851705	NaN	0.8909676185918236	NaN	1.5706890126394983	533907.0049096602	162.63737424163023	9318.4351351351	-9318.4351351351	1	-0.9607267417229353
+9318.4351351351	9318.44	9318	9318	9319	Infinity	9.13974998962673	3.969342986470191	13.185871984999437	NULL	13.185871984999437	173.867220004793	173.867220004793	96.53204201266593	9318.4351351351	0.4540668481851705	NaN	0.8909676185918236	NaN	1.5706890126394983	533907.0049096602	162.63737424163023	9318.4351351351	-9318.4351351351	1	-0.9607267417229353
+-4298.1513513514	-4298.15	-4298	-4299	-4298	0.0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4298.1513513514	-0.43730633941118113	NaN	0.899312607223313	NaN	-1.5705636686355597	-246265.93214088667	-75.01689283012556	-4298.1513513514	4298.1513513514	-1	NULL
+-4298.1513513514	-4298.15	-4298	-4299	-4298	0.0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4298.1513513514	-0.43730633941118113	NaN	0.899312607223313	NaN	-1.5705636686355597	-246265.93214088667	-75.01689283012556	-4298.1513513514	4298.1513513514	-1	NULL
+-4298.1513513514	-4298.15	-4298	-4299	-4298	0.0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4298.1513513514	-0.43730633941118113	NaN	0.899312607223313	NaN	-1.5705636686355597	-246265.93214088667	-75.01689283012556	-4298.1513513514	4298.1513513514	-1	NULL
+-4298.1513513514	-4298.15	-4298	-4299	-4298	0.0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4298.1513513514	-0.43730633941118113	NaN	0.899312607223313	NaN	-1.5705636686355597	-246265.93214088667	-75.01689283012556	-4298.1513513514	4298.1513513514	-1	NULL
+-4298.1513513514	-4298.15	-4298	-4299	-4298	0.0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4298.1513513514	-0.43730633941118113	NaN	0.899312607223313	NaN	-1.5705636686355597	-246265.93214088667	-75.01689283012556	-4298.1513513514	4298.1513513514	-1	NULL
+-4298.1513513514	-4298.15	-4298	-4299	-4298	0.0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4298.1513513514	-0.43730633941118113	NaN	0.899312607223313	NaN	-1.5705636686355597	-246265.93214088667	-75.01689283012556	-4298.1513513514	4298.1513513514	-1	NULL
+-4298.1513513514	-4298.15	-4298	-4299	-4298	0.0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4298.1513513514	-0.43730633941118113	NaN	0.899312607223313	NaN	-1.5705636686355597	-246265.93214088667	-75.01689283012556	-4298.1513513514	4298.1513513514	-1	NULL

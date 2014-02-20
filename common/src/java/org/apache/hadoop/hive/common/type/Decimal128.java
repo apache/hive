@@ -1809,7 +1809,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    * Argument scratch is needed to hold unused remainder output, to avoid need to
    * create a new object.
    */
-  public void zeroFractionPart() {
+  public void zeroFractionPart(UnsignedInt128 scratch) {
     short placesToRemove = this.getScale();
 
     // If there's no fraction part, return immediately to avoid the cost of a divide.
@@ -1822,16 +1822,24 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
      */
     UnsignedInt128 powerTenDivisor = SqlMathUtil.POWER_TENS_INT128[placesToRemove];
 
-    /* A scratch variable is created here. This could be optimized in the future
-     * by perhaps using thread-local storage to allocate this scratch field.
-     */
-    UnsignedInt128 scratch = new UnsignedInt128();
     this.getUnscaledValue().divideDestructive(powerTenDivisor, scratch);
 
     /* Multiply by the same power of ten to shift the decimal point back to
      * the original place. Places to the right of the decimal will be zero.
      */
     this.getUnscaledValue().scaleUpTenDestructive(placesToRemove);
+
+    if (this.unscaledValue.isZero()) {
+      this.signum = 0;
+    }
+  }
+
+  public void zeroFractionPart() {
+    /* A scratch variable is created here. This could be optimized in the future
+     * by perhaps using thread-local storage to allocate this scratch field.
+     */
+    UnsignedInt128 scratch = new UnsignedInt128();
+    zeroFractionPart(scratch);
   }
 
   /**

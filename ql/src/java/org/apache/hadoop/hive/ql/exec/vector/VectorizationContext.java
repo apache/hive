@@ -90,16 +90,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.udf.UDFConv;
-import org.apache.hadoop.hive.ql.udf.UDFHex;
-import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
-import org.apache.hadoop.hive.ql.udf.UDFToByte;
-import org.apache.hadoop.hive.ql.udf.UDFToDouble;
-import org.apache.hadoop.hive.ql.udf.UDFToFloat;
-import org.apache.hadoop.hive.ql.udf.UDFToInteger;
-import org.apache.hadoop.hive.ql.udf.UDFToLong;
-import org.apache.hadoop.hive.ql.udf.UDFToShort;
-import org.apache.hadoop.hive.ql.udf.UDFToString;
+import org.apache.hadoop.hive.ql.udf.*;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -319,6 +310,10 @@ public class VectorizationContext {
     return ve;
   }
 
+  /**
+   * Given a udf and its children, return the common type to which the children's type should be
+   * cast.
+   */
   private TypeInfo getCommonTypeForChildExpressions(GenericUDF genericUdf, List<ExprNodeDesc> children,
       TypeInfo returnType) {
     TypeInfo commonType;
@@ -350,7 +345,7 @@ public class VectorizationContext {
    */
   private List<ExprNodeDesc> getChildExpressionsWithImplicitCast(GenericUDF genericUDF,
       List<ExprNodeDesc> children, TypeInfo returnType) {
-    if (isCastExpression(genericUDF)) {
+    if (isExcludedFromCast(genericUDF)) {
 
       // No implicit cast needed
       return children;
@@ -358,6 +353,7 @@ public class VectorizationContext {
     if (children == null) {
       return null;
     }
+
     TypeInfo commonType = getCommonTypeForChildExpressions(genericUDF, children, returnType);
     List<ExprNodeDesc> childrenWithCasts = new ArrayList<ExprNodeDesc>();
     boolean atleastOneCastNeeded = false;
@@ -377,12 +373,18 @@ public class VectorizationContext {
     }
   }
 
-  private boolean isCastExpression(GenericUDF genericUDF) {
-    boolean ret = castExpressionUdfs.contains(genericUDF.getClass());
+  private boolean isExcludedFromCast(GenericUDF genericUDF) {
+    boolean ret = castExpressionUdfs.contains(genericUDF.getClass())
+        || (genericUDF instanceof GenericUDFRound);
+
     if (ret) {
       return ret;
-    } else if (genericUDF instanceof GenericUDFBridge) {
-      return castExpressionUdfs.contains(((GenericUDFBridge) genericUDF).getUdfClass());
+    }
+
+    if (genericUDF instanceof GenericUDFBridge) {
+      Class<?> udfClass = ((GenericUDFBridge) genericUDF).getUdfClass();
+      return castExpressionUdfs.contains(udfClass)
+          || UDFSign.class.isAssignableFrom(udfClass);
     }
     return false;
   }
