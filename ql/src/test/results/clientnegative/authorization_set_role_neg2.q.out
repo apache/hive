@@ -16,4 +16,12 @@ POSTHOOK: query: grant role rset_role_neg to user user2
 POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: set role rset_role_neg
 PREHOOK: type: SHOW_ROLES
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. hive_admin_user doesn't belong to role rset_role_neg
+POSTHOOK: query: set role rset_role_neg
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: set role public
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role public
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: set role nosuchroleexists
+PREHOOK: type: SHOW_ROLES
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. user2 doesn't belong to role nosuchroleexists
