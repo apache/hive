@@ -4,8 +4,10 @@ POSTHOOK: query: DROP TABLE if exists insert_into5_neg
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE insert_into5_neg (key int, value string) TBLPROPERTIES ("immutable"="true")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE insert_into5_neg (key int, value string) TBLPROPERTIES ("immutable"="true")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into5_neg
 PREHOOK: query: INSERT INTO TABLE insert_into5_neg SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
