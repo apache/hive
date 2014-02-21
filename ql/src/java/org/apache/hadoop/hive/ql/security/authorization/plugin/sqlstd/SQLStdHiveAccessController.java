@@ -62,6 +62,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   private HiveRole adminRole;
   private final String ADMIN_ONLY_MSG = "User has to belong to ADMIN role and "
       + "have it as current role, for this action.";
+  private final String HAS_ADMIN_PRIV_MSG = "grantor need to have ADMIN privileges on role being"
+      + " granted and have it as a current role for this action.";
 
   SQLStdHiveAccessController(HiveMetastoreClientFactory metastoreClientFactory, HiveConf conf,
       HiveAuthenticationProvider authenticator) throws HiveAuthzPluginException {
@@ -275,9 +277,9 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   public void grantRole(List<HivePrincipal> hivePrincipals, List<String> roleNames,
     boolean grantOption, HivePrincipal grantorPrinc) throws HiveAuthzPluginException,
     HiveAccessControlException {
-    if (!isUserAdmin()) {
+    if (!(isUserAdmin() || doesUserHasAdminOption(roleNames))) {
       throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
-        + " allowed to grant role. Currently " + ADMIN_ONLY_MSG);
+        + " allowed to grant role. " + ADMIN_ONLY_MSG + " Otherwise, " + HAS_ADMIN_PRIV_MSG);
     }
     for (HivePrincipal hivePrincipal : hivePrincipals) {
       for (String roleName : roleNames) {
@@ -307,9 +309,9 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       throw new HiveAuthzPluginException("Revoking only the admin privileges on "
         + "role is not currently supported");
     }
-    if (!isUserAdmin()) {
+    if (!(isUserAdmin() || doesUserHasAdminOption(roleNames))) {
       throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
-          + " allowed to revoke role. " + ADMIN_ONLY_MSG);
+          + " allowed to revoke role. " + ADMIN_ONLY_MSG + " Otherwise, " + HAS_ADMIN_PRIV_MSG);
     }
     for (HivePrincipal hivePrincipal : hivePrincipals) {
       for (String roleName : roleNames) {
@@ -404,6 +406,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   public void setCurrentRole(String roleName) throws HiveAccessControlException,
     HiveAuthzPluginException {
 
+    initUserRoles();
     if ("NONE".equalsIgnoreCase(roleName)) {
       // for set role NONE, reset roles to default roles.
       currentRoles.clear();
@@ -452,5 +455,31 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       }
     }
     return false;
+  }
+
+  private boolean doesUserHasAdminOption(List<String> roleNames) throws HiveAuthzPluginException {
+    List<HiveRole> currentRoles;
+    try {
+      currentRoles = getCurrentRoles();
+    } catch (Exception e) {
+        throw new HiveAuthzPluginException(e);
+    }
+    for (String roleName : roleNames) {
+      boolean roleFound = false;
+      for (HiveRole currentRole : currentRoles) {
+        if (roleName.equalsIgnoreCase(currentRole.getRoleName())) {
+          roleFound = true;
+          if (!currentRole.isGrantOption()) {
+            return false;
+          } else {
+              break;
+          }
+        }
+      }
+      if (!roleFound) {
+        return false;
+      }
+    }
+    return true;
   }
 }
