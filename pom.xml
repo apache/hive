@@ -764,6 +764,18 @@
 	    <exclude>**/*.q</exclude>
 	    <exclude>**/*.q.out</exclude>
 	    <exclude>**/*.xml</exclude>
+	    <exclude>**/gen/**</exclude>
+	    <exclude>**/scripts/**</exclude>
+	    <exclude>**/resources/**</exclude>
+	    <exclude>**/*.rc</exclude>
+	    <exclude>**/*.rcfile</exclude>
+	    <exclude>**/*.qv</exclude>
+	    <exclude>**/*.out</exclude>
+	    <exclude>**/RecordTestObj.java</exclude>
+	    <exclude>**/*.m</exclude>
+	    <exclude>**/gen-java/**</exclude>
+	    <exclude>**/testdata/**</exclude>
+	    <exclude>**/ptest2/*.md</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
