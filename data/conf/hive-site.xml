@@ -148,6 +148,19 @@
 </property>
 
 <property>
+  <key>hive.unlock.numretries</key>
+  <value>2</value>
+  <description>The number of times you want to retry to do one unlock</description>
+</property>
+
+<property>
+  <key>hive.lock.sleep.between.retries</key>
+  <value>2</value>
+  <description>The sleep time (in seconds) between various retries</description>
+</property>
+
+
+<property>
   <name>fs.pfile.impl</name>
   <value>org.apache.hadoop.fs.ProxyLocalFileSystem</value>
   <description>A proxy for local file system used for cross file system testing</description>
