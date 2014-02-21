@@ -1933,6 +1933,14 @@
 </property>
 
 <property>
+  <name>hive.exec.orc.skip.corrupt.data</name>
+  <value>false</value>
+  <description>If ORC reader encounters corrupt data, this value will be used to determine
+  whether to skip the corrupt data or throw exception. The default behavior is to throw exception.
+  </description>
+</property>
+
+<property>
   <name>hive.multi.insert.move.tasks.share.dependencies</name>
   <value>false</value>
   <description>

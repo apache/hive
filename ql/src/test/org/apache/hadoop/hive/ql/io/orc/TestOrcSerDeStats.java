@@ -212,7 +212,7 @@ public class TestOrcSerDeStats {
     writer.close();
     assertEquals(4, writer.getNumberOfRows());
     assertEquals(273, writer.getRawDataSize());
-    Reader reader = OrcFile.createReader(fs, testFilePath);
+    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
     assertEquals(4, reader.getNumberOfRows());
     assertEquals(273, reader.getRawDataSize());
     assertEquals(15, reader.getRawDataSizeOfColumns(Lists.newArrayList("bytes1")));
@@ -310,7 +310,7 @@ public class TestOrcSerDeStats {
     assertEquals(5000, writer.getNumberOfRows());
     assertEquals(430000000, writer.getRawDataSize());
 
-    Reader reader = OrcFile.createReader(fs, testFilePath);
+    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
     // stats from reader
     assertEquals(5000, reader.getNumberOfRows());
     assertEquals(430000000, reader.getRawDataSize());
@@ -341,7 +341,7 @@ public class TestOrcSerDeStats {
     assertEquals(1000, writer.getNumberOfRows());
     assertEquals(950000, writer.getRawDataSize());
 
-    Reader reader = OrcFile.createReader(fs, testFilePath);
+    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
     // stats from reader
     assertEquals(1000, reader.getNumberOfRows());
     assertEquals(950000, reader.getRawDataSize());
@@ -372,7 +372,7 @@ public class TestOrcSerDeStats {
     assertEquals(1000, writer.getNumberOfRows());
     assertEquals(44500, writer.getRawDataSize());
 
-    Reader reader = OrcFile.createReader(fs, testFilePath);
+    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
     // stats from reader
     assertEquals(1000, reader.getNumberOfRows());
     assertEquals(44500, reader.getRawDataSize());
@@ -413,7 +413,7 @@ public class TestOrcSerDeStats {
     long rawDataSize = writer.getRawDataSize();
     assertEquals(2, rowCount);
     assertEquals(1740, rawDataSize);
-    Reader reader = OrcFile.createReader(fs, testFilePath);
+    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
 
     assertEquals(2, reader.getNumberOfRows());
     assertEquals(1740, reader.getRawDataSize());
@@ -506,7 +506,7 @@ public class TestOrcSerDeStats {
     long rawDataSize = writer.getRawDataSize();
     assertEquals(2, rowCount);
     assertEquals(1740, rawDataSize);
-    Reader reader = OrcFile.createReader(fs, testFilePath);
+    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
 
     assertEquals(2, reader.getNumberOfRows());
     assertEquals(1740, reader.getRawDataSize());
@@ -573,7 +573,7 @@ public class TestOrcSerDeStats {
   @Test(expected = ClassCastException.class)
   public void testSerdeStatsOldFormat() throws Exception {
     Path oldFilePath = new Path(HiveTestUtils.getFileFromClasspath("orc-file-11-format.orc"));
-    Reader reader = OrcFile.createReader(fs, oldFilePath);
+    Reader reader = OrcFile.createReader(fs, oldFilePath, conf);
 
     int stripeCount = 0;
     int rowCount = 0;

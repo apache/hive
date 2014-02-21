@@ -270,16 +270,16 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
     if(!(fSplit instanceof OrcSplit)){
       //If CombineHiveInputFormat is used, it works with FileSplit and not OrcSplit
-      reader = OrcFile.createReader(fs, path);
+      reader = OrcFile.createReader(fs, path, conf);
     } else {
       //We have OrcSplit, which may have footer metadata cached, so use the appropriate reader
       //constructor
       OrcSplit orcSplit = (OrcSplit) fSplit;
       if (orcSplit.hasFooter()) {
         FileMetaInfo fMetaInfo = orcSplit.getFileMetaInfo();
-        reader = OrcFile.createReader(fs, path, fMetaInfo);
+        reader = OrcFile.createReader(fs, path, fMetaInfo, conf);
       } else {
-        reader = OrcFile.createReader(fs, path);
+        reader = OrcFile.createReader(fs, path, conf);
       }
     }
     return new OrcRecordReader(reader, conf, fSplit.getStart(), fSplit.getLength());
@@ -299,7 +299,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
     for (FileStatus file : files) {
       try {
-        OrcFile.createReader(fs, file.getPath());
+        OrcFile.createReader(fs, file.getPath(), conf);
       } catch (IOException e) {
         return false;
       }
@@ -797,14 +797,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           types = fileInfo.types;
           // For multiple runs, in case sendSplitsInFooter changes
           if (fileMetaInfo == null && context.footerInSplits) {
-            orcReader = OrcFile.createReader(fs, file.getPath());
+            orcReader = OrcFile.createReader(fs, file.getPath(), context.conf);
             fileInfo.fileMetaInfo = orcReader.getFileMetaInfo();
             fileInfo.metadata = orcReader.getMetadata();
             fileInfo.types = orcReader.getTypes();
           }
         }
         if (!found) {
-          orcReader = OrcFile.createReader(fs, file.getPath());
+          orcReader = OrcFile.createReader(fs, file.getPath(), context.conf);
           stripes = orcReader.getStripes();
           metadata = orcReader.getMetadata();
           types = orcReader.getTypes();
