@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
 
@@ -34,10 +38,13 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
   private final long[] literals = new long[RunLengthIntegerWriterV2.MAX_SCOPE];
   private int numLiterals = 0;
   private int used = 0;
+  private final boolean skipCorrupt;
 
-  RunLengthIntegerReaderV2(InStream input, boolean signed) throws IOException {
+  RunLengthIntegerReaderV2(InStream input, boolean signed,
+      Configuration conf) throws IOException {
     this.input = input;
     this.signed = signed;
+    this.skipCorrupt = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
   }
 
   private void readValues() throws IOException {
@@ -163,14 +170,20 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
 
     // unpack the patch blob
     long[] unpackedPatch = new long[pl];
-    SerializationUtils.readInts(unpackedPatch, 0, pl, pw + pgw, input);
+
+    if ((pw + pgw) > 64 && !skipCorrupt) {
+      throw new IOException(ErrorMsg.ORC_CORRUPTED_READ.getMsg());
+    }
+    int bitSize = SerializationUtils.getClosestFixedBits(pw + pgw);
+    SerializationUtils.readInts(unpackedPatch, 0, pl, bitSize, input);
 
     // apply the patch directly when decoding the packed data
     int patchIdx = 0;
     long currGap = 0;
     long currPatch = 0;
+    long patchMask = ((1L << pw) - 1);
     currGap = unpackedPatch[patchIdx] >>> pw;
-    currPatch = unpackedPatch[patchIdx] & ((1 << pw) - 1);
+    currPatch = unpackedPatch[patchIdx] & patchMask;
     long actualGap = 0;
 
     // special case: gap is >255 then patch value will be 0.
@@ -179,7 +192,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
       actualGap += 255;
       patchIdx++;
       currGap = unpackedPatch[patchIdx] >>> pw;
-      currPatch = unpackedPatch[patchIdx] & ((1 << pw) - 1);
+      currPatch = unpackedPatch[patchIdx] & patchMask;
     }
     // add the left over gap
     actualGap += currGap;
@@ -199,7 +212,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
         if (patchIdx < pl) {
           // read the next gap and patch
           currGap = unpackedPatch[patchIdx] >>> pw;
-          currPatch = unpackedPatch[patchIdx] & ((1 << pw) - 1);
+          currPatch = unpackedPatch[patchIdx] & patchMask;
           actualGap = 0;
 
           // special case: gap is >255 then patch will be 0. if gap is
@@ -208,7 +221,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
             actualGap += 255;
             patchIdx++;
             currGap = unpackedPatch[patchIdx] >>> pw;
-            currPatch = unpackedPatch[patchIdx] & ((1 << pw) - 1);
+            currPatch = unpackedPatch[patchIdx] & patchMask;
           }
           // add the left over gap
           actualGap += currGap;

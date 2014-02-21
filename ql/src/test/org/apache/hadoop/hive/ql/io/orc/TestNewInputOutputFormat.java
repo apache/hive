@@ -191,7 +191,7 @@ public class TestNewInputOutputFormat {
     
     Path outputFilePath = new Path(outputPath, "part-m-00000");
     assertTrue(localFs.exists(outputFilePath));
-    Reader reader = OrcFile.createReader(localFs, outputFilePath);
+    Reader reader = OrcFile.createReader(localFs, outputFilePath, conf);
     assertTrue(reader.getNumberOfRows() == rownum);
     assertEquals(reader.getCompression(), CompressionKind.ZLIB);
     StructObjectInspector soi =
@@ -248,7 +248,7 @@ public class TestNewInputOutputFormat {
     assertTrue(result);
     
     Path outputFilePath = new Path(outputPath, "part-m-00000");
-    Reader reader = OrcFile.createReader(localFs, outputFilePath);
+    Reader reader = OrcFile.createReader(localFs, outputFilePath, conf);
     assertEquals(reader.getCompression(), CompressionKind.SNAPPY);
     
     localFs.delete(outputPath, true);
@@ -351,7 +351,7 @@ public class TestNewInputOutputFormat {
     assertTrue(result);
     
     Path outputFilePath = new Path(outputPath, "part-r-00000");
-    Reader reader = OrcFile.createReader(localFs, outputFilePath);
+    Reader reader = OrcFile.createReader(localFs, outputFilePath, conf);
     
     RecordReader rows = reader.rows(null);
     ObjectInspector orcOi = reader.getObjectInspector();
