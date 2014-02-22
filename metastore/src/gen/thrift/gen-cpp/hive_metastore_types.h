@@ -55,6 +55,16 @@ struct FunctionType {
 
 extern const std::map<int, const char*> _FunctionType_VALUES_TO_NAMES;
 
+struct ResourceType {
+  enum type {
+    JAR = 1,
+    FILE = 2,
+    ARCHIVE = 3
+  };
+};
+
+extern const std::map<int, const char*> _ResourceType_VALUES_TO_NAMES;
+
 typedef struct _Version__isset {
   _Version__isset() : version(false), comments(false) {}
   bool version;
@@ -2743,8 +2753,59 @@ class DropPartitionsRequest {
 
 void swap(DropPartitionsRequest &a, DropPartitionsRequest &b);
 
+typedef struct _ResourceUri__isset {
+  _ResourceUri__isset() : resourceType(false), uri(false) {}
+  bool resourceType;
+  bool uri;
+} _ResourceUri__isset;
+
+class ResourceUri {
+ public:
+
+  static const char* ascii_fingerprint; // = "19B5240589E680301A7E32DF3971EFBE";
+  static const uint8_t binary_fingerprint[16]; // = {0x19,0xB5,0x24,0x05,0x89,0xE6,0x80,0x30,0x1A,0x7E,0x32,0xDF,0x39,0x71,0xEF,0xBE};
+
+  ResourceUri() : resourceType((ResourceType::type)0), uri() {
+  }
+
+  virtual ~ResourceUri() throw() {}
+
+  ResourceType::type resourceType;
+  std::string uri;
+
+  _ResourceUri__isset __isset;
+
+  void __set_resourceType(const ResourceType::type val) {
+    resourceType = val;
+  }
+
+  void __set_uri(const std::string& val) {
+    uri = val;
+  }
+
+  bool operator == (const ResourceUri & rhs) const
+  {
+    if (!(resourceType == rhs.resourceType))
+      return false;
+    if (!(uri == rhs.uri))
+      return false;
+    return true;
+  }
+  bool operator != (const ResourceUri &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ResourceUri & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(ResourceUri &a, ResourceUri &b);
+
 typedef struct _Function__isset {
-  _Function__isset() : functionName(false), dbName(false), className(false), ownerName(false), ownerType(false), createTime(false), functionType(false) {}
+  _Function__isset() : functionName(false), dbName(false), className(false), ownerName(false), ownerType(false), createTime(false), functionType(false), resourceUris(false) {}
   bool functionName;
   bool dbName;
   bool className;
@@ -2752,13 +2813,14 @@ typedef struct _Function__isset {
   bool ownerType;
   bool createTime;
   bool functionType;
+  bool resourceUris;
 } _Function__isset;
 
 class Function {
  public:
 
-  static const char* ascii_fingerprint; // = "86DDA615E907A95BA1CF7EDB4925A7F5";
-  static const uint8_t binary_fingerprint[16]; // = {0x86,0xDD,0xA6,0x15,0xE9,0x07,0xA9,0x5B,0xA1,0xCF,0x7E,0xDB,0x49,0x25,0xA7,0xF5};
+  static const char* ascii_fingerprint; // = "72279C515E70F888568542F97616ADB8";
+  static const uint8_t binary_fingerprint[16]; // = {0x72,0x27,0x9C,0x51,0x5E,0x70,0xF8,0x88,0x56,0x85,0x42,0xF9,0x76,0x16,0xAD,0xB8};
 
   Function() : functionName(), dbName(), className(), ownerName(), ownerType((PrincipalType::type)0), createTime(0), functionType((FunctionType::type)0) {
   }
@@ -2772,6 +2834,7 @@ class Function {
   PrincipalType::type ownerType;
   int32_t createTime;
   FunctionType::type functionType;
+  std::vector<ResourceUri>  resourceUris;
 
   _Function__isset __isset;
 
@@ -2803,6 +2866,10 @@ class Function {
     functionType = val;
   }
 
+  void __set_resourceUris(const std::vector<ResourceUri> & val) {
+    resourceUris = val;
+  }
+
   bool operator == (const Function & rhs) const
   {
     if (!(functionName == rhs.functionName))
@@ -2818,6 +2885,8 @@ class Function {
     if (!(createTime == rhs.createTime))
       return false;
     if (!(functionType == rhs.functionType))
+      return false;
+    if (!(resourceUris == rhs.resourceUris))
       return false;
     return true;
   }

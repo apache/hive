@@ -41,6 +41,7 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
   private static final org.apache.thrift.protocol.TField OWNER_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerType", org.apache.thrift.protocol.TType.I32, (short)5);
   private static final org.apache.thrift.protocol.TField CREATE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("createTime", org.apache.thrift.protocol.TType.I32, (short)6);
   private static final org.apache.thrift.protocol.TField FUNCTION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("functionType", org.apache.thrift.protocol.TType.I32, (short)7);
+  private static final org.apache.thrift.protocol.TField RESOURCE_URIS_FIELD_DESC = new org.apache.thrift.protocol.TField("resourceUris", org.apache.thrift.protocol.TType.LIST, (short)8);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +56,7 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
   private PrincipalType ownerType; // required
   private int createTime; // required
   private FunctionType functionType; // required
+  private List<ResourceUri> resourceUris; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -72,7 +74,8 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
      * 
      * @see FunctionType
      */
-    FUNCTION_TYPE((short)7, "functionType");
+    FUNCTION_TYPE((short)7, "functionType"),
+    RESOURCE_URIS((short)8, "resourceUris");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -101,6 +104,8 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
           return CREATE_TIME;
         case 7: // FUNCTION_TYPE
           return FUNCTION_TYPE;
+        case 8: // RESOURCE_URIS
+          return RESOURCE_URIS;
         default:
           return null;
       }
@@ -160,6 +165,9 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.FUNCTION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("functionType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, FunctionType.class)));
+    tmpMap.put(_Fields.RESOURCE_URIS, new org.apache.thrift.meta_data.FieldMetaData("resourceUris", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ResourceUri.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Function.class, metaDataMap);
   }
@@ -174,7 +182,8 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     String ownerName,
     PrincipalType ownerType,
     int createTime,
-    FunctionType functionType)
+    FunctionType functionType,
+    List<ResourceUri> resourceUris)
   {
     this();
     this.functionName = functionName;
@@ -185,6 +194,7 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     this.createTime = createTime;
     setCreateTimeIsSet(true);
     this.functionType = functionType;
+    this.resourceUris = resourceUris;
   }
 
   /**
@@ -211,6 +221,13 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     if (other.isSetFunctionType()) {
       this.functionType = other.functionType;
     }
+    if (other.isSetResourceUris()) {
+      List<ResourceUri> __this__resourceUris = new ArrayList<ResourceUri>();
+      for (ResourceUri other_element : other.resourceUris) {
+        __this__resourceUris.add(new ResourceUri(other_element));
+      }
+      this.resourceUris = __this__resourceUris;
+    }
   }
 
   public Function deepCopy() {
@@ -227,6 +244,7 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     setCreateTimeIsSet(false);
     this.createTime = 0;
     this.functionType = null;
+    this.resourceUris = null;
   }
 
   public String getFunctionName() {
@@ -405,6 +423,44 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     }
   }
 
+  public int getResourceUrisSize() {
+    return (this.resourceUris == null) ? 0 : this.resourceUris.size();
+  }
+
+  public java.util.Iterator<ResourceUri> getResourceUrisIterator() {
+    return (this.resourceUris == null) ? null : this.resourceUris.iterator();
+  }
+
+  public void addToResourceUris(ResourceUri elem) {
+    if (this.resourceUris == null) {
+      this.resourceUris = new ArrayList<ResourceUri>();
+    }
+    this.resourceUris.add(elem);
+  }
+
+  public List<ResourceUri> getResourceUris() {
+    return this.resourceUris;
+  }
+
+  public void setResourceUris(List<ResourceUri> resourceUris) {
+    this.resourceUris = resourceUris;
+  }
+
+  public void unsetResourceUris() {
+    this.resourceUris = null;
+  }
+
+  /** Returns true if field resourceUris is set (has been assigned a value) and false otherwise */
+  public boolean isSetResourceUris() {
+    return this.resourceUris != null;
+  }
+
+  public void setResourceUrisIsSet(boolean value) {
+    if (!value) {
+      this.resourceUris = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case FUNCTION_NAME:
@@ -463,6 +519,14 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       }
       break;
 
+    case RESOURCE_URIS:
+      if (value == null) {
+        unsetResourceUris();
+      } else {
+        setResourceUris((List<ResourceUri>)value);
+      }
+      break;
+
     }
   }
 
@@ -489,6 +553,9 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     case FUNCTION_TYPE:
       return getFunctionType();
 
+    case RESOURCE_URIS:
+      return getResourceUris();
+
     }
     throw new IllegalStateException();
   }
@@ -514,6 +581,8 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       return isSetCreateTime();
     case FUNCTION_TYPE:
       return isSetFunctionType();
+    case RESOURCE_URIS:
+      return isSetResourceUris();
     }
     throw new IllegalStateException();
   }
@@ -594,6 +663,15 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
         return false;
     }
 
+    boolean this_present_resourceUris = true && this.isSetResourceUris();
+    boolean that_present_resourceUris = true && that.isSetResourceUris();
+    if (this_present_resourceUris || that_present_resourceUris) {
+      if (!(this_present_resourceUris && that_present_resourceUris))
+        return false;
+      if (!this.resourceUris.equals(that.resourceUris))
+        return false;
+    }
+
     return true;
   }
 
@@ -635,6 +713,11 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     builder.append(present_functionType);
     if (present_functionType)
       builder.append(functionType.getValue());
+
+    boolean present_resourceUris = true && (isSetResourceUris());
+    builder.append(present_resourceUris);
+    if (present_resourceUris)
+      builder.append(resourceUris);
 
     return builder.toHashCode();
   }
@@ -717,6 +800,16 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetResourceUris()).compareTo(typedOther.isSetResourceUris());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetResourceUris()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.resourceUris, typedOther.resourceUris);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -786,6 +879,14 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       sb.append("null");
     } else {
       sb.append(this.functionType);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("resourceUris:");
+    if (this.resourceUris == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.resourceUris);
     }
     first = false;
     sb.append(")");
@@ -889,6 +990,25 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // RESOURCE_URIS
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list354 = iprot.readListBegin();
+                struct.resourceUris = new ArrayList<ResourceUri>(_list354.size);
+                for (int _i355 = 0; _i355 < _list354.size; ++_i355)
+                {
+                  ResourceUri _elem356; // optional
+                  _elem356 = new ResourceUri();
+                  _elem356.read(iprot);
+                  struct.resourceUris.add(_elem356);
+                }
+                iprot.readListEnd();
+              }
+              struct.setResourceUrisIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -935,6 +1055,18 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
         oprot.writeI32(struct.functionType.getValue());
         oprot.writeFieldEnd();
       }
+      if (struct.resourceUris != null) {
+        oprot.writeFieldBegin(RESOURCE_URIS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.resourceUris.size()));
+          for (ResourceUri _iter357 : struct.resourceUris)
+          {
+            _iter357.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -974,7 +1106,10 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       if (struct.isSetFunctionType()) {
         optionals.set(6);
       }
-      oprot.writeBitSet(optionals, 7);
+      if (struct.isSetResourceUris()) {
+        optionals.set(7);
+      }
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetFunctionName()) {
         oprot.writeString(struct.functionName);
       }
@@ -996,12 +1131,21 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       if (struct.isSetFunctionType()) {
         oprot.writeI32(struct.functionType.getValue());
       }
+      if (struct.isSetResourceUris()) {
+        {
+          oprot.writeI32(struct.resourceUris.size());
+          for (ResourceUri _iter358 : struct.resourceUris)
+          {
+            _iter358.write(oprot);
+          }
+        }
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Function struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(7);
+      BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         struct.functionName = iprot.readString();
         struct.setFunctionNameIsSet(true);
@@ -1029,6 +1173,20 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       if (incoming.get(6)) {
         struct.functionType = FunctionType.findByValue(iprot.readI32());
         struct.setFunctionTypeIsSet(true);
+      }
+      if (incoming.get(7)) {
+        {
+          org.apache.thrift.protocol.TList _list359 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.resourceUris = new ArrayList<ResourceUri>(_list359.size);
+          for (int _i360 = 0; _i360 < _list359.size; ++_i360)
+          {
+            ResourceUri _elem361; // optional
+            _elem361 = new ResourceUri();
+            _elem361.read(iprot);
+            struct.resourceUris.add(_elem361);
+          }
+        }
+        struct.setResourceUrisIsSet(true);
       }
     }
   }

@@ -90,6 +90,8 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -115,6 +117,7 @@ import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
+import org.apache.hadoop.hive.metastore.model.MResourceUri;
 import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
@@ -6389,7 +6392,8 @@ public class ObjectStore implements RawStore, Configurable {
         mfunc.getOwnerName(),
         PrincipalType.valueOf(mfunc.getOwnerType()),
         mfunc.getCreateTime(),
-        FunctionType.findByValue(mfunc.getFunctionType()));
+        FunctionType.findByValue(mfunc.getFunctionType()),
+        convertToResourceUriList(mfunc.getResourceUris()));
     return func;
   }
 
@@ -6412,8 +6416,32 @@ public class ObjectStore implements RawStore, Configurable {
         func.getOwnerName(),
         func.getOwnerType().name(),
         func.getCreateTime(),
-        func.getFunctionType().getValue());
+        func.getFunctionType().getValue(),
+        convertToMResourceUriList(func.getResourceUris()));
     return mfunc;
+  }
+
+  private List<ResourceUri> convertToResourceUriList(List<MResourceUri> mresourceUriList) {
+    List<ResourceUri> resourceUriList = null;
+    if (mresourceUriList != null) {
+      resourceUriList = new ArrayList<ResourceUri>(mresourceUriList.size());
+      for (MResourceUri mres : mresourceUriList) {
+        resourceUriList.add(
+            new ResourceUri(ResourceType.findByValue(mres.getResourceType()), mres.getUri()));
+      }
+    }
+    return resourceUriList;
+  }
+
+  private List<MResourceUri> convertToMResourceUriList(List<ResourceUri> resourceUriList) {
+    List<MResourceUri> mresourceUriList = null;
+    if (resourceUriList != null) {
+      mresourceUriList = new ArrayList<MResourceUri>(resourceUriList.size());
+      for (ResourceUri res : resourceUriList) {
+        mresourceUriList.add(new MResourceUri(res.getResourceType().getValue(), res.getUri()));
+      }
+    }
+    return mresourceUriList;
   }
 
   public void createFunction(Function func) throws InvalidObjectException, MetaException {

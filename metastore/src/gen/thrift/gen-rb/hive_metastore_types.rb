@@ -38,6 +38,14 @@ module FunctionType
   VALID_VALUES = Set.new([JAVA]).freeze
 end
 
+module ResourceType
+  JAR = 1
+  FILE = 2
+  ARCHIVE = 3
+  VALUE_MAP = {1 => "JAR", 2 => "FILE", 3 => "ARCHIVE"}
+  VALID_VALUES = Set.new([JAR, FILE, ARCHIVE]).freeze
+end
+
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1
@@ -1020,6 +1028,27 @@ class DropPartitionsRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class ResourceUri
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCETYPE = 1
+  URI = 2
+
+  FIELDS = {
+    RESOURCETYPE => {:type => ::Thrift::Types::I32, :name => 'resourceType', :enum_class => ::ResourceType},
+    URI => {:type => ::Thrift::Types::STRING, :name => 'uri'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @resourceType.nil? || ::ResourceType::VALID_VALUES.include?(@resourceType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field resourceType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Function
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FUNCTIONNAME = 1
@@ -1029,6 +1058,7 @@ class Function
   OWNERTYPE = 5
   CREATETIME = 6
   FUNCTIONTYPE = 7
+  RESOURCEURIS = 8
 
   FIELDS = {
     FUNCTIONNAME => {:type => ::Thrift::Types::STRING, :name => 'functionName'},
@@ -1037,7 +1067,8 @@ class Function
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
     OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :enum_class => ::PrincipalType},
     CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
-    FUNCTIONTYPE => {:type => ::Thrift::Types::I32, :name => 'functionType', :enum_class => ::FunctionType}
+    FUNCTIONTYPE => {:type => ::Thrift::Types::I32, :name => 'functionType', :enum_class => ::FunctionType},
+    RESOURCEURIS => {:type => ::Thrift::Types::LIST, :name => 'resourceUris', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ResourceUri}}
   }
 
   def struct_fields; FIELDS; end

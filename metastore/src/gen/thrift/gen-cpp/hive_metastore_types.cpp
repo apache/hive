@@ -54,6 +54,18 @@ const char* _kFunctionTypeNames[] = {
 };
 const std::map<int, const char*> _FunctionType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(1, _kFunctionTypeValues, _kFunctionTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
+int _kResourceTypeValues[] = {
+  ResourceType::JAR,
+  ResourceType::FILE,
+  ResourceType::ARCHIVE
+};
+const char* _kResourceTypeNames[] = {
+  "JAR",
+  "FILE",
+  "ARCHIVE"
+};
+const std::map<int, const char*> _ResourceType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kResourceTypeValues, _kResourceTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
 const char* Version::ascii_fingerprint = "07A9615F837F7D0A952B595DD3020972";
 const uint8_t Version::binary_fingerprint[16] = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
 
@@ -5186,8 +5198,85 @@ void swap(DropPartitionsRequest &a, DropPartitionsRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* Function::ascii_fingerprint = "86DDA615E907A95BA1CF7EDB4925A7F5";
-const uint8_t Function::binary_fingerprint[16] = {0x86,0xDD,0xA6,0x15,0xE9,0x07,0xA9,0x5B,0xA1,0xCF,0x7E,0xDB,0x49,0x25,0xA7,0xF5};
+const char* ResourceUri::ascii_fingerprint = "19B5240589E680301A7E32DF3971EFBE";
+const uint8_t ResourceUri::binary_fingerprint[16] = {0x19,0xB5,0x24,0x05,0x89,0xE6,0x80,0x30,0x1A,0x7E,0x32,0xDF,0x39,0x71,0xEF,0xBE};
+
+uint32_t ResourceUri::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast276;
+          xfer += iprot->readI32(ecast276);
+          this->resourceType = (ResourceType::type)ecast276;
+          this->__isset.resourceType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->uri);
+          this->__isset.uri = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ResourceUri::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("ResourceUri");
+
+  xfer += oprot->writeFieldBegin("resourceType", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32((int32_t)this->resourceType);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("uri", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->uri);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ResourceUri &a, ResourceUri &b) {
+  using ::std::swap;
+  swap(a.resourceType, b.resourceType);
+  swap(a.uri, b.uri);
+  swap(a.__isset, b.__isset);
+}
+
+const char* Function::ascii_fingerprint = "72279C515E70F888568542F97616ADB8";
+const uint8_t Function::binary_fingerprint[16] = {0x72,0x27,0x9C,0x51,0x5E,0x70,0xF8,0x88,0x56,0x85,0x42,0xF9,0x76,0x16,0xAD,0xB8};
 
 uint32_t Function::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -5243,9 +5332,9 @@ uint32_t Function::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast276;
-          xfer += iprot->readI32(ecast276);
-          this->ownerType = (PrincipalType::type)ecast276;
+          int32_t ecast277;
+          xfer += iprot->readI32(ecast277);
+          this->ownerType = (PrincipalType::type)ecast277;
           this->__isset.ownerType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -5261,10 +5350,30 @@ uint32_t Function::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 7:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast277;
-          xfer += iprot->readI32(ecast277);
-          this->functionType = (FunctionType::type)ecast277;
+          int32_t ecast278;
+          xfer += iprot->readI32(ecast278);
+          this->functionType = (FunctionType::type)ecast278;
           this->__isset.functionType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->resourceUris.clear();
+            uint32_t _size279;
+            ::apache::thrift::protocol::TType _etype282;
+            xfer += iprot->readListBegin(_etype282, _size279);
+            this->resourceUris.resize(_size279);
+            uint32_t _i283;
+            for (_i283 = 0; _i283 < _size279; ++_i283)
+            {
+              xfer += this->resourceUris[_i283].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.resourceUris = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -5313,6 +5422,18 @@ uint32_t Function::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeI32((int32_t)this->functionType);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("resourceUris", ::apache::thrift::protocol::T_LIST, 8);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->resourceUris.size()));
+    std::vector<ResourceUri> ::const_iterator _iter284;
+    for (_iter284 = this->resourceUris.begin(); _iter284 != this->resourceUris.end(); ++_iter284)
+    {
+      xfer += (*_iter284).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -5327,6 +5448,7 @@ void swap(Function &a, Function &b) {
   swap(a.ownerType, b.ownerType);
   swap(a.createTime, b.createTime);
   swap(a.functionType, b.functionType);
+  swap(a.resourceUris, b.resourceUris);
   swap(a.__isset, b.__isset);
 }
 

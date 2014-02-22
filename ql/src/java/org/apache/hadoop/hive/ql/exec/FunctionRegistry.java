@@ -547,6 +547,13 @@ public final class FunctionRegistry {
       if (func != null) {
         // Found UDF in metastore - now add it to the function registry
         // At this point we should add any relevant jars that would be needed for the UDf.
+        try {
+          FunctionTask.addFunctionResources(func.getResourceUris());
+        } catch (Exception e) {
+          LOG.error("Unable to load resources for " + dbName + "." + fName + ":" + e);
+          return null;
+        }
+
         Class<?> udfClass = Class.forName(func.getClassName(), true, JavaUtils.getClassLoader());
         if (registerTemporaryFunction(functionName, udfClass)) {
           ret = mFunctions.get(functionName);
