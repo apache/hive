@@ -321,6 +321,11 @@ TOK_SUBQUERY_OP_NOTEXISTS;
 TOK_DB_TYPE;
 TOK_TABLE_TYPE;
 TOK_CTE;
+TOK_ARCHIVE;
+TOK_FILE;
+TOK_JAR;
+TOK_RESOURCE_URI;
+TOK_RESOURCE_LIST;
 }
 
 
@@ -1493,12 +1498,38 @@ metastoreCheck
     -> ^(TOK_MSCK $repair? ($table partitionSpec*)?)
     ;
 
+resourceList
+@init { pushMsg("resource list", state); }
+@after { popMsg(state); }
+  :
+  resource (COMMA resource)* -> ^(TOK_RESOURCE_LIST resource+)
+  ;
+
+resource
+@init { pushMsg("resource", state); }
+@after { popMsg(state); }
+  :
+  resType=resourceType resPath=StringLiteral -> ^(TOK_RESOURCE_URI $resType $resPath)
+  ;
+
+resourceType
+@init { pushMsg("resource type", state); }
+@after { popMsg(state); }
+  :
+  KW_JAR -> ^(TOK_JAR)
+  |
+  KW_FILE -> ^(TOK_FILE)
+  |
+  KW_ARCHIVE -> ^(TOK_ARCHIVE)
+  ;
+
 createFunctionStatement
 @init { pushMsg("create function statement", state); }
 @after { popMsg(state); }
     : KW_CREATE (temp=KW_TEMPORARY)? KW_FUNCTION functionIdentifier KW_AS StringLiteral
-    -> {$temp != null}? ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral TOK_TEMPORARY)
-    ->                  ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral)
+      (KW_USING rList=resourceList)?
+    -> {$temp != null}? ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral $rList? TOK_TEMPORARY)
+    ->                  ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral $rList?)
     ;
 
 dropFunctionStatement
@@ -2110,5 +2141,3 @@ limitClause
    :
    KW_LIMIT num=Number -> ^(TOK_LIMIT $num)
    ;
-
-

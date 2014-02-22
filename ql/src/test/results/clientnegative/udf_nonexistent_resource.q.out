@@ -1,0 +1,4 @@
+PREHOOK: query: create function lookup as 'org.apache.hadoop.hive.ql.udf.UDFFileLookup' using file 'nonexistent_file.txt'
+PREHOOK: type: CREATEFUNCTION
+nonexistent_file.txt does not exist
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask. Unable to load FILE nonexistent_file.txt

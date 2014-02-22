@@ -56,6 +56,17 @@ final class FunctionType {
   );
 }
 
+final class ResourceType {
+  const JAR = 1;
+  const FILE = 2;
+  const ARCHIVE = 3;
+  static public $__names = array(
+    1 => 'JAR',
+    2 => 'FILE',
+    3 => 'ARCHIVE',
+  );
+}
+
 class Version {
   static $_TSPEC;
 
@@ -6697,6 +6708,98 @@ class DropPartitionsRequest {
 
 }
 
+class ResourceUri {
+  static $_TSPEC;
+
+  public $resourceType = null;
+  public $uri = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'resourceType',
+          'type' => TType::I32,
+          ),
+        2 => array(
+          'var' => 'uri',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['resourceType'])) {
+        $this->resourceType = $vals['resourceType'];
+      }
+      if (isset($vals['uri'])) {
+        $this->uri = $vals['uri'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ResourceUri';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->resourceType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->uri);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ResourceUri');
+    if ($this->resourceType !== null) {
+      $xfer += $output->writeFieldBegin('resourceType', TType::I32, 1);
+      $xfer += $output->writeI32($this->resourceType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->uri !== null) {
+      $xfer += $output->writeFieldBegin('uri', TType::STRING, 2);
+      $xfer += $output->writeString($this->uri);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class Function {
   static $_TSPEC;
 
@@ -6707,6 +6810,7 @@ class Function {
   public $ownerType = null;
   public $createTime = null;
   public $functionType = null;
+  public $resourceUris = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -6739,6 +6843,15 @@ class Function {
           'var' => 'functionType',
           'type' => TType::I32,
           ),
+        8 => array(
+          'var' => 'resourceUris',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\ResourceUri',
+            ),
+          ),
         );
     }
     if (is_array($vals)) {
@@ -6762,6 +6875,9 @@ class Function {
       }
       if (isset($vals['functionType'])) {
         $this->functionType = $vals['functionType'];
+      }
+      if (isset($vals['resourceUris'])) {
+        $this->resourceUris = $vals['resourceUris'];
       }
     }
   }
@@ -6834,6 +6950,24 @@ class Function {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 8:
+          if ($ftype == TType::LST) {
+            $this->resourceUris = array();
+            $_size313 = 0;
+            $_etype316 = 0;
+            $xfer += $input->readListBegin($_etype316, $_size313);
+            for ($_i317 = 0; $_i317 < $_size313; ++$_i317)
+            {
+              $elem318 = null;
+              $elem318 = new \metastore\ResourceUri();
+              $xfer += $elem318->read($input);
+              $this->resourceUris []= $elem318;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -6880,6 +7014,23 @@ class Function {
     if ($this->functionType !== null) {
       $xfer += $output->writeFieldBegin('functionType', TType::I32, 7);
       $xfer += $output->writeI32($this->functionType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->resourceUris !== null) {
+      if (!is_array($this->resourceUris)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('resourceUris', TType::LST, 8);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->resourceUris));
+        {
+          foreach ($this->resourceUris as $iter319)
+          {
+            $xfer += $iter319->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

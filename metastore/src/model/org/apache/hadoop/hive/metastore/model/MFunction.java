@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.model;
 
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import java.util.List;
 
 public class MFunction {
 
@@ -29,6 +30,7 @@ public class MFunction {
   private String ownerType;
   private int createTime;
   private int functionType;
+  private List<MResourceUri> resourceUris;
 
   public MFunction() {
   }
@@ -39,7 +41,8 @@ public class MFunction {
       String ownerName,
       String ownerType,
       int createTime,
-      int functionType) {
+      int functionType,
+      List<MResourceUri> resourceUris) {
     this.setFunctionName(functionName);
     this.setDatabase(database);
     this.setFunctionType(functionType);
@@ -47,6 +50,7 @@ public class MFunction {
     this.setOwnerName(ownerName);
     this.setOwnerType(ownerType);
     this.setCreateTime(createTime);
+    this.setResourceUris(resourceUris);
   }
 
   public String getFunctionName() {
@@ -104,4 +108,12 @@ public class MFunction {
   public void setFunctionType(int functionType) {
     this.functionType = functionType;
   }
+
+  public List<MResourceUri> getResourceUris() {
+    return resourceUris;
+  }
+
+  public void setResourceUris(List<MResourceUri> resourceUris) {
+    this.resourceUris = resourceUris;
+  }  
 }

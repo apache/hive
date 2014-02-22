@@ -360,6 +360,17 @@ enum FunctionType {
   JAVA = 1,
 }
 
+enum ResourceType {
+  JAR     = 1,
+  FILE    = 2,
+  ARCHIVE = 3,
+}
+
+struct ResourceUri {
+  1: ResourceType resourceType,
+  2: string       uri,
+}
+
 // User-defined function
 struct Function {
   1: string           functionName,
@@ -369,6 +380,7 @@ struct Function {
   5: PrincipalType    ownerType,
   6: i32              createTime,
   7: FunctionType     functionType,
+  8: list<ResourceUri> resourceUris,
 }
 
 exception MetaException {

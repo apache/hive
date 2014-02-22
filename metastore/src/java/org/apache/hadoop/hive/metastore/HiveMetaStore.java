@@ -4582,19 +4582,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (className == null) {
         throw new InvalidObjectException("Function class name cannot be null");
       }
-
-      // Not sure if we can verify that the class is actually a UDF,
-      // since from metastore we do not have access to ql where UDF classes live.
-      // We can at least verify that the class name is a valid class.
-      try {
-        Class<?> functionClass = Class.forName(className, true, JavaUtils.getClassLoader());
-        if (functionClass == null) {
-          throw new ClassNotFoundException(className + " was null");
-        }
-      } catch (ClassNotFoundException e) {
-        throw new MetaException("Cannot load class " + className + " for function "
-            + func.getDbName() + "." + func.getFunctionName() + ": " + e);
-      }
     }
 
     @Override

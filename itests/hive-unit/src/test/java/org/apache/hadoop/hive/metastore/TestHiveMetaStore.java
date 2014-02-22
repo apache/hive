@@ -56,6 +56,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -2505,7 +2507,7 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       createDb(dbName);
 
-      createFunction(dbName, funcName, className, owner, ownerType, createTime, funcType);
+      createFunction(dbName, funcName, className, owner, ownerType, createTime, funcType, null);
 
       // Try the different getters
 
@@ -2517,6 +2519,8 @@ public abstract class TestHiveMetaStore extends TestCase {
       assertEquals("function owner name", owner, func.getOwnerName());
       assertEquals("function owner type", PrincipalType.USER, func.getOwnerType());
       assertEquals("function type", funcType, func.getFunctionType());
+      List<ResourceUri> resources = func.getResourceUris();
+      assertTrue("function resources", resources == null || resources.size() == 0);
 
       boolean gotException = false;
       try {
@@ -2551,7 +2555,52 @@ public abstract class TestHiveMetaStore extends TestCase {
     }
   }
 
+  public void testFunctionWithResources() throws Exception {
+    String dbName = "test_db2";
+    String funcName = "test_func";
+    String className = "org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper";
+    String owner = "test_owner";
+    PrincipalType ownerType = PrincipalType.USER;
+    int createTime = (int) (System.currentTimeMillis() / 1000);
+    FunctionType funcType = FunctionType.JAVA;
+    List<ResourceUri> resList = new ArrayList<ResourceUri>();
+    resList.add(new ResourceUri(ResourceType.JAR, "hdfs:///tmp/jar1.jar"));
+    resList.add(new ResourceUri(ResourceType.FILE, "hdfs:///tmp/file1.txt"));
+    resList.add(new ResourceUri(ResourceType.ARCHIVE, "hdfs:///tmp/archive1.tgz"));
 
+    try {
+      cleanUp(dbName, null, null);
+
+      createDb(dbName);
+
+      createFunction(dbName, funcName, className, owner, ownerType, createTime, funcType, resList);
+
+      // Try the different getters
+
+      // getFunction()
+      Function func = client.getFunction(dbName, funcName);
+      assertEquals("function db name", dbName, func.getDbName());
+      assertEquals("function name", funcName, func.getFunctionName());
+      assertEquals("function class name", className, func.getClassName());
+      assertEquals("function owner name", owner, func.getOwnerName());
+      assertEquals("function owner type", PrincipalType.USER, func.getOwnerType());
+      assertEquals("function type", funcType, func.getFunctionType());
+      List<ResourceUri> resources = func.getResourceUris();
+      assertEquals("Resource list size", resList.size(), resources.size());
+      for (ResourceUri res : resources) {
+        assertTrue("Matching resource " + res.getResourceType() + " " + res.getUri(),
+            resList.indexOf(res) >= 0);
+      }
+
+      client.dropFunction(dbName, funcName);
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testConcurrentMetastores() failed.");
+      throw e;
+    } finally {
+      silentDropDatabase(dbName);
+    }
+  }
 
   /**
    * This method simulates another Hive metastore renaming a table, by accessing the db and
@@ -2737,9 +2786,10 @@ public abstract class TestHiveMetaStore extends TestCase {
 
   private void createFunction(String dbName, String funcName, String className,
       String ownerName, PrincipalType ownerType, int createTime,
-      org.apache.hadoop.hive.metastore.api.FunctionType functionType) throws Exception {
+      org.apache.hadoop.hive.metastore.api.FunctionType functionType, List<ResourceUri> resources)
+          throws Exception {
     Function func = new Function(funcName, dbName, className,
-        ownerName, ownerType, createTime, functionType);
+        ownerName, ownerType, createTime, functionType, resources);
     client.createFunction(func);
   }
 }

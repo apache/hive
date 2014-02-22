@@ -917,6 +917,15 @@
       </field>
     </class>
 
+    <class name="MResourceUri" embedded-only="true" table="RESOURCE_URI" detachable="true">
+      <field name="resourceType">
+        <column name="RESOURCE_TYPE" jdbc-type="INTEGER"/>
+      </field>
+      <field name="uri">
+        <column name="RESOURCE_URI" length="4000" jdbc-type="VARCHAR"/>
+      </field>
+    </class>
+
     <class name="MFunction" table="FUNCS" identity-type="datastore" detachable="true">
       <datastore-identity>
         <column name="FUNC_ID"/>
@@ -945,6 +954,22 @@
       </field>
       <field name="createTime">
         <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="resourceUris" table="FUNC_RU">
+        <collection element-type="MResourceUri"/>
+        <join>
+          <column name="FUNC_ID"/>
+        </join>
+        <element>
+          <embedded>
+            <field name="resourceType">
+              <column name="RESOURCE_TYPE" jdbc-type="INTEGER"/>
+            </field>
+            <field name="uri">
+              <column name="RESOURCE_URI" length="4000" jdbc-type="VARCHAR"/>
+            </field>
+          </embedded>
+        </element>
       </field>
     </class>
 
