@@ -66,15 +66,12 @@ public class SQLOperation extends ExecuteStatementOperation {
   private TableSchema resultSchema = null;
   private Schema mResultSchema = null;
   private SerDe serde = null;
-  private final boolean runAsync;
-  private volatile Future<?> backgroundHandle;
   private boolean fetchStarted = false;
 
   public SQLOperation(HiveSession parentSession, String statement, Map<String,
       String> confOverlay, boolean runInBackground) {
     // TODO: call setRemoteUser in ExecuteStatementOperation or higher.
-    super(parentSession, statement, confOverlay);
-    this.runAsync = runInBackground;
+    super(parentSession, statement, confOverlay, runInBackground);
   }
 
   /***
@@ -159,7 +156,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   public void run() throws HiveSQLException {
     setState(OperationState.PENDING);
     prepare(getConfigForOperation());
-    if (!runAsync) {
+    if (!shouldRunAsync()) {
       runInternal(getConfigForOperation());
     } else {
       Runnable backgroundOperation = new Runnable() {
@@ -177,8 +174,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       };
       try {
         // This submit blocks if no background threads are available to run this operation
-        backgroundHandle =
+        Future<?> backgroundHandle =
             getParentSession().getSessionManager().submitBackgroundOperation(backgroundOperation);
+        setBackgroundHandle(backgroundHandle);
       } catch (RejectedExecutionException rejected) {
         setState(OperationState.ERROR);
         throw new HiveSQLException("All the asynchronous threads are currently busy, " +
@@ -189,7 +187,8 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   private void cleanup(OperationState state) throws HiveSQLException {
     setState(state);
-    if (runAsync) {
+    if (shouldRunAsync()) {
+      Future<?> backgroundHandle = getBackgroundHandle();
       if (backgroundHandle != null) {
         backgroundHandle.cancel(true);
       }
@@ -349,7 +348,7 @@ public class SQLOperation extends ExecuteStatementOperation {
    */
   private HiveConf getConfigForOperation() throws HiveSQLException {
     HiveConf sqlOperationConf = getParentSession().getHiveConf();
-    if (!getConfOverlay().isEmpty() || runAsync) {
+    if (!getConfOverlay().isEmpty() || shouldRunAsync()) {
       // clone the partent session config for this query
       sqlOperationConf = new HiveConf(sqlOperationConf);
 
@@ -364,5 +363,4 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
     return sqlOperationConf;
   }
-
 }

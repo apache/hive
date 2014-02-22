@@ -35,7 +35,7 @@ public abstract class MetadataOperation extends Operation {
   private static final char SEARCH_STRING_ESCAPE = '\\';
 
   protected MetadataOperation(HiveSession parentSession, OperationType opType) {
-    super(parentSession, opType);
+    super(parentSession, opType, false);
     setHasResultSet(true);
   }
 
@@ -85,15 +85,15 @@ public abstract class MetadataOperation extends Operation {
    * format '.*'  This is driven by the datanucleusFormat flag.
    */
   private String convertPattern(final String pattern, boolean datanucleusFormat) {
-      String wStr;
-      if (datanucleusFormat) {
-        wStr = "*";
-      } else {
-        wStr = ".*";
-      }
-      return pattern
-          .replaceAll("([^\\\\])%", "$1" + wStr).replaceAll("\\\\%", "%").replaceAll("^%", wStr)
-          .replaceAll("([^\\\\])_", "$1.").replaceAll("\\\\_", "_").replaceAll("^_", ".");
+    String wStr;
+    if (datanucleusFormat) {
+      wStr = "*";
+    } else {
+      wStr = ".*";
+    }
+    return pattern
+        .replaceAll("([^\\\\])%", "$1" + wStr).replaceAll("\\\\%", "%").replaceAll("^%", wStr)
+        .replaceAll("([^\\\\])_", "$1.").replaceAll("\\\\_", "_").replaceAll("^_", ".");
   }
 
 }

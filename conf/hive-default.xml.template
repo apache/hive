@@ -2119,6 +2119,12 @@
 </property>
 
 <property>
+  <name>hive.server2.long.polling.timeout</name>
+  <value>5000L</value>
+  <description>Time in milliseconds that HiveServer2 will wait, before responding to asynchronous calls that use long polling</description>
+</property>
+
+<property>
   <name>hive.server2.async.exec.wait.queue.size</name>
   <value>100</value>
   <description>Size of the wait queue for async thread pool in HiveServer2.

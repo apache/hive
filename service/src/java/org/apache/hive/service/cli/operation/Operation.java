@@ -18,6 +18,7 @@
 package org.apache.hive.service.cli.operation;
 
 import java.util.EnumSet;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,14 +44,29 @@ public abstract class Operation {
   public static final long DEFAULT_FETCH_MAX_ROWS = 100;
   protected boolean hasResultSet;
   protected volatile HiveSQLException operationException;
+  protected final boolean runAsync;
+  protected volatile Future<?> backgroundHandle;
 
   protected static final EnumSet<FetchOrientation> DEFAULT_FETCH_ORIENTATION_SET =
       EnumSet.of(FetchOrientation.FETCH_NEXT,FetchOrientation.FETCH_FIRST);
-  
-  protected Operation(HiveSession parentSession, OperationType opType) {
+
+  protected Operation(HiveSession parentSession, OperationType opType, boolean runInBackground) {
     super();
     this.parentSession = parentSession;
+    this.runAsync = runInBackground;
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
+  }
+
+  public Future<?> getBackgroundHandle() {
+    return backgroundHandle;
+  }
+
+  protected void setBackgroundHandle(Future<?> backgroundHandle) {
+    this.backgroundHandle = backgroundHandle;
+  }
+
+  public boolean shouldRunAsync() {
+    return runAsync;
   }
 
   public void setConfiguration(HiveConf configuration) {
@@ -160,7 +176,7 @@ public abstract class Operation {
       EnumSet<FetchOrientation> supportedOrientations) throws HiveSQLException {
     if (!supportedOrientations.contains(orientation)) {
       throw new HiveSQLException("The fetch type " + orientation.toString() +
-        " is not supported for this resultset", "HY106");
+          " is not supported for this resultset", "HY106");
     }
   }
 }
