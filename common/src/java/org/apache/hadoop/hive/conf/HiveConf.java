@@ -816,6 +816,9 @@ public class HiveConf extends Configuration {
     // will wait for a new task to arrive before terminating
     HIVE_SERVER2_ASYNC_EXEC_KEEPALIVE_TIME("hive.server2.async.exec.keepalive.time", 10),
 
+    // Time in milliseconds that HiveServer2 will wait,
+    // before responding to asynchronous calls that use long polling
+    HIVE_SERVER2_LONG_POLLING_TIMEOUT("hive.server2.long.polling.timeout", 5000L),
 
     // HiveServer2 auth configuration
     HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE",
