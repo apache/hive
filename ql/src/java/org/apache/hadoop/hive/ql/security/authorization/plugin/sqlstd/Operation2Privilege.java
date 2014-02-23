@@ -179,7 +179,7 @@ public class Operation2Privilege {
 
     // require db ownership, if there is a file require SELECT , INSERT, and DELETE
     op2Priv.put(HiveOperationType.CREATETABLE,
-        new InOutPrivs(OWNER_INS_SEL_DEL_NOGRANT_AR, null));
+        new InOutPrivs(OWNER_INS_SEL_DEL_NOGRANT_AR, OWNER_PRIV_AR));
 
     op2Priv.put(HiveOperationType.ALTERDATABASE, new InOutPrivs(OWNER_PRIV_AR, null));
     op2Priv.put(HiveOperationType.DESCDATABASE, new InOutPrivs(null, null));
