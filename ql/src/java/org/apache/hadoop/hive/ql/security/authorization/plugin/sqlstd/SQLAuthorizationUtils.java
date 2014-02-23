@@ -35,7 +35,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -247,26 +250,40 @@ public class SQLAuthorizationUtils {
    */
   private static boolean isOwner(IMetaStoreClient metastoreClient, String userName,
       HivePrivilegeObject hivePrivObject) throws HiveAuthzPluginException {
-    //for now, check only table
-    if(hivePrivObject.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW){
+    //for now, check only table & db
+    switch (hivePrivObject.getType()) {
+      case TABLE_OR_VIEW : {
       Table thriftTableObj = null;
       try {
         thriftTableObj = metastoreClient.getTable(hivePrivObject.getDbname(), hivePrivObject.getTableViewURI());
-      } catch (MetaException e) {
-        throwGetTableErr(e, hivePrivObject);
-      } catch (NoSuchObjectException e) {
-        throwGetTableErr(e, hivePrivObject);
-      } catch (TException e) {
-        throwGetTableErr(e, hivePrivObject);
+      } catch (Exception e) {
+        throwGetObjErr(e, hivePrivObject);
       }
       return userName.equals(thriftTableObj.getOwner());
     }
-    return false;
+      case DATABASE: {
+        if (MetaStoreUtils.DEFAULT_DATABASE_NAME.equalsIgnoreCase(hivePrivObject.getDbname())){
+          return true;
+        }
+        Database db = null;
+        try {
+          db = metastoreClient.getDatabase(hivePrivObject.getDbname());
+        } catch (Exception e) {
+          throwGetObjErr(e, hivePrivObject);
+        }
+        return userName.equals(db.getOwnerName());
+      }
+      case DFS_URI:
+      case LOCAL_URI:
+      case PARTITION:
+      default:
+        return false;
+    }
   }
 
-  private static void throwGetTableErr(Exception e, HivePrivilegeObject hivePrivObject)
+  private static void throwGetObjErr(Exception e, HivePrivilegeObject hivePrivObject)
       throws HiveAuthzPluginException {
-    String msg = "Error getting table object from metastore for" + hivePrivObject;
+    String msg = "Error getting object from metastore for " + hivePrivObject;
     throw new HiveAuthzPluginException(msg, e);
   }
 
