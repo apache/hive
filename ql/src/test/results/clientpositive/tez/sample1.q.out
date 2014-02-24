@@ -63,6 +63,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:

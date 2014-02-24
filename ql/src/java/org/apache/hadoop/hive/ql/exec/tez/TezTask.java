@@ -207,9 +207,7 @@ public class TezTask extends Task<TezWork> {
     FileSystem fs = tezDir.getFileSystem(conf);
 
     // the name of the dag is what is displayed in the AM/Job UI
-    DAG dag = new DAG(
-        Utilities.abbreviate(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING),
-        HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEJOBNAMELENGTH)));
+    DAG dag = new DAG(work.getName());
 
     for (BaseWork w: ws) {
 

@@ -22,6 +22,7 @@ STAGE PLANS:
     Tez
       Edges:
         Map 2 <- Map 1 (BROADCAST_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:

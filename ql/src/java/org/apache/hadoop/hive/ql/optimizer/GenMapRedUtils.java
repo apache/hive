@@ -1250,7 +1250,7 @@ public final class GenMapRedUtils {
     } else {
       cplan = createMRWorkForMergingFiles(conf, tsMerge, fsInputDesc);
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-        work = new TezWork();
+        work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
         cplan.setName("Merge");
         ((TezWork)work).add(cplan);
       } else {

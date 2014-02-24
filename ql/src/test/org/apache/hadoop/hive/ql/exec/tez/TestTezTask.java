@@ -112,7 +112,7 @@ public class TestTezTask {
           }
         });
 
-    work = new TezWork();
+    work = new TezWork("");
 
     mws = new MapWork[] { new MapWork(), new MapWork()};
     rws = new ReduceWork[] { new ReduceWork(), new ReduceWork() };
@@ -194,7 +194,7 @@ public class TestTezTask {
 
   @Test
   public void testEmptyWork() throws IllegalArgumentException, IOException, Exception {
-    DAG dag = task.build(conf, new TezWork(), path, appLr, new Context(conf));
+    DAG dag = task.build(conf, new TezWork(""), path, appLr, new Context(conf));
     assertEquals(dag.getVertices().size(), 0);
   }
 

@@ -154,17 +154,24 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
   public JSONObject getJSONPlan(PrintStream out, ExplainWork work)
       throws Exception {
+    return getJSONPlan(out, work.getAstStringTree(), work.getRootTasks(), work.getFetchTask(),
+                       work.isFormatted(), work.getExtended(), work.isAppendTaskType());
+  }
+
+  public JSONObject getJSONPlan(PrintStream out, String ast, List<Task<?>> tasks, Task<?> fetchTask,
+      boolean jsonOutput, boolean isExtended, boolean appendTaskType) throws Exception {
+    
     // If the user asked for a formatted output, dump the json output
     // in the output stream
     JSONObject outJSONObject = new JSONObject();
-    boolean jsonOutput = work.isFormatted();
+
     if (jsonOutput) {
       out = null;
     }
 
     // Print out the parse AST
-    if (work.getAstStringTree() != null && work.getExtended()) {
-      String jsonAST = outputAST(work.getAstStringTree(), out, jsonOutput, 0);
+    if (ast != null && isExtended) {
+      String jsonAST = outputAST(ast, out, jsonOutput, 0);
       if (out != null) {
         out.println();
       }
@@ -173,16 +180,15 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         outJSONObject.put("ABSTRACT SYNTAX TREE", jsonAST);
       }
     }
-    List<Task<?>> tasks = work.getRootTasks();
 
     List<Task> ordered = StageIDsRearranger.getExplainOrder(conf, tasks);
-    Task<? extends Serializable> fetchTask = work.getFetchTask();
+
     if (fetchTask != null) {
       fetchTask.setRootTask(true);  // todo HIVE-3925
       ordered.add(fetchTask);
     }
 
-    JSONObject jsonDependencies = outputDependencies(out, work, ordered);
+    JSONObject jsonDependencies = outputDependencies(out, jsonOutput, appendTaskType, ordered);
 
     if (out != null) {
       out.println();
@@ -193,7 +199,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     // Go over all the tasks and dump out the plans
-    JSONObject jsonPlan = outputStagePlans(out, work, ordered);
+    JSONObject jsonPlan = outputStagePlans(out, ordered,
+         jsonOutput, isExtended);
 
     if (jsonOutput) {
       outJSONObject.put("STAGE PLANS", jsonPlan);
@@ -748,10 +755,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonOutput ? treeString : null;
   }
 
-  public JSONObject outputDependencies(PrintStream out, ExplainWork work, List<Task> tasks)
+  public JSONObject outputDependencies(PrintStream out, boolean jsonOutput,
+      boolean appendTaskType, List<Task> tasks)
       throws Exception {
-    boolean jsonOutput = work.isFormatted();
-    boolean appendTaskType = work.isAppendTaskType();
+
     if (out != null) {
       out.println("STAGE DEPENDENCIES:");
     }
@@ -767,16 +774,17 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonOutput ? json : null;
   }
 
-  public JSONObject outputStagePlans(PrintStream out, ExplainWork work, List<Task> tasks)
+  public JSONObject outputStagePlans(PrintStream out, List<Task> tasks,
+      boolean jsonOutput, boolean isExtended)
       throws Exception {
-    boolean jsonOutput = work.isFormatted();
+
     if (out != null) {
       out.println("STAGE PLANS:");
     }
 
     JSONObject json = jsonOutput ? new JSONObject() : null;
     for (Task task : tasks) {
-      outputPlan(task, out, json, work.getExtended(), jsonOutput, 2);
+      outputPlan(task, out, json, isExtended, jsonOutput, 2);
     }
     return jsonOutput ? json : null;
   }
