@@ -23,6 +23,7 @@ STAGE PLANS:
         Map 1 <- Union 2 (CONTAINS)
         Map 3 <- Union 2 (CONTAINS)
         Map 4 <- Union 2 (CONTAINS)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:

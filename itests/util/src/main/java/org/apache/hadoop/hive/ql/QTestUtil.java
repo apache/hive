@@ -1249,6 +1249,7 @@ public class QTestUtil {
       ".*job_local[0-9_]*.*",
       ".*USING 'java -cp.*",
       "^Deleted.*",
+      ".*DagName:.*"
   });
 
   public int checkCliDriverResults(String tname) throws Exception {

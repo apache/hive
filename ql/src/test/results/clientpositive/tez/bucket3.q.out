@@ -43,6 +43,7 @@ STAGE PLANS:
     Tez
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -221,6 +222,7 @@ STAGE PLANS:
     Tez
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:

@@ -131,7 +131,8 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.rootTasks = rootTasks;
     this.inputs = inputs;
     this.outputs = outputs;
-    this.currentTask = (TezTask) TaskFactory.get(new TezWork(), conf);
+    this.currentTask = (TezTask) TaskFactory.get(
+         new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
     this.leafOperatorToFollowingWork = new HashMap<Operator<?>, BaseWork>();
     this.linkOpWithWorkMap = new HashMap<Operator<?>, List<BaseWork>>();
     this.linkWorkWithReduceSinkMap = new HashMap<BaseWork, List<ReduceSinkOperator>>();

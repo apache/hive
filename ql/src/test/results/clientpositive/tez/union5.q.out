@@ -23,6 +23,7 @@ STAGE PLANS:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
