@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.MergedLogicalInput;
 import org.apache.tez.runtime.api.Reader;
@@ -34,5 +35,10 @@ public class TezMergedLogicalInput extends MergedLogicalInput {
   @Override
   public Reader getReader() throws Exception {
     return new InputMerger(getInputs());
+  }
+
+  @Override
+  public void setConstituentInputIsReady(Input input) {
+    // ignore notification
   }
 }
