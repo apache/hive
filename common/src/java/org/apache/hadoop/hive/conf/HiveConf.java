@@ -499,6 +499,7 @@ public class HiveConf extends Configuration {
 
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true),
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false),
+    HIVEMERGETEZFILES("hive.merge.tezfiles", false),
     HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long) (256 * 1000 * 1000)),
     HIVEMERGEMAPFILESAVGSIZE("hive.merge.smallfiles.avgsize", (long) (16 * 1000 * 1000)),
     HIVEMERGERCFILEBLOCKLEVEL("hive.merge.rcfile.block.level", true),
@@ -560,6 +561,10 @@ public class HiveConf extends Configuration {
     HIVEDEBUGLOCALTASK("hive.debug.localtask",false),
 
     HIVEINPUTFORMAT("hive.input.format", "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat"),
+    HIVETEZINPUTFORMAT("hive.tez.input.format", "org.apache.hadoop.hive.ql.io.HiveInputFormat"),
+
+    HIVETEZCONTAINERSIZE("hive.tez.container.size", -1),
+    HIVETEZJAVAOPTS("hive.tez.java.opts", null),
 
     HIVEENFORCEBUCKETING("hive.enforce.bucketing", false),
     HIVEENFORCESORTING("hive.enforce.sorting", false),

@@ -88,10 +88,6 @@ public class TezCompiler extends TaskCompiler {
     // We require the use of recursive input dirs for union processing
     conf.setBoolean("mapred.input.dir.recursive", true);
     HiveConf.setBoolVar(conf, ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
-
-    // Don't auto-merge files in tez
-    HiveConf.setBoolVar(conf, ConfVars.HIVEMERGEMAPFILES, false);
-    HiveConf.setBoolVar(conf, ConfVars.HIVEMERGEMAPREDFILES, false);
   }
 
   @Override
