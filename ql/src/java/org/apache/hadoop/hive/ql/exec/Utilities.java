@@ -3144,8 +3144,10 @@ public final class Utilities {
    * Set hive input format, and input format file if necessary.
    */
   public static void setInputAttributes(Configuration conf, MapWork mWork) {
+    HiveConf.ConfVars var = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") ?
+      HiveConf.ConfVars.HIVETEZINPUTFORMAT : HiveConf.ConfVars.HIVEINPUTFORMAT;
     if (mWork.getInputformat() != null) {
-      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEINPUTFORMAT, mWork.getInputformat());
+      HiveConf.setVar(conf, var, mWork.getInputformat());
     }
     if (mWork.getIndexIntermediateFile() != null) {
       conf.set("hive.index.compact.file", mWork.getIndexIntermediateFile());

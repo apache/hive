@@ -1619,6 +1619,13 @@ public final class GenMapRedUtils {
       }
 
       if ((mvTask != null) && !mvTask.isLocal() && fsOp.getConf().canBeMerged()) {
+
+        if (currTask.getWork() instanceof TezWork) {
+          // tez blurs the boundary between map and reduce, thus it has it's own
+          // config
+          return hconf.getBoolVar(ConfVars.HIVEMERGETEZFILES);
+        }
+
         if (fsOp.getConf().isLinkedFileSink()) {
           // If the user has HIVEMERGEMAPREDFILES set to false, the idea was the
           // number of reducers are few, so the number of files anyway are small.
@@ -1632,16 +1639,13 @@ public final class GenMapRedUtils {
           // There are separate configuration parameters to control whether to
           // merge for a map-only job
           // or for a map-reduce job
-          if (currTask.getWork() instanceof TezWork) {
-            return hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) || 
-                hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES);
-          } else if (currTask.getWork() instanceof MapredWork) {
+          if (currTask.getWork() instanceof MapredWork) {  
             ReduceWork reduceWork = ((MapredWork) currTask.getWork()).getReduceWork();
             boolean mergeMapOnly =
-                hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && reduceWork == null;
+              hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && reduceWork == null;
             boolean mergeMapRed =
-                hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES) &&
-                reduceWork != null;
+              hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES) &&
+              reduceWork != null;
             if (mergeMapOnly || mergeMapRed) {
               return true;
             }

@@ -74,6 +74,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
+import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.URL;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
@@ -178,7 +179,7 @@ public class DagUtils {
 
     Utilities.setInputAttributes(conf, mapWork);
 
-    String inpFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEINPUTFORMAT);
+    String inpFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZINPUTFORMAT);
     if ((inpFormat == null) || (!StringUtils.isNotBlank(inpFormat))) {
       inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
     }
@@ -294,6 +295,35 @@ public class DagUtils {
   }
 
   /*
+   * Helper to determine the size of the container requested
+   * from yarn. Falls back to Map-reduce's map size if tez
+   * container size isn't set.
+   */
+  private Resource getContainerResource(Configuration conf) {
+    Resource containerResource;
+    int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0 ?
+      HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
+      conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
+    int cpus = conf.getInt(MRJobConfig.MAP_CPU_VCORES,
+                           MRJobConfig.DEFAULT_MAP_CPU_VCORES);
+    return Resource.newInstance(memory, cpus);
+  }
+
+  /*
+   * Helper to determine what java options to use for the containers
+   * Falls back to Map-reduces map java opts if no tez specific options
+   * are set
+   */
+  private String getContainerJavaOpts(Configuration conf) {
+    String javaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZJAVAOPTS);
+    if (javaOpts != null && !javaOpts.isEmpty()) {
+      return javaOpts;
+    }
+    return MRHelpers.getMapJavaOpts(conf);
+  }
+
+
+  /*
    * Helper function to create Vertex from MapWork.
    */
   private Vertex createVertex(JobConf conf, MapWork mapWork,
@@ -344,12 +374,11 @@ public class DagUtils {
     byte[] serializedConf = MRHelpers.createUserPayloadFromConf(conf);
     map = new Vertex(mapWork.getName(),
         new ProcessorDescriptor(MapTezProcessor.class.getName()).
-             setUserPayload(serializedConf), numTasks,
-        MRHelpers.getMapResource(conf));
+             setUserPayload(serializedConf), numTasks, getContainerResource(conf));
     Map<String, String> environment = new HashMap<String, String>();
     MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
     map.setTaskEnvironment(environment);
-    map.setJavaOpts(MRHelpers.getMapJavaOpts(conf));
+    map.setJavaOpts(getContainerJavaOpts(conf));
 
     assert mapWork.getAliasToWork().keySet().size() == 1;
 
@@ -419,14 +448,14 @@ public class DagUtils {
     Vertex reducer = new Vertex(reduceWork.getName(),
         new ProcessorDescriptor(ReduceTezProcessor.class.getName()).
              setUserPayload(MRHelpers.createUserPayloadFromConf(conf)),
-        reduceWork.getNumReduceTasks(), MRHelpers.getReduceResource(conf));
+        reduceWork.getNumReduceTasks(), getContainerResource(conf));
 
     Map<String, String> environment = new HashMap<String, String>();
 
     MRHelpers.updateEnvironmentForMRTasks(conf, environment, false);
     reducer.setTaskEnvironment(environment);
 
-    reducer.setJavaOpts(MRHelpers.getReduceJavaOpts(conf));
+    reducer.setJavaOpts(getContainerJavaOpts(conf));
 
     Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
     localResources.put(getBaseName(appJarLr), appJarLr);
@@ -479,7 +508,7 @@ public class DagUtils {
     ProcessorDescriptor prewarmProcDescriptor = new ProcessorDescriptor(HivePreWarmProcessor.class.getName());
     prewarmProcDescriptor.setUserPayload(MRHelpers.createUserPayloadFromConf(conf));
 
-    PreWarmContext context = new PreWarmContext(prewarmProcDescriptor, MRHelpers.getMapResource(conf),
+    PreWarmContext context = new PreWarmContext(prewarmProcDescriptor, getContainerResource(conf),
         numContainers, new VertexLocationHint(null));
 
     Map<String, LocalResource> combinedResources = new HashMap<String, LocalResource>();
@@ -504,7 +533,7 @@ public class DagUtils {
     Map<String, String> environment = new HashMap<String, String>();
     MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
     context.setEnvironment(environment);
-    context.setJavaOpts(MRHelpers.getMapJavaOpts(conf));
+    context.setJavaOpts(getContainerJavaOpts(conf));
     return context;
   }
 
