@@ -5,6 +5,7 @@ PREHOOK: query: -- Test stored as directories
 CREATE TABLE  if not exists stored_as_dirs_multiple (col1 STRING, col2 int, col3 STRING) 
 SKEWED BY (col1, col2) ON (('s1',1), ('s3',3), ('s13',13), ('s78',78))  stored as DIRECTORIES
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Test stored as directories
 -- it covers a few cases
 
@@ -12,6 +13,7 @@ POSTHOOK: query: -- Test stored as directories
 CREATE TABLE  if not exists stored_as_dirs_multiple (col1 STRING, col2 int, col3 STRING) 
 SKEWED BY (col1, col2) ON (('s1',1), ('s3',3), ('s13',13), ('s78',78))  stored as DIRECTORIES
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stored_as_dirs_multiple
 PREHOOK: query: describe formatted stored_as_dirs_multiple
 PREHOOK: type: DESCTABLE
@@ -143,9 +145,11 @@ Storage Desc Params:
 PREHOOK: query: -- 4. alter a table to stored as directories
 CREATE TABLE stored_as_dirs_single (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- 4. alter a table to stored as directories
 CREATE TABLE stored_as_dirs_single (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stored_as_dirs_single
 PREHOOK: query: alter table stored_as_dirs_single SKEWED BY (key) ON ('1','5','6') 
 stored as DIRECTORIES
@@ -293,9 +297,11 @@ Storage Desc Params:
 PREHOOK: query: -- 7. create table like
 create table stored_as_dirs_single_like like stored_as_dirs_single
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- 7. create table like
 create table stored_as_dirs_single_like like stored_as_dirs_single
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stored_as_dirs_single_like
 PREHOOK: query: describe formatted stored_as_dirs_single_like
 PREHOOK: type: DESCTABLE

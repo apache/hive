@@ -8,22 +8,24 @@ drop table tbl_protectmode3
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_protectmode3  (col string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tbl_protectmode3  (col string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_protectmode3
 PREHOOK: query: alter table tbl_protectmode3 add partition (p='p1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tbl_protectmode3
+PREHOOK: Output: default@tbl_protectmode3
 POSTHOOK: query: alter table tbl_protectmode3 add partition (p='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tbl_protectmode3
+POSTHOOK: Output: default@tbl_protectmode3
 POSTHOOK: Output: default@tbl_protectmode3@p=p1
 PREHOOK: query: alter table tbl_protectmode3 add partition (p='p2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tbl_protectmode3
+PREHOOK: Output: default@tbl_protectmode3
 POSTHOOK: query: alter table tbl_protectmode3 add partition (p='p2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tbl_protectmode3
+POSTHOOK: Output: default@tbl_protectmode3
 POSTHOOK: Output: default@tbl_protectmode3@p=p2
 PREHOOK: query: select * from tbl_protectmode3 where p='p1'
 PREHOOK: type: QUERY

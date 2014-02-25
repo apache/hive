@@ -1,20 +1,26 @@
 PREHOOK: query: CREATE TABLE tmpT1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE tmpT1(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmpT1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE tmpT1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tmpt1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE tmpT1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tmpt1
 PREHOOK: query: -- testing skew on other data types - int
 CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- testing skew on other data types - int
 CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
 PREHOOK: query: INSERT OVERWRITE TABLE T1 SELECT key, val FROM tmpT1
 PREHOOK: type: QUERY
@@ -32,20 +38,24 @@ PREHOOK: query: -- Tke skewed column is same in both the tables, however it is
 CREATE TABLE T2(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Tke skewed column is same in both the tables, however it is
 -- INT in one of the tables, and STRING in the other table
 
 CREATE TABLE T2(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T2
 POSTHOOK: Lineage: t1.key EXPRESSION [(tmpt1)tmpt1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(tmpt1)tmpt1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@t2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@t2
 POSTHOOK: Lineage: t1.key EXPRESSION [(tmpt1)tmpt1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(tmpt1)tmpt1.FieldSchema(name:val, type:string, comment:null), ]

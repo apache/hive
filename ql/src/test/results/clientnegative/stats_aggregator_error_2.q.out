@@ -5,6 +5,7 @@ PREHOOK: query: -- In this test, the stats aggregator does not exists.
 
 create table tmptable(key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- In this test, the stats aggregator does not exists.
 -- If stats need not be reliable, the statement succeeds. However, if stats are supposed
 -- to be reliable (by setting hive.stats.reliable to true), the insert statement fails
@@ -12,6 +13,7 @@ POSTHOOK: query: -- In this test, the stats aggregator does not exists.
 
 create table tmptable(key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptable
 PREHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
 PREHOOK: type: QUERY

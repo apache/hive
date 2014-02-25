@@ -26,6 +26,8 @@ import static org.junit.Assert.assertTrue;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.reflect.Constructor;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeCaptureOutputOperator;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromConcat;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromLongIterables;
@@ -48,6 +52,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -158,9 +163,9 @@ public class TestVectorGroupByOperator {
 
     return desc;
   }
-  
+
   long outputRowCount = 0;
-  
+
   @Test
   public void testMemoryPressureFlush() throws HiveException {
 
@@ -169,22 +174,22 @@ public class TestVectorGroupByOperator {
     mapColumnNames.put("Value", 1);
     VectorizationContext ctx = new VectorizationContext(mapColumnNames, 2);
 
-    GroupByDesc desc = buildKeyGroupByDesc (ctx, "max", 
-        "Value", TypeInfoFactory.longTypeInfo, 
+    GroupByDesc desc = buildKeyGroupByDesc (ctx, "max",
+        "Value", TypeInfoFactory.longTypeInfo,
         "Key", TypeInfoFactory.longTypeInfo);
-    
+
     // Set the memory treshold so that we get 100Kb before we need to flush.
     MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
     long maxMemory = memoryMXBean.getHeapMemoryUsage().getMax();
-    
+
     float treshold = 100.0f*1024.0f/maxMemory;
     desc.setMemoryThreshold(treshold);
 
     VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
-    
+
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
     vgo.initialize(null, null);
-    
+
     this.outputRowCount = 0;
     out.setOutputInspector(new FakeCaptureOutputOperator.OutputInspector() {
       @Override
@@ -192,7 +197,7 @@ public class TestVectorGroupByOperator {
         ++outputRowCount;
       }
     });
-          
+
     Iterable<Object> it = new Iterable<Object>() {
       @Override
       public Iterator<Object> iterator() {
@@ -215,7 +220,7 @@ public class TestVectorGroupByOperator {
         };
       }
     };
-    
+
     FakeVectorRowBatchFromObjectIterables data = new FakeVectorRowBatchFromObjectIterables(
         100,
         new String[] {"long", "long"},
@@ -223,7 +228,7 @@ public class TestVectorGroupByOperator {
         it);
 
     // The 'it' data source will produce data w/o ever ending
-    // We want to see that memory pressure kicks in and some 
+    // We want to see that memory pressure kicks in and some
     // entries in the VGBY are flushed.
     long countRowsProduced = 0;
     for (VectorizedRowBatch unit: data) {
@@ -237,7 +242,7 @@ public class TestVectorGroupByOperator {
       // It should not go beyond 100k/16 (key+data)
       assertTrue(countRowsProduced < 100*1024/16);
     }
-    
+
     assertTrue(0 < outputRowCount);
   }
 
@@ -594,6 +599,178 @@ public class TestVectorGroupByOperator {
         Arrays.asList(new Long[]{13L,null,7L,19L}),
         4L);
   }
+
+  @Test
+  public void testCountDecimal() throws HiveException {
+    testAggregateDecimal(
+        "count",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(1),
+                new Decimal128(2),
+                new Decimal128(3)}),
+       3L);
+  }
+
+  @Test
+  public void testMaxDecimal() throws HiveException {
+    testAggregateDecimal(
+        "max",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(1),
+                new Decimal128(2),
+                new Decimal128(3)}),
+       new Decimal128(3));
+    testAggregateDecimal(
+            "max",
+            2,
+            Arrays.asList(new Object[]{
+                    new Decimal128(3),
+                    new Decimal128(2),
+                    new Decimal128(1)}),
+           new Decimal128(3));
+    testAggregateDecimal(
+            "max",
+            2,
+            Arrays.asList(new Object[]{
+                    new Decimal128(2),
+                    new Decimal128(3),
+                    new Decimal128(1)}),
+           new Decimal128(3));
+  }
+
+  @Test
+  public void testMinDecimal() throws HiveException {
+    testAggregateDecimal(
+        "min",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(1),
+                new Decimal128(2),
+                new Decimal128(3)}),
+       new Decimal128(1));
+    testAggregateDecimal(
+            "min",
+            2,
+            Arrays.asList(new Object[]{
+                    new Decimal128(3),
+                    new Decimal128(2),
+                    new Decimal128(1)}),
+           new Decimal128(1));
+
+    testAggregateDecimal(
+          "min",
+          2,
+          Arrays.asList(new Object[]{
+                  new Decimal128(2),
+                  new Decimal128(1),
+                  new Decimal128(3)}),
+         new Decimal128(1));
+  }
+
+  @Test
+  public void testSumDecimal() throws HiveException {
+    testAggregateDecimal(
+        "sum",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(1),
+                new Decimal128(2),
+                new Decimal128(3)}),
+       new Decimal128(1+2+3));
+  }
+
+  @Test
+  public void testAvgDecimal() throws HiveException {
+    testAggregateDecimal(
+        "avg",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(1),
+                new Decimal128(2),
+                new Decimal128(3)}),
+       HiveDecimal.create((1+2+3)/3));
+  }
+
+  @Test
+  public void testAvgDecimalNegative() throws HiveException {
+    testAggregateDecimal(
+            "avg",
+            2,
+            Arrays.asList(new Object[]{
+                    new Decimal128(-1),
+                    new Decimal128(-2),
+                    new Decimal128(-3)}),
+           HiveDecimal.create((-1-2-3)/3));
+  }
+
+  @Test
+  public void testVarianceDecimal () throws HiveException {
+      testAggregateDecimal(
+        "variance",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(13),
+                new Decimal128(5),
+                new Decimal128(7),
+                new Decimal128(19)}),
+        (double) 30);
+  }
+
+  @Test
+  public void testVarSampDecimal () throws HiveException {
+      testAggregateDecimal(
+        "var_samp",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(13),
+                new Decimal128(5),
+                new Decimal128(7),
+                new Decimal128(19)}),
+        (double) 40);
+  }
+
+  @Test
+  public void testStdPopDecimal () throws HiveException {
+      testAggregateDecimal(
+        "stddev_pop",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(13),
+                new Decimal128(5),
+                new Decimal128(7),
+                new Decimal128(19)}),
+        (double) Math.sqrt(30));
+  }
+
+  @Test
+  public void testStdSampDecimal () throws HiveException {
+      testAggregateDecimal(
+        "stddev_samp",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(13),
+                new Decimal128(5),
+                new Decimal128(7),
+                new Decimal128(19)}),
+        (double) Math.sqrt(40));
+  }
+
+  @Test
+  public void testDecimalKeyTypeAggregate() throws HiveException {
+    testKeyTypeAggregate(
+        "sum",
+        new FakeVectorRowBatchFromObjectIterables(
+            2,
+            new String[] {"decimal(38,0)", "bigint"},
+            Arrays.asList(new Object[]{
+                    new Decimal128(1),null,
+                    new Decimal128(1), null}),
+            Arrays.asList(new Object[]{13L,null,7L, 19L})),
+        buildHashMap(HiveDecimal.create(1), 20L, null, 19L));
+  }
+
 
   @Test
   public void testCountString() throws HiveException {
@@ -1655,6 +1832,9 @@ public class TestVectorGroupByOperator {
         } else if (key instanceof BooleanWritable) {
           BooleanWritable bwKey = (BooleanWritable)key;
           keyValue = bwKey.get();
+        } else if (key instanceof HiveDecimalWritable) {
+            HiveDecimalWritable hdwKey = (HiveDecimalWritable)key;
+            keyValue = hdwKey.getHiveDecimal();
         } else {
           Assert.fail(String.format("Not implemented key output type %s: %s",
               key.getClass().getName(), key));
@@ -1755,6 +1935,19 @@ public class TestVectorGroupByOperator {
     testAggregateLongKeyIterable (aggregateName, fdr, expected);
   }
 
+  public void testAggregateDecimal (
+          String aggregateName,
+          int batchSize,
+          Iterable<Object> values,
+          Object expected) throws HiveException {
+
+        @SuppressWarnings("unchecked")
+        FakeVectorRowBatchFromObjectIterables fdr = new FakeVectorRowBatchFromObjectIterables(
+            batchSize, new String[] {"Decimal"}, values);
+        testAggregateDecimalIterable (aggregateName, fdr, expected);
+      }
+
+
   public void testAggregateString (
       String aggregateName,
       int batchSize,
@@ -1832,6 +2025,15 @@ public class TestVectorGroupByOperator {
         assertEquals (key, (Double) expected, (Double) arr[0]);
       } else if (arr[0] instanceof Long) {
         assertEquals (key, (Long) expected, (Long) arr[0]);
+      } else if (arr[0] instanceof HiveDecimalWritable) {
+        HiveDecimalWritable hdw = (HiveDecimalWritable) arr[0];
+        HiveDecimal hd = hdw.getHiveDecimal();
+        Decimal128 d128 = (Decimal128)expected;
+        assertEquals (key, d128.toBigDecimal(), hd.bigDecimalValue());
+      } else if (arr[0] instanceof HiveDecimal) {
+          HiveDecimal hd = (HiveDecimal) arr[0];
+          Decimal128 d128 = (Decimal128)expected;
+          assertEquals (key, d128.toBigDecimal(), hd.bigDecimalValue());
       } else {
         Assert.fail("Unsupported result type: " + arr[0].getClass().getName());
       }
@@ -1853,11 +2055,16 @@ public class TestVectorGroupByOperator {
         assertEquals (2, vals.length);
 
         assertEquals (true, vals[0] instanceof LongWritable);
-        assertEquals (true, vals[1] instanceof DoubleWritable);
         LongWritable lw = (LongWritable) vals[0];
-        DoubleWritable dw = (DoubleWritable) vals[1];
         assertFalse (lw.get() == 0L);
-        assertEquals (key, (Double) expected, (Double) (dw.get() / lw.get()));
+
+        if (vals[1] instanceof DoubleWritable) {
+          DoubleWritable dw = (DoubleWritable) vals[1];
+          assertEquals (key, (Double) expected, (Double) (dw.get() / lw.get()));
+        } else if (vals[1] instanceof HiveDecimalWritable) {
+          HiveDecimalWritable hdw = (HiveDecimalWritable) vals[1];
+          assertEquals (key, (HiveDecimal) expected, hdw.getHiveDecimal().divide(HiveDecimal.create(lw.get())));
+        }
       }
     }
 
@@ -1935,6 +2142,7 @@ public class TestVectorGroupByOperator {
       {"var_samp", VarianceSampValidator.class},
       {"std", StdValidator.class},
       {"stddev", StdValidator.class},
+      {"stddev_pop", StdValidator.class},
       {"stddev_samp", StdSampValidator.class},
   };
 
@@ -2014,6 +2222,38 @@ public class TestVectorGroupByOperator {
     Validator validator = getValidator(aggregateName);
     validator.validate("_total", expected, result);
   }
+
+  public void testAggregateDecimalIterable (
+          String aggregateName,
+          Iterable<VectorizedRowBatch> data,
+          Object expected) throws HiveException {
+        Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
+        mapColumnNames.put("A", 0);
+        VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
+
+        GroupByDesc desc = buildGroupByDescType(ctx, aggregateName, "A",
+            TypeInfoFactory.getDecimalTypeInfo(30, 4));
+
+        VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+
+        FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+        vgo.initialize(null, null);
+
+        for (VectorizedRowBatch unit: data) {
+          vgo.processOp(unit,  0);
+        }
+        vgo.close(false);
+
+        List<Object> outBatchList = out.getCapturedRows();
+        assertNotNull(outBatchList);
+        assertEquals(1, outBatchList.size());
+
+        Object result = outBatchList.get(0);
+
+        Validator validator = getValidator(aggregateName);
+        validator.validate("_total", expected, result);
+      }
+
 
   public void testAggregateDoubleIterable (
       String aggregateName,

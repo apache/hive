@@ -8,15 +8,17 @@ drop table tbl_protectmode_tbl8
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_protectmode_tbl8  (col string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tbl_protectmode_tbl8  (col string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_protectmode_tbl8
 PREHOOK: query: alter table tbl_protectmode_tbl8 add partition (p='p1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tbl_protectmode_tbl8
+PREHOOK: Output: default@tbl_protectmode_tbl8
 POSTHOOK: query: alter table tbl_protectmode_tbl8 add partition (p='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tbl_protectmode_tbl8
+POSTHOOK: Output: default@tbl_protectmode_tbl8
 POSTHOOK: Output: default@tbl_protectmode_tbl8@p=p1
 PREHOOK: query: alter table tbl_protectmode_tbl8 enable no_drop
 PREHOOK: type: ALTERTABLE_PROTECTMODE
@@ -44,9 +46,9 @@ POSTHOOK: Input: default@tbl_protectmode_tbl8
 POSTHOOK: Output: default@tbl_protectmode_tbl8
 PREHOOK: query: alter table tbl_protectmode_tbl8 add partition (p='p1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tbl_protectmode_tbl8
+PREHOOK: Output: default@tbl_protectmode_tbl8
 POSTHOOK: query: alter table tbl_protectmode_tbl8 add partition (p='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tbl_protectmode_tbl8
+POSTHOOK: Output: default@tbl_protectmode_tbl8
 POSTHOOK: Output: default@tbl_protectmode_tbl8@p=p1
 FAILED: SemanticException [Error 30011]: Partition protected from being dropped default@tbl_protectmode_tbl8@p=p1

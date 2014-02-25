@@ -8,8 +8,10 @@ drop table tbl_protectmode__no_drop
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_protectmode__no_drop  (col string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tbl_protectmode__no_drop  (col string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_protectmode__no_drop
 PREHOOK: query: select * from tbl_protectmode__no_drop
 PREHOOK: type: QUERY

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncFloorDecimalToDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncFloorDoubleToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncFloorLongToLong;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -33,7 +34,7 @@ extended = "Example:\n"
     + "  > SELECT _FUNC_(-0.1) FROM src LIMIT 1;\n"
     + "  -1\n"
     + "  > SELECT _FUNC_(5) FROM src LIMIT 1;\n" + "  5")
-@VectorizedExpressions({FuncFloorLongToLong.class, FuncFloorDoubleToLong.class})
+@VectorizedExpressions({FuncFloorLongToLong.class, FuncFloorDoubleToLong.class, FuncFloorDecimalToDecimal.class})
 public final class GenericUDFFloor extends GenericUDFFloorCeilBase {
 
   public GenericUDFFloor() {

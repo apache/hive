@@ -3,11 +3,13 @@ PREHOOK: query: -- Test SHOW CREATE TABLE on an external, clustered and sorted t
 CREATE EXTERNAL TABLE tmp_showcrt1 (key smallint, value float)
 CLUSTERED BY (key) SORTED BY (value DESC) INTO 5 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Test SHOW CREATE TABLE on an external, clustered and sorted table. Then test the query again after ALTERs.
 
 CREATE EXTERNAL TABLE tmp_showcrt1 (key smallint, value float)
 CLUSTERED BY (key) SORTED BY (value DESC) INTO 5 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_showcrt1
 PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 PREHOOK: type: SHOW_CREATETABLE

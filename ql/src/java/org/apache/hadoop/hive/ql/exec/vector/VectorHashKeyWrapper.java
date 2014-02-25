@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -42,16 +43,23 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private int[] byteStarts;
   private int[] byteLengths;
 
+  private Decimal128[] decimalValues;
+
   private boolean[] isNull;
   private int hashcode;
 
-  public VectorHashKeyWrapper(int longValuesCount, int doubleValuesCount, int byteValuesCount) {
+  public VectorHashKeyWrapper(int longValuesCount, int doubleValuesCount,
+          int byteValuesCount, int decimalValuesCount) {
     longValues = new long[longValuesCount];
     doubleValues = new double[doubleValuesCount];
+    decimalValues = new Decimal128[decimalValuesCount];
+    for(int i = 0; i < decimalValuesCount; ++i) {
+      decimalValues[i] = new Decimal128();
+    }
     byteValues = new byte[byteValuesCount][];
     byteStarts = new int[byteValuesCount];
     byteLengths = new int[byteValuesCount];
-    isNull = new boolean[longValuesCount + doubleValuesCount + byteValuesCount];
+    isNull = new boolean[longValuesCount + doubleValuesCount + byteValuesCount + decimalValuesCount];
   }
 
   private VectorHashKeyWrapper() {
@@ -66,6 +74,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   public void setHashKey() {
     hashcode = Arrays.hashCode(longValues) ^
         Arrays.hashCode(doubleValues) ^
+        Arrays.hashCode(decimalValues) ^
         Arrays.hashCode(isNull);
 
     // This code, with branches and all, is not executed if there are no string keys
@@ -104,6 +113,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
       return hashcode == keyThat.hashcode &&
           Arrays.equals(longValues, keyThat.longValues) &&
           Arrays.equals(doubleValues, keyThat.doubleValues) &&
+          Arrays.equals(decimalValues,  keyThat.decimalValues) &&
           Arrays.equals(isNull, keyThat.isNull) &&
           byteValues.length == keyThat.byteValues.length &&
           (0 == byteValues.length || bytesEquals(keyThat));
@@ -136,6 +146,12 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     clone.longValues = longValues.clone();
     clone.doubleValues = doubleValues.clone();
     clone.isNull = isNull.clone();
+
+    // Decimal128 requires deep clone
+    clone.decimalValues = new Decimal128[decimalValues.length];
+    for(int i = 0; i < decimalValues.length; ++i) {
+    	clone.decimalValues[i] = new Decimal128().update(decimalValues[i]);
+    }
 
     clone.byteValues = new byte[byteValues.length][];
     clone.byteStarts = new int[byteValues.length];
@@ -201,13 +217,22 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     isNull[longValues.length + doubleValues.length + index] = true;
   }
 
+  public void assignDecimal(int index, Decimal128 value) {
+      decimalValues[index].update(value);
+  }
+
+  public void assignNullDecimal(int index) {
+      isNull[longValues.length + doubleValues.length + byteValues.length + index] = true;
+  }
+
   @Override
   public String toString()
   {
-    return String.format("%d[%s] %d[%s] %d[%s]",
+    return String.format("%d[%s] %d[%s] %d[%s] %d[%s]",
         longValues.length, Arrays.toString(longValues),
         doubleValues.length, Arrays.toString(doubleValues),
-        byteValues.length, Arrays.toString(byteValues));
+        byteValues.length, Arrays.toString(byteValues),
+        decimalValues.length, Arrays.toString(decimalValues));
   }
 
   public boolean getIsLongNull(int i) {
@@ -222,7 +247,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     return isNull[longValues.length + doubleValues.length + i];
   }
 
-  
+
   public long getLongValue(int i) {
     return longValues[i];
   }
@@ -252,6 +277,12 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     return variableSize;
   }
 
+  public boolean getIsDecimalNull(int i) {
+    return isNull[longValues.length + doubleValues.length + byteValues.length + i];
+  }
 
+  public Decimal128 getDecimal(int i) {
+    return decimalValues[i];
+  }
 }
 

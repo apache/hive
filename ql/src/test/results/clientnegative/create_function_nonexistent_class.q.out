@@ -1,0 +1,4 @@
+PREHOOK: query: create function default.badfunc as 'my.nonexistent.class'
+PREHOOK: type: CREATEFUNCTION
+FAILED: Class my.nonexistent.class not found
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask

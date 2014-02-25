@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -84,6 +85,7 @@ class RecordReaderImpl implements RecordReader {
   private final int[] filterColumns;
   // an array about which row groups aren't skipped
   private boolean[] includedRowGroups = null;
+  private final Configuration conf;
 
   RecordReaderImpl(Iterable<StripeInformation> stripes,
                    FileSystem fileSystem,
@@ -95,13 +97,15 @@ class RecordReaderImpl implements RecordReader {
                    boolean[] included,
                    long strideRate,
                    SearchArgument sarg,
-                   String[] columnNames
+                   String[] columnNames,
+                   Configuration conf
                   ) throws IOException {
     this.file = fileSystem.open(path);
     this.codec = codec;
     this.types = types;
     this.bufferSize = bufferSize;
     this.included = included;
+    this.conf = conf;
     this.sarg = sarg;
     if (sarg != null) {
       sargLeaves = sarg.getLeaves();
@@ -128,7 +132,7 @@ class RecordReaderImpl implements RecordReader {
 
     firstRow = skippedRows;
     totalRowCount = rows;
-    reader = createTreeReader(path, 0, types, included);
+    reader = createTreeReader(path, 0, types, included, conf);
     indexes = new OrcProto.RowIndex[types.size()];
     rowIndexStride = strideRate;
     advanceToNextRow(0L);
@@ -163,10 +167,12 @@ class RecordReaderImpl implements RecordReader {
     protected final int columnId;
     private BitFieldReader present = null;
     protected boolean valuePresent = false;
+    protected final Configuration conf;
 
-    TreeReader(Path path, int columnId) {
+    TreeReader(Path path, int columnId, Configuration conf) {
       this.path = path;
       this.columnId = columnId;
+      this.conf = conf;
     }
 
     void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
@@ -182,7 +188,7 @@ class RecordReaderImpl implements RecordReader {
       switch (kind) {
       case DIRECT_V2:
       case DICTIONARY_V2:
-        return new RunLengthIntegerReaderV2(in, signed);
+        return new RunLengthIntegerReaderV2(in, signed, conf);
       case DIRECT:
       case DICTIONARY:
         return new RunLengthIntegerReader(in, signed);
@@ -275,8 +281,8 @@ class RecordReaderImpl implements RecordReader {
   private static class BooleanTreeReader extends TreeReader{
     private BitFieldReader reader = null;
 
-    BooleanTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    BooleanTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
     }
 
     @Override
@@ -335,8 +341,8 @@ class RecordReaderImpl implements RecordReader {
   private static class ByteTreeReader extends TreeReader{
     private RunLengthByteReader reader = null;
 
-    ByteTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    ByteTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
     }
 
     @Override
@@ -395,8 +401,8 @@ class RecordReaderImpl implements RecordReader {
   private static class ShortTreeReader extends TreeReader{
     private IntegerReader reader = null;
 
-    ShortTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    ShortTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
     }
 
     @Override
@@ -465,8 +471,8 @@ class RecordReaderImpl implements RecordReader {
   private static class IntTreeReader extends TreeReader{
     private IntegerReader reader = null;
 
-    IntTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    IntTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
     }
 
     @Override
@@ -535,8 +541,8 @@ class RecordReaderImpl implements RecordReader {
   private static class LongTreeReader extends TreeReader{
     private IntegerReader reader = null;
 
-    LongTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    LongTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
     }
 
     @Override
@@ -605,8 +611,8 @@ class RecordReaderImpl implements RecordReader {
   private static class FloatTreeReader extends TreeReader{
     private InStream stream;
 
-    FloatTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    FloatTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
     }
 
     @Override
@@ -685,8 +691,8 @@ class RecordReaderImpl implements RecordReader {
   private static class DoubleTreeReader extends TreeReader{
     private InStream stream;
 
-    DoubleTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    DoubleTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
     }
 
     @Override
@@ -764,8 +770,8 @@ class RecordReaderImpl implements RecordReader {
     private InStream stream;
     private IntegerReader lengths = null;
 
-    BinaryTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    BinaryTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
     }
 
     @Override
@@ -843,8 +849,8 @@ class RecordReaderImpl implements RecordReader {
     private IntegerReader nanos = null;
     private final LongColumnVector nanoVector = new LongColumnVector();
 
-    TimestampTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    TimestampTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
     }
 
     @Override
@@ -970,8 +976,8 @@ class RecordReaderImpl implements RecordReader {
   private static class DateTreeReader extends TreeReader{
     private IntegerReader reader = null;
 
-    DateTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    DateTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
     }
 
     @Override
@@ -1045,8 +1051,8 @@ class RecordReaderImpl implements RecordReader {
     private final int precision;
     private final int scale;
 
-    DecimalTreeReader(Path path, int columnId, int precision, int scale) {
-      super(path, columnId);
+    DecimalTreeReader(Path path, int columnId, int precision, int scale, Configuration conf) {
+      super(path, columnId, conf);
       this.precision = precision;
       this.scale = scale;
     }
@@ -1155,8 +1161,8 @@ class RecordReaderImpl implements RecordReader {
   private static class StringTreeReader extends TreeReader {
     private TreeReader reader;
 
-    StringTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    StringTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
     }
 
     @Override
@@ -1173,11 +1179,11 @@ class RecordReaderImpl implements RecordReader {
       switch (encodings.get(columnId).getKind()) {
         case DIRECT:
         case DIRECT_V2:
-          reader = new StringDirectTreeReader(path, columnId);
+          reader = new StringDirectTreeReader(path, columnId, conf);
           break;
         case DICTIONARY:
         case DICTIONARY_V2:
-          reader = new StringDictionaryTreeReader(path, columnId);
+          reader = new StringDictionaryTreeReader(path, columnId, conf);
           break;
         default:
           throw new IllegalArgumentException("Unsupported encoding " +
@@ -1217,8 +1223,8 @@ class RecordReaderImpl implements RecordReader {
 
     private final LongColumnVector scratchlcv;
 
-    StringDirectTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    StringDirectTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
       scratchlcv = new LongColumnVector();
     }
 
@@ -1366,8 +1372,8 @@ class RecordReaderImpl implements RecordReader {
     private byte[] dictionaryBufferInBytesCache = null;
     private final LongColumnVector scratchlcv;
 
-    StringDictionaryTreeReader(Path path, int columnId) {
-      super(path, columnId);
+    StringDictionaryTreeReader(Path path, int columnId, Configuration conf) {
+      super(path, columnId, conf);
       scratchlcv = new LongColumnVector();
     }
 
@@ -1532,8 +1538,8 @@ class RecordReaderImpl implements RecordReader {
   private static class CharTreeReader extends StringTreeReader {
     int maxLength;
 
-    CharTreeReader(Path path, int columnId, int maxLength) {
-      super(path, columnId);
+    CharTreeReader(Path path, int columnId, int maxLength, Configuration conf) {
+      super(path, columnId, conf);
       this.maxLength = maxLength;
     }
 
@@ -1560,8 +1566,8 @@ class RecordReaderImpl implements RecordReader {
   private static class VarcharTreeReader extends StringTreeReader {
     int maxLength;
 
-    VarcharTreeReader(Path path, int columnId, int maxLength) {
-      super(path, columnId);
+    VarcharTreeReader(Path path, int columnId, int maxLength, Configuration conf) {
+      super(path, columnId, conf);
       this.maxLength = maxLength;
     }
 
@@ -1591,8 +1597,8 @@ class RecordReaderImpl implements RecordReader {
 
     StructTreeReader(Path path, int columnId,
                      List<OrcProto.Type> types,
-                     boolean[] included) throws IOException {
-      super(path, columnId);
+                     boolean[] included, Configuration conf) throws IOException {
+      super(path, columnId, conf);
       OrcProto.Type type = types.get(columnId);
       int fieldCount = type.getFieldNamesCount();
       this.fields = new TreeReader[fieldCount];
@@ -1600,7 +1606,7 @@ class RecordReaderImpl implements RecordReader {
       for(int i=0; i < fieldCount; ++i) {
         int subtype = type.getSubtypes(i);
         if (included == null || included[subtype]) {
-          this.fields[i] = createTreeReader(path, subtype, types, included);
+          this.fields[i] = createTreeReader(path, subtype, types, included, conf);
         }
         this.fieldNames[i] = type.getFieldNames(i);
       }
@@ -1693,15 +1699,15 @@ class RecordReaderImpl implements RecordReader {
 
     UnionTreeReader(Path path, int columnId,
                     List<OrcProto.Type> types,
-                    boolean[] included) throws IOException {
-      super(path, columnId);
+                    boolean[] included, Configuration conf) throws IOException {
+      super(path, columnId, conf);
       OrcProto.Type type = types.get(columnId);
       int fieldCount = type.getSubtypesCount();
       this.fields = new TreeReader[fieldCount];
       for(int i=0; i < fieldCount; ++i) {
         int subtype = type.getSubtypes(i);
         if (included == null || included[subtype]) {
-          this.fields[i] = createTreeReader(path, subtype, types, included);
+          this.fields[i] = createTreeReader(path, subtype, types, included, conf);
         }
       }
     }
@@ -1772,11 +1778,11 @@ class RecordReaderImpl implements RecordReader {
 
     ListTreeReader(Path path, int columnId,
                    List<OrcProto.Type> types,
-                   boolean[] included) throws IOException {
-      super(path, columnId);
+                   boolean[] included, Configuration conf) throws IOException {
+      super(path, columnId, conf);
       OrcProto.Type type = types.get(columnId);
       elementReader = createTreeReader(path, type.getSubtypes(0), types,
-          included);
+          included, conf);
     }
 
     @Override
@@ -1863,18 +1869,18 @@ class RecordReaderImpl implements RecordReader {
     MapTreeReader(Path path,
                   int columnId,
                   List<OrcProto.Type> types,
-                  boolean[] included) throws IOException {
-      super(path, columnId);
+                  boolean[] included, Configuration conf) throws IOException {
+      super(path, columnId, conf);
       OrcProto.Type type = types.get(columnId);
       int keyColumn = type.getSubtypes(0);
       int valueColumn = type.getSubtypes(1);
       if (included == null || included[keyColumn]) {
-        keyReader = createTreeReader(path, keyColumn, types, included);
+        keyReader = createTreeReader(path, keyColumn, types, included, conf);
       } else {
         keyReader = null;
       }
       if (included == null || included[valueColumn]) {
-        valueReader = createTreeReader(path, valueColumn, types, included);
+        valueReader = createTreeReader(path, valueColumn, types, included, conf);
       } else {
         valueReader = null;
       }
@@ -1956,54 +1962,55 @@ class RecordReaderImpl implements RecordReader {
   private static TreeReader createTreeReader(Path path,
                                              int columnId,
                                              List<OrcProto.Type> types,
-                                             boolean[] included
+                                             boolean[] included,
+                                             Configuration conf
                                             ) throws IOException {
     OrcProto.Type type = types.get(columnId);
     switch (type.getKind()) {
       case BOOLEAN:
-        return new BooleanTreeReader(path, columnId);
+        return new BooleanTreeReader(path, columnId, conf);
       case BYTE:
-        return new ByteTreeReader(path, columnId);
+        return new ByteTreeReader(path, columnId, conf);
       case DOUBLE:
-        return new DoubleTreeReader(path, columnId);
+        return new DoubleTreeReader(path, columnId, conf);
       case FLOAT:
-        return new FloatTreeReader(path, columnId);
+        return new FloatTreeReader(path, columnId, conf);
       case SHORT:
-        return new ShortTreeReader(path, columnId);
+        return new ShortTreeReader(path, columnId, conf);
       case INT:
-        return new IntTreeReader(path, columnId);
+        return new IntTreeReader(path, columnId, conf);
       case LONG:
-        return new LongTreeReader(path, columnId);
+        return new LongTreeReader(path, columnId, conf);
       case STRING:
-        return new StringTreeReader(path, columnId);
+        return new StringTreeReader(path, columnId, conf);
       case CHAR:
         if (!type.hasMaximumLength()) {
           throw new IllegalArgumentException("ORC char type has no length specified");
         }
-        return new CharTreeReader(path, columnId, type.getMaximumLength());
+        return new CharTreeReader(path, columnId, type.getMaximumLength(), conf);
       case VARCHAR:
         if (!type.hasMaximumLength()) {
           throw new IllegalArgumentException("ORC varchar type has no length specified");
         }
-        return new VarcharTreeReader(path, columnId, type.getMaximumLength());
+        return new VarcharTreeReader(path, columnId, type.getMaximumLength(), conf);
       case BINARY:
-        return new BinaryTreeReader(path, columnId);
+        return new BinaryTreeReader(path, columnId, conf);
       case TIMESTAMP:
-        return new TimestampTreeReader(path, columnId);
+        return new TimestampTreeReader(path, columnId, conf);
       case DATE:
-        return new DateTreeReader(path, columnId);
+        return new DateTreeReader(path, columnId, conf);
       case DECIMAL:
         int precision = type.hasPrecision() ? type.getPrecision() : HiveDecimal.SYSTEM_DEFAULT_PRECISION;
         int scale =  type.hasScale()? type.getScale() : HiveDecimal.SYSTEM_DEFAULT_SCALE;
-        return new DecimalTreeReader(path, columnId, precision, scale);
+        return new DecimalTreeReader(path, columnId, precision, scale, conf);
       case STRUCT:
-        return new StructTreeReader(path, columnId, types, included);
+        return new StructTreeReader(path, columnId, types, included, conf);
       case LIST:
-        return new ListTreeReader(path, columnId, types, included);
+        return new ListTreeReader(path, columnId, types, included, conf);
       case MAP:
-        return new MapTreeReader(path, columnId, types, included);
+        return new MapTreeReader(path, columnId, types, included, conf);
       case UNION:
-        return new UnionTreeReader(path, columnId, types, included);
+        return new UnionTreeReader(path, columnId, types, included, conf);
       default:
         throw new IllegalArgumentException("Unsupported type " +
           type.getKind());

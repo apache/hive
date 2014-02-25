@@ -1,19 +1,25 @@
 PREHOOK: query: CREATE TABLE nullscript(KEY STRING, VALUE STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE nullscript(KEY STRING, VALUE STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nullscript
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE nullscript
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@nullscript
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE nullscript
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@nullscript
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE nullscript
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@nullscript
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE nullscript
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@nullscript
 PREHOOK: query: explain
 select transform(key) using 'cat' as key1 from nullscript

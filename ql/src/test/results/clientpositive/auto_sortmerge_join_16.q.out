@@ -5,6 +5,7 @@ value STRING
 )
 PARTITIONED BY (file_tag STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE stage_bucket_big
 (
 key BIGINT,
@@ -12,6 +13,7 @@ value STRING
 )
 PARTITIONED BY (file_tag STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stage_bucket_big
 PREHOOK: query: CREATE TABLE bucket_big
 (
@@ -22,6 +24,7 @@ PARTITIONED BY (day STRING, pri bigint)
 clustered by (key) sorted by (key) into 12 buckets
 stored as RCFile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE bucket_big
 (
 key BIGINT,
@@ -31,6 +34,7 @@ PARTITIONED BY (day STRING, pri bigint)
 clustered by (key) sorted by (key) into 12 buckets
 stored as RCFile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_big
 PREHOOK: query: CREATE TABLE stage_bucket_small
 (
@@ -39,6 +43,7 @@ value string
 )
 PARTITIONED BY (file_tag STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE stage_bucket_small
 (
 key BIGINT,
@@ -46,6 +51,7 @@ value string
 )
 PARTITIONED BY (file_tag STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stage_bucket_small
 PREHOOK: query: CREATE TABLE bucket_small
 (
@@ -56,6 +62,7 @@ PARTITIONED BY (pri bigint)
 clustered by (key) sorted by (key) into 12 buckets
 stored as RCFile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE bucket_small
 (
 key BIGINT,
@@ -65,19 +72,24 @@ PARTITIONED BY (pri bigint)
 clustered by (key) sorted by (key) into 12 buckets
 stored as RCFile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_small
 PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' overwrite into table stage_bucket_small partition (file_tag='1')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@stage_bucket_small
 POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' overwrite into table stage_bucket_small partition (file_tag='1')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@stage_bucket_small
 POSTHOOK: Output: default@stage_bucket_small@file_tag=1
 PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' overwrite into table stage_bucket_small partition (file_tag='2')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@stage_bucket_small
 POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' overwrite into table stage_bucket_small partition (file_tag='2')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@stage_bucket_small
 POSTHOOK: Output: default@stage_bucket_small@file_tag=2
 PREHOOK: query: insert overwrite table bucket_small partition(pri) 
@@ -113,9 +125,11 @@ POSTHOOK: Lineage: bucket_small PARTITION(pri=2).key SIMPLE [(stage_bucket_small
 POSTHOOK: Lineage: bucket_small PARTITION(pri=2).value SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket1outof4.txt' overwrite into table stage_bucket_big partition (file_tag='1')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@stage_bucket_big
 POSTHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket1outof4.txt' overwrite into table stage_bucket_big partition (file_tag='1')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@stage_bucket_big
 POSTHOOK: Output: default@stage_bucket_big@file_tag=1
 POSTHOOK: Lineage: bucket_small PARTITION(pri=1).key SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:key, type:bigint, comment:null), ]

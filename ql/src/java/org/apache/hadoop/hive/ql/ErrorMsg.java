@@ -25,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
@@ -374,6 +375,7 @@ public enum ErrorMsg {
   UNNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP(10254,
       "Principal type GROUP is not supported in this authorization setting", "28000"),
   INVALID_TABLE_NAME(10255, "Invalid table name {0}", true),
+  INSERT_INTO_IMMUTABLE_TABLE(10256, "Inserting into a non-empty immutable table is not allowed"),
 
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
@@ -431,7 +433,9 @@ public enum ErrorMsg {
   STATSAGGREGATOR_MISSED_SOMESTATS(30016,
       "Stats type {0} is missing from stats aggregator. If you don't want the query " +
       "to fail because of this, set hive.stats.atomic=false", true),
-  STATS_SKIPPING_BY_ERROR(30017, "Skipping stats aggregation by error {0}", true);
+  STATS_SKIPPING_BY_ERROR(30017, "Skipping stats aggregation by error {0}", true),
+  ORC_CORRUPTED_READ(30018, "Corruption in ORC data encountered. To skip reading corrupted "
+      + "data, set " + HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA + " to true");
   ;
 
   private int errorCode;

@@ -176,7 +176,6 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.thrift.TException;
 import org.stringtemplate.v4.ST;
 
 /**
@@ -658,7 +657,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         //only grantInfo is used
         HiveObjectPrivilege thriftObjectPriv = new HiveObjectPrivilege(new HiveObjectRef(
           AuthorizationUtils.getThriftHiveObjType(privObj.getType()),privObj.getDbname(),
-          privObj.getTableviewname(),null,null), principal.getName(),
+          privObj.getTableViewURI(),null,null), principal.getName(),
           AuthorizationUtils.getThriftPrincipalType(principal.getType()), grantInfo);
         privList.add(thriftObjectPriv);
       }
@@ -873,9 +872,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private HivePrivilegeObjectType getPrivObjectType(PrivilegeObjectDesc privSubjectDesc) {
-    //TODO: This needs to change to support view once view grant/revoke is supported as
-    // part of HIVE-6181
-    return privSubjectDesc.getTable() ? HivePrivilegeObjectType.TABLE : HivePrivilegeObjectType.DATABASE;
+    return privSubjectDesc.getTable() ? HivePrivilegeObjectType.TABLE_OR_VIEW : HivePrivilegeObjectType.DATABASE;
   }
 
   private List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges) {
@@ -971,7 +968,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       break;
     case SHOW_ROLES:
       List<String> allRoles = authorizer.getAllRoles();
-      writeListToFile(allRoles, roleDDLDesc.getResFile());
+      writeListToFileAfterSort(allRoles, roleDDLDesc.getResFile());
       break;
     case SHOW_CURRENT_ROLE:
       List<HiveRole> currentRoles = authorizer.getCurrentRoles();
@@ -979,7 +976,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       for (HiveRole role : currentRoles) {
         roleNames.add(role.getRoleName());
       }
-      writeListToFile(roleNames, roleDDLDesc.getResFile());
+      writeListToFileAfterSort(roleNames, roleDDLDesc.getResFile());
       break;
     case SET_ROLE:
       authorizer.setCurrentRole(roleDDLDesc.getName());
@@ -998,7 +995,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @param resFile
    * @throws IOException
    */
-  private void writeListToFile(List<String> entries, String resFile) throws IOException {
+  private void writeListToFileAfterSort(List<String> entries, String resFile) throws IOException {
+    Collections.sort(entries);
     StringBuilder sb = new StringBuilder();
     for(String entry : entries){
       sb.append(entry);
@@ -2836,12 +2834,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           if(descDatabase.isExt()) {
             params = database.getParameters();
           }
-
-          formatter.showDatabaseDescription(outStream,
-                                            database.getName(),
-                                            database.getDescription(),
-                                            database.getLocationUri(),
-                                            params);
+          PrincipalType ownerType = database.getOwnerType();
+          formatter.showDatabaseDescription(outStream, database.getName(),
+            database.getDescription(), database.getLocationUri(),
+            database.getOwnerName(), (null == ownerType) ? null : ownerType.name(), params);
       }
       outStream.close();
       outStream = null;
@@ -3632,12 +3628,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private boolean updateModifiedParameters(Map<String, String> params, HiveConf conf) throws HiveException {
     String user = null;
-    try {
-      user = conf.getUser();
-    } catch (IOException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to get current user");
-    }
-
+    user = SessionState.getUserFromAuthenticator();
     params.put("last_modified_by", user);
     params.put("last_modified_time", Long.toString(System.currentTimeMillis() / 1000));
     return true;
@@ -3673,6 +3664,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     database.setDescription(crtDb.getComment());
     database.setLocationUri(crtDb.getLocationUri());
     database.setParameters(crtDb.getDatabaseProperties());
+    database.setOwnerName(SessionState.getUserFromAuthenticator());
+    database.setOwnerType(PrincipalType.USER);
     try {
       db.createDatabase(database, crtDb.getIfNotExists());
     }
@@ -4137,11 +4130,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int setGenericTableAttributes(Table tbl) throws HiveException {
-    try {
-      tbl.setOwner(conf.getUser());
-    } catch (IOException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to get current user");
-    }
+    tbl.setOwner(SessionState.getUserFromAuthenticator());
     // set create time
     tbl.setCreateTime((int) (System.currentTimeMillis() / 1000));
     return 0;

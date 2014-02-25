@@ -1,7 +1,9 @@
 PREHOOK: query: create table partition_vs_table(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table partition_vs_table(key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_vs_table
 PREHOOK: query: insert overwrite table partition_vs_table partition(ds='100') select key, value from src
 PREHOOK: type: QUERY

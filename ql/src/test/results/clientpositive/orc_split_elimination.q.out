@@ -1,13 +1,17 @@
 PREHOOK: query: create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_split_elim
 PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@orc_split_elim
 POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@orc_split_elim
 PREHOOK: query: -- The above table will have 5 splits with the followings stats
 --  Stripe 1:
@@ -258,35 +262,41 @@ POSTHOOK: Input: default@orc_split_elim
 PREHOOK: query: -- partitioned table
 create table orc_split_elim_part (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (country string, year int) stored as orc
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- partitioned table
 create table orc_split_elim_part (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (country string, year int) stored as orc
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_split_elim_part
 PREHOOK: query: alter table orc_split_elim_part add partition(country='us', year=2000)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@orc_split_elim_part
+PREHOOK: Output: default@orc_split_elim_part
 POSTHOOK: query: alter table orc_split_elim_part add partition(country='us', year=2000)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@orc_split_elim_part
+POSTHOOK: Output: default@orc_split_elim_part
 POSTHOOK: Output: default@orc_split_elim_part@country=us/year=2000
 PREHOOK: query: alter table orc_split_elim_part add partition(country='us', year=2001)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@orc_split_elim_part
+PREHOOK: Output: default@orc_split_elim_part
 POSTHOOK: query: alter table orc_split_elim_part add partition(country='us', year=2001)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@orc_split_elim_part
+POSTHOOK: Output: default@orc_split_elim_part
 POSTHOOK: Output: default@orc_split_elim_part@country=us/year=2001
 PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim_part partition(country='us', year=2000)
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@orc_split_elim_part@country=us/year=2000
 POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim_part partition(country='us', year=2000)
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@orc_split_elim_part@country=us/year=2000
 PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim_part partition(country='us', year=2001)
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@orc_split_elim_part@country=us/year=2001
 POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim_part partition(country='us', year=2001)
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@orc_split_elim_part@country=us/year=2001
 PREHOOK: query: -- 10 mapper - no split elimination
 select userid,string1,subtype,decimal1,ts from orc_split_elim_part where userid<=2 and country='us'order by userid

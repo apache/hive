@@ -84,7 +84,7 @@ public abstract class HCatBaseOutputFormat extends OutputFormat<WritableComparab
     OutputJobInfo jobInfo = getJobInfo(context);
     HiveStorageHandler storageHandler = HCatUtil.getStorageHandler(context.getConfiguration(), 
         jobInfo.getTableInfo().getStorerInfo());
-    //why do we need this?
+    // Always configure storage handler with jobproperties/jobconf before calling any methods on it
     configureOutputStorageHandler(context);
     if (storageHandler instanceof FosterStorageHandler) {
       return new FileOutputFormatContainer(ReflectionUtils.newInstance(

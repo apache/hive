@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -35,9 +36,15 @@ public class ReadEntity extends Entity implements Serializable {
   // Consider a query like: select * from V, where the view V is defined as:
   // select * from T
   // The inputs will contain V and T (parent: V)
+  // T will be marked as an indirect entity using isDirect flag.
+  // This will help in distinguishing from the case where T is a direct dependency
+  // For example in the case of "select * from V join T ..." T would be direct dependency
+  private boolean isDirect = true;
 
   // For views, the entities can be nested - by default, entities are at the top level
   private final Set<ReadEntity> parents = new HashSet<ReadEntity>();
+
+
 
   /**
    * For serialization only.
@@ -74,6 +81,11 @@ public class ReadEntity extends Entity implements Serializable {
     initParent(parent);
   }
 
+  public ReadEntity(Table t, ReadEntity parent, boolean isDirect) {
+    this(t, parent);
+    this.isDirect = isDirect;
+  }
+
   /**
    * Constructor given a partition.
    *
@@ -87,6 +99,23 @@ public class ReadEntity extends Entity implements Serializable {
   public ReadEntity(Partition p, ReadEntity parent) {
     super(p, true);
     initParent(parent);
+  }
+
+  public ReadEntity(Partition p, ReadEntity parent, boolean isDirect) {
+    this(p, parent);
+    this.isDirect = isDirect;
+  }
+
+  /**
+   * Constructor for a file.
+   *
+   * @param d
+   *          The name of the directory that is being written to.
+   * @param islocal
+   *          Flag to decide whether this directory is local or in dfs.
+   */
+  public ReadEntity(Path d, boolean islocal) {
+    super(d.toString(), islocal, true);
   }
 
   public Set<ReadEntity> getParents() {
@@ -109,4 +138,15 @@ public class ReadEntity extends Entity implements Serializable {
       return false;
     }
   }
+
+  public boolean isDirect() {
+    return isDirect;
+  }
+
+  public void setDirect(boolean isDirect) {
+    this.isDirect = isDirect;
+  }
+
+
+
 }

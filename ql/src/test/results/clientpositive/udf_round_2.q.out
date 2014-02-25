@@ -1,9 +1,11 @@
 PREHOOK: query: -- test for NaN (not-a-number)
 create table tstTbl1(n double)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- test for NaN (not-a-number)
 create table tstTbl1(n double)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstTbl1
 PREHOOK: query: insert overwrite table tstTbl1
 select 'NaN' from src tablesample (1 rows)

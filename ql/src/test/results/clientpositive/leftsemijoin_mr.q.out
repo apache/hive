@@ -1,24 +1,32 @@
 PREHOOK: query: CREATE TABLE T1(key INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE T1(key INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/leftsemijoin_mr_t1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@t1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/leftsemijoin_mr_t1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@t1
 PREHOOK: query: CREATE TABLE T2(key INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE T2(key INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/leftsemijoin_mr_t2.txt' INTO TABLE T2
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@t2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/leftsemijoin_mr_t2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@t2
 PREHOOK: query: -- Run this query using TestMinimrCliDriver
 

@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -60,6 +61,7 @@ final class ReaderImpl implements Reader {
   private final OrcProto.Footer footer;
   private final ObjectInspector inspector;
   private long deserializedSize = -1;
+  private final Configuration conf;
 
   //serialized footer - Keeping this around for use by getFileMetaInfo()
   // will help avoid cpu cycles spend in deserializing at cost of increased
@@ -288,11 +290,13 @@ final class ReaderImpl implements Reader {
    * Constructor that extracts metadata information from file footer
    * @param fs
    * @param path
+   * @param conf
    * @throws IOException
    */
-  ReaderImpl(FileSystem fs, Path path) throws IOException {
+  ReaderImpl(FileSystem fs, Path path, Configuration conf) throws IOException {
     this.fileSystem = fs;
     this.path = path;
+    this.conf = conf;
 
     FileMetaInfo footerMetaData = extractMetaInfoFromFooter(fs, path);
 
@@ -316,12 +320,14 @@ final class ReaderImpl implements Reader {
    * @param fs
    * @param path
    * @param fMetaInfo
+   * @param conf
    * @throws IOException
    */
-  ReaderImpl(FileSystem fs, Path path, FileMetaInfo fMetaInfo)
+  ReaderImpl(FileSystem fs, Path path, FileMetaInfo fMetaInfo, Configuration conf)
       throws IOException {
     this.fileSystem = fs;
     this.path = path;
+    this.conf = conf;
 
     MetaInfoObjExtractor rInfo = new MetaInfoObjExtractor(
             fMetaInfo.compressionType,
@@ -487,7 +493,7 @@ final class ReaderImpl implements Reader {
 
     return new RecordReaderImpl(this.getStripes(), fileSystem,  path, offset,
         length, footer.getTypesList(), codec, bufferSize,
-        include, footer.getRowIndexStride(), sarg, columnNames);
+        include, footer.getRowIndexStride(), sarg, columnNames, conf);
   }
 
   @Override

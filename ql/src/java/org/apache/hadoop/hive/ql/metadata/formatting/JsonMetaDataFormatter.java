@@ -398,28 +398,20 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
      * Show the description of a database
      */
     @Override
-    public void showDatabaseDescription(DataOutputStream out,
-                                        String database,
-                                        String comment,
-                                        String location,
-                                        Map<String, String> params)
-        throws HiveException
-    {
-        if (params == null || params.isEmpty()) {
-            asJson(out, MapBuilder
-               .create()
-               .put("database", database)
-               .put("comment", comment)
-               .put("location", location)
-               .build());
-        } else {
-            asJson(out, MapBuilder
-               .create()
-               .put("database", database)
-               .put("comment", comment)
-               .put("location", location)
-               .put("params", params)
-               .build());
-        }
+    public void showDatabaseDescription(DataOutputStream out, String database, String comment,
+      String location, String ownerName, String ownerType, Map<String, String> params)
+      throws HiveException {
+      MapBuilder builder = MapBuilder.create().put("database", database).put("comment", comment)
+        .put("location", location);
+      if (null != ownerName) {
+        builder.put("owner", ownerName);
+      }
+      if (null != ownerType) {
+        builder.put("ownerType", ownerType);
+      }
+      if (null != params && !params.isEmpty()) {
+        builder.put("params", params);
+      }
+      asJson(out, builder.build());
     }
 }

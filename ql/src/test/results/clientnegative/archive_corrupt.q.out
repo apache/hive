@@ -8,8 +8,10 @@ POSTHOOK: query: drop table tstsrcpart
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tstsrcpart like srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tstsrcpart like srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrcpart
 PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 -- The version of GzipCodec that is provided in Hadoop 0.20 silently ignores
@@ -20,6 +22,7 @@ PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 
 load data local inpath '../../data/files/archive_corrupt.rc' overwrite into table tstsrcpart partition (ds='2008-04-08', hr='11')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tstsrcpart
 Failed with exception Wrong file format. Please check the file's format.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask

@@ -9,6 +9,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:cq-boolean,cf:cq-byte,cf:cq-short,cf:cq-int,cf:cq-long,cf:cq-string,cf:cq-float,cf:cq-double")
 TBLPROPERTIES ("hbase.table.name" = "HiveExternalTable")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_1
 (key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
  c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
@@ -16,6 +17,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:cq-boolean,cf:cq-byte,cf:cq-short,cf:cq-int,cf:cq-long,cf:cq-string,cf:cq-float,cf:cq-double")
 TBLPROPERTIES ("hbase.table.name" = "HiveExternalTable")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_1
 PREHOOK: query: SELECT * FROM t_ext_hbase_1
 PREHOOK: type: QUERY
@@ -47,6 +49,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#b,cf:cq-boolean#b,cf:cq-byte#b,cf:cq-short#b,cf:cq-int#b,cf:cq-long#b,cf:cq-string#b,cf:cq-float#b,cf:cq-double#b")
 TBLPROPERTIES ("hbase.table.name" = "HiveExternalTable")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_2
 (key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
  c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
@@ -54,6 +57,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#b,cf:cq-boolean#b,cf:cq-byte#b,cf:cq-short#b,cf:cq-int#b,cf:cq-long#b,cf:cq-string#b,cf:cq-float#b,cf:cq-double#b")
 TBLPROPERTIES ("hbase.table.name" = "HiveExternalTable")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_2
 PREHOOK: query: SELECT * FROM t_ext_hbase_2
 PREHOOK: type: QUERY
@@ -87,6 +91,7 @@ TBLPROPERTIES (
 "hbase.table.name" = "HiveExternalTable",
 "hbase.table.default.storage.type" = "binary")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_3
 (key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
  c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
@@ -96,6 +101,7 @@ TBLPROPERTIES (
 "hbase.table.name" = "HiveExternalTable",
 "hbase.table.default.storage.type" = "binary")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_3
 PREHOOK: query: SELECT * from t_ext_hbase_3
 PREHOOK: type: QUERY

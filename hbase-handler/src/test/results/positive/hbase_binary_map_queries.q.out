@@ -11,6 +11,7 @@ PREHOOK: query: CREATE TABLE hbase_src(key STRING,
                        double_col DOUBLE,
                        string_col STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE hbase_src(key STRING,
                        tinyint_col TINYINT,
                        smallint_col SMALLINT,
@@ -20,6 +21,7 @@ POSTHOOK: query: CREATE TABLE hbase_src(key STRING,
                        double_col DOUBLE,
                        string_col STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_src
 PREHOOK: query: INSERT OVERWRITE TABLE hbase_src
   SELECT key, key, key, key, key, key, key, value
@@ -68,6 +70,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE t_hbase_maps(key STRING,
                           tinyint_map_col MAP<TINYINT, TINYINT>,
                           smallint_map_col MAP<SMALLINT, SMALLINT>,
@@ -81,6 +84,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_maps
 POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -209,6 +213,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps(key STRING,
                                        tinyint_map_col MAP<TINYINT, TINYINT>,
                                        smallint_map_col MAP<SMALLINT, SMALLINT>,
@@ -222,6 +227,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps
 POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -290,6 +296,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#bi:bi,cf-smallint:#bin:bin,cf-int:#bina:bina,cf-bigint:#binar:binar,cf-float:#binary:binary,cf-double:#b:b,cf-string:#bi:bi,cf-boolean:#bin:bin")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_1(key STRING,
                                          tinyint_map_col MAP<TINYINT, TINYINT>,
                                          smallint_map_col MAP<SMALLINT, SMALLINT>,
@@ -303,6 +310,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#bi:bi,cf-smallint:#bin:bin,cf-int:#bina:bina,cf-bigint:#binar:binar,cf-float:#binary:binary,cf-double:#b:b,cf-string:#bi:bi,cf-boolean:#bin:bin")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps_1
 POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -373,6 +381,7 @@ TBLPROPERTIES (
 "hbase.table.name"="t_hive_maps",
 "hbase.table.default.storage.type"="binary")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_2(key STRING,
                                          tinyint_map_col MAP<TINYINT, TINYINT>,
                                          smallint_map_col MAP<SMALLINT, SMALLINT>,
@@ -388,6 +397,7 @@ TBLPROPERTIES (
 "hbase.table.name"="t_hive_maps",
 "hbase.table.default.storage.type"="binary")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps_2
 POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -456,6 +466,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#b:b,cf-smallint:#b:b,cf-int:#b:b,cf-bigint:#b:b,cf-float:#b:b,cf-double:#b:b,cf-string:#b:b,cf-boolean:#b:b")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE t_hbase_maps_1(key STRING,
                             tinyint_map_col MAP<TINYINT, TINYINT>,
                             smallint_map_col MAP<SMALLINT, SMALLINT>,
@@ -469,6 +480,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#b:b,cf-smallint:#b:b,cf-int:#b:b,cf-bigint:#b:b,cf-float:#b:b,cf-double:#b:b,cf-string:#b:b,cf-boolean:#b:b")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_maps_1
 POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -597,6 +609,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#bi:bi,cf-smallint:#bin:bin,cf-int:#bina:bina,cf-bigint:#binar:binar,cf-float:#binary:binary,cf-double:#b:b,cf-string:#bi:bi,cf-boolean:#bin:bin")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_3(key STRING,
                                          tinyint_map_col MAP<TINYINT, TINYINT>,
                                          smallint_map_col MAP<SMALLINT, SMALLINT>,
@@ -610,6 +623,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#bi:bi,cf-smallint:#bin:bin,cf-int:#bina:bina,cf-bigint:#binar:binar,cf-float:#binary:binary,cf-double:#b:b,cf-string:#bi:bi,cf-boolean:#bin:bin")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps_3
 POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -678,6 +692,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_4(key STRING,
                                          tinyint_map_col MAP<TINYINT, TINYINT>,
                                          smallint_map_col MAP<SMALLINT, SMALLINT>,
@@ -691,6 +706,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
 TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps_4
 POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -761,6 +777,7 @@ TBLPROPERTIES (
 "hbase.table.name"="t_hive_maps_1",
 "hbase.table.default.storage.type"="binary")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_5(key STRING,
                                          tinyint_map_col MAP<TINYINT, TINYINT>,
                                          smallint_map_col MAP<SMALLINT, SMALLINT>,
@@ -776,6 +793,7 @@ TBLPROPERTIES (
 "hbase.table.name"="t_hive_maps_1",
 "hbase.table.default.storage.type"="binary")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps_5
 POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -1,15 +1,19 @@
 PREHOOK: query: create table tab_binary(a binary)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tab_binary(a binary)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_binary
 PREHOOK: query: -- insert some data
 LOAD DATA LOCAL INPATH "../../data/files/binary.txt" INTO TABLE tab_binary
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tab_binary
 POSTHOOK: query: -- insert some data
 LOAD DATA LOCAL INPATH "../../data/files/binary.txt" INTO TABLE tab_binary
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tab_binary
 PREHOOK: query: select count(*) from tab_binary
 PREHOOK: type: QUERY

@@ -38,6 +38,7 @@ with serdeproperties (
 )
 stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- RegexSerDe
 --
@@ -54,12 +55,15 @@ with serdeproperties (
 )
 stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_serde_regex
 PREHOOK: query: load data local inpath '../../data/files/flights_tiny.txt.1' overwrite into table date_serde_regex
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@date_serde_regex
 POSTHOOK: query: load data local inpath '../../data/files/flights_tiny.txt.1' overwrite into table date_serde_regex
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@date_serde_regex
 PREHOOK: query: select * from date_serde_regex
 PREHOOK: type: QUERY
@@ -234,6 +238,7 @@ create table date_serde_lb (
   c2 int
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- LazyBinary
 --
@@ -242,6 +247,7 @@ create table date_serde_lb (
   c2 int
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_serde_lb
 PREHOOK: query: alter table date_serde_lb set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
@@ -293,6 +299,7 @@ create table date_serde_ls (
   c2 int
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- LazySimple
 --
@@ -301,6 +308,7 @@ create table date_serde_ls (
   c2 int
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_serde_ls
 POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
 POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
@@ -362,6 +370,7 @@ create table date_serde_c (
   c2 int
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- Columnar
 --
@@ -370,6 +379,7 @@ create table date_serde_c (
   c2 int
 ) stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_serde_c
 POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
 POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
@@ -441,6 +451,7 @@ create table date_serde_lbc (
   c2 int
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- LazyBinaryColumnar
 --
@@ -449,6 +460,7 @@ create table date_serde_lbc (
   c2 int
 ) stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_serde_lbc
 POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
 POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
@@ -530,6 +542,7 @@ create table date_serde_orc (
   c2 int
 ) stored as orc
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --
 -- ORC
 --
@@ -538,6 +551,7 @@ create table date_serde_orc (
   c2 int
 ) stored as orc
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_serde_orc
 POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
 POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]

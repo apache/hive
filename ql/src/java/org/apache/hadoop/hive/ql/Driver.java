@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
-import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -594,7 +593,7 @@ public class Driver implements CommandProcessor {
           continue;
         }
         Table tbl = read.getTable();
-        if ((read.getPartition() != null) || (tbl.isPartitioned())) {
+        if ((read.getPartition() != null) || (tbl != null && tbl.isPartitioned())) {
           String tblName = tbl.getTableName();
           if (tableUsePartLevelAuth.get(tblName) == null) {
             boolean usePartLevelPriv = (tbl.getParameters().get(
@@ -728,22 +727,45 @@ public class Driver implements CommandProcessor {
       HivePrivilegeObjectType privObjType =
           AuthorizationUtils.getHivePrivilegeObjectType(privObject.getType());
 
-      //support for authorization on partitions or uri needs to be added
-      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType,
-          getDataBaseName(privObject),
-              privObject.getTable() == null ? null : privObject.getTable().getTableName());
+      if(privObject instanceof ReadEntity && !((ReadEntity)privObject).isDirect()){
+        // In case of views, the underlying views or tables are not direct dependencies
+        // and are not used for authorization checks.
+        // This ReadEntity represents one of the underlying tables/views, so skip it.
+        // See description of the isDirect in ReadEntity
+        continue;
+      }
+      if(privObject instanceof WriteEntity && ((WriteEntity)privObject).isTempURI()){
+        //do not authorize temporary uris
+        continue;
+      }
+
+      //support for authorization on partitions needs to be added
+      String dbname = null;
+      String tableURI = null;
+      switch(privObject.getType()){
+      case DATABASE:
+        dbname = privObject.getDatabase() == null ? null : privObject.getDatabase().getName();
+        break;
+      case TABLE:
+        dbname = privObject.getTable() == null ? null : privObject.getTable().getDbName();
+        tableURI = privObject.getTable() == null ? null : privObject.getTable().getTableName();
+        break;
+      case DFS_DIR:
+      case LOCAL_DIR:
+        tableURI = privObject.getD();
+        break;
+      case DUMMYPARTITION:
+      case PARTITION:
+        // not currently handled
+        break;
+        default:
+          throw new AssertionError("Unexpected object type");
+      }
+
+      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, tableURI);
       hivePrivobjs.add(hPrivObject);
     }
     return hivePrivobjs;
-  }
-
-
-  private String getDataBaseName(Entity privObject) {
-    if(privObject.getType() == Type.DATABASE){
-      return privObject.getDatabase() == null ? null : privObject.getDatabase().getName();
-    } else {
-      return privObject.getTable() == null ? null : privObject.getTable().getDbName();
-    }
   }
 
   private HiveOperationType getHiveOperationType(HiveOperation op) {

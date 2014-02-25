@@ -76,6 +76,12 @@ public class DecimalColumnVector extends ColumnVector {
     // TODO Auto-generated method stub
   }
 
+  @Override
+  public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
+    vector[outElementNum].update(((DecimalColumnVector) inputVector).vector[inputElementNum]);
+    vector[outElementNum].changeScaleDestructive(scale);
+  }
+
   /**
    * Check if the value at position i fits in the available precision,
    * and convert the value to NULL if it does not.

@@ -1,15 +1,19 @@
 PREHOOK: query: create table tab_double(a double)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tab_double(a double)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_double
 PREHOOK: query: -- insert some data
 LOAD DATA LOCAL INPATH "../../data/files/double.txt" INTO TABLE tab_double
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tab_double
 POSTHOOK: query: -- insert some data
 LOAD DATA LOCAL INPATH "../../data/files/double.txt" INTO TABLE tab_double
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tab_double
 PREHOOK: query: select count(*) from tab_double
 PREHOOK: type: QUERY

@@ -1,14 +1,18 @@
 PREHOOK: query: -- HIVE-3849 Aliased column in where clause for multi-groupby single reducer cannot be resolved
 create table e1 (key string, count int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- HIVE-3849 Aliased column in where clause for multi-groupby single reducer cannot be resolved
 create table e1 (key string, count int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e1
 PREHOOK: query: create table e2 (key string, count int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table e2 (key string, count int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e2
 PREHOOK: query: explain
 from src

@@ -14,6 +14,7 @@ PREHOOK: query: CREATE TABLE part_rc(
     p_comment STRING
 )  STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE part_rc( 
     p_partkey INT,
     p_name STRING,
@@ -26,12 +27,15 @@ POSTHOOK: query: CREATE TABLE part_rc(
     p_comment STRING
 )  STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_rc
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.rc' overwrite into table part_rc
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@part_rc
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.rc' overwrite into table part_rc
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@part_rc
 PREHOOK: query: -- testWindowingPTFWithPartRC
 select p_mfgr, p_name, p_size, 

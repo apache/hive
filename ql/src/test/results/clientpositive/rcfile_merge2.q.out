@@ -6,10 +6,12 @@ PREHOOK: query: CREATE TABLE rcfile_merge2a (key INT, value STRING)
     PARTITIONED BY (one string, two string, three string)
     STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE rcfile_merge2a (key INT, value STRING)
     PARTITIONED BY (one string, two string, three string)
     STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_merge2a
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE rcfile_merge2a PARTITION (one='1', two, three)
     SELECT key, value, PMOD(HASH(key), 10) as two, 

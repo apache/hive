@@ -2,10 +2,12 @@ PREHOOK: query: create table if not exists nzhang_part_bucket (key string, value
   partitioned by (ds string, hr string) 
   clustered by (key) into 10 buckets
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists nzhang_part_bucket (key string, value string) 
   partitioned by (ds string, hr string) 
   clustered by (key) into 10 buckets
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part_bucket
 PREHOOK: query: describe extended nzhang_part_bucket
 PREHOOK: type: DESCTABLE

@@ -4,8 +4,10 @@ POSTHOOK: query: drop table partition_date2_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table partition_date2_1 (key string, value string) partitioned by (dt date, region int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table partition_date2_1 (key string, value string) partitioned by (dt date, region int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_date2_1
 PREHOOK: query: -- test date literal syntax
 from (select * from src tablesample (1 rows)) x
@@ -191,11 +193,11 @@ POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=2000-01-01,region=2).value SIM
 PREHOOK: query: -- alter table add partition
 alter table partition_date2_1 add partition (dt=date '1980-01-02', region=3)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@partition_date2_1
+PREHOOK: Output: default@partition_date2_1
 POSTHOOK: query: -- alter table add partition
 alter table partition_date2_1 add partition (dt=date '1980-01-02', region=3)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@partition_date2_1
+POSTHOOK: Output: default@partition_date2_1
 POSTHOOK: Output: default@partition_date2_1@dt=1980-01-02/region=3
 POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=1999-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=1999-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -442,6 +444,7 @@ alter table partition_date2_1 partition(dt=date '1980-01-02', region=3)
 PREHOOK: type: ALTERPARTITION_LOCATION
 PREHOOK: Input: default@partition_date2_1
 PREHOOK: Output: default@partition_date2_1@dt=1980-01-02/region=3
+#### A masked pattern was here ####
 POSTHOOK: query: -- alter table set location
 alter table partition_date2_1 partition(dt=date '1980-01-02', region=3)
 #### A masked pattern was here ####
@@ -449,6 +452,7 @@ POSTHOOK: type: ALTERPARTITION_LOCATION
 POSTHOOK: Input: default@partition_date2_1
 POSTHOOK: Input: default@partition_date2_1@dt=1980-01-02/region=3
 POSTHOOK: Output: default@partition_date2_1@dt=1980-01-02/region=3
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=1980-01-02,region=3).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=1980-01-02,region=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=1999-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

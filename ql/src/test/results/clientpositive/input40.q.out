@@ -1,13 +1,17 @@
 PREHOOK: query: create table tmp_insert_test (key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tmp_insert_test (key string, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_insert_test
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tmp_insert_test
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tmp_insert_test
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tmp_insert_test
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tmp_insert_test
 PREHOOK: query: select * from tmp_insert_test
 PREHOOK: type: QUERY
@@ -519,14 +523,18 @@ POSTHOOK: Input: default@tmp_insert_test
 97	val_97
 PREHOOK: query: create table tmp_insert_test_p (key string, value string) partitioned by (ds string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tmp_insert_test_p (key string, value string) partitioned by (ds string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_insert_test_p
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tmp_insert_test_p partition (ds = '2009-08-01')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tmp_insert_test_p
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tmp_insert_test_p partition (ds = '2009-08-01')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tmp_insert_test_p
 POSTHOOK: Output: default@tmp_insert_test_p@ds=2009-08-01
 PREHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
@@ -1043,9 +1051,11 @@ POSTHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
 98	val_98	2009-08-01
 PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table tmp_insert_test_p partition (ds = '2009-08-01')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tmp_insert_test_p@ds=2009-08-01
 POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table tmp_insert_test_p partition (ds = '2009-08-01')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tmp_insert_test_p@ds=2009-08-01
 PREHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key, value

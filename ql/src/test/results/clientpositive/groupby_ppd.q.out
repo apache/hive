@@ -1,9 +1,11 @@
 PREHOOK: query: -- see HIVE-2382
 create table invites (id int, foo int, bar int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- see HIVE-2382
 create table invites (id int, foo int, bar int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@invites
 PREHOOK: query: explain select * from (select foo, bar from (select bar, foo from invites c union all select bar, foo from invites d) b) a group by bar, foo having bar=1
 PREHOOK: type: QUERY

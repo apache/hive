@@ -1,7 +1,9 @@
 PREHOOK: query: create table tst1(key string, value string) partitioned by (ds string) clustered by (key) into 10 buckets
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tst1(key string, value string) partitioned by (ds string) clustered by (key) into 10 buckets
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tst1
 PREHOOK: query: alter table tst1 clustered by (key) into 8 buckets
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT

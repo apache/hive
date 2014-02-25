@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
 
 /**
  * Utility class to authorize grant/revoke privileges
@@ -35,7 +36,7 @@ public class GrantPrivAuthUtils {
 
   static void authorize(List<HivePrincipal> hivePrincipals, List<HivePrivilege> hivePrivileges,
       HivePrivilegeObject hivePrivObject, boolean grantOption, IMetaStoreClient metastoreClient,
-      String userName)
+      String userName, List<HiveRole> curRoles, boolean isAdmin)
           throws HiveAuthzPluginException, HiveAccessControlException {
 
     // check if this user has grant privileges for this privileges on this
@@ -44,23 +45,13 @@ public class GrantPrivAuthUtils {
     // map priv being granted to required privileges
     RequiredPrivileges reqPrivs = getGrantRequiredPrivileges(hivePrivileges);
 
-    // api for checking required privileges for a user
-    checkRequiredPrivileges(hivePrincipals, reqPrivs, hivePrivObject, metastoreClient, userName);
+    // check if this user has necessary privileges (reqPrivs) on this object
+    checkRequiredPrivileges(reqPrivs, hivePrivObject, metastoreClient, userName, curRoles, isAdmin);
   }
 
-  private static void checkRequiredPrivileges(List<HivePrincipal> hivePrincipals,
-      RequiredPrivileges reqPrivs, HivePrivilegeObject hivePrivObject,
-      IMetaStoreClient metastoreClient, String userName)
-          throws HiveAuthzPluginException, HiveAccessControlException {
-
-  for (HivePrincipal hivePrincipal : hivePrincipals) {
-      checkRequiredPrivileges(hivePrincipal, reqPrivs, hivePrivObject, metastoreClient, userName);
-    }
-  }
-
-  private static void checkRequiredPrivileges(HivePrincipal hivePrincipal,
+  private static void checkRequiredPrivileges(
       RequiredPrivileges reqPrivileges, HivePrivilegeObject hivePrivObject,
-      IMetaStoreClient metastoreClient, String userName)
+      IMetaStoreClient metastoreClient, String userName, List<HiveRole> curRoles, boolean isAdmin)
           throws HiveAuthzPluginException, HiveAccessControlException {
 
     // keep track of the principals on which privileges have been checked for
@@ -68,7 +59,7 @@ public class GrantPrivAuthUtils {
 
     // get privileges for this user and its roles on this object
     RequiredPrivileges availPrivs = SQLAuthorizationUtils.getPrivilegesFromMetaStore(
-        metastoreClient, userName, hivePrivObject);
+        metastoreClient, userName, hivePrivObject, curRoles, isAdmin);
 
     // check if required privileges is subset of available privileges
     Collection<SQLPrivTypeGrant> missingPrivs = reqPrivileges.findMissingPrivs(availPrivs);

@@ -36,10 +36,6 @@ public class SessionStateUserAuthenticator implements HiveAuthenticationProvider
   protected Configuration conf;
   private SessionState sessionState;
 
-  public SessionStateUserAuthenticator(SessionState sessionState){
-    this.sessionState = sessionState;
-  }
-
   @Override
   public List<String> getGroupNames() {
     return groupNames;

@@ -1,7 +1,9 @@
 PREHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_test_partitioned
 PREHOOK: query: alter table partition_test_partitioned set fileformat rcfile
 PREHOOK: type: ALTERTABLE_FILEFORMAT

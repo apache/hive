@@ -1,23 +1,31 @@
 PREHOOK: query: CREATE TABLE dest1(key INT, val1 INT, val2 INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest1(key INT, val1 INT, val2 INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
 PREHOOK: query: CREATE TABLE dest2(key INT, val1 INT, val2 INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest2(key INT, val1 INT, val2 INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest2
 PREHOOK: query: CREATE TABLE INPUT(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE INPUT(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@INPUT
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv5.txt' INTO TABLE INPUT
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@input
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv5.txt' INTO TABLE INPUT
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@input
 PREHOOK: query: EXPLAIN
 FROM INPUT 

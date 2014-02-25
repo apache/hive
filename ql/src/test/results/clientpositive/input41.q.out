@@ -1,7 +1,9 @@
 PREHOOK: query: create table dest_sp (cnt int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table dest_sp (cnt int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_sp
 PREHOOK: query: insert overwrite table dest_sp
 select * from 

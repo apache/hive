@@ -19,9 +19,11 @@ POSTHOOK: Input: default@src
 PREHOOK: query: -- insert test
 create table s1 like src
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- insert test
 create table s1 like src
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s1
 PREHOOK: query: with q1 as ( select key, value from src where key = '5')
 from q1

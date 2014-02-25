@@ -24,4 +24,4 @@ PUBLIC
 
 PREHOOK: query: drop role r1
 PREHOOK: type: DROPROLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Current user : hive_admin_user is not allowed to drop role. Only users belonging to admin role can drop roles.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Current user : hive_admin_user is not allowed to drop role. User has to belong to ADMIN role and have it as current role, for this action.

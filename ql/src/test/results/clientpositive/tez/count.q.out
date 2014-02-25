@@ -1,13 +1,17 @@
 PREHOOK: query: create table abcd (a int, b int, c int, d int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table abcd (a int, b int, c int, d int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@abcd
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@abcd
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@abcd
 PREHOOK: query: select * from abcd
 PREHOOK: type: QUERY

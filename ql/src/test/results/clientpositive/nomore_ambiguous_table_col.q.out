@@ -8,8 +8,10 @@ drop table ambiguous
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table ambiguous (key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table ambiguous (key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ambiguous
 PREHOOK: query: FROM src key
 INSERT OVERWRITE TABLE ambiguous SELECT key.key, key.value WHERE key.value < 'val_100'

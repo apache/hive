@@ -18,13 +18,27 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.hadoop.util.StringUtils.stringifyException;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils.FunctionType;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils.UDFClassType;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
@@ -32,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.CreateMacroDesc;
 import org.apache.hadoop.hive.ql.plan.DropMacroDesc;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
@@ -62,12 +77,32 @@ public class FunctionTask extends Task<FunctionWork> {
   public int execute(DriverContext driverContext) {
     CreateFunctionDesc createFunctionDesc = work.getCreateFunctionDesc();
     if (createFunctionDesc != null) {
-      return createFunction(createFunctionDesc);
+      if (createFunctionDesc.isTemp()) {
+        return createTemporaryFunction(createFunctionDesc);
+      } else {
+        try {
+          return createPermanentFunction(Hive.get(conf), createFunctionDesc);
+        } catch (Exception e) {
+          setException(e);
+          LOG.error(stringifyException(e));
+          return 1;
+        }
+      }
     }
 
     DropFunctionDesc dropFunctionDesc = work.getDropFunctionDesc();
     if (dropFunctionDesc != null) {
-      return dropFunction(dropFunctionDesc);
+      if (dropFunctionDesc.isTemp()) {
+        return dropTemporaryFunction(dropFunctionDesc);
+      } else {
+        try {
+          return dropPermanentFunction(Hive.get(conf), dropFunctionDesc);
+        } catch (Exception e) {
+          setException(e);
+          LOG.error(stringifyException(e));
+          return 1;
+        }
+      }
     }
 
     CreateMacroDesc createMacroDesc = work.getCreateMacroDesc();
@@ -82,8 +117,67 @@ public class FunctionTask extends Task<FunctionWork> {
     return 0;
   }
 
-  private int createFunction(CreateFunctionDesc createFunctionDesc) {
+  private int createPermanentFunction(Hive db, CreateFunctionDesc createFunctionDesc)
+      throws HiveException, IOException {
+    String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(
+        createFunctionDesc.getFunctionName());
+    String dbName = qualifiedNameParts[0];
+    String funcName = qualifiedNameParts[1];
+    String registeredName = FunctionUtils.qualifyFunctionName(funcName, dbName);
+    String className = createFunctionDesc.getClassName();
+    boolean addedToRegistry = false;
+
     try {
+      // For permanent functions, check for any resources from local filesystem.
+      checkLocalFunctionResources(db, createFunctionDesc.getResources());
+
+      // Add any required resources
+      addFunctionResources(createFunctionDesc.getResources());
+
+      // UDF class should exist
+      Class<?> udfClass = getUdfClass(createFunctionDesc);
+      if (FunctionUtils.getUDFClassType(udfClass) == UDFClassType.UNKNOWN) {
+        console.printError("FAILED: Class " + createFunctionDesc.getClassName()
+            + " does not implement UDF, GenericUDF, or UDAF");
+        return 1;
+      }
+
+      // TODO: There should be a registerPermanentFunction()
+      addedToRegistry = FunctionRegistry.registerTemporaryFunction(registeredName, udfClass);
+      if (!addedToRegistry) {
+        console.printError("Failed to register " + registeredName
+            + " using class " + createFunctionDesc.getClassName());
+        return 1;
+      }
+
+      // Add to metastore
+      Function func = new Function(
+          funcName,
+          dbName,
+          className,
+          SessionState.get().getUserName(),
+          PrincipalType.USER,
+          (int) (System.currentTimeMillis() / 1000),
+          org.apache.hadoop.hive.metastore.api.FunctionType.JAVA,
+          createFunctionDesc.getResources()
+          );
+      db.createFunction(func);
+      return 0;
+    } catch (ClassNotFoundException e) {
+      console.printError("FAILED: Class " + createFunctionDesc.getClassName() + " not found");
+      LOG.info("create function: " + StringUtils.stringifyException(e));
+      if (addedToRegistry) {
+        FunctionRegistry.unregisterTemporaryUDF(registeredName);
+      }
+      return 1;
+    }
+  }
+
+  private int createTemporaryFunction(CreateFunctionDesc createFunctionDesc) {
+    try {
+      // Add any required resources
+      addFunctionResources(createFunctionDesc.getResources());
+
       Class<?> udfClass = getUdfClass(createFunctionDesc);
       boolean registered = FunctionRegistry.registerTemporaryFunction(
         createFunctionDesc.getFunctionName(),
@@ -94,7 +188,12 @@ public class FunctionTask extends Task<FunctionWork> {
       console.printError("FAILED: Class " + createFunctionDesc.getClassName()
           + " does not implement UDF, GenericUDF, or UDAF");
       return 1;
+    } catch (HiveException e) {
+      console.printError("FAILED: " + e.toString());
+      LOG.info("create function: " + StringUtils.stringifyException(e));
+      return 1;
     } catch (ClassNotFoundException e) {
+
       console.printError("FAILED: Class " + createFunctionDesc.getClassName() + " not found");
       LOG.info("create function: " + StringUtils.stringifyException(e));
       return 1;
@@ -121,7 +220,27 @@ public class FunctionTask extends Task<FunctionWork> {
     }
   }
 
-  private int dropFunction(DropFunctionDesc dropFunctionDesc) {
+  private int dropPermanentFunction(Hive db, DropFunctionDesc dropFunctionDesc) {
+    try {
+      String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(
+          dropFunctionDesc.getFunctionName());
+      String dbName = qualifiedNameParts[0];
+      String funcName = qualifiedNameParts[1];
+
+      String registeredName = FunctionUtils.qualifyFunctionName(funcName, dbName);
+      // TODO: there should be a unregisterPermanentUDF()
+      FunctionRegistry.unregisterTemporaryUDF(registeredName);
+      db.dropFunction(dbName, funcName);
+
+      return 0;
+    } catch (Exception e) {
+      LOG.info("drop function: " + StringUtils.stringifyException(e));
+      console.printError("FAILED: error during drop function: " + StringUtils.stringifyException(e));
+      return 1;
+    }
+  }
+
+  private int dropTemporaryFunction(DropFunctionDesc dropFunctionDesc) {
     try {
       FunctionRegistry.unregisterTemporaryUDF(dropFunctionDesc
           .getFunctionName());
@@ -129,6 +248,63 @@ public class FunctionTask extends Task<FunctionWork> {
     } catch (HiveException e) {
       LOG.info("drop function: " + StringUtils.stringifyException(e));
       return 1;
+    }
+  }
+
+  private void checkLocalFunctionResources(Hive db, List<ResourceUri> resources)
+      throws HiveException {
+    // If this is a non-local warehouse, then adding resources from the local filesystem
+    // may mean that other clients will not be able to access the resources.
+    // So disallow resources from local filesystem in this case. 
+    if (resources != null && resources.size() > 0) {
+      try {
+        String localFsScheme = FileSystem.getLocal(db.getConf()).getUri().getScheme();
+        String configuredFsScheme = FileSystem.get(db.getConf()).getUri().getScheme();
+        if (configuredFsScheme.equals(localFsScheme)) {
+          // Configured warehouse FS is local, don't need to bother checking.
+          return;
+        }
+
+        for (ResourceUri res : resources) {
+          String resUri = res.getUri();
+          if (!SessionState.canDownloadResource(resUri)) {
+            throw new HiveException("Hive warehouse is non-local, but "
+                + res.getUri() + " specifies file on local filesystem. "
+                + "Resources on non-local warehouse should specify a non-local scheme/path");
+          }
+        }
+      } catch (HiveException e) {
+        throw e;
+      } catch (Exception e) {
+        LOG.error(e);
+        throw new HiveException(e);
+      }
+    }
+  }
+
+
+  private static SessionState.ResourceType getResourceType(ResourceType rt) throws HiveException {
+    switch (rt) {
+      case JAR:
+        return SessionState.ResourceType.JAR;
+      case FILE:
+        return SessionState.ResourceType.FILE;
+      case ARCHIVE:
+        return SessionState.ResourceType.ARCHIVE;
+      default:
+        throw new HiveException("Unexpected resource type " + rt);
+    }
+  }
+
+  public static void addFunctionResources(List<ResourceUri> resources) throws HiveException {
+    if (resources != null) {
+      for (ResourceUri res : resources) {
+        String addedResource =
+            SessionState.get().add_resource(getResourceType(res.getResourceType()), res.getUri());
+        if (addedResource == null) {
+          throw new HiveException("Unable to load " + res.getResourceType() + " " + res.getUri());
+        }
+      }
     }
   }
 

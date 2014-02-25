@@ -49,7 +49,7 @@ public class VectorExpressionDescriptor {
 
     public static ArgumentType getType(String inType) {
       String type = VectorizationContext.getNormalizedTypeName(inType);
-      if (VectorizationContext.decimalTypePattern.matcher(type.toLowerCase()).matches()) {
+      if (VectorizationContext.decimalTypePattern.matcher(type).matches()) {
         type = "decimal";
       }
       return valueOf(type.toUpperCase());

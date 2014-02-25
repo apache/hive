@@ -3,16 +3,20 @@ PREHOOK: query: -- Tests that when a multi insert inserts into a bucketed table 
 
 CREATE TABLE bucketed_table(key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Tests that when a multi insert inserts into a bucketed table and a table which is not bucketed
 -- the bucketed table is not merged and the table which is not bucketed is
 
 CREATE TABLE bucketed_table(key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucketed_table
 PREHOOK: query: CREATE TABLE unbucketed_table(key INT, value STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE unbucketed_table(key INT, value STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unbucketed_table
 PREHOOK: query: EXPLAIN EXTENDED
 FROM src

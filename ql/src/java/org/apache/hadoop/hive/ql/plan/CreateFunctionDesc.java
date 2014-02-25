@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.List;
+
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 
 /**
  * CreateFunctionDesc.
@@ -30,6 +33,8 @@ public class CreateFunctionDesc implements Serializable {
 
   private String functionName;
   private String className;
+  private boolean isTemp;
+  private List<ResourceUri> resources;
 
   /**
    * For serialization only.
@@ -37,9 +42,12 @@ public class CreateFunctionDesc implements Serializable {
   public CreateFunctionDesc() {
   }
   
-  public CreateFunctionDesc(String functionName, String className) {
+  public CreateFunctionDesc(String functionName, boolean isTemp, String className,
+      List<ResourceUri> resources) {
     this.functionName = functionName;
+    this.isTemp = isTemp;
     this.className = className;
+    this.resources = resources;
   }
 
   @Explain(displayName = "name")
@@ -58,6 +66,22 @@ public class CreateFunctionDesc implements Serializable {
 
   public void setClassName(String className) {
     this.className = className;
+  }
+
+  public boolean isTemp() {
+    return isTemp;
+  }
+
+  public void setTemp(boolean isTemp) {
+    this.isTemp = isTemp;
+  }
+
+  public List<ResourceUri> getResources() {
+    return resources;
+  }
+
+  public void setResources(List<ResourceUri> resources) {
+    this.resources = resources;
   }
 
 }

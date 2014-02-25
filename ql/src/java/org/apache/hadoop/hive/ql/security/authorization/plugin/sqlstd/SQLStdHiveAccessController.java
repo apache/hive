@@ -18,8 +18,10 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -42,12 +44,12 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControl
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
+import org.apache.thrift.TException;
 
 /**
  * Implements functionality of access control statements for sql standard based
@@ -61,6 +63,10 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   private String currentUserName;
   private List<HiveRole> currentRoles;
   private HiveRole adminRole;
+  private final String ADMIN_ONLY_MSG = "User has to belong to ADMIN role and "
+      + "have it as current role, for this action.";
+  private final String HAS_ADMIN_PRIV_MSG = "grantor need to have ADMIN privileges on role being"
+      + " granted and have it as a current role for this action.";
 
   SQLStdHiveAccessController(HiveMetastoreClientFactory metastoreClientFactory, HiveConf conf,
       HiveAuthenticationProvider authenticator) throws HiveAuthzPluginException {
@@ -89,20 +95,46 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   private List<HiveRole> getRolesFromMS() throws HiveAuthzPluginException {
     List<Role> roles;
     try {
-      roles = metastoreClientFactory.getHiveMetastoreClient().
-        list_roles(currentUserName, PrincipalType.USER);
+      roles = metastoreClientFactory.getHiveMetastoreClient().list_roles(currentUserName,
+          PrincipalType.USER);
+      Map<String, HiveRole> name2Rolesmap = new HashMap<String, HiveRole>();
+      getAllRoleAncestors(name2Rolesmap, roles);
       List<HiveRole> currentRoles = new ArrayList<HiveRole>(roles.size());
-      for (Role role : roles) {
+      for (HiveRole role : name2Rolesmap.values()) {
         if (!HiveMetaStore.ADMIN.equalsIgnoreCase(role.getRoleName())) {
-          currentRoles.add(new HiveRole(role));
+          currentRoles.add(role);
         } else {
-          this.adminRole = new HiveRole(role);
+          this.adminRole = role;
         }
       }
       return currentRoles;
     } catch (Exception e) {
-        throw new HiveAuthzPluginException("Failed to retrieve roles for "+
-            currentUserName, e);
+      throw new HiveAuthzPluginException("Failed to retrieve roles for " + currentUserName + ": "
+          + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Add role names of parentRoles and its parents to processedRolesMap
+   *
+   * @param processedRolesMap
+   * @param parentRoles
+   * @throws TException
+   * @throws HiveAuthzPluginException
+   * @throws MetaException
+   */
+  private void getAllRoleAncestors(Map<String, HiveRole> processedRolesMap, List<Role> parentRoles)
+      throws MetaException, HiveAuthzPluginException, TException {
+    for (Role parentRole : parentRoles) {
+      String parentRoleName = parentRole.getRoleName();
+      if (processedRolesMap.get(parentRoleName) == null) {
+        // unprocessed role: get its parents, add it to processed, and call this
+        // function recursively
+        List<Role> nextParentRoles = metastoreClientFactory.getHiveMetastoreClient().list_roles(
+            parentRoleName, PrincipalType.ROLE);
+        processedRolesMap.put(parentRoleName, new HiveRole(parentRole));
+        getAllRoleAncestors(processedRolesMap, nextParentRoles);
+      }
     }
   }
 
@@ -112,15 +144,12 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       HivePrincipal grantorPrincipal, boolean grantOption)
           throws HiveAuthzPluginException, HiveAccessControlException {
 
-    // expand ALL privileges, if any
-    hivePrivileges = expandAllPrivileges(hivePrivileges);
-
-    SQLAuthorizationUtils.validatePrivileges(hivePrivileges);
+    hivePrivileges = expandAndValidatePrivileges(hivePrivileges);
 
     IMetaStoreClient metastoreClient = metastoreClientFactory.getHiveMetastoreClient();
     // authorize the grant
     GrantPrivAuthUtils.authorize(hivePrincipals, hivePrivileges, hivePrivObject, grantOption,
-        metastoreClient, authenticator.getUserName());
+        metastoreClient, authenticator.getUserName(), getCurrentRoles(), isUserAdmin());
 
     // grant
     PrivilegeBag privBag = getThriftPrivilegesBag(hivePrincipals, hivePrivileges, hivePrivObject,
@@ -128,8 +157,16 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     try {
       metastoreClient.grant_privileges(privBag);
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error granting privileges", e);
+      throw new HiveAuthzPluginException("Error granting privileges: " + e.getMessage(), e);
     }
+  }
+
+  private List<HivePrivilege> expandAndValidatePrivileges(List<HivePrivilege> hivePrivileges)
+      throws HiveAuthzPluginException {
+    // expand ALL privileges, if any
+    hivePrivileges = expandAllPrivileges(hivePrivileges);
+    SQLAuthorizationUtils.validatePrivileges(hivePrivileges);
+    return hivePrivileges;
   }
 
   private List<HivePrivilege> expandAllPrivileges(List<HivePrivilege> hivePrivileges) {
@@ -196,7 +233,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       List<HivePrivilege> hivePrivileges, HivePrivilegeObject hivePrivObject,
       HivePrincipal grantorPrincipal, boolean grantOption)
           throws HiveAuthzPluginException, HiveAccessControlException {
-    SQLAuthorizationUtils.validatePrivileges(hivePrivileges);
+
+    hivePrivileges = expandAndValidatePrivileges(hivePrivileges);
 
     IMetaStoreClient metastoreClient = metastoreClientFactory.getHiveMetastoreClient();
     // authorize the revoke, and get the set of privileges to be revoked
@@ -221,9 +259,9 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   public void createRole(String roleName, HivePrincipal adminGrantor)
       throws HiveAuthzPluginException, HiveAccessControlException {
     // only user belonging to admin role can create new roles.
-    if (!this.isUserAdmin(new HivePrincipal(currentUserName,HivePrincipalType.USER))) {
+    if (!isUserAdmin()) {
       throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
-      + " allowed to add roles. Only users belonging to admin role can add new roles.");
+      + " allowed to add roles. " + ADMIN_ONLY_MSG);
     }
     try {
       String grantorName = adminGrantor == null ? null : adminGrantor.getName();
@@ -237,9 +275,9 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   @Override
   public void dropRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException {
     // only user belonging to admin role can drop existing role
-    if (!this.isUserAdmin(new HivePrincipal(currentUserName,HivePrincipalType.USER))) {
+    if (!isUserAdmin()) {
       throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
-      + " allowed to drop role. Only users belonging to admin role can drop roles.");
+      + " allowed to drop role. " + ADMIN_ONLY_MSG);
     }
     try {
       metastoreClientFactory.getHiveMetastoreClient().drop_role(roleName);
@@ -260,7 +298,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       return hiveRoles;
     } catch (Exception e) {
       throw new HiveAuthzPluginException("Error listing roles for user "
-          + hivePrincipal.getName(), e);
+          + hivePrincipal.getName() + ": " + e.getMessage(), e);
     }
   }
 
@@ -268,9 +306,9 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   public void grantRole(List<HivePrincipal> hivePrincipals, List<String> roleNames,
     boolean grantOption, HivePrincipal grantorPrinc) throws HiveAuthzPluginException,
     HiveAccessControlException {
-    if (!this.isUserAdmin(new HivePrincipal(currentUserName,HivePrincipalType.USER))) {
+    if (!(isUserAdmin() || doesUserHasAdminOption(roleNames))) {
       throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
-        + " allowed to grant role. Currently only users belonging to admin role can grant roles.");
+        + " allowed to grant role. " + ADMIN_ONLY_MSG + " Otherwise, " + HAS_ADMIN_PRIV_MSG);
     }
     for (HivePrincipal hivePrincipal : hivePrincipals) {
       for (String roleName : roleNames) {
@@ -300,9 +338,9 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       throw new HiveAuthzPluginException("Revoking only the admin privileges on "
         + "role is not currently supported");
     }
-    if (!this.isUserAdmin(new HivePrincipal(currentUserName,HivePrincipalType.USER))) {
+    if (!(isUserAdmin() || doesUserHasAdminOption(roleNames))) {
       throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
-          + " allowed to revoke role. Currently only users belonging to admin role can revoke roles.");
+          + " allowed to revoke role. " + ADMIN_ONLY_MSG + " Otherwise, " + HAS_ADMIN_PRIV_MSG);
     }
     for (HivePrincipal hivePrincipal : hivePrincipals) {
       for (String roleName : roleNames) {
@@ -312,7 +350,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
               AuthorizationUtils.getThriftPrincipalType(hivePrincipal.getType()));
         } catch (Exception e) {
           String msg = "Error revoking roles for " + hivePrincipal.getName() + " to role "
-              + roleName;
+              + roleName + ": " + e.getMessage();
           throw new HiveAuthzPluginException(msg, e);
         }
       }
@@ -322,9 +360,9 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   @Override
   public List<String> getAllRoles() throws HiveAuthzPluginException, HiveAccessControlException {
     // only user belonging to admin role can list role
-    if (!this.isUserAdmin(new HivePrincipal(currentUserName,HivePrincipalType.USER))) {
+    if (!isUserAdmin()) {
       throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
-        + " allowed to list roles. Only users belonging to admin role can list roles.");
+        + " allowed to list roles. " + ADMIN_ONLY_MSG);
     }
     try {
       return metastoreClientFactory.getHiveMetastoreClient().listRoleNames();
@@ -372,7 +410,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       return resPrivInfos;
 
     } catch (Exception e) {
-      throw new HiveAuthzPluginException("Error showing privileges", e);
+      throw new HiveAuthzPluginException("Error showing privileges: "+ e.getMessage(), e);
     }
 
   }
@@ -383,7 +421,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     case DATABASE:
       return HivePrivilegeObjectType.DATABASE;
     case TABLE:
-      return HivePrivilegeObjectType.TABLE;
+      return HivePrivilegeObjectType.TABLE_OR_VIEW;
     case COLUMN:
     case GLOBAL:
     case PARTITION:
@@ -397,6 +435,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   public void setCurrentRole(String roleName) throws HiveAccessControlException,
     HiveAuthzPluginException {
 
+    initUserRoles();
     if ("NONE".equalsIgnoreCase(roleName)) {
       // for set role NONE, reset roles to default roles.
       currentRoles.clear();
@@ -429,22 +468,47 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   }
 
   /**
-   * @param principal
    * @return true only if current role of user is Admin
    * @throws HiveAuthzPluginException
    */
-  private boolean isUserAdmin(HivePrincipal principal) throws HiveAuthzPluginException {
+  boolean isUserAdmin() throws HiveAuthzPluginException {
     List<HiveRole> roles;
     try {
       roles = getCurrentRoles();
     } catch (Exception e) {
-        throw new HiveAuthzPluginException(e);
+      throw new HiveAuthzPluginException(e);
     }
-    for (HiveRole role : roles){
-    if (role.getRoleName().equalsIgnoreCase(HiveMetaStore.ADMIN)) {
+    for (HiveRole role : roles) {
+      if (role.getRoleName().equalsIgnoreCase(HiveMetaStore.ADMIN)) {
         return true;
       }
     }
     return false;
+  }
+
+  private boolean doesUserHasAdminOption(List<String> roleNames) throws HiveAuthzPluginException {
+    List<HiveRole> currentRoles;
+    try {
+      currentRoles = getCurrentRoles();
+    } catch (Exception e) {
+        throw new HiveAuthzPluginException(e);
+    }
+    for (String roleName : roleNames) {
+      boolean roleFound = false;
+      for (HiveRole currentRole : currentRoles) {
+        if (roleName.equalsIgnoreCase(currentRole.getRoleName())) {
+          roleFound = true;
+          if (!currentRole.isGrantOption()) {
+            return false;
+          } else {
+              break;
+          }
+        }
+      }
+      if (!roleFound) {
+        return false;
+      }
+    }
+    return true;
   }
 }

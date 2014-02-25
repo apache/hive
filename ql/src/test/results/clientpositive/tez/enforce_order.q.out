@@ -8,13 +8,17 @@ POSTHOOK: query: drop table table_desc
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table table_asc(key string, value string) clustered by (key) sorted by (key ASC) into 1 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table table_asc(key string, value string) clustered by (key) sorted by (key ASC) into 1 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_asc
 PREHOOK: query: create table table_desc(key string, value string) clustered by (key) sorted by (key DESC) into 1 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table table_desc(key string, value string) clustered by (key) sorted by (key DESC) into 1 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_desc
 PREHOOK: query: insert overwrite table table_asc select key, value from src
 PREHOOK: type: QUERY

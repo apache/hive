@@ -120,7 +120,9 @@ struct Database {
   2: string description,
   3: string locationUri,
   4: map<string, string> parameters, // properties associated with the database
-  5: optional PrincipalPrivilegeSet privileges
+  5: optional PrincipalPrivilegeSet privileges,
+  6: optional string ownerName,
+  7: optional PrincipalType ownerType
 }
 
 // This object holds the information needed by SerDes
@@ -352,6 +354,33 @@ struct DropPartitionsRequest {
   6: optional bool ignoreProtection,
   7: optional EnvironmentContext environmentContext,
   8: optional bool needResult=true
+}
+
+enum FunctionType {
+  JAVA = 1,
+}
+
+enum ResourceType {
+  JAR     = 1,
+  FILE    = 2,
+  ARCHIVE = 3,
+}
+
+struct ResourceUri {
+  1: ResourceType resourceType,
+  2: string       uri,
+}
+
+// User-defined function
+struct Function {
+  1: string           functionName,
+  2: string           dbName,
+  3: string           className,
+  4: string           ownerName,
+  5: PrincipalType    ownerType,
+  6: i32              createTime,
+  7: FunctionType     functionType,
+  8: list<ResourceUri> resourceUris,
 }
 
 exception MetaException {
@@ -691,6 +720,27 @@ service ThriftHiveMetastore extends fb303.FacebookService
               (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
                4:InvalidInputException o4)
 
+  //
+  // user-defined functions
+  //
+
+  void create_function(1:Function func)
+      throws (1:AlreadyExistsException o1,
+              2:InvalidObjectException o2,
+              3:MetaException o3,
+              4:NoSuchObjectException o4)
+
+  void drop_function(1:string dbName, 2:string funcName)
+      throws (1:NoSuchObjectException o1, 2:MetaException o3)
+
+  void alter_function(1:string dbName, 2:string funcName, 3:Function newFunc)
+      throws (1:InvalidOperationException o1, 2:MetaException o2)
+
+  list<string> get_functions(1:string dbName, 2:string pattern)
+      throws (1:MetaException o1)
+  Function get_function(1:string dbName, 2:string funcName)
+      throws (1:MetaException o1, 2:NoSuchObjectException o2)
+
   //authorization privileges
 
   bool create_role(1:Role role) throws(1:MetaException o1)
@@ -739,6 +789,12 @@ const string IS_ARCHIVED = "is_archived",
 // this directory will contain the archive. When the partition
 // is dropped, this directory will be deleted
 const string ORIGINAL_LOCATION = "original_location",
+
+// Whether or not the table is considered immutable - immutable tables can only be
+// overwritten or created if unpartitioned, or if partitioned, partitions inside them
+// can only be overwritten or created. Immutability supports write-once and replace
+// semantics, but not append.
+const string IS_IMMUTABLE = "immutable",
 
 // these should be needed only for backward compatibility with filestore
 const string META_TABLE_COLUMNS   = "columns",

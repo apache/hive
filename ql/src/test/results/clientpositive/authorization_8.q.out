@@ -4,8 +4,10 @@ POSTHOOK: query: GRANT ALL TO USER hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: CREATE TABLE tbl_j5jbymsx8e (key INT, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE tbl_j5jbymsx8e (key INT, value STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_j5jbymsx8e
 PREHOOK: query: CREATE VIEW view_j5jbymsx8e_1 as SELECT * FROM tbl_j5jbymsx8e
 PREHOOK: type: CREATEVIEW

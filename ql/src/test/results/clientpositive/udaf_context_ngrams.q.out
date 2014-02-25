@@ -1,13 +1,17 @@
 PREHOOK: query: CREATE TABLE kafka (contents STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE kafka (contents STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@kafka
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/text-en.txt' INTO TABLE kafka
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@kafka
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/text-en.txt' INTO TABLE kafka
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@kafka
 PREHOOK: query: SELECT context_ngrams(sentences(lower(contents)), array(null), 100, 1000).estfrequency FROM kafka
 PREHOOK: type: QUERY

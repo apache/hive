@@ -24,8 +24,10 @@ POSTHOOK: query: drop table char_nested_view
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table char_nested_1 (key int, value char(20))
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table char_nested_1 (key int, value char(20))
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_nested_1
 PREHOOK: query: insert overwrite table char_nested_1
   select key, value from src order by key limit 1
@@ -42,9 +44,11 @@ POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:val
 PREHOOK: query: -- arrays
 create table char_nested_array (c1 array<char(20)>)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- arrays
 create table char_nested_array (c1 array<char(20)>)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_nested_array
 POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -84,9 +88,11 @@ POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1
 PREHOOK: query: -- maps
 create table char_nested_map (c1 map<int, char(20)>)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- maps
 create table char_nested_map (c1 map<int, char(20)>)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_nested_map
 POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -130,9 +136,11 @@ POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.F
 PREHOOK: query: -- structs
 create table char_nested_struct (c1 struct<a:int, b:char(20), c:string>)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- structs
 create table char_nested_struct (c1 struct<a:int, b:char(20), c:string>)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_nested_struct
 POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]

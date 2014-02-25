@@ -5,17 +5,21 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE table tmp_jo_tab_test (message_line STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE table tmp_jo_tab_test (message_line STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_jo_tab_test
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/input.txt'
 OVERWRITE INTO TABLE tmp_jo_tab_test
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tmp_jo_tab_test
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/input.txt'
 OVERWRITE INTO TABLE tmp_jo_tab_test
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tmp_jo_tab_test
 PREHOOK: query: select size(split(message_line, '\t')) from tmp_jo_tab_test
 PREHOOK: type: QUERY

@@ -21,6 +21,7 @@ PREHOOK: query: CREATE TABLE lineitem (L_ORDERKEY      INT,
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE lineitem (L_ORDERKEY      INT,
                                 L_PARTKEY       INT,
                                 L_SUPPKEY       INT,
@@ -40,12 +41,15 @@ POSTHOOK: query: CREATE TABLE lineitem (L_ORDERKEY      INT,
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lineitem
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@lineitem
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@lineitem
 PREHOOK: query: CREATE INDEX lineitem_lshipdate_idx ON TABLE lineitem(l_shipdate) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(l_shipdate)")
 PREHOOK: type: CREATEINDEX
@@ -1007,8 +1011,10 @@ STAGE PLANS:
 
 PREHOOK: query: CREATE TABLE tbl(key int, value int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE tbl(key int, value int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
@@ -2327,8 +2333,10 @@ POSTHOOK: Lineage: default__tbl_tbl_key_idx__._offsets EXPRESSION [(tbl)tbl.Fiel
 POSTHOOK: Lineage: default__tbl_tbl_key_idx__.key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: CREATE TABLE tblpart (key int, value string) PARTITIONED BY (ds string, hr int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE tblpart (key int, value string) PARTITIONED BY (ds string, hr int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tblpart
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
@@ -2839,8 +2847,10 @@ POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpa
 POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
@@ -2876,9 +2886,11 @@ POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpa
 POSTHOOK: Lineage: tblpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tbl.txt' OVERWRITE INTO TABLE tbl
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tbl
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tbl.txt' OVERWRITE INTO TABLE tbl
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tbl
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]

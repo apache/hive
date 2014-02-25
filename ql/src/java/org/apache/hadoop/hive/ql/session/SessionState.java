@@ -54,8 +54,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
-import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.DisallowTransformHook;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
@@ -349,12 +349,6 @@ public class SessionState {
     try {
       authenticator = HiveUtils.getAuthenticator(getConf(),
           HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
-
-      if (userName != null) {
-        // if username is set through the session, use an authenticator that
-        // just returns the sessionstate user
-        authenticator = new SessionStateUserAuthenticator(this);
-      }
       authenticator.setSessionState(this);
 
       authorizer = HiveUtils.getAuthorizeProviderManager(getConf(),
@@ -370,6 +364,14 @@ public class SessionState {
             getConf(), authenticator);
         // grant all privileges for table to its owner
         getConf().setVar(ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS, "insert,select,update,delete");
+        String hooks = getConf().getVar(ConfVars.PREEXECHOOKS).trim();
+        if (hooks.isEmpty()) {
+          hooks = DisallowTransformHook.class.getName();
+        } else {
+          hooks = hooks + "," +DisallowTransformHook.class.getName();
+        }
+        LOG.debug("Configuring hooks : " + hooks);
+        getConf().setVar(ConfVars.PREEXECHOOKS, hooks);
       }
 
       createTableGrants = CreateTableAutomaticGrant.create(getConf());
@@ -556,6 +558,19 @@ public class SessionState {
               + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return null;
     }
+  }
+
+  /**
+   *
+   * @return username from current SessionState authenticator. username will be
+   *         null if there is no current SessionState object or authenticator is
+   *         null.
+   */
+  public static String getUserFromAuthenticator() {
+    if (SessionState.get() != null && SessionState.get().getAuthenticator() != null) {
+      return SessionState.get().getAuthenticator().getUserName();
+    }
+    return null;
   }
 
   public static boolean registerJar(String newJar) {

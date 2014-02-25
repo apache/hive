@@ -29,6 +29,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Want to ensure we can build and use indices on tables stored with SerDes
 -- Build the (Avro backed) table
 CREATE TABLE doctors 
@@ -60,6 +61,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@doctors
 PREHOOK: query: DESCRIBE doctors
 PREHOOK: type: DESCTABLE
@@ -70,9 +72,11 @@ first_name          	string              	from deserializer
 last_name           	string              	from deserializer   
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@doctors
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@doctors
 PREHOOK: query: -- Create and build an index
 CREATE INDEX doctors_index ON TABLE doctors(number) AS 'COMPACT' WITH DEFERRED REBUILD

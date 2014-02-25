@@ -2,16 +2,20 @@ PREHOOK: query: create table exim_department ( dep_id int comment "department id
 	stored as textfile	
 	tblproperties("creator"="krishna")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table exim_department ( dep_id int comment "department id") 	
 	stored as textfile	
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_department
 PREHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@exim_department
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@exim_department
 #### A masked pattern was here ####
 PREHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
@@ -42,9 +46,11 @@ PREHOOK: query: create table exim_department ( dep_id int comment "department id
 	stored as rcfile	
 	tblproperties("creator"="krishna")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:importer
 POSTHOOK: query: create table exim_department ( dep_id int comment "department id") 	
 	stored as rcfile	
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_department
 FAILED: SemanticException [Error 10120]: The existing table is not compatible with the import spec.   Table inputformat/outputformats do not match

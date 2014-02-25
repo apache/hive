@@ -1,0 +1,17 @@
+PREHOOK: query: -- check create view without select privileges
+create table t1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: -- check create view without select privileges
+create table t1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: create view v1 as select * from t1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+POSTHOOK: query: create view v1 as select * from t1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@v1
+FAILED: HiveAccessControlException Permission denied. Principal [name=user1, type=USER] does not have following privileges on Object [type=TABLE_OR_VIEW, name=default.v1] : [SELECT]

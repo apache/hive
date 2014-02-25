@@ -1,7 +1,9 @@
 PREHOOK: query: create table analyze_t1 like srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table analyze_t1 like srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_t1
 PREHOOK: query: explain
 insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null

@@ -4,12 +4,14 @@ PREHOOK: query: -- EXCLUDE_OS_WINDOWS
 create table if not exists nzhang_part14 (key string) 
   partitioned by (value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- EXCLUDE_OS_WINDOWS
 -- excluded on windows because of difference in file name encoding logic
 
 create table if not exists nzhang_part14 (key string) 
   partitioned by (value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part14
 PREHOOK: query: describe extended nzhang_part14
 PREHOOK: type: DESCTABLE

@@ -60,7 +60,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
 
   protected HiveCommandOperation(HiveSession parentSession, String statement,
       CommandProcessor commandProcessor, Map<String, String> confOverlay) {
-    super(parentSession, statement, confOverlay);
+    super(parentSession, statement, confOverlay, false);
     this.commandProcessor = commandProcessor;
     setupSessionIO(parentSession.getSessionState());
   }

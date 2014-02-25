@@ -1,7 +1,9 @@
 PREHOOK: query: create table ppr_test (key string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table ppr_test (key string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ppr_test
 PREHOOK: query: insert overwrite table ppr_test partition(ds='2') select '2' from src tablesample (1 rows)
 PREHOOK: type: QUERY
@@ -50,8 +52,10 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 22	22
 PREHOOK: query: create table ppr_test2 (key string) partitioned by (ds string, s string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table ppr_test2 (key string) partitioned by (ds string, s string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ppr_test2
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
@@ -110,8 +114,10 @@ POSTHOOK: Lineage: ppr_test2 PARTITION(ds=2,s=1).key SIMPLE []
 1	1	2
 PREHOOK: query: create table ppr_test3 (key string) partitioned by (col string, ol string, l string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table ppr_test3 (key string) partitioned by (col string, ol string, l string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ppr_test3
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []

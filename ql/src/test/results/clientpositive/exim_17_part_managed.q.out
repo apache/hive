@@ -4,47 +4,57 @@ PREHOOK: query: create table exim_employee ( emp_id int comment "employee id")
 	stored as textfile	
 	tblproperties("creator"="krishna")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
 	comment "employee table"
 	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
 	stored as textfile	
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_employee
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="in", emp_state="tn")
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@exim_employee
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="in", emp_state="tn")
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=tn
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="in", emp_state="ka")
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@exim_employee
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="in", emp_state="ka")
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=ka
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="tn")
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@exim_employee
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="tn")
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=us/emp_state=tn
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="ka")
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@exim_employee
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="ka")
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=us/emp_state=ka
 #### A masked pattern was here ####
@@ -85,12 +95,14 @@ PREHOOK: query: create table exim_employee ( emp_id int comment "employee id")
 	stored as textfile	
 	tblproperties("creator"="krishna")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:importer
 POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
 	comment "employee table"
 	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
 	stored as textfile	
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_employee
 PREHOOK: query: import table exim_employee partition (emp_country="us", emp_state="tn") 
 	from 'ql/test/data/exports/exim_employee'
@@ -106,11 +118,13 @@ POSTHOOK: Output: importer@exim_employee@emp_country=us/emp_state=tn
 PREHOOK: query: alter table exim_employee add partition	(emp_country="us", emp_state="ap")
 	location 'ql/test/data/tablestore2/exim_employee'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: importer@exim_employee
+PREHOOK: Input: ql/test/data/tablestore2/exim_employee
+PREHOOK: Output: importer@exim_employee
 POSTHOOK: query: alter table exim_employee add partition	(emp_country="us", emp_state="ap")
 	location 'ql/test/data/tablestore2/exim_employee'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: importer@exim_employee
+POSTHOOK: Input: ql/test/data/tablestore2/exim_employee
+POSTHOOK: Output: importer@exim_employee
 POSTHOOK: Output: importer@exim_employee@emp_country=us/emp_state=ap
 PREHOOK: query: show table extended like exim_employee
 PREHOOK: type: SHOW_TABLESTATUS

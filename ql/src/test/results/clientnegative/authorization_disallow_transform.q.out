@@ -1,0 +1,12 @@
+PREHOOK: query: set role NONE
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role NONE
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: SELECT TRANSFORM (*) USING 'cat' AS (key, value) FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+FAILED: Hive Internal Error: org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException(Query with transform clause is disallowed in current configuration.)
+org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException: Query with transform clause is disallowed in current configuration.
+#### A masked pattern was here ####
+

@@ -417,9 +417,11 @@ val_348	5
 PREHOOK: query: -- dyn partitions
 CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- dyn partitions
 CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_src_part
 PREHOOK: query: EXPLAIN INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
 PREHOOK: type: QUERY
@@ -824,9 +826,11 @@ val_348	5
 PREHOOK: query: -- multi insert
 CREATE TABLE even (c int, d string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- multi insert
 CREATE TABLE even (c int, d string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@even
 POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
@@ -835,8 +839,10 @@ POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldS
 POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE odd (c int, d string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE odd (c int, d string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@odd
 POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]

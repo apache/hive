@@ -5,6 +5,8 @@ CREATE TABLE rename_partition_table (key STRING, value STRING) PARTITIONED BY (p
 STORED AS RCFILE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This test verifies that if the tables location changes, renaming a table will not change
 -- the table location scheme
 
@@ -12,6 +14,8 @@ CREATE TABLE rename_partition_table (key STRING, value STRING) PARTITIONED BY (p
 STORED AS RCFILE
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rename_partition_table
 PREHOOK: query: INSERT OVERWRITE TABLE rename_partition_table PARTITION (part = '1') SELECT * FROM src
 PREHOOK: type: QUERY
@@ -31,6 +35,7 @@ PREHOOK: Output: default@rename_partition_table
 POSTHOOK: type: ALTERTABLE_LOCATION
 POSTHOOK: Input: default@rename_partition_table
 POSTHOOK: Output: default@rename_partition_table
+#### A masked pattern was here ####
 POSTHOOK: Lineage: rename_partition_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rename_partition_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- If the metastore attempts to change the scheme of the table back to the default pfile, it will get

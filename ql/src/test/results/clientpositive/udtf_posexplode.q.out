@@ -5,6 +5,7 @@ subordinates ARRAY<STRING>,
 deductions MAP<STRING, FLOAT>,
 address STRUCT<street:STRING, city:STRING, state:STRING, zip:INT>)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE employees (
 name STRING,
 salary FLOAT,
@@ -12,12 +13,15 @@ subordinates ARRAY<STRING>,
 deductions MAP<STRING, FLOAT>,
 address STRUCT<street:STRING, city:STRING, state:STRING, zip:INT>)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@employees
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/posexplode_data.txt' INTO TABLE employees
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@employees
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/posexplode_data.txt' INTO TABLE employees
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@employees
 PREHOOK: query: SELECT
   name, pos, sub

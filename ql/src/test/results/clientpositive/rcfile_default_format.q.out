@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE rcfile_default_format (key STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE rcfile_default_format (key STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_default_format
 PREHOOK: query: DESCRIBE FORMATTED rcfile_default_format
 PREHOOK: type: DESCTABLE
@@ -74,8 +76,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: CREATE TABLE rcfile_default_format_txtfile (key STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE rcfile_default_format_txtfile (key STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_default_format_txtfile
 PREHOOK: query: INSERT OVERWRITE TABLE rcfile_default_format_txtfile SELECT key from src
 PREHOOK: type: QUERY
@@ -208,8 +212,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: CREATE TABLE rcfile_default_format_default_serde (key STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE rcfile_default_format_default_serde (key STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_default_format_default_serde
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED rcfile_default_format_default_serde
@@ -286,8 +292,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: CREATE TABLE rcfile_default_serde (key STRING) STORED AS rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE rcfile_default_serde (key STRING) STORED AS rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_default_serde
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED rcfile_default_serde

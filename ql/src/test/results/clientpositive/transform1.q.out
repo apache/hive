@@ -1,7 +1,9 @@
 PREHOOK: query: create table transform1_t1(a string, b string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table transform1_t1(a string, b string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@transform1_t1
 PREHOOK: query: EXPLAIN
 SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
@@ -53,8 +55,10 @@ POSTHOOK: Input: default@transform1_t1
 #### A masked pattern was here ####
 PREHOOK: query: create table transform1_t2(col array<int>)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table transform1_t2(col array<int>)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@transform1_t2
 PREHOOK: query: insert overwrite table transform1_t2
 select array(1,2,3) from src tablesample (1 rows)

@@ -1,8 +1,10 @@
 PREHOOK: query: -- Create table
 create table if not exists test_invalid_column(key string, value string ) partitioned by (year string, month string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Create table
 create table if not exists test_invalid_column(key string, value string ) partitioned by (year string, month string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_invalid_column
 FAILED: SemanticException [Error 10004]: Line 3:41 Invalid table alias or column reference 'column1': (possible column names are: key, value, year, month)

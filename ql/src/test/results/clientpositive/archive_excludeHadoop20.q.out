@@ -12,8 +12,10 @@ POSTHOOK: query: drop table tstsrcpart
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tstsrc like src
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tstsrc like src
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrc
 PREHOOK: query: insert overwrite table tstsrc select key, value from src
 PREHOOK: type: QUERY
@@ -27,8 +29,10 @@ POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table tstsrcpart (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 10 buckets
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tstsrcpart (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 10 buckets
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrcpart
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -277,10 +281,12 @@ PREHOOK: query: CREATE TABLE harbucket(key INT)
 PARTITIONED by (ds STRING)
 CLUSTERED BY (key) INTO 10 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE harbucket(key INT)
 PARTITIONED by (ds STRING)
 CLUSTERED BY (key) INTO 10 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@harbucket
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -433,9 +439,11 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcp
 PREHOOK: query: CREATE TABLE old_name(key INT)
 PARTITIONED by (ds STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE old_name(key INT)
 PARTITIONED by (ds STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@old_name
 POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

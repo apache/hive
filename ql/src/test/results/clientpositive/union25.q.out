@@ -1,7 +1,9 @@
 PREHOOK: query: create table tmp_srcpart like srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tmp_srcpart like srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_srcpart
 PREHOOK: query: insert overwrite table tmp_srcpart partition (ds='2008-04-08', hr='11')
 select key, value from srcpart where ds='2008-04-08' and hr='11'

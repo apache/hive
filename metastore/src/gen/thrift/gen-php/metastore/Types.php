@@ -49,6 +49,24 @@ final class PartitionEventType {
   );
 }
 
+final class FunctionType {
+  const JAVA = 1;
+  static public $__names = array(
+    1 => 'JAVA',
+  );
+}
+
+final class ResourceType {
+  const JAR = 1;
+  const FILE = 2;
+  const ARCHIVE = 3;
+  static public $__names = array(
+    1 => 'JAR',
+    2 => 'FILE',
+    3 => 'ARCHIVE',
+  );
+}
+
 class Version {
   static $_TSPEC;
 
@@ -1494,6 +1512,8 @@ class Database {
   public $locationUri = null;
   public $parameters = null;
   public $privileges = null;
+  public $ownerName = null;
+  public $ownerType = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1527,6 +1547,14 @@ class Database {
           'type' => TType::STRUCT,
           'class' => '\metastore\PrincipalPrivilegeSet',
           ),
+        6 => array(
+          'var' => 'ownerName',
+          'type' => TType::STRING,
+          ),
+        7 => array(
+          'var' => 'ownerType',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -1544,6 +1572,12 @@ class Database {
       }
       if (isset($vals['privileges'])) {
         $this->privileges = $vals['privileges'];
+      }
+      if (isset($vals['ownerName'])) {
+        $this->ownerName = $vals['ownerName'];
+      }
+      if (isset($vals['ownerType'])) {
+        $this->ownerType = $vals['ownerType'];
       }
     }
   }
@@ -1616,6 +1650,20 @@ class Database {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ownerName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->ownerType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -1668,6 +1716,16 @@ class Database {
       }
       $xfer += $output->writeFieldBegin('privileges', TType::STRUCT, 5);
       $xfer += $this->privileges->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ownerName !== null) {
+      $xfer += $output->writeFieldBegin('ownerName', TType::STRING, 6);
+      $xfer += $output->writeString($this->ownerName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ownerType !== null) {
+      $xfer += $output->writeFieldBegin('ownerType', TType::I32, 7);
+      $xfer += $output->writeI32($this->ownerType);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -6650,6 +6708,338 @@ class DropPartitionsRequest {
 
 }
 
+class ResourceUri {
+  static $_TSPEC;
+
+  public $resourceType = null;
+  public $uri = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'resourceType',
+          'type' => TType::I32,
+          ),
+        2 => array(
+          'var' => 'uri',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['resourceType'])) {
+        $this->resourceType = $vals['resourceType'];
+      }
+      if (isset($vals['uri'])) {
+        $this->uri = $vals['uri'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ResourceUri';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->resourceType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->uri);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ResourceUri');
+    if ($this->resourceType !== null) {
+      $xfer += $output->writeFieldBegin('resourceType', TType::I32, 1);
+      $xfer += $output->writeI32($this->resourceType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->uri !== null) {
+      $xfer += $output->writeFieldBegin('uri', TType::STRING, 2);
+      $xfer += $output->writeString($this->uri);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class Function {
+  static $_TSPEC;
+
+  public $functionName = null;
+  public $dbName = null;
+  public $className = null;
+  public $ownerName = null;
+  public $ownerType = null;
+  public $createTime = null;
+  public $functionType = null;
+  public $resourceUris = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'functionName',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'dbName',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'className',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'ownerName',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'ownerType',
+          'type' => TType::I32,
+          ),
+        6 => array(
+          'var' => 'createTime',
+          'type' => TType::I32,
+          ),
+        7 => array(
+          'var' => 'functionType',
+          'type' => TType::I32,
+          ),
+        8 => array(
+          'var' => 'resourceUris',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\ResourceUri',
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['functionName'])) {
+        $this->functionName = $vals['functionName'];
+      }
+      if (isset($vals['dbName'])) {
+        $this->dbName = $vals['dbName'];
+      }
+      if (isset($vals['className'])) {
+        $this->className = $vals['className'];
+      }
+      if (isset($vals['ownerName'])) {
+        $this->ownerName = $vals['ownerName'];
+      }
+      if (isset($vals['ownerType'])) {
+        $this->ownerType = $vals['ownerType'];
+      }
+      if (isset($vals['createTime'])) {
+        $this->createTime = $vals['createTime'];
+      }
+      if (isset($vals['functionType'])) {
+        $this->functionType = $vals['functionType'];
+      }
+      if (isset($vals['resourceUris'])) {
+        $this->resourceUris = $vals['resourceUris'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Function';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->functionName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->className);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ownerName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->ownerType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->createTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->functionType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::LST) {
+            $this->resourceUris = array();
+            $_size313 = 0;
+            $_etype316 = 0;
+            $xfer += $input->readListBegin($_etype316, $_size313);
+            for ($_i317 = 0; $_i317 < $_size313; ++$_i317)
+            {
+              $elem318 = null;
+              $elem318 = new \metastore\ResourceUri();
+              $xfer += $elem318->read($input);
+              $this->resourceUris []= $elem318;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Function');
+    if ($this->functionName !== null) {
+      $xfer += $output->writeFieldBegin('functionName', TType::STRING, 1);
+      $xfer += $output->writeString($this->functionName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->dbName !== null) {
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 2);
+      $xfer += $output->writeString($this->dbName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->className !== null) {
+      $xfer += $output->writeFieldBegin('className', TType::STRING, 3);
+      $xfer += $output->writeString($this->className);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ownerName !== null) {
+      $xfer += $output->writeFieldBegin('ownerName', TType::STRING, 4);
+      $xfer += $output->writeString($this->ownerName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ownerType !== null) {
+      $xfer += $output->writeFieldBegin('ownerType', TType::I32, 5);
+      $xfer += $output->writeI32($this->ownerType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->createTime !== null) {
+      $xfer += $output->writeFieldBegin('createTime', TType::I32, 6);
+      $xfer += $output->writeI32($this->createTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->functionType !== null) {
+      $xfer += $output->writeFieldBegin('functionType', TType::I32, 7);
+      $xfer += $output->writeI32($this->functionType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->resourceUris !== null) {
+      if (!is_array($this->resourceUris)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('resourceUris', TType::LST, 8);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->resourceUris));
+        {
+          foreach ($this->resourceUris as $iter319)
+          {
+            $xfer += $iter319->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class MetaException extends TException {
   static $_TSPEC;
 
@@ -7525,6 +7915,8 @@ $GLOBALS['hive_metastore_CONSTANTS']['HIVE_FILTER_FIELD_LAST_ACCESS'] = "hive_fi
 $GLOBALS['hive_metastore_CONSTANTS']['IS_ARCHIVED'] = "is_archived";
 
 $GLOBALS['hive_metastore_CONSTANTS']['ORIGINAL_LOCATION'] = "original_location";
+
+$GLOBALS['hive_metastore_CONSTANTS']['IS_IMMUTABLE'] = "immutable";
 
 $GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_COLUMNS'] = "columns";
 

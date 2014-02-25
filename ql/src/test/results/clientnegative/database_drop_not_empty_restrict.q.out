@@ -15,8 +15,10 @@ POSTHOOK: query: USE db_drop_non_empty_restrict
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: CREATE TABLE t(a INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db_drop_non_empty_restrict
 POSTHOOK: query: CREATE TABLE t(a INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db_drop_non_empty_restrict
 POSTHOOK: Output: db_drop_non_empty_restrict@t
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
@@ -26,4 +28,4 @@ PREHOOK: query: DROP DATABASE db_drop_non_empty_restrict
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:db_drop_non_empty_restrict
 PREHOOK: Output: database:db_drop_non_empty_restrict
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Database db_drop_non_empty_restrict is not empty)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Database db_drop_non_empty_restrict is not empty. One or more tables exist.)

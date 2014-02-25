@@ -16,95 +16,127 @@ POSTHOOK: query: drop table test4
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table test1 (key string, value string) clustered by (key) sorted by (key) into 3 buckets
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table test1 (key string, value string) clustered by (key) sorted by (key) into 3 buckets
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test1
 PREHOOK: query: create table test2 (key string, value string) clustered by (value) sorted by (value) into 3 buckets
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table test2 (key string, value string) clustered by (value) sorted by (value) into 3 buckets
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test2
 PREHOOK: query: create table test3 (key string, value string) clustered by (key, value) sorted by (key, value) into 3 buckets
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table test3 (key string, value string) clustered by (key, value) sorted by (key, value) into 3 buckets
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test3
 PREHOOK: query: create table test4 (key string, value string) clustered by (value, key) sorted by (value, key) into 3 buckets
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table test4 (key string, value string) clustered by (value, key) sorted by (value, key) into 3 buckets
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test4
 PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test1
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test1
 PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test1
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test1
 PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test1
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test1
 PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test2
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test2
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test2
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test2
 PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test2
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test2
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test2
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test2
 PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test2
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test2
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test2
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test2
 PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test3
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test3
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test3
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test3
 PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test3
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test3
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test3
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test3
 PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test3
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test3
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test3
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test3
 PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test4
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test4
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test4
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test4
 PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test4
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test4
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test4
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test4
 PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test4
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test4
 POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test4
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test4
 PREHOOK: query: -- should be allowed
 explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value

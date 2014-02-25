@@ -6,10 +6,12 @@ PREHOOK: query: CREATE TABLE s3log
 ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.s3.S3LogDeserializer'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE s3log
 ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.s3.S3LogDeserializer'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s3log
 PREHOOK: query: DESCRIBE s3log
 PREHOOK: type: DESCTABLE
@@ -34,9 +36,11 @@ referer             	string              	from deserializer
 useragent           	string              	from deserializer   
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../contrib/data/files/s3.log' INTO TABLE s3log
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@s3log
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../contrib/data/files/s3.log' INTO TABLE s3log
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@s3log
 PREHOOK: query: SELECT a.* FROM s3log a
 PREHOOK: type: QUERY

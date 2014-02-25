@@ -7,6 +7,7 @@ create table convert_enum_to_string
       "serialization.class"="org.apache.hadoop.hive.serde2.thrift.test.MegaStruct",
       "serialization.format"="org.apache.thrift.protocol.TBinaryProtocol")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Ensure Enum fields are converted to strings (instead of struct<value:int>)
 
 create table convert_enum_to_string
@@ -16,6 +17,7 @@ create table convert_enum_to_string
       "serialization.class"="org.apache.hadoop.hive.serde2.thrift.test.MegaStruct",
       "serialization.format"="org.apache.thrift.protocol.TBinaryProtocol")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@convert_enum_to_string
 PREHOOK: query: describe convert_enum_to_string
 PREHOOK: type: DESCTABLE

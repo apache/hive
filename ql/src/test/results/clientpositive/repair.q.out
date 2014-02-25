@@ -4,8 +4,10 @@ POSTHOOK: query: DROP TABLE IF EXISTS repairtable
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable
 PREHOOK: query: MSCK TABLE repairtable
 PREHOOK: type: MSCK

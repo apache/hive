@@ -6,10 +6,12 @@ PREHOOK: query: CREATE TABLE dest1(bytes1 BINARY,
                    bytes2 BINARY,
                    string STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest1(bytes1 BINARY,
                    bytes2 BINARY,
                    string STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1
 SELECT

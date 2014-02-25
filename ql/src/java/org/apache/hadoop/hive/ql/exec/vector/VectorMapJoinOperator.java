@@ -63,8 +63,8 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   private int tagLen;
 
   private VectorExpression[] keyExpressions;
-  private VectorHashKeyWrapperBatch keyWrapperBatch;
-  private VectorExpressionWriter[] keyOutputWriters;
+  private transient VectorHashKeyWrapperBatch keyWrapperBatch;
+  private transient VectorExpressionWriter[] keyOutputWriters;
 
   private VectorExpression[] bigTableFilterExpressions;
   private VectorExpression[] bigTableValueExpressions;
@@ -111,7 +111,6 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
 
     List<ExprNodeDesc> keyDesc = desc.getKeys().get(posBigTable);
     keyExpressions = vContext.getVectorExpressions(keyDesc);
-    keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyDesc);
 
     // We're only going to evaluate the big table vectorized expressions,
     Map<Byte, List<ExprNodeDesc>> exprs = desc.getExprs();
@@ -135,6 +134,8 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   public void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
     
+    List<ExprNodeDesc> keyDesc = conf.getKeys().get(posBigTable);
+    keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyDesc);
 
     vrbCtx = new VectorizedRowBatchCtx();
     vrbCtx.init(hconf, this.fileKey, (StructObjectInspector) this.outputObjInspector);

@@ -7,18 +7,24 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_10
 PREHOOK: query: create table src_lv1 (key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_lv1 (key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_lv1
 PREHOOK: query: create table src_lv2 (key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_lv2 (key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_lv2
 PREHOOK: query: create table src_lv3 (key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_lv3 (key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_lv3
 PREHOOK: query: -- 2LV
 -- TS[0]-LVF[1]-SEL[2]-LVJ[5]-SEL[11]-FS[12]
@@ -1441,8 +1447,10 @@ val_86	86.0
 val_98	98.0
 PREHOOK: query: create table src_lv4 (key string, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_lv4 (key string, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_lv4
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]

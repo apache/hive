@@ -7,6 +7,7 @@ PREHOOK: query: -- This is to test the union->selectstar->filesink optimization
 
 create table inputTbl1(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
 -- Union of 2 subqueries is performed (all of which are mapred queries)
 -- followed by select star and a file sink in 2 output tables.
@@ -16,22 +17,29 @@ POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
 
 create table inputTbl1(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputTbl1
 PREHOOK: query: create table outputTbl1(key string, values bigint) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table outputTbl1(key string, values bigint) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
 PREHOOK: query: create table outputTbl2(key string, values bigint) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table outputTbl2(key string, values bigint) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl2
 PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@inputtbl1
 POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@inputtbl1
 PREHOOK: query: explain
 FROM (

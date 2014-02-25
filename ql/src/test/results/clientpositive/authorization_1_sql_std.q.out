@@ -1,7 +1,9 @@
 PREHOOK: query: create table src_autho_test (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_autho_test (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: set  role ADMIN
 PREHOOK: type: SHOW_ROLES

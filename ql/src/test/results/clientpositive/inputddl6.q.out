@@ -3,24 +3,30 @@ PREHOOK: query: -- test for describe extended table
 -- test for alter table drop partition
 CREATE TABLE INPUTDDL6(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- test for describe extended table
 -- test for describe extended table partition
 -- test for alter table drop partition
 CREATE TABLE INPUTDDL6(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@INPUTDDL6
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUTDDL6 PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@inputddl6
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUTDDL6 PARTITION (ds='2008-04-09')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@inputddl6
 POSTHOOK: Output: default@inputddl6@ds=2008-04-09
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUTDDL6 PARTITION (ds='2008-04-08')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@inputddl6
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUTDDL6 PARTITION (ds='2008-04-08')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@inputddl6
 POSTHOOK: Output: default@inputddl6@ds=2008-04-08
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL6

@@ -8,29 +8,31 @@ POSTHOOK: query: use dtf3
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: create table drop_table_failure_temp(col STRING) partitioned by (p STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:dtf3
 POSTHOOK: query: create table drop_table_failure_temp(col STRING) partitioned by (p STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:dtf3
 POSTHOOK: Output: dtf3@drop_table_failure_temp
 PREHOOK: query: alter table drop_table_failure_temp add partition (p ='p1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: dtf3@drop_table_failure_temp
+PREHOOK: Output: dtf3@drop_table_failure_temp
 POSTHOOK: query: alter table drop_table_failure_temp add partition (p ='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: dtf3@drop_table_failure_temp
+POSTHOOK: Output: dtf3@drop_table_failure_temp
 POSTHOOK: Output: dtf3@drop_table_failure_temp@p=p1
 PREHOOK: query: alter table drop_table_failure_temp add partition (p ='p2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: dtf3@drop_table_failure_temp
+PREHOOK: Output: dtf3@drop_table_failure_temp
 POSTHOOK: query: alter table drop_table_failure_temp add partition (p ='p2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: dtf3@drop_table_failure_temp
+POSTHOOK: Output: dtf3@drop_table_failure_temp
 POSTHOOK: Output: dtf3@drop_table_failure_temp@p=p2
 PREHOOK: query: alter table drop_table_failure_temp add partition (p ='p3')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: dtf3@drop_table_failure_temp
+PREHOOK: Output: dtf3@drop_table_failure_temp
 POSTHOOK: query: alter table drop_table_failure_temp add partition (p ='p3')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: dtf3@drop_table_failure_temp
+POSTHOOK: Output: dtf3@drop_table_failure_temp
 POSTHOOK: Output: dtf3@drop_table_failure_temp@p=p3
 PREHOOK: query: alter table drop_table_failure_temp partition (p ='p3') ENABLE NO_DROP
 PREHOOK: type: ALTERPARTITION_PROTECTMODE

@@ -1,7 +1,9 @@
 PREHOOK: query: create table tmp_meta_export_listener_drop_test (foo string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tmp_meta_export_listener_drop_test (foo string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_meta_export_listener_drop_test
 PREHOOK: query: drop table tmp_meta_export_listener_drop_test
 PREHOOK: type: DROPTABLE

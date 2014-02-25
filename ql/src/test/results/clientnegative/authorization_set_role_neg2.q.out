@@ -1,0 +1,27 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: -- an error should be thrown if 'set role ' is done for role that does not exist
+
+create role rset_role_neg
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: -- an error should be thrown if 'set role ' is done for role that does not exist
+
+create role rset_role_neg
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant role rset_role_neg to user user2
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role rset_role_neg to user user2
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: set role rset_role_neg
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role rset_role_neg
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: set role public
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role public
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: set role nosuchroleexists
+PREHOOK: type: SHOW_ROLES
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. user2 doesn't belong to role nosuchroleexists

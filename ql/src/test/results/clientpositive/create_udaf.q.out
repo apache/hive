@@ -16,8 +16,10 @@ POSTHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.q
 POSTHOOK: type: CREATEFUNCTION
 PREHOOK: query: CREATE TABLE dest1(col INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest1(col INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT test_max(length(src.value))
 PREHOOK: type: QUERY

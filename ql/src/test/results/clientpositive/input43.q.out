@@ -4,14 +4,18 @@ POSTHOOK: query: drop table tst_src1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tst_src1 like src1
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tst_src1 like src1
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tst_src1
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tst_src1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tst_src1
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tst_src1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tst_src1
 PREHOOK: query: select count(1) from tst_src1
 PREHOOK: type: QUERY
@@ -24,9 +28,11 @@ POSTHOOK: Input: default@tst_src1
 500
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tst_src1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tst_src1
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tst_src1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tst_src1
 PREHOOK: query: select count(1) from tst_src1
 PREHOOK: type: QUERY

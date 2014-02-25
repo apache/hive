@@ -2,16 +2,20 @@ PREHOOK: query: -- HIVE-5292 Join on decimal columns fails
 
 create table src_dec (key decimal(3,0), value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- HIVE-5292 Join on decimal columns fails
 
 create table src_dec (key decimal(3,0), value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_dec
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table src_dec
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@src_dec
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table src_dec
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@src_dec
 PREHOOK: query: select * from src_dec a join src_dec b on a.key=b.key+450
 PREHOOK: type: QUERY

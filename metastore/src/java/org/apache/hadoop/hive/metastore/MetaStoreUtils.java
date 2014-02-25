@@ -44,6 +44,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -1180,6 +1181,29 @@ public class MetaStoreUtils {
     return "TRUE".equalsIgnoreCase(params.get("EXTERNAL"));
   }
 
+  /**
+   * Determines whether a table is an immutable table.
+   * Immutable tables are write-once/replace, and do not support append. Partitioned
+   * immutable tables do support additions by way of creation of new partitions, but
+   * do not allow the partitions themselves to be appended to. "INSERT INTO" will not
+   * work for Immutable tables.
+   *
+   * @param table table of interest
+   *
+   * @return true if immutable
+   */
+  public static boolean isImmutableTable(Table table) {
+    if (table == null){
+      return false;
+    }
+    Map<String, String> params = table.getParameters();
+    if (params == null) {
+      return false;
+    }
+
+    return "TRUE".equalsIgnoreCase(params.get(hive_metastoreConstants.IS_IMMUTABLE));
+  }
+
   public static boolean isArchived(
       org.apache.hadoop.hive.metastore.api.Partition part) {
     Map<String, String> params = part.getParameters();
@@ -1205,6 +1229,35 @@ public class MetaStoreUtils {
       return false;
     }
     return (table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE) != null);
+  }
+
+  /**
+   * Filter that filters out hidden files
+   */
+  private static final PathFilter hiddenFileFilter = new PathFilter() {
+    public boolean accept(Path p) {
+      String name = p.getName();
+      return !name.startsWith("_") && !name.startsWith(".");
+    }
+  };
+
+  /**
+   * Utility method that determines if a specified directory already has
+   * contents (non-hidden files) or not - useful to determine if an
+   * immutable table already has contents, for example.
+   *
+   * @param path
+   * @throws IOException
+   */
+  public static boolean isDirEmpty(FileSystem fs, Path path) throws IOException {
+
+    if (fs.exists(path)) {
+      FileStatus[] status = fs.globStatus(new Path(path, "*"), hiddenFileFilter);
+      if (status.length > 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

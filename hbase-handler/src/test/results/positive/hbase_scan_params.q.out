@@ -3,11 +3,13 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string",
 "hbase.scan.cache" = "500", "hbase.scan.cacheblocks" = "true", "hbase.scan.batch" = "1")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE hbase_pushdown(key int, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string",
 "hbase.scan.cache" = "500", "hbase.scan.cacheblocks" = "true", "hbase.scan.batch" = "1")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_pushdown
 PREHOOK: query: INSERT OVERWRITE TABLE hbase_pushdown SELECT * FROM src
 PREHOOK: type: QUERY

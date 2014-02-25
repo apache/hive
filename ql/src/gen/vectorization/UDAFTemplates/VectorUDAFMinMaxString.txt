@@ -35,15 +35,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.Text;
 
 /**
-* <ClassName>. Vectorized implementation for MIN/MAX aggregates. 
+* <ClassName>. Vectorized implementation for MIN/MAX aggregates.
 */
-@Description(name = "<DescriptionName>", 
+@Description(name = "<DescriptionName>",
     value = "<DescriptionValue>")
 public class <ClassName> extends VectorAggregateExpression {
 
     private static final long serialVersionUID = 1L;
 
-    /** 
+    /**
      * class for storing the current aggregate value.
      */
     static private final class Aggregation implements AggregationBuffer {
@@ -53,7 +53,11 @@ public class <ClassName> extends VectorAggregateExpression {
       transient private final static int MIN_BUFFER_SIZE = 16;
       transient private byte[] bytes = new byte[MIN_BUFFER_SIZE];
       transient private int length;
-      transient private boolean isNull;
+
+      /**
+      * Value is explicitly (re)initialized in reset()
+      */
+      transient private boolean isNull = true;
 
       public void checkValue(byte[] bytes, int start, int length) {
         if (isNull) {
@@ -65,7 +69,7 @@ public class <ClassName> extends VectorAggregateExpression {
           assign(bytes, start, length);
         }
       }
-      
+
       public void assign(byte[] bytes, int start, int length) {
         // Avoid new allocation if possible
         if (this.bytes.length < length) {
@@ -80,10 +84,10 @@ public class <ClassName> extends VectorAggregateExpression {
         return model.lengthForByteArrayOfSize(bytes.length);
       }
     }
-    
+
     private VectorExpression inputExpression;
     transient private Text result;
-    
+
     public <ClassName>(VectorExpression inputExpression) {
       this();
       this.inputExpression = inputExpression;
@@ -93,7 +97,7 @@ public class <ClassName> extends VectorAggregateExpression {
       super();
       result = new Text();
     }
-    
+
     private Aggregation getCurrentAggregationBuffer(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregrateIndex,
@@ -102,21 +106,21 @@ public class <ClassName> extends VectorAggregateExpression {
       Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(aggregrateIndex);
       return myagg;
     }
-    
+
 @Override
     public void aggregateInputSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex, 
+      int aggregrateIndex,
       VectorizedRowBatch batch) throws HiveException {
-      
+
       int batchSize = batch.size;
-      
+
       if (batchSize == 0) {
         return;
       }
-      
+
       inputExpression.evaluate(batch);
-      
+
       BytesColumnVector inputColumn = (BytesColumnVector)batch.
         cols[this.inputExpression.getOutputColumn()];
 
@@ -164,12 +168,12 @@ public class <ClassName> extends VectorAggregateExpression {
       int length = inputColumn.length[0];
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets, 
+          aggregationBufferSets,
           aggregrateIndex,
           i);
         myagg.checkValue(bytes, start, length);
       }
-    } 
+    }
 
     private void iterateNoNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
@@ -177,11 +181,11 @@ public class <ClassName> extends VectorAggregateExpression {
       BytesColumnVector inputColumn,
       int[] selection,
       int batchSize) {
-      
+
       for (int i=0; i < batchSize; ++i) {
         int row = selection[i];
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets, 
+          aggregationBufferSets,
           aggregrateIndex,
           i);
         myagg.checkValue(inputColumn.vector[row],
@@ -197,7 +201,7 @@ public class <ClassName> extends VectorAggregateExpression {
       int batchSize) {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets, 
+          aggregationBufferSets,
           aggregrateIndex,
           i);
         myagg.checkValue(inputColumn.vector[i],
@@ -217,7 +221,7 @@ public class <ClassName> extends VectorAggregateExpression {
         int row = selection[i];
         if (!inputColumn.isNull[row]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets, 
+            aggregationBufferSets,
             aggregrateIndex,
             i);
           myagg.checkValue(inputColumn.vector[row],
@@ -236,7 +240,7 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int i=0; i < batchSize; ++i) {
         if (!inputColumn.isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets, 
+            aggregationBufferSets,
             aggregrateIndex,
             i);
           myagg.checkValue(inputColumn.vector[i],
@@ -245,24 +249,24 @@ public class <ClassName> extends VectorAggregateExpression {
         }
       }
    }
-    
+
     @Override
-    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch) 
+    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch)
       throws HiveException {
-        
+
         inputExpression.evaluate(batch);
-        
+
         BytesColumnVector inputColumn = (BytesColumnVector)batch.
             cols[this.inputExpression.getOutputColumn()];
-        
+
         int batchSize = batch.size;
-        
+
         if (batchSize == 0) {
           return;
         }
-        
+
         Aggregation myagg = (Aggregation)agg;
-          
+
         if (inputColumn.isRepeating) {
           if (inputColumn.noNulls) {
             myagg.checkValue(inputColumn.vector[0],
@@ -271,7 +275,7 @@ public class <ClassName> extends VectorAggregateExpression {
           }
           return;
         }
-        
+
         if (!batch.selectedInUse && inputColumn.noNulls) {
           iterateNoSelectionNoNulls(myagg, inputColumn, batchSize);
         }
@@ -285,13 +289,13 @@ public class <ClassName> extends VectorAggregateExpression {
           iterateSelectionHasNulls(myagg, inputColumn, batchSize, batch.selected);
         }
     }
-  
+
     private void iterateSelectionHasNulls(
-        Aggregation myagg, 
-        BytesColumnVector inputColumn, 
+        Aggregation myagg,
+        BytesColumnVector inputColumn,
         int batchSize,
         int[] selected) {
-      
+
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!inputColumn.isNull[i]) {
@@ -303,11 +307,11 @@ public class <ClassName> extends VectorAggregateExpression {
     }
 
     private void iterateSelectionNoNulls(
-        Aggregation myagg, 
-        BytesColumnVector inputColumn, 
-        int batchSize, 
+        Aggregation myagg,
+        BytesColumnVector inputColumn,
+        int batchSize,
         int[] selected) {
-      
+
       for (int i=0; i< batchSize; ++i) {
         myagg.checkValue(inputColumn.vector[i],
           inputColumn.start[i],
@@ -316,10 +320,10 @@ public class <ClassName> extends VectorAggregateExpression {
     }
 
     private void iterateNoSelectionHasNulls(
-        Aggregation myagg, 
-        BytesColumnVector inputColumn, 
+        Aggregation myagg,
+        BytesColumnVector inputColumn,
         int batchSize) {
-      
+
       for (int i=0; i< batchSize; ++i) {
         if (!inputColumn.isNull[i]) {
           myagg.checkValue(inputColumn.vector[i],
@@ -330,7 +334,7 @@ public class <ClassName> extends VectorAggregateExpression {
     }
 
     private void iterateNoSelectionNoNulls(
-        Aggregation myagg, 
+        Aggregation myagg,
         BytesColumnVector inputColumn,
         int batchSize) {
       for (int i=0; i< batchSize; ++i) {
@@ -363,7 +367,7 @@ public class <ClassName> extends VectorAggregateExpression {
         return result;
       }
     }
-    
+
     @Override
     public ObjectInspector getOutputObjectInspector() {
       return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -378,7 +382,7 @@ public class <ClassName> extends VectorAggregateExpression {
         model.primitive1()*2,
         model.memoryAlign());
     }
-    
+
     @Override
     public boolean hasVariableSize() {
       return true;
