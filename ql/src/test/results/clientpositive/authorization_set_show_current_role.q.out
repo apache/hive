@@ -44,8 +44,8 @@ PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
-r1
 PUBLIC
+r1
 
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES

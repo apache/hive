@@ -18,8 +18,10 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -47,6 +49,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
+import org.apache.thrift.TException;
 
 /**
  * Implements functionality of access control statements for sql standard based
@@ -92,20 +95,46 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   private List<HiveRole> getRolesFromMS() throws HiveAuthzPluginException {
     List<Role> roles;
     try {
-      roles = metastoreClientFactory.getHiveMetastoreClient().
-        list_roles(currentUserName, PrincipalType.USER);
+      roles = metastoreClientFactory.getHiveMetastoreClient().list_roles(currentUserName,
+          PrincipalType.USER);
+      Map<String, HiveRole> name2Rolesmap = new HashMap<String, HiveRole>();
+      getAllRoleAncestors(name2Rolesmap, roles);
       List<HiveRole> currentRoles = new ArrayList<HiveRole>(roles.size());
-      for (Role role : roles) {
+      for (HiveRole role : name2Rolesmap.values()) {
         if (!HiveMetaStore.ADMIN.equalsIgnoreCase(role.getRoleName())) {
-          currentRoles.add(new HiveRole(role));
+          currentRoles.add(role);
         } else {
-          this.adminRole = new HiveRole(role);
+          this.adminRole = role;
         }
       }
       return currentRoles;
     } catch (Exception e) {
-        throw new HiveAuthzPluginException("Failed to retrieve roles for "+
-            currentUserName + ": " + e.getMessage(), e);
+      throw new HiveAuthzPluginException("Failed to retrieve roles for " + currentUserName + ": "
+          + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Add role names of parentRoles and its parents to processedRolesMap
+   *
+   * @param processedRolesMap
+   * @param parentRoles
+   * @throws TException
+   * @throws HiveAuthzPluginException
+   * @throws MetaException
+   */
+  private void getAllRoleAncestors(Map<String, HiveRole> processedRolesMap, List<Role> parentRoles)
+      throws MetaException, HiveAuthzPluginException, TException {
+    for (Role parentRole : parentRoles) {
+      String parentRoleName = parentRole.getRoleName();
+      if (processedRolesMap.get(parentRoleName) == null) {
+        // unprocessed role: get its parents, add it to processed, and call this
+        // function recursively
+        List<Role> nextParentRoles = metastoreClientFactory.getHiveMetastoreClient().list_roles(
+            parentRoleName, PrincipalType.ROLE);
+        processedRolesMap.put(parentRoleName, new HiveRole(parentRole));
+        getAllRoleAncestors(processedRolesMap, nextParentRoles);
+      }
     }
   }
 
