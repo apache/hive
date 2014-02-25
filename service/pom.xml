@@ -55,6 +55,11 @@
       <artifactId>commons-cli</artifactId>
       <version>${commons-cli.version}</version>
     </dependency>
+    <dependency>
+      <groupId>net.sf.jpam</groupId>
+      <artifactId>jpam</artifactId>
+      <version>${jpam.version}</version>
+    </dependency>
     <!-- used by thrift generated code -->
     <dependency>
       <groupId>commons-lang</groupId>
