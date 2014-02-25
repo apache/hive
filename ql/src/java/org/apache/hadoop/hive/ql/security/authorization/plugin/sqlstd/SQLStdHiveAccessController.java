@@ -447,10 +447,10 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     try {
       roles = getCurrentRoles();
     } catch (Exception e) {
-        throw new HiveAuthzPluginException(e);
+      throw new HiveAuthzPluginException(e);
     }
-    for (HiveRole role : roles){
-    if (role.getRoleName().equalsIgnoreCase(HiveMetaStore.ADMIN)) {
+    for (HiveRole role : roles) {
+      if (role.getRoleName().equalsIgnoreCase(HiveMetaStore.ADMIN)) {
         return true;
       }
     }
