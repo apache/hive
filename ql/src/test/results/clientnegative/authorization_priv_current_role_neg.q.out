@@ -39,8 +39,8 @@ POSTHOOK: query: -- switch to user2
 -- by default all roles should be in current roles, and grant to new user should work
 show current roles
 POSTHOOK: type: SHOW_ROLES
-role2
 PUBLIC
+role2
 
 PREHOOK: query: grant all on table tpriv_current_role to user user3
 PREHOOK: type: GRANT_PRIVILEGE

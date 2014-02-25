@@ -176,7 +176,6 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.thrift.TException;
 import org.stringtemplate.v4.ST;
 
 /**
@@ -969,7 +968,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       break;
     case SHOW_ROLES:
       List<String> allRoles = authorizer.getAllRoles();
-      writeListToFile(allRoles, roleDDLDesc.getResFile());
+      writeListToFileAfterSort(allRoles, roleDDLDesc.getResFile());
       break;
     case SHOW_CURRENT_ROLE:
       List<HiveRole> currentRoles = authorizer.getCurrentRoles();
@@ -977,7 +976,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       for (HiveRole role : currentRoles) {
         roleNames.add(role.getRoleName());
       }
-      writeListToFile(roleNames, roleDDLDesc.getResFile());
+      writeListToFileAfterSort(roleNames, roleDDLDesc.getResFile());
       break;
     case SET_ROLE:
       authorizer.setCurrentRole(roleDDLDesc.getName());
@@ -996,7 +995,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @param resFile
    * @throws IOException
    */
-  private void writeListToFile(List<String> entries, String resFile) throws IOException {
+  private void writeListToFileAfterSort(List<String> entries, String resFile) throws IOException {
+    Collections.sort(entries);
     StringBuilder sb = new StringBuilder();
     for(String entry : entries){
       sb.append(entry);
