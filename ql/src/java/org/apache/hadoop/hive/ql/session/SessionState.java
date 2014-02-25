@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
-import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.DisallowTransformHook;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
@@ -350,12 +349,6 @@ public class SessionState {
     try {
       authenticator = HiveUtils.getAuthenticator(getConf(),
           HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
-
-      if (userName != null) {
-        // if username is set through the session, use an authenticator that
-        // just returns the sessionstate user
-        authenticator = new SessionStateUserAuthenticator(this);
-      }
       authenticator.setSessionState(this);
 
       authorizer = HiveUtils.getAuthorizeProviderManager(getConf(),

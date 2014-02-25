@@ -107,11 +107,11 @@ public class SessionManager extends CompositeService {
     HiveSession session;
     if (withImpersonation) {
       HiveSessionImplwithUGI hiveSessionUgi = new HiveSessionImplwithUGI(protocol, username, password,
-        sessionConf, delegationToken);
+        hiveConf, sessionConf, delegationToken);
       session = HiveSessionProxy.getProxy(hiveSessionUgi, hiveSessionUgi.getSessionUgi());
       hiveSessionUgi.setProxySession(session);
     } else {
-      session = new HiveSessionImpl(protocol, username, password, sessionConf);
+      session = new HiveSessionImpl(protocol, username, password, hiveConf, sessionConf);
     }
     session.setSessionManager(this);
     session.setOperationManager(operationManager);
