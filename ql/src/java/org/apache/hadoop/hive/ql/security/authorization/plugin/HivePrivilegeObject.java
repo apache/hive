@@ -29,19 +29,34 @@ public class HivePrivilegeObject {
 
   @Override
   public String toString() {
-    return "Hive Object [type=" + type + ", dbname=" + dbname + ", table/viewname="
-        + tableviewname + "]";
+    String name = null;
+    switch (type) {
+    case DATABASE:
+      name = dbname;
+      break;
+    case TABLE_OR_VIEW:
+      name = (dbname == null ? "" : dbname + ".") + tableviewname;
+      break;
+    case LOCAL_URI:
+    case DFS_URI:
+      name = tableviewname;
+      break;
+    case PARTITION:
+      break;
+    }
+    return "Object [type=" + type + ", name=" + name + "]";
+
   }
 
-  public enum HivePrivilegeObjectType { DATABASE, TABLE, VIEW, PARTITION, URI};
+  public enum HivePrivilegeObjectType { DATABASE, TABLE_OR_VIEW, PARTITION, LOCAL_URI, DFS_URI};
   private final HivePrivilegeObjectType type;
   private final String dbname;
   private final String tableviewname;
 
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String tableviewname){
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String tableViewURI){
     this.type = type;
     this.dbname = dbname;
-    this.tableviewname = tableviewname;
+    this.tableviewname = tableViewURI;
   }
 
   public HivePrivilegeObjectType getType() {
@@ -52,7 +67,7 @@ public class HivePrivilegeObject {
     return dbname;
   }
 
-  public String getTableviewname() {
+  public String getTableViewURI() {
     return tableviewname;
   }
 }

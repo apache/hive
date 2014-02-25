@@ -1,1 +1,1 @@
-FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Database does not exist: table_in_database_creation_not_exist
+FAILED: SemanticException [Error 10072]: Database does not exist: table_in_database_creation_not_exist

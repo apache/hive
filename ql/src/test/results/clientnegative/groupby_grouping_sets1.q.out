@@ -1,6 +1,8 @@
 PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
 FAILED: SemanticException [Error 10211]: Grouping sets aggregations are not allowed if no aggregation function is presented

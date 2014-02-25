@@ -28,6 +28,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- verify that we can actually read avro files
 CREATE TABLE doctors 
 ROW FORMAT
@@ -58,6 +59,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@doctors
 PREHOOK: query: DESCRIBE doctors
 PREHOOK: type: DESCTABLE
@@ -68,9 +70,11 @@ first_name          	string              	from deserializer
 last_name           	string              	from deserializer   
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@doctors
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@doctors
 PREHOOK: query: SELECT * FROM doctors ORDER BY number
 PREHOOK: type: QUERY

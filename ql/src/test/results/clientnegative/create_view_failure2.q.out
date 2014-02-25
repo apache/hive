@@ -13,4 +13,5 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@xxx4
 PREHOOK: query: CREATE TABLE xxx4(key int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. AlreadyExistsException(message:Table xxx4 already exists)

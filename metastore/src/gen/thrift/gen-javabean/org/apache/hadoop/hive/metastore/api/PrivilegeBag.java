@@ -350,7 +350,7 @@ public class PrivilegeBag implements org.apache.thrift.TBase<PrivilegeBag, Privi
                 struct.privileges = new ArrayList<HiveObjectPrivilege>(_list16.size);
                 for (int _i17 = 0; _i17 < _list16.size; ++_i17)
                 {
-                  HiveObjectPrivilege _elem18; // required
+                  HiveObjectPrivilege _elem18; // optional
                   _elem18 = new HiveObjectPrivilege();
                   _elem18.read(iprot);
                   struct.privileges.add(_elem18);
@@ -430,7 +430,7 @@ public class PrivilegeBag implements org.apache.thrift.TBase<PrivilegeBag, Privi
           struct.privileges = new ArrayList<HiveObjectPrivilege>(_list21.size);
           for (int _i22 = 0; _i22 < _list21.size; ++_i22)
           {
-            HiveObjectPrivilege _elem23; // required
+            HiveObjectPrivilege _elem23; // optional
             _elem23 = new HiveObjectPrivilege();
             _elem23.read(iprot);
             struct.privileges.add(_elem23);

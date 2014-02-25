@@ -8,6 +8,7 @@ STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --This query must pass even when vectorized reader is not available for
 --RC files. The query must fall back to the non-vector mode and run successfully.
 
@@ -18,6 +19,7 @@ STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@columnTable
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE columnTable SELECT src.key, src.value LIMIT 10

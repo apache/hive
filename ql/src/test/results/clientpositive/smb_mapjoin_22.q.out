@@ -2,17 +2,21 @@ PREHOOK: query: -- Create two bucketed and sorted tables
 CREATE TABLE test_table1 (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Create two bucketed and sorted tables
 CREATE TABLE test_table1 (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
 PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table1 SELECT *
@@ -169,9 +173,11 @@ POSTHOOK: Lineage: test_table2.value SIMPLE [(test_table1)test_table1.FieldSchem
 PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
 POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -180,9 +186,11 @@ POSTHOOK: Lineage: test_table2.value SIMPLE [(test_table1)test_table1.FieldSchem
 PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
 POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

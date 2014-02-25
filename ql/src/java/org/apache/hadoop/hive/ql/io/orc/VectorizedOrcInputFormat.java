@@ -151,16 +151,16 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
     if(!(fSplit instanceof OrcSplit)){
       //If CombineHiveInputFormat is used, it works with FileSplit and not OrcSplit
-      reader = OrcFile.createReader(fs, path);
+      reader = OrcFile.createReader(fs, path, conf);
     } else {
       //We have OrcSplit, which may have footer metadata cached, so use the appropriate reader
       //constructor
       OrcSplit orcSplit = (OrcSplit) fSplit;
       if (orcSplit.hasFooter()) {
         FileMetaInfo fMetaInfo = orcSplit.getFileMetaInfo();
-        reader = OrcFile.createReader(fs, path, fMetaInfo);
+        reader = OrcFile.createReader(fs, path, fMetaInfo, conf);
       } else {
-        reader = OrcFile.createReader(fs, path);
+        reader = OrcFile.createReader(fs, path, conf);
       }
     }
 
@@ -176,7 +176,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     }
     for (FileStatus file : files) {
       try {
-        OrcFile.createReader(fs, file.getPath());
+        OrcFile.createReader(fs, file.getPath(), conf);
       } catch (IOException e) {
         return false;
       }

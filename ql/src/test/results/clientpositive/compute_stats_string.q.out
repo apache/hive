@@ -1,15 +1,19 @@
 PREHOOK: query: create table tab_string(a string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tab_string(a string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_string
 PREHOOK: query: -- insert some data
 LOAD DATA LOCAL INPATH "../../data/files/string.txt" INTO TABLE tab_string
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tab_string
 POSTHOOK: query: -- insert some data
 LOAD DATA LOCAL INPATH "../../data/files/string.txt" INTO TABLE tab_string
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tab_string
 PREHOOK: query: select count(*) from tab_string
 PREHOOK: type: QUERY

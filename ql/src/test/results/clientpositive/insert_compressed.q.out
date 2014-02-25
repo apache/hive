@@ -4,8 +4,10 @@ POSTHOOK: query: drop table insert_compressed
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table insert_compressed (key int, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table insert_compressed (key int, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_compressed
 PREHOOK: query: insert overwrite table insert_compressed select * from src
 PREHOOK: type: QUERY

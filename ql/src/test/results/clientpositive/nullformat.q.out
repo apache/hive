@@ -6,14 +6,18 @@ DROP TABLE IF EXISTS base_tab
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE base_tab(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE base_tab(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@base_tab
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@base_tab
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@base_tab
 PREHOOK: query: DESCRIBE EXTENDED base_tab
 PREHOOK: type: DESCTABLE
@@ -49,8 +53,10 @@ STAGE PLANS:
 
 PREHOOK: query: CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@null_tab1
 PREHOOK: query: DESCRIBE EXTENDED null_tab1
 PREHOOK: type: DESCTABLE

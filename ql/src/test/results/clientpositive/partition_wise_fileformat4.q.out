@@ -1,7 +1,9 @@
 PREHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_test_partitioned
 PREHOOK: query: alter table partition_test_partitioned set fileformat sequencefile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
@@ -34,10 +36,10 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src1)
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: alter table partition_test_partitioned add partition (dt='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Output: default@partition_test_partitioned
 POSTHOOK: query: alter table partition_test_partitioned add partition (dt='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Output: default@partition_test_partitioned
 POSTHOOK: Output: default@partition_test_partitioned@dt=2
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]

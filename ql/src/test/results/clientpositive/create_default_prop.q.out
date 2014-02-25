@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE table_p1 (a STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE table_p1 (a STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_p1
 PREHOOK: query: DESC EXTENDED table_p1
 PREHOOK: type: DESCTABLE
@@ -12,8 +14,10 @@ a                   	string              	None
 #### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE table_p2 LIKE table_p1
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE table_p2 LIKE table_p1
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_p2
 PREHOOK: query: DESC EXTENDED table_p2
 PREHOOK: type: DESCTABLE

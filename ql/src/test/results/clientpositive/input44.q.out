@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE dest(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest
 PREHOOK: query: INSERT OVERWRITE TABLE dest SELECT src.* FROM src
 PREHOOK: type: QUERY

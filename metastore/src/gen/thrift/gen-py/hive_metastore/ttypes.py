@@ -69,6 +69,34 @@ class PartitionEventType:
     "LOAD_DONE": 1,
   }
 
+class FunctionType:
+  JAVA = 1
+
+  _VALUES_TO_NAMES = {
+    1: "JAVA",
+  }
+
+  _NAMES_TO_VALUES = {
+    "JAVA": 1,
+  }
+
+class ResourceType:
+  JAR = 1
+  FILE = 2
+  ARCHIVE = 3
+
+  _VALUES_TO_NAMES = {
+    1: "JAR",
+    2: "FILE",
+    3: "ARCHIVE",
+  }
+
+  _NAMES_TO_VALUES = {
+    "JAR": 1,
+    "FILE": 2,
+    "ARCHIVE": 3,
+  }
+
 
 class Version:
   """
@@ -1015,6 +1043,8 @@ class Database:
    - locationUri
    - parameters
    - privileges
+   - ownerName
+   - ownerType
   """
 
   thrift_spec = (
@@ -1024,14 +1054,18 @@ class Database:
     (3, TType.STRING, 'locationUri', None, None, ), # 3
     (4, TType.MAP, 'parameters', (TType.STRING,None,TType.STRING,None), None, ), # 4
     (5, TType.STRUCT, 'privileges', (PrincipalPrivilegeSet, PrincipalPrivilegeSet.thrift_spec), None, ), # 5
+    (6, TType.STRING, 'ownerName', None, None, ), # 6
+    (7, TType.I32, 'ownerType', None, None, ), # 7
   )
 
-  def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None,):
+  def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None,):
     self.name = name
     self.description = description
     self.locationUri = locationUri
     self.parameters = parameters
     self.privileges = privileges
+    self.ownerName = ownerName
+    self.ownerType = ownerType
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1074,6 +1108,16 @@ class Database:
           self.privileges.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.ownerName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.I32:
+          self.ownerType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1107,6 +1151,14 @@ class Database:
     if self.privileges is not None:
       oprot.writeFieldBegin('privileges', TType.STRUCT, 5)
       self.privileges.write(oprot)
+      oprot.writeFieldEnd()
+    if self.ownerName is not None:
+      oprot.writeFieldBegin('ownerName', TType.STRING, 6)
+      oprot.writeString(self.ownerName)
+      oprot.writeFieldEnd()
+    if self.ownerType is not None:
+      oprot.writeFieldBegin('ownerType', TType.I32, 7)
+      oprot.writeI32(self.ownerType)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -4406,6 +4458,231 @@ class DropPartitionsRequest:
       raise TProtocol.TProtocolException(message='Required field tblName is unset!')
     if self.parts is None:
       raise TProtocol.TProtocolException(message='Required field parts is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ResourceUri:
+  """
+  Attributes:
+   - resourceType
+   - uri
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'resourceType', None, None, ), # 1
+    (2, TType.STRING, 'uri', None, None, ), # 2
+  )
+
+  def __init__(self, resourceType=None, uri=None,):
+    self.resourceType = resourceType
+    self.uri = uri
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.resourceType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.uri = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ResourceUri')
+    if self.resourceType is not None:
+      oprot.writeFieldBegin('resourceType', TType.I32, 1)
+      oprot.writeI32(self.resourceType)
+      oprot.writeFieldEnd()
+    if self.uri is not None:
+      oprot.writeFieldBegin('uri', TType.STRING, 2)
+      oprot.writeString(self.uri)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class Function:
+  """
+  Attributes:
+   - functionName
+   - dbName
+   - className
+   - ownerName
+   - ownerType
+   - createTime
+   - functionType
+   - resourceUris
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'functionName', None, None, ), # 1
+    (2, TType.STRING, 'dbName', None, None, ), # 2
+    (3, TType.STRING, 'className', None, None, ), # 3
+    (4, TType.STRING, 'ownerName', None, None, ), # 4
+    (5, TType.I32, 'ownerType', None, None, ), # 5
+    (6, TType.I32, 'createTime', None, None, ), # 6
+    (7, TType.I32, 'functionType', None, None, ), # 7
+    (8, TType.LIST, 'resourceUris', (TType.STRUCT,(ResourceUri, ResourceUri.thrift_spec)), None, ), # 8
+  )
+
+  def __init__(self, functionName=None, dbName=None, className=None, ownerName=None, ownerType=None, createTime=None, functionType=None, resourceUris=None,):
+    self.functionName = functionName
+    self.dbName = dbName
+    self.className = className
+    self.ownerName = ownerName
+    self.ownerType = ownerType
+    self.createTime = createTime
+    self.functionType = functionType
+    self.resourceUris = resourceUris
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.functionName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.dbName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.className = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.ownerName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I32:
+          self.ownerType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.I32:
+          self.createTime = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.I32:
+          self.functionType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.LIST:
+          self.resourceUris = []
+          (_etype316, _size313) = iprot.readListBegin()
+          for _i317 in xrange(_size313):
+            _elem318 = ResourceUri()
+            _elem318.read(iprot)
+            self.resourceUris.append(_elem318)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('Function')
+    if self.functionName is not None:
+      oprot.writeFieldBegin('functionName', TType.STRING, 1)
+      oprot.writeString(self.functionName)
+      oprot.writeFieldEnd()
+    if self.dbName is not None:
+      oprot.writeFieldBegin('dbName', TType.STRING, 2)
+      oprot.writeString(self.dbName)
+      oprot.writeFieldEnd()
+    if self.className is not None:
+      oprot.writeFieldBegin('className', TType.STRING, 3)
+      oprot.writeString(self.className)
+      oprot.writeFieldEnd()
+    if self.ownerName is not None:
+      oprot.writeFieldBegin('ownerName', TType.STRING, 4)
+      oprot.writeString(self.ownerName)
+      oprot.writeFieldEnd()
+    if self.ownerType is not None:
+      oprot.writeFieldBegin('ownerType', TType.I32, 5)
+      oprot.writeI32(self.ownerType)
+      oprot.writeFieldEnd()
+    if self.createTime is not None:
+      oprot.writeFieldBegin('createTime', TType.I32, 6)
+      oprot.writeI32(self.createTime)
+      oprot.writeFieldEnd()
+    if self.functionType is not None:
+      oprot.writeFieldBegin('functionType', TType.I32, 7)
+      oprot.writeI32(self.functionType)
+      oprot.writeFieldEnd()
+    if self.resourceUris is not None:
+      oprot.writeFieldBegin('resourceUris', TType.LIST, 8)
+      oprot.writeListBegin(TType.STRUCT, len(self.resourceUris))
+      for iter319 in self.resourceUris:
+        iter319.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
     return
 
 

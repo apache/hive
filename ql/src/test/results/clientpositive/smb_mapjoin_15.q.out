@@ -4,17 +4,21 @@ PREHOOK: query: -- This test verifies that the sort merge join optimizer works w
 -- Create bucketed and sorted tables
 CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, value ASC) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This test verifies that the sort merge join optimizer works when the tables are sorted on columns which is a superset
 -- of join columns
 
 -- Create bucketed and sorted tables
 CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, value ASC) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
 PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, value ASC) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, value ASC) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table1 SELECT *
@@ -253,9 +257,11 @@ POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, ty
 PREHOOK: query: -- Create bucketed and sorted tables
 CREATE TABLE test_table1 (key INT, key2 INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, key2 ASC, value ASC) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Create bucketed and sorted tables
 CREATE TABLE test_table1 (key INT, key2 INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, key2 ASC, value ASC) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
 POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -263,8 +269,10 @@ POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, ty
 POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE test_table2 (key INT, key2 INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, key2 ASC, value ASC) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table2 (key INT, key2 INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, key2 ASC, value ASC) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
 POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

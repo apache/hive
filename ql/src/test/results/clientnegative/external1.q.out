@@ -1,3 +1,5 @@
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Got exception: java.io.IOException No FileSystem for scheme: invalidscheme)

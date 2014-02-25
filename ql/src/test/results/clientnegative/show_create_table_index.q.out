@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE tmp_showcrt (key int, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE tmp_showcrt (key int, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_showcrt
 PREHOOK: query: CREATE INDEX tmp_index on table tmp_showcrt(key) as 'compact' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX

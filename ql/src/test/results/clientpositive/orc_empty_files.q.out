@@ -4,12 +4,14 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_orc (key STRING, cnt INT)
 CLUSTERED BY (key) INTO 3 BUCKETS
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_orc
 PREHOOK: query: -- Creates a table bucketed into 3 buckets, but only one contains data, specifically bucket 1,
 -- buckets 0 and 2 are empty, so this tests reading from and empty file followed by a file

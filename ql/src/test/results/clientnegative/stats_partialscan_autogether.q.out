@@ -5,6 +5,7 @@ CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
 partitioned by (ds string, hr string)
 stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- test analyze table ... compute statistics partialscan
 
 -- 1. prepare data
@@ -12,6 +13,7 @@ CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
 partitioned by (ds string, hr string)
 stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_srcpart_partial_scan
 PREHOOK: query: insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null
 PREHOOK: type: QUERY

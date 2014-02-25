@@ -28,6 +28,7 @@ PREHOOK: query: CREATE TABLE orc_create_staging (
     COLLECTION ITEMS TERMINATED BY ','
     MAP KEYS TERMINATED BY ':'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE orc_create_staging (
   str STRING,
   mp  MAP<STRING,STRING>,
@@ -38,6 +39,7 @@ POSTHOOK: query: CREATE TABLE orc_create_staging (
     COLLECTION ITEMS TERMINATED BY ','
     MAP KEYS TERMINATED BY ':'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_staging
 PREHOOK: query: DESCRIBE FORMATTED orc_create_staging
 PREHOOK: type: DESCTABLE
@@ -77,10 +79,12 @@ PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
    STORED AS ORC
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
    STORED AS ORC
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create
 PREHOOK: query: DESCRIBE FORMATTED orc_create
 PREHOOK: type: DESCTABLE
@@ -127,9 +131,11 @@ POSTHOOK: Output: default@orc_create
 PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create
 PREHOOK: query: DESCRIBE FORMATTED orc_create
 PREHOOK: type: DESCTABLE
@@ -218,9 +224,11 @@ POSTHOOK: Output: default@orc_create
 PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create
 PREHOOK: query: DESCRIBE FORMATTED orc_create
 PREHOOK: type: DESCTABLE
@@ -263,6 +271,7 @@ PREHOOK: query: CREATE TABLE orc_create_complex (
   strct STRUCT<A:STRING,B:STRING>
 ) STORED AS ORC
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE orc_create_complex (
   str STRING,
   mp  MAP<STRING,STRING>,
@@ -270,6 +279,7 @@ POSTHOOK: query: CREATE TABLE orc_create_complex (
   strct STRUCT<A:STRING,B:STRING>
 ) STORED AS ORC
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_complex
 PREHOOK: query: DESCRIBE FORMATTED orc_create_complex
 PREHOOK: type: DESCTABLE
@@ -304,9 +314,11 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@orc_create_staging
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@orc_create_staging
 PREHOOK: query: SELECT * from orc_create_staging
 PREHOOK: type: QUERY
@@ -413,6 +425,7 @@ PREHOOK: query: CREATE TABLE orc_create_people_staging (
   address string,
   state string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE orc_create_people_staging (
   id int,
   first_name string,
@@ -420,6 +433,7 @@ POSTHOOK: query: CREATE TABLE orc_create_people_staging (
   address string,
   state string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_staging
 POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
@@ -428,10 +442,12 @@ POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_crea
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt'
   OVERWRITE INTO TABLE orc_create_people_staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@orc_create_people_staging
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt'
   OVERWRITE INTO TABLE orc_create_people_staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@orc_create_people_staging
 POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
@@ -445,6 +461,7 @@ PREHOOK: query: CREATE TABLE orc_create_people (
 PARTITIONED BY (state string)
 STORED AS orc
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
@@ -453,6 +470,7 @@ POSTHOOK: query: CREATE TABLE orc_create_people (
 PARTITIONED BY (state string)
 STORED AS orc
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people
 POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]

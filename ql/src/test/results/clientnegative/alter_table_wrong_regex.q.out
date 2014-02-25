@@ -6,10 +6,12 @@ PREHOOK: query: create table aa ( test STRING )
   ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
   WITH SERDEPROPERTIES ("input.regex" = "(.*)", "output.format.string" = "$1s")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table aa ( test STRING )
   ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
   WITH SERDEPROPERTIES ("input.regex" = "(.*)", "output.format.string" = "$1s")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@aa
 PREHOOK: query: alter table aa set serdeproperties ("input.regex" = "[^\\](.*)", "output.format.string" = "$1s")
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES

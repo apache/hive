@@ -1,12 +1,16 @@
 PREHOOK: query: CREATE TABLE shtb_test1(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE shtb_test1(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@shtb_test1
 PREHOOK: query: CREATE TABLE shtb_test2(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE shtb_test2(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@shtb_test2
 PREHOOK: query: EXPLAIN
 SHOW TABLES 'shtb_*'
@@ -74,18 +78,24 @@ POSTHOOK: query: USE test_db
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: CREATE TABLE foo(a INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: CREATE TABLE foo(a INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@foo
 PREHOOK: query: CREATE TABLE bar(a INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: CREATE TABLE bar(a INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@bar
 PREHOOK: query: CREATE TABLE baz(a INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
 POSTHOOK: query: CREATE TABLE baz(a INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@baz
 PREHOOK: query: -- SHOW TABLES basic syntax tests
 USE default
@@ -157,8 +167,10 @@ POSTHOOK: query: USE `database`
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: CREATE TABLE foo(a INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:database
 POSTHOOK: query: CREATE TABLE foo(a INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:database
 POSTHOOK: Output: database@foo
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE

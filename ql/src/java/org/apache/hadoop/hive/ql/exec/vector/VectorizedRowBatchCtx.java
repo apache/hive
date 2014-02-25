@@ -394,7 +394,7 @@ public class VectorizedRowBatchCtx {
       return new DoubleColumnVector(defaultSize);
     } else if (type.equalsIgnoreCase("string")) {
       return new BytesColumnVector(defaultSize);
-    } else if (VectorizationContext.decimalTypePattern.matcher(type.toLowerCase()).matches()){
+    } else if (VectorizationContext.decimalTypePattern.matcher(type).matches()){
       int [] precisionScale = getScalePrecisionFromDecimalType(type);
       return new DecimalColumnVector(defaultSize, precisionScale[0], precisionScale[1]);
     } else {

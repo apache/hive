@@ -93,11 +93,8 @@ public interface MetaDataFormatter {
     /**
      * Describe a database.
      */
-    public void showDatabaseDescription(DataOutputStream out,
-                                        String database,
-                                        String comment,
-                                        String location,
-                                        Map<String, String> params)
-        throws HiveException;
+    public void showDatabaseDescription (DataOutputStream out, String database, String comment,
+      String location, String ownerName, String ownerType, Map<String, String> params)
+     throws HiveException;
 }
 

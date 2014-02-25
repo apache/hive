@@ -1,0 +1,22 @@
+PREHOOK: query: DROP TABLE if exists insert_into5_neg
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE if exists insert_into5_neg
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE insert_into5_neg (key int, value string) TBLPROPERTIES ("immutable"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TABLE insert_into5_neg (key int, value string) TBLPROPERTIES ("immutable"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_into5_neg
+PREHOOK: query: INSERT INTO TABLE insert_into5_neg SELECT * FROM src LIMIT 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into5_neg
+POSTHOOK: query: INSERT INTO TABLE insert_into5_neg SELECT * FROM src LIMIT 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into5_neg
+POSTHOOK: Lineage: insert_into5_neg.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert_into5_neg.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: SemanticException [Error 10256]: Inserting into a non-empty immutable table is not allowed insert_into5_neg

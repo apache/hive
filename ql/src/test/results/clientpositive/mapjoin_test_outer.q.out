@@ -2,10 +2,12 @@ PREHOOK: query: --HIVE-2101 mapjoin sometimes gives wrong results if there is a 
 
 create table dest_1 (key STRING, value STRING) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: --HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
 
 create table dest_1 (key STRING, value STRING) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_1
 PREHOOK: query: insert overwrite table dest_1 select * from src1 order by src1.value limit 8
 PREHOOK: type: QUERY
@@ -31,8 +33,10 @@ POSTHOOK: Lineage: dest_1.value SIMPLE [(src1)src1.FieldSchema(name:value, type:
 POSTHOOK: Lineage: dest_1.value SIMPLE []
 PREHOOK: query: create table dest_2 (key STRING, value STRING) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table dest_2 (key STRING, value STRING) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_2
 POSTHOOK: Lineage: dest_1.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_1.key SIMPLE []

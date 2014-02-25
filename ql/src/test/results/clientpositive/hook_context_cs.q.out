@@ -4,15 +4,19 @@ POSTHOOK: query: drop table vcsc
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE vcsc (c STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE vcsc (c STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vcsc
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@vcsc
+#### A masked pattern was here ####
+PREHOOK: Output: default@vcsc
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@vcsc
+#### A masked pattern was here ####
+POSTHOOK: Output: default@vcsc
 POSTHOOK: Output: default@vcsc@ds=dummy
 POSTHOOK: query: SELECT a.c, b.c FROM vcsc a JOIN vcsc b ON a.ds = 'dummy' AND b.ds = 'dummy' AND a.c = b.c
 POSTHOOK: type: QUERY

@@ -310,4 +310,15 @@ public class BytesColumnVector extends ColumnVector {
     isRepeating = true;
     setRef(0, value, 0, value.length);
   }
+
+  @Override
+  public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
+    BytesColumnVector in = (BytesColumnVector) inputVector;
+    setVal(outElementNum, in.vector[inputElementNum], in.start[inputElementNum], in.length[outElementNum]);
+  }
+
+  @Override
+  public void init() {
+    initBuffer(0);
+  }
 }

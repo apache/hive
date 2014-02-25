@@ -1,0 +1,10 @@
+PREHOOK: query: -- check if create table fails as different user
+create table t1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: -- check if create table fails as different user
+create table t1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+FAILED: HiveAccessControlException Permission denied. Principal [name=user2, type=USER] does not have following privileges on Object [type=TABLE_OR_VIEW, name=default.t1] : [OBJECT OWNERSHIP]

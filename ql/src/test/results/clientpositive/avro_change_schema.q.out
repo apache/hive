@@ -13,6 +13,7 @@ TBLPROPERTIES ('avro.schema.literal'='{ "namespace": "org.apache.hive",
     { "name":"string2", "type":"string" }
   ] }')
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- verify that we can update the table properties
 CREATE TABLE avro2
 ROW FORMAT
@@ -28,6 +29,7 @@ TBLPROPERTIES ('avro.schema.literal'='{ "namespace": "org.apache.hive",
     { "name":"string2", "type":"string" }
   ] }')
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro2
 PREHOOK: query: DESCRIBE avro2
 PREHOOK: type: DESCTABLE

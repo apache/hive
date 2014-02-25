@@ -8,21 +8,25 @@ drop table tbl_protectmode6
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_protectmode6  (c1 string,c2 string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tbl_protectmode6  (c1 string,c2 string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_protectmode6
 PREHOOK: query: alter table tbl_protectmode6 add partition (p='p1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tbl_protectmode6
+PREHOOK: Output: default@tbl_protectmode6
 POSTHOOK: query: alter table tbl_protectmode6 add partition (p='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tbl_protectmode6
+POSTHOOK: Output: default@tbl_protectmode6
 POSTHOOK: Output: default@tbl_protectmode6@p=p1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE tbl_protectmode6 partition (p='p1')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tbl_protectmode6@p=p1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE tbl_protectmode6 partition (p='p1')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tbl_protectmode6@p=p1
 PREHOOK: query: alter table tbl_protectmode6 partition (p='p1') enable offline
 PREHOOK: type: ALTERPARTITION_PROTECTMODE

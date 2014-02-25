@@ -53,6 +53,12 @@
            <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
         </value>
       </field>
+      <field name="ownerName">	
+        <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+       <field name="ownerType">
+        <column name="OWNER_TYPE" length="10" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
     </class>
 
     <class name="MFieldSchema" embedded-only="true" table="TYPE_FIELDS" detachable="true">
@@ -908,6 +914,62 @@
       </field>
       <field name ="versionComment">
         <column name="VERSION_COMMENT" length="255" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+    </class>
+
+    <class name="MResourceUri" embedded-only="true" table="RESOURCE_URI" detachable="true">
+      <field name="resourceType">
+        <column name="RESOURCE_TYPE" jdbc-type="INTEGER"/>
+      </field>
+      <field name="uri">
+        <column name="RESOURCE_URI" length="4000" jdbc-type="VARCHAR"/>
+      </field>
+    </class>
+
+    <class name="MFunction" table="FUNCS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="FUNC_ID"/>
+      </datastore-identity>
+      <index name="UniqueFunction" unique="true">
+        <column name="FUNC_NAME"/>
+        <column name="DB_ID"/>
+      </index>
+      <field name="functionName">
+        <column name="FUNC_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="database">
+        <column name="DB_ID"/>
+      </field>
+      <field name="functionType">
+        <column name="FUNC_TYPE" jdbc-type="integer"/>
+      </field>
+      <field name="className">
+        <column name="CLASS_NAME" length="4000" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="ownerName">	
+        <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+       <field name="ownerType">
+        <column name="OWNER_TYPE" length="10" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="resourceUris" table="FUNC_RU">
+        <collection element-type="MResourceUri"/>
+        <join>
+          <column name="FUNC_ID"/>
+        </join>
+        <element>
+          <embedded>
+            <field name="resourceType">
+              <column name="RESOURCE_TYPE" jdbc-type="INTEGER"/>
+            </field>
+            <field name="uri">
+              <column name="RESOURCE_URI" length="4000" jdbc-type="VARCHAR"/>
+            </field>
+          </embedded>
+        </element>
       </field>
     </class>
 

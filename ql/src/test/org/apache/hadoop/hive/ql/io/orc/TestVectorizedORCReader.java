@@ -131,8 +131,8 @@ public class TestVectorizedORCReader {
 
   private void checkVectorizedReader() throws Exception {
 
-    Reader vreader = OrcFile.createReader(testFilePath.getFileSystem(conf), testFilePath);
-    Reader reader = OrcFile.createReader(testFilePath.getFileSystem(conf), testFilePath);
+    Reader vreader = OrcFile.createReader(testFilePath.getFileSystem(conf), testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath.getFileSystem(conf), testFilePath, conf);
     RecordReaderImpl vrr = (RecordReaderImpl) vreader.rows(null);
     RecordReaderImpl rr = (RecordReaderImpl) reader.rows(null);
     VectorizedRowBatch batch = null;

@@ -124,11 +124,13 @@ ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@src
 PREHOOK: Input: default@vp1
+PREHOOK: Output: default@vp1
 POSTHOOK: query: ALTER VIEW vp1
 ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@vp1
+POSTHOOK: Output: default@vp1
 POSTHOOK: Output: default@vp1@value=val_86
 POSTHOOK: Output: default@vp1@value=val_xyz
 PREHOOK: query: -- should work since we use IF NOT EXISTS
@@ -137,12 +139,14 @@ ADD IF NOT EXISTS PARTITION (value='val_xyz')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@src
 PREHOOK: Input: default@vp1
+PREHOOK: Output: default@vp1
 POSTHOOK: query: -- should work since we use IF NOT EXISTS
 ALTER VIEW vp1
 ADD IF NOT EXISTS PARTITION (value='val_xyz')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@vp1
+POSTHOOK: Output: default@vp1
 PREHOOK: query: SHOW PARTITIONS vp1
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS vp1
@@ -283,6 +287,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Input: default@vp2
+PREHOOK: Output: default@vp2
 POSTHOOK: query: ALTER VIEW vp2 ADD PARTITION (hr='11') PARTITION (hr='12')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@srcpart
@@ -291,6 +296,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@vp2
+POSTHOOK: Output: default@vp2
 POSTHOOK: Output: default@vp2@hr=11
 POSTHOOK: Output: default@vp2@hr=12
 PREHOOK: query: SELECT key FROM vp2 WHERE hr='12' ORDER BY key
@@ -391,11 +397,13 @@ ADD PARTITION (v='val_86')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@src
 PREHOOK: Input: default@vp3
+PREHOOK: Output: default@vp3
 POSTHOOK: query: ALTER VIEW vp3
 ADD PARTITION (v='val_86')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@vp3
+POSTHOOK: Output: default@vp3
 POSTHOOK: Output: default@vp3@v=val_86
 PREHOOK: query: DROP VIEW vp1
 PREHOOK: type: DROPVIEW

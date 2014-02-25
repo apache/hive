@@ -18,6 +18,7 @@ create table list_bucketing_static_part (key String, value String)
     stored as DIRECTORIES
     STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- run this test case in minimr to ensure it works in cluster
 
 -- list bucketing DML: static partition. multiple skewed columns.
@@ -38,6 +39,7 @@ create table list_bucketing_static_part (key String, value String)
     stored as DIRECTORIES
     STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_static_part
 PREHOOK: query: -- list bucketing DML without merge. use bucketize to generate a few small files.
 explain extended

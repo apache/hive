@@ -1,90 +1,122 @@
 PREHOOK: query: create table fact(m1 int, m2 int, d1 int, d2 int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table fact(m1 int, m2 int, d1 int, d2 int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fact
 PREHOOK: query: create table dim1(f1 int, f2 int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table dim1(f1 int, f2 int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dim1
 PREHOOK: query: create table dim2(f3 int, f4 int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table dim2(f3 int, f4 int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dim2
 PREHOOK: query: create table dim3(f5 int, f6 int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table dim3(f5 int, f6 int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dim3
 PREHOOK: query: create table dim4(f7 int, f8 int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table dim4(f7 int, f8 int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dim4
 PREHOOK: query: create table dim5(f9 int, f10 int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table dim5(f9 int, f10 int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dim5
 PREHOOK: query: create table dim6(f11 int, f12 int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table dim6(f11 int, f12 int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dim6
 PREHOOK: query: create table dim7(f13 int, f14 int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table dim7(f13 int, f14 int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dim7
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/fact-data.txt' INTO TABLE fact
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@fact
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/fact-data.txt' INTO TABLE fact
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@fact
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dim1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dim1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim2
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dim2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim2
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dim2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim3
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dim3
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim3
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dim3
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim4
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dim4
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim4
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dim4
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim5
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dim5
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim5
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dim5
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim6
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dim6
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim6
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dim6
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim7
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dim7
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim7
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dim7
 PREHOOK: query: explain select m1, m2, f2 from fact join dim1 on fact.d1=dim1.f1
 PREHOOK: type: QUERY

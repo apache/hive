@@ -1,7 +1,9 @@
 PREHOOK: query: create table union_subq_union(key int, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table union_subq_union(key int, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_subq_union
 PREHOOK: query: explain
 insert overwrite table union_subq_union 

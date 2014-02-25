@@ -4,8 +4,10 @@ POSTHOOK: query: DROP TABLE insert_into1_neg
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE insert_into1_neg (key int, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE insert_into1_neg (key int, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into1_neg
 PREHOOK: query: LOCK TABLE insert_into1_neg SHARED
 PREHOOK: type: LOCKTABLE

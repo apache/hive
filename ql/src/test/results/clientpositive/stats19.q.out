@@ -5,6 +5,7 @@ PREHOOK: query: -- Note, its important that the partitions created below have a 
 
 create table stats_part like srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Note, its important that the partitions created below have a name greater than 16 characters in
 -- length since KeyVerifyingStatsAggregator depends on checking that a keyPrefix is hashed by the
 -- length of the keyPrefix, having a partition name greather than 16 characters guarantees no false
@@ -12,6 +13,7 @@ POSTHOOK: query: -- Note, its important that the partitions created below have a
 
 create table stats_part like srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_part
 PREHOOK: query: -- The stats key should be hashed since the max length is too small
 insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src

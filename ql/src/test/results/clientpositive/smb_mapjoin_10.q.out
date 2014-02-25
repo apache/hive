@@ -1,49 +1,59 @@
 PREHOOK: query: create table tmp_smb_bucket_10(userid int, pageid int, postid int, type string) partitioned by (ds string) CLUSTERED BY (userid) SORTED BY (pageid, postid, type, userid) INTO 2 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tmp_smb_bucket_10(userid int, pageid int, postid int, type string) partitioned by (ds string) CLUSTERED BY (userid) SORTED BY (pageid, postid, type, userid) INTO 2 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_smb_bucket_10
 PREHOOK: query: alter table tmp_smb_bucket_10 add partition (ds = '1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tmp_smb_bucket_10
+PREHOOK: Output: default@tmp_smb_bucket_10
 POSTHOOK: query: alter table tmp_smb_bucket_10 add partition (ds = '1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tmp_smb_bucket_10
+POSTHOOK: Output: default@tmp_smb_bucket_10
 POSTHOOK: Output: default@tmp_smb_bucket_10@ds=1
 PREHOOK: query: alter table tmp_smb_bucket_10 add partition (ds = '2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@tmp_smb_bucket_10
+PREHOOK: Output: default@tmp_smb_bucket_10
 POSTHOOK: query: alter table tmp_smb_bucket_10 add partition (ds = '2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@tmp_smb_bucket_10
+POSTHOOK: Output: default@tmp_smb_bucket_10
 POSTHOOK: Output: default@tmp_smb_bucket_10@ds=2
 PREHOOK: query: -- add dummy files to make sure that the number of files in each partition is same as number of buckets
  
 load data local inpath '../../data/files/smbbucket_1.rc' INTO TABLE tmp_smb_bucket_10 partition(ds='1')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tmp_smb_bucket_10@ds=1
 POSTHOOK: query: -- add dummy files to make sure that the number of files in each partition is same as number of buckets
  
 load data local inpath '../../data/files/smbbucket_1.rc' INTO TABLE tmp_smb_bucket_10 partition(ds='1')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tmp_smb_bucket_10@ds=1
 PREHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' INTO TABLE tmp_smb_bucket_10 partition(ds='1')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tmp_smb_bucket_10@ds=1
 POSTHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' INTO TABLE tmp_smb_bucket_10 partition(ds='1')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tmp_smb_bucket_10@ds=1
 PREHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' INTO TABLE tmp_smb_bucket_10 partition(ds='2')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tmp_smb_bucket_10@ds=2
 POSTHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' INTO TABLE tmp_smb_bucket_10 partition(ds='2')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tmp_smb_bucket_10@ds=2
 PREHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' INTO TABLE tmp_smb_bucket_10 partition(ds='2')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tmp_smb_bucket_10@ds=2
 POSTHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' INTO TABLE tmp_smb_bucket_10 partition(ds='2')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tmp_smb_bucket_10@ds=2
 PREHOOK: query: explain
 select /*+mapjoin(a)*/ * from tmp_smb_bucket_10 a join tmp_smb_bucket_10 b 

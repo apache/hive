@@ -21,6 +21,7 @@ class hive_metastoreConstants {
   std::string HIVE_FILTER_FIELD_LAST_ACCESS;
   std::string IS_ARCHIVED;
   std::string ORIGINAL_LOCATION;
+  std::string IS_IMMUTABLE;
   std::string META_TABLE_COLUMNS;
   std::string META_TABLE_COLUMN_TYPES;
   std::string BUCKET_FIELD_NAME;

@@ -2,17 +2,21 @@ PREHOOK: query: -- Create two bucketed and sorted tables
 CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Create two bucketed and sorted tables
 CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
 PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *

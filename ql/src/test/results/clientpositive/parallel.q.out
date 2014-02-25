@@ -1,12 +1,16 @@
 PREHOOK: query: create table if not exists src_a like src
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists src_a like src
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_a
 PREHOOK: query: create table if not exists src_b like src
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists src_b like src
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_b
 PREHOOK: query: explain
 from (select key, value from src group by key, value) s

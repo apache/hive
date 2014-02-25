@@ -47,6 +47,24 @@ struct PartitionEventType {
 
 extern const std::map<int, const char*> _PartitionEventType_VALUES_TO_NAMES;
 
+struct FunctionType {
+  enum type {
+    JAVA = 1
+  };
+};
+
+extern const std::map<int, const char*> _FunctionType_VALUES_TO_NAMES;
+
+struct ResourceType {
+  enum type {
+    JAR = 1,
+    FILE = 2,
+    ARCHIVE = 3
+  };
+};
+
+extern const std::map<int, const char*> _ResourceType_VALUES_TO_NAMES;
+
 typedef struct _Version__isset {
   _Version__isset() : version(false), comments(false) {}
   bool version;
@@ -667,21 +685,23 @@ class Role {
 void swap(Role &a, Role &b);
 
 typedef struct _Database__isset {
-  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false) {}
+  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false) {}
   bool name;
   bool description;
   bool locationUri;
   bool parameters;
   bool privileges;
+  bool ownerName;
+  bool ownerType;
 } _Database__isset;
 
 class Database {
  public:
 
-  static const char* ascii_fingerprint; // = "213967572143E49C9F1A23F7A866E2F5";
-  static const uint8_t binary_fingerprint[16]; // = {0x21,0x39,0x67,0x57,0x21,0x43,0xE4,0x9C,0x9F,0x1A,0x23,0xF7,0xA8,0x66,0xE2,0xF5};
+  static const char* ascii_fingerprint; // = "553495CAE243A1C583D5C3DD990AED53";
+  static const uint8_t binary_fingerprint[16]; // = {0x55,0x34,0x95,0xCA,0xE2,0x43,0xA1,0xC5,0x83,0xD5,0xC3,0xDD,0x99,0x0A,0xED,0x53};
 
-  Database() : name(), description(), locationUri() {
+  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0) {
   }
 
   virtual ~Database() throw() {}
@@ -691,6 +711,8 @@ class Database {
   std::string locationUri;
   std::map<std::string, std::string>  parameters;
   PrincipalPrivilegeSet privileges;
+  std::string ownerName;
+  PrincipalType::type ownerType;
 
   _Database__isset __isset;
 
@@ -715,6 +737,16 @@ class Database {
     __isset.privileges = true;
   }
 
+  void __set_ownerName(const std::string& val) {
+    ownerName = val;
+    __isset.ownerName = true;
+  }
+
+  void __set_ownerType(const PrincipalType::type val) {
+    ownerType = val;
+    __isset.ownerType = true;
+  }
+
   bool operator == (const Database & rhs) const
   {
     if (!(name == rhs.name))
@@ -728,6 +760,14 @@ class Database {
     if (__isset.privileges != rhs.__isset.privileges)
       return false;
     else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.ownerName != rhs.__isset.ownerName)
+      return false;
+    else if (__isset.ownerName && !(ownerName == rhs.ownerName))
+      return false;
+    if (__isset.ownerType != rhs.__isset.ownerType)
+      return false;
+    else if (__isset.ownerType && !(ownerType == rhs.ownerType))
       return false;
     return true;
   }
@@ -2712,6 +2752,156 @@ class DropPartitionsRequest {
 };
 
 void swap(DropPartitionsRequest &a, DropPartitionsRequest &b);
+
+typedef struct _ResourceUri__isset {
+  _ResourceUri__isset() : resourceType(false), uri(false) {}
+  bool resourceType;
+  bool uri;
+} _ResourceUri__isset;
+
+class ResourceUri {
+ public:
+
+  static const char* ascii_fingerprint; // = "19B5240589E680301A7E32DF3971EFBE";
+  static const uint8_t binary_fingerprint[16]; // = {0x19,0xB5,0x24,0x05,0x89,0xE6,0x80,0x30,0x1A,0x7E,0x32,0xDF,0x39,0x71,0xEF,0xBE};
+
+  ResourceUri() : resourceType((ResourceType::type)0), uri() {
+  }
+
+  virtual ~ResourceUri() throw() {}
+
+  ResourceType::type resourceType;
+  std::string uri;
+
+  _ResourceUri__isset __isset;
+
+  void __set_resourceType(const ResourceType::type val) {
+    resourceType = val;
+  }
+
+  void __set_uri(const std::string& val) {
+    uri = val;
+  }
+
+  bool operator == (const ResourceUri & rhs) const
+  {
+    if (!(resourceType == rhs.resourceType))
+      return false;
+    if (!(uri == rhs.uri))
+      return false;
+    return true;
+  }
+  bool operator != (const ResourceUri &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ResourceUri & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(ResourceUri &a, ResourceUri &b);
+
+typedef struct _Function__isset {
+  _Function__isset() : functionName(false), dbName(false), className(false), ownerName(false), ownerType(false), createTime(false), functionType(false), resourceUris(false) {}
+  bool functionName;
+  bool dbName;
+  bool className;
+  bool ownerName;
+  bool ownerType;
+  bool createTime;
+  bool functionType;
+  bool resourceUris;
+} _Function__isset;
+
+class Function {
+ public:
+
+  static const char* ascii_fingerprint; // = "72279C515E70F888568542F97616ADB8";
+  static const uint8_t binary_fingerprint[16]; // = {0x72,0x27,0x9C,0x51,0x5E,0x70,0xF8,0x88,0x56,0x85,0x42,0xF9,0x76,0x16,0xAD,0xB8};
+
+  Function() : functionName(), dbName(), className(), ownerName(), ownerType((PrincipalType::type)0), createTime(0), functionType((FunctionType::type)0) {
+  }
+
+  virtual ~Function() throw() {}
+
+  std::string functionName;
+  std::string dbName;
+  std::string className;
+  std::string ownerName;
+  PrincipalType::type ownerType;
+  int32_t createTime;
+  FunctionType::type functionType;
+  std::vector<ResourceUri>  resourceUris;
+
+  _Function__isset __isset;
+
+  void __set_functionName(const std::string& val) {
+    functionName = val;
+  }
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_className(const std::string& val) {
+    className = val;
+  }
+
+  void __set_ownerName(const std::string& val) {
+    ownerName = val;
+  }
+
+  void __set_ownerType(const PrincipalType::type val) {
+    ownerType = val;
+  }
+
+  void __set_createTime(const int32_t val) {
+    createTime = val;
+  }
+
+  void __set_functionType(const FunctionType::type val) {
+    functionType = val;
+  }
+
+  void __set_resourceUris(const std::vector<ResourceUri> & val) {
+    resourceUris = val;
+  }
+
+  bool operator == (const Function & rhs) const
+  {
+    if (!(functionName == rhs.functionName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(className == rhs.className))
+      return false;
+    if (!(ownerName == rhs.ownerName))
+      return false;
+    if (!(ownerType == rhs.ownerType))
+      return false;
+    if (!(createTime == rhs.createTime))
+      return false;
+    if (!(functionType == rhs.functionType))
+      return false;
+    if (!(resourceUris == rhs.resourceUris))
+      return false;
+    return true;
+  }
+  bool operator != (const Function &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Function & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(Function &a, Function &b);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

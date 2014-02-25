@@ -1,7 +1,9 @@
 PREHOOK: query: create table if not exists nzhang_part5 (key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists nzhang_part5 (key string) partitioned by (value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part5
 PREHOOK: query: describe extended nzhang_part5
 PREHOOK: type: DESCTABLE

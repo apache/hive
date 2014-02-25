@@ -1,7 +1,9 @@
 PREHOOK: query: create table nulltbl(key int) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table nulltbl(key int) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nulltbl
 PREHOOK: query: select key from nulltbl where ds='101'
 PREHOOK: type: QUERY

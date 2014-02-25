@@ -1,18 +1,24 @@
 PREHOOK: query: create table alter_rename_partition_src ( col1 string ) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table alter_rename_partition_src ( col1 string ) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_rename_partition_src
 PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter_rename_partition_src
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@alter_rename_partition_src
 POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter_rename_partition_src
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@alter_rename_partition_src
 PREHOOK: query: create table alter_rename_partition ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table alter_rename_partition ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_rename_partition
 PREHOOK: query: insert overwrite table alter_rename_partition partition (pCol1='old_part1:', pcol2='old_part2:') select col1 from alter_rename_partition_src
 PREHOOK: type: QUERY

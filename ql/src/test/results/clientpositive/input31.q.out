@@ -1,12 +1,16 @@
 PREHOOK: query: create table tst_dest31(a int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tst_dest31(a int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tst_dest31
 PREHOOK: query: create table dest31(a int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table dest31(a int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest31
 PREHOOK: query: explain 
 insert overwrite table dest31

@@ -1,7 +1,9 @@
 PREHOOK: query: create table load_overwrite like src
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table load_overwrite like src
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load_overwrite
 PREHOOK: query: insert overwrite table load_overwrite select * from src
 PREHOOK: type: QUERY
@@ -45,9 +47,11 @@ POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value,
 500
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_overwrite
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@load_overwrite
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_overwrite
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@load_overwrite
 POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -83,9 +87,11 @@ POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value,
 1000
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table load_overwrite
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@load_overwrite
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table load_overwrite
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@load_overwrite
 POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

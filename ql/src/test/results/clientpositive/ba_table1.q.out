@@ -6,10 +6,12 @@ PREHOOK: query: -- This query tests a) binary type works correctly in grammar b)
 
 create table ba_test (ba_key binary, ba_val binary)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This query tests a) binary type works correctly in grammar b) string can be cast into binary c) binary can be stored in a table d) binary data can be loaded back again and queried d) order-by on a binary key 
 
 create table ba_test (ba_key binary, ba_val binary)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ba_test
 PREHOOK: query: describe extended ba_test
 PREHOOK: type: DESCTABLE

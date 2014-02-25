@@ -96,6 +96,11 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)'
   print '  bool delete_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name)'
   print '  bool delete_table_column_statistics(string db_name, string tbl_name, string col_name)'
+  print '  void create_function(Function func)'
+  print '  void drop_function(string dbName, string funcName)'
+  print '  void alter_function(string dbName, string funcName, Function newFunc)'
+  print '   get_functions(string dbName, string pattern)'
+  print '  Function get_function(string dbName, string funcName)'
   print '  bool create_role(Role role)'
   print '  bool drop_role(string role_name)'
   print '   get_role_names()'
@@ -598,6 +603,36 @@ elif cmd == 'delete_table_column_statistics':
     print 'delete_table_column_statistics requires 3 args'
     sys.exit(1)
   pp.pprint(client.delete_table_column_statistics(args[0],args[1],args[2],))
+
+elif cmd == 'create_function':
+  if len(args) != 1:
+    print 'create_function requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.create_function(eval(args[0]),))
+
+elif cmd == 'drop_function':
+  if len(args) != 2:
+    print 'drop_function requires 2 args'
+    sys.exit(1)
+  pp.pprint(client.drop_function(args[0],args[1],))
+
+elif cmd == 'alter_function':
+  if len(args) != 3:
+    print 'alter_function requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.alter_function(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'get_functions':
+  if len(args) != 2:
+    print 'get_functions requires 2 args'
+    sys.exit(1)
+  pp.pprint(client.get_functions(args[0],args[1],))
+
+elif cmd == 'get_function':
+  if len(args) != 2:
+    print 'get_function requires 2 args'
+    sys.exit(1)
+  pp.pprint(client.get_function(args[0],args[1],))
 
 elif cmd == 'create_role':
   if len(args) != 1:

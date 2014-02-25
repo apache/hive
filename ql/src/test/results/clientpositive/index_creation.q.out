@@ -148,8 +148,10 @@ _offsets            	array<bigint>
 #### A masked pattern was here ####
 PREHOOK: query: create table `_t`(`_i` int, `_j` int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table `_t`(`_i` int, `_j` int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@_t
 PREHOOK: query: create index x on table `_t`(`_j`) as 'compact' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX

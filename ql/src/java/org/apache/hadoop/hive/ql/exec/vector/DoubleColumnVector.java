@@ -141,4 +141,9 @@ public class DoubleColumnVector extends ColumnVector {
     }
     flattenNoNulls(selectedInUse, sel, size);
   }
+
+  @Override
+  public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
+    vector[outElementNum] = ((DoubleColumnVector) inputVector).vector[inputElementNum];
+  }
 }

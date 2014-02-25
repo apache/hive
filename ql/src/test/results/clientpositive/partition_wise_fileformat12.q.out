@@ -1,9 +1,11 @@
 PREHOOK: query: -- This tests that the schema can be changed for binary serde data
 create table partition_test_partitioned(key string, value string) partitioned by (dt string) stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This tests that the schema can be changed for binary serde data
 create table partition_test_partitioned(key string, value string) partitioned by (dt string) stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_test_partitioned
 PREHOOK: query: alter table partition_test_partitioned set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER

@@ -2280,7 +2280,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                     _val19 = new ArrayList<String>(_list20.size);
                     for (int _i21 = 0; _i21 < _list20.size; ++_i21)
                     {
-                      String _elem22; // optional
+                      String _elem22; // required
                       _elem22 = iprot.readString();
                       _val19.add(_elem22);
                     }
@@ -2310,7 +2310,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                     _val26 = new ArrayList<MiniStruct>(_list27.size);
                     for (int _i28 = 0; _i28 < _list27.size; ++_i28)
                     {
-                      MiniStruct _elem29; // optional
+                      MiniStruct _elem29; // required
                       _elem29 = new MiniStruct();
                       _elem29.read(iprot);
                       _val26.add(_elem29);
@@ -2333,7 +2333,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 struct.my_stringlist = new ArrayList<String>(_list30.size);
                 for (int _i31 = 0; _i31 < _list30.size; ++_i31)
                 {
-                  String _elem32; // optional
+                  String _elem32; // required
                   _elem32 = iprot.readString();
                   struct.my_stringlist.add(_elem32);
                 }
@@ -2351,7 +2351,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 struct.my_structlist = new ArrayList<MiniStruct>(_list33.size);
                 for (int _i34 = 0; _i34 < _list33.size; ++_i34)
                 {
-                  MiniStruct _elem35; // optional
+                  MiniStruct _elem35; // required
                   _elem35 = new MiniStruct();
                   _elem35.read(iprot);
                   struct.my_structlist.add(_elem35);
@@ -2370,7 +2370,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 struct.my_enumlist = new ArrayList<MyEnum>(_list36.size);
                 for (int _i37 = 0; _i37 < _list36.size; ++_i37)
                 {
-                  MyEnum _elem38; // optional
+                  MyEnum _elem38; // required
                   _elem38 = MyEnum.findByValue(iprot.readI32());
                   struct.my_enumlist.add(_elem38);
                 }
@@ -2388,7 +2388,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 struct.my_stringset = new HashSet<String>(2*_set39.size);
                 for (int _i40 = 0; _i40 < _set39.size; ++_i40)
                 {
-                  String _elem41; // optional
+                  String _elem41; // required
                   _elem41 = iprot.readString();
                   struct.my_stringset.add(_elem41);
                 }
@@ -2406,7 +2406,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 struct.my_enumset = new HashSet<MyEnum>(2*_set42.size);
                 for (int _i43 = 0; _i43 < _set42.size; ++_i43)
                 {
-                  MyEnum _elem44; // optional
+                  MyEnum _elem44; // required
                   _elem44 = MyEnum.findByValue(iprot.readI32());
                   struct.my_enumset.add(_elem44);
                 }
@@ -2424,7 +2424,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 struct.my_structset = new HashSet<MiniStruct>(2*_set45.size);
                 for (int _i46 = 0; _i46 < _set45.size; ++_i46)
                 {
-                  MiniStruct _elem47; // optional
+                  MiniStruct _elem47; // required
                   _elem47 = new MiniStruct();
                   _elem47.read(iprot);
                   struct.my_structset.add(_elem47);
@@ -3023,7 +3023,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
               _val95 = new ArrayList<String>(_list96.size);
               for (int _i97 = 0; _i97 < _list96.size; ++_i97)
               {
-                String _elem98; // optional
+                String _elem98; // required
                 _elem98 = iprot.readString();
                 _val95.add(_elem98);
               }
@@ -3047,7 +3047,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
               _val102 = new ArrayList<MiniStruct>(_list103.size);
               for (int _i104 = 0; _i104 < _list103.size; ++_i104)
               {
-                MiniStruct _elem105; // optional
+                MiniStruct _elem105; // required
                 _elem105 = new MiniStruct();
                 _elem105.read(iprot);
                 _val102.add(_elem105);
@@ -3064,7 +3064,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           struct.my_stringlist = new ArrayList<String>(_list106.size);
           for (int _i107 = 0; _i107 < _list106.size; ++_i107)
           {
-            String _elem108; // optional
+            String _elem108; // required
             _elem108 = iprot.readString();
             struct.my_stringlist.add(_elem108);
           }
@@ -3077,7 +3077,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           struct.my_structlist = new ArrayList<MiniStruct>(_list109.size);
           for (int _i110 = 0; _i110 < _list109.size; ++_i110)
           {
-            MiniStruct _elem111; // optional
+            MiniStruct _elem111; // required
             _elem111 = new MiniStruct();
             _elem111.read(iprot);
             struct.my_structlist.add(_elem111);
@@ -3091,7 +3091,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           struct.my_enumlist = new ArrayList<MyEnum>(_list112.size);
           for (int _i113 = 0; _i113 < _list112.size; ++_i113)
           {
-            MyEnum _elem114; // optional
+            MyEnum _elem114; // required
             _elem114 = MyEnum.findByValue(iprot.readI32());
             struct.my_enumlist.add(_elem114);
           }
@@ -3104,7 +3104,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           struct.my_stringset = new HashSet<String>(2*_set115.size);
           for (int _i116 = 0; _i116 < _set115.size; ++_i116)
           {
-            String _elem117; // optional
+            String _elem117; // required
             _elem117 = iprot.readString();
             struct.my_stringset.add(_elem117);
           }
@@ -3117,7 +3117,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           struct.my_enumset = new HashSet<MyEnum>(2*_set118.size);
           for (int _i119 = 0; _i119 < _set118.size; ++_i119)
           {
-            MyEnum _elem120; // optional
+            MyEnum _elem120; // required
             _elem120 = MyEnum.findByValue(iprot.readI32());
             struct.my_enumset.add(_elem120);
           }
@@ -3130,7 +3130,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           struct.my_structset = new HashSet<MiniStruct>(2*_set121.size);
           for (int _i122 = 0; _i122 < _set121.size; ++_i122)
           {
-            MiniStruct _elem123; // optional
+            MiniStruct _elem123; // required
             _elem123 = new MiniStruct();
             _elem123.read(iprot);
             struct.my_structset.add(_elem123);

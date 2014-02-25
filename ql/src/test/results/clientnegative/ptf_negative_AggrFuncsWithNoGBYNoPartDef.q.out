@@ -14,6 +14,7 @@ PREHOOK: query: CREATE TABLE part(
     p_comment STRING
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
@@ -26,11 +27,14 @@ POSTHOOK: query: CREATE TABLE part(
     p_comment STRING
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@part
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@part
 FAILED: SemanticException [Error 10025]: Line 4:7 Expression not in GROUP BY key 'p_mfgr'

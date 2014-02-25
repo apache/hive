@@ -1,14 +1,16 @@
 PREHOOK: query: create table foobar(key int, value string) PARTITIONED BY (ds string, hr string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table foobar(key int, value string) PARTITIONED BY (ds string, hr string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foobar
 PREHOOK: query: alter table foobar add partition (ds='2008-04-08',hr='12')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@foobar
+PREHOOK: Output: default@foobar
 POSTHOOK: query: alter table foobar add partition (ds='2008-04-08',hr='12')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@foobar
+POSTHOOK: Output: default@foobar
 POSTHOOK: Output: default@foobar@ds=2008-04-08/hr=12
 PREHOOK: query: CREATE INDEX srcpart_auth_index ON TABLE foobar(key) as 'BITMAP' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX

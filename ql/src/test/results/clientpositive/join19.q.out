@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE triples (foo string, subject string, predicate string, object string, foo2 string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE triples (foo string, subject string, predicate string, object string, foo2 string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@triples
 PREHOOK: query: EXPLAIN
 SELECT t11.subject, t22.object , t33.subject , t55.object, t66.object

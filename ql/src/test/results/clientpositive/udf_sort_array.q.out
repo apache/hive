@@ -98,6 +98,7 @@ CREATE TABLE dest1 (
 	timestamps ARRAY<TIMESTAMP>
 ) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Test it against data in a table.
 CREATE TABLE dest1 (
 	tinyints ARRAY<TINYINT>,
@@ -111,12 +112,15 @@ CREATE TABLE dest1 (
 	timestamps ARRAY<TIMESTAMP>
 ) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dest1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dest1
 PREHOOK: query: SELECT	sort_array(tinyints), sort_array(smallints), sort_array(ints),
 	sort_array(bigints), sort_array(booleans), sort_array(floats),

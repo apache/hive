@@ -2,16 +2,20 @@ PREHOOK: query: CREATE TABLE fetchtask_ioexception (
   KEY STRING,
   VALUE STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE fetchtask_ioexception (
   KEY STRING,
   VALUE STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fetchtask_ioexception
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@fetchtask_ioexception
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@fetchtask_ioexception
 PREHOOK: query: SELECT * FROM fetchtask_ioexception
 PREHOOK: type: QUERY

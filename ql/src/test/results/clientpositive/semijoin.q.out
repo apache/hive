@@ -91,8 +91,10 @@ POSTHOOK: Input: default@t3
 20	val_10
 PREHOOK: query: create table t4 (key int, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t4 (key int, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t4
 PREHOOK: query: select * from t4
 PREHOOK: type: QUERY

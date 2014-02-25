@@ -1,7 +1,9 @@
 PREHOOK: query: create table ptestfilter (a string, b int) partitioned by (c string, d int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table ptestfilter (a string, b int) partitioned by (c string, d int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ptestfilter
 PREHOOK: query: describe ptestfilter
 PREHOOK: type: DESCTABLE
@@ -19,45 +21,45 @@ c                   	string              	None
 d                   	int                 	None                
 PREHOOK: query: alter table ptestfilter add partition (c='1', d=1)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter
 POSTHOOK: query: alter table ptestfilter add partition (c='1', d=1)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=1/d=1
 PREHOOK: query: alter table ptestfilter add partition (c='1', d=2)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter
 POSTHOOK: query: alter table ptestfilter add partition (c='1', d=2)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=1/d=2
 PREHOOK: query: alter table ptestFilter add partition (c='2', d=1)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter
 POSTHOOK: query: alter table ptestFilter add partition (c='2', d=1)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=2/d=1
 PREHOOK: query: alter table ptestfilter add partition (c='2', d=2)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter
 POSTHOOK: query: alter table ptestfilter add partition (c='2', d=2)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=2/d=2
 PREHOOK: query: alter table ptestfilter add partition (c='3', d=1)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter
 POSTHOOK: query: alter table ptestfilter add partition (c='3', d=1)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=3/d=1
 PREHOOK: query: alter table ptestfilter add partition (c='3', d=2)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter
 POSTHOOK: query: alter table ptestfilter add partition (c='3', d=2)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=3/d=2
 PREHOOK: query: show partitions ptestfilter
 PREHOOK: type: SHOWPARTITIONS

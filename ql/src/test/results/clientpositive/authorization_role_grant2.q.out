@@ -1,0 +1,49 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: ----------------------------------------
+-- role granting with admin option
+----------------------------------------
+
+create role src_role_wadmin
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: ----------------------------------------
+-- role granting with admin option
+----------------------------------------
+
+create role src_role_wadmin
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant  src_role_wadmin to user user2 with admin option
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant  src_role_wadmin to user user2 with admin option
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: show role grant user user2
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user2
+POSTHOOK: type: SHOW_ROLE_GRANT
+PUBLIC	-1			false	-1	
+src_role_wadmin	-1	user2	USER	true	-1	hive_admin_user
+PREHOOK: query: set role src_role_wadmin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role src_role_wadmin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: grant  src_role_wadmin to user user3
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant  src_role_wadmin to user user3
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: show role grant user user3
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user3
+POSTHOOK: type: SHOW_ROLE_GRANT
+PUBLIC	-1			false	-1	
+src_role_wadmin	-1	user3	USER	false	-1	user2
+PREHOOK: query: revoke src_role_wadmin from user user3
+PREHOOK: type: REVOKE_ROLE
+POSTHOOK: query: revoke src_role_wadmin from user user3
+POSTHOOK: type: REVOKE_ROLE
+PREHOOK: query: show role grant user user3
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user3
+POSTHOOK: type: SHOW_ROLE_GRANT
+PUBLIC	-1			false	-1	

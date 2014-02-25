@@ -35,6 +35,10 @@ public class CreateTableAutomaticGrant {
   private Map<String, List<PrivilegeGrantInfo>> groupGrants;
   private Map<String, List<PrivilegeGrantInfo>> roleGrants;
 
+  // the owner can change, also owner might appear in user grants as well
+  // so keep owner privileges separate from userGrants
+  private List<PrivilegeGrantInfo> ownerGrant;
+
   public static CreateTableAutomaticGrant create(HiveConf conf)
       throws HiveException {
     CreateTableAutomaticGrant grants = new CreateTableAutomaticGrant();
@@ -44,20 +48,10 @@ public class CreateTableAutomaticGrant {
         HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_GROUP_GRANTS));
     grants.roleGrants = getGrantMap(HiveConf.getVar(conf,
         HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_ROLE_GRANTS));
-    
-    String grantor = null;
-    if (SessionState.get() != null
-        && SessionState.get().getAuthenticator() != null) {
-      grantor = SessionState.get().getAuthenticator().getUserName();
-      List<PrivilegeGrantInfo> ownerGrant = getGrantorInfoList(HiveConf.getVar(conf,
-          HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS));
-      if(ownerGrant != null) {
-        if (grants.userGrants == null) {
-          grants.userGrants = new HashMap<String, List<PrivilegeGrantInfo>>();
-        }
-        grants.userGrants.put(grantor, ownerGrant);
-      }
-    }
+
+    grants.ownerGrant = getGrantorInfoList(HiveConf.getVar(conf,
+        HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS));
+
     return grants;
   }
 
@@ -94,13 +88,11 @@ public class CreateTableAutomaticGrant {
     if (privList == null || privList.trim().equals("")) {
       return null;
     }
-    checkPrivilege(privList);
+    validatePrivilege(privList);
     String[] grantArray = privList.split(",");
     List<PrivilegeGrantInfo> grantInfoList = new ArrayList<PrivilegeGrantInfo>();
-    String grantor = null;
-    if (SessionState.get().getAuthenticator() != null) {
-      grantor = SessionState.get().getAuthenticator().getUserName();  
-    }
+    String grantor = SessionState.getUserFromAuthenticator();
+
     for (String grant : grantArray) {
       grantInfoList.add(new PrivilegeGrantInfo(grant, -1, grantor,
           PrincipalType.USER, true));
@@ -108,7 +100,7 @@ public class CreateTableAutomaticGrant {
     return grantInfoList;
   }
 
-  private static void checkPrivilege(String ownerGrantsInConfig)
+  private static void validatePrivilege(String ownerGrantsInConfig)
       throws HiveException {
     String[] ownerGrantArray = ownerGrantsInConfig.split(",");
     // verify the config
@@ -121,7 +113,15 @@ public class CreateTableAutomaticGrant {
   }
 
   public Map<String, List<PrivilegeGrantInfo>> getUserGrants() {
-    return userGrants;
+    Map<String, List<PrivilegeGrantInfo>> curUserGrants = new HashMap<String, List<PrivilegeGrantInfo>>();
+    String owner = SessionState.getUserFromAuthenticator();
+    if (owner != null && ownerGrant != null) {
+      curUserGrants.put(owner, ownerGrant);
+    }
+    if (userGrants != null) {
+      curUserGrants.putAll(userGrants);
+    }
+    return curUserGrants;
   }
 
   public Map<String, List<PrivilegeGrantInfo>> getGroupGrants() {

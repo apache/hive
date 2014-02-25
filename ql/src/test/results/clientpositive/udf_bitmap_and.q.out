@@ -22,8 +22,10 @@ POSTHOOK: query: drop table bitmap_test
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table bitmap_test (a array<bigint>, b array<bigint>)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table bitmap_test (a array<bigint>, b array<bigint>)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bitmap_test
 PREHOOK: query: insert overwrite table bitmap_test
 select array(13,2,4,8589934592,4096,0), array(8,2,4,8589934592,128,0) from src tablesample (10 rows)

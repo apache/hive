@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE empty (c INT) PARTITIONED BY (p INT)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE empty (c INT) PARTITIONED BY (p INT)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@empty
 PREHOOK: query: SELECT MAX(c) FROM empty
 PREHOOK: type: QUERY
@@ -23,10 +25,10 @@ POSTHOOK: Input: default@empty
 NULL
 PREHOOK: query: ALTER TABLE empty ADD PARTITION (p=1)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@empty
+PREHOOK: Output: default@empty
 POSTHOOK: query: ALTER TABLE empty ADD PARTITION (p=1)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@empty
+POSTHOOK: Output: default@empty
 POSTHOOK: Output: default@empty@p=1
 PREHOOK: query: SELECT MAX(p) FROM empty
 PREHOOK: type: QUERY

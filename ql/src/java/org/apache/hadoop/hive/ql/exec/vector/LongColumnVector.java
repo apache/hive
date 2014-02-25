@@ -185,4 +185,9 @@ public class LongColumnVector extends ColumnVector {
     }
     flattenNoNulls(selectedInUse, sel, size);
   }
+
+  @Override
+  public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
+    vector[outElementNum] = ((LongColumnVector) inputVector).vector[inputElementNum];
+  }
 }

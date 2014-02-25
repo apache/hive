@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE TEST1(A INT, B DOUBLE) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE TEST1(A INT, B DOUBLE) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST1
 PREHOOK: query: explain extended select max(ds) from TEST1
 PREHOOK: type: QUERY
@@ -81,10 +83,10 @@ POSTHOOK: Input: default@test1
 NULL
 PREHOOK: query: alter table TEST1 add partition (ds='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@test1
+PREHOOK: Output: default@test1
 POSTHOOK: query: alter table TEST1 add partition (ds='1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@test1
+POSTHOOK: Output: default@test1
 POSTHOOK: Output: default@test1@ds=1
 PREHOOK: query: explain extended select max(ds) from TEST1
 PREHOOK: type: QUERY
@@ -504,10 +506,10 @@ POSTHOOK: Input: default@test1@ds=1
 0
 PREHOOK: query: alter table TEST1 add partition (ds='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@test1
+PREHOOK: Output: default@test1
 POSTHOOK: query: alter table TEST1 add partition (ds='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@test1
+POSTHOOK: Output: default@test1
 POSTHOOK: Output: default@test1@ds=2
 PREHOOK: query: explain extended 
 select count(*) from TEST1 a2 join (select max(ds) m from TEST1) b on a2.ds=b.m
@@ -938,29 +940,31 @@ POSTHOOK: Input: default@test1@ds=2
 0
 PREHOOK: query: CREATE TABLE TEST2(A INT, B DOUBLE) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE TEST2(A INT, B DOUBLE) partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST2
 PREHOOK: query: alter table TEST2 add partition (ds='1', hr='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@test2
+PREHOOK: Output: default@test2
 POSTHOOK: query: alter table TEST2 add partition (ds='1', hr='1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@test2
+POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@ds=1/hr=1
 PREHOOK: query: alter table TEST2 add partition (ds='1', hr='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@test2
+PREHOOK: Output: default@test2
 POSTHOOK: query: alter table TEST2 add partition (ds='1', hr='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@test2
+POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@ds=1/hr=2
 PREHOOK: query: alter table TEST2 add partition (ds='1', hr='3')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@test2
+PREHOOK: Output: default@test2
 POSTHOOK: query: alter table TEST2 add partition (ds='1', hr='3')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@test2
+POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@ds=1/hr=3
 PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2 group by ds
 PREHOOK: type: QUERY
@@ -1637,18 +1641,18 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: query: -- HIVE-3594 URI encoding for temporary path
 alter table TEST2 add partition (ds='01:10:10', hr='01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@test2
+PREHOOK: Output: default@test2
 POSTHOOK: query: -- HIVE-3594 URI encoding for temporary path
 alter table TEST2 add partition (ds='01:10:10', hr='01')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@test2
+POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@ds=01%3A10%3A10/hr=01
 PREHOOK: query: alter table TEST2 add partition (ds='01:10:20', hr='02')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@test2
+PREHOOK: Output: default@test2
 POSTHOOK: query: alter table TEST2 add partition (ds='01:10:20', hr='02')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@test2
+POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@ds=01%3A10%3A20/hr=02
 PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2 group by ds
 PREHOOK: type: QUERY

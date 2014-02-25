@@ -11,24 +11,30 @@ ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE DECIMAL_4_1(key decimal(35,25), value int) 
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL_4_1
 PREHOOK: query: CREATE TABLE DECIMAL_4_2(key decimal(35,25), value decimal(35,25)) 
 STORED AS ORC
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE DECIMAL_4_2(key decimal(35,25), value decimal(35,25)) 
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL_4_2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_4_1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@decimal_4_1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_4_1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@decimal_4_1
 PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_4_2 SELECT key, key * 3 FROM DECIMAL_4_1
 PREHOOK: type: QUERY

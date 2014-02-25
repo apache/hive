@@ -17,8 +17,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@merge_src
 PREHOOK: query: create table merge_src_part (key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table merge_src_part (key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge_src_part
 PREHOOK: query: insert overwrite table merge_src_part partition(ds) select key, value, ds from srcpart where ds is not null
 PREHOOK: type: QUERY
@@ -2375,8 +2377,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: create table merge_src_part2 like merge_src_part
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table merge_src_part2 like merge_src_part
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge_src_part2
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -4823,8 +4827,10 @@ POSTHOOK: Lineage: merge_src_part2 PARTITION(ds=2008-04-09).key SIMPLE [(merge_s
 POSTHOOK: Lineage: merge_src_part2 PARTITION(ds=2008-04-09).value SIMPLE [(merge_src_part)merge_src_part.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create table merge_src_part2 like merge_src_part
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table merge_src_part2 like merge_src_part
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge_src_part2
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

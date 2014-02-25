@@ -32,6 +32,20 @@ module PartitionEventType
   VALID_VALUES = Set.new([LOAD_DONE]).freeze
 end
 
+module FunctionType
+  JAVA = 1
+  VALUE_MAP = {1 => "JAVA"}
+  VALID_VALUES = Set.new([JAVA]).freeze
+end
+
+module ResourceType
+  JAR = 1
+  FILE = 2
+  ARCHIVE = 3
+  VALUE_MAP = {1 => "JAR", 2 => "FILE", 3 => "ARCHIVE"}
+  VALID_VALUES = Set.new([JAR, FILE, ARCHIVE]).freeze
+end
+
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1
@@ -244,18 +258,25 @@ class Database
   LOCATIONURI = 3
   PARAMETERS = 4
   PRIVILEGES = 5
+  OWNERNAME = 6
+  OWNERTYPE = 7
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description'},
     LOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'locationUri'},
     PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
-    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true}
+    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName', :optional => true},
+    OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :optional => true, :enum_class => ::PrincipalType}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
+    unless @ownerType.nil? || ::PrincipalType::VALID_VALUES.include?(@ownerType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field ownerType!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -1002,6 +1023,63 @@ class DropPartitionsRequest
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field parts is unset!') unless @parts
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ResourceUri
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCETYPE = 1
+  URI = 2
+
+  FIELDS = {
+    RESOURCETYPE => {:type => ::Thrift::Types::I32, :name => 'resourceType', :enum_class => ::ResourceType},
+    URI => {:type => ::Thrift::Types::STRING, :name => 'uri'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @resourceType.nil? || ::ResourceType::VALID_VALUES.include?(@resourceType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field resourceType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class Function
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FUNCTIONNAME = 1
+  DBNAME = 2
+  CLASSNAME = 3
+  OWNERNAME = 4
+  OWNERTYPE = 5
+  CREATETIME = 6
+  FUNCTIONTYPE = 7
+  RESOURCEURIS = 8
+
+  FIELDS = {
+    FUNCTIONNAME => {:type => ::Thrift::Types::STRING, :name => 'functionName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    CLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'className'},
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
+    OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :enum_class => ::PrincipalType},
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
+    FUNCTIONTYPE => {:type => ::Thrift::Types::I32, :name => 'functionType', :enum_class => ::FunctionType},
+    RESOURCEURIS => {:type => ::Thrift::Types::LIST, :name => 'resourceUris', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ResourceUri}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @ownerType.nil? || ::PrincipalType::VALID_VALUES.include?(@ownerType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field ownerType!')
+    end
+    unless @functionType.nil? || ::FunctionType::VALID_VALUES.include?(@functionType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field functionType!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

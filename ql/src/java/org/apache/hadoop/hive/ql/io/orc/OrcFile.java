@@ -114,14 +114,15 @@ public final class OrcFile {
    * @return a new ORC file reader.
    * @throws IOException
    */
-  public static Reader createReader(FileSystem fs, Path path
-                                    ) throws IOException {
-    return new ReaderImpl(fs, path);
+  public static Reader createReader(FileSystem fs, Path path,
+                                    Configuration conf) throws IOException {
+    return new ReaderImpl(fs, path, conf);
   }
 
-  public static Reader createReader(FileSystem fs, Path path, FileMetaInfo fileMetaInfo)
+  public static Reader createReader(FileSystem fs, Path path,
+      FileMetaInfo fileMetaInfo, Configuration conf)
       throws IOException {
-    return new ReaderImpl(fs, path, fileMetaInfo);
+    return new ReaderImpl(fs, path, fileMetaInfo, conf);
   }
 
   /**

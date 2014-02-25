@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
@@ -138,6 +140,18 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
             dcv.vector[row] = Double.valueOf(value.toString());
           }
         };
+      } else if (types[i].toLowerCase().startsWith("decimal")) {
+            batch.cols[i] = new DecimalColumnVector(batchSize, 38, 0);
+            columnAssign[i] = new ColumnVectorAssign() {
+                @Override
+                public void assign(
+                        ColumnVector columnVector,
+                        int row,
+                        Object value) {
+                    DecimalColumnVector dcv = (DecimalColumnVector) columnVector;
+                    dcv.vector[row] = (Decimal128)value;
+                }
+            };
       } else {
         throw new HiveException("Unimplemented type " + types[i]);
       }

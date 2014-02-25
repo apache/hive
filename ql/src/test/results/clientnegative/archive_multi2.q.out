@@ -10,8 +10,10 @@ drop table tstsrcpart
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tstsrcpart like srcpart
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tstsrcpart like srcpart
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrcpart
 PREHOOK: query: INSERT OVERWRITE TABLE tstsrcpart PARTITION (ds='2008-04-08', hr='11')
 SELECT key, value FROM srcpart WHERE ds='2008-04-08' AND hr='11'

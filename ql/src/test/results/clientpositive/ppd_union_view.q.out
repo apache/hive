@@ -8,8 +8,10 @@ drop view v
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create table t1_new (key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t1_new (key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_new
 PREHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-15')
 select 'key1', 'value1' from src tablesample (1 rows)
@@ -39,8 +41,10 @@ POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).key SIMPLE []
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).value SIMPLE []
 PREHOOK: query: create table t1_old (keymap string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t1_old (keymap string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_old
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).key SIMPLE []
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).value SIMPLE []
@@ -82,8 +86,10 @@ POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-14).keymap SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-14).value SIMPLE []
 PREHOOK: query: create table t1_mapping (key string, keymap string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table t1_mapping (key string, keymap string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_mapping
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).key SIMPLE []
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).value SIMPLE []

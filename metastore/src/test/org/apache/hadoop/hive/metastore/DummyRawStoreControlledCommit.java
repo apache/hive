@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
@@ -662,4 +663,35 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
     objectStore.dropPartitions(dbName, tblName, partNames);
   }
+
+  public void createFunction(Function func) throws InvalidObjectException,
+      MetaException {
+    objectStore.createFunction(func);
+  }
+
+  @Override
+  public void alterFunction(String dbName, String funcName, Function newFunction)
+      throws InvalidObjectException, MetaException {
+    objectStore.alterFunction(dbName, funcName, newFunction);
+  }
+
+  @Override
+  public void dropFunction(String dbName, String funcName)
+      throws MetaException, NoSuchObjectException, InvalidObjectException,
+      InvalidInputException {
+    objectStore.dropFunction(dbName, funcName);
+  }
+
+  @Override
+  public Function getFunction(String dbName, String funcName)
+      throws MetaException {
+    return objectStore.getFunction(dbName, funcName);
+  }
+
+  @Override
+  public List<String> getFunctions(String dbName, String pattern)
+      throws MetaException {
+    return objectStore.getFunctions(dbName, pattern);
+  }
+
 }

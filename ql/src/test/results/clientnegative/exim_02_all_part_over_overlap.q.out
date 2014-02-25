@@ -4,47 +4,57 @@ PREHOOK: query: create table exim_employee ( emp_id int comment "employee id")
 	stored as textfile	
 	tblproperties("creator"="krishna")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
 	comment "employee table"
 	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
 	stored as textfile	
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_employee
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="in", emp_state="tn")
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@exim_employee
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="in", emp_state="tn")
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=tn
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="in", emp_state="ka")
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@exim_employee
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="in", emp_state="ka")
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=ka
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="tn")
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@exim_employee
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="tn")
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=us/emp_state=tn
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="ka")
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@exim_employee
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="ka")
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=us/emp_state=ka
 #### A masked pattern was here ####
@@ -84,20 +94,24 @@ PREHOOK: query: create table exim_employee ( emp_id int comment "employee id")
 	stored as textfile	
 	tblproperties("maker"="krishna")
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:importer
 POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
 	comment "table of employees"
 	partitioned by (emp_country string comment "iso code", emp_state string comment "free-form text")
 	stored as textfile	
 	tblproperties("maker"="krishna")
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_employee
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="ka")
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: importer@exim_employee
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="ka")
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: importer@exim_employee
 POSTHOOK: Output: importer@exim_employee@emp_country=us/emp_state=ka
 FAILED: SemanticException [Error 10118]: Partition already exists emp_country=us,emp_state=ka

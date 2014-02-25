@@ -1945,6 +1945,14 @@
 </property>
 
 <property>
+  <name>hive.exec.orc.skip.corrupt.data</name>
+  <value>false</value>
+  <description>If ORC reader encounters corrupt data, this value will be used to determine
+  whether to skip the corrupt data or throw exception. The default behavior is to throw exception.
+  </description>
+</property>
+
+<property>
   <name>hive.multi.insert.move.tasks.share.dependencies</name>
   <value>false</value>
   <description>
@@ -2120,6 +2128,12 @@
   <value>10</value>
   <description>Time (in seconds) that an idle HiveServer2 async thread (from the thread pool) will wait
   for a new task to arrive before terminating</description>
+</property>
+
+<property>
+  <name>hive.server2.long.polling.timeout</name>
+  <value>5000L</value>
+  <description>Time in milliseconds that HiveServer2 will wait, before responding to asynchronous calls that use long polling</description>
 </property>
 
 <property>

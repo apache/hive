@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -59,13 +60,6 @@ import java.util.Map;
  * This implementation supports the following HCatalog features: partitioning, dynamic partitioning, Hadoop Archiving, etc.
  */
 class FileOutputFormatContainer extends OutputFormatContainer {
-
-  private static final PathFilter hiddenFileFilter = new PathFilter() {
-    public boolean accept(Path p) {
-      String name = p.getName();
-      return !name.startsWith("_") && !name.startsWith(".");
-    }
-  };
 
   /**
    * @param of base OutputFormat to contain
@@ -198,13 +192,9 @@ class FileOutputFormatContainer extends OutputFormatContainer {
       Path tablePath = new Path(table.getTTable().getSd().getLocation());
       FileSystem fs = tablePath.getFileSystem(context.getConfiguration());
 
-      if (fs.exists(tablePath)) {
-        FileStatus[] status = fs.globStatus(new Path(tablePath, "*"), hiddenFileFilter);
-
-        if (status.length > 0) {
-          throw new HCatException(ErrorType.ERROR_NON_EMPTY_TABLE,
+      if (!MetaStoreUtils.isDirEmpty(fs,tablePath)){
+        throw new HCatException(ErrorType.ERROR_NON_EMPTY_TABLE,
             table.getDbName() + "." + table.getTableName());
-        }
       }
     }
   }

@@ -2,10 +2,12 @@ PREHOOK: query: -- SORT_BEFORE_DIFF
 
 create table authorization_fail (key int, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- SORT_BEFORE_DIFF
 
 create table authorization_fail (key int, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@authorization_fail
 PREHOOK: query: create role hive_test_role_fail
 PREHOOK: type: CREATEROLE
@@ -25,8 +27,8 @@ PREHOOK: query: show role grant user hive_test_user
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user hive_test_user
 POSTHOOK: type: SHOW_ROLE_GRANT
-hive_test_role_fail	-1	hive_test_user	USER	false	-1	hive_test_user
 PUBLIC	-1			false	-1	
+hive_test_role_fail	-1	hive_test_user	USER	false	-1	hive_test_user
 PREHOOK: query: show grant role hive_test_role_fail on table authorization_fail
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant role hive_test_role_fail on table authorization_fail

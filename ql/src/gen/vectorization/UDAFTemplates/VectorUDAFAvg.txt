@@ -54,7 +54,11 @@ public class <ClassName> extends VectorAggregateExpression {
 
       transient private double sum;
       transient private long count;
-      transient private boolean isNull;
+
+      /**
+      * Value is explicitly (re)initialized in reset()
+      */
+      transient private boolean isNull = true;
       
       public void sumValue(<ValueType> value) {
         if (isNull) {

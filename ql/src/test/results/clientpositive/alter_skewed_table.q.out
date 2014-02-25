@@ -1,7 +1,9 @@
 PREHOOK: query: create table original (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table original (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@original
 PREHOOK: query: describe formatted original
 PREHOOK: type: DESCTABLE
@@ -87,8 +89,10 @@ POSTHOOK: Input: default@original
 POSTHOOK: Output: default@original
 PREHOOK: query: create table original2 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table original2 (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@original2
 PREHOOK: query: describe formatted original2
 PREHOOK: type: DESCTABLE
@@ -174,8 +178,10 @@ POSTHOOK: Input: default@original2
 POSTHOOK: Output: default@original2
 PREHOOK: query: create table original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@original3
 PREHOOK: query: describe formatted original3
 PREHOOK: type: DESCTABLE

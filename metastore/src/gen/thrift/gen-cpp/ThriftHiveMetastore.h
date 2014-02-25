@@ -89,6 +89,11 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_partitions_statistics_req(PartitionsStatsResult& _return, const PartitionsStatsRequest& request) = 0;
   virtual bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) = 0;
   virtual bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name) = 0;
+  virtual void create_function(const Function& func) = 0;
+  virtual void drop_function(const std::string& dbName, const std::string& funcName) = 0;
+  virtual void alter_function(const std::string& dbName, const std::string& funcName, const Function& newFunc) = 0;
+  virtual void get_functions(std::vector<std::string> & _return, const std::string& dbName, const std::string& pattern) = 0;
+  virtual void get_function(Function& _return, const std::string& dbName, const std::string& funcName) = 0;
   virtual bool create_role(const Role& role) = 0;
   virtual bool drop_role(const std::string& role_name) = 0;
   virtual void get_role_names(std::vector<std::string> & _return) = 0;
@@ -364,6 +369,21 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   bool delete_table_column_statistics(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* col_name */) {
     bool _return = false;
     return _return;
+  }
+  void create_function(const Function& /* func */) {
+    return;
+  }
+  void drop_function(const std::string& /* dbName */, const std::string& /* funcName */) {
+    return;
+  }
+  void alter_function(const std::string& /* dbName */, const std::string& /* funcName */, const Function& /* newFunc */) {
+    return;
+  }
+  void get_functions(std::vector<std::string> & /* _return */, const std::string& /* dbName */, const std::string& /* pattern */) {
+    return;
+  }
+  void get_function(Function& /* _return */, const std::string& /* dbName */, const std::string& /* funcName */) {
+    return;
   }
   bool create_role(const Role& /* role */) {
     bool _return = false;
@@ -11013,6 +11033,671 @@ class ThriftHiveMetastore_delete_table_column_statistics_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_create_function_args__isset {
+  _ThriftHiveMetastore_create_function_args__isset() : func(false) {}
+  bool func;
+} _ThriftHiveMetastore_create_function_args__isset;
+
+class ThriftHiveMetastore_create_function_args {
+ public:
+
+  ThriftHiveMetastore_create_function_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_create_function_args() throw() {}
+
+  Function func;
+
+  _ThriftHiveMetastore_create_function_args__isset __isset;
+
+  void __set_func(const Function& val) {
+    func = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_create_function_args & rhs) const
+  {
+    if (!(func == rhs.func))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_function_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_function_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_create_function_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_function_pargs() throw() {}
+
+  const Function* func;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_function_result__isset {
+  _ThriftHiveMetastore_create_function_result__isset() : o1(false), o2(false), o3(false), o4(false) {}
+  bool o1;
+  bool o2;
+  bool o3;
+  bool o4;
+} _ThriftHiveMetastore_create_function_result__isset;
+
+class ThriftHiveMetastore_create_function_result {
+ public:
+
+  ThriftHiveMetastore_create_function_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_create_function_result() throw() {}
+
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+  NoSuchObjectException o4;
+
+  _ThriftHiveMetastore_create_function_result__isset __isset;
+
+  void __set_o1(const AlreadyExistsException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const InvalidObjectException& val) {
+    o2 = val;
+  }
+
+  void __set_o3(const MetaException& val) {
+    o3 = val;
+  }
+
+  void __set_o4(const NoSuchObjectException& val) {
+    o4 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_create_function_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    if (!(o4 == rhs.o4))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_function_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_function_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_function_presult__isset {
+  _ThriftHiveMetastore_create_function_presult__isset() : o1(false), o2(false), o3(false), o4(false) {}
+  bool o1;
+  bool o2;
+  bool o3;
+  bool o4;
+} _ThriftHiveMetastore_create_function_presult__isset;
+
+class ThriftHiveMetastore_create_function_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_function_presult() throw() {}
+
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+  NoSuchObjectException o4;
+
+  _ThriftHiveMetastore_create_function_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_function_args__isset {
+  _ThriftHiveMetastore_drop_function_args__isset() : dbName(false), funcName(false) {}
+  bool dbName;
+  bool funcName;
+} _ThriftHiveMetastore_drop_function_args__isset;
+
+class ThriftHiveMetastore_drop_function_args {
+ public:
+
+  ThriftHiveMetastore_drop_function_args() : dbName(), funcName() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_function_args() throw() {}
+
+  std::string dbName;
+  std::string funcName;
+
+  _ThriftHiveMetastore_drop_function_args__isset __isset;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_funcName(const std::string& val) {
+    funcName = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_drop_function_args & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(funcName == rhs.funcName))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_function_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_function_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_drop_function_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_function_pargs() throw() {}
+
+  const std::string* dbName;
+  const std::string* funcName;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_function_result__isset {
+  _ThriftHiveMetastore_drop_function_result__isset() : o1(false), o3(false) {}
+  bool o1;
+  bool o3;
+} _ThriftHiveMetastore_drop_function_result__isset;
+
+class ThriftHiveMetastore_drop_function_result {
+ public:
+
+  ThriftHiveMetastore_drop_function_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_function_result() throw() {}
+
+  NoSuchObjectException o1;
+  MetaException o3;
+
+  _ThriftHiveMetastore_drop_function_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val) {
+    o1 = val;
+  }
+
+  void __set_o3(const MetaException& val) {
+    o3 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_drop_function_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_function_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_function_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_function_presult__isset {
+  _ThriftHiveMetastore_drop_function_presult__isset() : o1(false), o3(false) {}
+  bool o1;
+  bool o3;
+} _ThriftHiveMetastore_drop_function_presult__isset;
+
+class ThriftHiveMetastore_drop_function_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_function_presult() throw() {}
+
+  NoSuchObjectException o1;
+  MetaException o3;
+
+  _ThriftHiveMetastore_drop_function_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_function_args__isset {
+  _ThriftHiveMetastore_alter_function_args__isset() : dbName(false), funcName(false), newFunc(false) {}
+  bool dbName;
+  bool funcName;
+  bool newFunc;
+} _ThriftHiveMetastore_alter_function_args__isset;
+
+class ThriftHiveMetastore_alter_function_args {
+ public:
+
+  ThriftHiveMetastore_alter_function_args() : dbName(), funcName() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_function_args() throw() {}
+
+  std::string dbName;
+  std::string funcName;
+  Function newFunc;
+
+  _ThriftHiveMetastore_alter_function_args__isset __isset;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_funcName(const std::string& val) {
+    funcName = val;
+  }
+
+  void __set_newFunc(const Function& val) {
+    newFunc = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_alter_function_args & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(funcName == rhs.funcName))
+      return false;
+    if (!(newFunc == rhs.newFunc))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_function_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_function_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_alter_function_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_function_pargs() throw() {}
+
+  const std::string* dbName;
+  const std::string* funcName;
+  const Function* newFunc;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_function_result__isset {
+  _ThriftHiveMetastore_alter_function_result__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_alter_function_result__isset;
+
+class ThriftHiveMetastore_alter_function_result {
+ public:
+
+  ThriftHiveMetastore_alter_function_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_function_result() throw() {}
+
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_alter_function_result__isset __isset;
+
+  void __set_o1(const InvalidOperationException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const MetaException& val) {
+    o2 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_alter_function_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_function_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_function_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_function_presult__isset {
+  _ThriftHiveMetastore_alter_function_presult__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_alter_function_presult__isset;
+
+class ThriftHiveMetastore_alter_function_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_function_presult() throw() {}
+
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_alter_function_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_functions_args__isset {
+  _ThriftHiveMetastore_get_functions_args__isset() : dbName(false), pattern(false) {}
+  bool dbName;
+  bool pattern;
+} _ThriftHiveMetastore_get_functions_args__isset;
+
+class ThriftHiveMetastore_get_functions_args {
+ public:
+
+  ThriftHiveMetastore_get_functions_args() : dbName(), pattern() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_functions_args() throw() {}
+
+  std::string dbName;
+  std::string pattern;
+
+  _ThriftHiveMetastore_get_functions_args__isset __isset;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_pattern(const std::string& val) {
+    pattern = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_functions_args & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(pattern == rhs.pattern))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_functions_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_functions_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_functions_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_functions_pargs() throw() {}
+
+  const std::string* dbName;
+  const std::string* pattern;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_functions_result__isset {
+  _ThriftHiveMetastore_get_functions_result__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_get_functions_result__isset;
+
+class ThriftHiveMetastore_get_functions_result {
+ public:
+
+  ThriftHiveMetastore_get_functions_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_functions_result() throw() {}
+
+  std::vector<std::string>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_functions_result__isset __isset;
+
+  void __set_success(const std::vector<std::string> & val) {
+    success = val;
+  }
+
+  void __set_o1(const MetaException& val) {
+    o1 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_functions_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_functions_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_functions_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_functions_presult__isset {
+  _ThriftHiveMetastore_get_functions_presult__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_get_functions_presult__isset;
+
+class ThriftHiveMetastore_get_functions_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_functions_presult() throw() {}
+
+  std::vector<std::string> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_functions_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_function_args__isset {
+  _ThriftHiveMetastore_get_function_args__isset() : dbName(false), funcName(false) {}
+  bool dbName;
+  bool funcName;
+} _ThriftHiveMetastore_get_function_args__isset;
+
+class ThriftHiveMetastore_get_function_args {
+ public:
+
+  ThriftHiveMetastore_get_function_args() : dbName(), funcName() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_function_args() throw() {}
+
+  std::string dbName;
+  std::string funcName;
+
+  _ThriftHiveMetastore_get_function_args__isset __isset;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_funcName(const std::string& val) {
+    funcName = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_function_args & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(funcName == rhs.funcName))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_function_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_function_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_function_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_function_pargs() throw() {}
+
+  const std::string* dbName;
+  const std::string* funcName;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_function_result__isset {
+  _ThriftHiveMetastore_get_function_result__isset() : success(false), o1(false), o2(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_get_function_result__isset;
+
+class ThriftHiveMetastore_get_function_result {
+ public:
+
+  ThriftHiveMetastore_get_function_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_function_result() throw() {}
+
+  Function success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_function_result__isset __isset;
+
+  void __set_success(const Function& val) {
+    success = val;
+  }
+
+  void __set_o1(const MetaException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const NoSuchObjectException& val) {
+    o2 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_function_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_function_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_function_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_function_presult__isset {
+  _ThriftHiveMetastore_get_function_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_get_function_presult__isset;
+
+class ThriftHiveMetastore_get_function_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_function_presult() throw() {}
+
+  Function* success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_function_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_create_role_args__isset {
   _ThriftHiveMetastore_create_role_args__isset() : role(false) {}
   bool role;
@@ -12998,6 +13683,21 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
   void send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
   bool recv_delete_table_column_statistics();
+  void create_function(const Function& func);
+  void send_create_function(const Function& func);
+  void recv_create_function();
+  void drop_function(const std::string& dbName, const std::string& funcName);
+  void send_drop_function(const std::string& dbName, const std::string& funcName);
+  void recv_drop_function();
+  void alter_function(const std::string& dbName, const std::string& funcName, const Function& newFunc);
+  void send_alter_function(const std::string& dbName, const std::string& funcName, const Function& newFunc);
+  void recv_alter_function();
+  void get_functions(std::vector<std::string> & _return, const std::string& dbName, const std::string& pattern);
+  void send_get_functions(const std::string& dbName, const std::string& pattern);
+  void recv_get_functions(std::vector<std::string> & _return);
+  void get_function(Function& _return, const std::string& dbName, const std::string& funcName);
+  void send_get_function(const std::string& dbName, const std::string& funcName);
+  void recv_get_function(Function& _return);
   bool create_role(const Role& role);
   void send_create_role(const Role& role);
   bool recv_create_role();
@@ -13123,6 +13823,11 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_partitions_statistics_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_delete_partition_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_delete_table_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_create_function(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_drop_function(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_alter_function(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_functions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_function(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_role(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_role(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_role_names(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -13214,6 +13919,11 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_partitions_statistics_req"] = &ThriftHiveMetastoreProcessor::process_get_partitions_statistics_req;
     processMap_["delete_partition_column_statistics"] = &ThriftHiveMetastoreProcessor::process_delete_partition_column_statistics;
     processMap_["delete_table_column_statistics"] = &ThriftHiveMetastoreProcessor::process_delete_table_column_statistics;
+    processMap_["create_function"] = &ThriftHiveMetastoreProcessor::process_create_function;
+    processMap_["drop_function"] = &ThriftHiveMetastoreProcessor::process_drop_function;
+    processMap_["alter_function"] = &ThriftHiveMetastoreProcessor::process_alter_function;
+    processMap_["get_functions"] = &ThriftHiveMetastoreProcessor::process_get_functions;
+    processMap_["get_function"] = &ThriftHiveMetastoreProcessor::process_get_function;
     processMap_["create_role"] = &ThriftHiveMetastoreProcessor::process_create_role;
     processMap_["drop_role"] = &ThriftHiveMetastoreProcessor::process_drop_role;
     processMap_["get_role_names"] = &ThriftHiveMetastoreProcessor::process_get_role_names;
@@ -13960,6 +14670,53 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name);
     }
     return ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name);
+  }
+
+  void create_function(const Function& func) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->create_function(func);
+    }
+    ifaces_[i]->create_function(func);
+  }
+
+  void drop_function(const std::string& dbName, const std::string& funcName) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->drop_function(dbName, funcName);
+    }
+    ifaces_[i]->drop_function(dbName, funcName);
+  }
+
+  void alter_function(const std::string& dbName, const std::string& funcName, const Function& newFunc) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->alter_function(dbName, funcName, newFunc);
+    }
+    ifaces_[i]->alter_function(dbName, funcName, newFunc);
+  }
+
+  void get_functions(std::vector<std::string> & _return, const std::string& dbName, const std::string& pattern) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_functions(_return, dbName, pattern);
+    }
+    ifaces_[i]->get_functions(_return, dbName, pattern);
+    return;
+  }
+
+  void get_function(Function& _return, const std::string& dbName, const std::string& funcName) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_function(_return, dbName, funcName);
+    }
+    ifaces_[i]->get_function(_return, dbName, funcName);
+    return;
   }
 
   bool create_role(const Role& role) {

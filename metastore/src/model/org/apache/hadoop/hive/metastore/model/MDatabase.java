@@ -32,6 +32,8 @@ public class MDatabase {
   private String locationUri;
   private String description;
   private Map<String, String> parameters;
+  private String ownerName;
+  private String ownerType;
 
   /**
    * Default construction to keep jpox/jdo happy
@@ -106,5 +108,21 @@ public class MDatabase {
    */
   public void setParameters(Map<String, String> parameters) {
     this.parameters = parameters;
+  }
+
+  public String getOwnerName() {
+    return ownerName;
+  }
+
+  public void setOwnerName(String ownerName) {
+    this.ownerName = ownerName;
+  }
+
+  public String getOwnerType() {
+    return ownerType;
+  }
+
+  public void setOwnerType(String ownerType) {
+    this.ownerType = ownerType;
   }
 }

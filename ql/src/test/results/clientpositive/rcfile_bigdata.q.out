@@ -5,6 +5,7 @@ STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE table columnTable_Bigdata (key STRING, value STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -12,6 +13,7 @@ STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@columnTable_Bigdata
 PREHOOK: query: FROM (FROM src MAP src.key,src.value USING 'python dumpdata_script.py' AS (key,value) WHERE src.key = 10) subq
 INSERT OVERWRITE TABLE columnTable_Bigdata SELECT subq.key, subq.value

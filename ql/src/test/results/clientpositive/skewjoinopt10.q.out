@@ -1,13 +1,17 @@
 PREHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@t1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@t1
 PREHOOK: query: drop table array_valued_T1
 PREHOOK: type: DROPTABLE
@@ -15,8 +19,10 @@ POSTHOOK: query: drop table array_valued_T1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table array_valued_T1 (key string, value array<string>) SKEWED BY (key) ON ((8))
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table array_valued_T1 (key string, value array<string>) SKEWED BY (key) ON ((8))
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@array_valued_T1
 PREHOOK: query: insert overwrite table array_valued_T1 select key, array(value) from T1
 PREHOOK: type: QUERY

@@ -1,7 +1,9 @@
 PREHOOK: query: create table url_t (key string, fullurl string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table url_t (key string, fullurl string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@url_t
 PREHOOK: query: insert overwrite table url_t
 select * from (

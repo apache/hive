@@ -46,9 +46,10 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
       throws IOException, InterruptedException {
     FileSplit fileSplit = (FileSplit) inputSplit;
     Path path = fileSplit.getPath();
-    FileSystem fs = path.getFileSystem(ShimLoader.getHadoopShims()
-        .getConfiguration(context));
-    return new OrcRecordReader(OrcFile.createReader(fs, path),
+    Configuration conf = ShimLoader.getHadoopShims()
+        .getConfiguration(context);
+    FileSystem fs = path.getFileSystem(conf);
+    return new OrcRecordReader(OrcFile.createReader(fs, path, conf),
         ShimLoader.getHadoopShims().getConfiguration(context),
         fileSplit.getStart(), fileSplit.getLength());
   }

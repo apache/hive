@@ -1,7 +1,9 @@
 PREHOOK: query: create table src_b3(`x+1` string, `!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src_b3(`x+1` string, `!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_b3
 PREHOOK: query: alter table src_b3 
 clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
@@ -16,9 +18,11 @@ POSTHOOK: Output: default@src_b3
 PREHOOK: query: -- alter partition
 create table src_p3(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- alter partition
 create table src_p3(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_p3
 PREHOOK: query: insert overwrite table src_p3 partition(`!@#$%^&*()_q`='a') select * from src
 PREHOOK: type: QUERY
@@ -39,10 +43,10 @@ POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSc
 !@%23$%25%5E&%2A()_q=a
 PREHOOK: query: alter table src_p3 add if not exists partition(`!@#$%^&*()_q`='b')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@src_p3
+PREHOOK: Output: default@src_p3
 POSTHOOK: query: alter table src_p3 add if not exists partition(`!@#$%^&*()_q`='b')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@src_p3
+POSTHOOK: Output: default@src_p3
 POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=b
 POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

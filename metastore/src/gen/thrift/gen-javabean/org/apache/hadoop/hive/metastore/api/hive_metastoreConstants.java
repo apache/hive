@@ -45,6 +45,8 @@ public class hive_metastoreConstants {
 
   public static final String ORIGINAL_LOCATION = "original_location";
 
+  public static final String IS_IMMUTABLE = "immutable";
+
   public static final String META_TABLE_COLUMNS = "columns";
 
   public static final String META_TABLE_COLUMN_TYPES = "columns.types";

@@ -21,6 +21,7 @@ package org.apache.hive.service.cli.session;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -42,8 +43,8 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   private HiveSession proxySession = null;
 
   public HiveSessionImplwithUGI(TProtocolVersion protocol, String username, String password,
-      Map<String, String> sessionConf, String delegationToken) throws HiveSQLException {
-    super(protocol, username, password, sessionConf);
+      HiveConf hiveConf, Map<String, String> sessionConf, String delegationToken) throws HiveSQLException {
+    super(protocol, username, password, hiveConf, sessionConf);
     setSessionUGI(username);
     setDelegationToken(delegationToken);
   }

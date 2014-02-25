@@ -1269,6 +1269,89 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'delete_table_column_statistics failed: unknown result')
     end
 
+    def create_function(func)
+      send_create_function(func)
+      recv_create_function()
+    end
+
+    def send_create_function(func)
+      send_message('create_function', Create_function_args, :func => func)
+    end
+
+    def recv_create_function()
+      result = receive_message(Create_function_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      return
+    end
+
+    def drop_function(dbName, funcName)
+      send_drop_function(dbName, funcName)
+      recv_drop_function()
+    end
+
+    def send_drop_function(dbName, funcName)
+      send_message('drop_function', Drop_function_args, :dbName => dbName, :funcName => funcName)
+    end
+
+    def recv_drop_function()
+      result = receive_message(Drop_function_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def alter_function(dbName, funcName, newFunc)
+      send_alter_function(dbName, funcName, newFunc)
+      recv_alter_function()
+    end
+
+    def send_alter_function(dbName, funcName, newFunc)
+      send_message('alter_function', Alter_function_args, :dbName => dbName, :funcName => funcName, :newFunc => newFunc)
+    end
+
+    def recv_alter_function()
+      result = receive_message(Alter_function_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_functions(dbName, pattern)
+      send_get_functions(dbName, pattern)
+      return recv_get_functions()
+    end
+
+    def send_get_functions(dbName, pattern)
+      send_message('get_functions', Get_functions_args, :dbName => dbName, :pattern => pattern)
+    end
+
+    def recv_get_functions()
+      result = receive_message(Get_functions_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_functions failed: unknown result')
+    end
+
+    def get_function(dbName, funcName)
+      send_get_function(dbName, funcName)
+      return recv_get_function()
+    end
+
+    def send_get_function(dbName, funcName)
+      send_message('get_function', Get_function_args, :dbName => dbName, :funcName => funcName)
+    end
+
+    def recv_get_function()
+      result = receive_message(Get_function_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_function failed: unknown result')
+    end
+
     def create_role(role)
       send_create_role(role)
       return recv_create_role()
@@ -2506,6 +2589,73 @@ module ThriftHiveMetastore
         result.o4 = o4
       end
       write_result(result, oprot, 'delete_table_column_statistics', seqid)
+    end
+
+    def process_create_function(seqid, iprot, oprot)
+      args = read_args(iprot, Create_function_args)
+      result = Create_function_result.new()
+      begin
+        @handler.create_function(args.func)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      rescue ::NoSuchObjectException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'create_function', seqid)
+    end
+
+    def process_drop_function(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_function_args)
+      result = Drop_function_result.new()
+      begin
+        @handler.drop_function(args.dbName, args.funcName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'drop_function', seqid)
+    end
+
+    def process_alter_function(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_function_args)
+      result = Alter_function_result.new()
+      begin
+        @handler.alter_function(args.dbName, args.funcName, args.newFunc)
+      rescue ::InvalidOperationException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'alter_function', seqid)
+    end
+
+    def process_get_functions(seqid, iprot, oprot)
+      args = read_args(iprot, Get_functions_args)
+      result = Get_functions_result.new()
+      begin
+        result.success = @handler.get_functions(args.dbName, args.pattern)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_functions', seqid)
+    end
+
+    def process_get_function(seqid, iprot, oprot)
+      args = read_args(iprot, Get_function_args)
+      result = Get_function_result.new()
+      begin
+        result.success = @handler.get_function(args.dbName, args.funcName)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_function', seqid)
     end
 
     def process_create_role(seqid, iprot, oprot)
@@ -5567,6 +5717,192 @@ module ThriftHiveMetastore
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException},
       O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::InvalidInputException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_function_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    FUNC = 1
+
+    FIELDS = {
+      FUNC => {:type => ::Thrift::Types::STRUCT, :name => 'func', :class => ::Function}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_function_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_function_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    FUNCNAME = 2
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+      FUNCNAME => {:type => ::Thrift::Types::STRING, :name => 'funcName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_function_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O3 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_function_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    FUNCNAME = 2
+    NEWFUNC = 3
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+      FUNCNAME => {:type => ::Thrift::Types::STRING, :name => 'funcName'},
+      NEWFUNC => {:type => ::Thrift::Types::STRUCT, :name => 'newFunc', :class => ::Function}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_function_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidOperationException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_functions_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    PATTERN = 2
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+      PATTERN => {:type => ::Thrift::Types::STRING, :name => 'pattern'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_functions_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_function_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    FUNCNAME = 2
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+      FUNCNAME => {:type => ::Thrift::Types::STRING, :name => 'funcName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_function_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Function},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
     }
 
     def struct_fields; FIELDS; end

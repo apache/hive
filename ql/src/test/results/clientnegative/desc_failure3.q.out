@@ -4,7 +4,9 @@ POSTHOOK: query: CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: CREATE TABLE db1.t1(key1 INT, value1 STRING) PARTITIONED BY (ds STRING, part STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
 POSTHOOK: query: CREATE TABLE db1.t1(key1 INT, value1 STRING) PARTITIONED BY (ds STRING, part STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@t1
 FAILED: SemanticException [Error 10004]: Invalid table alias or column reference db1.t1.key1

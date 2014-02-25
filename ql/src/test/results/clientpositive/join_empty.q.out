@@ -1,12 +1,16 @@
 PREHOOK: query: create table srcpart_empty(key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table srcpart_empty(key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_empty
 PREHOOK: query: create table src2_empty (key int, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table src2_empty (key int, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src2_empty
 PREHOOK: query: select /*+mapjoin(a)*/ a.key, b.value from srcpart_empty a join src b on a.key=b.key
 PREHOOK: type: QUERY

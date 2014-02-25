@@ -4,12 +4,14 @@ CREATE EXTERNAL TABLE tmp_showcrt1 (key string, newvalue boolean COMMENT 'a new 
 COMMENT 'temporary table'
 PARTITIONED BY (value bigint COMMENT 'some value')
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Test SHOW CREATE TABLE on a table with partitions and column comments.
 
 CREATE EXTERNAL TABLE tmp_showcrt1 (key string, newvalue boolean COMMENT 'a new value')
 COMMENT 'temporary table'
 PARTITIONED BY (value bigint COMMENT 'some value')
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_showcrt1
 PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 PREHOOK: type: SHOW_CREATETABLE

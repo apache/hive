@@ -567,12 +567,22 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     // since we are considering only 95 percentile, the size of gap and
     // patch array can contain only be 5% values
     patchLength = (int) Math.ceil((baseRedLiterals.length * 0.05));
+
     int[] gapList = new int[patchLength];
     long[] patchList = new long[patchLength];
 
     // #bit for patch
     patchWidth = brBits100p - brBits95p;
     patchWidth = SerializationUtils.getClosestFixedBits(patchWidth);
+
+    // if patch bit requirement is 64 then it will not possible to pack
+    // gap and patch together in a long. To make sure gap and patch can be
+    // packed together adjust the patch width
+    if (patchWidth == 64) {
+      patchWidth = 56;
+      brBits95p = 8;
+      mask = (1L << brBits95p) - 1;
+    }
 
     int gapIdx = 0;
     int patchIdx = 0;
@@ -642,7 +652,7 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
       long g = gapList[gapIdx++];
       long p = patchList[patchIdx++];
       while (g > 255) {
-        gapVsPatchList[i++] = (255 << patchWidth) | 0;
+        gapVsPatchList[i++] = (255L << patchWidth);
         g -= 255;
       }
 

@@ -9,6 +9,7 @@ STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Create a table with binary output format
 CREATE TABLE dest1(mydata STRING)
 ROW FORMAT SERDE
@@ -20,6 +21,7 @@ STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
 PREHOOK: query: -- Insert into that table using transform
 EXPLAIN EXTENDED

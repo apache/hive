@@ -108,7 +108,7 @@ public class TestOrcNullOptimization {
                                Lists.newArrayList(new InnerStruct(100))));
     writer.close();
 
-    Reader reader = OrcFile.createReader(fs, testFilePath);
+    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
     // check the stats
     ColumnStatistics[] stats = reader.getStatistics();
     assertEquals(20000, reader.getNumberOfRows());
@@ -212,7 +212,7 @@ public class TestOrcNullOptimization {
                                Lists.newArrayList(new InnerStruct(100))));
     writer.close();
 
-    Reader reader = OrcFile.createReader(fs, testFilePath);
+    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
     // check the stats
     ColumnStatistics[] stats = reader.getStatistics();
     assertEquals(20000, reader.getNumberOfRows());
@@ -313,7 +313,7 @@ public class TestOrcNullOptimization {
                                Lists.newArrayList(new InnerStruct(100))));
     writer.close();
 
-    Reader reader = OrcFile.createReader(fs, testFilePath);
+    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
     // check the stats
     ColumnStatistics[] stats = reader.getStatistics();
     assertEquals(8, reader.getNumberOfRows());

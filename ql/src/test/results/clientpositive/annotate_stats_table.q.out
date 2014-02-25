@@ -3,16 +3,20 @@ PREHOOK: query: create table if not exists emp_staging (
   deptid int
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists emp_staging (
   lastname string,
   deptid int
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emp_staging
 PREHOOK: query: create table if not exists emp_orc like emp_staging
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists emp_orc like emp_staging
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emp_orc
 PREHOOK: query: alter table emp_orc set fileformat orc
 PREHOOK: type: ALTERTABLE_FILEFORMAT
@@ -64,9 +68,11 @@ STAGE PLANS:
 
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@emp_staging
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@emp_staging
 PREHOOK: query: insert overwrite table emp_orc select * from emp_staging
 PREHOOK: type: QUERY

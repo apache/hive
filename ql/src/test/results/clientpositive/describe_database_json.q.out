@@ -2,6 +2,7 @@
 PREHOOK: type: CREATEDATABASE
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
+#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE DATABASE jsondb1
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: DESCRIBE DATABASE jsondb1

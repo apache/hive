@@ -6,6 +6,7 @@ MAP KEYS TERMINATED BY '3'
 LINES TERMINATED BY '10'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '1'
@@ -14,6 +15,7 @@ MAP KEYS TERMINATED BY '3'
 LINES TERMINATED BY '10'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
 PREHOOK: query: EXPLAIN
 FROM src_thrift

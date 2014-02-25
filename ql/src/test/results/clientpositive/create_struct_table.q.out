@@ -3,19 +3,23 @@ row format delimited
   fields terminated by '\t'
   collection items terminated by '\001'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table abc(strct struct<a:int, b:string, c:string>)
 row format delimited
   fields terminated by '\t'
   collection items terminated by '\001'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@abc
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt'
 overwrite into table abc
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@abc
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt'
 overwrite into table abc
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@abc
 PREHOOK: query: SELECT strct, strct.a, strct.b FROM abc LIMIT 10
 PREHOOK: type: QUERY

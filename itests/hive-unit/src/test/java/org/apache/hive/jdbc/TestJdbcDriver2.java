@@ -1837,15 +1837,17 @@ public class TestJdbcDriver2 {
    * Test the cursor repositioning to start of resultset
    * @throws Exception
    */
+  @Test
   public void testFetchFirstQuery() throws Exception {
-    execFetchFirst("select c4 from " + dataTypeTableName + " order by c1", "c4", false);
-    execFetchFirst("select c4 from " + dataTypeTableName + " order by c1", "c4",  true);
+    execFetchFirst("select c4, c1 from " + dataTypeTableName + " order by c1", "c4", false);
+    execFetchFirst("select c4, c1 from " + dataTypeTableName + " order by c1", "c4",  true);
   }
 
   /**
    * Test the cursor repositioning to start of resultset from non-mr query
    * @throws Exception
    */
+  @Test
   public void testFetchFirstNonMR() throws Exception {
     execFetchFirst("select * from " + dataTypeTableName, "c4", false);
   }
@@ -1854,6 +1856,7 @@ public class TestJdbcDriver2 {
    *  Test for cursor repositioning to start of resultset for non-sql commands
    * @throws Exception
    */
+  @Test
   public void testFetchFirstSetCmds() throws Exception {
     execFetchFirst("set -v", SetProcessor.SET_COLUMN_NAME, false);
   }
@@ -1862,6 +1865,7 @@ public class TestJdbcDriver2 {
    *  Test for cursor repositioning to start of resultset for non-sql commands
    * @throws Exception
    */
+  @Test
   public void testFetchFirstDfsCmds() throws Exception {
     String wareHouseDir = conf.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname);
     execFetchFirst("dfs -ls " + wareHouseDir, DfsProcessor.DFS_RESULT_HEADER, false);
@@ -1873,6 +1877,7 @@ public class TestJdbcDriver2 {
    * Verify unsupported JDBC resultset attributes
    * @throws Exception
    */
+  @Test
   public void testUnsupportedFetchTypes() throws Exception {
     try {
       con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
@@ -1896,6 +1901,7 @@ public class TestJdbcDriver2 {
    * Verify unsupported JDBC resultset methods
    * @throws Exception
    */
+  @Test
   public void testFetchFirstError() throws Exception {
     Statement stmt = con.createStatement();
     ResultSet res = stmt.executeQuery("select * from " + tableName);

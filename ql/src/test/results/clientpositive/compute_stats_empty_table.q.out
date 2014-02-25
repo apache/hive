@@ -1,7 +1,9 @@
 PREHOOK: query: create table tab_empty(a boolean, b int, c double, d string, e binary)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table tab_empty(a boolean, b int, c double, d string, e binary)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_empty
 PREHOOK: query: select count(*) from tab_empty
 PREHOOK: type: QUERY

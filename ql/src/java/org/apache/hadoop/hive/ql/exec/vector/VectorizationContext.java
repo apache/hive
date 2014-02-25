@@ -40,28 +40,37 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.ArgumentType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.InputExpressionType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Mode;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFAvgDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCount;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFSumDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToBooleanViaLongToLong;
@@ -81,22 +90,11 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.udf.UDFConv;
-import org.apache.hadoop.hive.ql.udf.UDFHex;
-import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
-import org.apache.hadoop.hive.ql.udf.UDFToByte;
-import org.apache.hadoop.hive.ql.udf.UDFToDouble;
-import org.apache.hadoop.hive.ql.udf.UDFToFloat;
-import org.apache.hadoop.hive.ql.udf.UDFToInteger;
-import org.apache.hadoop.hive.ql.udf.UDFToLong;
-import org.apache.hadoop.hive.ql.udf.UDFToShort;
-import org.apache.hadoop.hive.ql.udf.UDFToString;
+import org.apache.hadoop.hive.ql.udf.*;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.*;
 
 /**
@@ -115,9 +113,9 @@ public class VectorizationContext {
   //columnName to column position map
   private final Map<String, Integer> columnMap;
   private final int firstOutputColumnIndex;
-  private final Mode operatorMode = Mode.PROJECTION;
 
-  public static final Pattern decimalTypePattern = Pattern.compile("decimal.*");
+  public static final Pattern decimalTypePattern = Pattern.compile("decimal.*",
+      Pattern.CASE_INSENSITIVE);
 
   //Map column number to type
   private final OutputColumnManager ocm;
@@ -134,6 +132,7 @@ public class VectorizationContext {
     castExpressionUdfs.add(GenericUDFToUtcTimestamp.class);
     castExpressionUdfs.add(GenericUDFToChar.class);
     castExpressionUdfs.add(GenericUDFToVarchar.class);
+    castExpressionUdfs.add(GenericUDFTimestamp.class);
     castExpressionUdfs.add(UDFToByte.class);
     castExpressionUdfs.add(UDFToBoolean.class);
     castExpressionUdfs.add(UDFToDouble.class);
@@ -311,6 +310,10 @@ public class VectorizationContext {
     return ve;
   }
 
+  /**
+   * Given a udf and its children, return the common type to which the children's type should be
+   * cast.
+   */
   private TypeInfo getCommonTypeForChildExpressions(GenericUDF genericUdf, List<ExprNodeDesc> children,
       TypeInfo returnType) {
     TypeInfo commonType;
@@ -342,7 +345,7 @@ public class VectorizationContext {
    */
   private List<ExprNodeDesc> getChildExpressionsWithImplicitCast(GenericUDF genericUDF,
       List<ExprNodeDesc> children, TypeInfo returnType) {
-    if (isCastExpression(genericUDF)) {
+    if (isExcludedFromCast(genericUDF)) {
 
       // No implicit cast needed
       return children;
@@ -350,11 +353,12 @@ public class VectorizationContext {
     if (children == null) {
       return null;
     }
+
     TypeInfo commonType = getCommonTypeForChildExpressions(genericUDF, children, returnType);
     List<ExprNodeDesc> childrenWithCasts = new ArrayList<ExprNodeDesc>();
     boolean atleastOneCastNeeded = false;
     for (ExprNodeDesc child : children) {
-      ExprNodeDesc castExpression = getImplicitCastExpression(child, commonType);
+      ExprNodeDesc castExpression = getImplicitCastExpression(genericUDF, child, commonType);
       if (castExpression != null) {
         atleastOneCastNeeded = true;
         childrenWithCasts.add(castExpression);
@@ -369,12 +373,18 @@ public class VectorizationContext {
     }
   }
 
-  private boolean isCastExpression(GenericUDF genericUDF) {
-    boolean ret = castExpressionUdfs.contains(genericUDF.getClass());
+  private boolean isExcludedFromCast(GenericUDF genericUDF) {
+    boolean ret = castExpressionUdfs.contains(genericUDF.getClass())
+        || (genericUDF instanceof GenericUDFRound);
+
     if (ret) {
       return ret;
-    } else if (genericUDF instanceof GenericUDFBridge) {
-      return castExpressionUdfs.contains(((GenericUDFBridge) genericUDF).getUdfClass());
+    }
+
+    if (genericUDF instanceof GenericUDFBridge) {
+      Class<?> udfClass = ((GenericUDFBridge) genericUDF).getUdfClass();
+      return castExpressionUdfs.contains(udfClass)
+          || UDFSign.class.isAssignableFrom(udfClass);
     }
     return false;
   }
@@ -393,10 +403,19 @@ public class VectorizationContext {
     return new DecimalTypeInfo(precision, scale);
   }
 
-  private ExprNodeDesc getImplicitCastExpression(ExprNodeDesc child, TypeInfo castType) {
+  /**
+   * The GenericUDFs might need their children output to be cast to the given castType.
+   * This method returns a cast expression that would achieve the required casting.
+   */
+  private ExprNodeDesc getImplicitCastExpression(GenericUDF udf, ExprNodeDesc child, TypeInfo castType) {
     TypeInfo inputTypeInfo = child.getTypeInfo();
     String inputTypeString = inputTypeInfo.getTypeName();
     String castTypeString = castType.getTypeName();
+
+    if (inputTypeString.equals(castTypeString)) {
+      // Nothing to be done
+      return null;
+    }
     boolean inputTypeDecimal = false;
     boolean castTypeDecimal = false;
     if (decimalTypePattern.matcher(inputTypeString).matches()) {
@@ -406,72 +425,82 @@ public class VectorizationContext {
       castTypeDecimal = true;
     }
 
-    // If castType is decimal, try not to lose precision for numeric types.
-    if (castTypeDecimal) {
-      castType = updatePrecision(inputTypeInfo, (DecimalTypeInfo) castType);
-    }
-
     if (castTypeDecimal && !inputTypeDecimal) {
+
       // Cast the input to decimal
+      // If castType is decimal, try not to lose precision for numeric types.
+      castType = updatePrecision(inputTypeInfo, (DecimalTypeInfo) castType);
       GenericUDFToDecimal castToDecimalUDF = new GenericUDFToDecimal();
       List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
       children.add(child);
       ExprNodeDesc desc = new ExprNodeGenericFuncDesc(castType, castToDecimalUDF, children);
       return desc;
     } else if (!castTypeDecimal && inputTypeDecimal) {
+
       // Cast decimal input to returnType
-      UDF udfClass = null;
-      GenericUDF genericUdf = null;
-      PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
-          ((PrimitiveTypeInfo) castType).getPrimitiveCategory();
-      switch (((PrimitiveTypeInfo) castType).getPrimitiveCategory()) {
-        case BYTE:
-          udfClass = new UDFToByte();
-          break;
-        case SHORT:
-          udfClass = new UDFToShort();
-          break;
-        case INT:
-          udfClass = new UDFToInteger();
-          break;
-        case LONG:
-          udfClass = new UDFToLong();
-          break;
-        case FLOAT:
-          udfClass = new UDFToFloat();
-          break;
-        case DOUBLE:
-          udfClass = new UDFToDouble();
-          break;
-        case STRING:
-          udfClass = new UDFToString();
-          break;
-        case BOOLEAN:
-          udfClass = new UDFToBoolean();
-          break;
-        case DATE:
-          genericUdf = new GenericUDFToDate();
-          break;
-        case TIMESTAMP:
-          genericUdf = new GenericUDFToUnixTimeStamp();
-          break;
-        case BINARY:
-          genericUdf = new GenericUDFToBinary();
-          break;
-      }
-      if (genericUdf == null) {
-        genericUdf = new GenericUDFBridge();
-        ((GenericUDFBridge) genericUdf).setUdfClassName(udfClass.getClass().getName());
-      }
+      GenericUDF genericUdf = getGenericUDFForCast(castType);
       List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
       children.add(child);
       ExprNodeDesc desc = new ExprNodeGenericFuncDesc(castType, genericUdf, children);
       return desc;
+    } else {
+
+      // Casts to exact types including long to double etc. are needed in some special cases.
+      if (udf instanceof GenericUDFCoalesce) {
+        GenericUDF genericUdf = getGenericUDFForCast(castType);
+        List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+        children.add(child);
+        ExprNodeDesc desc = new ExprNodeGenericFuncDesc(castType, genericUdf, children);
+        return desc;
+      }
     }
-    // No cast needed
     return null;
   }
 
+  private GenericUDF getGenericUDFForCast(TypeInfo castType) {
+    UDF udfClass = null;
+    GenericUDF genericUdf = null;
+    switch (((PrimitiveTypeInfo) castType).getPrimitiveCategory()) {
+      case BYTE:
+        udfClass = new UDFToByte();
+        break;
+      case SHORT:
+        udfClass = new UDFToShort();
+        break;
+      case INT:
+        udfClass = new UDFToInteger();
+        break;
+      case LONG:
+        udfClass = new UDFToLong();
+        break;
+      case FLOAT:
+        udfClass = new UDFToFloat();
+        break;
+      case DOUBLE:
+        udfClass = new UDFToDouble();
+        break;
+      case STRING:
+        udfClass = new UDFToString();
+        break;
+      case BOOLEAN:
+        udfClass = new UDFToBoolean();
+        break;
+      case DATE:
+        genericUdf = new GenericUDFToDate();
+        break;
+      case TIMESTAMP:
+        genericUdf = new GenericUDFToUnixTimeStamp();
+        break;
+      case BINARY:
+        genericUdf = new GenericUDFToBinary();
+        break;
+    }
+    if (genericUdf == null) {
+      genericUdf = new GenericUDFBridge();
+      ((GenericUDFBridge) genericUdf).setUdfClassName(udfClass.getClass().getName());
+    }
+    return genericUdf;
+  }
 
 
   /* Return true if this is one of a small set of functions for which
@@ -568,7 +597,10 @@ public class VectorizationContext {
     }
 
     GenericUDF gudf = ((ExprNodeGenericFuncDesc) exprDesc).getGenericUDF();
-    if (gudf instanceof GenericUDFOPNegative || gudf instanceof GenericUDFOPPositive) {
+    if (gudf instanceof GenericUDFOPNegative || gudf instanceof GenericUDFOPPositive
+        || castExpressionUdfs.contains(gudf)
+        || ((gudf instanceof GenericUDFBridge)
+            && castExpressionUdfs.contains(((GenericUDFBridge) gudf).getUdfClass()))) {
       ExprNodeEvaluator<?> evaluator = ExprNodeEvaluatorFactory.get(exprDesc);
       ObjectInspector output = evaluator.initialize(null);
       Object constant = evaluator.evaluate(null);
@@ -775,6 +807,9 @@ public class VectorizationContext {
 
   private VectorExpression getGenericUdfVectorExpression(GenericUDF udf,
       List<ExprNodeDesc> childExpr, Mode mode, TypeInfo returnType) throws HiveException {
+
+    List<ExprNodeDesc> constantFoldedChildren = foldConstantsForUnaryExprs(childExpr);
+    childExpr = constantFoldedChildren;
     //First handle special cases
     if (udf instanceof GenericUDFBetween) {
       return getBetweenFilterExpression(childExpr, mode);
@@ -782,6 +817,10 @@ public class VectorizationContext {
       return getInExpression(childExpr, mode);
     } else if (udf instanceof GenericUDFOPPositive) {
       return getIdentityExpression(childExpr);
+    } else if (udf instanceof GenericUDFCoalesce) {
+
+      // Coalesce is a special case because it can take variable number of arguments.
+      return getCoalesceExpression(childExpr, returnType);
     } else if (udf instanceof GenericUDFBridge) {
       VectorExpression v = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode,
           returnType);
@@ -798,7 +837,6 @@ public class VectorizationContext {
       udfClass = ((GenericUDFBridge) udf).getUdfClass();
     }
 
-    List<ExprNodeDesc> constantFoldedChildren = foldConstantsForUnaryExprs(childExpr);
     VectorExpression ve = getVectorExpressionForUdf(udfClass, constantFoldedChildren, mode, returnType);
 
     if (ve == null) {
@@ -806,6 +844,33 @@ public class VectorizationContext {
     }
 
     return ve;
+  }
+
+  private VectorExpression getCoalesceExpression(List<ExprNodeDesc> childExpr, TypeInfo returnType)
+      throws HiveException {
+    int[] inputColumns = new int[childExpr.size()];
+    VectorExpression[] vectorChildren = null;
+    try {
+      vectorChildren = getVectorExpressions(childExpr, Mode.PROJECTION);
+
+      int i = 0;
+      for (VectorExpression ve : vectorChildren) {
+        inputColumns[i++] = ve.getOutputColumn();
+      }
+
+      int outColumn = ocm.allocateOutputColumn(getNormalizedTypeName(returnType.getTypeName()));
+      VectorCoalesce vectorCoalesce = new VectorCoalesce(inputColumns, outColumn);
+      vectorCoalesce.setOutputType(returnType.getTypeName());
+      vectorCoalesce.setChildExpressions(vectorChildren);
+      return vectorCoalesce;
+    } finally {
+      // Free the output columns of the child expressions.
+      if (vectorChildren != null) {
+        for (VectorExpression v : vectorChildren) {
+          ocm.freeOutputColumn(v.getOutputColumn());
+        }
+      }
+    }
   }
 
   /**
@@ -816,7 +881,7 @@ public class VectorizationContext {
     ExprNodeDesc colExpr = childExpr.get(0);
     TypeInfo colTypeInfo = colExpr.getTypeInfo();
     String colType = colExpr.getTypeString();
-
+    
     // prepare arguments for createVectorExpression
     List<ExprNodeDesc> childrenForInList =
         foldConstantsForUnaryExprs(childExpr.subList(1, childExpr.size()));
@@ -1058,7 +1123,7 @@ public class VectorizationContext {
     String colType = colExpr.getTypeString();
 
     // prepare arguments for createVectorExpression
-    List<ExprNodeDesc> childrenAfterNot = foldConstantsForUnaryExprs(childExpr.subList(1, 4));
+    List<ExprNodeDesc> childrenAfterNot = foldConstantsForUnaryExprs(childExpr.subList(1, 4));;
 
     // determine class
     Class<?> cl = null;
@@ -1188,6 +1253,10 @@ public class VectorizationContext {
         || resultType.equalsIgnoreCase("long");
   }
 
+  public static boolean isDecimalFamily(String colType) {
+      return decimalTypePattern.matcher(colType).matches();
+  }
+
   private Object getScalarValue(ExprNodeConstantDesc constDesc)
       throws HiveException {
     if (constDesc.getTypeString().equalsIgnoreCase("String")) {
@@ -1300,14 +1369,13 @@ public class VectorizationContext {
     }
   }
 
-  static String getNormalizedTypeName(String colType) {
+  static String getNormalizedTypeName(String colType){
     String normalizedType = null;
     if (colType.equalsIgnoreCase("Double") || colType.equalsIgnoreCase("Float")) {
       normalizedType = "Double";
     } else if (colType.equalsIgnoreCase("String")) {
       normalizedType = "String";
-    } else if (decimalTypePattern.matcher(colType.toLowerCase()).matches()) {
-
+   } else if (decimalTypePattern.matcher(colType).matches()) {
       //Return the decimal type as is, it includes scale and precision.
       normalizedType = colType;
     } else {
@@ -1320,31 +1388,43 @@ public class VectorizationContext {
     {"min",       "Long",   VectorUDAFMinLong.class},
     {"min",       "Double", VectorUDAFMinDouble.class},
     {"min",       "String", VectorUDAFMinString.class},
+    {"min",       "Decimal",VectorUDAFMinDecimal.class},
     {"max",       "Long",   VectorUDAFMaxLong.class},
     {"max",       "Double", VectorUDAFMaxDouble.class},
     {"max",       "String", VectorUDAFMaxString.class},
+    {"max",       "Decimal",VectorUDAFMaxDecimal.class},
     {"count",     null,     VectorUDAFCountStar.class},
     {"count",     "Long",   VectorUDAFCount.class},
     {"count",     "Double", VectorUDAFCount.class},
     {"count",     "String", VectorUDAFCount.class},
+    {"count",     "Decimal",VectorUDAFCount.class},
     {"sum",       "Long",   VectorUDAFSumLong.class},
     {"sum",       "Double", VectorUDAFSumDouble.class},
+    {"sum",       "Decimal",VectorUDAFSumDecimal.class},
     {"avg",       "Long",   VectorUDAFAvgLong.class},
     {"avg",       "Double", VectorUDAFAvgDouble.class},
+    {"avg",       "Decimal",VectorUDAFAvgDecimal.class},
     {"variance",  "Long",   VectorUDAFVarPopLong.class},
     {"var_pop",   "Long",   VectorUDAFVarPopLong.class},
     {"variance",  "Double", VectorUDAFVarPopDouble.class},
     {"var_pop",   "Double", VectorUDAFVarPopDouble.class},
+    {"variance",  "Decimal",VectorUDAFVarPopDecimal.class},
+    {"var_pop",   "Decimal",VectorUDAFVarPopDecimal.class},
     {"var_samp",  "Long",   VectorUDAFVarSampLong.class},
     {"var_samp" , "Double", VectorUDAFVarSampDouble.class},
+    {"var_samp" , "Decimal",VectorUDAFVarSampDecimal.class},
     {"std",       "Long",   VectorUDAFStdPopLong.class},
     {"stddev",    "Long",   VectorUDAFStdPopLong.class},
     {"stddev_pop","Long",   VectorUDAFStdPopLong.class},
     {"std",       "Double", VectorUDAFStdPopDouble.class},
     {"stddev",    "Double", VectorUDAFStdPopDouble.class},
     {"stddev_pop","Double", VectorUDAFStdPopDouble.class},
+    {"std",       "Decimal",VectorUDAFStdPopDecimal.class},
+    {"stddev",    "Decimal",VectorUDAFStdPopDecimal.class},
+    {"stddev_pop","Decimal",VectorUDAFStdPopDecimal.class},
     {"stddev_samp","Long",  VectorUDAFStdSampLong.class},
     {"stddev_samp","Double",VectorUDAFStdSampDouble.class},
+    {"stddev_samp","Decimal",VectorUDAFStdSampDecimal.class},
   };
 
   public VectorAggregateExpression getAggregatorExpression(AggregationDesc desc)
@@ -1364,6 +1444,9 @@ public class VectorizationContext {
     if (paramDescList.size() > 0) {
       ExprNodeDesc inputExpr = paramDescList.get(0);
       inputType = getNormalizedTypeName(inputExpr.getTypeString());
+      if (decimalTypePattern.matcher(inputType).matches()) {
+        inputType = "Decimal";
+      }
     }
 
     for (Object[] aggDef : aggregatesDefinition) {

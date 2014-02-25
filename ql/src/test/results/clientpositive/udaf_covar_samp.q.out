@@ -6,18 +6,22 @@ PREHOOK: query: CREATE TABLE covar_tab (a INT, b INT, c INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE covar_tab (a INT, b INT, c INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@covar_tab
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/covar_tab.txt' OVERWRITE
 INTO TABLE covar_tab
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@covar_tab
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/covar_tab.txt' OVERWRITE
 INTO TABLE covar_tab
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@covar_tab
 PREHOOK: query: DESCRIBE FUNCTION covar_samp
 PREHOOK: type: DESCFUNCTION

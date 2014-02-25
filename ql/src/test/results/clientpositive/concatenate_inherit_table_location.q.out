@@ -2,10 +2,14 @@ PREHOOK: query: CREATE TABLE citl_table (key STRING, value STRING) PARTITIONED B
 STORED AS RCFILE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE citl_table (key STRING, value STRING) PARTITIONED BY (part STRING)
 STORED AS RCFILE
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@citl_table
 PREHOOK: query: INSERT OVERWRITE TABLE citl_table PARTITION (part = '1') SELECT * FROM src
 PREHOOK: type: QUERY
@@ -15,6 +19,7 @@ PREHOOK: Output: default@citl_table@part=1
 PREHOOK: type: ALTERTABLE_LOCATION
 PREHOOK: Input: default@citl_table
 PREHOOK: Output: default@citl_table
+#### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE citl_table PARTITION (part = '1') CONCATENATE
 PREHOOK: type: ALTER_PARTITION_MERGE
 PREHOOK: Input: default@citl_table

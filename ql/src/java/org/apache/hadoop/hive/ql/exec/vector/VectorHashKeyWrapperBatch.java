@@ -40,7 +40,38 @@ public class VectorHashKeyWrapperBatch {
     private int longIndex;
     private int doubleIndex;
     private int stringIndex;
+    private int decimalIndex;
+
+    private static final int INDEX_UNUSED = -1;
+
+    private void resetIndices() {
+        this.longIndex = this.doubleIndex = this.stringIndex = this.decimalIndex = INDEX_UNUSED;
+    }
+    public void setLong(int index) {
+        resetIndices();
+        this.longIndex= index;
+    }
+
+    public void setDouble(int index) {
+        resetIndices();
+        this.doubleIndex = index;
+    }
+
+    public void setString(int index) {
+        resetIndices();
+        this.stringIndex = index;
+    }
+
+    public void setDecimal(int index) {
+        resetIndices();
+        this.decimalIndex = index;
+    }
   }
+
+  /**
+   * Number of object references in 'this' (for size computation)
+   */
+  private static final int MODEL_REFERENCES_COUNT = 7;
 
   /**
    * The key expressions that require evaluation and output the primitive values for each key.
@@ -61,6 +92,11 @@ public class VectorHashKeyWrapperBatch {
    * indices of string (byte[]) primitive keys.
    */
   private int[] stringIndices;
+
+  /**
+   * indices of decimal primitive keys.
+   */
+  private int[] decimalIndices;
 
   /**
    * Pre-allocated batch size vector of keys wrappers.
@@ -175,6 +211,28 @@ public class VectorHashKeyWrapperBatch {
             columnVector.noNulls, columnVector.isRepeating, batch.selectedInUse));
       }
     }
+    for(int i=0;i<decimalIndices.length; ++i) {
+        int keyIndex = decimalIndices[i];
+        int columnIndex = keyExpressions[keyIndex].getOutputColumn();
+        DecimalColumnVector columnVector = (DecimalColumnVector) batch.cols[columnIndex];
+        if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
+          assignDecimalNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
+        } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
+          assignDecimalNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
+        } else if (columnVector.noNulls && columnVector.isRepeating) {
+          assignDecimalNoNullsRepeating(i, batch.size, columnVector);
+        } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
+          assignDecimalNullsNoRepeatingNoSelection(i, batch.size, columnVector);
+        } else if (!columnVector.noNulls && columnVector.isRepeating) {
+          assignDecimalNullsRepeating(i, batch.size, columnVector);
+        } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
+          assignDecimalNullsNoRepeatingSelection (i, batch.size, columnVector, batch.selected);
+        } else {
+          throw new HiveException (String.format(
+              "Unimplemented Decimal null/repeat/selected combination %b/%b/%b",
+              columnVector.noNulls, columnVector.isRepeating, batch.selectedInUse));
+        }
+      }
     for(int i=0;i<batch.size;++i) {
       vectorHashKeyWrappers[i].setHashKey();
     }
@@ -427,6 +485,80 @@ public class VectorHashKeyWrapperBatch {
   }
 
   /**
+   * Helper method to assign values from a vector column into the key wrapper.
+   * Optimized for Decimal type, possible nulls, no repeat values, batch selection vector.
+   */
+  private void assignDecimalNullsNoRepeatingSelection(int index, int size,
+      DecimalColumnVector columnVector, int[] selected) {
+    for(int i = 0; i < size; ++i) {
+      int row = selected[i];
+      if (!columnVector.isNull[row]) {
+        vectorHashKeyWrappers[i].assignDecimal(index, columnVector.vector[row]);
+      } else {
+        vectorHashKeyWrappers[i].assignNullDecimal(index);
+      }
+    }
+  }
+
+  /**
+   * Helper method to assign values from a vector column into the key wrapper.
+   * Optimized for Decimal type, repeat null values.
+   */
+  private void assignDecimalNullsRepeating(int index, int size,
+      DecimalColumnVector columnVector) {
+    for(int r = 0; r < size; ++r) {
+      vectorHashKeyWrappers[r].assignNullDecimal(index);
+    }
+  }
+
+  /**
+   * Helper method to assign values from a vector column into the key wrapper.
+   * Optimized for Decimal type, possible nulls, repeat values.
+   */
+  private void assignDecimalNullsNoRepeatingNoSelection(int index, int size,
+      DecimalColumnVector columnVector) {
+    for(int r = 0; r < size; ++r) {
+      if (!columnVector.isNull[r]) {
+        vectorHashKeyWrappers[r].assignDecimal(index, columnVector.vector[r]);
+      } else {
+        vectorHashKeyWrappers[r].assignNullDecimal(index);
+      }
+    }
+  }
+
+  /**
+   * Helper method to assign values from a vector column into the key wrapper.
+   * Optimized for Decimal type, no nulls, repeat values, no selection vector.
+   */
+  private void assignDecimalNoNullsRepeating(int index, int size, DecimalColumnVector columnVector) {
+    for(int r = 0; r < size; ++r) {
+      vectorHashKeyWrappers[r].assignDecimal(index, columnVector.vector[0]);
+    }
+  }
+
+  /**
+   * Helper method to assign values from a vector column into the key wrapper.
+   * Optimized for Decimal type, no nulls, no repeat values, batch selection vector.
+   */
+  private void assignDecimalNoNullsNoRepeatingSelection(int index, int size,
+      DecimalColumnVector columnVector, int[] selected) {
+    for(int r = 0; r < size; ++r) {
+      vectorHashKeyWrappers[r].assignDecimal(index, columnVector.vector[selected[r]]);
+    }
+  }
+
+  /**
+   * Helper method to assign values from a vector column into the key wrapper.
+   * Optimized for Decimal type, no nulls, no repeat values, no selection vector.
+   */
+  private void assignDecimalNoNullsNoRepeatingNoSelection(int index, int size,
+      DecimalColumnVector columnVector) {
+    for(int r = 0; r < size; ++r) {
+      vectorHashKeyWrappers[r].assignDecimal(index, columnVector.vector[r]);
+    }
+  }
+
+  /**
    * Prepares a VectorHashKeyWrapperBatch to work for a specific set of keys.
    * Computes the fast access lookup indices, preallocates all needed internal arrays.
    * This step is done only once per query, not once per batch. The information computed now
@@ -446,6 +578,8 @@ public class VectorHashKeyWrapperBatch {
     int doubleIndicesIndex  = 0;
     int[] stringIndices = new int[keyExpressions.length];
     int stringIndicesIndex = 0;
+    int[] decimalIndices = new int[keyExpressions.length];
+    int decimalIndicesIndex = 0;
     KeyLookupHelper[] indexLookup = new KeyLookupHelper[keyExpressions.length];
 
     // Inspect the output type of each key expression.
@@ -455,22 +589,20 @@ public class VectorHashKeyWrapperBatch {
       if (VectorizationContext.isIntFamily(outputType) ||
           VectorizationContext.isDatetimeFamily(outputType)) {
         longIndices[longIndicesIndex] = i;
-        indexLookup[i].longIndex = longIndicesIndex;
-        indexLookup[i].doubleIndex = -1;
-        indexLookup[i].stringIndex = -1;
+        indexLookup[i].setLong(longIndicesIndex);
         ++longIndicesIndex;
       } else if (VectorizationContext.isFloatFamily(outputType)) {
         doubleIndices[doubleIndicesIndex] = i;
-        indexLookup[i].longIndex = -1;
-        indexLookup[i].doubleIndex = doubleIndicesIndex;
-        indexLookup[i].stringIndex = -1;
+        indexLookup[i].setDouble(doubleIndicesIndex);
         ++doubleIndicesIndex;
       } else if (VectorizationContext.isStringFamily(outputType)) {
         stringIndices[stringIndicesIndex]= i;
-        indexLookup[i].longIndex = -1;
-        indexLookup[i].doubleIndex = -1;
-        indexLookup[i].stringIndex = stringIndicesIndex;
+        indexLookup[i].setString(stringIndicesIndex);
         ++stringIndicesIndex;
+      } else if (VectorizationContext.isDecimalFamily(outputType)) {
+          decimalIndices[decimalIndicesIndex]= i;
+          indexLookup[i].setDecimal(decimalIndicesIndex);
+          ++decimalIndicesIndex;
       }
       else {
         throw new HiveException("Unsuported vector output type: " + outputType);
@@ -480,11 +612,13 @@ public class VectorHashKeyWrapperBatch {
     compiledKeyWrapperBatch.longIndices = Arrays.copyOf(longIndices, longIndicesIndex);
     compiledKeyWrapperBatch.doubleIndices = Arrays.copyOf(doubleIndices, doubleIndicesIndex);
     compiledKeyWrapperBatch.stringIndices = Arrays.copyOf(stringIndices, stringIndicesIndex);
+    compiledKeyWrapperBatch.decimalIndices = Arrays.copyOf(decimalIndices, decimalIndicesIndex);
     compiledKeyWrapperBatch.vectorHashKeyWrappers =
         new VectorHashKeyWrapper[VectorizedRowBatch.DEFAULT_SIZE];
     for(int i=0;i<VectorizedRowBatch.DEFAULT_SIZE; ++i) {
       compiledKeyWrapperBatch.vectorHashKeyWrappers[i] =
-          new VectorHashKeyWrapper(longIndicesIndex, doubleIndicesIndex, stringIndicesIndex);
+          new VectorHashKeyWrapper(longIndicesIndex, doubleIndicesIndex,
+                  stringIndicesIndex, decimalIndicesIndex);
     }
 
     JavaDataModel model = JavaDataModel.get();
@@ -493,7 +627,7 @@ public class VectorHashKeyWrapperBatch {
     // start with the keywrapper itself
     compiledKeyWrapperBatch.keysFixedSize += JavaDataModel.alignUp(
         model.object() +
-        model.ref() * 6+
+        model.ref() * MODEL_REFERENCES_COUNT +
         model.primitive1(),
         model.memoryAlign());
 
@@ -501,6 +635,7 @@ public class VectorHashKeyWrapperBatch {
     compiledKeyWrapperBatch.keysFixedSize += model.lengthForLongArrayOfSize(longIndicesIndex);
     compiledKeyWrapperBatch.keysFixedSize += model.lengthForDoubleArrayOfSize(doubleIndicesIndex);
     compiledKeyWrapperBatch.keysFixedSize += model.lengthForObjectArrayOfSize(stringIndicesIndex);
+    compiledKeyWrapperBatch.keysFixedSize += model.lengthForObjectArrayOfSize(decimalIndicesIndex);
     compiledKeyWrapperBatch.keysFixedSize += model.lengthForIntArrayOfSize(longIndicesIndex) * 2;
     compiledKeyWrapperBatch.keysFixedSize +=
         model.lengthForBooleanArrayOfSize(keyExpressions.length);
@@ -529,7 +664,12 @@ public class VectorHashKeyWrapperBatch {
               kw.getBytes(klh.stringIndex),
                 kw.getByteStart(klh.stringIndex),
                 kw.getByteLength(klh.stringIndex));
-    } else {
+    } else if (klh.decimalIndex >= 0) {
+      return kw.getIsDecimalNull(klh.decimalIndex)? null :
+          keyOutputWriter.writeValue(
+                kw.getDecimal(klh.decimalIndex));
+    }
+    else {
       throw new HiveException(String.format(
           "Internal inconsistent KeyLookupHelper at index [%d]:%d %d %d",
           i, klh.longIndex, klh.doubleIndex, klh.stringIndex));

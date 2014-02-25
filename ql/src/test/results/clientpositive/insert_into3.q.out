@@ -8,13 +8,17 @@ POSTHOOK: query: DROP TABLE insert_into3b
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE insert_into3a (key int, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE insert_into3a (key int, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into3a
 PREHOOK: query: CREATE TABLE insert_into3b (key int, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE insert_into3b (key int, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into3b
 PREHOOK: query: EXPLAIN FROM src INSERT INTO TABLE insert_into3a SELECT * ORDER BY key, value LIMIT 50
                  INSERT INTO TABLE insert_into3b SELECT * ORDER BY key, value LIMIT 100

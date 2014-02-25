@@ -1,30 +1,44 @@
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
+PREHOOK: Output: database:default
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load_overwrite
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
+PREHOOK: Output: database:default
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load_overwrite2
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_overwrite
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@load_overwrite
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_overwrite
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@load_overwrite
 PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table load_overwrite
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@load_overwrite
 POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table load_overwrite
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@load_overwrite
 PREHOOK: query: load data local inpath '../../data/files/kv3.txt' into table load_overwrite
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@load_overwrite
 POSTHOOK: query: load data local inpath '../../data/files/kv3.txt' into table load_overwrite
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@load_overwrite
 PREHOOK: query: show table extended like load_overwrite
 PREHOOK: type: SHOW_TABLESTATUS
@@ -62,9 +76,11 @@ POSTHOOK: Input: default@load_overwrite
 1025
 #### A masked pattern was here ####
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@load_overwrite2
 #### A masked pattern was here ####
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@load_overwrite2
 PREHOOK: query: show table extended like load_overwrite2
 PREHOOK: type: SHOW_TABLESTATUS
@@ -102,9 +118,11 @@ POSTHOOK: Input: default@load_overwrite2
 1025
 #### A masked pattern was here ####
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@load_overwrite
 #### A masked pattern was here ####
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@load_overwrite
 PREHOOK: query: show table extended like load_overwrite
 PREHOOK: type: SHOW_TABLESTATUS

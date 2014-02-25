@@ -6,10 +6,12 @@ PREHOOK: query: -- Test of hive.exec.max.dynamic.partitions.pernode
 
 CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Test of hive.exec.max.dynamic.partitions.pernode
 
 CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@max_parts
 PREHOOK: query: INSERT OVERWRITE TABLE max_parts PARTITION(value)
 SELECT key, value

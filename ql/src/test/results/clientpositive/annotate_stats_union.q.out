@@ -5,6 +5,7 @@ PREHOOK: query: create table if not exists loc_staging (
   year int
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table if not exists loc_staging (
   state string,
   locid int,
@@ -12,11 +13,14 @@ POSTHOOK: query: create table if not exists loc_staging (
   year int
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@loc_staging
 PREHOOK: query: create table loc_orc like loc_staging
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table loc_orc like loc_staging
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@loc_orc
 PREHOOK: query: alter table loc_orc set fileformat orc
 PREHOOK: type: ALTERTABLE_FILEFORMAT
@@ -28,9 +32,11 @@ POSTHOOK: Input: default@loc_orc
 POSTHOOK: Output: default@loc_orc
 PREHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@loc_staging
 POSTHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@loc_staging
 PREHOOK: query: insert overwrite table loc_orc select * from loc_staging
 PREHOOK: type: QUERY
@@ -607,6 +613,7 @@ PREHOOK: query: create table if not exists loc_staging (
   year int
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test
 POSTHOOK: query: create table if not exists loc_staging (
   state string,
   locid int,
@@ -614,6 +621,7 @@ POSTHOOK: query: create table if not exists loc_staging (
   year int
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test
 POSTHOOK: Output: test@loc_staging
 POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
@@ -621,8 +629,10 @@ POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(nam
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 PREHOOK: query: create table loc_orc like loc_staging
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test
 POSTHOOK: query: create table loc_orc like loc_staging
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test
 POSTHOOK: Output: test@loc_orc
 POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
@@ -642,9 +652,11 @@ POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(nam
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 PREHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: test@loc_staging
 POSTHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: test@loc_staging
 POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]

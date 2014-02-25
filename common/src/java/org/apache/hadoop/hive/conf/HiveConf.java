@@ -534,6 +534,7 @@ public class HiveConf extends Configuration {
     HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS("hive.orc.splits.include.file.footer", false),
     HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE("hive.orc.cache.stripe.details.size", 10000),
     HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS("hive.orc.compute.splits.num.threads", 10),
+    HIVE_ORC_SKIP_CORRUPT_DATA("hive.exec.orc.skip.corrupt.data", false),
 
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
     HIVECONVERTJOIN("hive.auto.convert.join", true),
@@ -820,6 +821,9 @@ public class HiveConf extends Configuration {
     // will wait for a new task to arrive before terminating
     HIVE_SERVER2_ASYNC_EXEC_KEEPALIVE_TIME("hive.server2.async.exec.keepalive.time", 10),
 
+    // Time in milliseconds that HiveServer2 will wait,
+    // before responding to asynchronous calls that use long polling
+    HIVE_SERVER2_LONG_POLLING_TIMEOUT("hive.server2.long.polling.timeout", 5000L),
 
     // HiveServer2 auth configuration
     HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE",

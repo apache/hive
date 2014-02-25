@@ -1,7 +1,9 @@
 PREHOOK: query: create table srcpart2 (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table srcpart2 (key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart2
 PREHOOK: query: insert overwrite table srcpart2 partition (ds='2011') select * from src
 PREHOOK: type: QUERY

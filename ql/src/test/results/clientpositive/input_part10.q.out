@@ -9,6 +9,7 @@ CREATE TABLE part_special (
   ts STRING
 )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- EXCLUDE_OS_WINDOWS
 -- excluded on windows because of difference in file name encoding logic
 
@@ -20,6 +21,7 @@ CREATE TABLE part_special (
   ts STRING
 )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_special
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE part_special PARTITION(ds='2008 04 08', ts = '10:11:12=455')

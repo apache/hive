@@ -17,6 +17,7 @@ CREATE TABLE test_serializer(string1 STRING,
  ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY ':' MAP KEYS TERMINATED BY '#' LINES TERMINATED BY '\n'
  STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Verify that nullable fields properly work
 CREATE TABLE test_serializer(string1 STRING,
                              int1 INT,
@@ -36,12 +37,15 @@ CREATE TABLE test_serializer(string1 STRING,
  ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY ':' MAP KEYS TERMINATED BY '#' LINES TERMINATED BY '\n'
  STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_serializer
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/csv.txt' INTO TABLE test_serializer
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@test_serializer
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/csv.txt' INTO TABLE test_serializer
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@test_serializer
 PREHOOK: query: CREATE TABLE as_avro
   ROW FORMAT
@@ -78,6 +82,7 @@ PREHOOK: query: CREATE TABLE as_avro
     }'
   )
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE as_avro
   ROW FORMAT
   SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -113,6 +118,7 @@ POSTHOOK: query: CREATE TABLE as_avro
     }'
   )
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@as_avro
 PREHOOK: query: INSERT OVERWRITE TABLE as_avro SELECT * FROM test_serializer
 PREHOOK: type: QUERY

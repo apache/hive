@@ -1,17 +1,23 @@
 PREHOOK: query: create table e1 (key string, keyD double)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table e1 (key string, keyD double)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e1
 PREHOOK: query: create table e2 (key string, keyD double, value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table e2 (key string, keyD double, value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e2
 PREHOOK: query: create table e3 (key string, keyD double)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table e3 (key string, keyD double)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e3
 PREHOOK: query: explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
