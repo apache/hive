@@ -1071,7 +1071,7 @@ public class TestJdbcDriver2 {
     tests.put("", new Object[]{});
 
     for (String checkPattern: tests.keySet()) {
-      ResultSet rs = (ResultSet)con.getMetaData().getTables("default", null, checkPattern, null);
+      ResultSet rs = con.getMetaData().getTables("default", null, checkPattern, null);
       ResultSetMetaData resMeta = rs.getMetaData();
       assertEquals(5, resMeta.getColumnCount());
       assertEquals("TABLE_CAT", resMeta.getColumnName(1));
@@ -1100,7 +1100,7 @@ public class TestJdbcDriver2 {
     }
 
     // only ask for the views.
-    ResultSet rs = (ResultSet)con.getMetaData().getTables("default", null, null
+    ResultSet rs = con.getMetaData().getTables("default", null, null
         , new String[]{viewTypeName});
     int cnt=0;
     while (rs.next()) {
@@ -1112,7 +1112,7 @@ public class TestJdbcDriver2 {
 
   @Test
   public void testMetaDataGetCatalogs() throws SQLException {
-    ResultSet rs = (ResultSet)con.getMetaData().getCatalogs();
+    ResultSet rs = con.getMetaData().getCatalogs();
     ResultSetMetaData resMeta = rs.getMetaData();
     assertEquals(1, resMeta.getColumnCount());
     assertEquals("TABLE_CAT", resMeta.getColumnName(1));
@@ -1122,7 +1122,7 @@ public class TestJdbcDriver2 {
 
   @Test
   public void testMetaDataGetSchemas() throws SQLException {
-    ResultSet rs = (ResultSet)con.getMetaData().getSchemas();
+    ResultSet rs = con.getMetaData().getSchemas();
     ResultSetMetaData resMeta = rs.getMetaData();
     assertEquals(2, resMeta.getColumnCount());
     assertEquals("TABLE_SCHEM", resMeta.getColumnName(1));
@@ -1172,7 +1172,7 @@ public class TestJdbcDriver2 {
    */
   private void metaDataGetTableTypeTest(Set<String> tabletypes)
       throws SQLException {
-    ResultSet rs = (ResultSet)con.getMetaData().getTableTypes();
+    ResultSet rs = con.getMetaData().getTableTypes();
 
     int cnt = 0;
     while (rs.next()) {
@@ -1237,7 +1237,7 @@ public class TestJdbcDriver2 {
    */
   @Test
   public void testMetaDataGetColumnsMetaData() throws SQLException {
-    ResultSet rs = (ResultSet)con.getMetaData().getColumns(null, null
+    ResultSet rs = con.getMetaData().getColumns(null, null
         , "testhivejdbcdriver\\_table", null);
 
     ResultSetMetaData rsmd = rs.getMetaData();
@@ -1301,14 +1301,30 @@ public class TestJdbcDriver2 {
     ResultSet res = stmt.executeQuery("describe " + tableName);
 
     res.next();
-    assertEquals("Column name 'under_col' not found", "under_col", res.getString(1).trim());
+    assertEquals("Column name 'under_col' not found", "under_col", res.getString(1));
     assertEquals("Column type 'under_col' for column under_col not found", "int", res
-        .getString(2).trim());
+        .getString(2));
     res.next();
-    assertEquals("Column name 'value' not found", "value", res.getString(1).trim());
+    assertEquals("Column name 'value' not found", "value", res.getString(1));
     assertEquals("Column type 'string' for column key not found", "string", res
-        .getString(2).trim());
+        .getString(2));
 
+    assertFalse("More results found than expected", res.next());
+  }
+
+  @Test
+  public void testShowColumns() throws SQLException {
+    Statement stmt = con.createStatement();
+    assertNotNull("Statement is null", stmt);
+
+    ResultSet res = stmt.executeQuery("show columns in " + tableName);
+    res.next();
+    assertEquals("Column name 'under_col' not found",
+        "under_col", res.getString(1));
+
+    res.next();
+    assertEquals("Column name 'value' not found",
+        "value", res.getString(1));
     assertFalse("More results found than expected", res.next());
   }
 
@@ -1881,7 +1897,7 @@ public class TestJdbcDriver2 {
   public void testUnsupportedFetchTypes() throws Exception {
     try {
       con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
-        ResultSet.CONCUR_READ_ONLY);
+          ResultSet.CONCUR_READ_ONLY);
       fail("createStatement with TYPE_SCROLL_SENSITIVE should fail");
     } catch(SQLException e) {
       assertEquals("HYC00", e.getSQLState().trim());
@@ -1889,7 +1905,7 @@ public class TestJdbcDriver2 {
 
     try {
       con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-        ResultSet.CONCUR_UPDATABLE);
+          ResultSet.CONCUR_UPDATABLE);
       fail("createStatement with CONCUR_UPDATABLE should fail");
     } catch(SQLException e) {
       assertEquals("HYC00", e.getSQLState().trim());
@@ -1924,7 +1940,7 @@ public class TestJdbcDriver2 {
   private void execFetchFirst(String sqlStmt, String colName, boolean oneRowOnly)
       throws Exception {
     Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-          ResultSet.CONCUR_READ_ONLY);
+        ResultSet.CONCUR_READ_ONLY);
     ResultSet res = stmt.executeQuery(sqlStmt);
 
     List<String> results = new ArrayList<String> ();
