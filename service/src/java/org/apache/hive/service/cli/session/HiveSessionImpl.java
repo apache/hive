@@ -85,6 +85,7 @@ public class HiveSessionImpl implements HiveSession {
     this.sessionHandle = new SessionHandle(protocol);
     this.hiveConf = new HiveConf(serverhiveConf);
 
+    //set conf properties specified by user from client side
     if (sessionConfMap != null) {
       for (Map.Entry<String, String> entry : sessionConfMap.entrySet()) {
         hiveConf.set(entry.getKey(), entry.getValue());
@@ -98,6 +99,7 @@ public class HiveSessionImpl implements HiveSession {
         FetchFormatter.ThriftFormatter.class.getName());
     hiveConf.setInt(ListSinkOperator.OUTPUT_PROTOCOL, protocol.getValue());
     sessionState = new SessionState(hiveConf, username);
+    sessionState.setIsHiveServerQuery(true);
     SessionState.start(sessionState);
   }
 
@@ -210,12 +212,12 @@ public class HiveSessionImpl implements HiveSession {
 
   private OperationHandle executeStatementInternal(String statement, Map<String, String> confOverlay,
       boolean runAsync)
-      throws HiveSQLException {
+          throws HiveSQLException {
     acquire();
 
     OperationManager operationManager = getOperationManager();
     ExecuteStatementOperation operation = operationManager
-          .newExecuteStatementOperation(getSession(), statement, confOverlay, runAsync);
+        .newExecuteStatementOperation(getSession(), statement, confOverlay, runAsync);
     OperationHandle opHandle = operation.getHandle();
     try {
       operation.run();
@@ -297,7 +299,7 @@ public class HiveSessionImpl implements HiveSession {
   @Override
   public OperationHandle getTables(String catalogName, String schemaName, String tableName,
       List<String> tableTypes)
-      throws HiveSQLException {
+          throws HiveSQLException {
     acquire();
 
     OperationManager operationManager = getOperationManager();
@@ -346,9 +348,9 @@ public class HiveSessionImpl implements HiveSession {
         catalogName, schemaName, tableName, columnName);
     OperationHandle opHandle = operation.getHandle();
     try {
-    operation.run();
-    opHandleSet.add(opHandle);
-    return opHandle;
+      operation.run();
+      opHandleSet.add(opHandle);
+      return opHandle;
     } catch (HiveSQLException e) {
       operationManager.closeOperation(opHandle);
       throw e;
