@@ -262,7 +262,7 @@ public class TestStringRedBlackTree {
     bit.testCompressedSeek();
     bit.testBiggerItems();
     bit.testSkips();
-    TestOrcFile test1 = new TestOrcFile();
+    TestOrcFile test1 = new TestOrcFile(false);
     test1.test1();
     test1.emptyFile();
     test1.metaData();

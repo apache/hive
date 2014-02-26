@@ -28,7 +28,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -36,6 +38,8 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -53,6 +57,10 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.HadoopShims.*;
+
+import com.google.common.collect.ComparisonChain;
 
 class RecordReaderImpl implements RecordReader {
 
@@ -86,6 +94,89 @@ class RecordReaderImpl implements RecordReader {
   // an array about which row groups aren't skipped
   private boolean[] includedRowGroups = null;
   private final Configuration conf;
+
+  private final ByteBufferAllocatorPool pool = new ByteBufferAllocatorPool();
+  private final ZeroCopyReaderShim zcr;
+
+  // this is an implementation copied from ElasticByteBufferPool in hadoop-2,
+  // which lacks a clear()/clean() operation
+  public final static class ByteBufferAllocatorPool implements ByteBufferPoolShim {
+    private static final class Key implements Comparable<Key> {
+      private final int capacity;
+      private final long insertionGeneration;
+
+      Key(int capacity, long insertionGeneration) {
+        this.capacity = capacity;
+        this.insertionGeneration = insertionGeneration;
+      }
+
+      @Override
+      public int compareTo(Key other) {
+        return ComparisonChain.start().compare(capacity, other.capacity)
+            .compare(insertionGeneration, other.insertionGeneration).result();
+      }
+
+      @Override
+      public boolean equals(Object rhs) {
+        if (rhs == null) {
+          return false;
+        }
+        try {
+          Key o = (Key) rhs;
+          return (compareTo(o) == 0);
+        } catch (ClassCastException e) {
+          return false;
+        }
+      }
+
+      @Override
+      public int hashCode() {
+        return new HashCodeBuilder().append(capacity).append(insertionGeneration)
+            .toHashCode();
+      }
+    }
+
+    private final TreeMap<Key, ByteBuffer> buffers = new TreeMap<Key, ByteBuffer>();
+
+    private final TreeMap<Key, ByteBuffer> directBuffers = new TreeMap<Key, ByteBuffer>();
+
+    private long currentGeneration = 0;
+
+    private final TreeMap<Key, ByteBuffer> getBufferTree(boolean direct) {
+      return direct ? directBuffers : buffers;
+    }
+
+    public void clear() {
+      buffers.clear();
+      directBuffers.clear();
+    }
+
+    @Override
+    public ByteBuffer getBuffer(boolean direct, int length) {
+      TreeMap<Key, ByteBuffer> tree = getBufferTree(direct);
+      Map.Entry<Key, ByteBuffer> entry = tree.ceilingEntry(new Key(length, 0));
+      if (entry == null) {
+        return direct ? ByteBuffer.allocateDirect(length) : ByteBuffer
+            .allocate(length);
+      }
+      tree.remove(entry.getKey());
+      return entry.getValue();
+    }
+
+    @Override
+    public void putBuffer(ByteBuffer buffer) {
+      TreeMap<Key, ByteBuffer> tree = getBufferTree(buffer.isDirect());
+      while (true) {
+        Key key = new Key(buffer.capacity(), currentGeneration++);
+        if (!tree.containsKey(key)) {
+          tree.put(key, buffer);
+          return;
+        }
+        // Buffers are indexed by (capacity, generation).
+        // If our key is not unique on the first try, we try again
+      }
+    }
+  }
 
   RecordReaderImpl(Iterable<StripeInformation> stripes,
                    FileSystem fileSystem,
@@ -128,6 +219,18 @@ class RecordReaderImpl implements RecordReader {
         this.stripes.add(stripe);
         rows += stripe.getNumberOfRows();
       }
+    }
+
+    final boolean zeroCopy = (conf != null)
+        && (HiveConf.getBoolVar(conf, HIVE_ORC_ZEROCOPY));
+
+    if (zeroCopy
+        && (codec == null || ((codec instanceof DirectDecompressionCodec)
+            && ((DirectDecompressionCodec) codec).isAvailable()))) {
+      /* codec is null or is available */
+      this.zcr = ShimLoader.getHadoopShims().getZeroCopyReader(file, pool);
+    } else {
+      this.zcr = null;
     }
 
     firstRow = skippedRows;
@@ -2283,6 +2386,11 @@ class RecordReaderImpl implements RecordReader {
       is.close();
     }
     if(bufferChunks != null) {
+      if(zcr != null) {
+        for (BufferChunk bufChunk : bufferChunks) {
+          zcr.releaseBuffer(bufChunk.chunk);
+        }
+      }
       bufferChunks.clear();
     }
     streams.clear();
@@ -2599,10 +2707,20 @@ class RecordReaderImpl implements RecordReader {
     for(DiskRange range: ranges) {
       int len = (int) (range.end - range.offset);
       long off = range.offset;
-      file.seek(base + off); 
-      byte[] buffer = new byte[len];
-      file.readFully(buffer, 0, buffer.length);
-      result.add(new BufferChunk(ByteBuffer.wrap(buffer), range.offset));
+      file.seek(base + off);
+      if(zcr != null) {
+        while(len > 0) {
+          ByteBuffer partial = zcr.readBuffer(len, false);
+          result.add(new BufferChunk(partial, off));
+          int read = partial.remaining();
+          len -= read;
+          off += read;
+        }
+      } else {
+        byte[] buffer = new byte[len];
+        file.readFully(buffer, 0, buffer.length);
+        result.add(new BufferChunk(ByteBuffer.wrap(buffer), range.offset));
+      }
     }
     return result;
   }
@@ -2840,6 +2958,7 @@ class RecordReaderImpl implements RecordReader {
   @Override
   public void close() throws IOException {
     clearStreams();
+    pool.clear();
     file.close();
   }
 

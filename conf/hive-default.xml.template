@@ -2368,6 +2368,14 @@
 </property>
 
 <property>
+  <name>hive.exec.orc.zerocopy</name>.
+  <value>false</value>
+  <description>
+    Use zerocopy reads with ORC.
+  </description>
+</property>
+
+<property>
   <name>hive.jar.directory</name>
   <value>hdfs:///user/hive/</value>
   <description>

@@ -122,6 +122,9 @@ class MemoryManager {
       totalAllocation -= val.allocation;
       updateScale(false);
     }
+    if(writerList.isEmpty()) {
+      rowsAddedSinceCheck = 0;
+    }
   }
 
   /**
