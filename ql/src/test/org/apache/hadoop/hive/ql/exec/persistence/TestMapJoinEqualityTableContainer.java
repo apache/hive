@@ -38,7 +38,7 @@ public class TestMapJoinEqualityTableContainer {
   private MapJoinRowContainer rowContainer;
   @Before
   public void setup() throws Exception {
-    rowContainer = new MapJoinRowContainer();
+    rowContainer = new MapJoinEagerRowContainer();
     rowContainer.add(VALUE);
     container = new HashMapWrapper();
   }

@@ -57,7 +57,7 @@ public class MapJoinTableContainerSerDe {
     try {
       String name = in.readUTF();
       Map<String, String> metaData = (Map<String, String>) in.readObject();
-      tableContainer = create(name, metaData);      
+      tableContainer = create(name, metaData);
     } catch (IOException e) {
       throw new HiveException("IO error while trying to create table container", e);
     } catch (ClassNotFoundException e) {
@@ -70,7 +70,7 @@ public class MapJoinTableContainerSerDe {
       for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
         MapJoinKey key = new MapJoinKey();
         key.read(keyContext, in, keyContainer);
-        MapJoinRowContainer values = new MapJoinRowContainer();
+        MapJoinEagerRowContainer values = new MapJoinEagerRowContainer();
         values.read(valueContext, in, valueContainer);
         tableContainer.put(key, values);
       }

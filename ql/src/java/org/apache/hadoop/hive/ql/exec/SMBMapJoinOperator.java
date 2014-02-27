@@ -313,7 +313,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     boolean allFetchDone = allFetchDone();
     // if all left data in small tables are less than and equal to the left data
     // in big table, let's them catch up
-    while (bigTblRowContainer != null && bigTblRowContainer.size() > 0
+    while (bigTblRowContainer != null && bigTblRowContainer.rowCount() > 0
         && !allFetchDone) {
       joinOneGroup();
       bigTblRowContainer = this.candidateStorage[this.posBigTable];
@@ -341,7 +341,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       joinOneGroup();
       dataInCache = false;
       for (byte pos = 0; pos < order.length; pos++) {
-        if (this.candidateStorage[pos].size() > 0) {
+        if (this.candidateStorage[pos].rowCount() > 0) {
           dataInCache = true;
           break;
         }
@@ -397,7 +397,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
     checkAndGenObject();
     for (Byte pos : needFetchList) {
-      this.candidateStorage[pos].clear();
+      this.candidateStorage[pos].clearRows();
       this.keyWritables[pos] = null;
     }
     return needFetchList;
@@ -437,7 +437,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     this.keyWritables[t] = this.nextKeyWritables[t];
     this.nextKeyWritables[t] = null;
     RowContainer<List<Object>> oldRowContainer = this.candidateStorage[t];
-    oldRowContainer.clear();
+    oldRowContainer.clearRows();
     this.candidateStorage[t] = this.nextGroupStorage[t];
     this.nextGroupStorage[t] = oldRowContainer;
   }

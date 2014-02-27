@@ -21,18 +21,18 @@ package org.apache.hadoop.hive.ql.exec.persistence;
 import java.util.Map;
 import java.util.Set;
 
-public interface MapJoinTableContainer {  
-  
+public interface MapJoinTableContainer {
+
   public int size();
-  
+
   public MapJoinRowContainer get(MapJoinKey key);
-  
+
   public void put(MapJoinKey key, MapJoinRowContainer value);
-  
+
   public Set<Map.Entry<MapJoinKey, MapJoinRowContainer>> entrySet();
-  
+
   public Map<String, String> getMetaData();
-  
+
   public void clear();
 
 }
