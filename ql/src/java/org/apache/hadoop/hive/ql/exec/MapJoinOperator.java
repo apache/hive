@@ -198,7 +198,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             }
           } else {
             joinNeeded = true;
-            storage[pos] = rowContainer.copy();
+            storage[pos] = rowContainer.copy(); // TODO: why copy?
             aliasFilterTags[pos] = rowContainer.getAliasFilter();
           }
         }
@@ -211,7 +211,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         checkAndGenObject();
       }
       // done with the row
-      storage[tag].clear();
+      storage[tag].clearRows();
       for (byte pos = 0; pos < order.length; pos++) {
         if (pos != tag) {
           storage[pos] = null;

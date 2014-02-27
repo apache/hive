@@ -30,6 +30,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -254,8 +255,35 @@ public final class ObjectInspectorUtils {
     return copyToStandardObject(o, oi, ObjectInspectorCopyOption.JAVA);
   }
 
-  public static Object copyToStandardObject(Object o, ObjectInspector oi,
-      ObjectInspectorCopyOption objectInspectorOption) {
+  public static int getStructSize(ObjectInspector oi) throws SerDeException {
+    if (oi.getCategory() != Category.STRUCT) {
+      throw new SerDeException("Unexpected category " + oi.getCategory());
+    }
+    return ((StructObjectInspector)oi).getAllStructFieldRefs().size();
+  }
+
+  public static void copyStructToArray(Object o, ObjectInspector oi,
+      ObjectInspectorCopyOption objectInspectorOption, Object[] dest, int offset)
+          throws SerDeException {
+    if (o == null) {
+      return;
+    }
+
+    if (oi.getCategory() != Category.STRUCT) {
+      throw new SerDeException("Unexpected category " + oi.getCategory());
+    }
+
+    StructObjectInspector soi = (StructObjectInspector) oi;
+    List<? extends StructField> fields = soi.getAllStructFieldRefs();
+    for (int i = 0; i < fields.size(); ++i) {
+      StructField f = fields.get(i);
+      dest[offset + i] = copyToStandardObject(soi.getStructFieldData(o, f), f
+          .getFieldObjectInspector(), objectInspectorOption);
+    }
+  }
+
+  public static Object copyToStandardObject(
+      Object o, ObjectInspector oi, ObjectInspectorCopyOption objectInspectorOption) {
     if (o == null) {
       return null;
     }

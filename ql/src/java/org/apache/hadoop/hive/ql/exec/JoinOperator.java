@@ -85,7 +85,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       }
 
       // number of rows for the key in the given table
-      long sz = storage[alias].size();
+      long sz = storage[alias].rowCount();
       StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[tag];
       StructField sf = soi.getStructFieldRef(Utilities.ReduceField.KEY
           .toString());
@@ -101,7 +101,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
           // storage,
           // to preserve the correctness for outer joins.
           checkAndGenObject();
-          storage[alias].clear();
+          storage[alias].clearRows();
         }
       } else {
         if (sz == nextSz) {
