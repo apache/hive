@@ -146,8 +146,8 @@ public class GenTezUtils {
   }
 
   // this method's main use is to help unit testing this class
-  protected void setupMapWork(MapWork mapWork, GenTezProcContext context, 
-      PrunedPartitionList partitions, Operator<? extends OperatorDesc> root, 
+  protected void setupMapWork(MapWork mapWork, GenTezProcContext context,
+      PrunedPartitionList partitions, Operator<? extends OperatorDesc> root,
       String alias) throws SemanticException {
     // All the setup is done in GenMapRedUtils
     GenMapRedUtils.setMapWork(mapWork, context.parseContext,
@@ -155,12 +155,12 @@ public class GenTezUtils {
   }
 
   // removes any union operator and clones the plan
-  public void removeUnionOperators(Configuration conf, GenTezProcContext context, 
-      BaseWork work) 
+  public void removeUnionOperators(Configuration conf, GenTezProcContext context,
+      BaseWork work)
     throws SemanticException {
 
     Set<Operator<?>> roots = work.getAllRootOperators();
-    
+
     // need to clone the plan.
     Set<Operator<?>> newRoots = Utilities.cloneOperatorTree(conf, roots);
 
@@ -185,14 +185,14 @@ public class GenTezUtils {
 
       if (current instanceof FileSinkOperator) {
         FileSinkOperator fileSink = (FileSinkOperator)current;
-        
+
         // remember it for additional processing later
         context.fileSinkSet.add(fileSink);
 
         FileSinkDesc desc = fileSink.getConf();
         Path path = desc.getDirName();
         List<FileSinkDesc> linked;
-        
+
         if (!context.linkedFileSinks.containsKey(path)) {
           linked = new ArrayList<FileSinkDesc>();
           context.linkedFileSinks.put(path, linked);
@@ -203,7 +203,7 @@ public class GenTezUtils {
         desc.setDirName(new Path(path, ""+linked.size()));
         desc.setLinkedFileSinkDesc(linked);
       }
-      
+
       if (current instanceof UnionOperator) {
         Operator<?> parent = null;
         int count = 0;
@@ -214,7 +214,7 @@ public class GenTezUtils {
             parent = op;
           }
         }
-        
+
         // we should have been able to reach the union from only one side.
         assert count <= 1;
 
@@ -232,7 +232,7 @@ public class GenTezUtils {
       } else {
         operators.addAll(current.getChildOperators());
       }
-    }   
+    }
     work.replaceRoots(replacementMap);
   }
 
@@ -240,11 +240,11 @@ public class GenTezUtils {
       throws SemanticException {
 
     ParseContext parseContext = context.parseContext;
-    
+
     boolean isInsertTable = // is INSERT OVERWRITE TABLE
         GenMapRedUtils.isInsertInto(parseContext, fileSink);
     HiveConf hconf = parseContext.getConf();
-    
+
     boolean chDir = GenMapRedUtils.isMergeRequired(context.moveTask,
         hconf, fileSink, context.currentTask, isInsertTable);
 
