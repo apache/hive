@@ -51,7 +51,7 @@ public class FileSinkProcessor implements NodeProcessor {
 
     GenTezProcContext context = (GenTezProcContext) procCtx;
     FileSinkOperator fileSink = (FileSinkOperator) nd;
-    
+
     // just remember it for later processing
     context.fileSinkSet.add(fileSink);
     return true;
