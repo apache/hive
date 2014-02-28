@@ -88,6 +88,11 @@ public class SessionState {
    */
   protected boolean isVerbose;
 
+  /**
+   * Is the query served from HiveServer2
+   */
+  private boolean isHiveServerQuery = false;
+
   /*
    * HiveHistory Object
    */
@@ -193,6 +198,10 @@ public class SessionState {
     }
   }
 
+  public boolean isHiveServerQuery() {
+    return this.isHiveServerQuery;
+  }
+
   public void setIsSilent(boolean isSilent) {
     if(conf != null) {
       conf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
@@ -206,6 +215,10 @@ public class SessionState {
 
   public void setIsVerbose(boolean isVerbose) {
     this.isVerbose = isVerbose;
+  }
+
+  public void setIsHiveServerQuery(boolean isHiveServerQuery) {
+    this.isHiveServerQuery = isHiveServerQuery;
   }
 
   public SessionState(HiveConf conf) {
@@ -330,7 +343,7 @@ public class SessionState {
         throw new RuntimeException(e);
       }
     } else {
-       LOG.info("No Tez session required at this point. hive.execution.engine=mr.");
+      LOG.info("No Tez session required at this point. hive.execution.engine=mr.");
     }
     return startSs;
   }
@@ -383,7 +396,7 @@ public class SessionState {
     if(LOG.isDebugEnabled()){
       Object authorizationClass = getAuthorizationMode() == AuthorizationMode.V1 ?
           getAuthorizer() : getAuthorizerV2();
-      LOG.debug("Session is using authorization class " + authorizationClass.getClass());
+          LOG.debug("Session is using authorization class " + authorizationClass.getClass());
     }
     return;
   }

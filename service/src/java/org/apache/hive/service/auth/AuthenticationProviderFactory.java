@@ -23,6 +23,7 @@ public class AuthenticationProviderFactory {
 
   public static enum AuthMethods {
     LDAP("LDAP"),
+    PAM("PAM"),
     CUSTOM("CUSTOM"),
     NONE("NONE");
 
@@ -50,14 +51,20 @@ public class AuthenticationProviderFactory {
   }
 
   public static PasswdAuthenticationProvider getAuthenticationProvider(AuthMethods authMethod)
-            throws AuthenticationException {
+      throws AuthenticationException {
     if (authMethod.equals(AuthMethods.LDAP)) {
       return new LdapAuthenticationProviderImpl();
-    } else if (authMethod.equals(AuthMethods.CUSTOM)) {
+    }
+    else if (authMethod.equals(AuthMethods.PAM)) {
+      return new PamAuthenticationProviderImpl();
+    }
+    else if (authMethod.equals(AuthMethods.CUSTOM)) {
       return new CustomAuthenticationProviderImpl();
-    } else if (authMethod.equals(AuthMethods.NONE)) {
+    }
+    else if (authMethod.equals(AuthMethods.NONE)) {
       return new AnonymousAuthenticationProviderImpl();
-    } else {
+    }
+    else {
       throw new AuthenticationException("Unsupported authentication method");
     }
   }

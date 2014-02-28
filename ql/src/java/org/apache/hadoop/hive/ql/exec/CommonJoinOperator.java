@@ -323,7 +323,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     LOG.trace("Join: Starting new group");
     newGroupStarted = true;
     for (AbstractRowContainer<List<Object>> alw : storage) {
-      alw.clear();
+      alw.clearRows();
     }
     super.startGroup();
   }
@@ -437,8 +437,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   private void genJoinObject() throws HiveException {
     boolean rightFirst = true;
     boolean hasFilter = hasFilter(order[0]);
-    AbstractRowContainer<List<Object>> aliasRes = storage[order[0]];
-    for (List<Object> rightObj = aliasRes.first(); rightObj != null; rightObj = aliasRes.next()) {
+    AbstractRowContainer.RowIterator<List<Object>> iter = storage[order[0]].rowIter();
+    for (List<Object> rightObj = iter.first(); rightObj != null; rightObj = iter.next()) {
       boolean rightNull = rightObj == dummyObj[0];
       if (hasFilter) {
         filterTags[0] = getFilterTag(rightObj);
@@ -472,8 +472,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       boolean tryLOForFO = type == JoinDesc.FULL_OUTER_JOIN;
 
       boolean rightFirst = true;
-      for (List<Object> rightObj = aliasRes.first(); !done && rightObj != null;
-           rightObj = loopAgain ? rightObj : aliasRes.next(), rightFirst = loopAgain = false) {
+      AbstractRowContainer.RowIterator<List<Object>> iter = aliasRes.rowIter();
+      for (List<Object> rightObj = iter.first(); !done && rightObj != null;
+           rightObj = loopAgain ? rightObj : iter.next(), rightFirst = loopAgain = false) {
         System.arraycopy(prevSkip, 0, skip, 0, prevSkip.length);
 
         boolean rightNull = rightObj == dummyObj[aliasNum];
@@ -639,8 +640,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   private void genUniqueJoinObject(int aliasNum, int forwardCachePos)
       throws HiveException {
-    AbstractRowContainer<List<Object>> alias = storage[order[aliasNum]];
-    for (List<Object> row = alias.first(); row != null; row = alias.next()) {
+    AbstractRowContainer.RowIterator<List<Object>> iter = storage[order[aliasNum]].rowIter();
+    for (List<Object> row = iter.first(); row != null; row = iter.next()) {
       int sz = joinValues[order[aliasNum]].size();
       int p = forwardCachePos;
       for (int j = 0; j < sz; j++) {
@@ -660,7 +661,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     int p = 0;
     for (int i = 0; i < numAliases; i++) {
       int sz = joinValues[order[i]].size();
-      List<Object> obj = storage[order[i]].first();
+      List<Object> obj = storage[order[i]].rowIter().first();
       for (int j = 0; j < sz; j++) {
         forwardCache[p++] = obj.get(j);
       }
@@ -684,11 +685,11 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         Byte alias = order[i];
         AbstractRowContainer<List<Object>> alw = storage[alias];
 
-        if (alw.size() != 1) {
+        if (alw.rowCount() != 1) {
           allOne = false;
         }
 
-        if (alw.size() == 0) {
+        if (alw.rowCount() == 0) {
           alw.add(dummyObj[i]);
           hasNulls = true;
         } else if (condn[i].getPreserved()) {
@@ -718,24 +719,25 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         AbstractRowContainer<List<Object>> alw = storage[alias];
 
         if (noOuterJoin) {
-          if (alw.size() == 0) {
+          if (alw.rowCount() == 0) {
             LOG.trace("No data for alias=" + i);
             return;
-          } else if (alw.size() > 1) {
+          } else if (alw.rowCount() > 1) {
             mayHasMoreThanOne = true;
           }
         } else {
-          if (alw.size() == 0) {
+          if (alw.rowCount() == 0) {
             hasEmpty = true;
             alw.add(dummyObj[i]);
-          } else if (!hasEmpty && alw.size() == 1) {
-            if (hasAnyFiltered(alias, alw.first())) {
+          } else if (!hasEmpty && alw.rowCount() == 1) {
+            if (hasAnyFiltered(alias, alw.rowIter().first())) {
               hasEmpty = true;
             }
           } else {
             mayHasMoreThanOne = true;
             if (!hasEmpty) {
-              for (List<Object> row = alw.first(); row != null; row = alw.next()) {
+              AbstractRowContainer.RowIterator<List<Object>> iter = alw.rowIter();
+              for (List<Object> row = iter.first(); row != null; row = iter.next()) {
                 reportProgress();
                 if (hasAnyFiltered(alias, row)) {
                   hasEmpty = true;
@@ -784,7 +786,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     LOG.trace("Join Op close");
     for (AbstractRowContainer<List<Object>> alw : storage) {
       if (alw != null) {
-        alw.clear(); // clean up the temp files
+        alw.clearRows(); // clean up the temp files
       }
     }
     Arrays.fill(storage, null);

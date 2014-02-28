@@ -80,6 +80,9 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
         // listColumns contains partition columns which are metadata only
         if (fileSchema.containsField(col)) {
           typeListTable.add(fileSchema.getType(col));
+        } else {
+          // below allows schema evolution
+          typeListTable.add(new PrimitiveType(Repetition.OPTIONAL, PrimitiveTypeName.BINARY, col));
         }
       }
       MessageType tableSchema = new MessageType(TABLE_SCHEMA, typeListTable);

@@ -28,13 +28,14 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
+import org.apache.hadoop.hive.ql.exec.persistence.LazyFlatRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.library.api.KeyValueReader;
@@ -68,6 +69,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     int hashTableThreshold = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD);
     float hashTableLoadFactor = HiveConf.getFloatVar(hconf,
         HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR);
+    boolean useLazyRows = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEMAPJOINLAZYHASHTABLE);
 
     for (int pos = 0; pos < mapJoinTables.length; pos++) {
       if (pos == desc.getPosBigTable()) {
@@ -87,12 +89,13 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           MapJoinKey key = new MapJoinKey();
           key.read(mapJoinTableSerdes[pos].getKeyContext(), (Writable)kvReader.getCurrentKey());
 
-          MapJoinRowContainer values = tableContainer.get(key);
-          if(values == null){
-        	  values = new MapJoinRowContainer();
-        	  tableContainer.put(key, values);
+          LazyFlatRowContainer values = (LazyFlatRowContainer)tableContainer.get(key);
+          if (values == null) {
+            values = new LazyFlatRowContainer();
+            tableContainer.put(key, values);
           }
-          values.read(mapJoinTableSerdes[pos].getValueContext(), (Writable)kvReader.getCurrentValue());
+          values.add(mapJoinTableSerdes[pos].getValueContext(),
+              (BytesWritable)kvReader.getCurrentValue(), useLazyRows);
         }
 
         mapJoinTables[pos] = tableContainer;

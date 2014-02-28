@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import junit.framework.Assert;
 
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.io.BytesWritable;
@@ -62,20 +63,22 @@ class Utilities {
     result.read(context, in, new BytesWritable());
     return result;
   }
-  
-  
-  static void testEquality(MapJoinRowContainer container1, MapJoinRowContainer container2) {
-    Assert.assertEquals(container1.size(), container2.size());
-    List<Object> row1 = container1.first();
-    List<Object> row2 = container2.first();
-    for (; row1 != null && row2 != null; row1 = container1.next(), row2 = container2.next()) {
+
+
+  static void testEquality(MapJoinRowContainer container1, MapJoinRowContainer container2)
+      throws HiveException {
+    Assert.assertEquals(container1.rowCount(), container2.rowCount());
+    AbstractRowContainer.RowIterator<List<Object>> iter1 = container1.rowIter(),
+        iter2 = container2.rowIter();
+    for (List<Object> row1 = iter1.first(), row2 = iter2.first();
+        row1 != null && row2 != null; row1 = iter1.next(), row2 = iter2.next()) {
       Assert.assertEquals(row1, row2);
     }
   }
-  
-  static MapJoinRowContainer serde(MapJoinRowContainer container, String columns, String types) 
-  throws Exception {
-    MapJoinRowContainer result = new MapJoinRowContainer();
+
+  static MapJoinEagerRowContainer serde(
+      MapJoinRowContainer container, String columns, String types) throws Exception {
+    MapJoinEagerRowContainer result = new MapJoinEagerRowContainer();
     ByteArrayInputStream bais;
     ObjectInputStream in;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();

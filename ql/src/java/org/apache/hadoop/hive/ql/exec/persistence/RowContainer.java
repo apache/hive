@@ -71,7 +71,8 @@ import org.apache.hadoop.util.ReflectionUtils;
  * reading.
  *
  */
-public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer<ROW> {
+public class RowContainer<ROW extends List<Object>>
+  implements AbstractRowContainer<ROW>, AbstractRowContainer.RowIterator<ROW> {
 
   protected static Log LOG = LogFactory.getLog(RowContainer.class);
 
@@ -175,6 +176,11 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
       this.dummyRow = t;
     }
     ++size;
+  }
+
+  @Override
+  public AbstractRowContainer.RowIterator<ROW> rowIter() {
+    return this;
   }
 
   @Override
@@ -316,7 +322,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
 
       this.numFlushedBlocks++;
     } catch (Exception e) {
-      clear();
+      clearRows();
       LOG.error(e.toString(), e);
       if ( e instanceof HiveException ) {
         throw (HiveException) e;
@@ -331,8 +337,8 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
    * @return number of elements in the RowContainer
    */
   @Override
-  public long size() {
-    return size;
+  public int rowCount() {
+    return (int)size;
   }
 
   protected boolean nextBlock(int readIntoOffset) throws HiveException {
@@ -372,7 +378,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
       try {
-        this.clear();
+        this.clearRows();
       } catch (HiveException e1) {
         LOG.error(e.getMessage(), e);
       }
@@ -392,14 +398,14 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
         + destPath.toString());
     destFs
         .copyFromLocalFile(true, tempOutPath, new Path(destPath, new Path(tempOutPath.getName())));
-    clear();
+    clearRows();
   }
 
   /**
    * Remove all elements in the RowContainer.
    */
   @Override
-  public void clear() throws HiveException {
+  public void clearRows() throws HiveException {
     itrCursor = 0;
     addCursor = 0;
     numFlushedBlocks = 0;
@@ -524,7 +530,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
           hiveOutputFormat, serde.getSerializedClass(), false,
           tblDesc.getProperties(), tempOutPath, reporter);
     } catch (Exception e) {
-      clear();
+      clearRows();
       LOG.error(e.toString(), e);
       throw new HiveException(e);
     }
@@ -586,8 +592,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
   }
 
   protected void close() throws HiveException {
-    clear();
+    clearRows();
     currentReadBlock = firstReadBlockPointer = currentWriteBlock = null;
   }
-
 }
