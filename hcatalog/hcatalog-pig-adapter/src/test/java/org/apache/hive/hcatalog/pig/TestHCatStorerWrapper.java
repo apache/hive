@@ -73,7 +73,18 @@ public class TestHCatStorerWrapper extends HCatBaseTest {
     server.executeBatch();
 
     Assert.assertTrue(tmpExternalDir.exists());
-    Assert.assertTrue(new File(tmpExternalDir.getPath().replaceAll("\\\\", "/") + "/" + "part-m-00000").exists());
+
+    boolean found = false;
+    File[] f = tmpExternalDir.listFiles();
+    if (f != null) {
+      for (File fin : f){
+        if (fin.getPath().contains("part-m-00000")){
+          found = true;
+        }
+      }
+    }
+
+    Assert.assertTrue(found);
 
     driver.run("select * from junit_external");
     ArrayList<String> res = new ArrayList<String>();

@@ -113,6 +113,14 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
         throw new HCatException(ErrorType.ERROR_NOT_SUPPORTED, "Store into a partition with sorted column definition from Pig/Mapreduce is not supported");
       }
 
+      // Set up a common id hash for this job, so that when we create any temporary directory
+      // later on, it is guaranteed to be unique.
+      String idHash;
+      if ((idHash = conf.get(HCatConstants.HCAT_OUTPUT_ID_HASH)) == null) {
+        idHash = String.valueOf(Math.random());
+      }
+      conf.set(HCatConstants.HCAT_OUTPUT_ID_HASH,idHash);
+
       if (table.getTTable().getPartitionKeysSize() == 0) {
         if ((outputJobInfo.getPartitionValues() != null) && (!outputJobInfo.getPartitionValues().isEmpty())) {
           // attempt made to save partition values in non-partitioned table - throw error.
@@ -153,9 +161,6 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
           String dynHash;
           if ((dynHash = conf.get(HCatConstants.HCAT_DYNAMIC_PTN_JOBID)) == null) {
             dynHash = String.valueOf(Math.random());
-//              LOG.info("New dynHash : ["+dynHash+"]");
-//            }else{
-//              LOG.info("Old dynHash : ["+dynHash+"]");
           }
           conf.set(HCatConstants.HCAT_DYNAMIC_PTN_JOBID, dynHash);
 

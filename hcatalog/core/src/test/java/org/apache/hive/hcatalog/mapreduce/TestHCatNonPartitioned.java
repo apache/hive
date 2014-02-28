@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hive.hcatalog.common.ErrorType;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.DefaultHCatRecord;
@@ -38,6 +39,8 @@ import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 public class TestHCatNonPartitioned extends HCatMapReduceTest {
 
@@ -87,17 +90,21 @@ public class TestHCatNonPartitioned extends HCatMapReduceTest {
     Map<String, String> partitionMap = new HashMap<String, String>();
     runMRCreate(null, partitionColumns, writeRecords, 10, true);
 
-    //Test for duplicate publish
+    //Test for duplicate publish -- this will either fail on job creation time
+    // and throw an exception, or will fail at runtime, and fail the job.
+
     IOException exc = null;
     try {
-      runMRCreate(null, partitionColumns, writeRecords, 20, true);
+      Job j = runMRCreate(null, partitionColumns, writeRecords, 20, true);
+      assertEquals(!isTableImmutable(),j.isSuccessful());
     } catch (IOException e) {
       exc = e;
+      assertTrue(exc instanceof HCatException);
+      assertEquals(ErrorType.ERROR_NON_EMPTY_TABLE, ((HCatException) exc).getErrorType());
     }
-
-    assertTrue(exc != null);
-    assertTrue(exc instanceof HCatException);
-    assertEquals(ErrorType.ERROR_NON_EMPTY_TABLE, ((HCatException) exc).getErrorType());
+    if (!isTableImmutable()){
+      assertNull(exc);
+    }
 
     //Test for publish with invalid partition key name
     exc = null;
@@ -105,17 +112,21 @@ public class TestHCatNonPartitioned extends HCatMapReduceTest {
     partitionMap.put("px", "p1value2");
 
     try {
-      runMRCreate(partitionMap, partitionColumns, writeRecords, 20, true);
+      Job j = runMRCreate(partitionMap, partitionColumns, writeRecords, 20, true);
+      assertFalse(j.isSuccessful());
     } catch (IOException e) {
       exc = e;
+      assertTrue(exc != null);
+      assertTrue(exc instanceof HCatException);
+      assertEquals(ErrorType.ERROR_INVALID_PARTITION_VALUES, ((HCatException) exc).getErrorType());
     }
 
-    assertTrue(exc != null);
-    assertTrue(exc instanceof HCatException);
-    assertEquals(ErrorType.ERROR_INVALID_PARTITION_VALUES, ((HCatException) exc).getErrorType());
-
-    //Read should get 10 rows
-    runMRRead(10);
+    //Read should get 10 rows if immutable, 30 if mutable
+    if (isTableImmutable()){
+      runMRRead(10);
+    } else {
+      runMRRead(30);
+    }
 
     hiveReadTest();
   }
@@ -132,6 +143,10 @@ public class TestHCatNonPartitioned extends HCatMapReduceTest {
 
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);
-    assertEquals(10, res.size());
+    if (isTableImmutable()){
+      assertEquals(10, res.size());
+    }else {
+      assertEquals(30, res.size());
+    }
   }
 }
