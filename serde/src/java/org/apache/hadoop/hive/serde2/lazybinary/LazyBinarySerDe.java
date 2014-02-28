@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -159,8 +160,8 @@ public class LazyBinarySerDe extends AbstractSerDe {
     if (byteArrayRef == null) {
       byteArrayRef = new ByteArrayRef();
     }
-    if (field instanceof BytesWritable) {
-      BytesWritable b = (BytesWritable) field;
+    if (field instanceof BinaryComparable) {
+      BinaryComparable b = (BinaryComparable) field;
       if (b.getLength() == 0) {
         return null;
       }
@@ -176,7 +177,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
       cachedLazyBinaryStruct.init(byteArrayRef, 0, t.getLength());
     } else {
       throw new SerDeException(getClass().toString()
-          + ": expects either BytesWritable or Text object!");
+          + ": expects either BinaryComparable or Text object!");
     }
     lastOperationSerialize = false;
     lastOperationDeserialize = true;

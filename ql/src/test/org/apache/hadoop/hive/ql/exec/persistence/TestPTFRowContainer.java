@@ -85,7 +85,7 @@ public class TestPTFRowContainer {
     }
 
     // test forward scan
-    assert(rc.size() == sz);
+    assert(rc.rowCount() == sz);
     i = 0;
     row = new ArrayList<Object>();
     row = rc.first();

@@ -63,38 +63,79 @@ public final class MetaDataFormatUtils {
     columnInformation.append(LINE_DELIM);
   }
 
+  /**
+   * Write formatted information about the given columns to a string
+   * @param cols - list of columns
+   * @param printHeader - if header should be included
+   * @param isOutputPadded - make it more human readable by setting indentation
+   *        with spaces. Turned off for use by HiveServer2
+   * @return string with formatted column information
+   */
   public static String getAllColumnsInformation(List<FieldSchema> cols,
-      boolean printHeader) {
+      boolean printHeader, boolean isOutputPadded) {
     StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
     if(printHeader){
       formatColumnsHeader(columnInformation);
     }
-    formatAllFields(columnInformation, cols);
+    formatAllFields(columnInformation, cols, isOutputPadded);
     return columnInformation.toString();
   }
 
-  public static String getAllColumnsInformation(List<FieldSchema> cols, List<FieldSchema> partCols,
-      boolean printHeader) {
+  /**
+   * Write formatted information about the given columns, including partition
+   * columns to a string
+   * @param cols - list of columns
+   * @param partCols - list of partition columns
+   * @param printHeader - if header should be included
+   * @param isOutputPadded - make it more human readable by setting indentation
+   *        with spaces. Turned off for use by HiveServer2
+   * @return string with formatted column information
+   */
+  public static String getAllColumnsInformation(List<FieldSchema> cols,
+      List<FieldSchema> partCols, boolean printHeader, boolean isOutputPadded) {
     StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
     if(printHeader){
       formatColumnsHeader(columnInformation);
     }
-    formatAllFields(columnInformation, cols);
+    formatAllFields(columnInformation, cols, isOutputPadded);
 
     if ((partCols != null) && (!partCols.isEmpty())) {
       columnInformation.append(LINE_DELIM).append("# Partition Information")
-        .append(LINE_DELIM);
+      .append(LINE_DELIM);
       formatColumnsHeader(columnInformation);
-      formatAllFields(columnInformation, partCols);
+      formatAllFields(columnInformation, partCols, isOutputPadded);
     }
 
     return columnInformation.toString();
   }
 
-  private static void formatAllFields(StringBuilder tableInfo, List<FieldSchema> cols) {
+  /**
+   * Write formatted column information into given StringBuilder
+   * @param tableInfo - StringBuilder to append column information into
+   * @param cols - list of columns
+   * @param isOutputPadded - make it more human readable by setting indentation
+   *        with spaces. Turned off for use by HiveServer2
+   */
+  private static void formatAllFields(StringBuilder tableInfo,
+      List<FieldSchema> cols, boolean isOutputPadded) {
     for (FieldSchema col : cols) {
-      formatOutput(col.getName(), col.getType(), getComment(col), tableInfo);
+      if(isOutputPadded) {
+        formatWithIndentation(col.getName(), col.getType(), getComment(col), tableInfo);
+      }
+      else {
+        formatWithoutIndentation(col.getName(), col.getType(), col.getComment(), tableInfo);
+      }
     }
+  }
+
+  private static void formatWithoutIndentation(String name, String type, String comment,
+      StringBuilder colBuffer) {
+    colBuffer.append(name);
+    colBuffer.append(FIELD_DELIM);
+    colBuffer.append(type);
+    colBuffer.append(FIELD_DELIM);
+    colBuffer.append(comment == null ? "" : comment);
+    colBuffer.append(LINE_DELIM);
   }
 
   public static String getAllColumnsInformation(Index index) {
@@ -133,7 +174,7 @@ public final class MetaDataFormatUtils {
     formatOutput(indexColumns.toArray(new String[0]), indexInfo);
 
     return indexInfo.toString();
-}
+  }
 
   public static String getPartitionInformation(Partition part) {
     StringBuilder tableInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
@@ -176,7 +217,7 @@ public final class MetaDataFormatUtils {
   }
 
   private static void getStorageDescriptorInfo(StringBuilder tableInfo,
-                                               StorageDescriptor storageDesc) {
+      StorageDescriptor storageDesc) {
 
     formatOutput("SerDe Library:", storageDesc.getSerdeInfo().getSerializationLib(), tableInfo);
     formatOutput("InputFormat:", storageDesc.getInputFormat(), tableInfo);
@@ -293,13 +334,13 @@ public final class MetaDataFormatUtils {
   }
 
   private static void formatOutput(String name, String value,
-                                   StringBuilder tableInfo) {
+      StringBuilder tableInfo) {
     tableInfo.append(String.format("%-" + ALIGNMENT + "s", name)).append(FIELD_DELIM);
     tableInfo.append(String.format("%-" + ALIGNMENT + "s", value)).append(LINE_DELIM);
   }
 
-  private static void formatOutput(String colName, String colType, String colComment,
-                                   StringBuilder tableInfo) {
+  private static void formatWithIndentation(String colName, String colType, String colComment,
+      StringBuilder tableInfo) {
     tableInfo.append(String.format("%-" + ALIGNMENT + "s", colName)).append(FIELD_DELIM);
     tableInfo.append(String.format("%-" + ALIGNMENT + "s", colType)).append(FIELD_DELIM);
 
@@ -313,7 +354,7 @@ public final class MetaDataFormatUtils {
     int colTypeLength = ALIGNMENT > colType.length() ? ALIGNMENT : colType.length();
     for (int i = 1; i < commentSegments.length; i++) {
       tableInfo.append(String.format("%" + colNameLength + "s" + FIELD_DELIM + "%"
-        + colTypeLength + "s" + FIELD_DELIM + "%s", "", "", commentSegments[i])).append(LINE_DELIM);
+          + colTypeLength + "s" + FIELD_DELIM + "%s", "", "", commentSegments[i])).append(LINE_DELIM);
     }
   }
 

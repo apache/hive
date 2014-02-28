@@ -431,6 +431,7 @@ public class HiveConf extends Configuration {
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
     HIVEMAPJOINBUCKETCACHESIZE("hive.mapjoin.bucket.cache.size", 100),
+    HIVEMAPJOINLAZYHASHTABLE("hive.mapjoin.lazy.hashtable", true),
 
     HIVESMBJOINCACHEROWS("hive.smbjoin.cache.rows", 10000),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000),
@@ -829,13 +830,16 @@ public class HiveConf extends Configuration {
 
     // HiveServer2 auth configuration
     HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE",
-        new StringsValidator("NOSASL", "NONE", "LDAP", "KERBEROS", "CUSTOM")),
+        new StringsValidator("NOSASL", "NONE", "LDAP", "KERBEROS", "PAM", "CUSTOM")),
     HIVE_SERVER2_KERBEROS_KEYTAB("hive.server2.authentication.kerberos.keytab", ""),
     HIVE_SERVER2_KERBEROS_PRINCIPAL("hive.server2.authentication.kerberos.principal", ""),
     HIVE_SERVER2_PLAIN_LDAP_URL("hive.server2.authentication.ldap.url", null),
     HIVE_SERVER2_PLAIN_LDAP_BASEDN("hive.server2.authentication.ldap.baseDN", null),
     HIVE_SERVER2_PLAIN_LDAP_DOMAIN("hive.server2.authentication.ldap.Domain", null),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null),
+    // List of the underlying pam services that should be used when auth type is PAM
+    // A file with the same name must exist in /etc/pam.d
+    HIVE_SERVER2_PAM_SERVICES("hive.server2.authentication.pam.services", null),
     HIVE_SERVER2_ENABLE_DOAS("hive.server2.enable.doAs", true),
     HIVE_SERVER2_TABLE_TYPE_MAPPING("hive.server2.table.type.mapping", "CLASSIC",
         new StringsValidator("CLASSIC", "HIVE")),
