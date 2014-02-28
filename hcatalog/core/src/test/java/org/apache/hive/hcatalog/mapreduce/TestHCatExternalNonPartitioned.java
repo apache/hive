@@ -19,7 +19,7 @@
 
 package org.apache.hive.hcatalog.mapreduce;
 
-public class TestHCatExternalHCatNonPartitioned extends TestHCatNonPartitioned {
+public class TestHCatExternalNonPartitioned extends TestHCatNonPartitioned {
 
   @Override
   protected Boolean isTableExternal() {

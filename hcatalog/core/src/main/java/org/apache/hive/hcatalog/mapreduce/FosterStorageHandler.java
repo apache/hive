@@ -111,6 +111,8 @@ public class FosterStorageHandler extends DefaultStorageHandler {
       String parentPath = jobInfo.getTableInfo().getTableLocation();
       String dynHash = tableDesc.getJobProperties().get(
         HCatConstants.HCAT_DYNAMIC_PTN_JOBID);
+      String idHash = tableDesc.getJobProperties().get(
+          HCatConstants.HCAT_OUTPUT_ID_HASH);
 
       // For dynamic partitioned writes without all keyvalues specified,
       // we create a temp dir for the associated write job
@@ -122,6 +124,8 @@ public class FosterStorageHandler extends DefaultStorageHandler {
           parentPath = new Path(parentPath, jobInfo.getCustomDynamicRoot()).toString();
         }
         parentPath = new Path(parentPath, FileOutputCommitterContainer.DYNTEMP_DIR_NAME + dynHash).toString();
+      } else {
+        parentPath = new Path(parentPath,FileOutputCommitterContainer.SCRATCH_DIR_NAME + idHash).toString();
       }
 
       String outputLocation;
@@ -139,8 +143,8 @@ public class FosterStorageHandler extends DefaultStorageHandler {
         // honor custom location for external table apart from what metadata specifies
         outputLocation = jobInfo.getLocation();
       } else if (dynHash == null && jobInfo.getPartitionValues().size() == 0) {
-        // For non-partitioned tables, we send them to the temp dir
-        outputLocation = TEMP_DIR_NAME;
+        // Unpartitioned table, writing to the scratch dir directly is good enough.
+        outputLocation = "";
       } else {
         List<String> cols = new ArrayList<String>();
         List<String> values = new ArrayList<String>();
@@ -156,11 +160,15 @@ public class FosterStorageHandler extends DefaultStorageHandler {
         outputLocation = FileUtils.makePartName(cols, values);
       }
 
-      jobInfo.setLocation(new Path(parentPath, outputLocation).toString());
+      if (outputLocation!= null && !outputLocation.isEmpty()){
+        jobInfo.setLocation(new Path(parentPath, outputLocation).toString());
+      } else {
+        jobInfo.setLocation(new Path(parentPath).toString());
+      }
 
       //only set output dir if partition is fully materialized
-      if (jobInfo.getPartitionValues().size()
-        == jobInfo.getTableInfo().getPartitionColumns().size()) {
+      if (jobInfo.getPartitionValues().size() ==
+          jobInfo.getTableInfo().getPartitionColumns().size()) {
         jobProperties.put("mapred.output.dir", jobInfo.getLocation());
       }
 

@@ -149,7 +149,10 @@ class FileOutputFormatContainer extends OutputFormatContainer {
   }
 
   /**
-   * Handles duplicate publish of partition. Fails if partition already exists.
+   * Handles duplicate publish of partition or data into an unpartitioned table
+   * if the table is immutable
+   *
+   * For partitioned tables, fails if partition already exists.
    * For non partitioned tables, fails if files are present in table directory.
    * For dynamic partitioned publish, does nothing - check would need to be done at recordwriter time
    * @param context the job
@@ -161,17 +164,21 @@ class FileOutputFormatContainer extends OutputFormatContainer {
    * @throws org.apache.thrift.TException
    */
   private static void handleDuplicatePublish(JobContext context, OutputJobInfo outputInfo,
-                         HiveMetaStoreClient client, Table table) throws IOException, MetaException, TException, NoSuchObjectException {
+      HiveMetaStoreClient client, Table table)
+      throws IOException, MetaException, TException, NoSuchObjectException {
 
     /*
-    * For fully specified ptn, follow strict checks for existence of partitions in metadata
-    * For unpartitioned tables, follow filechecks
-    * For partially specified tables:
-    *    This would then need filechecks at the start of a ptn write,
-    *    Doing metadata checks can get potentially very expensive (fat conf) if
-    *    there are a large number of partitions that match the partial specifications
-    */
+     * For fully specified ptn, follow strict checks for existence of partitions in metadata
+     * For unpartitioned tables, follow filechecks
+     * For partially specified tables:
+     *    This would then need filechecks at the start of a ptn write,
+     *    Doing metadata checks can get potentially very expensive (fat conf) if
+     *    there are a large number of partitions that match the partial specifications
+     */
 
+    if (!table.isImmutable()){
+      return;
+    }
     if (table.getPartitionKeys().size() > 0) {
       if (!outputInfo.isDynamicPartitioningUsed()) {
         List<String> partitionValues = getPartitionValueList(
@@ -181,6 +188,9 @@ class FileOutputFormatContainer extends OutputFormatContainer {
           outputInfo.getTableName(), partitionValues, (short) 1);
 
         if (currentParts.size() > 0) {
+          // If a table is partitioned and immutable, then the presence
+          // of the partition alone is enough to throw an error - we do
+          // not need to check for emptiness to decide to throw an error
           throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION);
         }
       }

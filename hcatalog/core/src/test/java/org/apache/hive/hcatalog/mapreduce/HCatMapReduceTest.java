@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -90,7 +91,11 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     return false;
   }
 
-  protected String inputFormat() { 
+  protected boolean isTableImmutable() {
+    return true;
+  }
+
+  protected String inputFormat() {
     return RCFileInputFormat.class.getName();
   }
 
@@ -176,6 +181,9 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     Map<String, String> tableParams = new HashMap<String, String>();
     if (isTableExternal()) {
       tableParams.put("EXTERNAL", "TRUE");
+    }
+    if (isTableImmutable()){
+      tableParams.put(hive_metastoreConstants.IS_IMMUTABLE,"true");
     }
     tbl.setParameters(tableParams);
 
