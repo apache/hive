@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,7 +36,8 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
-import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
+import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
+import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.HBaseSerDe.ColumnMapping;
@@ -376,9 +378,20 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     try {
-      TableMapReduceUtil.addDependencyJars(jobConf);
-      org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil.addDependencyJars(jobConf,
-          HBaseStorageHandler.class, org.apache.hadoop.hbase.HBaseConfiguration.class);
+      /*
+       * HIVE-6356
+       * The following code change is only needed for hbase-0.96.0 due to HBASE-9165, and
+       * will not be required once Hive bumps up its hbase version). At that time , we will
+       * only need TableMapReduceUtil.addDependencyJars(jobConf) here.
+       */
+      TableMapReduceUtil.addDependencyJars(
+          jobConf, HBaseStorageHandler.class, TableInputFormatBase.class);
+      Set<String> merged = new LinkedHashSet<String>(jobConf.getStringCollection("tmpjars"));
+
+      Job copy = new Job(jobConf);
+      TableMapReduceUtil.addDependencyJars(copy);
+      merged.addAll(copy.getConfiguration().getStringCollection("tmpjars"));
+      jobConf.set("tmpjars", StringUtils.arrayToString(merged.toArray(new String[0])));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
