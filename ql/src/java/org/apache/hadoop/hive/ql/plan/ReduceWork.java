@@ -129,7 +129,13 @@ public class ReduceWork extends BaseWork {
   }
 
   @Override
-  protected Set<Operator<?>> getAllRootOperators() {
+  public void replaceRoots(Map<Operator<?>, Operator<?>> replacementMap) {
+    assert replacementMap.size() == 1;
+    setReducer(replacementMap.get(getReducer()));
+  }
+
+  @Override
+  public Set<Operator<?>> getAllRootOperators() {
     Set<Operator<?>> opSet = new LinkedHashSet<Operator<?>>();
     opSet.add(getReducer());
     return opSet;

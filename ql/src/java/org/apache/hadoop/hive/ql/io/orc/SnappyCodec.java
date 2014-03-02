@@ -18,12 +18,17 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.hadoop.hive.shims.HadoopShims.DirectDecompressorShim;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.HadoopShims.DirectCompressionType;
 import org.iq80.snappy.Snappy;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-class SnappyCodec implements CompressionCodec {
+class SnappyCodec implements CompressionCodec, DirectDecompressionCodec {
+
+  Boolean direct = null;
 
   @Override
   public boolean compress(ByteBuffer in, ByteBuffer out,
@@ -57,11 +62,41 @@ class SnappyCodec implements CompressionCodec {
 
   @Override
   public void decompress(ByteBuffer in, ByteBuffer out) throws IOException {
+    if(in.isDirect() && out.isDirect()) {
+      directDecompress(in, out);
+      return;
+    }
     int inOffset = in.position();
     int uncompressLen =
         Snappy.uncompress(in.array(), in.arrayOffset() + inOffset,
         in.limit() - inOffset, out.array(), out.arrayOffset() + out.position());
     out.position(uncompressLen + out.position());
     out.flip();
+  }
+
+  @Override
+  public boolean isAvailable() {
+    if (direct == null) {
+      try {
+        if (ShimLoader.getHadoopShims().getDirectDecompressor(
+            DirectCompressionType.SNAPPY) != null) {
+          direct = Boolean.valueOf(true);
+        } else {
+          direct = Boolean.valueOf(false);
+        }
+      } catch (UnsatisfiedLinkError ule) {
+        direct = Boolean.valueOf(false);
+      }
+    }
+    return direct.booleanValue();
+  }
+
+  @Override
+  public void directDecompress(ByteBuffer in, ByteBuffer out)
+      throws IOException {
+    DirectDecompressorShim decompressShim = ShimLoader.getHadoopShims()
+        .getDirectDecompressor(DirectCompressionType.SNAPPY);
+    decompressShim.decompress(in, out);
+    out.flip(); // flip for read
   }
 }

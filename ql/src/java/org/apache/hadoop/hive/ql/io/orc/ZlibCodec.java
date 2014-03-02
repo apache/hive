@@ -23,7 +23,14 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
-class ZlibCodec implements CompressionCodec {
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.HadoopShims.DirectCompressionType;
+import org.apache.hadoop.hive.shims.HadoopShims.DirectDecompressorShim;
+import org.apache.hadoop.hive.shims.ShimLoader;
+
+class ZlibCodec implements CompressionCodec, DirectDecompressionCodec {
+
+  private Boolean direct = null;
 
   @Override
   public boolean compress(ByteBuffer in, ByteBuffer out,
@@ -55,6 +62,12 @@ class ZlibCodec implements CompressionCodec {
 
   @Override
   public void decompress(ByteBuffer in, ByteBuffer out) throws IOException {
+
+    if(in.isDirect() && out.isDirect()) {
+      directDecompress(in, out);
+      return;
+    }
+
     Inflater inflater = new Inflater(true);
     inflater.setInput(in.array(), in.arrayOffset() + in.position(),
                       in.remaining());
@@ -74,4 +87,30 @@ class ZlibCodec implements CompressionCodec {
     in.position(in.limit());
   }
 
+  @Override
+  public boolean isAvailable() {
+    if (direct == null) {
+      // see nowrap option in new Inflater(boolean) which disables zlib headers
+      try {
+        if (ShimLoader.getHadoopShims().getDirectDecompressor(
+            DirectCompressionType.ZLIB_NOHEADER) != null) {
+          direct = Boolean.valueOf(true);
+        } else {
+          direct = Boolean.valueOf(false);
+        }
+      } catch (UnsatisfiedLinkError ule) {
+        direct = Boolean.valueOf(false);
+      }
+    }
+    return direct.booleanValue();
+  }
+
+  @Override
+  public void directDecompress(ByteBuffer in, ByteBuffer out)
+      throws IOException {
+    DirectDecompressorShim decompressShim = ShimLoader.getHadoopShims()
+        .getDirectDecompressor(DirectCompressionType.ZLIB_NOHEADER);
+    decompressShim.decompress(in, out);
+    out.flip(); // flip for read
+  }
 }

@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE dest1(key INT, value STRING, dt STRING, hr STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING, dt STRING, hr STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
 PREHOOK: query: -- no input pruning, no sample filter
 EXPLAIN EXTENDED
@@ -56,18 +58,14 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
-  Stage-5
-  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
-  Stage-4
-  Stage-6
-  Stage-7 depends on stages: Stage-6
 
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -155,15 +153,6 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /srcpart/ds=2008-04-08/hr=11 [s]
 
-  Stage: Stage-8
-    Conditional Operator
-
-  Stage: Stage-5
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
   Stage: Stage-2
     Dependency Collection
 
@@ -190,146 +179,6 @@ STAGE PLANS:
 
   Stage: Stage-3
     Stats-Aggr Operator
-#### A masked pattern was here ####
-
-  Stage: Stage-4
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  GatherStats: false
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-#### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          bucket_count -1
-                          columns key,value,dt,hr
-                          columns.types int:string:string:string
-#### A masked pattern was here ####
-                          name default.dest1
-                          serialization.ddl struct dest1 { i32 key, string value, string dt, string hr}
-                          serialization.format 1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
-                    TotalFiles: 1
-                    GatherStats: false
-                    MultiFileSpray: false
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    bucket_count -1
-                    columns key,value,dt,hr
-                    columns.types int:string:string:string
-#### A masked pattern was here ####
-                    name default.dest1
-                    serialization.ddl struct dest1 { i32 key, string value, string dt, string hr}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucket_count -1
-                      columns key,value,dt,hr
-                      columns.types int:string:string:string
-#### A masked pattern was here ####
-                      name default.dest1
-                      serialization.ddl struct dest1 { i32 key, string value, string dt, string hr}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.dest1
-                  name: default.dest1
-            Truncated Path -> Alias:
-#### A masked pattern was here ####
-
-  Stage: Stage-6
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  GatherStats: false
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-#### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          bucket_count -1
-                          columns key,value,dt,hr
-                          columns.types int:string:string:string
-#### A masked pattern was here ####
-                          name default.dest1
-                          serialization.ddl struct dest1 { i32 key, string value, string dt, string hr}
-                          serialization.format 1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
-                    TotalFiles: 1
-                    GatherStats: false
-                    MultiFileSpray: false
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    bucket_count -1
-                    columns key,value,dt,hr
-                    columns.types int:string:string:string
-#### A masked pattern was here ####
-                    name default.dest1
-                    serialization.ddl struct dest1 { i32 key, string value, string dt, string hr}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucket_count -1
-                      columns key,value,dt,hr
-                      columns.types int:string:string:string
-#### A masked pattern was here ####
-                      name default.dest1
-                      serialization.ddl struct dest1 { i32 key, string value, string dt, string hr}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.dest1
-                  name: default.dest1
-            Truncated Path -> Alias:
-#### A masked pattern was here ####
-
-  Stage: Stage-7
-    Move Operator
-      files:
-          hdfs directory: true
 #### A masked pattern was here ####
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.*

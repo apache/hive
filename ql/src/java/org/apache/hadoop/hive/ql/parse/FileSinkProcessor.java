@@ -51,28 +51,9 @@ public class FileSinkProcessor implements NodeProcessor {
 
     GenTezProcContext context = (GenTezProcContext) procCtx;
     FileSinkOperator fileSink = (FileSinkOperator) nd;
-    ParseContext parseContext = context.parseContext;
 
-
-    boolean isInsertTable = // is INSERT OVERWRITE TABLE
-        GenMapRedUtils.isInsertInto(parseContext, fileSink);
-    HiveConf hconf = parseContext.getConf();
-
-    boolean chDir = GenMapRedUtils.isMergeRequired(context.moveTask,
-        hconf, fileSink, context.currentTask, isInsertTable);
-
-    Path finalName = GenMapRedUtils.createMoveTask(context.currentTask,
-        chDir, fileSink, parseContext, context.moveTask, hconf, context.dependencyTask);
-
-    if (chDir) {
-      // Merge the files in the destination table/partitions by creating Map-only merge job
-      // If underlying data is RCFile a RCFileBlockMerge task would be created.
-      LOG.info("using CombineHiveInputformat for the merge job");
-      GenMapRedUtils.createMRWorkForMergingFiles(fileSink, finalName,
-          context.dependencyTask, context.moveTask,
-          hconf, context.currentTask);
-    }
-
+    // just remember it for later processing
+    context.fileSinkSet.add(fileSink);
     return true;
   }
 }

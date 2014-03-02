@@ -1,0 +1,143 @@
+PREHOOK: query: -- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
+
+explain 
+  select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
+                                    UNION  ALL  
+                                      select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
+
+explain 
+  select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
+                                    UNION  ALL  
+                                      select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Union 3 (SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: s2
+                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Select Operator
+                  expressions: 'tst1' (type: string), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Select Operator
+                    expressions: _col0 (type: string)
+                    outputColumnNames: _col0
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: _col0 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        value expressions: _col1 (type: bigint)
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Select Operator
+                  expressions: 'tst2' (type: string), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Select Operator
+                    expressions: _col0 (type: string)
+                    outputColumnNames: _col0
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: _col0 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        value expressions: _col1 (type: bigint)
+        Union 3 
+            Vertex: Union 3
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
+                                  UNION  ALL  
+                                    select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
+                                  UNION  ALL  
+                                    select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+tst1	1
+tst2	1

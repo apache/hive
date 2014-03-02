@@ -33,8 +33,26 @@
 </property>
 
 <property>
-  <name>mapred.child.java.opts</name>
-  <value>-Xmx200m</value>
+  <name>mapred.tez.java.opts</name>
+  <value>-Xmx128m</value>
+</property>
+
+<property>
+  <name>hive.tez.container.size</name>
+  <value>128</value>
+  <description></description>
+</property>
+
+<property>
+  <name>hive.merge.tezfiles</name>
+  <value>false</value>
+  <description>Merge small files at the end of a Tez DAG</description>
+</property>
+
+<property>
+  <name>hive.tez.input.format</name>
+  <value>org.apache.hadoop.hive.ql.io.HiveInputFormat</value>
+  <description>The default input format for tez. Tez groups splits in the AM.</description>
 </property>
 
 <property>
@@ -172,7 +190,7 @@
 
 <property>
   <name>hive.input.format</name>
-  <value>org.apache.hadoop.hive.ql.io.HiveInputFormat</value>
+  <value>org.apache.hadoop.hive.ql.io.CombineHiveInputFormat</value>
   <description>The default input format, if it is not specified, the system assigns it. It is set to HiveInputFormat for hadoop versions 17, 18 and 19, whereas it is set to CombineHiveInputFormat for hadoop 20. The user can always overwrite it - if there is a bug in CombineHiveInputFormat, it can always be manually set to HiveInputFormat. </description>
 </property>
 
@@ -192,6 +210,22 @@
   <name>hive.execution.engine</name>
   <value>tez</value>
   <description>Whether to use MR or Tez</description>
+</property>
+
+<property>
+  <name>hive.prewarm.enabled</name>
+  <value>true</value>
+  <description>
+    Enables container prewarm for tez (hadoop 2 only)
+  </description>
+</property>
+
+<property>
+  <name>hive.prewarm.numcontainers</name>
+  <value>3</value>
+  <description>
+    Controls the number of containers to prewarm for tez (hadoop 2 only)
+  </description>
 </property>
 
 </configuration>

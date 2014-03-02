@@ -1,0 +1,276 @@
+PREHOOK: query: explain
+SELECT *
+FROM (
+  SELECT 1 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 2 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 3 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+  UNION ALL
+  SELECT 4 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+) a
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT *
+FROM (
+  SELECT 1 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 2 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 3 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+  UNION ALL
+  SELECT 4 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+) a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 10 <- Map 9 (SIMPLE_EDGE)
+        Reducer 11 <- Reducer 10 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 7 <- Map 6 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (SIMPLE_EDGE), Union 3 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 1
+                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: string)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 1
+                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: string)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 1
+                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: string)
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 1
+                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: string)
+        Reducer 10 
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 1
+                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: 2 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int)
+        Reducer 11 
+            Reduce Operator Tree:
+              Extract
+                Select Operator
+                  expressions: _col0 (type: int)
+                  outputColumnNames: _col0
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 2 
+            Reduce Operator Tree:
+              Extract
+                Limit
+                  Number of rows: 1
+                  Select Operator
+                    expressions: 4 (type: int)
+                    outputColumnNames: _col0
+                    Select Operator
+                      expressions: _col0 (type: int)
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Reduce Operator Tree:
+              Extract
+                Limit
+                  Number of rows: 1
+                  Select Operator
+                    expressions: 3 (type: int)
+                    outputColumnNames: _col0
+                    Select Operator
+                      expressions: _col0 (type: int)
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 7 
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 1
+                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: 1 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int)
+        Reducer 8 
+            Reduce Operator Tree:
+              Extract
+                Select Operator
+                  expressions: _col0 (type: int)
+                  outputColumnNames: _col0
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 3 
+            Vertex: Union 3
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: CREATE TABLE union_out (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TABLE union_out (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_out
+PREHOOK: query: insert overwrite table union_out 
+SELECT *
+FROM (
+  SELECT 1 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 2 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 3 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+  UNION ALL
+  SELECT 4 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@union_out
+POSTHOOK: query: insert overwrite table union_out 
+SELECT *
+FROM (
+  SELECT 1 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 2 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 3 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+  UNION ALL
+  SELECT 4 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@union_out
+POSTHOOK: Lineage: union_out.id EXPRESSION []
+PREHOOK: query: select * from union_out cluster by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_out
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union_out cluster by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_out
+#### A masked pattern was here ####
+POSTHOOK: Lineage: union_out.id EXPRESSION []
+1
+2
+3
+4

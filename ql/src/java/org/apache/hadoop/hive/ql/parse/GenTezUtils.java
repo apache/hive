@@ -18,17 +18,35 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.hadoop.fs.Path;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
 
 /**
@@ -57,6 +75,13 @@ public class GenTezUtils {
 
   public void resetSequenceNumber() {
     sequenceNumber = 0;
+  }
+
+  public UnionWork createUnionWork(GenTezProcContext context, Operator<?> operator, TezWork tezWork) {
+    UnionWork unionWork = new UnionWork("Union "+ (++sequenceNumber));
+    context.unionWorkMap.put(operator, unionWork);
+    tezWork.add(unionWork);
+    return unionWork;
   }
 
   public ReduceWork createReduceWork(GenTezProcContext context, Operator<?> root, TezWork tezWork) {
@@ -121,11 +146,118 @@ public class GenTezUtils {
   }
 
   // this method's main use is to help unit testing this class
-  protected void setupMapWork(MapWork mapWork, GenTezProcContext context, 
-      PrunedPartitionList partitions, Operator<? extends OperatorDesc> root, 
+  protected void setupMapWork(MapWork mapWork, GenTezProcContext context,
+      PrunedPartitionList partitions, Operator<? extends OperatorDesc> root,
       String alias) throws SemanticException {
     // All the setup is done in GenMapRedUtils
     GenMapRedUtils.setMapWork(mapWork, context.parseContext,
         context.inputs, partitions, root, alias, context.conf, false);
+  }
+
+  // removes any union operator and clones the plan
+  public void removeUnionOperators(Configuration conf, GenTezProcContext context,
+      BaseWork work)
+    throws SemanticException {
+
+    Set<Operator<?>> roots = work.getAllRootOperators();
+
+    // need to clone the plan.
+    Set<Operator<?>> newRoots = Utilities.cloneOperatorTree(conf, roots);
+
+    Map<Operator<?>, Operator<?>> replacementMap = new HashMap<Operator<?>, Operator<?>>();
+
+    Iterator<Operator<?>> it = newRoots.iterator();
+    for (Operator<?> orig: roots) {
+      replacementMap.put(orig,it.next());
+    }
+
+    // now we remove all the unions. we throw away any branch that's not reachable from
+    // the current set of roots. The reason is that those branches will be handled in
+    // different tasks.
+    Deque<Operator<?>> operators = new LinkedList<Operator<?>>();
+    operators.addAll(newRoots);
+
+    Set<Operator<?>> seen = new HashSet<Operator<?>>();
+
+    while(!operators.isEmpty()) {
+      Operator<?> current = operators.pop();
+      seen.add(current);
+
+      if (current instanceof FileSinkOperator) {
+        FileSinkOperator fileSink = (FileSinkOperator)current;
+
+        // remember it for additional processing later
+        context.fileSinkSet.add(fileSink);
+
+        FileSinkDesc desc = fileSink.getConf();
+        Path path = desc.getDirName();
+        List<FileSinkDesc> linked;
+
+        if (!context.linkedFileSinks.containsKey(path)) {
+          linked = new ArrayList<FileSinkDesc>();
+          context.linkedFileSinks.put(path, linked);
+        }
+        linked = context.linkedFileSinks.get(path);
+        linked.add(desc);
+
+        desc.setDirName(new Path(path, ""+linked.size()));
+        desc.setLinkedFileSinkDesc(linked);
+      }
+
+      if (current instanceof UnionOperator) {
+        Operator<?> parent = null;
+        int count = 0;
+
+        for (Operator<?> op: current.getParentOperators()) {
+          if (seen.contains(op)) {
+            ++count;
+            parent = op;
+          }
+        }
+
+        // we should have been able to reach the union from only one side.
+        assert count <= 1;
+
+        if (parent == null) {
+          // root operator is union (can happen in reducers)
+          replacementMap.put(current, current.getChildOperators().get(0));
+        } else {
+          parent.removeChildAndAdoptItsChildren(current);
+        }
+      }
+
+      if (current instanceof FileSinkOperator
+          || current instanceof ReduceSinkOperator) {
+        current.setChildOperators(null);
+      } else {
+        operators.addAll(current.getChildOperators());
+      }
+    }
+    work.replaceRoots(replacementMap);
+  }
+
+  public void processFileSink(GenTezProcContext context, FileSinkOperator fileSink)
+      throws SemanticException {
+
+    ParseContext parseContext = context.parseContext;
+
+    boolean isInsertTable = // is INSERT OVERWRITE TABLE
+        GenMapRedUtils.isInsertInto(parseContext, fileSink);
+    HiveConf hconf = parseContext.getConf();
+
+    boolean chDir = GenMapRedUtils.isMergeRequired(context.moveTask,
+        hconf, fileSink, context.currentTask, isInsertTable);
+
+    Path finalName = GenMapRedUtils.createMoveTask(context.currentTask,
+        chDir, fileSink, parseContext, context.moveTask, hconf, context.dependencyTask);
+
+    if (chDir) {
+      // Merge the files in the destination table/partitions by creating Map-only merge job
+      // If underlying data is RCFile a RCFileBlockMerge task would be created.
+      LOG.info("using CombineHiveInputformat for the merge job");
+      GenMapRedUtils.createMRWorkForMergingFiles(fileSink, finalName,
+          context.dependencyTask, context.moveTask,
+          hconf, context.currentTask);
+    }
   }
 }

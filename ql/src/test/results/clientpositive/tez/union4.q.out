@@ -1,0 +1,156 @@
+PREHOOK: query: -- union case: both subqueries are map-reduce jobs on same input, followed by filesink
+
+
+create table tmptable(key string, value int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: -- union case: both subqueries are map-reduce jobs on same input, followed by filesink
+
+
+create table tmptable(key string, value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: explain 
+insert overwrite table tmptable
+  select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+                                        UNION  ALL  
+                                            select 'tst2' as key, count(1) as value from src s2) unionsrc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+insert overwrite table tmptable
+  select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+                                        UNION  ALL  
+                                            select 'tst2' as key, count(1) as value from src s2) unionsrc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: s2
+                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Select Operator
+                  expressions: 'tst1' (type: string), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Select Operator
+                    expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                    outputColumnNames: _col0, _col1
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.tmptable
+        Reducer 5 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Select Operator
+                  expressions: 'tst2' (type: string), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Select Operator
+                    expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                    outputColumnNames: _col0, _col1
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.tmptable
+        Union 3 
+            Vertex: Union 3
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.tmptable
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: insert overwrite table tmptable
+select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+                                        UNION  ALL  
+                                          select 'tst2' as key, count(1) as value from src s2) unionsrc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: insert overwrite table tmptable
+select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+                                        UNION  ALL  
+                                          select 'tst2' as key, count(1) as value from src s2) unionsrc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmptable
+POSTHOOK: Lineage: tmptable.key EXPRESSION []
+POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src)s2.null, ]
+PREHOOK: query: select * from tmptable x sort by x.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmptable
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tmptable x sort by x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmptable
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmptable.key EXPRESSION []
+POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src)s2.null, ]
+tst1	500
+tst2	500

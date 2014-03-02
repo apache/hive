@@ -29,6 +29,8 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +41,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
+
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -67,14 +72,19 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.HiveTestUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Tests for the top level reader/streamFactory of ORC files.
  */
+@RunWith(value = Parameterized.class)
 public class TestOrcFile {
 
   public static class SimpleStruct {
@@ -191,6 +201,16 @@ public class TestOrcFile {
   Configuration conf;
   FileSystem fs;
   Path testFilePath;
+  private final boolean zeroCopy;
+
+  @Parameters
+  public static Collection<Boolean[]> data() {
+    return Arrays.asList(new Boolean[][] { {false}, {true}});
+  }
+
+  public TestOrcFile(Boolean zcr) {
+    zeroCopy = zcr.booleanValue();
+  }
 
   @Rule
   public TestName testCaseName = new TestName();
@@ -198,6 +218,9 @@ public class TestOrcFile {
   @Before
   public void openFileSystem () throws Exception {
     conf = new Configuration();
+    if(zeroCopy) {
+      conf.setBoolean(HIVE_ORC_ZEROCOPY.varname, zeroCopy);
+    }
     fs = FileSystem.getLocal(conf);
     testFilePath = new Path(workDir, "TestOrcFile." +
         testCaseName.getMethodName() + ".orc");
@@ -547,6 +570,7 @@ public class TestOrcFile {
       inspector = ObjectInspectorFactory.getReflectionObjectInspector
           (InnerStruct.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
+
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .inspector(inspector)
@@ -572,35 +596,36 @@ public class TestOrcFile {
     StripeStatistics ss1 = metadata.getStripeStatistics().get(0);
     StripeStatistics ss2 = metadata.getStripeStatistics().get(1);
     StripeStatistics ss3 = metadata.getStripeStatistics().get(2);
-    assertEquals(4996, ss1.getColumnStatistics()[0].getNumberOfValues());
-    assertEquals(5000, ss2.getColumnStatistics()[0].getNumberOfValues());
-    assertEquals(1004, ss3.getColumnStatistics()[0].getNumberOfValues());
 
-    assertEquals(4996, ((IntegerColumnStatistics)ss1.getColumnStatistics()[1]).getNumberOfValues());
+    assertEquals(5000, ss1.getColumnStatistics()[0].getNumberOfValues());
+    assertEquals(5000, ss2.getColumnStatistics()[0].getNumberOfValues());
+    assertEquals(1000, ss3.getColumnStatistics()[0].getNumberOfValues());
+
+    assertEquals(5000, ((IntegerColumnStatistics)ss1.getColumnStatistics()[1]).getNumberOfValues());
     assertEquals(5000, ((IntegerColumnStatistics)ss2.getColumnStatistics()[1]).getNumberOfValues());
-    assertEquals(1004, ((IntegerColumnStatistics)ss3.getColumnStatistics()[1]).getNumberOfValues());
+    assertEquals(1000, ((IntegerColumnStatistics)ss3.getColumnStatistics()[1]).getNumberOfValues());
     assertEquals(1, ((IntegerColumnStatistics)ss1.getColumnStatistics()[1]).getMinimum());
-    assertEquals(1, ((IntegerColumnStatistics)ss2.getColumnStatistics()[1]).getMinimum());
-    assertEquals(2, ((IntegerColumnStatistics)ss3.getColumnStatistics()[1]).getMinimum());
+    assertEquals(2, ((IntegerColumnStatistics)ss2.getColumnStatistics()[1]).getMinimum());
+    assertEquals(3, ((IntegerColumnStatistics)ss3.getColumnStatistics()[1]).getMinimum());
     assertEquals(1, ((IntegerColumnStatistics)ss1.getColumnStatistics()[1]).getMaximum());
     assertEquals(2, ((IntegerColumnStatistics)ss2.getColumnStatistics()[1]).getMaximum());
     assertEquals(3, ((IntegerColumnStatistics)ss3.getColumnStatistics()[1]).getMaximum());
-    assertEquals(4996, ((IntegerColumnStatistics)ss1.getColumnStatistics()[1]).getSum());
-    assertEquals(9996, ((IntegerColumnStatistics)ss2.getColumnStatistics()[1]).getSum());
-    assertEquals(3008, ((IntegerColumnStatistics)ss3.getColumnStatistics()[1]).getSum());
+    assertEquals(5000, ((IntegerColumnStatistics)ss1.getColumnStatistics()[1]).getSum());
+    assertEquals(10000, ((IntegerColumnStatistics)ss2.getColumnStatistics()[1]).getSum());
+    assertEquals(3000, ((IntegerColumnStatistics)ss3.getColumnStatistics()[1]).getSum());
 
-    assertEquals(4996, ((StringColumnStatistics)ss1.getColumnStatistics()[2]).getNumberOfValues());
+    assertEquals(5000, ((StringColumnStatistics)ss1.getColumnStatistics()[2]).getNumberOfValues());
     assertEquals(5000, ((StringColumnStatistics)ss2.getColumnStatistics()[2]).getNumberOfValues());
-    assertEquals(1004, ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getNumberOfValues());
+    assertEquals(1000, ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getNumberOfValues());
     assertEquals("one", ((StringColumnStatistics)ss1.getColumnStatistics()[2]).getMinimum());
-    assertEquals("one", ((StringColumnStatistics)ss2.getColumnStatistics()[2]).getMinimum());
+    assertEquals("two", ((StringColumnStatistics)ss2.getColumnStatistics()[2]).getMinimum());
     assertEquals("three", ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getMinimum());
     assertEquals("one", ((StringColumnStatistics)ss1.getColumnStatistics()[2]).getMaximum());
     assertEquals("two", ((StringColumnStatistics)ss2.getColumnStatistics()[2]).getMaximum());
-    assertEquals("two", ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getMaximum());
-    assertEquals(14988, ((StringColumnStatistics)ss1.getColumnStatistics()[2]).getSum());
+    assertEquals("three", ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getMaximum());
+    assertEquals(15000, ((StringColumnStatistics)ss1.getColumnStatistics()[2]).getSum());
     assertEquals(15000, ((StringColumnStatistics)ss2.getColumnStatistics()[2]).getSum());
-    assertEquals(5012, ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getSum());
+    assertEquals(5000, ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getSum());
 
     RecordReaderImpl recordReader = (RecordReaderImpl) reader.rows(null);
     OrcProto.RowIndex[] index = recordReader.readRowIndex(0);

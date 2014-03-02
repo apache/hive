@@ -2,23 +2,29 @@ PREHOOK: query: -- partitioned table analyze
 
 create table dummy (key string, value string) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- partitioned table analyze 
 
 create table dummy (key string, value string) partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dummy
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table dummy partition (ds='2008',hr='12')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dummy
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table dummy partition (ds='2008',hr='12')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dummy
 POSTHOOK: Output: default@dummy@ds=2008/hr=12
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table dummy partition (ds='2008',hr='11')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@dummy
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table dummy partition (ds='2008',hr='11')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@dummy
 POSTHOOK: Output: default@dummy@ds=2008/hr=11
 PREHOOK: query: analyze table dummy partition (ds,hr) compute statistics
@@ -129,10 +135,12 @@ PREHOOK: query: -- static partitioned table on insert
 
 create table dummy (key string, value string) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- static partitioned table on insert
 
 create table dummy (key string, value string) partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dummy
 PREHOOK: query: insert overwrite table dummy partition (ds='10',hr='11') select * from src
 PREHOOK: type: QUERY
@@ -260,10 +268,12 @@ PREHOOK: query: -- dynamic partitioned table on insert
 
 create table dummy (key int) partitioned by (hr int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- dynamic partitioned table on insert
 
 create table dummy (key int) partitioned by (hr int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dummy
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -271,8 +281,10 @@ POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -280,9 +292,11 @@ POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tbl.txt' OVERWRITE INTO TABLE tbl
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@tbl
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tbl.txt' OVERWRITE INTO TABLE tbl
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@tbl
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

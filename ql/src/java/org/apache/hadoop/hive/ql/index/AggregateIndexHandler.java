@@ -152,6 +152,7 @@ public class AggregateIndexHandler extends CompactIndexHandler {
       HiveConf builderConf = new HiveConf(getConf(), AggregateIndexHandler.class);
       builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES, false);
       builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
+      builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGETEZFILES, false);
       Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
           command, (LinkedHashMap<String, String>) partSpec, indexTableName, dbName);
 

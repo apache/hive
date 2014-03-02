@@ -500,6 +500,7 @@ public class HiveConf extends Configuration {
 
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true),
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false),
+    HIVEMERGETEZFILES("hive.merge.tezfiles", false),
     HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long) (256 * 1000 * 1000)),
     HIVEMERGEMAPFILESAVGSIZE("hive.merge.smallfiles.avgsize", (long) (16 * 1000 * 1000)),
     HIVEMERGERCFILEBLOCKLEVEL("hive.merge.rcfile.block.level", true),
@@ -536,6 +537,8 @@ public class HiveConf extends Configuration {
     HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS("hive.orc.compute.splits.num.threads", 10),
     HIVE_ORC_SKIP_CORRUPT_DATA("hive.exec.orc.skip.corrupt.data", false),
 
+    HIVE_ORC_ZEROCOPY("hive.exec.orc.zerocopy", false),
+
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
     HIVECONVERTJOIN("hive.auto.convert.join", true),
     HIVECONVERTJOINNOCONDITIONALTASK("hive.auto.convert.join.noconditionaltask", true),
@@ -562,6 +565,10 @@ public class HiveConf extends Configuration {
     HIVEDEBUGLOCALTASK("hive.debug.localtask",false),
 
     HIVEINPUTFORMAT("hive.input.format", "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat"),
+    HIVETEZINPUTFORMAT("hive.tez.input.format", "org.apache.hadoop.hive.ql.io.HiveInputFormat"),
+
+    HIVETEZCONTAINERSIZE("hive.tez.container.size", -1),
+    HIVETEZJAVAOPTS("hive.tez.java.opts", null),
 
     HIVEENFORCEBUCKETING("hive.enforce.bucketing", false),
     HIVEENFORCESORTING("hive.enforce.sorting", false),
@@ -902,6 +909,9 @@ public class HiveConf extends Configuration {
 
     // Whether to generate the splits locally or in the AM (tez only)
     HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true),
+
+    HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false),
+    HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10),
 
     // none, idonly, traverse, execution
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none"),

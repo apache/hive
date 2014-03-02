@@ -305,6 +305,17 @@ public class MapWork extends BaseWork {
   }
 
   @Override
+  public void replaceRoots(Map<Operator<?>, Operator<?>> replacementMap) {
+    LinkedHashMap<String, Operator<?>> newAliasToWork = new LinkedHashMap<String, Operator<?>>();
+
+    for (Map.Entry<String, Operator<?>> entry: aliasToWork.entrySet()) {
+      newAliasToWork.put(entry.getKey(), replacementMap.get(entry.getValue()));
+    }
+
+    setAliasToWork(newAliasToWork);
+  }
+
+  @Override
   @Explain(displayName = "Map Operator Tree")
   public Set<Operator<?>> getAllRootOperators() {
     Set<Operator<?>> opSet = new LinkedHashSet<Operator<?>>();

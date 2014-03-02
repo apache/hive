@@ -21,7 +21,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 abstract class InStream extends InputStream {
+
+  private static final Log LOG = LogFactory.getLog(InStream.class);
 
   private static class UncompressedStream extends InStream {
     private final String name;
@@ -172,7 +177,7 @@ abstract class InStream extends InputStream {
               bufferSize + " needed = " + chunkLength);
         }
         // read 3 bytes, which should be equal to OutStream.HEADER_SIZE always
-		assert OutStream.HEADER_SIZE == 3 : "The Orc HEADER_SIZE must be the same in OutStream and InStream";
+        assert OutStream.HEADER_SIZE == 3 : "The Orc HEADER_SIZE must be the same in OutStream and InStream";
         currentOffset += OutStream.HEADER_SIZE;
 
         ByteBuffer slice = this.slice(chunkLength);
@@ -274,14 +279,23 @@ abstract class InStream extends InputStream {
             chunkLength + " bytes");
       }
 
+      if (LOG.isDebugEnabled()) {
+        LOG.debug(String.format(
+            "Crossing into next BufferChunk because compressed only has %d bytes (needs %d)",
+            compressed.remaining(), len));
+      }
+
       // we need to consolidate 2 or more buffers into 1
-      // first clear out compressed buffers
+      // first copy out compressed buffers
       ByteBuffer copy = allocateBuffer(chunkLength);
       currentOffset += compressed.remaining();
       len -= compressed.remaining();
       copy.put(compressed);
 
       while (len > 0 && (++currentRange) < bytes.length) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(String.format("Read slow-path, >1 cross block reads with %s", this.toString()));
+        }
         compressed = bytes[currentRange].duplicate();
         if (compressed.remaining() >= len) {
           slice = compressed.slice();
