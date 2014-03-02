@@ -33,19 +33,16 @@ import org.apache.hadoop.io.BytesWritable;
 
 class Utilities {
 
-  static void testEquality(MapJoinKey key1, MapJoinKey key2) {
+  static void testEquality(MapJoinKeyObject key1, MapJoinKeyObject key2) {
     Assert.assertEquals(key1.hashCode(), key2.hashCode());
     Assert.assertEquals(key1, key2);
-    Assert.assertEquals(key1.getKey().length, key2.getKey().length);
-    int length = key1.getKey().length;
-    for (int i = 0; i <length; i++) {
-      Assert.assertEquals(key1.getKey()[i], key2.getKey()[i]); 
-    }
+    Assert.assertEquals(key1.getKeyLength(), key2.getKeyLength());
+    Assert.assertTrue(key1.equals(key2));
   }
-  
-  static MapJoinKey serde(MapJoinKey key, String columns, String types) 
+
+  static MapJoinKeyObject serde(MapJoinKeyObject key, String columns, String types) 
   throws Exception {
-    MapJoinKey result = new MapJoinKey();
+    MapJoinKeyObject result = new MapJoinKeyObject();
     ByteArrayInputStream bais;
     ObjectInputStream in;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();

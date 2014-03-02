@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -53,7 +54,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private transient String serdeKey;
   private transient ObjectCache cache;
 
-  private HashTableLoader loader;
+  protected HashTableLoader loader;
 
   protected transient MapJoinTableContainer[] mapJoinTables;
   private transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;
@@ -167,9 +168,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     }
   }
 
+  protected transient final Output outputForMapJoinKey = new Output();
   protected MapJoinKey computeMapJoinKey(Object row, byte alias) throws HiveException {
-    return JoinUtil.computeMapJoinKeys(key, row, joinKeys[alias],
-        joinKeysObjectInspectors[alias]);
+    MapJoinKey refKey = (key == null ? loader.getKeyType() : key);
+    return MapJoinKey.readFromRow(outputForMapJoinKey,
+        refKey, row, joinKeys[alias], joinKeysObjectInspectors[alias], key == refKey);
   }
 
   @Override
@@ -184,12 +187,13 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
       // compute keys and values as StandardObjects
       key = computeMapJoinKey(row, alias);
+      int fieldCount = joinKeys[alias].size();
       boolean joinNeeded = false;
       for (byte pos = 0; pos < order.length; pos++) {
         if (pos != alias) {
           MapJoinRowContainer rowContainer = mapJoinTables[pos].get(key);
           // there is no join-value or join-key has all null elements
-          if (rowContainer == null || key.hasAnyNulls(nullsafes)) {
+          if (rowContainer == null || key.hasAnyNulls(fieldCount, nullsafes)) {
             if (!noOuterJoin) {
               joinNeeded = true;
               storage[pos] = dummyObjVectors[pos];

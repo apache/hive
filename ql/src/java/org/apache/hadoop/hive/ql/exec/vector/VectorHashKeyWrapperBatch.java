@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 
 /**
  * Class for handling vectorized hash map key wrappers. It evaluates the key columns in a
@@ -671,8 +672,8 @@ public class VectorHashKeyWrapperBatch {
     }
     else {
       throw new HiveException(String.format(
-          "Internal inconsistent KeyLookupHelper at index [%d]:%d %d %d",
-          i, klh.longIndex, klh.doubleIndex, klh.stringIndex));
+          "Internal inconsistent KeyLookupHelper at index [%d]:%d %d %d %d",
+          i, klh.longIndex, klh.doubleIndex, klh.stringIndex, klh.decimalIndex));
     }
   }
 

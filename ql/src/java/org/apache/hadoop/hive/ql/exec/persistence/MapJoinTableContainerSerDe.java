@@ -49,6 +49,11 @@ public class MapJoinTableContainerSerDe {
   }
 
   @SuppressWarnings({"unchecked"})
+  /**
+   * Loads the table container. Only used on MR path.
+   * @param in Input stream.
+   * @return Loaded table.
+   */
   public MapJoinTableContainer load(ObjectInputStream in) 
       throws HiveException {
     SerDe keySerDe = keyContext.getSerDe();
@@ -68,7 +73,7 @@ public class MapJoinTableContainerSerDe {
       Writable valueContainer = valueSerDe.getSerializedClass().newInstance();    
       int numKeys = in.readInt();
       for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
-        MapJoinKey key = new MapJoinKey();
+        MapJoinKeyObject key = new MapJoinKeyObject();
         key.read(keyContext, in, keyContainer);
         MapJoinEagerRowContainer values = new MapJoinEagerRowContainer();
         values.read(valueContext, in, valueContainer);

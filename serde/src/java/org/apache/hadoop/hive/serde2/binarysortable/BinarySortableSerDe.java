@@ -763,12 +763,12 @@ public class BinarySortableSerDe extends AbstractSerDe {
         // get the sign of the big decimal
         int sign = dec.compareTo(HiveDecimal.ZERO);
 
-        // we'll encode the absolute value (sign is separate)
-        dec = dec.abs();
+    // we'll encode the absolute value (sign is separate)
+    dec = dec.abs();
 
-        // get the scale factor to turn big decimal into a decimal < 1
-        int factor = dec.precision() - dec.scale();
-        factor = sign == 1 ? factor : -factor;
+    // get the scale factor to turn big decimal into a decimal < 1
+    int factor = dec.precision() - dec.scale();
+    factor = sign == 1 ? factor : -factor;
 
         // convert the absolute big decimal to string
         dec.scaleByPowerOfTen(Math.abs(dec.scale()));

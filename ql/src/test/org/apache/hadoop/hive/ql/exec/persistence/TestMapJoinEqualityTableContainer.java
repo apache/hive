@@ -29,10 +29,10 @@ import org.junit.Test;
 
 public class TestMapJoinEqualityTableContainer {
   
-  private static final MapJoinKey KEY1 = new MapJoinKey(new Object[] {new Text("key1")});
-  private static final MapJoinKey KEY2 = new MapJoinKey(new Object[] {new Text("key2")});
-  private static final MapJoinKey KEY3 = new MapJoinKey(new Object[] {new Text("key3")});
-  private static final MapJoinKey KEY4 = new MapJoinKey(new Object[] {new Text("key4")});
+  private static final MapJoinKeyObject KEY1 = new MapJoinKeyObject(new Object[] {new Text("key1")});
+  private static final MapJoinKeyObject KEY2 = new MapJoinKeyObject(new Object[] {new Text("key2")});
+  private static final MapJoinKeyObject KEY3 = new MapJoinKeyObject(new Object[] {new Text("key3")});
+  private static final MapJoinKeyObject KEY4 = new MapJoinKeyObject(new Object[] {new Text("key4")});
   private static final Object[] VALUE = new Object[] {new Text("value")};
   private MapJoinTableContainer container;
   private MapJoinRowContainer rowContainer;
@@ -49,7 +49,8 @@ public class TestMapJoinEqualityTableContainer {
     container.put(KEY3, rowContainer);
     container.put(KEY4, rowContainer);
     Assert.assertEquals(4, container.size());
-    Map<MapJoinKey, MapJoinRowContainer> localContainer = new HashMap<MapJoinKey, MapJoinRowContainer>();
+    Map<MapJoinKey, MapJoinRowContainer> localContainer =
+        new HashMap<MapJoinKey, MapJoinRowContainer>();
     for(Entry<MapJoinKey, MapJoinRowContainer> entry : container.entrySet()) {
       localContainer.put(entry.getKey(), entry.getValue());
     }

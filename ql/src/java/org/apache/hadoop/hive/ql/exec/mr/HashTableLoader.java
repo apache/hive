@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TemporaryHashSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKeyObject;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -153,5 +155,10 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     }
 
     Arrays.fill(tables, null);
+  }
+
+  @Override
+  public MapJoinKey getKeyType() {
+    return new MapJoinKeyObject(); // always use Object-array keys
   }
 }

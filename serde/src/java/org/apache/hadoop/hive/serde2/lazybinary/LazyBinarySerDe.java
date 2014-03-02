@@ -27,6 +27,8 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -41,6 +43,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -73,9 +76,7 @@ import org.apache.hadoop.io.Writable;
  * compact format.
  */
 public class LazyBinarySerDe extends AbstractSerDe {
-
-  public static final Log LOG = LogFactory.getLog(LazyBinarySerDe.class
-      .getName());
+  public static final Log LOG = LogFactory.getLog(LazyBinarySerDe.class.getName());
 
   public LazyBinarySerDe() throws SerDeException {
   }
@@ -218,6 +219,42 @@ public class LazyBinarySerDe extends AbstractSerDe {
     return serializeBytesWritable;
   }
 
+  public static class StringWrapper {
+    public byte[] bytes;
+    public int start, length;
+
+    public void set(byte[] bytes, int start, int length) {
+      this.bytes = bytes;
+      this.start = start;
+      this.length = length;
+    }
+  }
+
+  private static boolean serializeStruct(Output byteStream, Object obj,
+      StructObjectInspector soi, boolean warnedOnceNullMapKey) throws SerDeException {
+    // do nothing for null struct
+    if (null == obj) {
+      return warnedOnceNullMapKey;
+    }
+
+    List<? extends StructField> fields = soi.getAllStructFieldRefs();
+    int size = fields.size();
+    Object[] fieldData = new Object[size];
+    List<ObjectInspector> fieldOis = new ArrayList<ObjectInspector>(size);
+    for (int i = 0; i < size; ++i) {
+      StructField field = fields.get(i);
+      fieldData[i] = soi.getStructFieldData(obj, field);
+      fieldOis.add(field.getFieldObjectInspector());
+    }
+
+    return serializeStruct(byteStream, fieldData, fieldOis, warnedOnceNullMapKey);
+  }
+
+  public static void serializeStruct(Output byteStream, Object[] fieldData,
+      List<ObjectInspector> fieldOis) throws SerDeException {
+    serializeStruct(byteStream, fieldData, fieldOis, true);
+  }
+
   /**
    * Serialize a struct object without writing the byte size. This function is
    * shared by both row serialization and struct serialization.
@@ -232,25 +269,18 @@ public class LazyBinarySerDe extends AbstractSerDe {
    *          has been issued once already when encountering null map keys
    * @return a boolean indicating whether a warning for null map keys has been issued
    *          once already
+   * @throws SerDeException 
    */
-  private static boolean serializeStruct(Output byteStream, Object obj,
-      StructObjectInspector soi, boolean warnedOnceNullMapKey) throws SerDeException {
-    // do nothing for null struct
-    if (null == obj) {
-      return warnedOnceNullMapKey;
-    }
-    /*
-     * Interleave serializing one null byte and 8 struct fields in each round,
-     * in order to support data deserialization with different table schemas
-     */
-    List<? extends StructField> fields = soi.getAllStructFieldRefs();
-    int size = fields.size();
+  private static boolean serializeStruct(Output byteStream, Object[] fieldData,
+      List<ObjectInspector> fieldOis, boolean warnedOnceNullMapKey) throws SerDeException {
+
     int lasti = 0;
     byte nullByte = 0;
+    int size = fieldData.length;
 
     for (int i = 0; i < size; i++) {
       // set bit to 1 if a field is not null
-      if (null != soi.getStructFieldData(obj, fields.get(i))) {
+      if (null != fieldData[i]) {
         nullByte |= 1 << (i % 8);
       }
       // write the null byte every eight elements or
@@ -259,8 +289,8 @@ public class LazyBinarySerDe extends AbstractSerDe {
       if (7 == i % 8 || i == size - 1) {
         byteStream.write(nullByte);
         for (int j = lasti; j <= i; j++) {
-          warnedOnceNullMapKey = serialize(byteStream, soi.getStructFieldData(obj, fields
-              .get(j)), fields.get(j).getFieldObjectInspector(), false, warnedOnceNullMapKey);
+          warnedOnceNullMapKey = serialize(
+              byteStream, fieldData[j], fieldOis.get(j), false, warnedOnceNullMapKey);
         }
         lasti = i + 1;
         nullByte = 0;
@@ -297,9 +327,8 @@ public class LazyBinarySerDe extends AbstractSerDe {
    * @return a boolean indicating whether a warning for null map keys has been issued
    *          once already
    */
-  public static boolean serialize(Output byteStream, Object obj,
-      ObjectInspector objInspector, boolean skipLengthPrefix, boolean warnedOnceNullMapKey)
-      throws SerDeException {
+  public static boolean serialize(Output byteStream, Object obj, ObjectInspector objInspector,
+      boolean skipLengthPrefix, boolean warnedOnceNullMapKey) throws SerDeException {
 
     // do nothing for null object
     if (null == obj) {
@@ -354,15 +383,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
       }
       case DOUBLE: {
         DoubleObjectInspector doi = (DoubleObjectInspector) poi;
-        long v = Double.doubleToLongBits(doi.get(obj));
-        byteStream.write((byte) (v >> 56));
-        byteStream.write((byte) (v >> 48));
-        byteStream.write((byte) (v >> 40));
-        byteStream.write((byte) (v >> 32));
-        byteStream.write((byte) (v >> 24));
-        byteStream.write((byte) (v >> 16));
-        byteStream.write((byte) (v >> 8));
-        byteStream.write((byte) (v));
+        LazyBinaryUtils.writeDouble(byteStream, doi.get(obj));
         return warnedOnceNullMapKey;
       }
       case STRING: {
@@ -391,8 +412,8 @@ public class LazyBinarySerDe extends AbstractSerDe {
           LazyBinaryUtils.writeVInt(byteStream, length);
         } else {
           if (length == 0){
-            throw new RuntimeException("LazyBinaryColumnarSerde cannot serialize a non-null " +
-            		"zero length binary field. Consider using either LazyBinarySerde or ColumnarSerde.");
+            throw new RuntimeException("LazyBinaryColumnarSerde cannot serialize a non-null zero "
+                + "length binary field. Consider using either LazyBinarySerde or ColumnarSerde.");
           }
         }
         byteStream.write(bw.getBytes(),0,length);

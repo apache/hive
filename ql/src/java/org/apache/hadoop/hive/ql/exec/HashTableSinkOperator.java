@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionHandler;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKeyObject;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinEagerRowContainer;
@@ -228,9 +229,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   @Override
   public void processOp(Object row, int tag) throws HiveException {
     alias = (byte)tag;
-    // compute keys and values as StandardObjects
-    MapJoinKey key = JoinUtil.computeMapJoinKeys(null, row, joinKeys[alias],
-        joinKeysObjectInspectors[alias]);
+    // compute keys and values as StandardObjects. Use non-optimized key (MR).
+    MapJoinKey key = MapJoinKey.readFromRow(null, new MapJoinKeyObject(),
+        row, joinKeys[alias], joinKeysObjectInspectors[alias], true);
     Object[] value = EMPTY_OBJECT_ARRAY;
     if((hasFilter(alias) && filterMaps[alias].length > 0) || joinValues[alias].size() > 0) {
       value = JoinUtil.computeMapJoinValues(row, joinValues[alias],
