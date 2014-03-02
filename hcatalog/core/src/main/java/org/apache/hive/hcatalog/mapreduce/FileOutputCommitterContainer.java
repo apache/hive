@@ -35,14 +35,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
@@ -69,8 +71,10 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
   private static final String TEMP_DIR_NAME = "_temporary";
   private static final String LOGS_DIR_NAME = "_logs";
-  /** The directory under which data is initially written for a partitioned table */
+
   static final String DYNTEMP_DIR_NAME = "_DYN";
+  static final String SCRATCH_DIR_NAME = "_SCRATCH";
+  private static final String APPEND_SUFFIX = "_a_";
 
   private static final Logger LOG = LoggerFactory.getLogger(FileOutputCommitterContainer.class);
   private final boolean dynamicPartitioningUsed;
@@ -174,6 +178,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       }
       Path src;
       OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(jobContext);
+      Path tblPath = new Path(jobInfo.getTableInfo().getTableLocation());
       if (dynamicPartitioningUsed) {
         if (!customDynamicLocationUsed) {
           src = new Path(getPartitionRootLocation(jobInfo.getLocation(), jobInfo.getTableInfo().getTable()
@@ -191,7 +196,9 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       // directory containing open files. So on Windows, we will leave output directory
       // behind when job fail. User needs to remove the output directory manually
       LOG.info("Job failed. Try cleaning up temporary directory [{}].", src);
-      fs.delete(src, true);
+      if (!src.equals(tblPath)){
+        fs.delete(src, true);
+      }
     } finally {
       cancelDelegationTokens(jobContext);
     }
@@ -332,13 +339,17 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     } else if (!dynamicPartitioningUsed
          && Boolean.valueOf((String)table.getProperty("EXTERNAL"))
          && jobInfo.getLocation() != null && jobInfo.getLocation().length() > 0) {
-      // honor external table that specifies the location
-      partPath = new Path(jobInfo.getLocation());
+      // Now, we need to de-scratchify this location - i.e., get rid of any
+      // _SCRATCH[\d].?[\d]+ from the location.
+      String jobLocation = jobInfo.getLocation();
+      String finalLocn = jobLocation.replaceAll(Path.SEPARATOR + SCRATCH_DIR_NAME + "\\d\\.?\\d+","");
+      partPath = new Path(finalLocn);
     } else {
       partPath = new Path(partLocnRoot);
       int i = 0;
       for (FieldSchema partKey : table.getPartitionKeys()) {
         if (i++ != 0) {
+          fs.mkdirs(partPath); // Attempt to make the path in case it does not exist before we check
           applyGroupAndPerms(fs, partPath, perms, grpName, false);
         }
         partPath = constructPartialPartPath(partPath, partKey.getName().toLowerCase(), partKVs);
@@ -347,6 +358,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
     // Apply the group and permissions to the leaf partition and files.
     // Need not bother in case of HDFS as permission is taken care of by setting UMask
+    fs.mkdirs(partPath); // Attempt to make the path in case it does not exist before we check
     if (!ShimLoader.getHadoopShims().getHCatShim().isFileInHDFS(fs, partPath)) {
       applyGroupAndPerms(fs, partPath, perms, grpName, true);
     }
@@ -370,6 +382,11 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   private void applyGroupAndPerms(FileSystem fs, Path dir, FsPermission permission,
                   String group, boolean recursive)
     throws IOException {
+    if(LOG.isDebugEnabled()) {
+      LOG.debug("applyGroupAndPerms : " + dir +
+          " perms: " + permission +
+          " group: " + group + " recursive: " + recursive);
+    }
     fs.setPermission(dir, permission);
     if (recursive) {
       for (FileStatus fileStatus : fs.listStatus(dir)) {
@@ -457,24 +474,38 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
    *                 on whether other files exist where we're trying to copy
    * @throws java.io.IOException
    */
-  private void moveTaskOutputs(FileSystem fs,
-                 Path file,
-                 Path srcDir,
-                 Path destDir, final boolean dryRun) throws IOException {
+  private void moveTaskOutputs(FileSystem fs, Path file, Path srcDir,
+                 Path destDir, final boolean dryRun, boolean immutable
+      ) throws IOException {
+    if(LOG.isDebugEnabled()) {
+      LOG.debug("moveTaskOutputs "
+          + file + " from: " + srcDir + " to: " + destDir
+          + " dry: " + dryRun + " immutable: " + immutable);
+    }
+
+    if (dynamicPartitioningUsed) {
+      immutable = true; // Making sure we treat dynamic partitioning jobs as if they were immutable.
+    }
 
     if (file.getName().equals(TEMP_DIR_NAME) || file.getName().equals(LOGS_DIR_NAME) || file.getName().equals(SUCCEEDED_FILE_NAME)) {
       return;
     }
-    final Path finalOutputPath = getFinalPath(file, srcDir, destDir);
+
+    final Path finalOutputPath = getFinalPath(fs, file, srcDir, destDir, immutable);
+
     if (fs.isFile(file)) {
       if (dryRun){
-        if(LOG.isDebugEnabled()) {
-          LOG.debug("Testing if moving file: [" + file + "] to ["
-              + finalOutputPath + "] would cause a problem");
-        }
-        if (fs.exists(finalOutputPath)) {
-          throw new HCatException(ErrorType.ERROR_MOVE_FAILED, "Data already exists in " + finalOutputPath
-              + ", duplicate publish not possible.");
+        if (immutable){
+          // Dryrun checks are meaningless for mutable table - we should always succeed
+          // unless there is a runtime IOException.
+          if(LOG.isDebugEnabled()) {
+            LOG.debug("Testing if moving file: [" + file + "] to ["
+                + finalOutputPath + "] would cause a problem");
+          }
+          if (fs.exists(finalOutputPath)) {
+            throw new HCatException(ErrorType.ERROR_MOVE_FAILED, "Data already exists in "
+                + finalOutputPath + ", duplicate publish not possible.");
+          }
         }
       } else {
         if(LOG.isDebugEnabled()) {
@@ -493,12 +524,15 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         }
       }
     } else if(fs.getFileStatus(file).isDir()) {
+
       FileStatus[] children = fs.listStatus(file);
       FileStatus firstChild = null;
       if (children != null) {
         int index=0;
         while (index < children.length) {
-          if (!children[index].getPath().getName().equals(TEMP_DIR_NAME) && !children[index].getPath().getName().equals(LOGS_DIR_NAME) && !children[index].getPath().getName().equals(SUCCEEDED_FILE_NAME)) {
+          if ( !children[index].getPath().getName().equals(TEMP_DIR_NAME)
+              && !children[index].getPath().getName().equals(LOGS_DIR_NAME)
+              && !children[index].getPath().getName().equals(SUCCEEDED_FILE_NAME)) {
             firstChild = children[index];
             break;
           }
@@ -509,14 +543,17 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         // If the first child is directory, then rest would be directory too according to HCatalog dir structure
         // recurse in that case
         for (FileStatus child : children) {
-          moveTaskOutputs(fs, child.getPath(), srcDir, destDir, dryRun);
+          moveTaskOutputs(fs, child.getPath(), srcDir, destDir, dryRun, immutable);
         }
       } else {
 
         if (!dryRun) {
           if (dynamicPartitioningUsed) {
+
             // Optimization: if the first child is file, we have reached the leaf directory, move the parent directory itself
             // instead of moving each file under the directory. See HCATALOG-538
+            // Note for future Append implementation : This optimization is another reason dynamic
+            // partitioning is currently incompatible with append on mutable tables.
 
             final Path parentDir = finalOutputPath.getParent();
             // Create the directory
@@ -539,16 +576,21 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
             }
             fs.delete(placeholder, false);
           } else {
+
             // In case of no partition we have to move each file
             for (FileStatus child : children) {
-              moveTaskOutputs(fs, child.getPath(), srcDir, destDir, dryRun);
+              moveTaskOutputs(fs, child.getPath(), srcDir, destDir, dryRun, immutable);
             }
+
           }
+
         } else {
-          if(fs.exists(finalOutputPath)) {
-            throw new HCatException(ErrorType.ERROR_MOVE_FAILED, "Data already exists in " + finalOutputPath
+          if(immutable && fs.exists(finalOutputPath) && !MetaStoreUtils.isDirEmpty(fs, finalOutputPath)) {
+
+            throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION, "Data already exists in " + finalOutputPath
                 + ", duplicate publish not possible.");
           }
+
         }
       }
     } else {
@@ -560,15 +602,16 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
   /**
    * Find the final name of a given output file, given the output directory
-   * and the work directory.
+   * and the work directory. If immutable, attempt to create file of name
+   * _aN till we find an item that does not exist.
    * @param file the file to move
    * @param src the source directory
    * @param dest the target directory
    * @return the final path for the specific output file
    * @throws java.io.IOException
    */
-  private Path getFinalPath(Path file, Path src,
-                Path dest) throws IOException {
+  private Path getFinalPath(FileSystem fs, Path file, Path src,
+                Path dest, final boolean immutable) throws IOException {
     URI taskOutputUri = file.toUri();
     URI relativePath = src.toUri().relativize(taskOutputUri);
     if (taskOutputUri == relativePath) {
@@ -576,8 +619,43 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         src + " child = " + file);
     }
     if (relativePath.getPath().length() > 0) {
-      return new Path(dest, relativePath.getPath());
+
+      Path itemDest = new Path(dest, relativePath.getPath());
+      if (!immutable){
+        String name = relativePath.getPath();
+        String filetype;
+        int index = name.lastIndexOf('.');
+        if (index >= 0) {
+          filetype = name.substring(index);
+          name = name.substring(0, index);
+        } else {
+          filetype = "";
+        }
+
+        // Attempt to find COUNTER_MAX possible alternatives to a filename by
+        // appending _a_N and seeing if that destination also clashes. If we're
+        // still clashing after that, give up.
+        final int COUNTER_MAX = 1000;
+        int counter = 1;
+        for (; fs.exists(itemDest) && counter < COUNTER_MAX ; counter++) {
+          itemDest = new Path(dest, name + (APPEND_SUFFIX + counter) + filetype);
+        }
+
+        if (counter == COUNTER_MAX){
+          throw new HCatException(ErrorType.ERROR_MOVE_FAILED,
+              "Could not find a unique destination path for move: file = "
+                  + file + " , src = " + src + ", dest = " + dest);
+        }
+
+      }
+
+      if (LOG.isDebugEnabled()){
+        LOG.debug("FinalPath(file:"+file+":"+src+"->"+dest+"="+itemDest);
+      }
+
+      return itemDest;
     } else {
+
       return dest;
     }
   }
@@ -671,8 +749,10 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       //Move data from temp directory the actual table directory
       //No metastore operation required.
       Path src = new Path(jobInfo.getLocation());
-      moveTaskOutputs(fs, src, src, tblPath, false);
-      fs.delete(src, true);
+      moveTaskOutputs(fs, src, src, tblPath, false, table.isImmutable());
+      if (!src.equals(tblPath)){
+        fs.delete(src, true);
+      }
       return;
     }
 
@@ -715,15 +795,38 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         ptnInfos.add(InternalUtil.createPtnKeyValueMap(new Table(tableInfo.getTable()), ptn));
       }
 
+      /**
+       * Dynamic partitioning & Append incompatibility note:
+       *
+       * Currently, we do not support mixing dynamic partitioning and append in the
+       * same job. One reason is that we need exhaustive testing of corner cases
+       * for that, and a second reason is the behaviour of add_partitions. To support
+       * dynamic partitioning with append, we'd have to have a add_partitions_if_not_exist
+       * call, rather than an add_partitions call. Thus far, we've tried to keep the
+       * implementation of append jobtype-agnostic, but here, in code, we assume that
+       * a table is considered immutable if dynamic partitioning is enabled on the job.
+       *
+       * This does not mean that we can check before the job begins that this is going
+       * to be a dynamic partition job on an immutable table and thus fail the job, since
+       * it is quite possible to have a dynamic partitioning job run on an unpopulated
+       * immutable table. It simply means that at the end of the job, as far as copying
+       * in data is concerned, we will pretend that the table is immutable irrespective
+       * of what table.isImmutable() tells us.
+       */
+
       //Publish the new partition(s)
       if (dynamicPartitioningUsed && harProcessor.isEnabled() && (!partitionsToAdd.isEmpty())){
+
         if (!customDynamicLocationUsed) {
           Path src = new Path(ptnRootLocation);
           // check here for each dir we're copying out, to see if it
-          // already exists, error out if so
-          moveTaskOutputs(fs, src, src, tblPath, true);
-          moveTaskOutputs(fs, src, src, tblPath, false);
-          fs.delete(src, true);
+          // already exists, error out if so.
+          // Also, treat dyn-writes as writes to immutable tables.
+          moveTaskOutputs(fs, src, src, tblPath, true, true); // dryRun = true, immutable = true
+          moveTaskOutputs(fs, src, src, tblPath, false, true);
+          if (!src.equals(tblPath)){
+            fs.delete(src, true);
+          }
         } else {
           moveCustomLocationTaskOutputs(fs, table, hiveConf);
         }
@@ -744,21 +847,84 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         }
 
       }else{
+
         // no harProcessor, regular operation
         updateTableSchema(client, table, jobInfo.getOutputSchema());
         LOG.info("HAR not is not being used. The table {} has new partitions {}.", table.getTableName(), ptnInfos);
-        if (dynamicPartitioningUsed && (partitionsToAdd.size()>0)){
-          if (!customDynamicLocationUsed) {
-            Path src = new Path(ptnRootLocation);
-            moveTaskOutputs(fs, src, src, tblPath, true);
-            moveTaskOutputs(fs, src, src, tblPath, false);
-            fs.delete(src, true);
+        if (partitionsToAdd.size() > 0){
+          if (!dynamicPartitioningUsed ) {
+
+            // regular single-partition write into a partitioned table.
+            //Move data from temp directory the actual table directory
+            if (partitionsToAdd.size() > 1){
+              throw new HCatException(ErrorType.ERROR_PUBLISHING_PARTITION,
+                  "More than one partition to publish in non-dynamic partitioning job");
+            }
+            Partition p = partitionsToAdd.get(0);
+            Path src = new Path(jobInfo.getLocation());
+            Path dest = new Path(p.getSd().getLocation());
+            moveTaskOutputs(fs, src, src, dest, true, table.isImmutable());
+            moveTaskOutputs(fs,src,src,dest,false,table.isImmutable());
+            if (!src.equals(dest)){
+              fs.delete(src, true);
+            }
+
+            // Now, we check if the partition already exists. If not, we go ahead.
+            // If so, we error out if immutable, and if mutable, check that the partition's IF
+            // matches our current job's IF (table's IF) to check for compatibility. If compatible, we
+            // ignore and do not add. If incompatible, we error out again.
+
+            boolean publishRequired = false;
+            try {
+              Partition existingP = client.getPartition(p.getDbName(),p.getTableName(),p.getValues());
+              if (existingP != null){
+                if (table.isImmutable()){
+                  throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION,
+                      "Attempted duplicate partition publish on to immutable table");
+                } else {
+                  if (! existingP.getSd().getInputFormat().equals(table.getInputFormatClass().getName())){
+                    throw new HCatException(ErrorType.ERROR_PUBLISHING_PARTITION,
+                        "Attempted partition append, where old partition format was "
+                            + existingP.getSd().getInputFormat()
+                            + " and table format was "
+                            + table.getInputFormatClass().getName());
+                  }
+                }
+              } else {
+                publishRequired = true;
+              }
+            } catch (NoSuchObjectException e){
+              // All good, no such partition exists, move on.
+              publishRequired = true;
+            }
+            if (publishRequired){
+              client.add_partitions(partitionsToAdd);
+              partitionsAdded = partitionsToAdd;
+            }
+
           } else {
-            moveCustomLocationTaskOutputs(fs, table, hiveConf);
+            // Dynamic partitioning usecase
+            if (!customDynamicLocationUsed) {
+              Path src = new Path(ptnRootLocation);
+              moveTaskOutputs(fs, src, src, tblPath, true, true); // dryRun = true, immutable = true
+              moveTaskOutputs(fs, src, src, tblPath, false, true);
+              if (!src.equals(tblPath)){
+                fs.delete(src, true);
+              }
+            } else {
+              moveCustomLocationTaskOutputs(fs, table, hiveConf);
+            }
+            client.add_partitions(partitionsToAdd);
+            partitionsAdded = partitionsToAdd;
           }
         }
-        client.add_partitions(partitionsToAdd);
-        partitionsAdded = partitionsToAdd;
+
+        // Set permissions appropriately for each of the partitions we just created
+        // so as to have their permissions mimic the table permissions
+        for (Partition p : partitionsAdded){
+          applyGroupAndPerms(fs,new Path(p.getSd().getLocation()),tblStat.getPermission(),tblStat.getGroup(),true);
+        }
+
       }
     } catch (Exception e) {
       if (partitionsAdded.size() > 0) {
@@ -793,8 +959,8 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     for (Entry<String, Map<String, String>> entry : partitionsDiscoveredByPath.entrySet()) {
       Path src = new Path(entry.getKey());
       Path destPath = new Path(getFinalDynamicPartitionDestination(table, entry.getValue(), jobInfo));
-      moveTaskOutputs(fs, src, src, destPath, true);
-      moveTaskOutputs(fs, src, src, destPath, false);
+      moveTaskOutputs(fs, src, src, destPath, true, true); // dryRun = true, immutable = true
+      moveTaskOutputs(fs, src, src, destPath, false, true);
     }
     // delete the parent temp directory of all custom dynamic partitions
     Path parentPath = new Path(getCustomPartitionRootLocation(jobInfo, conf));
