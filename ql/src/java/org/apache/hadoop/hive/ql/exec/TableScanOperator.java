@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.stats.CounterStatsPublisher;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -293,8 +293,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
       int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
       String key = Utilities.getHashedStatsPrefix(prefix, maxKeyLength);
-      if (!(statsPublisher instanceof CounterStatsPublisher)) {
-        // stats publisher except counter type needs postfix 'taskID'
+      if (!(statsPublisher instanceof StatsCollectionTaskIndependent)) {
+        // stats publisher except counter or fs type needs postfix 'taskID'
         key = Utilities.join(prefix, taskID);
       }
       for(String statType : stats.get(pspecs).getStoredStats()) {

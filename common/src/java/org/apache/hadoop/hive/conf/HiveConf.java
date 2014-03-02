@@ -631,8 +631,8 @@ public class HiveConf extends Configuration {
 
     // Statistics
     HIVESTATSAUTOGATHER("hive.stats.autogather", true),
-    HIVESTATSDBCLASS("hive.stats.dbclass", "counter",
-        new PatternValidator("jdbc(:.*)", "hbase", "counter", "custom")), // StatsSetupConst.StatDB
+    HIVESTATSDBCLASS("hive.stats.dbclass", "fs",
+        new PatternValidator("jdbc(:.*)", "hbase", "counter", "custom", "fs")), // StatsSetupConst.StatDB
     HIVESTATSJDBCDRIVER("hive.stats.jdbcdriver",
         "org.apache.derby.jdbc.EmbeddedDriver"), // JDBC driver specific to the dbclass
     HIVESTATSDBCONNECTIONSTRING("hive.stats.dbconnectionstring",
