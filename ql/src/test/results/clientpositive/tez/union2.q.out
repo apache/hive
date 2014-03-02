@@ -1,0 +1,91 @@
+PREHOOK: query: -- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
+
+explain 
+  select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
+                        select s2.key as key, s2.value as value from src s2) unionsrc
+PREHOOK: type: QUERY
+POSTHOOK: query: -- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
+
+explain 
+  select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
+                        select s2.key as key, s2.value as value from src s2) unionsrc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 4 <- Union 2 (CONTAINS)
+        Reducer 3 <- Union 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: s2
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
+                      select s2.key as key, s2.value as value from src s2) unionsrc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
+                      select s2.key as key, s2.value as value from src s2) unionsrc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1000

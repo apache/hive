@@ -1,0 +1,142 @@
+PREHOOK: query: -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
+
+explain 
+  select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                                        UNION  ALL  
+                                            select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
+
+explain 
+  select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                                        UNION  ALL  
+                                            select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 5 <- Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Union 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: s2
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Group By Operator
+                        aggregations: count(1)
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          value expressions: _col1 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Select Operator
+                  expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
+                  outputColumnNames: _col0, _col1
+                  Select Operator
+                    expressions: _col0 (type: string)
+                    outputColumnNames: _col0
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: _col0 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        value expressions: _col1 (type: bigint)
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: PARTIAL
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 3 
+            Vertex: Union 3
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                                      UNION  ALL  
+                                    select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                                      UNION  ALL  
+                                    select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+	10
+128	1
+146	1
+150	1
+213	1
+224	1
+238	1
+255	1
+273	1
+278	1
+311	1
+369	1
+401	1
+406	1
+66	1
+98	1
+tst1	1

@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g2
 PREHOOK: query: EXPLAIN
 FROM src
@@ -13,20 +15,16 @@ INSERT OVERWRITE TABLE dest_g2 SELECT substr(src.key,1,1), count(DISTINCT substr
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
-  Stage-5
-  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
-  Stage-4
-  Stage-6
-  Stage-7 depends on stages: Stage-6
 
 STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -63,15 +61,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest_g2
 
-  Stage: Stage-8
-    Conditional Operator
-
-  Stage: Stage-5
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
   Stage: Stage-2
     Dependency Collection
 
@@ -87,40 +76,6 @@ STAGE PLANS:
 
   Stage: Stage-3
     Stats-Aggr Operator
-
-  Stage: Stage-4
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest_g2
-
-  Stage: Stage-6
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest_g2
-
-  Stage: Stage-7
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
 
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest_g2 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))) GROUP BY substr(src.key,1,1)

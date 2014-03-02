@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -82,7 +83,9 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     dummyOps.add(dummyOp);
   }
 
-  protected abstract Set<Operator<?>> getAllRootOperators();
+  public abstract void replaceRoots(Map<Operator<?>, Operator<?>> replacementMap);
+
+  public abstract Set<Operator<?>> getAllRootOperators();
 
   public Set<Operator<?>> getAllOperators() {
 

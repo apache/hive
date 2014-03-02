@@ -144,6 +144,7 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     HiveConf builderConf = new HiveConf(getConf(), CompactIndexHandler.class);
     builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES, false);
     builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
+    builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGETEZFILES, false);
     Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
         command, partSpec, indexTableName, dbName);
     return rootTask;

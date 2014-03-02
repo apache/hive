@@ -2,10 +2,12 @@ PREHOOK: query: CREATE TABLE src1_rot13_iof(key STRING, value STRING)
   STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13InputFormat'
             OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13OutputFormat'
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE src1_rot13_iof(key STRING, value STRING) 
   STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13InputFormat'
             OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13OutputFormat'
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src1_rot13_iof
 PREHOOK: query: DESCRIBE EXTENDED src1_rot13_iof
 PREHOOK: type: DESCTABLE

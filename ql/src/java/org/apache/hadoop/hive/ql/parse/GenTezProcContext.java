@@ -20,14 +20,19 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -39,6 +44,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
 /**
@@ -105,6 +111,15 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // used to group dependent tasks for multi table inserts
   public final DependencyCollectionTask dependencyTask;
 
+  // used to hook up unions
+  public final Map<Operator<?>, BaseWork> unionWorkMap;
+  public final List<UnionOperator> currentUnionOperators;
+  public final Set<BaseWork> workWithUnionOperators;
+
+  // we link filesink that will write to the same final location
+  public final Map<Path, List<FileSinkDesc>> linkedFileSinks;
+  public final Set<FileSinkOperator> fileSinkSet;
+
   @SuppressWarnings("unchecked")
   public GenTezProcContext(HiveConf conf, ParseContext parseContext,
       List<Task<MoveWork>> moveTask, List<Task<? extends Serializable>> rootTasks,
@@ -116,7 +131,8 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.rootTasks = rootTasks;
     this.inputs = inputs;
     this.outputs = outputs;
-    this.currentTask = (TezTask) TaskFactory.get(new TezWork(), conf);
+    this.currentTask = (TezTask) TaskFactory.get(
+         new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
     this.leafOperatorToFollowingWork = new HashMap<Operator<?>, BaseWork>();
     this.linkOpWithWorkMap = new HashMap<Operator<?>, List<BaseWork>>();
     this.linkWorkWithReduceSinkMap = new HashMap<BaseWork, List<ReduceSinkOperator>>();
@@ -126,6 +142,11 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.linkChildOpWithDummyOp = new HashMap<Operator<?>, List<Operator<?>>>();
     this.dependencyTask = (DependencyCollectionTask)
         TaskFactory.get(new DependencyCollectionWork(), conf);
+    this.unionWorkMap = new HashMap<Operator<?>, BaseWork>();
+    this.currentUnionOperators = new LinkedList<UnionOperator>();
+    this.workWithUnionOperators = new HashSet<BaseWork>();
+    this.linkedFileSinks = new HashMap<Path, List<FileSinkDesc>>();
+    this.fileSinkSet = new HashSet<FileSinkOperator>();
 
     rootTasks.add(currentTask);
   }

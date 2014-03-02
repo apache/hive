@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TABLE bucket3_1(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE bucket3_1(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket3_1
 PREHOOK: query: explain extended
 insert overwrite table bucket3_1 partition (ds='1')
@@ -43,6 +45,7 @@ STAGE PLANS:
     Tez
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -221,6 +224,7 @@ STAGE PLANS:
     Tez
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:

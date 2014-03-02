@@ -17,18 +17,27 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -41,6 +50,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
+import org.apache.hadoop.hive.ql.exec.tez.tools.TezMergedLogicalInput;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -64,18 +74,26 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
+import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.URL;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
+import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.EdgeProperty;
 import org.apache.tez.dag.api.EdgeProperty.DataMovementType;
 import org.apache.tez.dag.api.EdgeProperty.DataSourceType;
 import org.apache.tez.dag.api.EdgeProperty.SchedulingType;
+import org.apache.tez.dag.api.GroupInputEdge;
 import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.Vertex;
+import org.apache.tez.dag.api.VertexLocationHint;
+import org.apache.tez.dag.api.TezException;
+import org.apache.tez.client.PreWarmContext;
+import org.apache.tez.client.TezSessionConfiguration;
+import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.mapreduce.common.MRInputAMSplitGenerator;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
@@ -84,6 +102,8 @@ import org.apache.tez.mapreduce.hadoop.MultiStageMRConfToTezTranslator;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.partition.MRPartitioner;
+import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValueInput;
+import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValuesInput;
 import org.apache.tez.runtime.library.input.ShuffledMergedInputLegacy;
 import org.apache.tez.runtime.library.input.ShuffledUnorderedKVInput;
 import org.apache.tez.runtime.library.output.OnFileSortedOutput;
@@ -96,8 +116,35 @@ import org.apache.tez.runtime.library.output.OnFileUnorderedKVOutput;
  */
 public class DagUtils {
 
+  private static final Log LOG = LogFactory.getLog(DagUtils.class.getName());
   private static final String TEZ_DIR = "_tez_scratch_dir";
   private static DagUtils instance;
+
+  private void addCredentials(MapWork mapWork, DAG dag) {
+    Set<String> paths = mapWork.getPathToAliases().keySet();
+    if (paths != null && !paths.isEmpty()) {
+      Iterator<URI> pathIterator = Iterators.transform(paths.iterator(), new Function<String, URI>() {
+        @Override
+        public URI apply(String input) {
+          return new Path(input).toUri();
+        }
+      });
+    
+      Set<URI> uris = new HashSet<URI>();
+      Iterators.addAll(uris, pathIterator);
+
+      if (LOG.isDebugEnabled()) {
+        for (URI uri: uris) {
+          LOG.debug("Marking URI as needing credentials: "+uri);
+        }
+      }
+      dag.addURIsForCredentials(uris);
+    }
+  }
+
+  private void addCredentials(ReduceWork reduceWork, DAG dag) {
+    // nothing at the moment
+  }
 
   /*
    * Creates the configuration object necessary to run a specific vertex from
@@ -132,7 +179,7 @@ public class DagUtils {
 
     Utilities.setInputAttributes(conf, mapWork);
 
-    String inpFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEINPUTFORMAT);
+    String inpFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZINPUTFORMAT);
     if ((inpFormat == null) || (!StringUtils.isNotBlank(inpFormat))) {
       inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
     }
@@ -148,9 +195,56 @@ public class DagUtils {
   }
 
   /**
+   * Given a Vertex group and a vertex createEdge will create an
+   * Edge between them.
+   *
+   * @param group The parent VertexGroup
+   * @param wConf The job conf of the child vertex
+   * @param w The child vertex
+   * @param edgeType the type of connection between the two
+   * endpoints.
+   */
+  public GroupInputEdge createEdge(VertexGroup group, JobConf wConf,
+      Vertex w, EdgeType edgeType)
+      throws IOException {
+    
+    Class mergeInputClass;
+    
+    LOG.info("Creating Edge between " + group.getGroupName() + " and " + w.getVertexName());
+    w.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(wConf));
+
+    switch (edgeType) {
+    case BROADCAST_EDGE:
+      mergeInputClass = ConcatenatedMergedKeyValueInput.class;
+      break;
+
+    case SIMPLE_EDGE:
+    default:
+      mergeInputClass = TezMergedLogicalInput.class;
+      break;
+    }
+
+    return new GroupInputEdge(group, w, createEdgeProperty(edgeType),
+         new InputDescriptor(mergeInputClass.getName()));
+  }
+
+  /**
+   * Given two vertices a, b update their configurations to be used in an Edge a-b
+   */
+  public void updateConfigurationForEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w) 
+    throws IOException {
+
+    // Tez needs to setup output subsequent input pairs correctly
+    MultiStageMRConfToTezTranslator.translateVertexConfToTez(wConf, vConf);
+
+    // update payloads (configuration for the vertices might have changed)
+    v.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(vConf));
+    w.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(wConf));
+  }
+
+  /**
    * Given two vertices and their respective configuration objects createEdge
-   * will create an Edge object that connects the two. Currently the edge will
-   * always be a stable bi-partite edge.
+   * will create an Edge object that connects the two.
    *
    * @param vConf JobConf of the first vertex
    * @param v The first vertex (source)
@@ -162,13 +256,15 @@ public class DagUtils {
       EdgeType edgeType)
       throws IOException {
 
-    // Tez needs to setup output subsequent input pairs correctly
-    MultiStageMRConfToTezTranslator.translateVertexConfToTez(wConf, vConf);
+    updateConfigurationForEdge(vConf, v, wConf, w);
 
-    // update payloads (configuration for the vertices might have changed)
-    v.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(vConf));
-    w.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(wConf));
+    return new Edge(v, w, createEdgeProperty(edgeType));
+  }
 
+  /*
+   * Helper function to create an edge property from an edge type.
+   */
+  private EdgeProperty createEdgeProperty(EdgeType edgeType) {
     DataMovementType dataMovementType;
     Class logicalInputClass;
     Class logicalOutputClass;
@@ -194,8 +290,38 @@ public class DagUtils {
             SchedulingType.SEQUENTIAL,
             new OutputDescriptor(logicalOutputClass.getName()),
             new InputDescriptor(logicalInputClass.getName()));
-    return new Edge(v, w, edgeProperty);
+
+    return edgeProperty;
   }
+
+  /*
+   * Helper to determine the size of the container requested
+   * from yarn. Falls back to Map-reduce's map size if tez
+   * container size isn't set.
+   */
+  private Resource getContainerResource(Configuration conf) {
+    Resource containerResource;
+    int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0 ?
+      HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
+      conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
+    int cpus = conf.getInt(MRJobConfig.MAP_CPU_VCORES,
+                           MRJobConfig.DEFAULT_MAP_CPU_VCORES);
+    return Resource.newInstance(memory, cpus);
+  }
+
+  /*
+   * Helper to determine what java options to use for the containers
+   * Falls back to Map-reduces map java opts if no tez specific options
+   * are set
+   */
+  private String getContainerJavaOpts(Configuration conf) {
+    String javaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZJAVAOPTS);
+    if (javaOpts != null && !javaOpts.isEmpty()) {
+      return javaOpts;
+    }
+    return MRHelpers.getMapJavaOpts(conf);
+  }
+
 
   /*
    * Helper function to create Vertex from MapWork.
@@ -248,12 +374,11 @@ public class DagUtils {
     byte[] serializedConf = MRHelpers.createUserPayloadFromConf(conf);
     map = new Vertex(mapWork.getName(),
         new ProcessorDescriptor(MapTezProcessor.class.getName()).
-             setUserPayload(serializedConf), numTasks,
-        MRHelpers.getMapResource(conf));
+             setUserPayload(serializedConf), numTasks, getContainerResource(conf));
     Map<String, String> environment = new HashMap<String, String>();
     MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
     map.setTaskEnvironment(environment);
-    map.setJavaOpts(MRHelpers.getMapJavaOpts(conf));
+    map.setJavaOpts(getContainerJavaOpts(conf));
 
     assert mapWork.getAliasToWork().keySet().size() == 1;
 
@@ -262,7 +387,7 @@ public class DagUtils {
     byte[] mrInput = null;
     if (useTezGroupedSplits) {
       mrInput = MRHelpers.createMRInputPayloadWithGrouping(serializedConf,
-          null, HiveInputFormat.class.getName());
+          HiveInputFormat.class.getName());
     } else {
       mrInput = MRHelpers.createMRInputPayload(serializedConf, null);
     }
@@ -323,14 +448,14 @@ public class DagUtils {
     Vertex reducer = new Vertex(reduceWork.getName(),
         new ProcessorDescriptor(ReduceTezProcessor.class.getName()).
              setUserPayload(MRHelpers.createUserPayloadFromConf(conf)),
-        reduceWork.getNumReduceTasks(), MRHelpers.getReduceResource(conf));
+        reduceWork.getNumReduceTasks(), getContainerResource(conf));
 
     Map<String, String> environment = new HashMap<String, String>();
 
     MRHelpers.updateEnvironmentForMRTasks(conf, environment, false);
     reducer.setTaskEnvironment(environment);
 
-    reducer.setJavaOpts(MRHelpers.getReduceJavaOpts(conf));
+    reducer.setJavaOpts(getContainerJavaOpts(conf));
 
     Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
     localResources.put(getBaseName(appJarLr), appJarLr);
@@ -367,6 +492,49 @@ public class DagUtils {
     lr.setTimestamp(resourceModificationTime);
 
     return lr;
+  }
+
+  /**
+   * @param sessionConfig session configuration
+   * @param numContainers number of containers to pre-warm
+   * @param localResources additional resources to pre-warm with
+   * @return prewarm context object
+   */
+  public PreWarmContext createPreWarmContext(TezSessionConfiguration sessionConfig, int numContainers,
+               Map<String, LocalResource> localResources) throws IOException, TezException {
+
+    Configuration conf = sessionConfig.getTezConfiguration();
+
+    ProcessorDescriptor prewarmProcDescriptor = new ProcessorDescriptor(HivePreWarmProcessor.class.getName());
+    prewarmProcDescriptor.setUserPayload(MRHelpers.createUserPayloadFromConf(conf));
+
+    PreWarmContext context = new PreWarmContext(prewarmProcDescriptor, getContainerResource(conf),
+        numContainers, new VertexLocationHint(null));
+
+    Map<String, LocalResource> combinedResources = new HashMap<String, LocalResource>();
+
+    combinedResources.putAll(sessionConfig.getSessionResources());
+
+    try {
+      for(LocalResource lr : localizeTempFiles(conf)) {
+        combinedResources.put(getBaseName(lr), lr);
+      }
+    } catch(LoginException le) {
+      throw new IOException(le);
+    }
+
+    if(localResources != null) {
+       combinedResources.putAll(localResources);
+    }
+
+    context.setLocalResources(combinedResources);
+
+    /* boiler plate task env */
+    Map<String, String> environment = new HashMap<String, String>();
+    MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
+    context.setEnvironment(environment);
+    context.setJavaOpts(getContainerJavaOpts(conf));
+    return context;
   }
 
   /**
@@ -648,6 +816,17 @@ public class DagUtils {
     }
 
     return v;
+  }
+
+  /**
+   * Set up credentials for the base work on secure clusters
+   */
+  public void addCredentials(BaseWork work, DAG dag) {
+    if (work instanceof MapWork) {
+      addCredentials((MapWork) work, dag);
+    } else if (work instanceof ReduceWork) {
+      addCredentials((ReduceWork) work, dag);
+    }
   }
 
   /**

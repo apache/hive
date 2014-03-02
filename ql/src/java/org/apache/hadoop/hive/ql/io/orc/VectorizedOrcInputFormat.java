@@ -67,6 +67,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       this.offset = fileSplit.getStart();
       this.length = fileSplit.getLength();
       this.reader = file.rows(offset, length, includedColumns, sarg, columnNames);
+
       try {
         rbCtx = new VectorizedRowBatchCtx();
         rbCtx.init(conf, fileSplit);

@@ -31,6 +31,7 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -53,16 +54,19 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
+import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 /**
  * TezCompiler translates the operator plan into TezTasks.
@@ -72,6 +76,18 @@ public class TezCompiler extends TaskCompiler {
   protected final Log LOG = LogFactory.getLog(TezCompiler.class);
 
   public TezCompiler() {
+  }
+
+  @Override
+  public void init(HiveConf conf, LogHelper console, Hive db) {
+    super.init(conf, console, db);
+    
+    // Tez requires us to use RPC for the query plan
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN, true);
+
+    // We require the use of recursive input dirs for union processing
+    conf.setBoolean("mapred.input.dir.recursive", true);
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
   }
 
   @Override
@@ -138,14 +154,18 @@ public class TezCompiler extends TaskCompiler {
         TableScanOperator.getOperatorName() + "%"),
         new ProcessAnalyzeTable(GenTezUtils.getUtils()));
 
-    opRules.put(new RuleRegExp("Bail on Union",
+    opRules.put(new RuleRegExp("Handle union",
         UnionOperator.getOperatorName() + "%"), new NodeProcessor()
     {
       @Override
       public Object process(Node n, Stack<Node> s,
           NodeProcessorCtx procCtx, Object... os) throws SemanticException {
-        throw new SemanticException("Unions not yet supported on Tez."
-            +" Please use MR for this query");
+        GenTezProcContext context = (GenTezProcContext) procCtx;
+        UnionOperator union = (UnionOperator) n;
+
+        // simply need to remember that we've seen a union.
+        context.currentUnionOperators.add(union);
+        return null;
       }
     });
 
@@ -156,20 +176,31 @@ public class TezCompiler extends TaskCompiler {
     topNodes.addAll(pCtx.getTopOps().values());
     GraphWalker ogw = new GenTezWorkWalker(disp, procCtx);
     ogw.startWalking(topNodes, null);
+
+    // we need to clone some operator plans and remove union operators still
+    for (BaseWork w: procCtx.workWithUnionOperators) {
+      GenTezUtils.getUtils().removeUnionOperators(conf, procCtx, w);
+    }
+
+    // finally make sure the file sink operators are set up right
+    for (FileSinkOperator fileSink: procCtx.fileSinkSet) {
+      GenTezUtils.getUtils().processFileSink(procCtx, fileSink);
+    }
   }
 
   @Override
   protected void setInputFormat(Task<? extends Serializable> task) {
     if (task instanceof TezTask) {
       TezWork work = ((TezTask)task).getWork();
-      Set<BaseWork> roots = work.getRoots();
-      for (BaseWork w: roots) {
-        assert w instanceof MapWork;
-        MapWork mapWork = (MapWork)w;
-        HashMap<String, Operator<? extends OperatorDesc>> opMap = mapWork.getAliasToWork();
-        if (!opMap.isEmpty()) {
-          for (Operator<? extends OperatorDesc> op : opMap.values()) {
-            setInputFormat(mapWork, op);
+      List<BaseWork> all = work.getAllWork();
+      for (BaseWork w: all) {
+        if (w instanceof MapWork) {
+          MapWork mapWork = (MapWork) w;
+          HashMap<String, Operator<? extends OperatorDesc>> opMap = mapWork.getAliasToWork();
+          if (!opMap.isEmpty()) {
+            for (Operator<? extends OperatorDesc> op : opMap.values()) {
+              setInputFormat(mapWork, op);
+            }
           }
         }
       }
@@ -216,6 +247,9 @@ public class TezCompiler extends TaskCompiler {
        pCtx.getFetchTask());
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
       (new Vectorizer()).resolve(physicalCtx);
+    }
+    if (!"none".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE))) {
+      (new StageIDsRearranger()).resolve(physicalCtx);
     }
     return;
   }

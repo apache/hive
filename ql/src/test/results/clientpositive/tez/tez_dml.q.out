@@ -6,15 +6,10 @@ EXPLAIN CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
-  Stage-5
-  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
-  Stage-9 depends on stages: Stage-2, Stage-0
-  Stage-3 depends on stages: Stage-9
-  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
-  Stage-4
-  Stage-6
-  Stage-7 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-2, Stage-0
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -22,6 +17,7 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -74,19 +70,10 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.tmp_src
 
-  Stage: Stage-8
-    Conditional Operator
-
-  Stage: Stage-5
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
   Stage: Stage-2
     Dependency Collection
 
-  Stage: Stage-9
+  Stage: Stage-4
       Create Table Operator:
         Create Table
           columns: value string, cnt bigint
@@ -98,40 +85,6 @@ STAGE PLANS:
     Stats-Aggr Operator
 
   Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-4
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.tmp_src
-
-  Stage: Stage-6
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.tmp_src
-
-  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true
@@ -464,9 +417,11 @@ val_348	5
 PREHOOK: query: -- dyn partitions
 CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- dyn partitions
 CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_src_part
 PREHOOK: query: EXPLAIN INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
 PREHOOK: type: QUERY
@@ -474,18 +429,14 @@ POSTHOOK: query: EXPLAIN INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * F
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
-  Stage-5
-  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
-  Stage-4
-  Stage-6
-  Stage-7 depends on stages: Stage-6
 
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -505,15 +456,6 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.tmp_src_part
 
-  Stage: Stage-8
-    Conditional Operator
-
-  Stage: Stage-5
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
   Stage: Stage-2
     Dependency Collection
 
@@ -531,40 +473,6 @@ STAGE PLANS:
 
   Stage: Stage-3
     Stats-Aggr Operator
-
-  Stage: Stage-4
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.tmp_src_part
-
-  Stage: Stage-6
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.tmp_src_part
-
-  Stage: Stage-7
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
 
 PREHOOK: query: INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
 PREHOOK: type: QUERY
@@ -918,9 +826,11 @@ val_348	5
 PREHOOK: query: -- multi insert
 CREATE TABLE even (c int, d string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- multi insert
 CREATE TABLE even (c int, d string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@even
 POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
@@ -929,8 +839,10 @@ POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldS
 POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE odd (c int, d string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TABLE odd (c int, d string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@odd
 POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
@@ -954,25 +866,16 @@ POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldS
 POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-9 depends on stages: Stage-2 , consists of Stage-6, Stage-5, Stage-7
-  Stage-6
-  Stage-3 depends on stages: Stage-6, Stage-5, Stage-8, Stage-12, Stage-11, Stage-14
+  Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-3
   Stage-4 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-3
-  Stage-10 depends on stages: Stage-1
-  Stage-5
-  Stage-7
-  Stage-8 depends on stages: Stage-7
-  Stage-15 depends on stages: Stage-2 , consists of Stage-12, Stage-11, Stage-13
-  Stage-12
-  Stage-11
-  Stage-13
-  Stage-14 depends on stages: Stage-13
+  Stage-5 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
     Tez
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -1010,15 +913,6 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.odd
 
-  Stage: Stage-9
-    Conditional Operator
-
-  Stage: Stage-6
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
   Stage: Stage-3
     Dependency Collection
 
@@ -1045,85 +939,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.odd
 
-  Stage: Stage-10
-    Stats-Aggr Operator
-
   Stage: Stage-5
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.even
-
-  Stage: Stage-7
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.even
-
-  Stage: Stage-8
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-15
-    Conditional Operator
-
-  Stage: Stage-12
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-11
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.odd
-
-  Stage: Stage-13
-    Tez
-      Vertices:
-        Merge 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.odd
-
-  Stage: Stage-14
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
+    Stats-Aggr Operator
 
 PREHOOK: query: FROM src
 INSERT INTO TABLE even SELECT key, value WHERE key % 2 = 0 

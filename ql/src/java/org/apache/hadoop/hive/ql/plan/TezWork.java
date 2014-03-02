@@ -45,17 +45,29 @@ public class TezWork extends AbstractOperatorDesc {
 
   public enum EdgeType {
     SIMPLE_EDGE,
-    BROADCAST_EDGE
+    BROADCAST_EDGE,
+    CONTAINS
   }
 
   private static transient final Log LOG = LogFactory.getLog(TezWork.class);
 
+  private static int counter;
+  private final String name;
   private final Set<BaseWork> roots = new HashSet<BaseWork>();
   private final Set<BaseWork> leaves = new HashSet<BaseWork>();
   private final Map<BaseWork, List<BaseWork>> workGraph = new HashMap<BaseWork, List<BaseWork>>();
   private final Map<BaseWork, List<BaseWork>> invertedWorkGraph = new HashMap<BaseWork, List<BaseWork>>();
   private final Map<Pair<BaseWork, BaseWork>, EdgeType> edgeProperties =
       new HashMap<Pair<BaseWork, BaseWork>, EdgeType>();
+
+  public TezWork(String name) {
+    this.name = name + ":" + (++counter);
+  }
+
+  @Explain(displayName = "DagName")
+  public String getName() {
+    return name;
+  }
 
   /**
    * getWorkMap returns a map of "vertex name" to BaseWork
