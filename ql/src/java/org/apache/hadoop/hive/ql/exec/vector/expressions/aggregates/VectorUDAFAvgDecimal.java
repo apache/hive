@@ -139,7 +139,7 @@ public class VectorUDAFAvgDecimal extends VectorAggregateExpression {
       // expected type for the row-mode aggregation
       // For decimal, the type is "same number of integer digits and 4 more decimal digits"
       
-      DecimalTypeInfo dtiSum = GenericUDAFAverage.deriveSumTypeInfo(inputScale, inputPrecision);
+      DecimalTypeInfo dtiSum = GenericUDAFAverage.deriveSumFieldTypeInfo(inputPrecision, inputScale);
       this.sumScale = (short) dtiSum.scale();
       this.sumPrecision = (short) dtiSum.precision();
       

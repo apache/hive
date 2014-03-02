@@ -214,6 +214,9 @@
                          <void method="add"> 
                           <string>sum</string> 
                          </void> 
+                         <void method="add"> 
+                          <string>input</string> 
+                         </void> 
                         </object> 
                        </void> 
                        <void property="allStructFieldTypeInfos"> 
@@ -231,6 +234,9 @@
                             <string>double</string> 
                            </void> 
                           </object> 
+                         </void> 
+                         <void method="add"> 
+                          <object idref="PrimitiveTypeInfo0"/> 
                          </void> 
                         </object> 
                        </void> 
@@ -406,7 +412,7 @@
                        </void> 
                        <void method="put"> 
                         <string>columns.types</string> 
-                        <string>double,struct&lt;count:bigint,sum:double&gt;,struct&lt;count:bigint,sum:double&gt;,string,string</string> 
+                        <string>double,struct&lt;count:bigint,sum:double,input:string&gt;,struct&lt;count:bigint,sum:double,input:string&gt;,string,string</string> 
                        </void> 
                        <void method="put"> 
                         <string>escape.delim</string> 
@@ -465,7 +471,7 @@
                         <object idref="StructTypeInfo0"/> 
                        </void> 
                        <void property="typeName"> 
-                        <string>struct&lt;count:bigint,sum:double&gt;</string> 
+                        <string>struct&lt;count:bigint,sum:double,input:string&gt;</string> 
                        </void> 
                       </object> 
                      </void> 
@@ -478,7 +484,7 @@
                         <object idref="StructTypeInfo0"/> 
                        </void> 
                        <void property="typeName"> 
-                        <string>struct&lt;count:bigint,sum:double&gt;</string> 
+                        <string>struct&lt;count:bigint,sum:double,input:string&gt;</string> 
                        </void> 
                       </object> 
                      </void> 
@@ -988,7 +994,7 @@
                      <object idref="StructTypeInfo0"/> 
                     </void> 
                     <void property="typeName"> 
-                     <string>struct&lt;count:bigint,sum:double&gt;</string> 
+                     <string>struct&lt;count:bigint,sum:double,input:string&gt;</string> 
                     </void> 
                    </object> 
                   </void> 
@@ -1004,7 +1010,7 @@
                      <object idref="StructTypeInfo0"/> 
                     </void> 
                     <void property="typeName"> 
-                     <string>struct&lt;count:bigint,sum:double&gt;</string> 
+                     <string>struct&lt;count:bigint,sum:double,input:string&gt;</string> 
                     </void> 
                    </object> 
                   </void> 

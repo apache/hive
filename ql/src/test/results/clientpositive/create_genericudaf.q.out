@@ -49,7 +49,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col0 (type: struct<count:bigint,sum:double>), _col1 (type: struct<count:bigint,sum:double>)
+                  value expressions: _col0 (type: struct<count:bigint,sum:double,input:int>), _col1 (type: struct<count:bigint,sum:double,input:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: test_avg(VALUE._col0), test_avg(VALUE._col1)

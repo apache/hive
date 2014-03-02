@@ -175,11 +175,16 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     }
 
     private DecimalTypeInfo deriveResultDecimalTypeInfo() {
-      if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
-        return GenericUDAFAverage.deriveSumTypeInfo(inputOI.scale(), inputOI.precision());
+      int prec = inputOI.precision();
+      int scale = inputOI.scale();
+      if (mode == Mode.FINAL || mode == Mode.COMPLETE) {
+        int intPart = prec - scale;
+        // The avg() result type has the same number of integer digits and 4 more decimal digits.
+        scale = Math.min(scale + 4, HiveDecimal.MAX_SCALE - intPart);
+        return TypeInfoFactory.getDecimalTypeInfo(intPart + scale, scale);
       } else {
-        PrimitiveObjectInspector sfOI = (PrimitiveObjectInspector) sumFieldOI;
-        return (DecimalTypeInfo) sfOI.getTypeInfo();
+        // For intermediate sum field
+        return GenericUDAFAverage.deriveSumFieldTypeInfo(prec, scale);
       }
     }
 
@@ -285,25 +290,27 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
         sumField = soi.getStructFieldRef("sum");
         countFieldOI = (LongObjectInspector) countField.getFieldObjectInspector();
         sumFieldOI = sumField.getFieldObjectInspector();
+        inputOI = (PrimitiveObjectInspector) soi.getStructFieldRef("input").getFieldObjectInspector();
       }
 
       // init output
       if (mode == Mode.PARTIAL1 || mode == Mode.PARTIAL2) {
         // The output of a partial aggregation is a struct containing
         // a "long" count and a "double" sum.
-
         ArrayList<ObjectInspector> foi = new ArrayList<ObjectInspector>();
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         foi.add(getSumFieldWritableObjectInspector());
+        // We need to "remember" the input object inspector so that we need to know the input type
+        // in order to determine the sum field type (precision/scale) for Mode.PARTIAL2 and Mode.FINAL.
+        foi.add(inputOI);
         ArrayList<String> fname = new ArrayList<String>();
         fname.add("count");
         fname.add("sum");
+        fname.add("input");
         partialResult = new Object[2];
         partialResult[0] = new LongWritable(0);
         // index 1 set by child
-        return ObjectInspectorFactory.getStandardStructObjectInspector(fname,
-            foi);
-
+        return ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
       } else {
         return getSumFieldWritableObjectInspector();
       }
@@ -363,15 +370,16 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
   }
 
   /**
-   * The result type has the same number of integer digits and 4 more decimal digits
+   * The intermediate sum field has 10 more integer digits with the same scale.
    * This is exposed as static so that the vectorized AVG operator use the same logic
-   * @param scale
    * @param precision
+   * @param scale
    * @return
    */
-  public static DecimalTypeInfo deriveSumTypeInfo(int scale, int precision) {
-      int intPart = precision - scale;
-      scale = Math.min(scale + 4, HiveDecimal.MAX_SCALE - intPart);
-      return TypeInfoFactory.getDecimalTypeInfo(intPart + scale, scale);
+  public static DecimalTypeInfo deriveSumFieldTypeInfo(int precision, int scale) {
+    int intPart = precision - scale;
+    intPart = Math.min(intPart + 10, HiveDecimal.MAX_PRECISION - scale);
+    return TypeInfoFactory.getDecimalTypeInfo(intPart + scale, scale);
   }
+
 }
