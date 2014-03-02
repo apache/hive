@@ -24,6 +24,7 @@ import java.math.BigInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
@@ -117,6 +118,14 @@ public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritab
   @Override
   public int compareTo(HiveDecimalWritable that) {
     return getHiveDecimal().compareTo(that.getHiveDecimal());
+  }
+
+  public static void writeToByteStream(Decimal128 dec, Output byteStream) {
+    HiveDecimal hd = HiveDecimal.create(dec.toBigDecimal());
+    LazyBinaryUtils.writeVInt(byteStream, hd.scale());
+    byte[] bytes = hd.unscaledValue().toByteArray();
+    LazyBinaryUtils.writeVInt(byteStream, bytes.length);
+    byteStream.write(bytes, 0, bytes.length);
   }
 
   public void writeToByteStream(Output byteStream) {

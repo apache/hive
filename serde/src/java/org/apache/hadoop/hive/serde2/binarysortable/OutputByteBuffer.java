@@ -25,8 +25,16 @@ import java.util.Arrays;
  */
 public class OutputByteBuffer {
 
-  byte[] data = new byte[128];
+  byte[] data;
   int length;
+
+  public OutputByteBuffer(int size) {
+    data = new byte[size];
+  }
+
+  public OutputByteBuffer() {
+    this(128);
+  }
 
   /**
    * Reset the byte buffer.

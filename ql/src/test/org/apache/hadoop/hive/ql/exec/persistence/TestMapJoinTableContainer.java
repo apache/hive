@@ -40,11 +40,11 @@ public class TestMapJoinTableContainer {
   private ObjectInputStream in;
   private MapJoinTableContainer container;
   private MapJoinTableContainerSerDe containerSerde;
-  private MapJoinKey key;
+  private MapJoinKeyObject key;
   private MapJoinRowContainer rowContainer;
   @Before
   public void setup() throws Exception {
-    key = new MapJoinKey(KEY);
+    key = new MapJoinKeyObject(KEY);
     rowContainer = new MapJoinEagerRowContainer();
     rowContainer.add(VALUE);
     baos = new ByteArrayOutputStream();

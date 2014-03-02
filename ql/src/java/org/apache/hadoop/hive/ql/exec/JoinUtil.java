@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -147,30 +146,6 @@ public class JoinUtil {
 
     return nr;
   }
-
-  /**
-   * Return the key as a standard object. StandardObject can be inspected by a
-   * standard ObjectInspector. The first parameter a MapJoinKey can
-   * be null if the caller would like a new object to be instantiated.
-   */
-  public static MapJoinKey computeMapJoinKeys(MapJoinKey key, Object row,
-      List<ExprNodeEvaluator> keyFields, List<ObjectInspector> keyFieldsOI)
-      throws HiveException {
-    int size = keyFields.size();
-    if(key == null || key.getKey().length != size) {
-      key = new MapJoinKey(new Object[size]);
-    }
-    Object[] array = key.getKey();
-    for (int keyIndex = 0; keyIndex < size; keyIndex++) {
-      array[keyIndex] = (ObjectInspectorUtils.copyToStandardObject(keyFields.get(keyIndex)
-          .evaluate(row), keyFieldsOI.get(keyIndex), ObjectInspectorCopyOption.WRITABLE));
-    }
-    return key;
-  }
-
-
-
-
 
   /**
    * Return the value as a standard object. StandardObject can be inspected by a

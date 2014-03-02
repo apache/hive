@@ -414,6 +414,18 @@ public final class LazyBinaryUtils {
     int len = LazyBinaryUtils.writeVLongToByteArray(vLongBytes, l);
     byteStream.write(vLongBytes, 0, len);
   }
+  
+  public static void writeDouble(Output byteStream, double d) {
+    long v = Double.doubleToLongBits(d);
+    byteStream.write((byte) (v >> 56));
+    byteStream.write((byte) (v >> 48));
+    byteStream.write((byte) (v >> 40));
+    byteStream.write((byte) (v >> 32));
+    byteStream.write((byte) (v >> 24));
+    byteStream.write((byte) (v >> 16));
+    byteStream.write((byte) (v >> 8));
+    byteStream.write((byte) (v));
+  }
 
   static HashMap<TypeInfo, ObjectInspector> cachedLazyBinaryObjectInspector = new HashMap<TypeInfo, ObjectInspector>();
 
