@@ -838,7 +838,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    columns _col0,_col1
+                    columns key,value
                     columns.types string:string
                     field.delim ,
                     line.delim 

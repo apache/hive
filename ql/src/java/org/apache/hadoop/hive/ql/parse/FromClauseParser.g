@@ -204,7 +204,7 @@ subQuerySource
 @init { gParent.pushMsg("subquery source", state); }
 @after { gParent.popMsg(state); }
     :
-    LPAREN queryStatementExpression[false] RPAREN identifier -> ^(TOK_SUBQUERY queryStatementExpression identifier)
+    LPAREN queryStatementExpression[false] RPAREN KW_AS? identifier -> ^(TOK_SUBQUERY queryStatementExpression identifier)
     ;
 
 //---------------------- Rules for parsing PTF clauses -----------------------------

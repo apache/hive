@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hive.hcatalog.common.ErrorType;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.DefaultHCatRecord;
@@ -39,7 +40,9 @@ import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 public class TestHCatPartitioned extends HCatMapReduceTest {
 
@@ -99,17 +102,21 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
 
     runMRCreate(partitionMap, partitionColumns, writeRecords, 20, true);
 
-    //Test for duplicate publish
+    //Test for duplicate publish -- this will either fail on job creation time
+    // and throw an exception, or will fail at runtime, and fail the job.
+
     IOException exc = null;
     try {
-      runMRCreate(partitionMap, partitionColumns, writeRecords, 20, true);
+      Job j = runMRCreate(partitionMap, partitionColumns, writeRecords, 20, true);
+      assertEquals(!isTableImmutable(),j.isSuccessful());
     } catch (IOException e) {
       exc = e;
+      assertTrue(exc instanceof HCatException);
+      assertTrue(ErrorType.ERROR_DUPLICATE_PARTITION.equals(((HCatException) exc).getErrorType()));
     }
-
-    assertNotNull(exc);
-    assertTrue(exc instanceof HCatException);
-    assertEquals(ErrorType.ERROR_DUPLICATE_PARTITION, ((HCatException) exc).getErrorType());
+    if (!isTableImmutable()){
+      assertNull(exc);
+    }
 
     //Test for publish with invalid partition key name
     exc = null;
@@ -118,14 +125,14 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
     partitionMap.put("px0", "p0value2");
 
     try {
-      runMRCreate(partitionMap, partitionColumns, writeRecords, 20, true);
+      Job j = runMRCreate(partitionMap, partitionColumns, writeRecords, 20, true);
+      assertFalse(j.isSuccessful());
     } catch (IOException e) {
       exc = e;
+      assertNotNull(exc);
+      assertTrue(exc instanceof HCatException);
+      assertEquals(ErrorType.ERROR_MISSING_PARTITION_KEY, ((HCatException) exc).getErrorType());
     }
-
-    assertNotNull(exc);
-    assertTrue(exc instanceof HCatException);
-    assertEquals(ErrorType.ERROR_MISSING_PARTITION_KEY, ((HCatException) exc).getErrorType());
 
     //Test for publish with missing partition key values
     exc = null;
@@ -156,16 +163,27 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
 //    assertEquals(ErrorType.ERROR_PUBLISHING_PARTITION, ((HCatException) exc).getErrorType());
     // With Dynamic partitioning, this isn't an error that the keyValues specified didn't values
 
-    //Read should get 10 + 20 rows
-    runMRRead(30);
+    //Read should get 10 + 20 rows if immutable, 50 (10+20+20) if mutable
+    if (isTableImmutable()){
+      runMRRead(30);
+    } else {
+      runMRRead(50);
+    }
 
     //Read with partition filter
     runMRRead(10, "part1 = \"p1value1\"");
-    runMRRead(20, "part1 = \"p1value2\"");
-    runMRRead(30, "part1 = \"p1value1\" or part1 = \"p1value2\"");
     runMRRead(10, "part0 = \"p0value1\"");
-    runMRRead(20, "part0 = \"p0value2\"");
-    runMRRead(30, "part0 = \"p0value1\" or part0 = \"p0value2\"");
+    if (isTableImmutable()){
+      runMRRead(20, "part1 = \"p1value2\"");
+      runMRRead(30, "part1 = \"p1value1\" or part1 = \"p1value2\"");
+      runMRRead(20, "part0 = \"p0value2\"");
+      runMRRead(30, "part0 = \"p0value1\" or part0 = \"p0value2\"");
+    } else {
+      runMRRead(40, "part1 = \"p1value2\"");
+      runMRRead(50, "part1 = \"p1value1\" or part1 = \"p1value2\"");
+      runMRRead(40, "part0 = \"p0value2\"");
+      runMRRead(50, "part0 = \"p0value1\" or part0 = \"p0value2\"");
+    }
 
     tableSchemaTest();
     columnOrderChangeTest();
@@ -331,8 +349,12 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
 
     runMRCreate(partitionMap, partitionColumns, writeRecords, 10, true);
 
-    //Read should get 10 + 20 + 10 + 10 + 20 rows
-    runMRRead(70);
+    if (isTableImmutable()){
+      //Read should get 10 + 20 + 10 + 10 + 20 rows
+      runMRRead(70);
+    } else {
+      runMRRead(90); // +20 from the duplicate publish
+    }
   }
 
   //Test that data inserted through hcatoutputformat is readable from hive
@@ -347,6 +369,12 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
 
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);
-    assertEquals(70, res.size());
+    if (isTableImmutable()){
+      //Read should get 10 + 20 + 10 + 10 + 20 rows
+      assertEquals(70, res.size());
+    } else {
+      assertEquals(90, res.size()); // +20 from the duplicate publish
+    }
+
   }
 }
