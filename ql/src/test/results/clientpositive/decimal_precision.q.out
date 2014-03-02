@@ -548,7 +548,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<count:bigint,sum:decimal(24,14)>), _col1 (type: decimal(30,10))
+                  value expressions: _col0 (type: struct<count:bigint,sum:decimal(30,10),input:decimal(20,10)>), _col1 (type: decimal(30,10))
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0), sum(VALUE._col1)

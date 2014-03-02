@@ -33,7 +33,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: double), _col1 (type: struct<count:bigint,sum:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>), _col3 (type: struct<count:bigint,sum:double,variance:double>)
+                  value expressions: _col0 (type: double), _col1 (type: struct<count:bigint,sum:double,input:string>), _col2 (type: struct<count:bigint,sum:double,variance:double>), _col3 (type: struct<count:bigint,sum:double,variance:double>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0), avg(VALUE._col1), variance(VALUE._col2), std(VALUE._col3)

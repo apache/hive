@@ -30,7 +30,7 @@ STAGE PLANS:
                   Reduce Output Operator
                     sort order: 
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                    value expressions: _col0 (type: struct<count:bigint,sum:double>)
+                    value expressions: _col0 (type: struct<count:bigint,sum:double,input:bigint>)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
