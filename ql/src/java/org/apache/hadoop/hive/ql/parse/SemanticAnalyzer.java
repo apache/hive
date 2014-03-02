@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -44,6 +46,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -5838,6 +5842,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // can be changed in the optimizer but the key should not be changed
     // it should be the same as the MoveWork's sourceDir.
     fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
+    if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
+      String statsTmpLoc = ctx.getExternalTmpPath(queryTmpdir.toUri()).toString();
+      LOG.info("Set stats collection dir : " + statsTmpLoc);
+      conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
+    }
 
     if (dest_part != null) {
       try {
@@ -8717,6 +8726,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!qbp.isAnalyzeCommand()) {
       tsDesc.setGatherStats(false);
     } else {
+      if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
+        String statsTmpLoc = ctx.getExternalTmpPath(tab.getPath().toUri()).toString();
+        LOG.info("Set stats collection dir : " + statsTmpLoc);
+        conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
+      }
       tsDesc.setGatherStats(true);
       tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
       tsDesc.setMaxStatsKeyPrefixLength(StatsFactory.getMaxPrefixLength(conf));

@@ -32,29 +32,48 @@ public class StatsSetupConst {
 
   public enum StatDB {
     hbase {
+      @Override
       public String getPublisher(Configuration conf) {
         return "org.apache.hadoop.hive.hbase.HBaseStatsPublisher"; }
+      @Override
       public String getAggregator(Configuration conf) {
         return "org.apache.hadoop.hive.hbase.HBaseStatsAggregator"; }
     },
     jdbc {
+      @Override
       public String getPublisher(Configuration conf) {
         return "org.apache.hadoop.hive.ql.stats.jdbc.JDBCStatsPublisher"; }
+      @Override
       public String getAggregator(Configuration conf) {
         return "org.apache.hadoop.hive.ql.stats.jdbc.JDBCStatsAggregator"; }
     },
     counter {
+      @Override
       public String getPublisher(Configuration conf) {
         return "org.apache.hadoop.hive.ql.stats.CounterStatsPublisher"; }
+      @Override
       public String getAggregator(Configuration conf) {
         if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
           return "org.apache.hadoop.hive.ql.stats.CounterStatsAggregatorTez";
         }
         return "org.apache.hadoop.hive.ql.stats.CounterStatsAggregator"; }
     },
+    fs {
+      @Override
+      public String getPublisher(Configuration conf) {
+        return "org.apache.hadoop.hive.ql.stats.fs.FSStatsPublisher";
+      }
+
+      @Override
+      public String getAggregator(Configuration conf) {
+        return "org.apache.hadoop.hive.ql.stats.fs.FSStatsAggregator";
+      }
+    },
     custom {
+      @Override
       public String getPublisher(Configuration conf) {
         return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_DEFAULT_PUBLISHER); }
+      @Override
       public String getAggregator(Configuration conf) {
         return HiveConf.getVar(conf,  HiveConf.ConfVars.HIVE_STATS_DEFAULT_AGGREGATOR); }
     };
@@ -89,9 +108,15 @@ public class StatsSetupConst {
   public static final String RAW_DATA_SIZE = "rawDataSize";
 
   /**
+   * Temp dir for writing stats from tasks.
+   */
+  public static final String STATS_TMP_LOC = "hive.stats.tmp.loc";
+
+  public static final String STATS_FILE_PREFIX = "tmpstats-";
+  /**
    * @return List of all supported statistics
    */
-  public static final String[] supportedStats = new String[] 
+  public static final String[] supportedStats = new String[]
 	{NUM_FILES,ROW_COUNT,TOTAL_SIZE,RAW_DATA_SIZE};
 
   /**
@@ -104,7 +129,7 @@ public class StatsSetupConst {
    * @return List of statistics that can be collected quickly without requiring a scan of the data.
    */
   public static final String[] fastStats = new String[] {NUM_FILES,TOTAL_SIZE};
-  
+
   // This string constant is used by stats task to indicate to AlterHandler that
   // alterPartition/alterTable is happening via statsTask.
   public static final String STATS_GENERATED_VIA_STATS_TASK = "STATS_GENERATED_VIA_STATS_TASK";
@@ -112,11 +137,11 @@ public class StatsSetupConst {
   // This string constant will be persisted in metastore to indicate whether corresponding
   // table or partition's statistics are accurate or not.
   public static final String COLUMN_STATS_ACCURATE = "COLUMN_STATS_ACCURATE";
-  
+
   public static final String TRUE = "true";
-  
+
   public static final String FALSE = "false";
-  
+
   public static boolean areStatsUptoDate(Map<String,String> params) {
 	String statsAcc = params.get(COLUMN_STATS_ACCURATE);
 	return statsAcc == null ? false : statsAcc.equals(TRUE);

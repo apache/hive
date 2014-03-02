@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.CounterStatsPublisher;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -901,7 +902,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     String spSpec = conf.getStaticSpec();
 
     int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
-    boolean counterStats = statsPublisher instanceof CounterStatsPublisher;
+    boolean taskIndependent = statsPublisher instanceof StatsCollectionTaskIndependent;
 
     for (Map.Entry<String, FSPaths> entry : valToPaths.entrySet()) {
       String fspKey = entry.getKey();     // DP/LB
@@ -914,7 +915,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       String prefix;
       String postfix;
-      if (counterStats) {
+      if (taskIndependent) {
         // key = "database.table/SP/DP/"LB/
         prefix = conf.getTableInfo().getTableName();
         postfix = Utilities.join(lbSpec);
