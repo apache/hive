@@ -45,7 +45,7 @@ public final class VectorUDFYearLong extends VectorUDFTimestampFieldLong {
   }
 
   @Override
-  protected long getField(long time) {
+  protected long getTimestampField(long time) {
     /* binarySearch is faster than a loop doing a[i] (no array out of bounds checks) */
     int year = Arrays.binarySearch(YEAR_BOUNDARIES, time);
     if(year >= 0) {

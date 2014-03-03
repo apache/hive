@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -140,6 +141,17 @@ public class VectorizedBatchUtil {
         LongColumnVector lcv = (LongColumnVector) batch.cols[i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((LongWritable) writableCol).get();
+          lcv.isNull[rowIndex] = false;
+        } else {
+          lcv.vector[rowIndex] = 1;
+          SetNullColIsNullValue(lcv, rowIndex);
+        }
+      }
+        break;
+      case DATE: {
+        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
+        if (writableCol != null) {
+          lcv.vector[rowIndex] = ((DateWritable) writableCol).getDays();
           lcv.isNull[rowIndex] = false;
         } else {
           lcv.vector[rowIndex] = 1;

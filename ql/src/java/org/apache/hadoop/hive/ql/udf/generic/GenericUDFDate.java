@@ -25,6 +25,9 @@ import java.util.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateString;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -46,6 +49,7 @@ import org.apache.hadoop.io.Text;
     extended = "Example:\n "
         + "  > SELECT _FUNC_('2009-07-30 04:17:52') FROM src LIMIT 1;\n"
         + "  '2009-07-30'")
+@VectorizedExpressions({VectorUDFDateString.class, VectorUDFDateLong.class})
 public class GenericUDFDate extends GenericUDF {
   private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient TimestampConverter timestampConverter;

@@ -18,33 +18,37 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.util.Calendar;
+import org.apache.hadoop.io.Text;
 
-/**
- * Returns month value.
- * Extends {@link VectorUDFTimestampFieldLong}
- */
-public final class VectorUDFMonthLong extends VectorUDFTimestampFieldLong {
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+public class VectorUDFDateString extends StringUnaryUDF {
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFMonthLong(int colNum, int outputColumn) {
-    super(Calendar.MONTH, colNum, outputColumn);
+  public VectorUDFDateString(int colNum, int outputColumn) {
+    super(colNum, outputColumn, new StringUnaryUDF.IUDFUnaryString() {
+      SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+      Text t = new Text();
+
+      @Override
+      public Text evaluate(Text s) {
+        if (s == null) {
+          return null;
+        }
+        try {
+          Date date = formatter.parse(s.toString());
+          t.set(formatter.format(date)) ;
+          return t;
+        } catch (ParseException e) {
+          return null;
+        }
+      }
+    });
   }
 
-  public VectorUDFMonthLong() {
+  public VectorUDFDateString() {
     super();
-  }
-
-  @Override
-  protected long getTimestampField(long time) {
-    /* january is 0 */
-    return 1 + super.getTimestampField(time);
-  }
-
-  @Override
-  protected long getDateField(long days) {
-    /* january is 0 */
-    return 1 + super.getDateField(days);
   }
 }

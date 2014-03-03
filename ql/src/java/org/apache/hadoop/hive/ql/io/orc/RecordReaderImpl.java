@@ -2543,6 +2543,7 @@ class RecordReaderImpl implements RecordReader {
       case LONG:
       case FLOAT:
       case DOUBLE:
+      case DATE:
       case STRUCT:
       case MAP:
       case LIST:

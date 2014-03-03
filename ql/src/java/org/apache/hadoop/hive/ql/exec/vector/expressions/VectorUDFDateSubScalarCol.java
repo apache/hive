@@ -18,33 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.util.Calendar;
-
-/**
- * Returns month value.
- * Extends {@link VectorUDFTimestampFieldLong}
- */
-public final class VectorUDFMonthLong extends VectorUDFTimestampFieldLong {
-
-  private static final long serialVersionUID = 1L;
-
-  public VectorUDFMonthLong(int colNum, int outputColumn) {
-    super(Calendar.MONTH, colNum, outputColumn);
+public class VectorUDFDateSubScalarCol extends VectorUDFDateAddScalarCol {
+  public VectorUDFDateSubScalarCol(Object object, int colNum, int outputColumn) {
+    super(object, colNum, outputColumn);
+    isPositive = false;
   }
 
-  public VectorUDFMonthLong() {
+  public VectorUDFDateSubScalarCol() {
     super();
-  }
-
-  @Override
-  protected long getTimestampField(long time) {
-    /* january is 0 */
-    return 1 + super.getTimestampField(time);
-  }
-
-  @Override
-  protected long getDateField(long days) {
-    /* january is 0 */
-    return 1 + super.getDateField(days);
+    isPositive = false;
   }
 }
