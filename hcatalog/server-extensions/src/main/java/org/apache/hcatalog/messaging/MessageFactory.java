@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hcatalog.messaging.json.JSONMessageFactory;
 
+import java.util.List;
+
 /**
  * Abstract Factory for the construction of HCatalog message instances.
  * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.MessageFactory} instead
@@ -123,11 +125,11 @@ public abstract class MessageFactory {
 
   /**
    * Factory method for AddPartitionMessage.
-   * @param table The Table to which the partition is added.
-   * @param partition The Partition being added.
+   * @param table The Table to which the partitions are added.
+   * @param partitions The set of Partitions being added.
    * @return AddPartitionMessage instance.
    */
-  public abstract AddPartitionMessage buildAddPartitionMessage(Table table, Partition partition);
+  public abstract AddPartitionMessage buildAddPartitionMessage(Table table, List<Partition> partitions);
 
   /**
    * Factory method for DropPartitionMessage.

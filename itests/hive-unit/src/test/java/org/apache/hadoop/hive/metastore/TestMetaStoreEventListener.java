@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -223,11 +224,30 @@ public class TestMetaStoreEventListener extends TestCase {
 
     AddPartitionEvent partEvent = (AddPartitionEvent)(notifyList.get(listSize-1));
     assert partEvent.getStatus();
-    validateAddPartition(part, partEvent.getPartition());
+    validateAddPartition(part, partEvent.getPartitions().get(0));
     validateTableInAddPartition(tbl, partEvent.getTable());
 
     PreAddPartitionEvent prePartEvent = (PreAddPartitionEvent)(preNotifyList.get(listSize-1));
-    validateAddPartition(part, prePartEvent.getPartition());
+    validateAddPartition(part, prePartEvent.getPartitions().get(0));
+
+    // Test adding multiple partitions in a single partition-set, atomically.
+    int currentTime = (int)System.currentTimeMillis();
+    HiveMetaStoreClient hmsClient = new HiveMetaStoreClient(hiveConf);
+    Table table = hmsClient.getTable(dbName, "tmptbl");
+    Partition partition1 = new Partition(Arrays.asList("20110101"), dbName, "tmptbl", currentTime,
+                                        currentTime, table.getSd(), table.getParameters());
+    Partition partition2 = new Partition(Arrays.asList("20110102"), dbName, "tmptbl", currentTime,
+                                        currentTime, table.getSd(), table.getParameters());
+    Partition partition3 = new Partition(Arrays.asList("20110103"), dbName, "tmptbl", currentTime,
+                                        currentTime, table.getSd(), table.getParameters());
+    hmsClient.add_partitions(Arrays.asList(partition1, partition2, partition3));
+    ++listSize;
+    AddPartitionEvent multiplePartitionEvent = (AddPartitionEvent)(notifyList.get(listSize-1));
+    assertEquals("Unexpected number of partitions in event!", 3, multiplePartitionEvent.getPartitions().size());
+    assertEquals("Unexpected table value.", table, multiplePartitionEvent.getTable());
+    assertEquals("Unexpected partition value.", partition1.getValues(), multiplePartitionEvent.getPartitions().get(0).getValues());
+    assertEquals("Unexpected partition value.", partition2.getValues(), multiplePartitionEvent.getPartitions().get(1).getValues());
+    assertEquals("Unexpected partition value.", partition3.getValues(), multiplePartitionEvent.getPartitions().get(2).getValues());
 
     driver.run(String.format("alter table %s touch partition (%s)", tblName, "b='2011'"));
     listSize++;
@@ -260,11 +280,11 @@ public class TestMetaStoreEventListener extends TestCase {
 
     AddPartitionEvent appendPartEvent =
         (AddPartitionEvent)(notifyList.get(listSize-1));
-    validateAddPartition(newPart, appendPartEvent.getPartition());
+    validateAddPartition(newPart, appendPartEvent.getPartitions().get(0));
 
     PreAddPartitionEvent preAppendPartEvent =
         (PreAddPartitionEvent)(preNotifyList.get(listSize-1));
-    validateAddPartition(newPart, preAppendPartEvent.getPartition());
+    validateAddPartition(newPart, preAppendPartEvent.getPartitions().get(0));
 
     driver.run(String.format("alter table %s rename to %s", tblName, renamed));
     listSize++;

@@ -22,28 +22,36 @@ import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class AddPartitionEvent extends ListenerEvent {
 
   private final Table table;
-  private final Partition partition;
+  private final List<Partition> partitions;
 
-  public AddPartitionEvent (Table table, Partition partition, boolean status, HMSHandler handler) {
-    super (status, handler);
+  public AddPartitionEvent(Table table, List<Partition> partitions, boolean status, HMSHandler handler) {
+    super(status, handler);
     this.table = table;
-    this.partition = partition;
+    this.partitions = partitions;
+  }
+
+  public AddPartitionEvent(Table table, Partition partition, boolean status, HMSHandler handler) {
+    this(table, Arrays.asList(partition), status, handler);
   }
 
   /**
-   * @return the partition
-   */
-  public Partition getPartition() {
-    return partition;
-  }
-
-  /**
-   * @return the table
+   * @return The table.
    */
   public Table getTable() {
     return table;
   }
+
+  /**
+   * @return List of partitions.
+   */
+  public List<Partition> getPartitions() {
+    return partitions;
+  }
+
 }

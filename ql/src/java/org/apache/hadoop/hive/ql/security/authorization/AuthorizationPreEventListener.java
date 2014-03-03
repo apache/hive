@@ -224,10 +224,11 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
   private void authorizeAddPartition(PreAddPartitionEvent context)
       throws InvalidOperationException, MetaException {
     try {
-      org.apache.hadoop.hive.metastore.api.Partition mapiPart = context.getPartition();
-      tAuthorizer.get().authorize(getPartitionFromApiPartition(mapiPart, context),
-          HiveOperation.ALTERTABLE_ADDPARTS.getInputRequiredPrivileges(),
-          HiveOperation.ALTERTABLE_ADDPARTS.getOutputRequiredPrivileges());
+      for (org.apache.hadoop.hive.metastore.api.Partition mapiPart : context.getPartitions()) {
+        tAuthorizer.get().authorize(getPartitionFromApiPartition(mapiPart, context),
+            HiveOperation.ALTERTABLE_ADDPARTS.getInputRequiredPrivileges(),
+            HiveOperation.ALTERTABLE_ADDPARTS.getOutputRequiredPrivileges());
+      }
     } catch (AuthorizationException e) {
       throw invalidOperationException(e);
     } catch (NoSuchObjectException e) {

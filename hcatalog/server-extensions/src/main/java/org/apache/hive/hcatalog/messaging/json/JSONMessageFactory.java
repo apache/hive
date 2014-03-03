@@ -31,9 +31,7 @@ import org.apache.hive.hcatalog.messaging.DropTableMessage;
 import org.apache.hive.hcatalog.messaging.MessageDeserializer;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The JSON implementation of the MessageFactory. Constructs JSON implementations of
@@ -83,10 +81,9 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public AddPartitionMessage buildAddPartitionMessage(Table table, Partition partition) {
-    return new JSONAddPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, partition.getDbName(),
-        partition.getTableName(), Arrays.asList(getPartitionKeyValues(table, partition)),
-        System.currentTimeMillis()/1000);
+  public AddPartitionMessage buildAddPartitionMessage(Table table, List<Partition> partitions) {
+    return new JSONAddPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
+        table.getTableName(), getPartitionKeyValues(table, partitions), System.currentTimeMillis()/1000);
   }
 
   @Override
@@ -102,5 +99,12 @@ public class JSONMessageFactory extends MessageFactory {
       partitionKeys.put(table.getPartitionKeys().get(i).getName(),
           partition.getValues().get(i));
     return partitionKeys;
+  }
+
+  private static List<Map<String, String>> getPartitionKeyValues(Table table, List<Partition> partitions) {
+    List<Map<String, String>> partitionList = new ArrayList<Map<String, String>>(partitions.size());
+    for (Partition partition : partitions)
+      partitionList.add(getPartitionKeyValues(table, partition));
+    return partitionList;
   }
 }
