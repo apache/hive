@@ -71,7 +71,7 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.CREATEDATABASE,
         new InOutPrivs(ADMIN_PRIV_AR, OWNER_INS_SEL_DEL_NOGRANT_AR));
 
-    op2Priv.put(HiveOperationType.DROPDATABASE, new InOutPrivs(OWNER_PRIV_AR, null));
+    op2Priv.put(HiveOperationType.DROPDATABASE, new InOutPrivs(null, OWNER_PRIV_AR));
     // this should be database usage privilege once it is supported
     op2Priv.put(HiveOperationType.SWITCHDATABASE, new InOutPrivs(null, null));
 
@@ -181,7 +181,8 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.CREATETABLE,
         new InOutPrivs(OWNER_INS_SEL_DEL_NOGRANT_AR, OWNER_PRIV_AR));
 
-    op2Priv.put(HiveOperationType.ALTERDATABASE, new InOutPrivs(OWNER_PRIV_AR, null));
+    op2Priv.put(HiveOperationType.ALTERDATABASE, new InOutPrivs(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERDATABASE_OWNER, new InOutPrivs(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.DESCDATABASE, new InOutPrivs(null, null));
 
     // The following actions are authorized through SQLStdHiveAccessController,

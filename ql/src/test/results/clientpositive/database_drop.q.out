@@ -613,11 +613,37 @@ DROP DATABASE db5 CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:db5
 PREHOOK: Output: database:db5
+PREHOOK: Output: db5@db5__part_tab2_idx4__
+PREHOOK: Output: db5@db5__part_tab3_idx5__
+PREHOOK: Output: db5@db5__part_tab_idx3__
+PREHOOK: Output: db5@db5__temp_tbl2_idx2__
+PREHOOK: Output: db5@db5__temp_tbl_idx1__
+PREHOOK: Output: db5@extab1
+PREHOOK: Output: db5@part_tab
+PREHOOK: Output: db5@part_tab2
+PREHOOK: Output: db5@part_tab3
+PREHOOK: Output: db5@temp_tbl
+PREHOOK: Output: db5@temp_tbl2
+PREHOOK: Output: db5@temp_tbl2_view
+PREHOOK: Output: db5@temp_tbl_view
 POSTHOOK: query: -- drop the database with cascade
 DROP DATABASE db5 CASCADE
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:db5
 POSTHOOK: Output: database:db5
+POSTHOOK: Output: db5@db5__part_tab2_idx4__
+POSTHOOK: Output: db5@db5__part_tab3_idx5__
+POSTHOOK: Output: db5@db5__part_tab_idx3__
+POSTHOOK: Output: db5@db5__temp_tbl2_idx2__
+POSTHOOK: Output: db5@db5__temp_tbl_idx1__
+POSTHOOK: Output: db5@extab1
+POSTHOOK: Output: db5@part_tab
+POSTHOOK: Output: db5@part_tab2
+POSTHOOK: Output: db5@part_tab3
+POSTHOOK: Output: db5@temp_tbl
+POSTHOOK: Output: db5@temp_tbl2
+POSTHOOK: Output: db5@temp_tbl2_view
+POSTHOOK: Output: db5@temp_tbl_view
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]

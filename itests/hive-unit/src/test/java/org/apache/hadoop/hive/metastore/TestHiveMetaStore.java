@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -65,7 +66,6 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -2777,12 +2777,52 @@ public abstract class TestHiveMetaStore extends TestCase {
     createPartitions(dbName, tbl, values);
   }
 
-    @Test
-    public void testDBOwner() throws NoSuchObjectException, MetaException, TException {
-      Database db = client.getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME);
-      assertEquals(db.getOwnerName(), HiveMetaStore.PUBLIC);
-      assertEquals(db.getOwnerType(), PrincipalType.ROLE);
-    }
+  @Test
+  public void testDBOwner() throws NoSuchObjectException, MetaException, TException {
+    Database db = client.getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME);
+    assertEquals(db.getOwnerName(), HiveMetaStore.PUBLIC);
+    assertEquals(db.getOwnerType(), PrincipalType.ROLE);
+  }
+
+  /**
+   * Test changing owner and owner type of a database
+   * @throws NoSuchObjectException
+   * @throws MetaException
+   * @throws TException
+   */
+  @Test
+  public void testDBOwnerChange() throws NoSuchObjectException, MetaException, TException {
+    final String dbName = "alterDbOwner";
+    final String user1 = "user1";
+    final String user2 = "user2";
+    final String role1 = "role1";
+
+    silentDropDatabase(dbName);
+    Database db = new Database();
+    db.setName(dbName);
+    db.setOwnerName(user1);
+    db.setOwnerType(PrincipalType.USER);
+
+    client.createDatabase(db);
+    checkDbOwnerType(dbName, user1, PrincipalType.USER);
+
+    db.setOwnerName(user2);
+    client.alterDatabase(dbName, db);
+    checkDbOwnerType(dbName, user2, PrincipalType.USER);
+
+    db.setOwnerName(role1);
+    db.setOwnerType(PrincipalType.ROLE);
+    client.alterDatabase(dbName, db);
+    checkDbOwnerType(dbName, role1, PrincipalType.ROLE);
+
+  }
+
+  private void checkDbOwnerType(String dbName, String ownerName, PrincipalType ownerType)
+      throws NoSuchObjectException, MetaException, TException {
+    Database db = client.getDatabase(dbName);
+    assertEquals("Owner name", ownerName, db.getOwnerName());
+    assertEquals("Owner type", ownerType, db.getOwnerType());
+  }
 
   private void createFunction(String dbName, String funcName, String className,
       String ownerName, PrincipalType ownerType, int createTime,

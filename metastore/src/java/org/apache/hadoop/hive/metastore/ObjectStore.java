@@ -514,7 +514,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Alter the database object in metastore. Currently only the parameters
-   * of the database can be changed.
+   * of the database or the owner can be changed.
    * @param dbName the database name
    * @param db the Hive Database object
    * @throws MetaException
@@ -528,8 +528,11 @@ public class ObjectStore implements RawStore, Configurable {
     boolean committed = false;
     try {
       mdb = getMDatabase(dbName);
-      // currently only allow changing database parameters
       mdb.setParameters(db.getParameters());
+      mdb.setOwnerName(db.getOwnerName());
+      if (db.getOwnerType() != null) {
+        mdb.setOwnerType(db.getOwnerType().name());
+      }
       openTransaction();
       pm.makePersistent(mdb);
       committed = commitTransaction();

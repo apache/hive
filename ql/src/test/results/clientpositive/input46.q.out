@@ -34,7 +34,15 @@ PREHOOK: query: drop database table_in_database_creation cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:table_in_database_creation
 PREHOOK: Output: database:table_in_database_creation
+PREHOOK: Output: table_in_database_creation@test1
+PREHOOK: Output: table_in_database_creation@test2
+PREHOOK: Output: table_in_database_creation@test3
+PREHOOK: Output: table_in_database_creation@test4
 POSTHOOK: query: drop database table_in_database_creation cascade
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:table_in_database_creation
 POSTHOOK: Output: database:table_in_database_creation
+POSTHOOK: Output: table_in_database_creation@test1
+POSTHOOK: Output: table_in_database_creation@test2
+POSTHOOK: Output: table_in_database_creation@test3
+POSTHOOK: Output: table_in_database_creation@test4
