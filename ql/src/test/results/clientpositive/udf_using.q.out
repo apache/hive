@@ -4,8 +4,10 @@ PREHOOK: type: CREATEFUNCTION
 POSTHOOK: type: CREATEFUNCTION
 PREHOOK: query: create table udf_using (c1 string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table udf_using (c1 string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@udf_using
 PREHOOK: query: insert overwrite table udf_using select 'Joe' from src limit 2
 PREHOOK: type: QUERY

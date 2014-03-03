@@ -1009,21 +1009,36 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     String dbName = alterDbDesc.getDatabaseName();
     Database database = db.getDatabase(dbName);
-    Map<String, String> newParams = alterDbDesc.getDatabaseProperties();
-
-    if (database != null) {
-      Map<String, String> params = database.getParameters();
-      // if both old and new params are not null, merge them
-      if (params != null && newParams != null) {
-        params.putAll(newParams);
-        database.setParameters(params);
-      } else { // if one of them is null, replace the old params with the new one
-        database.setParameters(newParams);
-      }
-      db.alterDatabase(database.getName(), database);
-    } else {
+    if (database == null) {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
+
+    switch (alterDbDesc.getAlterType()) {
+    case ALTER_PROPERTY:
+      Map<String, String> newParams = alterDbDesc.getDatabaseProperties();
+      if (database != null) {
+        Map<String, String> params = database.getParameters();
+        // if both old and new params are not null, merge them
+        if (params != null && newParams != null) {
+          params.putAll(newParams);
+          database.setParameters(params);
+        } else { // if one of them is null, replace the old params with the new
+                 // one
+          database.setParameters(newParams);
+        }
+      }
+      break;
+
+    case ALTER_OWNER:
+      database.setOwnerName(alterDbDesc.getOwnerPrincipal().getName());
+      database.setOwnerType(alterDbDesc.getOwnerPrincipal().getType());
+      break;
+
+    default:
+      throw new AssertionError("Unsupported alter database type! : " + alterDbDesc.getAlterType());
+    }
+
+    db.alterDatabase(database.getName(), database);
     return 0;
   }
 

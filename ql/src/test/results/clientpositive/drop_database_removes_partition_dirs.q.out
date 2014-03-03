@@ -62,10 +62,12 @@ PREHOOK: query: DROP DATABASE test_database CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_database
 PREHOOK: Output: database:test_database
+PREHOOK: Output: test_database@test_table
 POSTHOOK: query: DROP DATABASE test_database CASCADE
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:test_database
 POSTHOOK: Output: database:test_database
+POSTHOOK: Output: test_database@test_table
 POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 #### A masked pattern was here ####

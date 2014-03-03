@@ -108,7 +108,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       HashSet<WriteEntity> outputs) throws SemanticException {
     List<PrivilegeDesc> privilegeDesc = analyzePrivilegeListDef(
         (ASTNode) ast.getChild(0));
-    List<PrincipalDesc> principalDesc = analyzePrincipalListDef(
+    List<PrincipalDesc> principalDesc = AuthorizationParseUtils.analyzePrincipalListDef(
         (ASTNode) ast.getChild(1));
     boolean grantOption = false;
     PrivilegeObjectDesc privilegeObj = null;
@@ -134,7 +134,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
   public Task<? extends Serializable> createRevokeTask(ASTNode ast, HashSet<ReadEntity> inputs,
       HashSet<WriteEntity> outputs) throws SemanticException {
     List<PrivilegeDesc> privilegeDesc = analyzePrivilegeListDef((ASTNode) ast.getChild(0));
-    List<PrincipalDesc> principalDesc = analyzePrincipalListDef((ASTNode) ast.getChild(1));
+    List<PrincipalDesc> principalDesc = AuthorizationParseUtils.analyzePrincipalListDef((ASTNode) ast.getChild(1));
     PrivilegeObjectDesc hiveObj = null;
     if (ast.getChildCount() > 2) {
       ASTNode astChild = (ASTNode) ast.getChild(2);
@@ -159,7 +159,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     ASTNode param = null;
     if (ast.getChildCount() > 0) {
       param = (ASTNode) ast.getChild(0);
-      principalDesc = getPrincipalDesc(param);
+      principalDesc = AuthorizationParseUtils.getPrincipalDesc(param);
       if (principalDesc != null) {
         param = (ASTNode) ast.getChild(1);  // shift one
       }
@@ -196,29 +196,6 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     return TaskFactory.get(new DDLWork(inputs, outputs, showGrant), conf);
   }
 
-  private PrincipalDesc getPrincipalDesc(ASTNode principal) {
-    PrincipalType type = getPrincipalType(principal);
-    if (type != null) {
-      String text = principal.getChild(0).getText();
-      String principalName = BaseSemanticAnalyzer.unescapeIdentifier(text);
-      return new PrincipalDesc(principalName, type);
-    }
-    return null;
-  }
-
-  private PrincipalType getPrincipalType(ASTNode principal) {
-    switch (principal.getType()) {
-      case HiveParser.TOK_USER:
-        return PrincipalType.USER;
-      case HiveParser.TOK_GROUP:
-        return PrincipalType.GROUP;
-      case HiveParser.TOK_ROLE:
-        return PrincipalType.ROLE;
-      default:
-        return null;
-    }
-  }
-
   @Override
   public Task<? extends Serializable> createRevokeRoleTask(ASTNode ast, HashSet<ReadEntity> inputs,
       HashSet<WriteEntity> outputs) {
@@ -226,7 +203,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
   }
   private Task<? extends Serializable> analyzeGrantRevokeRole(boolean isGrant, ASTNode ast,
       HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
-    List<PrincipalDesc> principalDesc = analyzePrincipalListDef(
+    List<PrincipalDesc> principalDesc = AuthorizationParseUtils.analyzePrincipalListDef(
         (ASTNode) ast.getChild(0));
 
     //check if admin option has been specified
@@ -280,31 +257,6 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     }
 
     return subject;
-  }
-
-  private List<PrincipalDesc> analyzePrincipalListDef(ASTNode node) {
-    List<PrincipalDesc> principalList = new ArrayList<PrincipalDesc>();
-
-    for (int i = 0; i < node.getChildCount(); i++) {
-      ASTNode child = (ASTNode) node.getChild(i);
-      PrincipalType type = null;
-      switch (child.getType()) {
-      case HiveParser.TOK_USER:
-        type = PrincipalType.USER;
-        break;
-      case HiveParser.TOK_GROUP:
-        type = PrincipalType.GROUP;
-        break;
-      case HiveParser.TOK_ROLE:
-        type = PrincipalType.ROLE;
-        break;
-      }
-      String principalName = BaseSemanticAnalyzer.unescapeIdentifier(child.getChild(0).getText());
-      PrincipalDesc principalDesc = new PrincipalDesc(principalName, type);
-      principalList.add(principalDesc);
-    }
-
-    return principalList;
   }
 
   private List<PrivilegeDesc> analyzePrivilegeListDef(ASTNode node)

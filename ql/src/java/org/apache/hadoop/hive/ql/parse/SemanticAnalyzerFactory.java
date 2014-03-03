@@ -99,6 +99,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOW_SET_ROLE, HiveOperation.SHOW_ROLES);
     commandType.put(HiveParser.TOK_SHOW_ROLE_GRANT, HiveOperation.SHOW_ROLE_GRANT);
     commandType.put(HiveParser.TOK_ALTERDATABASE_PROPERTIES, HiveOperation.ALTERDATABASE);
+    commandType.put(HiveParser.TOK_ALTERDATABASE_OWNER, HiveOperation.ALTERDATABASE_OWNER);
     commandType.put(HiveParser.TOK_DESCDATABASE, HiveOperation.DESCDATABASE);
     commandType.put(HiveParser.TOK_ALTERTABLE_SKEWED, HiveOperation.ALTERTABLE_SKEWED);
     commandType.put(HiveParser.TOK_ANALYZE, HiveOperation.ANALYZE_TABLE);
@@ -213,6 +214,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOW_ROLE_GRANT:
       case HiveParser.TOK_SHOW_ROLES:
       case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
+      case HiveParser.TOK_ALTERDATABASE_OWNER:
       case HiveParser.TOK_ALTERTABLE_SKEWED:
       case HiveParser.TOK_TRUNCATETABLE:
       case HiveParser.TOK_EXCHANGEPARTITION:

@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactory;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
@@ -107,6 +108,7 @@ import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
@@ -423,7 +425,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeSwitchDatabase(ast);
       break;
     case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
-      analyzeAlterDatabase(ast);
+      analyzeAlterDatabaseProperties(ast);
+      break;
+    case HiveParser.TOK_ALTERDATABASE_OWNER:
+      analyzeAlterDatabaseOwner(ast);
       break;
     case HiveParser.TOK_CREATEROLE:
       analyzeCreateRole(ast);
@@ -559,7 +564,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     setFetchTask(createFetchTask(RoleDDLDesc.getRoleNameSchema()));
   }
 
-  private void analyzeAlterDatabase(ASTNode ast) throws SemanticException {
+  private void analyzeAlterDatabaseProperties(ASTNode ast) throws SemanticException {
 
     String dbName = unescapeIdentifier(ast.getChild(0).getText());
     Map<String, String> dbProps = null;
@@ -574,13 +579,32 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
       }
     }
+    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, dbProps);
+    addAlterDbDesc(alterDesc);
+  }
 
-    // currently alter database command can only change properties
-    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, null, null, false);
-    alterDesc.setDatabaseProperties(dbProps);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterDesc),
-        conf));
+  private void addAlterDbDesc(AlterDatabaseDesc alterDesc) throws SemanticException {
+    Database database = getDatabase(alterDesc.getDatabaseName());
+    outputs.add(new WriteEntity(database));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterDesc), conf));
+  }
 
+  private void analyzeAlterDatabaseOwner(ASTNode ast) throws SemanticException {
+    String dbName = getUnescapedName((ASTNode) ast.getChild(0));
+    PrincipalDesc principalDesc = AuthorizationParseUtils.getPrincipalDesc((ASTNode) ast
+        .getChild(1));
+
+    // The syntax should not allow these fields to be null, but lets verify
+    String nullCmdMsg = "can't be null in alter database set owner command";
+    if(principalDesc.getName() == null){
+      throw new SemanticException("Owner name " + nullCmdMsg);
+    }
+    if(principalDesc.getType() == null){
+      throw new SemanticException("Owner type " + nullCmdMsg);
+    }
+
+    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, principalDesc);
+    addAlterDbDesc(alterDesc);
   }
 
   private void analyzeExchangePartition(ASTNode ast) throws SemanticException {
@@ -702,6 +726,24 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
 
+    // if cascade=true, then we need to authorize the drop table action as well
+    if (ifCascade) {
+      // add the tables as well to outputs
+      List<String> tableNames;
+      // get names of all tables under this dbName
+      try {
+        tableNames = db.getAllTables(dbName);
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
+      // add tables to outputs
+      if (tableNames != null) {
+        for (String tableName : tableNames) {
+          Table table = getTable(dbName, tableName, true);
+          outputs.add(new WriteEntity(table));
+        }
+      }
+    }
     inputs.add(new ReadEntity(database));
     outputs.add(new WriteEntity(database));
 
