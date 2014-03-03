@@ -21,6 +21,8 @@ package org.apache.hive.hcatalog.listener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -114,15 +116,8 @@ public class NotificationListener extends MetaStoreEventListener {
     testAndCreateConnection();
   }
 
-  private static String getTopicName(Partition partition,
-                     ListenerEvent partitionEvent) throws MetaException {
-    try {
-      return partitionEvent.getHandler()
-        .get_table(partition.getDbName(), partition.getTableName())
-        .getParameters().get(HCatConstants.HCAT_MSGBUS_TOPIC_NAME);
-    } catch (NoSuchObjectException e) {
-      throw new MetaException(e.toString());
-    }
+  private static String getTopicName(Table table, ListenerEvent partitionEvent) {
+    return table.getParameters().get(HCatConstants.HCAT_MSGBUS_TOPIC_NAME);
   }
 
   @Override
@@ -132,22 +127,21 @@ public class NotificationListener extends MetaStoreEventListener {
     // particular table by listening on a topic named "dbName.tableName"
     // and message selector string as "HCAT_EVENT = HCAT_ADD_PARTITION"
     if (partitionEvent.getStatus()) {
-
-      Partition partition = partitionEvent.getPartition();
-      String topicName = getTopicName(partition, partitionEvent);
+      Table table = partitionEvent.getTable();
+      List<Partition> partitions = partitionEvent.getPartitions();
+      String topicName = getTopicName(table, partitionEvent);
       if (topicName != null && !topicName.equals("")) {
-        send(messageFactory.buildAddPartitionMessage(partitionEvent.getTable(), partition), topicName);
+        send(messageFactory.buildAddPartitionMessage(table, partitions), topicName);
       } else {
         LOG.info("Topic name not found in metastore. Suppressing HCatalog notification for "
-          + partition.getDbName()
-          + "."
-          + partition.getTableName()
-          + " To enable notifications for this table, please do alter table set properties ("
-          + HCatConstants.HCAT_MSGBUS_TOPIC_NAME
-          + "=<dbname>.<tablename>) or whatever you want topic name to be.");
+            + partitions.get(0).getDbName()
+            + "."
+            + partitions.get(0).getTableName()
+            + " To enable notifications for this table, please do alter table set properties ("
+            + HCatConstants.HCAT_MSGBUS_TOPIC_NAME
+            + "=<dbname>.<tablename>) or whatever you want topic name to be.");
       }
     }
-
   }
 
   /**
@@ -171,7 +165,7 @@ public class NotificationListener extends MetaStoreEventListener {
       sd.setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSkewedInfo().setSkewedColNames(new ArrayList<String>());
-      String topicName = getTopicName(partition, partitionEvent);
+      String topicName = getTopicName(partitionEvent.getTable(), partitionEvent);
       if (topicName != null && !topicName.equals("")) {
         send(messageFactory.buildDropPartitionMessage(partitionEvent.getTable(), partition), topicName);
       } else {

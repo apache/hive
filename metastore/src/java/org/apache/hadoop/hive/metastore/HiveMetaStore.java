@@ -1634,9 +1634,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         part.setTableName(tableName);
         part.setValues(part_vals);
 
-        PreAddPartitionEvent event = new PreAddPartitionEvent(part, this);
-        firePreEvent(event);
-
         MetaStoreUtils.validatePartitionNameCharacters(part_vals, partitionValidationPattern);
 
         tbl = ms.getTable(part.getDbName(), part.getTableName());
@@ -1648,6 +1645,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new MetaException(
               "Cannot append a partition to a view");
         }
+
+        firePreEvent(new PreAddPartitionEvent(tbl, part, this));
 
         part.setSd(tbl.getSd());
         partLocation = new Path(tbl.getSd().getLocation(), Warehouse
@@ -1793,13 +1792,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Map<PartValEqWrapper, Boolean> addedPartitions = new HashMap<PartValEqWrapper, Boolean>();
       List<Partition> result = new ArrayList<Partition>();
       List<Partition> existingParts = null;
+      Table tbl = null;
       try {
         ms.openTransaction();
-        Table tbl = ms.getTable(dbName, tblName);
+        tbl = ms.getTable(dbName, tblName);
         if (tbl == null) {
           throw new InvalidObjectException("Unable to add partitions because "
               + "database or table " + dbName + "." + tblName + " does not exist");
         }
+
+        if (!parts.isEmpty()) {
+          firePreEvent(new PreAddPartitionEvent(tbl, parts, this));
+        }
+
         for (Partition part : parts) {
           if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
             throw new MetaException("Partition does not belong to target table "
@@ -1839,18 +1844,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // we just created this directory - it's not a case of pre-creation, so we nuke
             }
           }
-          for (Partition part : parts) {
-            fireMetaStoreAddPartitionEvent(ms, part, null, success);
-          }
+          fireMetaStoreAddPartitionEvent(tbl, parts, null, false);
         } else {
-          for (Partition part : result) {
-            fireMetaStoreAddPartitionEvent(ms, part, null, success);
-          }
+          fireMetaStoreAddPartitionEvent(tbl, result, null, true);
           if (existingParts != null) {
             // The request has succeeded but we failed to add these partitions.
-            for (Partition part : existingParts) {
-              fireMetaStoreAddPartitionEvent(ms, part, null, false);
-            }
+            fireMetaStoreAddPartitionEvent(tbl, existingParts, null, false);
           }
         }
       }
@@ -1913,7 +1912,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private boolean startAddPartition(
         RawStore ms, Partition part, boolean ifNotExists) throws MetaException, TException {
-      firePreEvent(new PreAddPartitionEvent(part, this));
       MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
           partitionValidationPattern);
       boolean doesExist = ms.doesPartitionExist(
@@ -2007,16 +2005,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final Partition part, final EnvironmentContext envContext)
         throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
       boolean success = false;
-      Partition retPtn = null;
+      Table tbl = null;
       try {
         ms.openTransaction();
-        Table tbl = ms.getTable(part.getDbName(), part.getTableName());
+        tbl = ms.getTable(part.getDbName(), part.getTableName());
         if (tbl == null) {
           throw new InvalidObjectException(
               "Unable to add partition because table or database do not exist");
         }
+
+        firePreEvent(new PreAddPartitionEvent(tbl, part, this));
+
         boolean shouldAdd = startAddPartition(ms, part, false);
-        assert shouldAdd; // start would thrrow if it already existed here
+        assert shouldAdd; // start would throw if it already existed here
         boolean madeDir = createLocationForAddedPartition(tbl, part);
         try {
           initializeAddedPartition(tbl, part, madeDir);
@@ -2033,20 +2034,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         }
-        fireMetaStoreAddPartitionEvent(ms, part, envContext, success);
+        fireMetaStoreAddPartitionEvent(tbl, Arrays.asList(part), envContext, success);
       }
       return part;
     }
 
-    private void fireMetaStoreAddPartitionEvent(final RawStore ms,
-        final Partition part, final EnvironmentContext envContext, boolean success)
+    private void fireMetaStoreAddPartitionEvent(final Table tbl,
+        final List<Partition> parts, final EnvironmentContext envContext, boolean success)
           throws MetaException {
-      final Table tbl = ms.getTable(part.getDbName(), part.getTableName());
-      for (MetaStoreEventListener listener : listeners) {
+      if (tbl != null && parts != null && !parts.isEmpty()) {
         AddPartitionEvent addPartitionEvent =
-            new AddPartitionEvent(tbl, part, success, this);
+            new AddPartitionEvent(tbl, parts, success, this);
         addPartitionEvent.setEnvironmentContext(envContext);
-        listener.onAddPartition(addPartitionEvent);
+
+        for (MetaStoreEventListener listener : listeners) {
+          listener.onAddPartition(addPartitionEvent);
+        }
       }
     }
 
