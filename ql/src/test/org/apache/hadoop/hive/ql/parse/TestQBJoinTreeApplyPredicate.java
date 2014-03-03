@@ -141,8 +141,8 @@ public class TestQBJoinTreeApplyPredicate {
     ArrayList<String> rightCondAl1 = new ArrayList<String>();
     ArrayList<String> rightCondAl2 = new ArrayList<String>();
 
-    sA.parseJoinCondPopulateAlias(jT, leftCondn, leftCondAl1, leftCondAl2, null);
-    sA.parseJoinCondPopulateAlias(jT, rightCondn, rightCondAl1, rightCondAl2, null);
+    sA.parseJoinCondPopulateAlias(jT, leftCondn, leftCondAl1, leftCondAl2, null, null);
+    sA.parseJoinCondPopulateAlias(jT, rightCondn, rightCondAl1, rightCondAl2, null, null);
 
     sA.applyEqualityPredicateToQBJoinTree(jT, JoinType.INNER, leftSrc, joinCond,
         leftCondn,

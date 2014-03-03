@@ -1543,11 +1543,51 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return false;
   }
+  
+  /*
+   * This method is invoked for unqualified column references in join conditions.
+   * This is passed in the Alias to Operator mapping in the QueryBlock so far.
+   * We try to resolve the unqualified column against each of the Operator Row Resolvers.
+   * - if the column is present in only one RowResolver, we treat this as a reference to
+   *   that Operator.
+   * - if the column resolves with more than one RowResolver, we treat it as an Ambiguous
+   *   reference.
+   * - if the column doesn't resolve with any RowREsolver, we treat this as an Invalid
+   *   reference.
+   */
+  @SuppressWarnings("rawtypes")
+  private String findAlias(ASTNode columnRef,
+      Map<String, Operator> aliasToOpInfo) throws SemanticException {
+    String colName = unescapeIdentifier(columnRef.getChild(0).getText()
+        .toLowerCase());
+    String tabAlias = null;
+    if ( aliasToOpInfo != null ) {
+      for (Map.Entry<String, Operator> opEntry : aliasToOpInfo.entrySet()) {
+        Operator op = opEntry.getValue();
+        RowResolver rr = opParseCtx.get(op).getRowResolver();
+        ColumnInfo colInfo = rr.get(null, colName);
+        if (colInfo != null) {
+          if (tabAlias == null) {
+            tabAlias = opEntry.getKey();
+          } else {
+            throw new SemanticException(
+                ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(columnRef.getChild(0)));
+          }
+        }
+      }
+    }
+    if ( tabAlias == null ) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(columnRef
+          .getChild(0)));
+    }
+    return tabAlias;
+  }
 
   @SuppressWarnings("nls")
   void parseJoinCondPopulateAlias(QBJoinTree joinTree, ASTNode condn,
       ArrayList<String> leftAliases, ArrayList<String> rightAliases,
-      ArrayList<String> fields) throws SemanticException {
+      ArrayList<String> fields,
+      Map<String, Operator> aliasToOpInfo) throws SemanticException {
     // String[] allAliases = joinTree.getAllAliases();
     switch (condn.getToken().getType()) {
     case HiveParser.TOK_TABLE_OR_COL:
@@ -1563,12 +1603,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           rightAliases.add(tableOrCol);
         }
       } else {
-        // We don't support columns without table prefix in JOIN condition right
-        // now.
-        // We need to pass Metadata here to know which table the column belongs
-        // to.
-        throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(condn
-            .getChild(0)));
+        tableOrCol = findAlias(condn, aliasToOpInfo);
+        if (isPresent(joinTree.getLeftAliases(), tableOrCol)) {
+          if (!leftAliases.contains(tableOrCol)) {
+            leftAliases.add(tableOrCol);
+          }
+        } else  {
+          if (!rightAliases.contains(tableOrCol)) {
+            rightAliases.add(tableOrCol);
+          }
+        }
       }
       break;
 
@@ -1597,7 +1641,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // check all the arguments
       for (int i = 1; i < condn.getChildCount(); i++) {
         parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(i),
-            leftAliases, rightAliases, null);
+            leftAliases, rightAliases, null, aliasToOpInfo);
       }
       break;
 
@@ -1605,7 +1649,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // This is an operator - so check whether it is unary or binary operator
       if (condn.getChildCount() == 1) {
         parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
-            leftAliases, rightAliases, null);
+            leftAliases, rightAliases, null, aliasToOpInfo);
       } else if (condn.getChildCount() == 2) {
 
         ArrayList<String> fields1 = null;
@@ -1617,7 +1661,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           fields1 = new ArrayList<String>();
           int rhssize = rightAliases.size();
           parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
-              leftAliases, rightAliases, null);
+              leftAliases, rightAliases, null, aliasToOpInfo);
           String rhsAlias = null;
 
           if (rightAliases.size() > rhssize) { // the new table is rhs table
@@ -1625,15 +1669,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
 
           parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(1),
-              leftAliases, rightAliases, fields1);
+              leftAliases, rightAliases, fields1, aliasToOpInfo);
           if (rhsAlias != null && fields1.size() > 0) {
             joinTree.addRHSSemijoinColumns(rhsAlias, condn);
           }
         } else {
           parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
-              leftAliases, rightAliases, null);
+              leftAliases, rightAliases, null, aliasToOpInfo);
           parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(1),
-              leftAliases, rightAliases, fields1);
+              leftAliases, rightAliases, fields1, aliasToOpInfo);
         }
       } else {
         throw new SemanticException(condn.toStringTree() + " encountered with "
@@ -1821,7 +1865,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   }
 
-  private void parseJoinCondition(QBJoinTree joinTree, ASTNode joinCond, List<String> leftSrc)
+  @SuppressWarnings("rawtypes")
+  private void parseJoinCondition(QBJoinTree joinTree, ASTNode joinCond, List<String> leftSrc, 
+      Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
     if (joinCond == null) {
       return;
@@ -1829,7 +1875,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     JoinCond cond = joinTree.getJoinCond()[0];
 
     JoinType type = cond.getJoinType();
-    parseJoinCondition(joinTree, joinCond, leftSrc, type);
+    parseJoinCondition(joinTree, joinCond, leftSrc, type, aliasToOpInfo);
 
     List<ArrayList<ASTNode>> filters = joinTree.getFilters();
     if (type == JoinType.LEFTOUTER || type == JoinType.FULLOUTER) {
@@ -1859,8 +1905,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *          left sources
    * @throws SemanticException
    */
+  @SuppressWarnings("rawtypes")
   private void parseJoinCondition(QBJoinTree joinTree, ASTNode joinCond,
-      List<String> leftSrc, JoinType type) throws SemanticException {
+      List<String> leftSrc, JoinType type,
+      Map<String, Operator> aliasToOpInfo) throws SemanticException {
     if (joinCond == null) {
       return;
     }
@@ -1871,8 +1919,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           .getMsg(joinCond));
 
     case HiveParser.KW_AND:
-      parseJoinCondition(joinTree, (ASTNode) joinCond.getChild(0), leftSrc, type);
-      parseJoinCondition(joinTree, (ASTNode) joinCond.getChild(1), leftSrc, type);
+      parseJoinCondition(joinTree, (ASTNode) joinCond.getChild(0), leftSrc, type, aliasToOpInfo);
+      parseJoinCondition(joinTree, (ASTNode) joinCond.getChild(1), leftSrc, type, aliasToOpInfo);
       break;
 
     case HiveParser.EQUAL_NS:
@@ -1881,13 +1929,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ArrayList<String> leftCondAl1 = new ArrayList<String>();
       ArrayList<String> leftCondAl2 = new ArrayList<String>();
       parseJoinCondPopulateAlias(joinTree, leftCondn, leftCondAl1, leftCondAl2,
-          null);
+          null, aliasToOpInfo);
 
       ASTNode rightCondn = (ASTNode) joinCond.getChild(1);
       ArrayList<String> rightCondAl1 = new ArrayList<String>();
       ArrayList<String> rightCondAl2 = new ArrayList<String>();
       parseJoinCondPopulateAlias(joinTree, rightCondn, rightCondAl1,
-          rightCondAl2, null);
+          rightCondAl2, null, aliasToOpInfo);
 
       // is it a filter or a join condition
       // if it is filter see if it can be pushed above the join
@@ -1927,7 +1975,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int ci = childrenBegin; ci < joinCond.getChildCount(); ci++) {
         parseJoinCondPopulateAlias(joinTree, (ASTNode) joinCond.getChild(ci),
             leftAlias.get(ci - childrenBegin), rightAlias.get(ci
-                - childrenBegin), null);
+                - childrenBegin), null, aliasToOpInfo);
       }
 
       boolean leftAliasNull = true;
@@ -1981,12 +2029,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void extractJoinCondsFromWhereClause(QBJoinTree joinTree, QB qb, String dest, ASTNode predicate) throws SemanticException {
+  @SuppressWarnings("rawtypes")
+  private void extractJoinCondsFromWhereClause(QBJoinTree joinTree, QB qb, String dest, ASTNode predicate, 
+      Map<String, Operator> aliasToOpInfo) throws SemanticException {
 
     switch (predicate.getType()) {
     case HiveParser.KW_AND:
-      extractJoinCondsFromWhereClause(joinTree, qb, dest, (ASTNode) predicate.getChild(0));
-      extractJoinCondsFromWhereClause(joinTree, qb, dest, (ASTNode) predicate.getChild(1));
+      extractJoinCondsFromWhereClause(joinTree, qb, dest, 
+          (ASTNode) predicate.getChild(0), aliasToOpInfo);
+      extractJoinCondsFromWhereClause(joinTree, qb, dest, 
+          (ASTNode) predicate.getChild(1), aliasToOpInfo);
       break;
     case HiveParser.EQUAL_NS:
     case HiveParser.EQUAL:
@@ -1996,7 +2048,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ArrayList<String> leftCondAl2 = new ArrayList<String>();
       try {
         parseJoinCondPopulateAlias(joinTree, leftCondn, leftCondAl1, leftCondAl2,
-          null);
+          null, aliasToOpInfo);
       } catch(SemanticException se) {
         // suppress here; if it is a real issue will get caught in where clause handling.
         return;
@@ -2007,7 +2059,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ArrayList<String> rightCondAl2 = new ArrayList<String>();
       try {
         parseJoinCondPopulateAlias(joinTree, rightCondn, rightCondAl1,
-            rightCondAl2, null);
+            rightCondAl2, null, aliasToOpInfo);
       } catch(SemanticException se) {
         // suppress here; if it is a real issue will get caught in where clause handling.
         return;
@@ -7101,7 +7153,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ASTNode joinCond = subQuery.getJoinConditionAST();
     ArrayList<String> leftSrc = new ArrayList<String>();
-    parseJoinCondition(joinTree, joinCond, leftSrc);
+    parseJoinCondition(joinTree, joinCond, leftSrc, aliasToOpInfo);
     if (leftSrc.size() == 1) {
       joinTree.setLeftAlias(leftSrc.get(0));
     }
@@ -7235,7 +7287,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ASTNode joinCond = (ASTNode) joinParseTree.getChild(2);
     ArrayList<String> leftSrc = new ArrayList<String>();
-    parseJoinCondition(joinTree, joinCond, leftSrc);
+    parseJoinCondition(joinTree, joinCond, leftSrc, aliasToOpInfo);
     if (leftSrc.size() == 1) {
       joinTree.setLeftAlias(leftSrc.get(0));
     }
@@ -8878,7 +8930,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           String dest = dests.iterator().next();
           ASTNode whereClause = qb.getParseInfo().getWhrForClause(dest);
           if ( whereClause != null ) {
-            extractJoinCondsFromWhereClause(joinTree, qb, dest, (ASTNode) whereClause.getChild(0) );
+            extractJoinCondsFromWhereClause(joinTree, qb, dest, 
+                (ASTNode) whereClause.getChild(0),
+                aliasToOpInfo );
           }
         }
         mergeJoinTree(qb);
