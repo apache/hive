@@ -19,6 +19,8 @@
 package org.apache.hive.hcatalog.pig;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.sql.Date;
@@ -32,13 +34,16 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -52,6 +57,9 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
+import org.apache.pig.PigRunner;
+import org.apache.pig.tools.pigstats.OutputStats;
+import org.apache.pig.tools.pigstats.PigStats;
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
@@ -432,6 +440,39 @@ public class TestHCatLoader {
       numTuplesRead++;
     }
     assertEquals(basicInputData.size(), numTuplesRead);
+  }
+
+  @Test
+  public void testColumnarStorePushdown() throws Exception {
+    String PIGOUTPUT_DIR = TEST_DATA_DIR+ "/colpushdownop";
+    String PIG_FILE = "test.pig";
+    String expectedCols = "0,1";
+    PrintWriter w = new PrintWriter(new FileWriter(PIG_FILE));
+    w.println("A = load '" + COMPLEX_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
+    w.println("B = foreach A generate name,studentid;");
+    w.println("C = filter B by name is not null;");
+    w.println("store C into '" + PIGOUTPUT_DIR + "' using PigStorage();");
+    w.close();
+
+    try {
+      String[] args = { "-x", "local", PIG_FILE };
+      PigStats stats = PigRunner.run(args, null);
+      //Pig script was successful
+      assertTrue(stats.isSuccessful());
+      //Single MapReduce job is launched
+      OutputStats outstats = stats.getOutputStats().get(0);
+      assertTrue(outstats!= null);
+      assertEquals(expectedCols,outstats.getConf()
+        .get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR));
+      //delete output file on exit
+      FileSystem fs = FileSystem.get(outstats.getConf());
+      if (fs.exists(new Path(PIGOUTPUT_DIR)))
+      {
+        fs.delete(new Path(PIGOUTPUT_DIR), true);
+      }
+    }finally {
+      new File(PIG_FILE).delete();
+    }
   }
 
   @Test
