@@ -190,6 +190,11 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFWeekOfYear.class);
     supportedGenericUDFs.add(GenericUDFToUnixTimeStamp.class);
 
+    supportedGenericUDFs.add(GenericUDFDateAdd.class);
+    supportedGenericUDFs.add(GenericUDFDateSub.class);
+    supportedGenericUDFs.add(GenericUDFDate.class);
+    supportedGenericUDFs.add(GenericUDFDateDiff.class);
+
     supportedGenericUDFs.add(UDFLike.class);
     supportedGenericUDFs.add(UDFRegExp.class);
     supportedGenericUDFs.add(UDFSubstr.class);
@@ -243,6 +248,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFToString.class);
     supportedGenericUDFs.add(GenericUDFTimestamp.class);
     supportedGenericUDFs.add(GenericUDFToDecimal.class);
+    supportedGenericUDFs.add(GenericUDFToDate.class);
 
     // For conditional expressions
     supportedGenericUDFs.add(GenericUDFIf.class);

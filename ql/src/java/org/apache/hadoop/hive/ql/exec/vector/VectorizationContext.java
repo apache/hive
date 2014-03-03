@@ -727,11 +727,13 @@ public class VectorizationContext {
   private VectorExpression createVectorExpression(Class<?> vectorClass,
       List<ExprNodeDesc> childExpr, Mode childrenMode, TypeInfo returnType) throws HiveException {
     int numChildren = childExpr == null ? 0: childExpr.size();
+    VectorExpression.Type [] inputTypes = new VectorExpression.Type[numChildren];
     List<VectorExpression> children = new ArrayList<VectorExpression>();
     Object[] arguments = new Object[numChildren];
     try {
       for (int i = 0; i < numChildren; i++) {
         ExprNodeDesc child = childExpr.get(i);
+        inputTypes[i] = VectorExpression.Type.getValue(child.getTypeInfo().getTypeName());
         if (child instanceof ExprNodeGenericFuncDesc) {
           VectorExpression vChild = getVectorExpression(child, childrenMode);
             children.add(vChild);
@@ -751,6 +753,7 @@ public class VectorizationContext {
         }
       }
       VectorExpression  vectorExpression = instantiateExpression(vectorClass, returnType, arguments);
+      vectorExpression.setInputTypes(inputTypes);
       if ((vectorExpression != null) && !children.isEmpty()) {
         vectorExpression.setChildExpressions(children.toArray(new VectorExpression[0]));
       }
@@ -1234,7 +1237,7 @@ public class VectorizationContext {
   }
 
   public static boolean isDatetimeFamily(String resultType) {
-    return resultType.equalsIgnoreCase("timestamp");
+    return resultType.equalsIgnoreCase("timestamp") || resultType.equalsIgnoreCase("date");
   }
 
   // return true if this is any kind of float

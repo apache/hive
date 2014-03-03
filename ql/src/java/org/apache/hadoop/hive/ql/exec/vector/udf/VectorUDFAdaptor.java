@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector.udf;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -27,9 +28,11 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterF
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableFloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableIntObjectInspector;
@@ -279,6 +282,16 @@ public class VectorUDFAdaptor extends VectorExpression {
             + ts.getNanos() % 1000000; // Add on the remaining nanos.
                                        // The % 1000000 operation removes the ms values
                                        // so that the milliseconds are not counted twice.
+      lv.vector[i] = l;
+    } else if (outputOI instanceof WritableDateObjectInspector) {
+      LongColumnVector lv = (LongColumnVector) colVec;
+      Date ts;
+      if (value instanceof Date) {
+        ts = (Date) value;
+      } else {
+        ts = ((WritableDateObjectInspector) outputOI).getPrimitiveJavaObject(value);
+      }
+      long l = DateWritable.dateToDays(ts);
       lv.vector[i] = l;
     } else if (outputOI instanceof WritableBooleanObjectInspector) {
       LongColumnVector lv = (LongColumnVector) colVec;

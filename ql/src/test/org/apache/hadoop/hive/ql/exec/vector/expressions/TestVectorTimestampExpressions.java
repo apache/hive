@@ -237,8 +237,10 @@ public class TestVectorTimestampExpressions {
     VectorExpression udf = null;
     if (testType == TestType.LONG2) {
       udf = new VectorUDFYearLong(0, 1);
+      udf.setInputTypes(VectorExpression.Type.TIMESTAMP);
     } else {
       udf = new VectorUDFYearString(0, 1);
+      udf.setInputTypes(VectorExpression.Type.STRING);
     }
     udf.evaluate(batch);
     final int in = 0;
@@ -318,8 +320,10 @@ public class TestVectorTimestampExpressions {
     VectorExpression udf = null;
     if (testType == TestType.LONG2) {
       udf = new VectorUDFDayOfMonthLong(0, 1);
+      udf.setInputTypes(VectorExpression.Type.TIMESTAMP);
     } else {
       udf = new VectorUDFDayOfMonthString(0, 1);
+      udf.setInputTypes(VectorExpression.Type.STRING);
     }
     udf.evaluate(batch);
     final int in = 0;
@@ -392,8 +396,10 @@ public class TestVectorTimestampExpressions {
     VectorExpression udf = null;
     if (testType == TestType.LONG2) {
       udf = new VectorUDFHourLong(0, 1);
+      udf.setInputTypes(VectorExpression.Type.TIMESTAMP);
     } else {
       udf = new VectorUDFHourString(0, 1);
+      udf.setInputTypes(VectorExpression.Type.STRING);
     }
     udf.evaluate(batch);
     final int in = 0;
@@ -466,8 +472,10 @@ public class TestVectorTimestampExpressions {
     VectorExpression udf = null;
     if (testType == TestType.LONG2) {
       udf = new VectorUDFMinuteLong(0, 1);
+      udf.setInputTypes(VectorExpression.Type.TIMESTAMP);
     } else {
       udf = new VectorUDFMinuteString(0, 1);
+      udf.setInputTypes(VectorExpression.Type.STRING);
     }
     udf.evaluate(batch);
     final int in = 0;
@@ -540,8 +548,10 @@ public class TestVectorTimestampExpressions {
     VectorExpression udf;
     if (testType == TestType.LONG2) {
       udf = new VectorUDFMonthLong(0, 1);
+      udf.setInputTypes(VectorExpression.Type.TIMESTAMP);
     } else {
       udf = new VectorUDFMonthString(0, 1);
+      udf.setInputTypes(VectorExpression.Type.STRING);
     }
     udf.evaluate(batch);
     final int in = 0;
@@ -614,8 +624,10 @@ public class TestVectorTimestampExpressions {
     VectorExpression udf;
     if (testType == TestType.LONG2) {
       udf = new VectorUDFSecondLong(0, 1);
+      udf.setInputTypes(VectorExpression.Type.TIMESTAMP);
     } else {
       udf = new VectorUDFSecondString(0, 1);
+      udf.setInputTypes(VectorExpression.Type.STRING);
     }
     udf.evaluate(batch);
     final int in = 0;
@@ -702,8 +714,10 @@ public class TestVectorTimestampExpressions {
     VectorExpression udf;
     if (testType == TestType.LONG2) {
       udf = new VectorUDFUnixTimeStampLong(0, 1);
+      udf.setInputTypes(VectorExpression.Type.TIMESTAMP);
     } else {
       udf = new VectorUDFUnixTimeStampString(0, 1);
+      udf.setInputTypes(VectorExpression.Type.STRING);
     }
     udf.evaluate(batch);
     final int in = 0;
@@ -776,8 +790,10 @@ public class TestVectorTimestampExpressions {
     VectorExpression udf;
     if (testType == TestType.LONG2) {
       udf = new VectorUDFWeekOfYearLong(0, 1);
+      udf.setInputTypes(VectorExpression.Type.TIMESTAMP);
     } else {
       udf = new VectorUDFWeekOfYearString(0, 1);
+      udf.setInputTypes(VectorExpression.Type.STRING);
     }
     udf.evaluate(batch);
     final int in = 0;

@@ -29,7 +29,9 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyDate;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
@@ -165,6 +167,11 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
                 TimestampWritable tw = new TimestampWritable();
                 tw.set(t);
                 LazyTimestamp.writeUTF8(serializeVectorStream, tw);
+                break;
+              case DATE:
+                LongColumnVector dacv = (LongColumnVector) batch.cols[k];
+                DateWritable daw = new DateWritable((int) dacv.vector[rowIndex]);
+                LazyDate.writeUTF8(serializeVectorStream, daw);
                 break;
               default:
                 throw new UnsupportedOperationException(
