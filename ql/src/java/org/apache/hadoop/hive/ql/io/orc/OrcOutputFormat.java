@@ -106,13 +106,62 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     }
   }
 
+  /**
+   * Helper method to get a parameter first from props if present, falling back to JobConf if not.
+   * Returns null if key is present in neither.
+   */
+  private String getSettingFromPropsFallingBackToConf(String key, Properties props, JobConf conf){
+    if ((props != null) && props.containsKey(key)){
+      return props.getProperty(key);
+    } else if(conf != null) {
+      // If conf is not null, and the key is not present, Configuration.get() will
+      // return null for us. So, we don't have to check if it contains it.
+      return conf.get(key);
+    } else {
+      return null;
+    }
+  }
+
+  private OrcFile.WriterOptions getOptions(JobConf conf, Properties props) {
+    OrcFile.WriterOptions options = OrcFile.writerOptions(conf);
+    String propVal ;
+    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.STRIPE_SIZE,props,conf)) != null){
+      options.stripeSize(Long.parseLong(propVal));
+    }
+
+    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.COMPRESSION,props,conf)) != null){
+      options.compress(CompressionKind.valueOf(propVal));
+    }
+
+    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.COMPRESSION_BLOCK_SIZE,props,conf)) != null){
+      options.bufferSize(Integer.parseInt(propVal));
+    }
+
+    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.ROW_INDEX_STRIDE,props,conf)) != null){
+      options.rowIndexStride(Integer.parseInt(propVal));
+    }
+
+    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.ENABLE_INDEXES,props,conf)) != null){
+      if ("false".equalsIgnoreCase(propVal)) {
+        options.rowIndexStride(0);
+      }
+    }
+
+    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.BLOCK_PADDING,props,conf)) != null){
+      options.blockPadding(Boolean.parseBoolean(propVal));
+    }
+
+    return options;
+  }
+
   @Override
   public RecordWriter<NullWritable, OrcSerdeRow>
-      getRecordWriter(FileSystem fileSystem, JobConf conf, String name,
-                      Progressable reporter) throws IOException {
+  getRecordWriter(FileSystem fileSystem, JobConf conf, String name,
+                  Progressable reporter) throws IOException {
     return new
-      OrcRecordWriter(new Path(name), OrcFile.writerOptions(conf));
+        OrcRecordWriter(new Path(name), getOptions(conf,null));
   }
+
 
   @Override
   public FSRecordWriter
@@ -122,42 +171,6 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
                          boolean isCompressed,
                          Properties tableProperties,
                          Progressable reporter) throws IOException {
-    OrcFile.WriterOptions options = OrcFile.writerOptions(conf);
-    if (tableProperties.containsKey(OrcFile.STRIPE_SIZE)) {
-      options.stripeSize(Long.parseLong
-                           (tableProperties.getProperty(OrcFile.STRIPE_SIZE)));
-    }
-
-    if (tableProperties.containsKey(OrcFile.COMPRESSION)) {
-      options.compress(CompressionKind.valueOf
-                           (tableProperties.getProperty(OrcFile.COMPRESSION)));
-    }
-
-    if (tableProperties.containsKey(OrcFile.COMPRESSION_BLOCK_SIZE)) {
-      options.bufferSize(Integer.parseInt
-                         (tableProperties.getProperty
-                            (OrcFile.COMPRESSION_BLOCK_SIZE)));
-    }
-
-    if (tableProperties.containsKey(OrcFile.ROW_INDEX_STRIDE)) {
-      options.rowIndexStride(Integer.parseInt
-                             (tableProperties.getProperty
-                              (OrcFile.ROW_INDEX_STRIDE)));
-    }
-
-    if (tableProperties.containsKey(OrcFile.ENABLE_INDEXES)) {
-      if ("false".equals(tableProperties.getProperty
-                         (OrcFile.ENABLE_INDEXES))) {
-        options.rowIndexStride(0);
-      }
-    }
-
-    if (tableProperties.containsKey(OrcFile.BLOCK_PADDING)) {
-      options.blockPadding(Boolean.parseBoolean
-                           (tableProperties.getProperty
-                            (OrcFile.BLOCK_PADDING)));
-    }
-
-    return new OrcRecordWriter(path, options);
+    return new OrcRecordWriter(path, getOptions(conf,tableProperties));
   }
 }
