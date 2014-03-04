@@ -45,7 +45,11 @@ public interface PredicateLeaf {
   public static enum Type {
     INTEGER, // all of the integer types
     FLOAT,   // float and double
-    STRING
+    STRING,
+    DATE,
+    DECIMAL,
+    CHAR,
+    VARCHAR
   }
 
   /**
