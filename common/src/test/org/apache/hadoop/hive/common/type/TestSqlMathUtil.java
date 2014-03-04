@@ -43,5 +43,16 @@ public class TestSqlMathUtil {
       assertArrayEquals(new int[] { 0x10000, 0, 0, 0, 0 }, quotient);
       assertArrayEquals(new int[] { 0, 0, 0, 0, 0 }, remainder);
     }
+
+    {
+      // Zero dividend
+      int[] dividend = new int[] { 0, 0, 0, 0 };
+      int[] divisor = new int[] { 0xF700, 0, 0x3900, 0 };
+      int[] quotient = new int[5];
+      int[] remainder = SqlMathUtil.divideMultiPrecision(dividend, divisor,
+          quotient);
+      assertArrayEquals(new int[] { 0, 0, 0, 0, 0 }, quotient);
+      assertArrayEquals(new int[] { 0, 0, 0, 0, 0 }, remainder);
+    }
   }
 }

@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToBoolean;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDoubleToBooleanViaDoubleToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToBooleanViaLongToLong;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -42,7 +43,7 @@ import org.apache.hadoop.io.Text;
  *
  */
 @VectorizedExpressions({CastLongToBooleanViaLongToLong.class,
-  CastDoubleToBooleanViaDoubleToLong.class})
+  CastDoubleToBooleanViaDoubleToLong.class, CastDecimalToBoolean.class})
 public class UDFToBoolean extends UDF {
   private final BooleanWritable booleanWritable = new BooleanWritable();
 
