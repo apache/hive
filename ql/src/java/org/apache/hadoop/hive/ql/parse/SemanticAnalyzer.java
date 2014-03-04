@@ -1236,8 +1236,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             sqAliasToCTEName.put(alias, cte_name);
             continue;
           }
-          throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(qb
-              .getParseInfo().getSrcForAlias(alias)));
+          ASTNode src = qb.getParseInfo().getSrcForAlias(alias);
+          if (null != src) {
+            throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(src));
+          } else {
+            throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(alias));
+          }
+
         }
 
         // Disallow INSERT INTO on bucketized tables
