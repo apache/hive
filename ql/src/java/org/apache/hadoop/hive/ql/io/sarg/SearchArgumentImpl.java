@@ -283,11 +283,19 @@ final class SearchArgumentImpl implements SearchArgument {
           case INT:
           case LONG:
             return PredicateLeaf.Type.INTEGER;
+          case CHAR:
+            return PredicateLeaf.Type.CHAR;
+          case VARCHAR:
+            return PredicateLeaf.Type.VARCHAR;
           case STRING:
             return PredicateLeaf.Type.STRING;
           case FLOAT:
           case DOUBLE:
             return PredicateLeaf.Type.FLOAT;
+          case DATE:
+            return PredicateLeaf.Type.DATE;
+          case DECIMAL:
+            return PredicateLeaf.Type.DECIMAL;
           default:
         }
       }

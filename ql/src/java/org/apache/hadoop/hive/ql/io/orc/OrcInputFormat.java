@@ -848,10 +848,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
             // column statistics at index 0 contains only the number of rows
             ColumnStatistics stats = stripeStatistics.getColumnStatistics()[filterColumns[pred] + 1];
-            Object minValue = getMin(stats);
-            Object maxValue = getMax(stats);
-            truthValues[pred] = RecordReaderImpl.evaluatePredicateRange(predLeaves.get(pred),
-                minValue, maxValue);
+            Object minValue = RecordReaderImpl.getMin(stats);
+            Object maxValue = RecordReaderImpl.getMax(stats);
+            PredicateLeaf predLeaf = predLeaves.get(pred);
+            truthValues[pred] = RecordReaderImpl.evaluatePredicateRange(predLeaf, minValue, maxValue);
           } else {
 
             // parition column case.
