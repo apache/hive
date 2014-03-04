@@ -90,11 +90,11 @@ public class PTFPartition {
     @SuppressWarnings("unchecked")
     List<Object> l = (List<Object>)
         ObjectInspectorUtils.copyToStandardObject(o, inputOI, ObjectInspectorCopyOption.WRITABLE);
-    elems.add(l);
+    elems.addRow(l);
   }
 
   public int size() {
-    return (int) elems.rowCount();
+    return elems.rowCount();
   }
 
   public PTFPartitionIterator<Object> iterator() throws HiveException {

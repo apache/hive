@@ -122,7 +122,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
         endGroup();
         startGroup();
       }
-      storage[alias].add(nr);
+      storage[alias].addRow(nr);
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);
@@ -208,7 +208,6 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
    * @param hconf
    * @param success
    * @param log
-   * @param dpCtx
    * @throws IOException
    * @throws HiveException
    */

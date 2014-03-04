@@ -39,7 +39,7 @@ public class TestMapJoinEqualityTableContainer {
   @Before
   public void setup() throws Exception {
     rowContainer = new MapJoinEagerRowContainer();
-    rowContainer.add(VALUE);
+    rowContainer.addRow(VALUE);
     container = new HashMapWrapper();
   }
   @Test

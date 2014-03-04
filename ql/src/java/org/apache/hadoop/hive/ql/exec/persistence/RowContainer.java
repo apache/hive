@@ -159,7 +159,7 @@ public class RowContainer<ROW extends List<Object>>
   }
 
   @Override
-  public void add(ROW t) throws HiveException {
+  public void addRow(ROW t) throws HiveException {
     if (this.tblDesc != null) {
       if (willSpill()) { // spill the current block to tmp file
         spillBlock(currentWriteBlock, addCursor);
@@ -279,9 +279,9 @@ public class RowContainer<ROW extends List<Object>>
   private void removeKeys(ROW ret) {
     if (this.keyObject != null && this.currentReadBlock != this.currentWriteBlock) {
       int len = this.keyObject.size();
-      int rowSize = ((ArrayList) ret).size();
+      int rowSize = ret.size();
       for (int i = 0; i < len; i++) {
-        ((ArrayList) ret).remove(rowSize - i - 1);
+        ret.remove(rowSize - i - 1);
       }
     }
   }

@@ -272,7 +272,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
           rowContainerStandardObjectInspectors[pos],
           alias, 1, spillTableDesc, conf, !hasFilter(pos), reporter);
 
-      values.add(dummyObj[pos]);
+      values.addRow(dummyObj[pos]);
       dummyObjVectors[pos] = values;
 
       // if serde is null, the input doesn't need to be spilled out
@@ -690,7 +690,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         }
 
         if (alw.rowCount() == 0) {
-          alw.add(dummyObj[i]);
+          alw.addRow(dummyObj[i]);
           hasNulls = true;
         } else if (condn[i].getPreserved()) {
           preserve = true;
@@ -728,7 +728,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         } else {
           if (alw.rowCount() == 0) {
             hasEmpty = true;
-            alw.add(dummyObj[i]);
+            alw.addRow(dummyObj[i]);
           } else if (!hasEmpty && alw.rowCount() == 1) {
             if (hasAnyFiltered(alias, alw.rowIter().first())) {
               hasEmpty = true;

@@ -91,7 +91,7 @@ public class PTFRowContainer<Row extends List<Object>> extends RowContainer<Row>
   }
 
   @Override
-  public void add(Row t) throws HiveException {
+  public void addRow(Row t) throws HiveException {
     if ( willSpill() ) {
       setupWriter();
       PTFRecordWriter rw = (PTFRecordWriter) getRecordWriter();
@@ -105,7 +105,7 @@ public class PTFRowContainer<Row extends List<Object>> extends RowContainer<Row>
         throw new HiveException(e);
       }
     }
-    super.add(t);
+    super.addRow(t);
   }
 
   @Override

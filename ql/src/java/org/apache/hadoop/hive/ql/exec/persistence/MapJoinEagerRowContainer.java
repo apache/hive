@@ -49,13 +49,13 @@ public class MapJoinEagerRowContainer
   } 
 
   @Override
-  public void add(List<Object> t) {
+  public void addRow(List<Object> t) {
     list.add(t);
   }
 
   @Override
-  public void add(Object[] t) {
-    add(toList(t));
+  public void addRow(Object[] t) {
+    addRow(toList(t));
   }
 
   @Override
@@ -108,7 +108,7 @@ public class MapJoinEagerRowContainer
   public MapJoinRowContainer copy() {
     MapJoinEagerRowContainer result = new MapJoinEagerRowContainer();
     for(List<Object> item : list) {
-      result.add(item);
+      result.addRow(item);
     }
     return result;
   }
@@ -129,13 +129,13 @@ public class MapJoinEagerRowContainer
     List<Object> value = (List<Object>)ObjectInspectorUtils.copyToStandardObject(serde.deserialize(currentValue),
         serde.getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
     if(value == null) {
-      add(toList(EMPTY_OBJECT_ARRAY));
+      addRow(toList(EMPTY_OBJECT_ARRAY));
     } else {
       Object[] valuesArray = value.toArray();
       if (context.hasFilterTag()) {
         aliasFilter &= ((ShortWritable)valuesArray[valuesArray.length - 1]).get();
       }
-      add(toList(valuesArray));
+      addRow(toList(valuesArray));
     }
   }
 

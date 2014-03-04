@@ -81,7 +81,7 @@ public class TestPTFRowContainer {
       row.add(new DoubleWritable(i));
       row.add(new IntWritable(i));
       row.add(new Text("def " + i));
-      rc.add(row);
+      rc.addRow(row);
     }
 
     // test forward scan
