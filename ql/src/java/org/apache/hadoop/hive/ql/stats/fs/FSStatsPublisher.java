@@ -69,7 +69,9 @@ public class FSStatsPublisher implements StatsPublisher, StatsCollectionTaskInde
 
   @Override
   public boolean publishStat(String partKV, Map<String, String> stats) {
-    statsMap.put(partKV, stats);
+    LOG.debug("Putting in map : " + partKV + "\t" + stats);
+    // we need to do new hashmap, since stats object is reused across calls.
+    statsMap.put(partKV, new HashMap<String, String>(stats));
     return true;
   }
 
@@ -81,6 +83,7 @@ public class FSStatsPublisher implements StatsPublisher, StatsCollectionTaskInde
       LOG.debug("About to create stats file for this task : " + statsFile);
       Output output = new Output(statsFile.getFileSystem(conf).create(statsFile,true));
       LOG.info("Created file : " + statsFile);
+      LOG.info("Writing stats in it : " + statsMap);
       Utilities.runtimeSerializationKryo.get().writeObject(output, statsMap);
       output.close();
       return true;
