@@ -199,7 +199,7 @@ public class VectorExpressionDescriptor {
       b.append(mode);
       b.append(", Argument Types = {");
       for (int i = 0; i < argCount; i++) {
-        if (i == 0) {
+        if (i != 0) {
           b.append(",");
         }
         b.append(argTypes[i]);
@@ -208,7 +208,7 @@ public class VectorExpressionDescriptor {
 
       b.append(", Input Expression Types = {");
       for (int i = 0; i < argCount; i++) {
-        if (i == 0) {
+        if (i != 0) {
           b.append(",");
         }
         b.append(exprTypes[i]);

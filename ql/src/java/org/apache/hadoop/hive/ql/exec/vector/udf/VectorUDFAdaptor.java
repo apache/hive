@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.udf;
 import java.sql.Date;
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -30,16 +31,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBooleanObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableFloatObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableIntObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -299,6 +291,14 @@ public class VectorUDFAdaptor extends VectorExpression {
         lv.vector[i] = (Boolean) value ? 1 : 0;
       } else {
         lv.vector[i] = ((WritableBooleanObjectInspector) outputOI).get(value) ? 1 : 0;
+      }
+    } else if (outputOI instanceof WritableHiveDecimalObjectInspector) {
+      DecimalColumnVector dcv = (DecimalColumnVector) colVec;
+      if (value instanceof HiveDecimal) {
+        dcv.vector[i].update(((HiveDecimal) value).bigDecimalValue());
+      } else {
+        HiveDecimal hd = ((WritableHiveDecimalObjectInspector) outputOI).getPrimitiveJavaObject(value);
+        dcv.vector[i].update(hd.bigDecimalValue());
       }
     } else {
       throw new RuntimeException("Unhandled object type " + outputOI.getTypeName());

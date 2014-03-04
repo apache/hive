@@ -344,7 +344,7 @@ public class VectorizationContext {
    * @return List of child expressions added with cast.
    */
   private List<ExprNodeDesc> getChildExpressionsWithImplicitCast(GenericUDF genericUDF,
-      List<ExprNodeDesc> children, TypeInfo returnType) {
+      List<ExprNodeDesc> children, TypeInfo returnType) throws HiveException {
     if (isExcludedFromCast(genericUDF)) {
 
       // No implicit cast needed
@@ -407,7 +407,8 @@ public class VectorizationContext {
    * The GenericUDFs might need their children output to be cast to the given castType.
    * This method returns a cast expression that would achieve the required casting.
    */
-  private ExprNodeDesc getImplicitCastExpression(GenericUDF udf, ExprNodeDesc child, TypeInfo castType) {
+  private ExprNodeDesc getImplicitCastExpression(GenericUDF udf, ExprNodeDesc child, TypeInfo castType)
+      throws HiveException {
     TypeInfo inputTypeInfo = child.getTypeInfo();
     String inputTypeString = inputTypeInfo.getTypeName();
     String castTypeString = castType.getTypeName();
@@ -457,7 +458,7 @@ public class VectorizationContext {
     return null;
   }
 
-  private GenericUDF getGenericUDFForCast(TypeInfo castType) {
+  private GenericUDF getGenericUDFForCast(TypeInfo castType) throws HiveException {
     UDF udfClass = null;
     GenericUDF genericUdf = null;
     switch (((PrimitiveTypeInfo) castType).getPrimitiveCategory()) {
@@ -494,8 +495,14 @@ public class VectorizationContext {
       case BINARY:
         genericUdf = new GenericUDFToBinary();
         break;
+      case DECIMAL:
+        genericUdf = new GenericUDFToDecimal();
+        break;
     }
     if (genericUdf == null) {
+      if (udfClass == null) {
+        throw new HiveException("Could not add implicit cast for type "+castType.getTypeName());
+      }
       genericUdf = new GenericUDFBridge();
       ((GenericUDFBridge) genericUdf).setUdfClassName(udfClass.getClass().getName());
     }
@@ -713,10 +720,11 @@ public class VectorizationContext {
         throw new HiveException("Cannot handle expression type: " + child.getClass().getSimpleName());
       }
     }
-    Class<?> vclass = this.vMap.getVectorExpressionClass(udf, builder.build());
+    VectorExpressionDescriptor.Descriptor descriptor = builder.build();
+    Class<?> vclass = this.vMap.getVectorExpressionClass(udf, descriptor);
     if (vclass == null) {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("No vector udf found for "+udf.getSimpleName());
+        LOG.debug("No vector udf found for "+udf.getSimpleName() + ", descriptor: "+descriptor);
       }
       return null;
     }
@@ -963,7 +971,7 @@ public class VectorizationContext {
     } else if (isCastToFloatFamily(cl)) {
       return getCastToDoubleExpression(cl, childExpr, returnType);
     } else if (cl.equals(UDFToString.class)) {
-      return getCastToString(childExpr);
+      return getCastToString(childExpr, returnType);
     }
     return null;
   }
@@ -987,6 +995,8 @@ public class VectorizationContext {
           returnType);
     } else if (isStringFamily(inputType)) {
       return createVectorExpression(CastStringToDecimal.class, childExpr, Mode.PROJECTION, returnType);
+    } else if (isDatetimeFamily(inputType)) {
+      return createVectorExpression(CastTimestampToDecimal.class, childExpr, Mode.PROJECTION, returnType);
     }
     throw new HiveException("Unhandled cast input type: " + inputType);
   }
@@ -1031,7 +1041,7 @@ public class VectorizationContext {
     return d;
   }
 
-  private VectorExpression getCastToString(List<ExprNodeDesc> childExpr)
+  private VectorExpression getCastToString(List<ExprNodeDesc> childExpr, TypeInfo returnType)
       throws HiveException {
     String inputType = childExpr.get(0).getTypeString();
     if (inputType.equals("boolean")) {
@@ -1039,6 +1049,8 @@ public class VectorizationContext {
       return createVectorExpression(CastBooleanToStringViaLongToString.class, childExpr, Mode.PROJECTION, null);
     } else if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToString.class, childExpr, Mode.PROJECTION, null);
+    } else if (isDecimalFamily(inputType)) {
+      return createVectorExpression(CastDecimalToString.class, childExpr, Mode.PROJECTION, returnType);
     }
     /* The string type is deliberately omitted -- the planner removes string to string casts.
      * Timestamp, float, and double types are handled by the legacy code path. See isLegacyPathUDF.

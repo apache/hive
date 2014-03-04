@@ -393,12 +393,15 @@ public final class SqlMathUtil {
     return (int) remainder;
   }
 
+  /**
+   * Returns length of the array discounting the trailing elements with zero value.
+   */
   private static int arrayValidLength(int[] array) {
     int len = array.length;
-    while (len >= 0 && array[len - 1] == 0) {
+    while (len > 0 && array[len - 1] == 0) {
       --len;
     }
-    return len < 0 ? 0 : len;
+    return len <= 0 ? 0 : len;
   }
 
   /**

@@ -34,19 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -65,7 +53,9 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
@@ -693,7 +683,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         // TODO: this cannot happen - VectorizationContext throws in such cases.
         return false;
       }
-    } catch (HiveException e) {
+    } catch (Exception e) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Failed to vectorize", e);
       }
@@ -731,19 +721,22 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private VectorizationContext getVectorizationContext(Operator<? extends OperatorDesc> op,
       PhysicalContext pctx) {
-    RowResolver rr = pctx.getParseContext().getOpParseCtx().get(op).getRowResolver();
+    RowSchema rs = op.getSchema();
 
     Map<String, Integer> cmap = new HashMap<String, Integer>();
     int columnCount = 0;
-    for (ColumnInfo c : rr.getColumnInfos()) {
+    for (ColumnInfo c : rs.getSignature()) {
       if (!c.getIsVirtualCol()) {
         cmap.put(c.getInternalName(), columnCount++);
       }
     }
-    Table tab = pctx.getParseContext().getTopToTable().get(op);
-    if (tab.getPartitionKeys() != null) {
-      for (FieldSchema fs : tab.getPartitionKeys()) {
-        cmap.put(fs.getName(), columnCount++);
+    PrunedPartitionList partList = pctx.getParseContext().getOpToPartList().get(op);
+    if (partList != null) {
+      Table tab = partList.getSourceTable();
+      if (tab.getPartitionKeys() != null) {
+        for (FieldSchema fs : tab.getPartitionKeys()) {
+          cmap.put(fs.getName(), columnCount++);
+        }
       }
     }
     return new VectorizationContext(cmap, columnCount);
