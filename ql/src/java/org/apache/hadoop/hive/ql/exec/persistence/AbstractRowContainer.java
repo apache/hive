@@ -29,7 +29,12 @@ public interface AbstractRowContainer<ROW> {
 
   public RowIterator<ROW> rowIter() throws HiveException;
 
-  public void add(ROW t) throws HiveException;
+  /**
+   * add a row into the RowContainer
+   *
+   * @param t row
+   */
+  public void addRow(ROW t) throws HiveException;
 
   /**
    * @return number of elements in the RowContainer

@@ -31,7 +31,7 @@ public interface MapJoinRowContainer extends AbstractRowContainer<List<Object>> 
 
   public MapJoinRowContainer copy() throws HiveException;
 
-  public void add(Object[] value) throws HiveException;
+  public void addRow(Object[] value) throws HiveException;
 
   public void write(MapJoinObjectSerDeContext valueContext, ObjectOutputStream out)
       throws IOException, SerDeException;

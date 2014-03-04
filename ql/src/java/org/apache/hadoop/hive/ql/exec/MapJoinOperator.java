@@ -210,7 +210,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       if (joinNeeded) {
         List<Object> value = getFilteredValue(alias, row);
         // Add the value to the ArrayList
-        storage[alias].add(value);
+        storage[alias].addRow(value);
         // generate the output records
         checkAndGenObject();
       }

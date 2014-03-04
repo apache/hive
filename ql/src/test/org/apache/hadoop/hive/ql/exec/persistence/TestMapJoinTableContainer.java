@@ -46,7 +46,7 @@ public class TestMapJoinTableContainer {
   public void setup() throws Exception {
     key = new MapJoinKeyObject(KEY);
     rowContainer = new MapJoinEagerRowContainer();
-    rowContainer.add(VALUE);
+    rowContainer.addRow(VALUE);
     baos = new ByteArrayOutputStream();
     out = new ObjectOutputStream(baos);
     
