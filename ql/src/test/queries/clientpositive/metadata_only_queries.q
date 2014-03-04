@@ -1,3 +1,4 @@
+set hive.stats.dbclass=fs;
 set hive.compute.query.using.stats=true;
 set hive.stats.autogather=true;
 create table over10k(
@@ -73,3 +74,4 @@ drop table stats_tbl;
 drop table stats_tbl_part;
 
 set hive.compute.query.using.stats=false;
+set hive.stats.dbclass=jdbc:derby;

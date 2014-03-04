@@ -80,9 +80,17 @@ public class FSStatsAggregator implements StatsAggregator, StatsCollectionTaskIn
   @Override
   public String aggregateStats(String partID, String statType) {
     long counter = 0;
+    LOG.debug("Part ID: " + partID + "\t" + statType);
     for (Map<String,Map<String,String>> statsMap : statsList) {
-      String statVal = statsMap.get(partID).get(statType);
-      counter += Long.valueOf(statVal == null ? "0" : statVal);
+      Map<String,String> partStat = statsMap.get(partID);
+      if (null == partStat) { // not all partitions are scanned in all mappers, so this could be null.
+        continue;
+      }
+      String statVal = partStat.get(statType);
+      if (null == statVal) { // partition was found, but was empty.
+        continue;
+      }
+      counter += Long.valueOf(statVal);
     }
     LOG.info("Read stats for : " + partID + "\t" + statType + "\t" + counter);
 
