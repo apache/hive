@@ -1,0 +1,115 @@
+PREHOOK: query: create table T1(key string, val string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table T1(key string, val string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1
+PREHOOK: query: select * from T1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	11
+2	12
+3	13
+7	17
+8	18
+8	28
+PREHOOK: query: create table T2(key string) partitioned by (val string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table T2(key string) partitioned by (val string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2
+PREHOOK: query: insert overwrite table T2 partition (val) select key, val from T1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert overwrite table T2 partition (val) select key, val from T1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t2@val=11
+POSTHOOK: Output: default@t2@val=12
+POSTHOOK: Output: default@t2@val=13
+POSTHOOK: Output: default@t2@val=17
+POSTHOOK: Output: default@t2@val=18
+POSTHOOK: Output: default@t2@val=28
+POSTHOOK: Lineage: t2 PARTITION(val=11).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=12).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=13).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=17).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=18).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=28).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: select * from T2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2@val=11
+PREHOOK: Input: default@t2@val=12
+PREHOOK: Input: default@t2@val=13
+PREHOOK: Input: default@t2@val=17
+PREHOOK: Input: default@t2@val=18
+PREHOOK: Input: default@t2@val=28
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2@val=11
+POSTHOOK: Input: default@t2@val=12
+POSTHOOK: Input: default@t2@val=13
+POSTHOOK: Input: default@t2@val=17
+POSTHOOK: Input: default@t2@val=18
+POSTHOOK: Input: default@t2@val=28
+#### A masked pattern was here ####
+POSTHOOK: Lineage: t2 PARTITION(val=11).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=12).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=13).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=17).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=18).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=28).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+1	11
+2	12
+3	13
+7	17
+8	18
+8	28
+PREHOOK: query: drop table T1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: drop table T1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t2 PARTITION(val=11).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=12).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=13).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=17).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=18).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=28).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: drop table T2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2
+PREHOOK: Output: default@t2
+POSTHOOK: query: drop table T2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2 PARTITION(val=11).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=12).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=13).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=17).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=18).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2 PARTITION(val=28).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]

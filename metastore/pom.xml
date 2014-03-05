@@ -54,7 +54,6 @@
       <groupId>com.jolbox</groupId>
       <artifactId>bonecp</artifactId>
       <version>${bonecp.version}</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>

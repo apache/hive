@@ -18,14 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
@@ -46,6 +38,14 @@ import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * LoadSemanticAnalyzer.
@@ -238,7 +238,9 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, String> partSpec = ts.getPartSpec();
     if (partSpec == null) {
       partSpec = new LinkedHashMap<String, String>();
-      outputs.add(new WriteEntity(ts.tableHandle));
+      outputs.add(new WriteEntity(ts.tableHandle,
+          (isOverWrite ? WriteEntity.WriteType.INSERT_OVERWRITE :
+              WriteEntity.WriteType.INSERT)));
     } else {
       try{
         Partition part = Hive.get().getPartition(ts.tableHandle, partSpec, false);
@@ -247,9 +249,13 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(ErrorMsg.OFFLINE_TABLE_OR_PARTITION.
                 getMsg(ts.tableName + ":" + part.getName()));
           }
-          outputs.add(new WriteEntity(part));
+          outputs.add(new WriteEntity(part,
+          (isOverWrite ? WriteEntity.WriteType.INSERT_OVERWRITE :
+              WriteEntity.WriteType.INSERT)));
         } else {
-          outputs.add(new WriteEntity(ts.tableHandle));
+          outputs.add(new WriteEntity(ts.tableHandle,
+          (isOverWrite ? WriteEntity.WriteType.INSERT_OVERWRITE :
+              WriteEntity.WriteType.INSERT)));
         }
       } catch(HiveException e) {
         throw new SemanticException(e);

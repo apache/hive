@@ -19,40 +19,18 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.DataInput;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.exec.ConditionalTask;
-import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.TaskResult;
-import org.apache.hadoop.hive.ql.exec.TaskRunner;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
@@ -63,39 +41,15 @@ import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
+import org.apache.hadoop.hive.ql.lockmgr.*;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
-import org.apache.hadoop.hive.ql.metadata.DummyPartition;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
-import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
-import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
-import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.ParseDriver;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
+import org.apache.hadoop.hive.ql.parse.*;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -112,7 +66,13 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.util.ReflectionUtils;
+
+import java.io.DataInput;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 
 public class Driver implements CommandProcessor {
 
@@ -130,11 +90,10 @@ public class Driver implements CommandProcessor {
   private Context ctx;
   private QueryPlan plan;
   private Schema schema;
-  private HiveLockManager hiveLockMgr;
-
   private String errorMessage;
   private String SQLState;
   private Throwable downstreamError;
+  private HiveTxnManager txnMgr;
 
   // A limit on the number of threads that can be launched
   private int maxthreads;
@@ -143,46 +102,27 @@ public class Driver implements CommandProcessor {
 
   private String userName;
 
+  private void createTxnManager() throws SemanticException {
+    if (txnMgr == null) {
+      try {
+        txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+      } catch (LockException e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
+    }
+    // the reason that we set the txn manager for the cxt here is because each
+    // query has its own ctx object. The txn mgr is shared across the
+    // same instance of Driver, which can run multiple queries.
+    ctx.setHiveTxnManager(txnMgr);
+  }
+
   private boolean checkConcurrency() throws SemanticException {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
     if (!supportConcurrency) {
       LOG.info("Concurrency mode is disabled, not creating a lock manager");
       return false;
     }
-    createLockManager();
-    // the reason that we set the lock manager for the cxt here is because each
-    // query has its own ctx object. The hiveLockMgr is shared accross the
-    // same instance of Driver, which can run multiple queries.
-    ctx.setHiveLockMgr(hiveLockMgr);
     return true;
-  }
-
-  private void createLockManager() throws SemanticException {
-    if (hiveLockMgr != null) {
-      return;
-    }
-    String lockMgr = conf.getVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER);
-    LOG.info("Creating lock manager of type " + lockMgr);
-    if ((lockMgr == null) || (lockMgr.isEmpty())) {
-      throw new SemanticException(ErrorMsg.LOCKMGR_NOT_SPECIFIED.getMsg());
-    }
-    try {
-      hiveLockMgr = (HiveLockManager) ReflectionUtils.newInstance(conf.getClassByName(lockMgr),
-          conf);
-      hiveLockMgr.setContext(new HiveLockManagerCtx(conf));
-    } catch (Exception e1) {
-      // set hiveLockMgr to null just in case this invalid manager got set to
-      // next query's ctx.
-      if (hiveLockMgr != null) {
-        try {
-          hiveLockMgr.close();
-        } catch (LockException e2) {
-          //nothing can do here
-        }
-        hiveLockMgr = null;
-      }
-      throw new SemanticException(ErrorMsg.LOCKMGR_NOT_INITIALIZED.getMsg() + e1.getMessage(), e1);
-    }
   }
 
   @Override
@@ -858,25 +798,20 @@ public class Driver implements CommandProcessor {
     return locks;
   }
 
-  /**
-   * Dedup the list of lock objects so that there is only one lock per table/partition.
-   * If there is both a shared and exclusive lock for the same object, this will deduped
-   * to just a single exclusive lock.
-   * @param lockObjects
-   */
-  static void dedupLockObjects(List<HiveLockObj> lockObjects) {
-    Map<String, HiveLockObj> lockMap = new HashMap<String, HiveLockObj>();
-    for (HiveLockObj lockObj : lockObjects) {
-      String lockName = lockObj.getName();
-      HiveLockObj foundLock = lockMap.get(lockName);
-      if (foundLock == null || lockObj.getMode() == HiveLockMode.EXCLUSIVE) {
-        lockMap.put(lockName, lockObj);
-      }
-    }
-    // copy set of deduped locks back to original list
-    lockObjects.clear();
-    for (HiveLockObj lockObj : lockMap.values()) {
-      lockObjects.add(lockObj);
+  // Write the current set of valid transactions into the conf file so that it can be read by
+  // the input format.
+  private int recordValidTxns() {
+    try {
+      IMetaStoreClient.ValidTxnList txns = txnMgr.getValidTxns();
+      ctx.getConf().set(IMetaStoreClient.ValidTxnList.VALID_TXNS_KEY, txns.toString());
+      return 0;
+    } catch (LockException e) {
+      errorMessage = "FAILED: Error in determing valid transactions: " + e.getMessage();
+      SQLState = ErrorMsg.findSQLState(e.getMessage());
+      downstreamError = e;
+      console.printError(errorMessage, "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return 10;
     }
   }
 
@@ -886,96 +821,21 @@ public class Driver implements CommandProcessor {
    * pretty simple. If all the locks cannot be obtained, error out. Deadlock is avoided by making
    * sure that the locks are lexicographically sorted.
    **/
-  public int acquireReadWriteLocks() {
+  private int acquireReadWriteLocks() {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
+
     try {
-      boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
-      if (!supportConcurrency) {
-        return 0;
-      }
-
-      List<HiveLockObj> lockObjects = new ArrayList<HiveLockObj>();
-
-      // Sort all the inputs, outputs.
-      // If a lock needs to be acquired on any partition, a read lock needs to be acquired on all
-      // its parents also
-      for (ReadEntity input : plan.getInputs()) {
-        if (input.getType() == ReadEntity.Type.DATABASE) {
-          lockObjects.addAll(getLockObjects(input.getDatabase(), null, null, HiveLockMode.SHARED));
-        } else if (input.getType() == ReadEntity.Type.TABLE) {
-          lockObjects.addAll(getLockObjects(null, input.getTable(), null, HiveLockMode.SHARED));
-        } else {
-          lockObjects.addAll(getLockObjects(null, null, input.getPartition(), HiveLockMode.SHARED));
-        }
-      }
-
-      for (WriteEntity output : plan.getOutputs()) {
-        List<HiveLockObj> lockObj = null;
-        if (output.getType() == WriteEntity.Type.DATABASE) {
-          lockObjects.addAll(getLockObjects(output.getDatabase(), null, null,
-              output.isComplete() ? HiveLockMode.EXCLUSIVE : HiveLockMode.SHARED));
-        } else if (output.getTyp() == WriteEntity.Type.TABLE) {
-          lockObj = getLockObjects(null, output.getTable(), null,
-              output.isComplete() ? HiveLockMode.EXCLUSIVE : HiveLockMode.SHARED);
-        } else if (output.getTyp() == WriteEntity.Type.PARTITION) {
-          lockObj = getLockObjects(null, null, output.getPartition(), HiveLockMode.EXCLUSIVE);
-        }
-        // In case of dynamic queries, it is possible to have incomplete dummy partitions
-        else if (output.getTyp() == WriteEntity.Type.DUMMYPARTITION) {
-          lockObj = getLockObjects(null, null, output.getPartition(), HiveLockMode.SHARED);
-        }
-
-        if(lockObj != null) {
-          lockObjects.addAll(lockObj);
-          ctx.getOutputLockObjects().put(output, lockObj);
-        }
-      }
-
-      if (lockObjects.isEmpty() && !ctx.isNeedLockMgr()) {
-        return 0;
-      }
-
-      HiveLockObjectData lockData =
-        new HiveLockObjectData(plan.getQueryId(),
-                               String.valueOf(System.currentTimeMillis()),
-                               "IMPLICIT",
-                               plan.getQueryStr());
-
-      // Lock the database also
-      String currentDb = SessionState.get().getCurrentDatabase();
-      lockObjects.add(
-          new HiveLockObj(
-              new HiveLockObject(currentDb, lockData),
-              HiveLockMode.SHARED
-              )
-          );
-
-      dedupLockObjects(lockObjects);
-      List<HiveLock> hiveLocks = ctx.getHiveLockMgr().lock(lockObjects, false);
-
-      if (hiveLocks == null) {
-        throw new SemanticException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());
-      } else {
-        ctx.setHiveLocks(hiveLocks);
-      }
-
-      return (0);
-    } catch (SemanticException e) {
-      errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
-      SQLState = ErrorMsg.findSQLState(e.getMessage());
-      downstreamError = e;
-      console.printError(errorMessage, "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return (10);
+      txnMgr.acquireLocks(plan, ctx, userName);
+      return 0;
     } catch (LockException e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());
       downstreamError = e;
       console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return (10);
+      return 10;
     } finally {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
     }
@@ -986,12 +846,12 @@ public class Driver implements CommandProcessor {
    *          list of hive locks to be released Release all the locks specified. If some of the
    *          locks have already been released, ignore them
    **/
-  private void releaseLocks(List<HiveLock> hiveLocks) {
+  private void releaseLocks(List<HiveLock> hiveLocks) throws LockException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
 
     if (hiveLocks != null) {
-      ctx.getHiveLockMgr().releaseLocks(hiveLocks);
+      ctx.getHiveTxnManager().getLockManager().releaseLocks(hiveLocks);
     }
     ctx.setHiveLocks(null);
 
@@ -1078,7 +938,12 @@ public class Driver implements CommandProcessor {
       ret = compile(command);
     }
     if (ret != 0) {
-      releaseLocks(ctx.getHiveLocks());
+      try {
+        releaseLocks(ctx.getHiveLocks());
+      } catch (LockException e) {
+        LOG.warn("Exception in releasing locks. "
+            + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      }
     }
     return ret;
   }
@@ -1128,6 +993,7 @@ public class Driver implements CommandProcessor {
     boolean ckLock = false;
     try {
       ckLock = checkConcurrency();
+      createTxnManager();
     } catch (SemanticException e) {
       errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());
@@ -1163,10 +1029,17 @@ public class Driver implements CommandProcessor {
       }
     }
 
+    ret = recordValidTxns();
+    if (ret != 0) return new CommandProcessorResponse(ret, errorMessage, SQLState);
+
     if (requireLock) {
       ret = acquireReadWriteLocks();
       if (ret != 0) {
-        releaseLocks(ctx.getHiveLocks());
+        try {
+          releaseLocks(ctx.getHiveLocks());
+        } catch (LockException e) {
+          // Not much to do here
+        }
         return new CommandProcessorResponse(ret, errorMessage, SQLState);
       }
     }
@@ -1174,12 +1047,25 @@ public class Driver implements CommandProcessor {
     ret = execute();
     if (ret != 0) {
       //if needRequireLock is false, the release here will do nothing because there is no lock
-      releaseLocks(ctx.getHiveLocks());
+      try {
+        releaseLocks(ctx.getHiveLocks());
+      } catch (LockException e) {
+        // Nothing to do here
+      }
       return new CommandProcessorResponse(ret, errorMessage, SQLState);
     }
 
     //if needRequireLock is false, the release here will do nothing because there is no lock
-    releaseLocks(ctx.getHiveLocks());
+    try {
+      releaseLocks(ctx.getHiveLocks());
+    } catch (LockException e) {
+      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
+      SQLState = ErrorMsg.findSQLState(e.getMessage());
+      downstreamError = e;
+      console.printError(errorMessage + "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return new CommandProcessorResponse(12, errorMessage, SQLState);
+    }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_RUN);
     perfLogger.close(LOG, plan);
@@ -1731,16 +1617,15 @@ public class Driver implements CommandProcessor {
 
   public void destroy() {
     if (ctx != null) {
-      releaseLocks(ctx.getHiveLocks());
-    }
-
-    if (hiveLockMgr != null) {
       try {
-        hiveLockMgr.close();
-      } catch(LockException e) {
-        LOG.warn("Exception in closing hive lock manager. "
-            + org.apache.hadoop.util.StringUtils.stringifyException(e));
+        releaseLocks(ctx.getHiveLocks());
+      } catch (LockException e) {
+        LOG.warn("Exception when releasing locking in destroy: " +
+            e.getMessage());
       }
+    }
+    if (txnMgr != null) {
+      txnMgr.closeTxnManager();
     }
   }
 

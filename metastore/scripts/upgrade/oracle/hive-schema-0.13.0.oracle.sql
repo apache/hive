@@ -754,3 +754,7 @@ CREATE INDEX FUNC_RU_N49 ON FUNC_RU (FUNC_ID);
 
 INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '0.13.0', 'Hive release version 0.13.0');
 
+------------------------------
+-- Transaction and lock tables
+------------------------------
+@hive-txn-schema-0.13.0.oracle.sql;

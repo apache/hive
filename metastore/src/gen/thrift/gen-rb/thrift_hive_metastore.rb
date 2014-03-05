@@ -1575,6 +1575,194 @@ module ThriftHiveMetastore
       return
     end
 
+    def get_open_txns()
+      send_get_open_txns()
+      return recv_get_open_txns()
+    end
+
+    def send_get_open_txns()
+      send_message('get_open_txns', Get_open_txns_args)
+    end
+
+    def recv_get_open_txns()
+      result = receive_message(Get_open_txns_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_open_txns failed: unknown result')
+    end
+
+    def get_open_txns_info()
+      send_get_open_txns_info()
+      return recv_get_open_txns_info()
+    end
+
+    def send_get_open_txns_info()
+      send_message('get_open_txns_info', Get_open_txns_info_args)
+    end
+
+    def recv_get_open_txns_info()
+      result = receive_message(Get_open_txns_info_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_open_txns_info failed: unknown result')
+    end
+
+    def open_txns(rqst)
+      send_open_txns(rqst)
+      return recv_open_txns()
+    end
+
+    def send_open_txns(rqst)
+      send_message('open_txns', Open_txns_args, :rqst => rqst)
+    end
+
+    def recv_open_txns()
+      result = receive_message(Open_txns_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'open_txns failed: unknown result')
+    end
+
+    def abort_txn(rqst)
+      send_abort_txn(rqst)
+      recv_abort_txn()
+    end
+
+    def send_abort_txn(rqst)
+      send_message('abort_txn', Abort_txn_args, :rqst => rqst)
+    end
+
+    def recv_abort_txn()
+      result = receive_message(Abort_txn_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
+    def commit_txn(rqst)
+      send_commit_txn(rqst)
+      recv_commit_txn()
+    end
+
+    def send_commit_txn(rqst)
+      send_message('commit_txn', Commit_txn_args, :rqst => rqst)
+    end
+
+    def recv_commit_txn()
+      result = receive_message(Commit_txn_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def lock(rqst)
+      send_lock(rqst)
+      return recv_lock()
+    end
+
+    def send_lock(rqst)
+      send_message('lock', Lock_args, :rqst => rqst)
+    end
+
+    def recv_lock()
+      result = receive_message(Lock_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'lock failed: unknown result')
+    end
+
+    def check_lock(rqst)
+      send_check_lock(rqst)
+      return recv_check_lock()
+    end
+
+    def send_check_lock(rqst)
+      send_message('check_lock', Check_lock_args, :rqst => rqst)
+    end
+
+    def recv_check_lock()
+      result = receive_message(Check_lock_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'check_lock failed: unknown result')
+    end
+
+    def unlock(rqst)
+      send_unlock(rqst)
+      recv_unlock()
+    end
+
+    def send_unlock(rqst)
+      send_message('unlock', Unlock_args, :rqst => rqst)
+    end
+
+    def recv_unlock()
+      result = receive_message(Unlock_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def show_locks(rqst)
+      send_show_locks(rqst)
+      return recv_show_locks()
+    end
+
+    def send_show_locks(rqst)
+      send_message('show_locks', Show_locks_args, :rqst => rqst)
+    end
+
+    def recv_show_locks()
+      result = receive_message(Show_locks_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'show_locks failed: unknown result')
+    end
+
+    def heartbeat(ids)
+      send_heartbeat(ids)
+      recv_heartbeat()
+    end
+
+    def send_heartbeat(ids)
+      send_message('heartbeat', Heartbeat_args, :ids => ids)
+    end
+
+    def recv_heartbeat()
+      result = receive_message(Heartbeat_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def compact(rqst)
+      send_compact(rqst)
+      recv_compact()
+    end
+
+    def send_compact(rqst)
+      send_message('compact', Compact_args, :rqst => rqst)
+    end
+
+    def recv_compact()
+      result = receive_message(Compact_result)
+      return
+    end
+
+    def show_compact(rqst)
+      send_show_compact(rqst)
+      return recv_show_compact()
+    end
+
+    def send_show_compact(rqst)
+      send_message('show_compact', Show_compact_args, :rqst => rqst)
+    end
+
+    def recv_show_compact()
+      result = receive_message(Show_compact_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'show_compact failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -2810,6 +2998,128 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'cancel_delegation_token', seqid)
+    end
+
+    def process_get_open_txns(seqid, iprot, oprot)
+      args = read_args(iprot, Get_open_txns_args)
+      result = Get_open_txns_result.new()
+      result.success = @handler.get_open_txns()
+      write_result(result, oprot, 'get_open_txns', seqid)
+    end
+
+    def process_get_open_txns_info(seqid, iprot, oprot)
+      args = read_args(iprot, Get_open_txns_info_args)
+      result = Get_open_txns_info_result.new()
+      result.success = @handler.get_open_txns_info()
+      write_result(result, oprot, 'get_open_txns_info', seqid)
+    end
+
+    def process_open_txns(seqid, iprot, oprot)
+      args = read_args(iprot, Open_txns_args)
+      result = Open_txns_result.new()
+      result.success = @handler.open_txns(args.rqst)
+      write_result(result, oprot, 'open_txns', seqid)
+    end
+
+    def process_abort_txn(seqid, iprot, oprot)
+      args = read_args(iprot, Abort_txn_args)
+      result = Abort_txn_result.new()
+      begin
+        @handler.abort_txn(args.rqst)
+      rescue ::NoSuchTxnException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'abort_txn', seqid)
+    end
+
+    def process_commit_txn(seqid, iprot, oprot)
+      args = read_args(iprot, Commit_txn_args)
+      result = Commit_txn_result.new()
+      begin
+        @handler.commit_txn(args.rqst)
+      rescue ::NoSuchTxnException => o1
+        result.o1 = o1
+      rescue ::TxnAbortedException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'commit_txn', seqid)
+    end
+
+    def process_lock(seqid, iprot, oprot)
+      args = read_args(iprot, Lock_args)
+      result = Lock_result.new()
+      begin
+        result.success = @handler.lock(args.rqst)
+      rescue ::NoSuchTxnException => o1
+        result.o1 = o1
+      rescue ::TxnAbortedException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'lock', seqid)
+    end
+
+    def process_check_lock(seqid, iprot, oprot)
+      args = read_args(iprot, Check_lock_args)
+      result = Check_lock_result.new()
+      begin
+        result.success = @handler.check_lock(args.rqst)
+      rescue ::NoSuchTxnException => o1
+        result.o1 = o1
+      rescue ::TxnAbortedException => o2
+        result.o2 = o2
+      rescue ::NoSuchLockException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'check_lock', seqid)
+    end
+
+    def process_unlock(seqid, iprot, oprot)
+      args = read_args(iprot, Unlock_args)
+      result = Unlock_result.new()
+      begin
+        @handler.unlock(args.rqst)
+      rescue ::NoSuchLockException => o1
+        result.o1 = o1
+      rescue ::TxnOpenException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'unlock', seqid)
+    end
+
+    def process_show_locks(seqid, iprot, oprot)
+      args = read_args(iprot, Show_locks_args)
+      result = Show_locks_result.new()
+      result.success = @handler.show_locks(args.rqst)
+      write_result(result, oprot, 'show_locks', seqid)
+    end
+
+    def process_heartbeat(seqid, iprot, oprot)
+      args = read_args(iprot, Heartbeat_args)
+      result = Heartbeat_result.new()
+      begin
+        @handler.heartbeat(args.ids)
+      rescue ::NoSuchLockException => o1
+        result.o1 = o1
+      rescue ::NoSuchTxnException => o2
+        result.o2 = o2
+      rescue ::TxnAbortedException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'heartbeat', seqid)
+    end
+
+    def process_compact(seqid, iprot, oprot)
+      args = read_args(iprot, Compact_args)
+      result = Compact_result.new()
+      @handler.compact(args.rqst)
+      write_result(result, oprot, 'compact', seqid)
+    end
+
+    def process_show_compact(seqid, iprot, oprot)
+      args = read_args(iprot, Show_compact_args)
+      result = Show_compact_result.new()
+      result.success = @handler.show_compact(args.rqst)
+      write_result(result, oprot, 'show_compact', seqid)
     end
 
   end
@@ -6419,6 +6729,405 @@ module ThriftHiveMetastore
 
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_open_txns_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_open_txns_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetOpenTxnsResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_open_txns_info_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_open_txns_info_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetOpenTxnsInfoResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Open_txns_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::OpenTxnRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Open_txns_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::OpenTxnsResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Abort_txn_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::AbortTxnRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Abort_txn_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Commit_txn_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::CommitTxnRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Commit_txn_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Lock_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::LockRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Lock_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::LockResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Check_lock_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::CheckLockRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Check_lock_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::LockResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::NoSuchLockException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Unlock_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::UnlockRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Unlock_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchLockException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnOpenException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Show_locks_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::ShowLocksRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Show_locks_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ShowLocksResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    IDS = 1
+
+    FIELDS = {
+      IDS => {:type => ::Thrift::Types::STRUCT, :name => 'ids', :class => ::HeartbeatRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchLockException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchTxnException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::TxnAbortedException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Compact_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::CompactionRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Compact_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Show_compact_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::ShowCompactRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Show_compact_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ShowCompactResponse}
     }
 
     def struct_fields; FIELDS; end

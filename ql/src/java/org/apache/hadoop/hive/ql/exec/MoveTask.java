@@ -18,16 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -56,16 +46,15 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
-import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
-import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
-import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.StringUtils;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.AccessControlException;
+import java.util.*;
 
 /**
  * MoveTask implementation.
@@ -175,7 +164,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     Context ctx = driverContext.getCtx();
-    HiveLockManager lockMgr = ctx.getHiveLockMgr();
+    HiveLockManager lockMgr = ctx.getHiveTxnManager().getLockManager();
     WriteEntity output = ctx.getLoadTableOutputMap().get(ltd);
     List<HiveLockObj> lockObjects = ctx.getOutputLockObjects().get(output);
     if (lockObjects == null) {
@@ -284,7 +273,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           db.loadTable(tbd.getSourcePath(), tbd.getTable()
               .getTableName(), tbd.getReplace(), tbd.getHoldDDLTime());
           if (work.getOutputs() != null) {
-            work.getOutputs().add(new WriteEntity(table));
+            work.getOutputs().add(new WriteEntity(table,
+                (tbd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
+                WriteEntity.WriteType.INSERT)));
           }
         } else {
           LOG.info("Partition is: " + tbd.getPartitionSpec().toString());
@@ -376,7 +367,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 updatePartitionBucketSortColumns(table, partn, bucketCols, numBuckets, sortCols);
               }
 
-              WriteEntity enty = new WriteEntity(partn);
+              WriteEntity enty = new WriteEntity(partn,
+                  (tbd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
+                      WriteEntity.WriteType.INSERT));
               if (work.getOutputs() != null) {
                 work.getOutputs().add(enty);
               }
@@ -417,7 +410,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           	dc = new DataContainer(table.getTTable(), partn.getTPartition());
           	// add this partition to post-execution hook
           	if (work.getOutputs() != null) {
-          	  work.getOutputs().add(new WriteEntity(partn));
+          	  work.getOutputs().add(new WriteEntity(partn,
+                  (tbd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE
+                      : WriteEntity.WriteType.INSERT)));
           	}
          }
         }

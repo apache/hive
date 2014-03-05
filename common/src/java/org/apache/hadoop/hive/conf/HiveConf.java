@@ -18,26 +18,6 @@
 
 package org.apache.hadoop.hive.conf;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.security.auth.login.LoginException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +26,14 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
+
+import javax.security.auth.login.LoginException;
+import java.io.*;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Hive Configuration.
@@ -134,7 +122,12 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN,
       HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
       HiveConf.ConfVars.USERS_IN_ADMIN_ROLE,
-      HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER
+      HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+      HiveConf.ConfVars.HIVE_TXN_MANAGER,
+      HiveConf.ConfVars.HIVE_TXN_JDBC_DRIVER,
+      HiveConf.ConfVars.HIVE_TXN_JDBC_CONNECT_STRING,
+      HiveConf.ConfVars.HIVE_TXN_TIMEOUT,
+      HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
       };
 
   /**
@@ -702,6 +695,48 @@ public class HiveConf extends Configuration {
     HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", 600*1000),
     HIVE_ZOOKEEPER_NAMESPACE("hive.zookeeper.namespace", "hive_zookeeper_namespace"),
     HIVE_ZOOKEEPER_CLEAN_EXTRA_NODES("hive.zookeeper.clean.extra.nodes", false),
+
+    // Transactions
+    HIVE_TXN_MANAGER("hive.txn.manager",
+        "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager"),
+    HIVE_TXN_JDBC_DRIVER("hive.txn.driver", ""),
+    HIVE_TXN_JDBC_CONNECT_STRING("hive.txn.connection.string", ""),
+    // time after which transactions are declared aborted if the client has
+    // not sent a heartbeat, in seconds.
+    HIVE_TXN_TIMEOUT("hive.txn.timeout", 300),
+
+    // Maximum number of transactions that can be fetched in one call to
+    // open_txns().
+    // Increasing this will decrease the number of delta files created when
+    // streaming data into Hive.  But it will also increase the number of
+    // open transactions at any given time, possibly impacting read
+    // performance.
+    HIVE_TXN_MAX_OPEN_BATCH("hive.txn.max.open.batch", 1000),
+
+    // Whether to run the compactor's initiator thread in this metastore instance or not.
+    HIVE_COMPACTOR_INITIATOR_ON("hive.compactor.initiator.on", false),
+
+    // Number of compactor worker threads to run on this metastore instance.
+    HIVE_COMPACTOR_WORKER_THREADS("hive.compactor.worker.threads", 0),
+
+    // Time, in seconds, before a given compaction in working state is declared a failure and
+    // returned to the initiated state.
+    HIVE_COMPACTOR_WORKER_TIMEOUT("hive.compactor.worker.timeout", 86400L),
+
+    // Time in seconds between checks to see if any partitions need compacted.  This should be
+    // kept high because each check for compaction requires many calls against the NameNode.
+    HIVE_COMPACTOR_CHECK_INTERVAL("hive.compactor.check.interval", 300L),
+
+    // Number of delta files that must exist in a directory before the compactor will attempt a
+    // minor compaction.
+    HIVE_COMPACTOR_DELTA_NUM_THRESHOLD("hive.compactor.delta.num.threshold", 10),
+
+    // Percentage (by size) of base that deltas can be before major compaction is initiated.
+    HIVE_COMPACTOR_DELTA_PCT_THRESHOLD("hive.compactor.delta.pct.threshold", 0.1f),
+
+    // Number of aborted transactions involving a particular table or partition before major
+    // compaction is initiated.
+    HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD("hive.compactor.abortedtxn.threshold", 1000),
 
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true),

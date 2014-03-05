@@ -5607,7 +5607,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // in the case of DP, we will register WriteEntity in MoveTask when the
       // list of dynamically created partitions are known.
       if ((dpCtx == null || dpCtx.getNumDPCols() == 0)) {
-        output = new WriteEntity(dest_tab);
+        output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable));
         if (!outputs.add(output)) {
           throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
               .getMsg(dest_tab.getTableName()));
@@ -5616,7 +5616,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if ((dpCtx != null) && (dpCtx.getNumDPCols() >= 0)) {
         // No static partition specified
         if (dpCtx.getNumSPCols() == 0) {
-          output = new WriteEntity(dest_tab, false);
+          output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable), false);
           outputs.add(output);
         }
         // part of the partition specified
@@ -5630,7 +5630,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 new DummyPartition(dest_tab, dest_tab.getDbName()
                     + "@" + dest_tab.getTableName() + "@" + ppath,
                     partSpec);
-            output = new WriteEntity(p, false);
+            output = new WriteEntity(p, WriteEntity.WriteType.INSERT, false);
             outputs.add(output);
           } catch (HiveException e) {
             throw new SemanticException(e.getMessage(), e);
@@ -5717,7 +5717,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ltd.setHoldDDLTime(true);
       }
       loadTableWork.add(ltd);
-      if (!outputs.add(new WriteEntity(dest_part))) {
+      if (!outputs.add(new WriteEntity(dest_part, (ltd.getReplace() ?
+          WriteEntity.WriteType.INSERT_OVERWRITE :
+          WriteEntity.WriteType.INSERT)))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
             .getMsg(dest_tab.getTableName() + "@" + dest_part.getName()));
       }
@@ -8823,7 +8825,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
 
       // set up WritenEntity for replication
-      outputs.add(new WriteEntity(tab));
+      outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_METADATA_ONLY));
 
       // add WriteEntity for each matching partition
       if (tab.isPartitioned()) {
@@ -8834,7 +8836,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (partitions != null) {
           for (Partition partn : partitions) {
             // inputs.add(new ReadEntity(partn)); // is this needed at all?
-            outputs.add(new WriteEntity(partn));
+            outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_METADATA_ONLY));
           }
         }
       }
@@ -9883,7 +9885,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String[] qualified = Hive.getQualifiedNames(tableName);
     String dbName = qualified.length == 1 ? SessionState.get().getCurrentDatabase() : qualified[0];
     Database database  = getDatabase(dbName);
-    outputs.add(new WriteEntity(database));
+    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_METADATA_ONLY));
     // Handle different types of CREATE TABLE command
     CreateTableDesc crtTblDesc = null;
     switch (command_type) {
@@ -11260,5 +11262,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 		  }
 		  gByRR.put(tab_alias, col_alias, colInfo);
 	  }
+  }
+
+  private WriteEntity.WriteType determineWriteType(LoadTableDesc ltd, boolean isNonNativeTable) {
+    // Don't know the characteristics of non-native tables,
+    // and don't have a rational way to guess, so assume the most
+    // conservative case.
+    if (isNonNativeTable) return WriteEntity.WriteType.INSERT_OVERWRITE;
+    else return (ltd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
+        WriteEntity.WriteType.INSERT);
   }
 }

@@ -315,3 +315,8 @@ ALTER TABLE "APP"."IDXS" ADD CONSTRAINT "SQL110318025504980" CHECK (DEFERRED_REB
 ALTER TABLE "APP"."SDS" ADD CONSTRAINT "SQL110318025505550" CHECK (IS_COMPRESSED IN ('Y','N'));
 
 INSERT INTO "APP"."VERSION" (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '0.13.0', 'Hive release version 0.13.0');
+
+-- ----------------------------
+-- Transaction and Lock Tables
+-- ----------------------------
+RUN 'hive-txn-schema-0.13.0.derby.sql';

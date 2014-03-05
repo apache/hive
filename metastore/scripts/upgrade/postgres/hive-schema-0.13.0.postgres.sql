@@ -1456,3 +1456,7 @@ INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1,
 -- PostgreSQL database dump complete
 --
 
+------------------------------
+-- Transaction and lock tables
+------------------------------
+\i hive-txn-schema-0.13.0.postgres.sql;
