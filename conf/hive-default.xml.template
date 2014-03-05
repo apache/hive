@@ -2406,4 +2406,34 @@
   <description>By default tez will use the java opts from map tasks. This can be used to overwrite.</description>
 </property>
 
+<property>
+  <name>hive.server2.tez.default.queues</name>
+  <value></value>
+  <description>
+    A list of comma separated values corresponding to yarn queues of the same name.
+    When hive server 2 is launched in tez mode, this configuration needs to be set
+    for multiple tez sessions to run in parallel on the cluster.
+  </description>
+</property>
+
+<property>
+  <name>hive.server2.tez.sessions.per.default.queue</name>
+  <value>1</value>
+  <description>
+    A positive integer that determines the number of tez sessions that should be
+    launched on each of the queues specified by "hive.server2.tez.default.queues".
+    Determines the parallelism on each queue.
+  </description>
+</property>
+
+<property>
+  <name>hive.server2.tez.initialize.default.sessions</name>
+  <value>false</value>
+  <description>
+    This flag is used in hive server 2 to enable a user to use hive server 2 without
+    turning on tez for hive server 2. The user could potentially want to run queries
+    over tez without the pool of sessions.
+  </description>
+</property>
+
 </configuration>
