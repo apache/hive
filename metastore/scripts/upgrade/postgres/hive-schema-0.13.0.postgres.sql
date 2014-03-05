@@ -80,7 +80,9 @@ CREATE TABLE "DBS" (
     "DB_ID" bigint NOT NULL,
     "DESC" character varying(4000) DEFAULT NULL::character varying,
     "DB_LOCATION_URI" character varying(4000) NOT NULL,
-    "NAME" character varying(128) DEFAULT NULL::character varying
+    "NAME" character varying(128) DEFAULT NULL::character varying,
+    "OWNER_NAME" character varying(128) DEFAULT NULL::character varying,
+    "OWNER_TYPE" character varying(10) DEFAULT NULL::character varying
 );
 
 
