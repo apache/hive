@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_N
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -35,6 +36,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -302,6 +304,16 @@ public class HdfsAuthorizationProvider extends HiveAuthorizationProviderBase {
                        final EnumSet<FsAction> actions, String user, String[] groups) throws IOException,
     AccessControlException {
 
+    if (groups != null) {
+      List<String> groupList = Arrays.asList(groups);
+      String superGroupName = getSuperGroupName(fs.getConf());
+      if (userBelongsToSuperGroup(superGroupName, groupList)) {
+        LOG.info("User \"" + user + "\" belongs to super-group \"" + superGroupName + "\". " +
+            "Permission granted for actions: (" + actions + ").");
+        return;
+      }
+    }
+
     final FileStatus stat;
 
     try {
@@ -334,5 +346,13 @@ public class HdfsAuthorizationProvider extends HiveAuthorizationProviderBase {
       throw new AccessControlException("action " + action + " not permitted on path "
         + path + " for user " + user);
     }
+  }
+
+  private static String getSuperGroupName(Configuration configuration) {
+    return configuration.get(DFSConfigKeys.DFS_PERMISSIONS_SUPERUSERGROUP_KEY, "");
+  }
+
+  private static boolean userBelongsToSuperGroup(String superGroupName, List<String> groups) {
+    return groups.contains(superGroupName);
   }
 }
