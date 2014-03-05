@@ -117,7 +117,7 @@
 
   <property>
     <name>templeton.hive.home</name>
-    <value>hive-0.13.0-SNAPSHOT-bin.tar.gz/hive-0.13.0-SNAPSHOT-bin</value>
+    <value>hive-0.14.0-SNAPSHOT-bin.tar.gz/hive-0.14.0-SNAPSHOT-bin</value>
     <description>
       The path to the Hive home within the tar.  This is needed if Hive is not installed on all
       nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig
@@ -126,7 +126,7 @@
   </property>
   <property>
     <name>templeton.hcat.home</name>
-    <value>hive-0.13.0-SNAPSHOT-bin.tar.gz/hive-0.13.0-SNAPSHOT-bin/hcatalog</value>
+    <value>hive-0.14.0-SNAPSHOT-bin.tar.gz/hive-0.14.0-SNAPSHOT-bin/hcatalog</value>
     <description>
       The path to the HCat home within the tar.  This is needed if Hive is not installed on all
       nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig
