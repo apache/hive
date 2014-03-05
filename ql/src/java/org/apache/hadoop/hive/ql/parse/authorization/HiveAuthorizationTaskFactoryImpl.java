@@ -250,9 +250,9 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       Table tbl = getTable(SessionState.get().getCurrentDatabase(), subject.getObject());
       if (subject.getPartSpec() != null) {
         Partition part = getPartition(tbl, subject.getPartSpec());
-        outputs.add(new WriteEntity(part));
+        outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL_METADATA_ONLY));
       } else {
-        outputs.add(new WriteEntity(tbl));
+        outputs.add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_METADATA_ONLY));
       }
     }
 

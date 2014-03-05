@@ -26,8 +26,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,11 +46,16 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
@@ -59,6 +64,9 @@ import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -66,8 +74,14 @@ import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
@@ -78,13 +92,20 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
@@ -97,6 +118,12 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.isIndexTable;
 
 /**
  * Hive Metastore Client.
@@ -665,7 +692,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param name
    * @param dbname
    * @throws NoSuchObjectException
-   * @throws ExistingDependentsException
    * @throws MetaException
    * @throws TException
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_table(java.lang.String,
@@ -689,7 +715,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param deleteData
    *          delete the underlying data or just delete the table in metadata
    * @throws NoSuchObjectException
-   * @throws ExistingDependentsException
    * @throws MetaException
    * @throws TException
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_table(java.lang.String,
@@ -920,7 +945,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       List<String> part_vals, String user_name, List<String> group_names)
       throws MetaException, UnknownTableException, NoSuchObjectException,
       TException {
-    return deepCopy(client.get_partition_with_auth(db_name, tbl_name, part_vals, user_name, group_names));
+    return deepCopy(client.get_partition_with_auth(db_name, tbl_name, part_vals, user_name,
+        group_names));
   }
 
   /**
@@ -1444,6 +1470,167 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     client.cancel_delegation_token(tokenStrForm);
   }
 
+  public static class ValidTxnListImpl implements ValidTxnList {
+
+    private GetOpenTxnsResponse txns;
+
+    public ValidTxnListImpl() {
+    }
+
+    public ValidTxnListImpl(GetOpenTxnsResponse t) {
+      txns = t;
+    }
+
+    @Override
+    public boolean isTxnCommitted(long txnid) {
+      if (txns.getTxn_high_water_mark() < txnid) return false;
+      return !txns.getOpen_txns().contains(txnid);
+    }
+
+    @Override
+    public RangeResponse isTxnRangeCommitted(long minTxnId, long maxTxnId) {
+      if (txns.getTxn_high_water_mark() < minTxnId) return RangeResponse.NONE;
+
+      RangeResponse rc = RangeResponse.ALL;
+      boolean foundCommitted = false;
+      for (long id = minTxnId; id <= maxTxnId; id++) {
+        if (isTxnCommitted(id)) foundCommitted = true;
+        else rc = RangeResponse.SOME;
+      }
+      if (!foundCommitted) rc = RangeResponse.NONE;
+      return rc;
+    }
+
+    @Override
+    public GetOpenTxnsResponse getOpenTxns() {
+      return txns;
+    }
+
+    @Override
+    public String toString() {
+      StringBuffer buf = new StringBuffer();
+      buf.append(getOpenTxns().getTxn_high_water_mark());
+      Set<Long> openTxns = getOpenTxns().getOpen_txns();
+      if (openTxns != null && openTxns.size() > 0) {
+        for (long txn : openTxns) {
+          buf.append(':');
+          buf.append(txn);
+        }
+      } else {
+        buf.append(':');
+      }
+      return buf.toString();
+    }
+
+    @Override
+    public void fromString(String src) {
+      // Make sure we have a non-null value in txns so that any future calls to this don't NPE.
+      txns = new GetOpenTxnsResponse();
+      if (src == null) {
+        txns.setTxn_high_water_mark(Long.MAX_VALUE);
+        txns.setOpen_txns(new HashSet<Long>());
+        return;
+      }
+
+      String[] tString = src.split(":");
+      txns.setTxn_high_water_mark(Long.valueOf(tString[0]));
+      Set<Long> openTxns = new HashSet<Long>();
+      for (int i = 1; i < tString.length; i++) openTxns.add(Long.valueOf(tString[i]));
+      txns.setOpen_txns(openTxns);
+    }
+  }
+
+  @Override
+  public ValidTxnList getValidTxns() throws TException {
+    GetOpenTxnsResponse txns = client.get_open_txns();
+    return new ValidTxnListImpl(txns);
+  }
+
+  @Override
+  public long openTxn(String user) throws TException {
+    OpenTxnsResponse txns = openTxns(user, 1);
+    return txns.getTxn_ids().get(0);
+  }
+
+  @Override
+  public OpenTxnsResponse openTxns(String user, int numTxns) throws TException {
+    String hostname = null;
+    try {
+      hostname = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      LOG.error("Unable to resolve my host name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+    return client.open_txns(new OpenTxnRequest(numTxns, user, hostname));
+  }
+
+  @Override
+  public void rollbackTxn(long txnid) throws NoSuchTxnException, TException {
+    client.abort_txn(new AbortTxnRequest(txnid));
+  }
+
+  @Override
+  public void commitTxn(long txnid)
+      throws NoSuchTxnException, TxnAbortedException, TException {
+    client.commit_txn(new CommitTxnRequest(txnid));
+  }
+
+  @Override
+  public GetOpenTxnsInfoResponse showTxns() throws TException {
+    return client.get_open_txns_info();
+  }
+
+  @Override
+  public LockResponse lock(LockRequest request)
+      throws NoSuchTxnException, TxnAbortedException, TException {
+    return client.lock(request);
+  }
+
+  @Override
+  public LockResponse checkLock(long lockid)
+      throws NoSuchTxnException, TxnAbortedException, NoSuchLockException,
+      TException {
+    return client.check_lock(new CheckLockRequest(lockid));
+  }
+
+  @Override
+  public void unlock(long lockid)
+      throws NoSuchLockException, TxnOpenException, TException {
+    client.unlock(new UnlockRequest(lockid));
+  }
+
+  @Override
+  public ShowLocksResponse showLocks() throws TException {
+    return client.show_locks(new ShowLocksRequest());
+  }
+
+  @Override
+  public void heartbeat(long txnid, long lockid)
+      throws NoSuchLockException, NoSuchTxnException, TxnAbortedException,
+      TException {
+    HeartbeatRequest hb = new HeartbeatRequest();
+    hb.setLockid(lockid);
+    hb.setTxnid(txnid);
+    client.heartbeat(hb);
+  }
+
+  @Override
+  public void compact(String dbname, String tableName, String partitionName,  CompactionType type)
+      throws TException {
+    CompactionRequest cr = new CompactionRequest();
+    if (dbname == null) cr.setDbname(DEFAULT_DATABASE_NAME);
+    else cr.setDbname(dbname);
+    cr.setTablename(tableName);
+    if (partitionName != null) cr.setPartitionname(partitionName);
+    cr.setType(type);
+    client.compact(cr);
+  }
+
+  @Override
+  public ShowCompactResponse showCompactions() throws TException {
+    return client.show_compact(new ShowCompactRequest());
+  }
+
   /**
    * Creates a synchronized wrapper for any {@link IMetaStoreClient}.
    * This may be used by multi-threaded applications until we have
@@ -1483,7 +1670,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public void markPartitionForEvent(String db_name, String tbl_name, Map<String,String> partKVs, PartitionEventType eventType)
-      throws MetaException, TException, NoSuchObjectException, UnknownDBException, UnknownTableException,
+      throws MetaException, TException, NoSuchObjectException, UnknownDBException,
+      UnknownTableException,
       InvalidPartitionException, UnknownPartitionException {
     assert db_name != null;
     assert tbl_name != null;

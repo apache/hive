@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import com.facebook.fb303.FacebookBase;
+import com.facebook.fb303.fb_status;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
@@ -60,12 +62,16 @@ import org.apache.hadoop.hive.common.cli.CommonCliOptions;
 import org.apache.hadoop.hive.common.metrics.Metrics;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
@@ -74,6 +80,9 @@ import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -83,8 +92,14 @@ import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
@@ -97,16 +112,24 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableStatsResult;
-import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.txn.TxnHandler;
+import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -149,14 +172,8 @@ import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TServerTransport;
-import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportFactory;
+import org.apache.thrift.transport.*;
 
-import com.facebook.fb303.FacebookBase;
-import com.facebook.fb303.fb_status;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
@@ -217,6 +234,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             return null;
           }
         };
+
+    private final ThreadLocal<TxnHandler> threadLocalTxn = new ThreadLocal<TxnHandler>() {
+      @Override
+      protected synchronized TxnHandler initialValue() {
+        return null;
+      }
+    };
 
     // Thread local configuration is needed as many threads could make changes
     // to the conf using the connection hook
@@ -441,6 +465,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms = threadLocalMS.get();
       }
       return ms;
+    }
+
+    private TxnHandler getTxnHandler() {
+      TxnHandler txn = threadLocalTxn.get();
+      if (txn == null) {
+        txn = new TxnHandler(hiveConf);
+        threadLocalTxn.set(txn);
+      }
+      return txn;
     }
 
     private RawStore newRawStore() throws MetaException {
@@ -4705,6 +4738,121 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       return func;
+    }
+
+    // Transaction and locking methods
+    @Override
+    public GetOpenTxnsResponse get_open_txns() throws TException {
+      try {
+        return getTxnHandler().getOpenTxns();
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    // Transaction and locking methods
+    @Override
+    public GetOpenTxnsInfoResponse get_open_txns_info() throws TException {
+      try {
+        return getTxnHandler().getOpenTxnsInfo();
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    @Override
+    public OpenTxnsResponse open_txns(OpenTxnRequest rqst) throws TException {
+      try {
+        return getTxnHandler().openTxns(rqst);
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    @Override
+    public void abort_txn(AbortTxnRequest rqst) throws NoSuchTxnException, TException {
+      try {
+        getTxnHandler().abortTxn(rqst);
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    @Override
+    public void commit_txn(CommitTxnRequest rqst)
+        throws NoSuchTxnException, TxnAbortedException, TException {
+      try {
+        getTxnHandler().commitTxn(rqst);
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    @Override
+    public LockResponse lock(LockRequest rqst)
+        throws NoSuchTxnException, TxnAbortedException, TException {
+      try {
+        return getTxnHandler().lock(rqst);
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    @Override
+    public LockResponse check_lock(CheckLockRequest rqst)
+        throws NoSuchTxnException, TxnAbortedException, NoSuchLockException, TException {
+      try {
+        return getTxnHandler().checkLock(rqst);
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    @Override
+    public void unlock(UnlockRequest rqst)
+        throws NoSuchLockException, TxnOpenException, TException {
+      try {
+        getTxnHandler().unlock(rqst);
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    @Override
+    public ShowLocksResponse show_locks(ShowLocksRequest rqst) throws TException {
+      try {
+        return getTxnHandler().showLocks(rqst);
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    @Override 
+    public void heartbeat(HeartbeatRequest ids)
+        throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, TException {
+      try {
+        getTxnHandler().heartbeat(ids);
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    @Override
+    public void compact(CompactionRequest rqst) throws TException {
+      try {
+        getTxnHandler().compact(rqst);
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    @Override
+    public ShowCompactResponse show_compact(ShowCompactRequest rqst) throws TException {
+      try {
+        return getTxnHandler().showCompact(rqst);
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
     }
   }
 

@@ -482,6 +482,66 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("cancel_delegation_token\n");
   }
 
+  void get_open_txns(GetOpenTxnsResponse& _return) {
+    // Your implementation goes here
+    printf("get_open_txns\n");
+  }
+
+  void get_open_txns_info(GetOpenTxnsInfoResponse& _return) {
+    // Your implementation goes here
+    printf("get_open_txns_info\n");
+  }
+
+  void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst) {
+    // Your implementation goes here
+    printf("open_txns\n");
+  }
+
+  void abort_txn(const AbortTxnRequest& rqst) {
+    // Your implementation goes here
+    printf("abort_txn\n");
+  }
+
+  void commit_txn(const CommitTxnRequest& rqst) {
+    // Your implementation goes here
+    printf("commit_txn\n");
+  }
+
+  void lock(LockResponse& _return, const LockRequest& rqst) {
+    // Your implementation goes here
+    printf("lock\n");
+  }
+
+  void check_lock(LockResponse& _return, const CheckLockRequest& rqst) {
+    // Your implementation goes here
+    printf("check_lock\n");
+  }
+
+  void unlock(const UnlockRequest& rqst) {
+    // Your implementation goes here
+    printf("unlock\n");
+  }
+
+  void show_locks(ShowLocksResponse& _return, const ShowLocksRequest& rqst) {
+    // Your implementation goes here
+    printf("show_locks\n");
+  }
+
+  void heartbeat(const HeartbeatRequest& ids) {
+    // Your implementation goes here
+    printf("heartbeat\n");
+  }
+
+  void compact(const CompactionRequest& rqst) {
+    // Your implementation goes here
+    printf("compact\n");
+  }
+
+  void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) {
+    // Your implementation goes here
+    printf("show_compact\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

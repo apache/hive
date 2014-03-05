@@ -1,4 +1,5 @@
 -- Upgrade MetaStore schema from 0.12.0 to 0.13.0
+RUN 'hive-txn-schema-0.13.0.derby.sql';
 RUN '016-HIVE-6386.derby.sql';
 RUN '017-HIVE-6458.derby.sql';
 

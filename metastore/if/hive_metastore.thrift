@@ -70,6 +70,37 @@ enum PartitionEventType {
   LOAD_DONE = 1,
 }
 
+// Enums for transaction and lock management 
+enum TxnState {
+    COMMITTED = 1,
+    ABORTED = 2,
+    OPEN = 3,
+}
+
+enum LockLevel {
+    DB = 1,
+    TABLE = 2,
+    PARTITION = 3,
+}
+
+enum LockState {
+    ACQUIRED = 1,       // requester has the lock
+    WAITING = 2,        // requester is waiting for the lock and should call checklock at a later point to see if the lock has been obtained.
+    ABORT = 3,          // the lock has been aborted, most likely due to timeout
+    NOT_ACQUIRED = 4,   // returned only with lockNoWait, indicates the lock was not available and was not acquired
+}
+
+enum LockType {
+    SHARED_READ = 1,
+    SHARED_WRITE = 2,
+    EXCLUSIVE = 3,
+}
+
+enum CompactionType {
+    MINOR = 1,
+    MAJOR = 2,
+}
+
 struct HiveObjectRef{
   1: HiveObjectType objectType,
   2: string dbName,
@@ -383,6 +414,122 @@ struct Function {
   8: list<ResourceUri> resourceUris,
 }
 
+// Structs for transaction and locks
+struct TxnInfo {
+    1: required i64 id,
+    2: required TxnState state,
+    3: required string user,        // used in 'show transactions' to help admins find who has open transactions
+    4: required string hostname,    // used in 'show transactions' to help admins find who has open transactions
+}
+
+struct GetOpenTxnsInfoResponse {
+    1: required i64 txn_high_water_mark,
+    2: required list<TxnInfo> open_txns,
+}
+
+struct GetOpenTxnsResponse {
+    1: required i64 txn_high_water_mark,
+    2: required set<i64> open_txns,
+}
+
+struct OpenTxnRequest {
+    1: required i32 num_txns,
+    2: required string user,
+    3: required string hostname,
+}
+
+struct OpenTxnsResponse {
+    1: required list<i64> txn_ids,
+}
+
+struct AbortTxnRequest {
+    1: required i64 txnid,
+}
+
+struct CommitTxnRequest {
+    1: required i64 txnid,
+}
+
+struct LockComponent {
+    1: required LockType type,
+    2: required LockLevel level,
+    3: required string dbname,
+    4: optional string tablename,
+    5: optional string partitionname,
+}
+
+struct LockRequest {
+    1: required list<LockComponent> component,
+    2: optional i64 txnid,
+    3: required string user,     // used in 'show locks' to help admins find who has open locks
+    4: required string hostname, // used in 'show locks' to help admins find who has open locks
+}
+
+struct LockResponse {
+    1: required i64 lockid,
+    2: required LockState state,
+}
+
+struct CheckLockRequest {
+    1: required i64 lockid,
+}
+
+struct UnlockRequest {
+    1: required i64 lockid,
+}
+
+struct ShowLocksRequest {
+}
+
+struct ShowLocksResponseElement {
+    1: required i64 lockid,
+    2: required string dbname,
+    3: optional string tablename,
+    4: optional string partname,
+    5: required LockState state,
+    6: required LockType type,
+    7: optional i64 txnid,
+    8: required i64 lastheartbeat,
+    9: optional i64 acquiredat,
+    10: required string user,
+    11: required string hostname,
+}
+
+struct ShowLocksResponse {
+    1: list<ShowLocksResponseElement> locks,
+}
+
+struct HeartbeatRequest {
+    1: optional i64 lockid,
+    2: optional i64 txnid
+}
+
+struct CompactionRequest {
+    1: required string dbname,
+    2: required string tablename,
+    3: optional string partitionname,
+    4: required CompactionType type,
+    5: optional string runas,
+}
+
+struct ShowCompactRequest {
+}
+
+struct ShowCompactResponseElement {
+    1: required string dbname,
+    2: required string tablename,
+    3: required string partitionname,
+    4: required CompactionType type,
+    5: required string state,
+    6: required string workerid,
+    7: required i64 start,
+    8: required string runAs,
+}
+
+struct ShowCompactResponse {
+    1: required list<ShowCompactResponseElement> compacts,
+}
+
 exception MetaException {
   1: string message
 }
@@ -429,6 +576,23 @@ exception ConfigValSecurityException {
 
 exception InvalidInputException {
   1: string message
+}
+
+// Transaction and lock exceptions
+exception NoSuchTxnException {
+    1: string message
+}
+
+exception TxnAbortedException {
+    1: string message
+}
+
+exception TxnOpenException {
+    1: string message
+}
+
+exception NoSuchLockException {
+    1: string message
 }
 
 /**
@@ -776,6 +940,23 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // method to cancel delegation token obtained from metastore server
   void cancel_delegation_token(1:string token_str_form) throws (1:MetaException o1)
+
+  // Transaction and lock management calls
+  // Get just list of open transactions
+  GetOpenTxnsResponse get_open_txns()
+  // Get list of open transactions with state (open, aborted)
+  GetOpenTxnsInfoResponse get_open_txns_info()
+  OpenTxnsResponse open_txns(1:OpenTxnRequest rqst)
+  void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
+  void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  LockResponse lock(1:LockRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  LockResponse check_lock(1:CheckLockRequest rqst)
+    throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:NoSuchLockException o3)
+  void unlock(1:UnlockRequest rqst) throws (1:NoSuchLockException o1, 2:TxnOpenException o2)
+  ShowLocksResponse show_locks(1:ShowLocksRequest rqst)
+  void heartbeat(1:HeartbeatRequest ids) throws (1:NoSuchLockException o1, 2:NoSuchTxnException o2, 3:TxnAbortedException o3)
+  void compact(1:CompactionRequest rqst) 
+  ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

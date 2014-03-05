@@ -2099,6 +2099,9 @@ public final class Utilities {
     for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
       job.set(entry.getKey(), entry.getValue());
     }
+    // copy the bucket count
+    job.set(hive_metastoreConstants.BUCKET_COUNT,
+        tbl.getProperties().getProperty(hive_metastoreConstants.BUCKET_COUNT));
   }
 
   private static final Object INPUT_SUMMARY_LOCK = new Object();

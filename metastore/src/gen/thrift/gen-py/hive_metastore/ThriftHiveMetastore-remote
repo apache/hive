@@ -115,6 +115,18 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  string get_delegation_token(string token_owner, string renewer_kerberos_principal_name)'
   print '  i64 renew_delegation_token(string token_str_form)'
   print '  void cancel_delegation_token(string token_str_form)'
+  print '  GetOpenTxnsResponse get_open_txns()'
+  print '  GetOpenTxnsInfoResponse get_open_txns_info()'
+  print '  OpenTxnsResponse open_txns(OpenTxnRequest rqst)'
+  print '  void abort_txn(AbortTxnRequest rqst)'
+  print '  void commit_txn(CommitTxnRequest rqst)'
+  print '  LockResponse lock(LockRequest rqst)'
+  print '  LockResponse check_lock(CheckLockRequest rqst)'
+  print '  void unlock(UnlockRequest rqst)'
+  print '  ShowLocksResponse show_locks(ShowLocksRequest rqst)'
+  print '  void heartbeat(HeartbeatRequest ids)'
+  print '  void compact(CompactionRequest rqst)'
+  print '  ShowCompactResponse show_compact(ShowCompactRequest rqst)'
   print ''
   sys.exit(0)
 
@@ -717,6 +729,78 @@ elif cmd == 'cancel_delegation_token':
     print 'cancel_delegation_token requires 1 args'
     sys.exit(1)
   pp.pprint(client.cancel_delegation_token(args[0],))
+
+elif cmd == 'get_open_txns':
+  if len(args) != 0:
+    print 'get_open_txns requires 0 args'
+    sys.exit(1)
+  pp.pprint(client.get_open_txns())
+
+elif cmd == 'get_open_txns_info':
+  if len(args) != 0:
+    print 'get_open_txns_info requires 0 args'
+    sys.exit(1)
+  pp.pprint(client.get_open_txns_info())
+
+elif cmd == 'open_txns':
+  if len(args) != 1:
+    print 'open_txns requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.open_txns(eval(args[0]),))
+
+elif cmd == 'abort_txn':
+  if len(args) != 1:
+    print 'abort_txn requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.abort_txn(eval(args[0]),))
+
+elif cmd == 'commit_txn':
+  if len(args) != 1:
+    print 'commit_txn requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.commit_txn(eval(args[0]),))
+
+elif cmd == 'lock':
+  if len(args) != 1:
+    print 'lock requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.lock(eval(args[0]),))
+
+elif cmd == 'check_lock':
+  if len(args) != 1:
+    print 'check_lock requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.check_lock(eval(args[0]),))
+
+elif cmd == 'unlock':
+  if len(args) != 1:
+    print 'unlock requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.unlock(eval(args[0]),))
+
+elif cmd == 'show_locks':
+  if len(args) != 1:
+    print 'show_locks requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.show_locks(eval(args[0]),))
+
+elif cmd == 'heartbeat':
+  if len(args) != 1:
+    print 'heartbeat requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.heartbeat(eval(args[0]),))
+
+elif cmd == 'compact':
+  if len(args) != 1:
+    print 'compact requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.compact(eval(args[0]),))
+
+elif cmd == 'show_compact':
+  if len(args) != 1:
+    print 'show_compact requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.show_compact(eval(args[0]),))
 
 else:
   print 'Unrecognized method %s' % cmd

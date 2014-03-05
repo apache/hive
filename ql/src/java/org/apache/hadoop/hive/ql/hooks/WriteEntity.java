@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import java.io.Serializable;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+
+import java.io.Serializable;
 
 /**
  * This class encapsulates an object that is being written to by the query. This
@@ -34,6 +34,18 @@ public class WriteEntity extends Entity implements Serializable {
 
   private boolean isTempURI = false;
 
+  public static enum WriteType {
+    DDL, // for use in DDL statements that will touch data,
+         // will result in an exclusive lock,
+    DDL_METADATA_ONLY, // for use in DDL statements that touch only
+                       // metadata and don't need a lock
+    INSERT,
+    INSERT_OVERWRITE,
+    UPDATE,
+    DELETE};
+
+  private WriteType writeType;
+
   /**
    * Only used by serialization.
    */
@@ -41,8 +53,9 @@ public class WriteEntity extends Entity implements Serializable {
     super();
   }
 
-  public WriteEntity(Database database) {
+  public WriteEntity(Database database, WriteType type) {
     super(database, true);
+    writeType = type;
   }
 
   /**
@@ -51,12 +64,14 @@ public class WriteEntity extends Entity implements Serializable {
    * @param t
    *          Table that is written to.
    */
-  public WriteEntity(Table t) {
-    this(t, true);
+  public WriteEntity(Table t, WriteType type) {
+    super(t, true);
+    writeType = type;
   }
 
-  public WriteEntity(Table t, boolean complete) {
+  public WriteEntity(Table t, WriteType type, boolean complete) {
     super(t, complete);
+    writeType = type;
   }
 
   /**
@@ -65,12 +80,14 @@ public class WriteEntity extends Entity implements Serializable {
    * @param p
    *          Partition that is written to.
    */
-  public WriteEntity(Partition p) {
+  public WriteEntity(Partition p, WriteType type) {
     super(p, true);
+    writeType = type;
   }
 
-  public WriteEntity(DummyPartition p, boolean complete) {
+  public WriteEntity(DummyPartition p, WriteType type, boolean complete) {
     super(p, complete);
+    writeType = type;
   }
 
   /**
@@ -98,6 +115,15 @@ public class WriteEntity extends Entity implements Serializable {
   public WriteEntity(Path d, boolean islocal, boolean isTemp) {
     super(d.toString(), islocal, true);
     this.isTempURI = isTemp;
+  }
+
+  /**
+   * Determine which type of write this is.  This is needed by the lock
+   * manager so it can understand what kind of lock to acquire.
+   * @return write type
+   */
+  public WriteType getWriteType() {
+    return writeType;
   }
 
   /**

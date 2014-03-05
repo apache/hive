@@ -49,6 +49,61 @@ final class PartitionEventType {
   );
 }
 
+final class TxnState {
+  const COMMITTED = 1;
+  const ABORTED = 2;
+  const OPEN = 3;
+  static public $__names = array(
+    1 => 'COMMITTED',
+    2 => 'ABORTED',
+    3 => 'OPEN',
+  );
+}
+
+final class LockLevel {
+  const DB = 1;
+  const TABLE = 2;
+  const PARTITION = 3;
+  static public $__names = array(
+    1 => 'DB',
+    2 => 'TABLE',
+    3 => 'PARTITION',
+  );
+}
+
+final class LockState {
+  const ACQUIRED = 1;
+  const WAITING = 2;
+  const ABORT = 3;
+  const NOT_ACQUIRED = 4;
+  static public $__names = array(
+    1 => 'ACQUIRED',
+    2 => 'WAITING',
+    3 => 'ABORT',
+    4 => 'NOT_ACQUIRED',
+  );
+}
+
+final class LockType {
+  const SHARED_READ = 1;
+  const SHARED_WRITE = 2;
+  const EXCLUSIVE = 3;
+  static public $__names = array(
+    1 => 'SHARED_READ',
+    2 => 'SHARED_WRITE',
+    3 => 'EXCLUSIVE',
+  );
+}
+
+final class CompactionType {
+  const MINOR = 1;
+  const MAJOR = 2;
+  static public $__names = array(
+    1 => 'MINOR',
+    2 => 'MAJOR',
+  );
+}
+
 final class FunctionType {
   const JAVA = 1;
   static public $__names = array(
@@ -7040,6 +7095,2314 @@ class Function {
 
 }
 
+class TxnInfo {
+  static $_TSPEC;
+
+  public $id = null;
+  public $state = null;
+  public $user = null;
+  public $hostname = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'id',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'state',
+          'type' => TType::I32,
+          ),
+        3 => array(
+          'var' => 'user',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'hostname',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
+      }
+      if (isset($vals['state'])) {
+        $this->state = $vals['state'];
+      }
+      if (isset($vals['user'])) {
+        $this->user = $vals['user'];
+      }
+      if (isset($vals['hostname'])) {
+        $this->hostname = $vals['hostname'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'TxnInfo';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->id);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->state);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->user);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->hostname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('TxnInfo');
+    if ($this->id !== null) {
+      $xfer += $output->writeFieldBegin('id', TType::I64, 1);
+      $xfer += $output->writeI64($this->id);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->state !== null) {
+      $xfer += $output->writeFieldBegin('state', TType::I32, 2);
+      $xfer += $output->writeI32($this->state);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->user !== null) {
+      $xfer += $output->writeFieldBegin('user', TType::STRING, 3);
+      $xfer += $output->writeString($this->user);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->hostname !== null) {
+      $xfer += $output->writeFieldBegin('hostname', TType::STRING, 4);
+      $xfer += $output->writeString($this->hostname);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class GetOpenTxnsInfoResponse {
+  static $_TSPEC;
+
+  public $txn_high_water_mark = null;
+  public $open_txns = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'txn_high_water_mark',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'open_txns',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\TxnInfo',
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['txn_high_water_mark'])) {
+        $this->txn_high_water_mark = $vals['txn_high_water_mark'];
+      }
+      if (isset($vals['open_txns'])) {
+        $this->open_txns = $vals['open_txns'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'GetOpenTxnsInfoResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txn_high_water_mark);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::LST) {
+            $this->open_txns = array();
+            $_size320 = 0;
+            $_etype323 = 0;
+            $xfer += $input->readListBegin($_etype323, $_size320);
+            for ($_i324 = 0; $_i324 < $_size320; ++$_i324)
+            {
+              $elem325 = null;
+              $elem325 = new \metastore\TxnInfo();
+              $xfer += $elem325->read($input);
+              $this->open_txns []= $elem325;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('GetOpenTxnsInfoResponse');
+    if ($this->txn_high_water_mark !== null) {
+      $xfer += $output->writeFieldBegin('txn_high_water_mark', TType::I64, 1);
+      $xfer += $output->writeI64($this->txn_high_water_mark);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->open_txns !== null) {
+      if (!is_array($this->open_txns)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('open_txns', TType::LST, 2);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->open_txns));
+        {
+          foreach ($this->open_txns as $iter326)
+          {
+            $xfer += $iter326->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class GetOpenTxnsResponse {
+  static $_TSPEC;
+
+  public $txn_high_water_mark = null;
+  public $open_txns = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'txn_high_water_mark',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'open_txns',
+          'type' => TType::SET,
+          'etype' => TType::I64,
+          'elem' => array(
+            'type' => TType::I64,
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['txn_high_water_mark'])) {
+        $this->txn_high_water_mark = $vals['txn_high_water_mark'];
+      }
+      if (isset($vals['open_txns'])) {
+        $this->open_txns = $vals['open_txns'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'GetOpenTxnsResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txn_high_water_mark);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::SET) {
+            $this->open_txns = array();
+            $_size327 = 0;
+            $_etype330 = 0;
+            $xfer += $input->readSetBegin($_etype330, $_size327);
+            for ($_i331 = 0; $_i331 < $_size327; ++$_i331)
+            {
+              $elem332 = null;
+              $xfer += $input->readI64($elem332);
+              if (is_scalar($elem332)) {
+                $this->open_txns[$elem332] = true;
+              } else {
+                $this->open_txns []= $elem332;
+              }
+            }
+            $xfer += $input->readSetEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('GetOpenTxnsResponse');
+    if ($this->txn_high_water_mark !== null) {
+      $xfer += $output->writeFieldBegin('txn_high_water_mark', TType::I64, 1);
+      $xfer += $output->writeI64($this->txn_high_water_mark);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->open_txns !== null) {
+      if (!is_array($this->open_txns)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('open_txns', TType::SET, 2);
+      {
+        $output->writeSetBegin(TType::I64, count($this->open_txns));
+        {
+          foreach ($this->open_txns as $iter333 => $iter334)
+          {
+            if (is_scalar($iter334)) {
+            $xfer += $output->writeI64($iter333);
+            } else {
+            $xfer += $output->writeI64($iter334);
+            }
+          }
+        }
+        $output->writeSetEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class OpenTxnRequest {
+  static $_TSPEC;
+
+  public $num_txns = null;
+  public $user = null;
+  public $hostname = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'num_txns',
+          'type' => TType::I32,
+          ),
+        2 => array(
+          'var' => 'user',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'hostname',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['num_txns'])) {
+        $this->num_txns = $vals['num_txns'];
+      }
+      if (isset($vals['user'])) {
+        $this->user = $vals['user'];
+      }
+      if (isset($vals['hostname'])) {
+        $this->hostname = $vals['hostname'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'OpenTxnRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->num_txns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->user);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->hostname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('OpenTxnRequest');
+    if ($this->num_txns !== null) {
+      $xfer += $output->writeFieldBegin('num_txns', TType::I32, 1);
+      $xfer += $output->writeI32($this->num_txns);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->user !== null) {
+      $xfer += $output->writeFieldBegin('user', TType::STRING, 2);
+      $xfer += $output->writeString($this->user);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->hostname !== null) {
+      $xfer += $output->writeFieldBegin('hostname', TType::STRING, 3);
+      $xfer += $output->writeString($this->hostname);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class OpenTxnsResponse {
+  static $_TSPEC;
+
+  public $txn_ids = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'txn_ids',
+          'type' => TType::LST,
+          'etype' => TType::I64,
+          'elem' => array(
+            'type' => TType::I64,
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['txn_ids'])) {
+        $this->txn_ids = $vals['txn_ids'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'OpenTxnsResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::LST) {
+            $this->txn_ids = array();
+            $_size335 = 0;
+            $_etype338 = 0;
+            $xfer += $input->readListBegin($_etype338, $_size335);
+            for ($_i339 = 0; $_i339 < $_size335; ++$_i339)
+            {
+              $elem340 = null;
+              $xfer += $input->readI64($elem340);
+              $this->txn_ids []= $elem340;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('OpenTxnsResponse');
+    if ($this->txn_ids !== null) {
+      if (!is_array($this->txn_ids)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('txn_ids', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::I64, count($this->txn_ids));
+        {
+          foreach ($this->txn_ids as $iter341)
+          {
+            $xfer += $output->writeI64($iter341);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class AbortTxnRequest {
+  static $_TSPEC;
+
+  public $txnid = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'txnid',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['txnid'])) {
+        $this->txnid = $vals['txnid'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'AbortTxnRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txnid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('AbortTxnRequest');
+    if ($this->txnid !== null) {
+      $xfer += $output->writeFieldBegin('txnid', TType::I64, 1);
+      $xfer += $output->writeI64($this->txnid);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class CommitTxnRequest {
+  static $_TSPEC;
+
+  public $txnid = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'txnid',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['txnid'])) {
+        $this->txnid = $vals['txnid'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'CommitTxnRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txnid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('CommitTxnRequest');
+    if ($this->txnid !== null) {
+      $xfer += $output->writeFieldBegin('txnid', TType::I64, 1);
+      $xfer += $output->writeI64($this->txnid);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class LockComponent {
+  static $_TSPEC;
+
+  public $type = null;
+  public $level = null;
+  public $dbname = null;
+  public $tablename = null;
+  public $partitionname = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'type',
+          'type' => TType::I32,
+          ),
+        2 => array(
+          'var' => 'level',
+          'type' => TType::I32,
+          ),
+        3 => array(
+          'var' => 'dbname',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'tablename',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'partitionname',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['type'])) {
+        $this->type = $vals['type'];
+      }
+      if (isset($vals['level'])) {
+        $this->level = $vals['level'];
+      }
+      if (isset($vals['dbname'])) {
+        $this->dbname = $vals['dbname'];
+      }
+      if (isset($vals['tablename'])) {
+        $this->tablename = $vals['tablename'];
+      }
+      if (isset($vals['partitionname'])) {
+        $this->partitionname = $vals['partitionname'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'LockComponent';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->type);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->level);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tablename);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->partitionname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('LockComponent');
+    if ($this->type !== null) {
+      $xfer += $output->writeFieldBegin('type', TType::I32, 1);
+      $xfer += $output->writeI32($this->type);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->level !== null) {
+      $xfer += $output->writeFieldBegin('level', TType::I32, 2);
+      $xfer += $output->writeI32($this->level);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->dbname !== null) {
+      $xfer += $output->writeFieldBegin('dbname', TType::STRING, 3);
+      $xfer += $output->writeString($this->dbname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tablename !== null) {
+      $xfer += $output->writeFieldBegin('tablename', TType::STRING, 4);
+      $xfer += $output->writeString($this->tablename);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->partitionname !== null) {
+      $xfer += $output->writeFieldBegin('partitionname', TType::STRING, 5);
+      $xfer += $output->writeString($this->partitionname);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class LockRequest {
+  static $_TSPEC;
+
+  public $component = null;
+  public $txnid = null;
+  public $user = null;
+  public $hostname = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'component',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\LockComponent',
+            ),
+          ),
+        2 => array(
+          'var' => 'txnid',
+          'type' => TType::I64,
+          ),
+        3 => array(
+          'var' => 'user',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'hostname',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['component'])) {
+        $this->component = $vals['component'];
+      }
+      if (isset($vals['txnid'])) {
+        $this->txnid = $vals['txnid'];
+      }
+      if (isset($vals['user'])) {
+        $this->user = $vals['user'];
+      }
+      if (isset($vals['hostname'])) {
+        $this->hostname = $vals['hostname'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'LockRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::LST) {
+            $this->component = array();
+            $_size342 = 0;
+            $_etype345 = 0;
+            $xfer += $input->readListBegin($_etype345, $_size342);
+            for ($_i346 = 0; $_i346 < $_size342; ++$_i346)
+            {
+              $elem347 = null;
+              $elem347 = new \metastore\LockComponent();
+              $xfer += $elem347->read($input);
+              $this->component []= $elem347;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txnid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->user);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->hostname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('LockRequest');
+    if ($this->component !== null) {
+      if (!is_array($this->component)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('component', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->component));
+        {
+          foreach ($this->component as $iter348)
+          {
+            $xfer += $iter348->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->txnid !== null) {
+      $xfer += $output->writeFieldBegin('txnid', TType::I64, 2);
+      $xfer += $output->writeI64($this->txnid);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->user !== null) {
+      $xfer += $output->writeFieldBegin('user', TType::STRING, 3);
+      $xfer += $output->writeString($this->user);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->hostname !== null) {
+      $xfer += $output->writeFieldBegin('hostname', TType::STRING, 4);
+      $xfer += $output->writeString($this->hostname);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class LockResponse {
+  static $_TSPEC;
+
+  public $lockid = null;
+  public $state = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'lockid',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'state',
+          'type' => TType::I32,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['lockid'])) {
+        $this->lockid = $vals['lockid'];
+      }
+      if (isset($vals['state'])) {
+        $this->state = $vals['state'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'LockResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->lockid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->state);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('LockResponse');
+    if ($this->lockid !== null) {
+      $xfer += $output->writeFieldBegin('lockid', TType::I64, 1);
+      $xfer += $output->writeI64($this->lockid);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->state !== null) {
+      $xfer += $output->writeFieldBegin('state', TType::I32, 2);
+      $xfer += $output->writeI32($this->state);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class CheckLockRequest {
+  static $_TSPEC;
+
+  public $lockid = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'lockid',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['lockid'])) {
+        $this->lockid = $vals['lockid'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'CheckLockRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->lockid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('CheckLockRequest');
+    if ($this->lockid !== null) {
+      $xfer += $output->writeFieldBegin('lockid', TType::I64, 1);
+      $xfer += $output->writeI64($this->lockid);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class UnlockRequest {
+  static $_TSPEC;
+
+  public $lockid = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'lockid',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['lockid'])) {
+        $this->lockid = $vals['lockid'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'UnlockRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->lockid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('UnlockRequest');
+    if ($this->lockid !== null) {
+      $xfer += $output->writeFieldBegin('lockid', TType::I64, 1);
+      $xfer += $output->writeI64($this->lockid);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ShowLocksRequest {
+  static $_TSPEC;
+
+
+  public function __construct() {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        );
+    }
+  }
+
+  public function getName() {
+    return 'ShowLocksRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ShowLocksRequest');
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ShowLocksResponseElement {
+  static $_TSPEC;
+
+  public $lockid = null;
+  public $dbname = null;
+  public $tablename = null;
+  public $partname = null;
+  public $state = null;
+  public $type = null;
+  public $txnid = null;
+  public $lastheartbeat = null;
+  public $acquiredat = null;
+  public $user = null;
+  public $hostname = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'lockid',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'dbname',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'tablename',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'partname',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'state',
+          'type' => TType::I32,
+          ),
+        6 => array(
+          'var' => 'type',
+          'type' => TType::I32,
+          ),
+        7 => array(
+          'var' => 'txnid',
+          'type' => TType::I64,
+          ),
+        8 => array(
+          'var' => 'lastheartbeat',
+          'type' => TType::I64,
+          ),
+        9 => array(
+          'var' => 'acquiredat',
+          'type' => TType::I64,
+          ),
+        10 => array(
+          'var' => 'user',
+          'type' => TType::STRING,
+          ),
+        11 => array(
+          'var' => 'hostname',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['lockid'])) {
+        $this->lockid = $vals['lockid'];
+      }
+      if (isset($vals['dbname'])) {
+        $this->dbname = $vals['dbname'];
+      }
+      if (isset($vals['tablename'])) {
+        $this->tablename = $vals['tablename'];
+      }
+      if (isset($vals['partname'])) {
+        $this->partname = $vals['partname'];
+      }
+      if (isset($vals['state'])) {
+        $this->state = $vals['state'];
+      }
+      if (isset($vals['type'])) {
+        $this->type = $vals['type'];
+      }
+      if (isset($vals['txnid'])) {
+        $this->txnid = $vals['txnid'];
+      }
+      if (isset($vals['lastheartbeat'])) {
+        $this->lastheartbeat = $vals['lastheartbeat'];
+      }
+      if (isset($vals['acquiredat'])) {
+        $this->acquiredat = $vals['acquiredat'];
+      }
+      if (isset($vals['user'])) {
+        $this->user = $vals['user'];
+      }
+      if (isset($vals['hostname'])) {
+        $this->hostname = $vals['hostname'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ShowLocksResponseElement';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->lockid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tablename);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->partname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->state);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->type);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txnid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->lastheartbeat);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 9:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->acquiredat);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 10:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->user);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 11:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->hostname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ShowLocksResponseElement');
+    if ($this->lockid !== null) {
+      $xfer += $output->writeFieldBegin('lockid', TType::I64, 1);
+      $xfer += $output->writeI64($this->lockid);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->dbname !== null) {
+      $xfer += $output->writeFieldBegin('dbname', TType::STRING, 2);
+      $xfer += $output->writeString($this->dbname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tablename !== null) {
+      $xfer += $output->writeFieldBegin('tablename', TType::STRING, 3);
+      $xfer += $output->writeString($this->tablename);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->partname !== null) {
+      $xfer += $output->writeFieldBegin('partname', TType::STRING, 4);
+      $xfer += $output->writeString($this->partname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->state !== null) {
+      $xfer += $output->writeFieldBegin('state', TType::I32, 5);
+      $xfer += $output->writeI32($this->state);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->type !== null) {
+      $xfer += $output->writeFieldBegin('type', TType::I32, 6);
+      $xfer += $output->writeI32($this->type);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->txnid !== null) {
+      $xfer += $output->writeFieldBegin('txnid', TType::I64, 7);
+      $xfer += $output->writeI64($this->txnid);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->lastheartbeat !== null) {
+      $xfer += $output->writeFieldBegin('lastheartbeat', TType::I64, 8);
+      $xfer += $output->writeI64($this->lastheartbeat);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->acquiredat !== null) {
+      $xfer += $output->writeFieldBegin('acquiredat', TType::I64, 9);
+      $xfer += $output->writeI64($this->acquiredat);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->user !== null) {
+      $xfer += $output->writeFieldBegin('user', TType::STRING, 10);
+      $xfer += $output->writeString($this->user);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->hostname !== null) {
+      $xfer += $output->writeFieldBegin('hostname', TType::STRING, 11);
+      $xfer += $output->writeString($this->hostname);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ShowLocksResponse {
+  static $_TSPEC;
+
+  public $locks = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'locks',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\ShowLocksResponseElement',
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['locks'])) {
+        $this->locks = $vals['locks'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ShowLocksResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::LST) {
+            $this->locks = array();
+            $_size349 = 0;
+            $_etype352 = 0;
+            $xfer += $input->readListBegin($_etype352, $_size349);
+            for ($_i353 = 0; $_i353 < $_size349; ++$_i353)
+            {
+              $elem354 = null;
+              $elem354 = new \metastore\ShowLocksResponseElement();
+              $xfer += $elem354->read($input);
+              $this->locks []= $elem354;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ShowLocksResponse');
+    if ($this->locks !== null) {
+      if (!is_array($this->locks)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('locks', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->locks));
+        {
+          foreach ($this->locks as $iter355)
+          {
+            $xfer += $iter355->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class HeartbeatRequest {
+  static $_TSPEC;
+
+  public $lockid = null;
+  public $txnid = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'lockid',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'txnid',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['lockid'])) {
+        $this->lockid = $vals['lockid'];
+      }
+      if (isset($vals['txnid'])) {
+        $this->txnid = $vals['txnid'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'HeartbeatRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->lockid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txnid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('HeartbeatRequest');
+    if ($this->lockid !== null) {
+      $xfer += $output->writeFieldBegin('lockid', TType::I64, 1);
+      $xfer += $output->writeI64($this->lockid);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->txnid !== null) {
+      $xfer += $output->writeFieldBegin('txnid', TType::I64, 2);
+      $xfer += $output->writeI64($this->txnid);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class CompactionRequest {
+  static $_TSPEC;
+
+  public $dbname = null;
+  public $tablename = null;
+  public $partitionname = null;
+  public $type = null;
+  public $runas = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'dbname',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'tablename',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'partitionname',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'type',
+          'type' => TType::I32,
+          ),
+        5 => array(
+          'var' => 'runas',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['dbname'])) {
+        $this->dbname = $vals['dbname'];
+      }
+      if (isset($vals['tablename'])) {
+        $this->tablename = $vals['tablename'];
+      }
+      if (isset($vals['partitionname'])) {
+        $this->partitionname = $vals['partitionname'];
+      }
+      if (isset($vals['type'])) {
+        $this->type = $vals['type'];
+      }
+      if (isset($vals['runas'])) {
+        $this->runas = $vals['runas'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'CompactionRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tablename);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->partitionname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->type);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->runas);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('CompactionRequest');
+    if ($this->dbname !== null) {
+      $xfer += $output->writeFieldBegin('dbname', TType::STRING, 1);
+      $xfer += $output->writeString($this->dbname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tablename !== null) {
+      $xfer += $output->writeFieldBegin('tablename', TType::STRING, 2);
+      $xfer += $output->writeString($this->tablename);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->partitionname !== null) {
+      $xfer += $output->writeFieldBegin('partitionname', TType::STRING, 3);
+      $xfer += $output->writeString($this->partitionname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->type !== null) {
+      $xfer += $output->writeFieldBegin('type', TType::I32, 4);
+      $xfer += $output->writeI32($this->type);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->runas !== null) {
+      $xfer += $output->writeFieldBegin('runas', TType::STRING, 5);
+      $xfer += $output->writeString($this->runas);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ShowCompactRequest {
+  static $_TSPEC;
+
+
+  public function __construct() {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        );
+    }
+  }
+
+  public function getName() {
+    return 'ShowCompactRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ShowCompactRequest');
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ShowCompactResponseElement {
+  static $_TSPEC;
+
+  public $dbname = null;
+  public $tablename = null;
+  public $partitionname = null;
+  public $type = null;
+  public $state = null;
+  public $workerid = null;
+  public $start = null;
+  public $runAs = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'dbname',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'tablename',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'partitionname',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'type',
+          'type' => TType::I32,
+          ),
+        5 => array(
+          'var' => 'state',
+          'type' => TType::STRING,
+          ),
+        6 => array(
+          'var' => 'workerid',
+          'type' => TType::STRING,
+          ),
+        7 => array(
+          'var' => 'start',
+          'type' => TType::I64,
+          ),
+        8 => array(
+          'var' => 'runAs',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['dbname'])) {
+        $this->dbname = $vals['dbname'];
+      }
+      if (isset($vals['tablename'])) {
+        $this->tablename = $vals['tablename'];
+      }
+      if (isset($vals['partitionname'])) {
+        $this->partitionname = $vals['partitionname'];
+      }
+      if (isset($vals['type'])) {
+        $this->type = $vals['type'];
+      }
+      if (isset($vals['state'])) {
+        $this->state = $vals['state'];
+      }
+      if (isset($vals['workerid'])) {
+        $this->workerid = $vals['workerid'];
+      }
+      if (isset($vals['start'])) {
+        $this->start = $vals['start'];
+      }
+      if (isset($vals['runAs'])) {
+        $this->runAs = $vals['runAs'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ShowCompactResponseElement';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tablename);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->partitionname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->type);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->state);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->workerid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->start);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->runAs);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ShowCompactResponseElement');
+    if ($this->dbname !== null) {
+      $xfer += $output->writeFieldBegin('dbname', TType::STRING, 1);
+      $xfer += $output->writeString($this->dbname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tablename !== null) {
+      $xfer += $output->writeFieldBegin('tablename', TType::STRING, 2);
+      $xfer += $output->writeString($this->tablename);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->partitionname !== null) {
+      $xfer += $output->writeFieldBegin('partitionname', TType::STRING, 3);
+      $xfer += $output->writeString($this->partitionname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->type !== null) {
+      $xfer += $output->writeFieldBegin('type', TType::I32, 4);
+      $xfer += $output->writeI32($this->type);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->state !== null) {
+      $xfer += $output->writeFieldBegin('state', TType::STRING, 5);
+      $xfer += $output->writeString($this->state);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->workerid !== null) {
+      $xfer += $output->writeFieldBegin('workerid', TType::STRING, 6);
+      $xfer += $output->writeString($this->workerid);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->start !== null) {
+      $xfer += $output->writeFieldBegin('start', TType::I64, 7);
+      $xfer += $output->writeI64($this->start);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->runAs !== null) {
+      $xfer += $output->writeFieldBegin('runAs', TType::STRING, 8);
+      $xfer += $output->writeString($this->runAs);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ShowCompactResponse {
+  static $_TSPEC;
+
+  public $compacts = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'compacts',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\ShowCompactResponseElement',
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['compacts'])) {
+        $this->compacts = $vals['compacts'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ShowCompactResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::LST) {
+            $this->compacts = array();
+            $_size356 = 0;
+            $_etype359 = 0;
+            $xfer += $input->readListBegin($_etype359, $_size356);
+            for ($_i360 = 0; $_i360 < $_size356; ++$_i360)
+            {
+              $elem361 = null;
+              $elem361 = new \metastore\ShowCompactResponseElement();
+              $xfer += $elem361->read($input);
+              $this->compacts []= $elem361;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ShowCompactResponse');
+    if ($this->compacts !== null) {
+      if (!is_array($this->compacts)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('compacts', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->compacts));
+        {
+          foreach ($this->compacts as $iter362)
+          {
+            $xfer += $iter362->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class MetaException extends TException {
   static $_TSPEC;
 
@@ -7892,6 +10255,294 @@ class InvalidInputException extends TException {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('InvalidInputException');
+    if ($this->message !== null) {
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
+      $xfer += $output->writeString($this->message);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class NoSuchTxnException extends TException {
+  static $_TSPEC;
+
+  public $message = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'message',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['message'])) {
+        $this->message = $vals['message'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'NoSuchTxnException';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->message);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('NoSuchTxnException');
+    if ($this->message !== null) {
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
+      $xfer += $output->writeString($this->message);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class TxnAbortedException extends TException {
+  static $_TSPEC;
+
+  public $message = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'message',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['message'])) {
+        $this->message = $vals['message'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'TxnAbortedException';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->message);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('TxnAbortedException');
+    if ($this->message !== null) {
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
+      $xfer += $output->writeString($this->message);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class TxnOpenException extends TException {
+  static $_TSPEC;
+
+  public $message = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'message',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['message'])) {
+        $this->message = $vals['message'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'TxnOpenException';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->message);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('TxnOpenException');
+    if ($this->message !== null) {
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
+      $xfer += $output->writeString($this->message);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class NoSuchLockException extends TException {
+  static $_TSPEC;
+
+  public $message = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'message',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['message'])) {
+        $this->message = $vals['message'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'NoSuchLockException';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->message);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('NoSuchLockException');
     if ($this->message !== null) {
       $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);

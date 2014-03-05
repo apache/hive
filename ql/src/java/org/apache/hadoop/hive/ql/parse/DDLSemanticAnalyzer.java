@@ -70,9 +70,10 @@ import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
+import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
@@ -585,7 +586,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void addAlterDbDesc(AlterDatabaseDesc alterDesc) throws SemanticException {
     Database database = getDatabase(alterDesc.getDatabaseName());
-    outputs.add(new WriteEntity(database));
+    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_METADATA_ONLY));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterDesc), conf));
   }
 
@@ -740,12 +741,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (tableNames != null) {
         for (String tableName : tableNames) {
           Table table = getTable(dbName, tableName, true);
-          outputs.add(new WriteEntity(table));
+          outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL));
         }
       }
     }
     inputs.add(new ReadEntity(database));
-    outputs.add(new WriteEntity(database));
+    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL));
 
     DropDatabaseDesc dropDatabaseDesc = new DropDatabaseDesc(dbName, ifExists, ifCascade);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropDatabaseDesc), conf));
@@ -771,7 +772,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Table tab = getTable(tableName, throwException);
     if (tab != null) {
       inputs.add(new ReadEntity(tab));
-      outputs.add(new WriteEntity(tab));
+      outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL));
     }
 
     DropTableDesc dropTblDesc = new DropTableDesc(tableName, expectView, ifExists);
@@ -796,19 +797,19 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, String> partSpec = getPartSpec((ASTNode) root.getChild(1));
     if (partSpec == null) {
       if (!table.isPartitioned()) {
-        outputs.add(new WriteEntity(table));
+        outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL));
       } else {
         for (Partition partition : getPartitions(table, null, false)) {
-          outputs.add(new WriteEntity(partition));
+          outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL));
         }
       }
     } else {
       if (isFullSpec(table, partSpec)) {
         Partition partition = getPartition(table, partSpec, true);
-        outputs.add(new WriteEntity(partition));
+        outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL));
       } else {
         for (Partition partition : getPartitions(table, partSpec, false)) {
-          outputs.add(new WriteEntity(partition));
+          outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL));
         }
       }
     }
@@ -1347,17 +1348,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Table tab = getTable(tableName, true);
     if (partSpec == null || partSpec.isEmpty()) {
       inputs.add(new ReadEntity(tab));
-      outputs.add(new WriteEntity(tab));
+      outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL));
     }
     else {
       inputs.add(new ReadEntity(tab));
       if (desc == null || desc.getOp() != AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
         Partition part = getPartition(tab, partSpec, true);
-        outputs.add(new WriteEntity(part));
+        outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL));
       }
       else {
         for (Partition part : getPartitions(tab, partSpec, true)) {
-          outputs.add(new WriteEntity(part));
+          outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL));
         }
       }
     }
@@ -2236,7 +2237,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ctx.setNeedLockMgr(true);
   }
 
-  /**
+   /**
    * Add the task according to the parsed command tree. This is used for the CLI
    * command "LOCK TABLE ..;".
    *
@@ -2566,7 +2567,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Table tab = getTable(tblName, true);
     boolean isView = tab.isView();
     validateAlterTableType(tab, AlterTableTypes.ADDPARTITION, expectView);
-    outputs.add(new WriteEntity(tab));
+    outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL));
 
     int numCh = ast.getChildCount();
     int start = ifNotExists ? 2 : 1;
@@ -2666,7 +2667,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       Partition partition = db.getPartition(tab, currentPart, false);
       if (partition != null) {
-        outputs.add(new WriteEntity(partition));
+        outputs.add(new WriteEntity(partition, WriteEntity.WriteType.INSERT));
       }
       return partition;
     } catch (HiveException e) {
@@ -2700,7 +2701,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       AlterTableSimpleDesc touchDesc = new AlterTableSimpleDesc(
           SessionState.get().getCurrentDatabase(), tblName, null,
           AlterTableDesc.AlterTableTypes.TOUCH);
-      outputs.add(new WriteEntity(tab));
+      outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_METADATA_ONLY));
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           touchDesc), conf));
     } else {
@@ -2965,7 +2966,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
       for (Partition p : parts) {
-        outputs.add(new WriteEntity(p));
+        outputs.add(new WriteEntity(p, WriteEntity.WriteType.DDL));
       }
     }
   }
@@ -3009,7 +3010,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(
               ErrorMsg.DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION.getMsg(p.getCompleteName()));
           }
-          outputs.add(new WriteEntity(p));
+          outputs.add(new WriteEntity(p, WriteEntity.WriteType.DELETE));
         }
       }
     }
@@ -3033,7 +3034,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Table tab = getTable(tableName, true);
 
     inputs.add(new ReadEntity(tab));
-    outputs.add(new WriteEntity(tab));
+    outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL));
 
     validateAlterTableType(tab, AlterTableTypes.ADDSKEWEDBY);
 

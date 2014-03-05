@@ -18,18 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.DataInput;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,9 +34,22 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
+
+import java.io.DataInput;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -92,6 +93,9 @@ public class Context {
   // List of Locks for this query
   protected List<HiveLock> hiveLocks;
   protected HiveLockManager hiveLockMgr;
+
+  // Transaction manager for this query
+  protected HiveTxnManager hiveTxnManager;
 
   private boolean needLockMgr;
 
@@ -533,15 +537,12 @@ public class Context {
     this.hiveLocks = hiveLocks;
   }
 
-  public HiveLockManager getHiveLockMgr() {
-    if (hiveLockMgr != null) {
-      hiveLockMgr.refresh();
-    }
-    return hiveLockMgr;
+  public HiveTxnManager getHiveTxnManager() {
+    return hiveTxnManager;
   }
 
-  public void setHiveLockMgr(HiveLockManager hiveLockMgr) {
-    this.hiveLockMgr = hiveLockMgr;
+  public void setHiveTxnManager(HiveTxnManager txnMgr) {
+    hiveTxnManager = txnMgr;
   }
 
   public void setOriginalTracker(String originalTracker) {

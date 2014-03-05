@@ -108,6 +108,18 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name) = 0;
   virtual int64_t renew_delegation_token(const std::string& token_str_form) = 0;
   virtual void cancel_delegation_token(const std::string& token_str_form) = 0;
+  virtual void get_open_txns(GetOpenTxnsResponse& _return) = 0;
+  virtual void get_open_txns_info(GetOpenTxnsInfoResponse& _return) = 0;
+  virtual void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst) = 0;
+  virtual void abort_txn(const AbortTxnRequest& rqst) = 0;
+  virtual void commit_txn(const CommitTxnRequest& rqst) = 0;
+  virtual void lock(LockResponse& _return, const LockRequest& rqst) = 0;
+  virtual void check_lock(LockResponse& _return, const CheckLockRequest& rqst) = 0;
+  virtual void unlock(const UnlockRequest& rqst) = 0;
+  virtual void show_locks(ShowLocksResponse& _return, const ShowLocksRequest& rqst) = 0;
+  virtual void heartbeat(const HeartbeatRequest& ids) = 0;
+  virtual void compact(const CompactionRequest& rqst) = 0;
+  virtual void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -432,6 +444,42 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return _return;
   }
   void cancel_delegation_token(const std::string& /* token_str_form */) {
+    return;
+  }
+  void get_open_txns(GetOpenTxnsResponse& /* _return */) {
+    return;
+  }
+  void get_open_txns_info(GetOpenTxnsInfoResponse& /* _return */) {
+    return;
+  }
+  void open_txns(OpenTxnsResponse& /* _return */, const OpenTxnRequest& /* rqst */) {
+    return;
+  }
+  void abort_txn(const AbortTxnRequest& /* rqst */) {
+    return;
+  }
+  void commit_txn(const CommitTxnRequest& /* rqst */) {
+    return;
+  }
+  void lock(LockResponse& /* _return */, const LockRequest& /* rqst */) {
+    return;
+  }
+  void check_lock(LockResponse& /* _return */, const CheckLockRequest& /* rqst */) {
+    return;
+  }
+  void unlock(const UnlockRequest& /* rqst */) {
+    return;
+  }
+  void show_locks(ShowLocksResponse& /* _return */, const ShowLocksRequest& /* rqst */) {
+    return;
+  }
+  void heartbeat(const HeartbeatRequest& /* ids */) {
+    return;
+  }
+  void compact(const CompactionRequest& /* rqst */) {
+    return;
+  }
+  void show_compact(ShowCompactResponse& /* _return */, const ShowCompactRequest& /* rqst */) {
     return;
   }
 };
@@ -13452,6 +13500,1344 @@ class ThriftHiveMetastore_cancel_delegation_token_presult {
 
 };
 
+
+class ThriftHiveMetastore_get_open_txns_args {
+ public:
+
+  ThriftHiveMetastore_get_open_txns_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_open_txns_args() throw() {}
+
+
+  bool operator == (const ThriftHiveMetastore_get_open_txns_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_open_txns_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_open_txns_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_open_txns_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_open_txns_pargs() throw() {}
+
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_open_txns_result__isset {
+  _ThriftHiveMetastore_get_open_txns_result__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_get_open_txns_result__isset;
+
+class ThriftHiveMetastore_get_open_txns_result {
+ public:
+
+  ThriftHiveMetastore_get_open_txns_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_open_txns_result() throw() {}
+
+  GetOpenTxnsResponse success;
+
+  _ThriftHiveMetastore_get_open_txns_result__isset __isset;
+
+  void __set_success(const GetOpenTxnsResponse& val) {
+    success = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_open_txns_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_open_txns_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_open_txns_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_open_txns_presult__isset {
+  _ThriftHiveMetastore_get_open_txns_presult__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_get_open_txns_presult__isset;
+
+class ThriftHiveMetastore_get_open_txns_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_open_txns_presult() throw() {}
+
+  GetOpenTxnsResponse* success;
+
+  _ThriftHiveMetastore_get_open_txns_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class ThriftHiveMetastore_get_open_txns_info_args {
+ public:
+
+  ThriftHiveMetastore_get_open_txns_info_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_open_txns_info_args() throw() {}
+
+
+  bool operator == (const ThriftHiveMetastore_get_open_txns_info_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_open_txns_info_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_open_txns_info_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_open_txns_info_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_open_txns_info_pargs() throw() {}
+
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_open_txns_info_result__isset {
+  _ThriftHiveMetastore_get_open_txns_info_result__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_get_open_txns_info_result__isset;
+
+class ThriftHiveMetastore_get_open_txns_info_result {
+ public:
+
+  ThriftHiveMetastore_get_open_txns_info_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_open_txns_info_result() throw() {}
+
+  GetOpenTxnsInfoResponse success;
+
+  _ThriftHiveMetastore_get_open_txns_info_result__isset __isset;
+
+  void __set_success(const GetOpenTxnsInfoResponse& val) {
+    success = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_open_txns_info_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_open_txns_info_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_open_txns_info_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_open_txns_info_presult__isset {
+  _ThriftHiveMetastore_get_open_txns_info_presult__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_get_open_txns_info_presult__isset;
+
+class ThriftHiveMetastore_get_open_txns_info_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_open_txns_info_presult() throw() {}
+
+  GetOpenTxnsInfoResponse* success;
+
+  _ThriftHiveMetastore_get_open_txns_info_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_open_txns_args__isset {
+  _ThriftHiveMetastore_open_txns_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_open_txns_args__isset;
+
+class ThriftHiveMetastore_open_txns_args {
+ public:
+
+  ThriftHiveMetastore_open_txns_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_open_txns_args() throw() {}
+
+  OpenTxnRequest rqst;
+
+  _ThriftHiveMetastore_open_txns_args__isset __isset;
+
+  void __set_rqst(const OpenTxnRequest& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_open_txns_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_open_txns_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_open_txns_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_open_txns_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_open_txns_pargs() throw() {}
+
+  const OpenTxnRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_open_txns_result__isset {
+  _ThriftHiveMetastore_open_txns_result__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_open_txns_result__isset;
+
+class ThriftHiveMetastore_open_txns_result {
+ public:
+
+  ThriftHiveMetastore_open_txns_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_open_txns_result() throw() {}
+
+  OpenTxnsResponse success;
+
+  _ThriftHiveMetastore_open_txns_result__isset __isset;
+
+  void __set_success(const OpenTxnsResponse& val) {
+    success = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_open_txns_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_open_txns_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_open_txns_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_open_txns_presult__isset {
+  _ThriftHiveMetastore_open_txns_presult__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_open_txns_presult__isset;
+
+class ThriftHiveMetastore_open_txns_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_open_txns_presult() throw() {}
+
+  OpenTxnsResponse* success;
+
+  _ThriftHiveMetastore_open_txns_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_abort_txn_args__isset {
+  _ThriftHiveMetastore_abort_txn_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_abort_txn_args__isset;
+
+class ThriftHiveMetastore_abort_txn_args {
+ public:
+
+  ThriftHiveMetastore_abort_txn_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_abort_txn_args() throw() {}
+
+  AbortTxnRequest rqst;
+
+  _ThriftHiveMetastore_abort_txn_args__isset __isset;
+
+  void __set_rqst(const AbortTxnRequest& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_abort_txn_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_abort_txn_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_abort_txn_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_abort_txn_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_abort_txn_pargs() throw() {}
+
+  const AbortTxnRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_abort_txn_result__isset {
+  _ThriftHiveMetastore_abort_txn_result__isset() : o1(false) {}
+  bool o1;
+} _ThriftHiveMetastore_abort_txn_result__isset;
+
+class ThriftHiveMetastore_abort_txn_result {
+ public:
+
+  ThriftHiveMetastore_abort_txn_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_abort_txn_result() throw() {}
+
+  NoSuchTxnException o1;
+
+  _ThriftHiveMetastore_abort_txn_result__isset __isset;
+
+  void __set_o1(const NoSuchTxnException& val) {
+    o1 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_abort_txn_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_abort_txn_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_abort_txn_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_abort_txn_presult__isset {
+  _ThriftHiveMetastore_abort_txn_presult__isset() : o1(false) {}
+  bool o1;
+} _ThriftHiveMetastore_abort_txn_presult__isset;
+
+class ThriftHiveMetastore_abort_txn_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_abort_txn_presult() throw() {}
+
+  NoSuchTxnException o1;
+
+  _ThriftHiveMetastore_abort_txn_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_commit_txn_args__isset {
+  _ThriftHiveMetastore_commit_txn_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_commit_txn_args__isset;
+
+class ThriftHiveMetastore_commit_txn_args {
+ public:
+
+  ThriftHiveMetastore_commit_txn_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_commit_txn_args() throw() {}
+
+  CommitTxnRequest rqst;
+
+  _ThriftHiveMetastore_commit_txn_args__isset __isset;
+
+  void __set_rqst(const CommitTxnRequest& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_commit_txn_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_commit_txn_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_commit_txn_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_commit_txn_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_commit_txn_pargs() throw() {}
+
+  const CommitTxnRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_commit_txn_result__isset {
+  _ThriftHiveMetastore_commit_txn_result__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_commit_txn_result__isset;
+
+class ThriftHiveMetastore_commit_txn_result {
+ public:
+
+  ThriftHiveMetastore_commit_txn_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_commit_txn_result() throw() {}
+
+  NoSuchTxnException o1;
+  TxnAbortedException o2;
+
+  _ThriftHiveMetastore_commit_txn_result__isset __isset;
+
+  void __set_o1(const NoSuchTxnException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const TxnAbortedException& val) {
+    o2 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_commit_txn_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_commit_txn_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_commit_txn_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_commit_txn_presult__isset {
+  _ThriftHiveMetastore_commit_txn_presult__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_commit_txn_presult__isset;
+
+class ThriftHiveMetastore_commit_txn_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_commit_txn_presult() throw() {}
+
+  NoSuchTxnException o1;
+  TxnAbortedException o2;
+
+  _ThriftHiveMetastore_commit_txn_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_lock_args__isset {
+  _ThriftHiveMetastore_lock_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_lock_args__isset;
+
+class ThriftHiveMetastore_lock_args {
+ public:
+
+  ThriftHiveMetastore_lock_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_lock_args() throw() {}
+
+  LockRequest rqst;
+
+  _ThriftHiveMetastore_lock_args__isset __isset;
+
+  void __set_rqst(const LockRequest& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_lock_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_lock_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_lock_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_lock_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_lock_pargs() throw() {}
+
+  const LockRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_lock_result__isset {
+  _ThriftHiveMetastore_lock_result__isset() : success(false), o1(false), o2(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_lock_result__isset;
+
+class ThriftHiveMetastore_lock_result {
+ public:
+
+  ThriftHiveMetastore_lock_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_lock_result() throw() {}
+
+  LockResponse success;
+  NoSuchTxnException o1;
+  TxnAbortedException o2;
+
+  _ThriftHiveMetastore_lock_result__isset __isset;
+
+  void __set_success(const LockResponse& val) {
+    success = val;
+  }
+
+  void __set_o1(const NoSuchTxnException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const TxnAbortedException& val) {
+    o2 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_lock_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_lock_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_lock_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_lock_presult__isset {
+  _ThriftHiveMetastore_lock_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_lock_presult__isset;
+
+class ThriftHiveMetastore_lock_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_lock_presult() throw() {}
+
+  LockResponse* success;
+  NoSuchTxnException o1;
+  TxnAbortedException o2;
+
+  _ThriftHiveMetastore_lock_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_check_lock_args__isset {
+  _ThriftHiveMetastore_check_lock_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_check_lock_args__isset;
+
+class ThriftHiveMetastore_check_lock_args {
+ public:
+
+  ThriftHiveMetastore_check_lock_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_check_lock_args() throw() {}
+
+  CheckLockRequest rqst;
+
+  _ThriftHiveMetastore_check_lock_args__isset __isset;
+
+  void __set_rqst(const CheckLockRequest& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_check_lock_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_check_lock_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_check_lock_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_check_lock_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_check_lock_pargs() throw() {}
+
+  const CheckLockRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_check_lock_result__isset {
+  _ThriftHiveMetastore_check_lock_result__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+  bool o3;
+} _ThriftHiveMetastore_check_lock_result__isset;
+
+class ThriftHiveMetastore_check_lock_result {
+ public:
+
+  ThriftHiveMetastore_check_lock_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_check_lock_result() throw() {}
+
+  LockResponse success;
+  NoSuchTxnException o1;
+  TxnAbortedException o2;
+  NoSuchLockException o3;
+
+  _ThriftHiveMetastore_check_lock_result__isset __isset;
+
+  void __set_success(const LockResponse& val) {
+    success = val;
+  }
+
+  void __set_o1(const NoSuchTxnException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const TxnAbortedException& val) {
+    o2 = val;
+  }
+
+  void __set_o3(const NoSuchLockException& val) {
+    o3 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_check_lock_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_check_lock_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_check_lock_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_check_lock_presult__isset {
+  _ThriftHiveMetastore_check_lock_presult__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+  bool o3;
+} _ThriftHiveMetastore_check_lock_presult__isset;
+
+class ThriftHiveMetastore_check_lock_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_check_lock_presult() throw() {}
+
+  LockResponse* success;
+  NoSuchTxnException o1;
+  TxnAbortedException o2;
+  NoSuchLockException o3;
+
+  _ThriftHiveMetastore_check_lock_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_unlock_args__isset {
+  _ThriftHiveMetastore_unlock_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_unlock_args__isset;
+
+class ThriftHiveMetastore_unlock_args {
+ public:
+
+  ThriftHiveMetastore_unlock_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_unlock_args() throw() {}
+
+  UnlockRequest rqst;
+
+  _ThriftHiveMetastore_unlock_args__isset __isset;
+
+  void __set_rqst(const UnlockRequest& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_unlock_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_unlock_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_unlock_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_unlock_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_unlock_pargs() throw() {}
+
+  const UnlockRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_unlock_result__isset {
+  _ThriftHiveMetastore_unlock_result__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_unlock_result__isset;
+
+class ThriftHiveMetastore_unlock_result {
+ public:
+
+  ThriftHiveMetastore_unlock_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_unlock_result() throw() {}
+
+  NoSuchLockException o1;
+  TxnOpenException o2;
+
+  _ThriftHiveMetastore_unlock_result__isset __isset;
+
+  void __set_o1(const NoSuchLockException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const TxnOpenException& val) {
+    o2 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_unlock_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_unlock_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_unlock_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_unlock_presult__isset {
+  _ThriftHiveMetastore_unlock_presult__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_unlock_presult__isset;
+
+class ThriftHiveMetastore_unlock_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_unlock_presult() throw() {}
+
+  NoSuchLockException o1;
+  TxnOpenException o2;
+
+  _ThriftHiveMetastore_unlock_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_show_locks_args__isset {
+  _ThriftHiveMetastore_show_locks_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_show_locks_args__isset;
+
+class ThriftHiveMetastore_show_locks_args {
+ public:
+
+  ThriftHiveMetastore_show_locks_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_show_locks_args() throw() {}
+
+  ShowLocksRequest rqst;
+
+  _ThriftHiveMetastore_show_locks_args__isset __isset;
+
+  void __set_rqst(const ShowLocksRequest& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_show_locks_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_show_locks_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_show_locks_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_show_locks_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_show_locks_pargs() throw() {}
+
+  const ShowLocksRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_show_locks_result__isset {
+  _ThriftHiveMetastore_show_locks_result__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_show_locks_result__isset;
+
+class ThriftHiveMetastore_show_locks_result {
+ public:
+
+  ThriftHiveMetastore_show_locks_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_show_locks_result() throw() {}
+
+  ShowLocksResponse success;
+
+  _ThriftHiveMetastore_show_locks_result__isset __isset;
+
+  void __set_success(const ShowLocksResponse& val) {
+    success = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_show_locks_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_show_locks_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_show_locks_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_show_locks_presult__isset {
+  _ThriftHiveMetastore_show_locks_presult__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_show_locks_presult__isset;
+
+class ThriftHiveMetastore_show_locks_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_show_locks_presult() throw() {}
+
+  ShowLocksResponse* success;
+
+  _ThriftHiveMetastore_show_locks_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_heartbeat_args__isset {
+  _ThriftHiveMetastore_heartbeat_args__isset() : ids(false) {}
+  bool ids;
+} _ThriftHiveMetastore_heartbeat_args__isset;
+
+class ThriftHiveMetastore_heartbeat_args {
+ public:
+
+  ThriftHiveMetastore_heartbeat_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_heartbeat_args() throw() {}
+
+  HeartbeatRequest ids;
+
+  _ThriftHiveMetastore_heartbeat_args__isset __isset;
+
+  void __set_ids(const HeartbeatRequest& val) {
+    ids = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_heartbeat_args & rhs) const
+  {
+    if (!(ids == rhs.ids))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_heartbeat_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_heartbeat_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_heartbeat_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_heartbeat_pargs() throw() {}
+
+  const HeartbeatRequest* ids;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_heartbeat_result__isset {
+  _ThriftHiveMetastore_heartbeat_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1;
+  bool o2;
+  bool o3;
+} _ThriftHiveMetastore_heartbeat_result__isset;
+
+class ThriftHiveMetastore_heartbeat_result {
+ public:
+
+  ThriftHiveMetastore_heartbeat_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_heartbeat_result() throw() {}
+
+  NoSuchLockException o1;
+  NoSuchTxnException o2;
+  TxnAbortedException o3;
+
+  _ThriftHiveMetastore_heartbeat_result__isset __isset;
+
+  void __set_o1(const NoSuchLockException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const NoSuchTxnException& val) {
+    o2 = val;
+  }
+
+  void __set_o3(const TxnAbortedException& val) {
+    o3 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_heartbeat_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_heartbeat_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_heartbeat_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_heartbeat_presult__isset {
+  _ThriftHiveMetastore_heartbeat_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1;
+  bool o2;
+  bool o3;
+} _ThriftHiveMetastore_heartbeat_presult__isset;
+
+class ThriftHiveMetastore_heartbeat_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_heartbeat_presult() throw() {}
+
+  NoSuchLockException o1;
+  NoSuchTxnException o2;
+  TxnAbortedException o3;
+
+  _ThriftHiveMetastore_heartbeat_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_compact_args__isset {
+  _ThriftHiveMetastore_compact_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_compact_args__isset;
+
+class ThriftHiveMetastore_compact_args {
+ public:
+
+  ThriftHiveMetastore_compact_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_compact_args() throw() {}
+
+  CompactionRequest rqst;
+
+  _ThriftHiveMetastore_compact_args__isset __isset;
+
+  void __set_rqst(const CompactionRequest& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_compact_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_compact_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_compact_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_compact_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_compact_pargs() throw() {}
+
+  const CompactionRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_compact_result {
+ public:
+
+  ThriftHiveMetastore_compact_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_compact_result() throw() {}
+
+
+  bool operator == (const ThriftHiveMetastore_compact_result & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_compact_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_compact_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_compact_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_compact_presult() throw() {}
+
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_show_compact_args__isset {
+  _ThriftHiveMetastore_show_compact_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_show_compact_args__isset;
+
+class ThriftHiveMetastore_show_compact_args {
+ public:
+
+  ThriftHiveMetastore_show_compact_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_show_compact_args() throw() {}
+
+  ShowCompactRequest rqst;
+
+  _ThriftHiveMetastore_show_compact_args__isset __isset;
+
+  void __set_rqst(const ShowCompactRequest& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_show_compact_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_show_compact_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_show_compact_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_show_compact_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_show_compact_pargs() throw() {}
+
+  const ShowCompactRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_show_compact_result__isset {
+  _ThriftHiveMetastore_show_compact_result__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_show_compact_result__isset;
+
+class ThriftHiveMetastore_show_compact_result {
+ public:
+
+  ThriftHiveMetastore_show_compact_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_show_compact_result() throw() {}
+
+  ShowCompactResponse success;
+
+  _ThriftHiveMetastore_show_compact_result__isset __isset;
+
+  void __set_success(const ShowCompactResponse& val) {
+    success = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_show_compact_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_show_compact_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_show_compact_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_show_compact_presult__isset {
+  _ThriftHiveMetastore_show_compact_presult__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_show_compact_presult__isset;
+
+class ThriftHiveMetastore_show_compact_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_show_compact_presult() throw() {}
+
+  ShowCompactResponse* success;
+
+  _ThriftHiveMetastore_show_compact_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -13740,6 +15126,42 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void cancel_delegation_token(const std::string& token_str_form);
   void send_cancel_delegation_token(const std::string& token_str_form);
   void recv_cancel_delegation_token();
+  void get_open_txns(GetOpenTxnsResponse& _return);
+  void send_get_open_txns();
+  void recv_get_open_txns(GetOpenTxnsResponse& _return);
+  void get_open_txns_info(GetOpenTxnsInfoResponse& _return);
+  void send_get_open_txns_info();
+  void recv_get_open_txns_info(GetOpenTxnsInfoResponse& _return);
+  void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst);
+  void send_open_txns(const OpenTxnRequest& rqst);
+  void recv_open_txns(OpenTxnsResponse& _return);
+  void abort_txn(const AbortTxnRequest& rqst);
+  void send_abort_txn(const AbortTxnRequest& rqst);
+  void recv_abort_txn();
+  void commit_txn(const CommitTxnRequest& rqst);
+  void send_commit_txn(const CommitTxnRequest& rqst);
+  void recv_commit_txn();
+  void lock(LockResponse& _return, const LockRequest& rqst);
+  void send_lock(const LockRequest& rqst);
+  void recv_lock(LockResponse& _return);
+  void check_lock(LockResponse& _return, const CheckLockRequest& rqst);
+  void send_check_lock(const CheckLockRequest& rqst);
+  void recv_check_lock(LockResponse& _return);
+  void unlock(const UnlockRequest& rqst);
+  void send_unlock(const UnlockRequest& rqst);
+  void recv_unlock();
+  void show_locks(ShowLocksResponse& _return, const ShowLocksRequest& rqst);
+  void send_show_locks(const ShowLocksRequest& rqst);
+  void recv_show_locks(ShowLocksResponse& _return);
+  void heartbeat(const HeartbeatRequest& ids);
+  void send_heartbeat(const HeartbeatRequest& ids);
+  void recv_heartbeat();
+  void compact(const CompactionRequest& rqst);
+  void send_compact(const CompactionRequest& rqst);
+  void recv_compact();
+  void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst);
+  void send_show_compact(const ShowCompactRequest& rqst);
+  void recv_show_compact(ShowCompactResponse& _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -13842,6 +15264,18 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_renew_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_cancel_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_open_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_open_txns_info(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_open_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_abort_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_commit_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_check_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_unlock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_show_locks(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_heartbeat(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_show_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -13938,6 +15372,18 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_delegation_token"] = &ThriftHiveMetastoreProcessor::process_get_delegation_token;
     processMap_["renew_delegation_token"] = &ThriftHiveMetastoreProcessor::process_renew_delegation_token;
     processMap_["cancel_delegation_token"] = &ThriftHiveMetastoreProcessor::process_cancel_delegation_token;
+    processMap_["get_open_txns"] = &ThriftHiveMetastoreProcessor::process_get_open_txns;
+    processMap_["get_open_txns_info"] = &ThriftHiveMetastoreProcessor::process_get_open_txns_info;
+    processMap_["open_txns"] = &ThriftHiveMetastoreProcessor::process_open_txns;
+    processMap_["abort_txn"] = &ThriftHiveMetastoreProcessor::process_abort_txn;
+    processMap_["commit_txn"] = &ThriftHiveMetastoreProcessor::process_commit_txn;
+    processMap_["lock"] = &ThriftHiveMetastoreProcessor::process_lock;
+    processMap_["check_lock"] = &ThriftHiveMetastoreProcessor::process_check_lock;
+    processMap_["unlock"] = &ThriftHiveMetastoreProcessor::process_unlock;
+    processMap_["show_locks"] = &ThriftHiveMetastoreProcessor::process_show_locks;
+    processMap_["heartbeat"] = &ThriftHiveMetastoreProcessor::process_heartbeat;
+    processMap_["compact"] = &ThriftHiveMetastoreProcessor::process_compact;
+    processMap_["show_compact"] = &ThriftHiveMetastoreProcessor::process_show_compact;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -14849,6 +16295,121 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->cancel_delegation_token(token_str_form);
     }
     ifaces_[i]->cancel_delegation_token(token_str_form);
+  }
+
+  void get_open_txns(GetOpenTxnsResponse& _return) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_open_txns(_return);
+    }
+    ifaces_[i]->get_open_txns(_return);
+    return;
+  }
+
+  void get_open_txns_info(GetOpenTxnsInfoResponse& _return) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_open_txns_info(_return);
+    }
+    ifaces_[i]->get_open_txns_info(_return);
+    return;
+  }
+
+  void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->open_txns(_return, rqst);
+    }
+    ifaces_[i]->open_txns(_return, rqst);
+    return;
+  }
+
+  void abort_txn(const AbortTxnRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->abort_txn(rqst);
+    }
+    ifaces_[i]->abort_txn(rqst);
+  }
+
+  void commit_txn(const CommitTxnRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->commit_txn(rqst);
+    }
+    ifaces_[i]->commit_txn(rqst);
+  }
+
+  void lock(LockResponse& _return, const LockRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->lock(_return, rqst);
+    }
+    ifaces_[i]->lock(_return, rqst);
+    return;
+  }
+
+  void check_lock(LockResponse& _return, const CheckLockRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->check_lock(_return, rqst);
+    }
+    ifaces_[i]->check_lock(_return, rqst);
+    return;
+  }
+
+  void unlock(const UnlockRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->unlock(rqst);
+    }
+    ifaces_[i]->unlock(rqst);
+  }
+
+  void show_locks(ShowLocksResponse& _return, const ShowLocksRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->show_locks(_return, rqst);
+    }
+    ifaces_[i]->show_locks(_return, rqst);
+    return;
+  }
+
+  void heartbeat(const HeartbeatRequest& ids) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->heartbeat(ids);
+    }
+    ifaces_[i]->heartbeat(ids);
+  }
+
+  void compact(const CompactionRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->compact(rqst);
+    }
+    ifaces_[i]->compact(rqst);
+  }
+
+  void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->show_compact(_return, rqst);
+    }
+    ifaces_[i]->show_compact(_return, rqst);
+    return;
   }
 
 };
