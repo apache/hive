@@ -114,19 +114,15 @@ public class TezTask extends Task<TezWork> {
       // get a session.
       SessionState ss = SessionState.get();
       session = ss.getTezSession();
-
-      // if we don't have one yet create it.
-      if (session == null) {
-        session = new TezSessionState();
-        ss.setTezSession(session);
-      }
+      session = TezSessionPoolManager.getInstance().getSession(session, conf);
+      ss.setTezSession(session);
 
       // if it's not running start it.
       if (!session.isOpen()) {
         // can happen if the user sets the tez flag after the session was
         // established
         LOG.info("Tez session hasn't been created yet. Opening session");
-        session.open(ss.getSessionId(), conf);
+        session.open(session.getSessionId(), conf);
       }
 
       // we will localize all the files (jars, plans, hashtables) to the
@@ -156,6 +152,7 @@ public class TezTask extends Task<TezWork> {
       // fetch the counters
       Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
       counters = client.getDAGStatus(statusGetOpts).getDAGCounters();
+      TezSessionPoolManager.getInstance().returnSession(session);
 
       if (LOG.isInfoEnabled()) {
         for (CounterGroup group: counters) {
