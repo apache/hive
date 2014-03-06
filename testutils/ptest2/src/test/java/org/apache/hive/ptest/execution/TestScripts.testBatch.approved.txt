@@ -85,15 +85,6 @@ fi
 echo $pid >> batch.pid
 wait $pid
 ret=$?
-if [[ $ret -ne 0 ]]
-then
-  if [[ 20 -lt 5 ]]
-  then
-    cp -R /some/local/dir/instance-1/apache-source /some/log/dir/source
-  else
-    echo "Number of failed tests 20 exceeded threshold, not copying source"
-  fi
-fi
 find ./ -type f -name hive.log | \
   xargs -I {} sh -c 'f=$(basename {}); test -f /some/log/dir/$f && f=$f-$(uuidgen); mv {} /some/log/dir/$f'
 find ./ -type f -name 'TEST-*.xml' | \
