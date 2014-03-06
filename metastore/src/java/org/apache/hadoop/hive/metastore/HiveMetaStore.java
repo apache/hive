@@ -512,9 +512,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new MetaException(e.getMessage());
       } catch (MetaException e) {
         throw e;
-      } catch (Exception e) {
-        assert (e instanceof RuntimeException);
-        throw (RuntimeException) e;
       }
     }
 
