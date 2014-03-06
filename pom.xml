@@ -99,6 +99,7 @@
     <hadoop-20.version>0.20.2</hadoop-20.version>
     <hadoop-20S.version>1.2.1</hadoop-20S.version>
     <hadoop-23.version>2.3.0</hadoop-23.version>
+    <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hbase.hadoop1.version>0.96.0-hadoop1</hbase.hadoop1.version>
     <hbase.hadoop2.version>0.96.0-hadoop2</hbase.hadoop2.version>
     <!-- httpcomponents are not always in version sync -->
@@ -719,7 +720,7 @@
             <!-- required by a few tests to find the derby jar -->
             <derby.version>${derby.version}</derby.version>
             <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
-            <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
+            <hadoop.bin.path>${hadoop.bin.path}</hadoop.bin.path>
             <!-- required by Hadoop's JobHistory -->
             <hadoop.log.dir>${test.tmp.dir}</hadoop.log.dir>
             <hive.root>${basedir}/${hive.path.to.root}/</hive.root>
