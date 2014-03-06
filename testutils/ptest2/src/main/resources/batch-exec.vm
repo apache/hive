@@ -86,15 +86,6 @@ fi
 echo $pid >> batch.pid
 wait $pid
 ret=$?
-if [[ $ret -ne 0 ]]
-then
-  if [[ $numOfFailedTests -lt $maxSourceDirs ]]
-  then
-    cp -R $localDir/$instanceName/${repositoryName}-source $logDir/source
-  else
-    echo "Number of failed tests $numOfFailedTests exceeded threshold, not copying source"
-  fi
-fi
 find ./ -type f -name hive.log | \
   xargs -I {} sh -c 'f=$(basename {}); test -f ${logDir}/$f && f=$f-$(uuidgen); mv {} ${logDir}/$f'
 find ./ -type f -name 'TEST-*.xml' | \

@@ -54,7 +54,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 
 class HostExecutor {
-  private static final int MAX_SOURCE_DIRS = 5;
   private final Host mHost;
   private final List<Drone> mDrones;
   private final ListeningExecutorService mExecutor;
@@ -212,8 +211,6 @@ class HostExecutor {
     templateVariables.put("testArguments", batch.getTestArguments());
     templateVariables.put("localDir", drone.getLocalDirectory());
     templateVariables.put("logDir", drone.getLocalLogDirectory());
-    templateVariables.put("maxSourceDirs", String.valueOf(MAX_SOURCE_DIRS));
-    templateVariables.put("numOfFailedTests", String.valueOf(failedTestResults.size()));
     String command = Templates.getTemplateResult("bash $localDir/$instanceName/scratch/" + script.getName(),
         templateVariables);
     Templates.writeTemplateResult("batch-exec.vm", script, templateVariables);
@@ -242,13 +239,6 @@ class HostExecutor {
     }
     copyFromDroneToLocal(drone, batchLogDir.getAbsolutePath(),
         drone.getLocalLogDirectory() + "/");
-    if(failedTestResults.size() > MAX_SOURCE_DIRS) {
-      File sourceDir = new File(batchLogDir, "source");
-      if(sourceDir.isDirectory()) {
-        mLogger.info("Max source directories exceeded, deleting " + sourceDir.getAbsolutePath()
-            + ":" + FileUtils.deleteQuietly(sourceDir));
-      }
-    }
     File logFile = new File(batchLogDir, String.format("%s.txt", batch.getName()));
     PrintWriter writer = new PrintWriter(logFile);
     writer.write(String.format("result = '%s'\n", sshResult.toString()));
