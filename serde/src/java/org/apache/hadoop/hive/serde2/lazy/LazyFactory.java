@@ -218,18 +218,43 @@ public final class LazyFactory {
   public static ObjectInspector createLazyObjectInspector(TypeInfo typeInfo,
       byte[] separator, int separatorIndex, Text nullSequence, boolean escaped,
       byte escapeChar) throws SerDeException {
+    return createLazyObjectInspector(typeInfo, separator, separatorIndex, nullSequence,
+        escaped, escapeChar, false);
+  }
+
+  /**
+   * Create a hierarchical ObjectInspector for LazyObject with the given
+   * typeInfo.
+   *
+   * @param typeInfo
+   *          The type information for the LazyObject
+   * @param separator
+   *          The array of separators for delimiting each level
+   * @param separatorIndex
+   *          The current level (for separators). List(array), struct uses 1
+   *          level of separator, and map uses 2 levels: the first one for
+   *          delimiting entries, the second one for delimiting key and values.
+   * @param nullSequence
+   *          The sequence of bytes representing NULL.
+   * @param extendedBooleanLiteral whether extended boolean literal set is legal
+   * @return The ObjectInspector
+   * @throws SerDeException
+   */
+  public static ObjectInspector createLazyObjectInspector(TypeInfo typeInfo,
+      byte[] separator, int separatorIndex, Text nullSequence, boolean escaped,
+      byte escapeChar, boolean extendedBooleanLiteral) throws SerDeException {
     ObjectInspector.Category c = typeInfo.getCategory();
     switch (c) {
     case PRIMITIVE:
       return LazyPrimitiveObjectInspectorFactory.getLazyObjectInspector(
-          (PrimitiveTypeInfo) typeInfo, escaped, escapeChar);
+          (PrimitiveTypeInfo) typeInfo, escaped, escapeChar, extendedBooleanLiteral);
     case MAP:
       return LazyObjectInspectorFactory.getLazySimpleMapObjectInspector(
           createLazyObjectInspector(((MapTypeInfo) typeInfo)
           .getMapKeyTypeInfo(), separator, separatorIndex + 2,
-          nullSequence, escaped, escapeChar), createLazyObjectInspector(
+          nullSequence, escaped, escapeChar, extendedBooleanLiteral), createLazyObjectInspector(
           ((MapTypeInfo) typeInfo).getMapValueTypeInfo(), separator,
-          separatorIndex + 2, nullSequence, escaped, escapeChar),
+          separatorIndex + 2, nullSequence, escaped, escapeChar, extendedBooleanLiteral),
           LazyUtils.getSeparator(separator, separatorIndex),
           LazyUtils.getSeparator(separator, separatorIndex+1),
           nullSequence, escaped, escapeChar);
@@ -237,7 +262,7 @@ public final class LazyFactory {
       return LazyObjectInspectorFactory.getLazySimpleListObjectInspector(
           createLazyObjectInspector(((ListTypeInfo) typeInfo)
           .getListElementTypeInfo(), separator, separatorIndex + 1,
-          nullSequence, escaped, escapeChar), LazyUtils.getSeparator(separator, separatorIndex),
+          nullSequence, escaped, escapeChar, extendedBooleanLiteral), LazyUtils.getSeparator(separator, separatorIndex),
           nullSequence, escaped, escapeChar);
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
@@ -249,7 +274,7 @@ public final class LazyFactory {
       for (int i = 0; i < fieldTypeInfos.size(); i++) {
         fieldObjectInspectors.add(createLazyObjectInspector(fieldTypeInfos
             .get(i), separator, separatorIndex + 1, nullSequence, escaped,
-            escapeChar));
+            escapeChar, extendedBooleanLiteral));
       }
       return LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(
           fieldNames, fieldObjectInspectors,
@@ -261,7 +286,7 @@ public final class LazyFactory {
       for (TypeInfo uti : unionTypeInfo.getAllUnionObjectTypeInfos()) {
         lazyOIs.add(createLazyObjectInspector(uti, separator,
             separatorIndex + 1, nullSequence, escaped,
-            escapeChar));
+            escapeChar, extendedBooleanLiteral));
       }
       return LazyObjectInspectorFactory.getLazyUnionObjectInspector(lazyOIs,
           LazyUtils.getSeparator(separator, separatorIndex),
@@ -286,11 +311,32 @@ public final class LazyFactory {
       List<String> columnNames, List<TypeInfo> typeInfos, byte[] separators,
       Text nullSequence, boolean lastColumnTakesRest, boolean escaped,
       byte escapeChar) throws SerDeException {
+    return createLazyStructInspector(columnNames, typeInfos, separators,
+        nullSequence, lastColumnTakesRest, escaped, escapeChar, false);
+  }
+
+  /**
+   * Create a hierarchical ObjectInspector for LazyStruct with the given
+   * columnNames and columnTypeInfos.
+   *
+   * @param lastColumnTakesRest
+   *          whether the last column of the struct should take the rest of the
+   *          row if there are extra fields.
+   * @param extendedBooleanLiteral whether extended boolean literal set is legal
+   * @throws SerDeException
+   * @see LazyFactory#createLazyObjectInspector(TypeInfo, byte[], int, Text,
+   *      boolean, byte)
+   */
+  public static ObjectInspector createLazyStructInspector(
+      List<String> columnNames, List<TypeInfo> typeInfos, byte[] separators,
+      Text nullSequence, boolean lastColumnTakesRest, boolean escaped,
+      byte escapeChar, boolean extendedBooleanLiteral) throws SerDeException {
     ArrayList<ObjectInspector> columnObjectInspectors = new ArrayList<ObjectInspector>(
         typeInfos.size());
     for (int i = 0; i < typeInfos.size(); i++) {
       columnObjectInspectors.add(LazyFactory.createLazyObjectInspector(
-          typeInfos.get(i), separators, 1, nullSequence, escaped, escapeChar));
+          typeInfos.get(i), separators, 1, nullSequence, escaped, escapeChar,
+          extendedBooleanLiteral));
     }
     return LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(
         columnNames, columnObjectInspectors, separators[0], nullSequence,
@@ -313,7 +359,7 @@ public final class LazyFactory {
     for (int i = 0; i < columnTypes.size(); i++) {
       columnObjectInspectors
           .add(LazyFactory.createLazyObjectInspector(columnTypes.get(i),
-          separators, 1, nullSequence, escaped, escapeChar));
+          separators, 1, nullSequence, escaped, escapeChar, false));
     }
     return ObjectInspectorFactory.getColumnarStructObjectInspector(columnNames,
         columnObjectInspectors);

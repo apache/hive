@@ -534,6 +534,9 @@ public class HiveConf extends Configuration {
 
     HIVE_ORC_ZEROCOPY("hive.exec.orc.zerocopy", false),
 
+    // Whether extended literal set is allowed for LazySimpleSerde.
+    HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL("hive.lazysimple.extended_boolean_literal", false),
+
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
     HIVECONVERTJOIN("hive.auto.convert.join", true),
     HIVECONVERTJOINNOCONDITIONALTASK("hive.auto.convert.join.noconditionaltask", true),

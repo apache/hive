@@ -1,0 +1,59 @@
+PREHOOK: query: DROP TABLE IF EXISTS bool_literal
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS bool_literal
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE bool_literal(key int, value boolean)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TABLE bool_literal(key int, value boolean)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bool_literal
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bool_literal.txt' INTO TABLE bool_literal
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@bool_literal
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bool_literal.txt' INTO TABLE bool_literal
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@bool_literal
+PREHOOK: query: SELECT * FROM bool_literal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bool_literal
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM bool_literal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bool_literal
+#### A masked pattern was here ####
+1	true
+2	NULL
+3	NULL
+4	NULL
+5	NULL
+6	NULL
+7	NULL
+8	false
+PREHOOK: query: SELECT * FROM bool_literal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bool_literal
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM bool_literal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bool_literal
+#### A masked pattern was here ####
+1	true
+2	true
+3	true
+4	true
+5	false
+6	false
+7	false
+8	false
+PREHOOK: query: DROP TABLE bool_literal
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@bool_literal
+PREHOOK: Output: default@bool_literal
+POSTHOOK: query: DROP TABLE bool_literal
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@bool_literal
+POSTHOOK: Output: default@bool_literal

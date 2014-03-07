@@ -2436,4 +2436,15 @@
   </description>
 </property>
 
+<property>
+  <name>hive.lazysimple.extended_boolean_literal</name>
+  <value>false</value>
+  <description>
+    LazySiimpleSerde uses this properties to determine if it treats 'T', 't', 'F', 'f',
+    '1', and '0' as extened, legal boolean literal, in addition to 'TRUE' and 'FALSE'.
+    The default is false, which means only 'TRUE' and 'FALSE' are treated as legal
+    boolean literal.
+  </description>
+</property>
+
 </configuration>
