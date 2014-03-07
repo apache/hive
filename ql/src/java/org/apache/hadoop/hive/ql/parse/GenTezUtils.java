@@ -35,6 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
@@ -160,15 +161,32 @@ public class GenTezUtils {
     throws SemanticException {
 
     Set<Operator<?>> roots = work.getAllRootOperators();
+    if (work.getDummyOps() != null) {
+      roots.addAll(work.getDummyOps());
+    }
 
     // need to clone the plan.
     Set<Operator<?>> newRoots = Utilities.cloneOperatorTree(conf, roots);
 
+    // we're cloning the operator plan but we're retaining the original work. That means
+    // that root operators have to be replaced with the cloned ops. The replacement map
+    // tells you what that mapping is.
     Map<Operator<?>, Operator<?>> replacementMap = new HashMap<Operator<?>, Operator<?>>();
+
+    // there's some special handling for dummyOps required. Mapjoins won't be properly
+    // initialized if their dummy parents aren't initialized. Since we cloned the plan
+    // we need to replace the dummy operators in the work with the cloned ones.
+    List<HashTableDummyOperator> dummyOps = new LinkedList<HashTableDummyOperator>();
 
     Iterator<Operator<?>> it = newRoots.iterator();
     for (Operator<?> orig: roots) {
-      replacementMap.put(orig,it.next());
+      Operator<?> newRoot = it.next();
+      if (newRoot instanceof HashTableDummyOperator) {
+        dummyOps.add((HashTableDummyOperator)newRoot);
+        it.remove();
+      } else {
+        replacementMap.put(orig,newRoot);
+      }
     }
 
     // now we remove all the unions. we throw away any branch that's not reachable from
@@ -233,6 +251,7 @@ public class GenTezUtils {
         operators.addAll(current.getChildOperators());
       }
     }
+    work.setDummyOps(dummyOps);
     work.replaceRoots(replacementMap);
   }
 
