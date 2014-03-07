@@ -93,7 +93,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   private Configuration hconf;
 
   private transient MapJoinTableContainer[] mapJoinTables;
-  private transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;  
+  private transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;
 
   private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
   private static final MapJoinEagerRowContainer EMPTY_ROW_CONTAINER = new MapJoinEagerRowContainer();
