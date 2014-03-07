@@ -213,8 +213,19 @@ public final class LocalMapJoinProcFactory {
       for (Operator<? extends OperatorDesc> op : dummyOperators) {
         context.addDummyParentOp(op);
       }
-      context.addDirectWorks(mapJoinOp, directOperators);
+      if (hasAnyDirectFetch(directOperators)) {
+        context.addDirectWorks(mapJoinOp, directOperators);
+      }
       return null;
+    }
+
+    private boolean hasAnyDirectFetch(List<Operator<?>> directOperators) {
+      for (Operator<?> operator : directOperators) {
+        if (operator != null) {
+          return true;
+        }
+      }
+      return false;
     }
 
     public void hasGroupBy(Operator<? extends OperatorDesc> mapJoinOp,

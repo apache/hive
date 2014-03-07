@@ -394,7 +394,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       fetchOperators.put(entry.getKey(), fetchOp);
       l4j.info("fetchoperator for " + entry.getKey() + " created");
     }
-    // initilize all forward operator
+    // initialize all forward operator
     for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
       // get the forward op
       String alias = entry.getKey();
