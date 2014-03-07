@@ -349,6 +349,7 @@ public final class GenMRSkewJoinProcessor {
       }
     }
     if (child != null) {
+      currTask.removeDependentTask(child);
       listTasks.add(child);
     }
     ConditionalResolverSkewJoinCtx context =
