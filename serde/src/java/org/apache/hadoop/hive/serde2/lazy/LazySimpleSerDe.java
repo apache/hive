@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -129,6 +130,8 @@ public class LazySimpleSerDe extends AbstractSerDe {
     byte escapeChar;
     boolean[] needsEscape;
 
+    boolean extendedBooleanLiteral;
+
     public List<TypeInfo> getColumnTypes() {
       return columnTypes;
     }
@@ -192,7 +195,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
         .getColumnNames(), serdeParams.getColumnTypes(), serdeParams
         .getSeparators(), serdeParams.getNullSequence(), serdeParams
         .isLastColumnTakesRest(), serdeParams.isEscaped(), serdeParams
-        .getEscapeChar());
+        .getEscapeChar(), serdeParams.extendedBooleanLiteral);
 
     cachedLazyStruct = (LazyStruct) LazyFactory
         .createLazyObject(cachedObjectInspector);
@@ -207,7 +210,6 @@ public class LazySimpleSerDe extends AbstractSerDe {
     stats = new SerDeStats();
     lastOperationSerialize = false;
     lastOperationDeserialize = false;
-
   }
 
   public static SerDeParameters initSerdeParams(Configuration job,
@@ -308,6 +310,8 @@ public class LazySimpleSerDe extends AbstractSerDe {
       }
     }
 
+    serdeParams.extendedBooleanLiteral = job == null ? false :
+        job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL.varname, false);
     return serdeParams;
   }
 
