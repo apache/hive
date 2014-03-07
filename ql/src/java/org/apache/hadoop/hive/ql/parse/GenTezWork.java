@@ -112,6 +112,42 @@ public class GenTezWork implements NodeProcessor {
       }
       context.rootToWorkMap.put(root, work);
     }
+    context.operatorWorkMap.put(operator, work);
+
+    /*
+     * this happens in case of map join operations.
+     * The tree looks like this:
+     *
+     *       RS <--- we are here perhaps
+     *       |
+     *    MapJoin
+     *    /     \
+     *  RS       TS
+     *  /
+     * TS
+     *
+     * If we are at the RS pointed above, and we may have already visited the
+     * RS following the TS, we have already generated work for the TS-RS.
+     * We need to hook the current work to this generated work.
+     */
+    List<BaseWork> linkWorkList = context.linkOpWithWorkMap.get(operator);
+    if (linkWorkList != null) {
+      if (context.linkChildOpWithDummyOp.containsKey(operator)) {
+        for (Operator<?> dummy: context.linkChildOpWithDummyOp.get(operator)) {
+          work.addDummyOp((HashTableDummyOperator) dummy);
+        }
+      }
+      for (BaseWork parentWork : linkWorkList) {
+        tezWork.connect(parentWork, work, EdgeType.BROADCAST_EDGE);
+
+        // need to set up output name for reduce sink now that we know the name
+        // of the downstream work
+        for (ReduceSinkOperator r:
+               context.linkWorkWithReduceSinkMap.get(parentWork)) {
+          r.getConf().setOutputName(work.getName());
+        }
+      }
+    }
 
     // This is where we cut the tree as described above. We also remember that
     // we might have to connect parent work with this work later.
@@ -189,42 +225,6 @@ public class GenTezWork implements NodeProcessor {
       context.parentOfRoot = operator;
       context.currentRootOperator = operator.getChildOperators().get(0);
       context.preceedingWork = work;
-    }
-
-    /*
-     * this happens in case of map join operations.
-     * The tree looks like this:
-     *
-     *       RS <--- we are here perhaps
-     *       |
-     *    MapJoin
-     *    /     \
-     *  RS       TS
-     *  /
-     * TS
-     *
-     * If we are at the RS pointed above, and we may have already visited the
-     * RS following the TS, we have already generated work for the TS-RS.
-     * We need to hook the current work to this generated work.
-     */
-    context.operatorWorkMap.put(operator, work);
-    List<BaseWork> linkWorkList = context.linkOpWithWorkMap.get(operator);
-    if (linkWorkList != null) {
-      if (context.linkChildOpWithDummyOp.containsKey(operator)) {
-        for (Operator<?> dummy: context.linkChildOpWithDummyOp.get(operator)) {
-          work.addDummyOp((HashTableDummyOperator) dummy);
-        }
-      }
-      for (BaseWork parentWork : linkWorkList) {
-        tezWork.connect(parentWork, work, EdgeType.BROADCAST_EDGE);
-
-        // need to set up output name for reduce sink now that we know the name
-        // of the downstream work
-        for (ReduceSinkOperator r:
-               context.linkWorkWithReduceSinkMap.get(parentWork)) {
-          r.getConf().setOutputName(work.getName());
-        }
-      }
     }
 
     return null;
