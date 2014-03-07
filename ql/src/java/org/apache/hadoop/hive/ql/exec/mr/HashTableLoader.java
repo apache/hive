@@ -33,7 +33,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TemporaryHashSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
@@ -140,7 +139,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     sink.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>(directWorks));
 
     for (Operator<?> operator : directWorks) {
-      if (operator instanceof TableScanOperator) {
+      if (operator != null) {
         operator.setChildOperators(Arrays.<Operator<? extends OperatorDesc>>asList(sink));
       }
     }
