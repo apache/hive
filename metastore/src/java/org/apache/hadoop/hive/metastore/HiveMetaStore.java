@@ -222,6 +222,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public static final Log LOG = HiveMetaStore.LOG;
     private static boolean createDefaultDB = false;
     private static boolean defaultRolesCreated = false;
+    private static boolean adminUsersAdded = false;
     private String rawStoreClassName;
     private final HiveConf hiveConf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
@@ -383,7 +384,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       synchronized (HMSHandler.class) {
         createDefaultDB();
-        createDefaultRolesNAddUsers();
+        createDefaultRoles();
+        addAdminUsers();
       }
 
       if (hiveConf.getBoolean("hive.metastore.metrics.enabled", false)) {
@@ -515,12 +517,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    private void createDefaultRolesNAddUsers() throws MetaException {
+    private boolean areWeAllowedToCreate() {
 
-      if(defaultRolesCreated) {
-        LOG.debug("Admin role already created previously.");
-        return;
-      }
       Class<?> authCls;
       Class<?> authIface;
       try {
@@ -528,13 +526,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         authIface = Class.forName("org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory");
       } catch (ClassNotFoundException e) {
         LOG.debug("No auth manager specified", e);
-        return;
+        return false;
       }
       if(!authIface.isAssignableFrom(authCls)){
-        LOG.warn("Configured auth manager "+authCls.getName()+" doesn't implement "+ ConfVars.
-          HIVE_AUTHENTICATOR_MANAGER+ " admin role will not be created.");
+        LOG.warn("Configured auth manager "+authCls.getName()+" doesn't implement "+ ConfVars.HIVE_AUTHENTICATOR_MANAGER);
+        return false;
+      }
+
+      return true;
+    }
+
+    private void createDefaultRoles() throws MetaException {
+
+      if(defaultRolesCreated) {
+        LOG.debug("Admin role already created previously.");
         return;
       }
+
+      if(!areWeAllowedToCreate()) {
+        return;
+      }
+
       RawStore ms = getMS();
       try {
         ms.addRole(ADMIN, ADMIN);
@@ -569,6 +581,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         LOG.warn("Failed while granting global privs to admin", e);
       }
 
+      defaultRolesCreated = true;
+    }
+
+    private void addAdminUsers() throws MetaException {
+
+      if(adminUsersAdded) {
+        LOG.debug("Admin users already added.");
+        return;
+      }
+      if(!areWeAllowedToCreate()) {
+        return;
+      }
       // now add pre-configured users to admin role
       String userStr = HiveConf.getVar(hiveConf,ConfVars.USERS_IN_ADMIN_ROLE,"").trim();
       if (userStr.isEmpty()) {
@@ -578,15 +602,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // Since user names need to be valid unix user names, per IEEE Std 1003.1-2001 they cannot
       // contain comma, so we can safely split above string on comma.
 
-     Iterator<String> users = Splitter.on(",").trimResults().omitEmptyStrings().split(userStr).
-       iterator();
+     Iterator<String> users = Splitter.on(",").trimResults().omitEmptyStrings().split(userStr).iterator();
       if (!users.hasNext()) {
         LOG.info("No user is added in admin role, since config value "+ userStr +
-          " is in incorrect format.");
+          " is in incorrect format. We accept comma seprated list of users.");
         return;
       }
-      LOG.info("Added " + userStr + " to admin role");
       Role adminRole;
+      RawStore ms = getMS();
       try {
         adminRole = ms.getRole(ADMIN);
       } catch (NoSuchObjectException e) {
@@ -597,13 +620,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         String userName = users.next();
         try {
           ms.grantRole(adminRole, userName, PrincipalType.USER, ADMIN, PrincipalType.ROLE, true);
+          LOG.info("Added " + userName + " to admin role");
         } catch (NoSuchObjectException e) {
           LOG.error("Failed to add "+ userName + " in admin role",e);
         } catch (InvalidObjectException e) {
           LOG.debug(userName + " already in admin role", e);
         }
       }
-      defaultRolesCreated = true;
+      adminUsersAdded = true;
     }
 
     private void logInfo(String m) {
@@ -4824,7 +4848,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    @Override 
+    @Override
     public void heartbeat(HeartbeatRequest ids)
         throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, TException {
       try {
