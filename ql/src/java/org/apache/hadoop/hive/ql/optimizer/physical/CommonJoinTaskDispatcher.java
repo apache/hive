@@ -20,19 +20,22 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -166,32 +169,18 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     return true;
   }
 
-  // Get the position of the big table for this join operator and the given alias
-  private int getPosition(MapWork work, Operator<? extends OperatorDesc> joinOp,
-      String alias) {
-    Operator<? extends OperatorDesc> parentOp = work.getAliasToWork().get(alias);
-
-    // reduceSinkOperator's child is null, but joinOperator's parents is reduceSink
-    while ((parentOp.getChildOperators() != null) &&
-        (!parentOp.getChildOperators().isEmpty())) {
-      parentOp = parentOp.getChildOperators().get(0);
-    }
-    return joinOp.getParentOperators().indexOf(parentOp);
-  }
-
   // create map join task and set big table as bigTablePosition
-  private ObjectPair<MapRedTask, String> convertTaskToMapJoinTask(MapredWork newWork,
-      int bigTablePosition) throws UnsupportedEncodingException, SemanticException {
+  private MapRedTask convertTaskToMapJoinTask(MapredWork newWork, int bigTablePosition)
+      throws UnsupportedEncodingException, SemanticException {
     // create a mapred task for this work
     MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork, physicalContext
         .getParseContext().getConf());
     JoinOperator newJoinOp = getJoinOp(newTask);
 
     // optimize this newWork given the big table position
-    String bigTableAlias =
-        MapJoinProcessor.genMapJoinOpAndLocalWork(physicalContext.getParseContext().getConf(),
-            newWork, newJoinOp, bigTablePosition);
-    return new ObjectPair<MapRedTask, String>(newTask, bigTableAlias);
+    MapJoinProcessor.genMapJoinOpAndLocalWork(physicalContext.getParseContext().getConf(),
+        newWork, newJoinOp, bigTablePosition);
+    return newTask;
   }
 
   /*
@@ -374,20 +363,13 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     }
   }
 
-  public static boolean cannotConvert(String bigTableAlias,
-      Map<String, Long> aliasToSize, long aliasTotalKnownInputSize,
-      long ThresholdOfSmallTblSizeSum) {
-    boolean ret = false;
-    Long aliasKnownSize = aliasToSize.get(bigTableAlias);
-    if (aliasKnownSize != null && aliasKnownSize.longValue() > 0) {
-      long smallTblTotalKnownSize = aliasTotalKnownInputSize
-          - aliasKnownSize.longValue();
-      if (smallTblTotalKnownSize > ThresholdOfSmallTblSizeSum) {
-        //this table is not good to be a big table.
-        ret = true;
-      }
+  public static boolean cannotConvert(long aliasKnownSize,
+      long aliasTotalKnownInputSize, long ThresholdOfSmallTblSizeSum) {
+    if (aliasKnownSize > 0 &&
+        aliasTotalKnownInputSize - aliasKnownSize > ThresholdOfSmallTblSizeSum) {
+      return true;
     }
-    return ret;
+    return false;
   }
 
   @Override
@@ -408,9 +390,9 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     List<Serializable> listWorks = new ArrayList<Serializable>();
     List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
 
-    // create alias to task mapping and alias to input file mapping for resolver
-    HashMap<String, Task<? extends Serializable>> aliasToTask =
-        new HashMap<String, Task<? extends Serializable>>();
+    // create task to aliases mapping and alias to input file mapping for resolver
+    HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
+        new HashMap<Task<? extends Serializable>, Set<String>>();
     HashMap<String, ArrayList<String>> pathToAliases = currWork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork = currWork.getAliasToWork();
 
@@ -420,8 +402,6 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
     // start to generate multiple map join tasks
     JoinDesc joinDesc = joinOp.getConf();
-    Byte[] order = joinDesc.getTagOrder();
-    int numAliases = order.length;
 
     if (aliasToSize == null) {
       aliasToSize = new HashMap<String, Long>();
@@ -439,6 +419,10 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         return null;
       }
 
+      // if any of bigTableCandidates is from multi-sourced, bigTableCandidates should
+      // only contain multi-sourced because multi-sourced cannot be hashed or direct readable
+      bigTableCandidates = multiInsertBigTableCheck(joinOp, bigTableCandidates);
+
       Configuration conf = context.getConf();
 
       // If sizes of at least n-1 tables in a n-way join is known, and their sum is smaller than
@@ -453,20 +437,18 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
         Long bigTableSize = null;
         Set<String> aliases = aliasToWork.keySet();
-        for (String alias : aliases) {
-          int tablePosition = getPosition(currWork, joinOp, alias);
-          if (!bigTableCandidates.contains(tablePosition)) {
-            continue;
-          }
-          long sumOfOthers = Utilities.sumOfExcept(aliasToSize, aliases, alias);
+        for (int tablePosition : bigTableCandidates) {
+          Operator<?> parent = joinOp.getParentOperators().get(tablePosition);
+          Set<String> participants = GenMapRedUtils.findAliases(currWork, parent);
+          long sumOfOthers = Utilities.sumOfExcept(aliasToSize, aliases, participants);
           if (sumOfOthers < 0 || sumOfOthers > mapJoinSize) {
             continue; // some small alias is not known or too big
           }
           if (bigTableSize == null && bigTablePosition >= 0 && tablePosition < bigTablePosition) {
             continue; // prefer right most alias
           }
-          Long aliasSize = aliasToSize.get(alias);
-          if (bigTableSize == null || (aliasSize != null && aliasSize > bigTableSize)) {
+          long aliasSize = Utilities.sumOf(aliasToSize, participants);
+          if (bigTableSize == null || bigTableSize < 0 || (aliasSize >= 0 && aliasSize >= bigTableSize)) {
             bigTablePosition = tablePosition;
             bigTableSize = aliasSize;
           }
@@ -478,7 +460,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
       if (bigTablePosition >= 0) {
         // create map join task and set big table as bigTablePosition
-        MapRedTask newTask = convertTaskToMapJoinTask(currTask.getWork(), bigTablePosition).getFirst();
+        MapRedTask newTask = convertTaskToMapJoinTask(currTask.getWork(), bigTablePosition);
 
         newTask.setTaskTag(Task.MAPJOIN_ONLY_NOBACKUP);
         replaceTask(currTask, newTask, physicalContext);
@@ -494,9 +476,9 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
       long ThresholdOfSmallTblSizeSum = HiveConf.getLongVar(conf,
           HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
-      for (int i = 0; i < numAliases; i++) {
+      for (int pos = 0; pos < joinOp.getNumParent(); pos++) {
         // this table cannot be big table
-        if (!bigTableCandidates.contains(i)) {
+        if (!bigTableCandidates.contains(pos)) {
           continue;
         }
         // deep copy a new mapred work from xml
@@ -504,12 +486,14 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         MapredWork newWork = Utilities.clonePlan(currTask.getWork());
 
         // create map join task and set big table as i
-        ObjectPair<MapRedTask, String> newTaskAlias = convertTaskToMapJoinTask(newWork, i);
-        MapRedTask newTask = newTaskAlias.getFirst();
-        String bigTableAlias = newTaskAlias.getSecond();
+        MapRedTask newTask = convertTaskToMapJoinTask(newWork, pos);
 
-        if (cannotConvert(bigTableAlias, aliasToSize,
-            aliasTotalKnownInputSize, ThresholdOfSmallTblSizeSum)) {
+        MapWork mapWork = newTask.getWork().getMapWork();
+        Operator<?> startOp = joinOp.getParentOperators().get(pos);
+        Set<String> aliases = GenMapRedUtils.findAliases(mapWork, startOp);
+
+        long aliasKnownSize = Utilities.sumOf(aliasToSize, aliases);
+        if (cannotConvert(aliasKnownSize, aliasTotalKnownInputSize, ThresholdOfSmallTblSizeSum)) {
           continue;
         }
 
@@ -522,8 +506,8 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         newTask.setBackupTask(currTask);
         newTask.setBackupChildrenTasks(currTask.getChildTasks());
 
-        // put the mapping alias to task
-        aliasToTask.put(bigTableAlias, newTask);
+        // put the mapping task to aliases
+        taskToAliases.put(newTask, aliases);
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -547,7 +531,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     ConditionalResolverCommonJoinCtx resolverCtx = new ConditionalResolverCommonJoinCtx();
     resolverCtx.setPathToAliases(pathToAliases);
     resolverCtx.setAliasToKnownSize(aliasToSize);
-    resolverCtx.setAliasToTask(aliasToTask);
+    resolverCtx.setTaskToAliases(taskToAliases);
     resolverCtx.setCommonJoinTask(currTask);
     resolverCtx.setLocalTmpDir(context.getLocalScratchDir(false));
     resolverCtx.setHdfsTmpDir(context.getMRScratchDir());
@@ -599,5 +583,43 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     } else {
       return null;
     }
+  }
+
+
+  /**
+   * In the case of a multi-insert statement the Source Operator will have multiple children.
+   * For e.g.
+   * from src b
+   * INSERT OVERWRITE TABLE src_4
+   *  select *
+   *  where b.key in
+   *    (select a.key from src a where b.value = a.value and a.key > '9')
+   * INSERT OVERWRITE TABLE src_5
+   * select *
+   * where b.key not in
+   *   ( select key from src s1 where s1.key > '2')
+   *
+   * The TableScan on 'src'(for alias b) will have 2 children one for each destination.
+   *
+   * In such cases only the Source side of the Join is the candidate Big Table.
+   * The reason being, it cannot be replaced by a HashTable as its rows must flow into the other children
+   * of the TableScan Operator.
+   */
+  private Set<Integer> multiInsertBigTableCheck(JoinOperator joinOp, Set<Integer> bigTableCandidates) {
+    int multiChildrenSource = -1;
+    for (int tablePosition : bigTableCandidates.toArray(new Integer[0])) {
+      Operator<?> parent = joinOp.getParentOperators().get(tablePosition);
+      for (; parent != null;
+           parent = parent.getNumParent() > 0 ? parent.getParentOperators().get(0) : null) {
+        if (parent.getNumChild() > 1 && !(parent instanceof LateralViewForwardOperator)) {
+          if (multiChildrenSource >= 0) {
+            return Collections.emptySet();
+          }
+          multiChildrenSource = tablePosition;
+        }
+      }
+    }
+    return multiChildrenSource < 0 ? bigTableCandidates :
+        new HashSet<Integer>(Arrays.asList(multiChildrenSource));
   }
 }

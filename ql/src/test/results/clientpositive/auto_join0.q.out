@@ -30,11 +30,11 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a:src2:src 
+        a:src1:src 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a:src2:src 
+        a:src1:src 
           TableScan
             alias: src
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE

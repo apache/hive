@@ -1193,11 +1193,11 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        subq2:a 
+        subq1:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        subq2:a 
+        subq1:a 
           TableScan
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
