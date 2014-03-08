@@ -771,7 +771,7 @@
     
     <class name="MMasterKey" table="MASTER_KEYS" identity-type="application" detachable="true">
 
-      <field name="keyId" primary-key="true" value-strategy="identity">
+      <field name="keyId" primary-key="true" value-strategy="native">
         <column name="KEY_ID" jdbc-type="integer" />
       </field>
         
