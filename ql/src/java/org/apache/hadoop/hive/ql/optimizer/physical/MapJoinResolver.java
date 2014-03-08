@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.fs.Path;
@@ -196,21 +198,22 @@ public class MapJoinResolver implements PhysicalPlanResolver {
               // get bigKeysDirToTaskMap
               ConditionalResolverCommonJoinCtx context = (ConditionalResolverCommonJoinCtx) conditionalTask
                   .getResolverCtx();
-              HashMap<String, Task<? extends Serializable>> aliasToWork = context.getAliasToTask();
+              HashMap<Task<? extends Serializable>, Set<String>> taskToAliases = context.getTaskToAliases();
               // to avoid concurrent modify the hashmap
-              HashMap<String, Task<? extends Serializable>> newAliasToWork = new HashMap<String, Task<? extends Serializable>>();
+              HashMap<Task<? extends Serializable>, Set<String>> newTaskToAliases =
+                  new HashMap<Task<? extends Serializable>, Set<String>>();
               // reset the resolver
-              for (Map.Entry<String, Task<? extends Serializable>> entry : aliasToWork.entrySet()) {
-                Task<? extends Serializable> task = entry.getValue();
-                String key = entry.getKey();
+              for (Map.Entry<Task<? extends Serializable>, Set<String>> entry : taskToAliases.entrySet()) {
+                Task<? extends Serializable> task = entry.getKey();
+                Set<String> key = new HashSet<String>(entry.getValue());
 
                 if (task.equals(currTask)) {
-                  newAliasToWork.put(key, localTask);
+                  newTaskToAliases.put(localTask, key);
                 } else {
-                  newAliasToWork.put(key, task);
+                  newTaskToAliases.put(task, key);
                 }
               }
-              context.setAliasToTask(newAliasToWork);
+              context.setTaskToAliases(newTaskToAliases);
               conditionalTask.setResolverCtx(context);
             }
           }

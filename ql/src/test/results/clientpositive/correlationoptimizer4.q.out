@@ -368,7 +368,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x
+            alias: z
             Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
@@ -403,20 +403,20 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            tmp:y 
+            tmp:x 
               Fetch Operator
                 limit: -1
-            tmp:z 
+            tmp:y 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
+            tmp:x 
+              TableScan
+                alias: x
+                Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             tmp:y 
               TableScan
                 alias: y
-                Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-            tmp:z 
-              TableScan
-                alias: z
                 Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator

@@ -518,4 +518,12 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public String toString() {
     return getId() + ":" + getType();
   }
+
+  public int hashCode() {
+    return toString().hashCode();
+  }
+
+  public boolean equals(Object obj) {
+    return toString().equals(String.valueOf(obj));
+  }
 }

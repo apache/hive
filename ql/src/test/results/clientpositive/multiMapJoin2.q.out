@@ -2223,7 +2223,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
@@ -2253,13 +2253,13 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            null-subquery1:x-subquery1:tmp:b 
+            null-subquery1:x-subquery1:tmp:a 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            null-subquery1:x-subquery1:tmp:b 
+            null-subquery1:x-subquery1:tmp:a 
               TableScan
-                alias: b
+                alias: a
                 Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator

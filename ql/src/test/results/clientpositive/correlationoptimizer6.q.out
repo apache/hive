@@ -512,7 +512,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x
+            alias: y
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
@@ -542,7 +542,7 @@ STAGE PLANS:
                     Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint)
           TableScan
-            alias: x
+            alias: y
             Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
@@ -574,20 +574,20 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            xx:y 
+            xx:x 
               Fetch Operator
                 limit: -1
-            yy:y 
+            yy:x 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            xx:y 
+            xx:x 
               TableScan
-                alias: y
+                alias: x
                 Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
-            yy:y 
+            yy:x 
               TableScan
-                alias: y
+                alias: x
                 Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Demux Operator
@@ -3896,8 +3896,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            alias: y
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -3928,14 +3928,14 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            yy:y 
+            yy:x 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            yy:y 
+            yy:x 
               TableScan
-                alias: y
-                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                alias: x
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -3965,7 +3965,7 @@ STAGE PLANS:
               Statistics: Num rows: 31 Data size: 3145 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
           TableScan
-            alias: x
+            alias: y
             Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
@@ -3997,13 +3997,13 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            xx:y 
+            xx:x 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            xx:y 
+            xx:x 
               TableScan
-                alias: y
+                alias: x
                 Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Demux Operator
