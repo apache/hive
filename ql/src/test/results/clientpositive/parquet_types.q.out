@@ -1,0 +1,142 @@
+PREHOOK: query: DROP TABLE parquet_types_staging
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_types_staging
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE parquet_types
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_types
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE parquet_types_staging (
+  cint int,
+  ctinyint tinyint,
+  csmallint smallint,
+  cfloat float,
+  cdouble double,
+  cstring1 string
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TABLE parquet_types_staging (
+  cint int,
+  ctinyint tinyint,
+  csmallint smallint,
+  cfloat float,
+  cdouble double,
+  cstring1 string
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_types_staging
+PREHOOK: query: CREATE TABLE parquet_types (
+  cint int,
+  ctinyint tinyint,
+  csmallint smallint,
+  cfloat float,
+  cdouble double,
+  cstring1 string
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TABLE parquet_types (
+  cint int,
+  ctinyint tinyint,
+  csmallint smallint,
+  cfloat float,
+  cdouble double,
+  cstring1 string
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_types
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_types_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_types_staging
+PREHOOK: query: INSERT OVERWRITE TABLE parquet_types SELECT * FROM parquet_types_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_staging
+PREHOOK: Output: default@parquet_types
+POSTHOOK: query: INSERT OVERWRITE TABLE parquet_types SELECT * FROM parquet_types_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_staging
+POSTHOOK: Output: default@parquet_types
+POSTHOOK: Lineage: parquet_types.cdouble SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: parquet_types.cfloat SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: parquet_types.cint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_types.csmallint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: parquet_types.cstring1 SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_types.ctinyint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: SELECT * FROM parquet_types
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_types
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types
+#### A masked pattern was here ####
+POSTHOOK: Lineage: parquet_types.cdouble SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: parquet_types.cfloat SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: parquet_types.cint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_types.csmallint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: parquet_types.cstring1 SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_types.ctinyint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+100	1	1	1.0	0.0	abc
+101	2	2	1.1	0.3	def
+102	3	3	1.2	0.6	ghi
+103	1	4	1.3	0.9	jkl
+104	2	5	1.4	1.2	mno
+105	3	1	1.0	1.5	pqr
+106	1	2	1.1	1.8	stu
+107	2	3	1.2	2.1	vwx
+108	3	4	1.3	2.4	yza
+109	1	5	1.4	2.7	bcd
+110	2	1	1.0	3.0	efg
+111	3	2	1.1	3.3	hij
+112	1	3	1.2	3.6	klm
+113	2	4	1.3	3.9	nop
+114	3	5	1.4	4.2	qrs
+115	1	1	1.0	4.5	tuv
+116	2	2	1.1	4.8	wxy
+117	3	3	1.2	5.1	zab
+118	1	4	1.3	5.4	cde
+119	2	5	1.4	5.7	fgh
+120	3	1	1.0	6.0	ijk
+PREHOOK: query: SELECT ctinyint,
+  MAX(cint),
+  MIN(csmallint),
+  COUNT(cstring1),
+  AVG(cfloat),
+  STDDEV_POP(cdouble)
+FROM parquet_types
+GROUP BY ctinyint
+ORDER BY ctinyint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ctinyint,
+  MAX(cint),
+  MIN(csmallint),
+  COUNT(cstring1),
+  AVG(cfloat),
+  STDDEV_POP(cdouble)
+FROM parquet_types
+GROUP BY ctinyint
+ORDER BY ctinyint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types
+#### A masked pattern was here ####
+POSTHOOK: Lineage: parquet_types.cdouble SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: parquet_types.cfloat SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: parquet_types.cint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_types.csmallint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: parquet_types.cstring1 SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_types.ctinyint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+1	118	1	7	1.1857142789023263	1.8000000000000003
+2	119	1	7	1.2142857142857142	1.8
+3	120	1	7	1.171428578240531	1.7999999999999996
