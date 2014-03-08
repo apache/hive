@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.index.IndexMetadataChangeTask;
@@ -251,7 +252,7 @@ public final class IndexUtils {
     // Don't try to index optimize the query to build the index
     HiveConf.setBoolVar(builderConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER, false);
     Driver driver = new Driver(builderConf);
-    driver.compile(command.toString());
+    driver.compile(command.toString(), false);
 
     Task<?> rootTask = driver.getPlan().getRootTasks().get(0);
     inputs.addAll(driver.getPlan().getInputs());
@@ -259,7 +260,8 @@ public final class IndexUtils {
 
     IndexMetadataChangeWork indexMetaChange = new IndexMetadataChangeWork(partSpec,
         indexTableName, dbName);
-    IndexMetadataChangeTask indexMetaChangeTsk = new IndexMetadataChangeTask();
+    IndexMetadataChangeTask indexMetaChangeTsk =
+        (IndexMetadataChangeTask) TaskFactory.get(indexMetaChange, builderConf);
     indexMetaChangeTsk.setWork(indexMetaChange);
     rootTask.addDependentTask(indexMetaChangeTsk);
 

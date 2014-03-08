@@ -120,14 +120,12 @@ public class MapJoinProcessor implements Transform {
    * @param mapJoinOp
    *          map-join operator for which local work needs to be generated.
    * @param bigTablePos
-   * @return
    * @throws SemanticException
    */
-  private static String genMapJoinLocalWork(MapredWork newWork, MapJoinOperator mapJoinOp,
+  private static void genMapJoinLocalWork(MapredWork newWork, MapJoinOperator mapJoinOp,
       int bigTablePos) throws SemanticException {
     // keep the small table alias to avoid concurrent modification exception
     ArrayList<String> smallTableAliasList = new ArrayList<String>();
-    String bigTableAlias = null;
 
     // create a new  MapredLocalWork
     MapredLocalWork newLocalWork = new MapredLocalWork(
@@ -155,7 +153,6 @@ public class MapJoinProcessor implements Transform {
       // skip the big table pos
       int i = childOp.getParentOperators().indexOf(parentOp);
       if (i == bigTablePos) {
-        bigTableAlias = alias;
         continue;
       }
       // set alias to work and put into smallTableAliasList
@@ -219,11 +216,6 @@ public class MapJoinProcessor implements Transform {
     newWork.getMapWork().setMapLocalWork(newLocalWork);
     // remove reducer
     newWork.setReduceWork(null);
-    // return the big table alias
-    if (bigTableAlias == null) {
-      throw new SemanticException("Big Table Alias is null");
-    }
-    return bigTableAlias;
   }
 
   /**
@@ -233,10 +225,9 @@ public class MapJoinProcessor implements Transform {
    * @param op
    *          The join operator that needs to be converted to map-join
    * @param bigTablePos
-   * @return the alias to the big table
    * @throws SemanticException
    */
-  public static String genMapJoinOpAndLocalWork(HiveConf conf, MapredWork newWork,
+  public static void genMapJoinOpAndLocalWork(HiveConf conf, MapredWork newWork,
     JoinOperator op, int mapJoinPos)
       throws SemanticException {
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap =
@@ -245,21 +236,18 @@ public class MapJoinProcessor implements Transform {
     // generate the map join operator; already checked the map join
     MapJoinOperator newMapJoinOp = MapJoinProcessor.convertMapJoin(conf, opParseCtxMap, op,
         newJoinTree, mapJoinPos, true, false);
-    return genLocalWorkForMapJoin(newWork, newMapJoinOp, mapJoinPos);
+    genLocalWorkForMapJoin(newWork, newMapJoinOp, mapJoinPos);
   }
 
-  public static String genLocalWorkForMapJoin(MapredWork newWork, MapJoinOperator newMapJoinOp,
+  public static void genLocalWorkForMapJoin(MapredWork newWork, MapJoinOperator newMapJoinOp,
       int mapJoinPos)
       throws SemanticException {
     try {
-      // generate the local work and return the big table alias
-      String bigTableAlias = MapJoinProcessor
-          .genMapJoinLocalWork(newWork, newMapJoinOp, mapJoinPos);
+      // generate the local work for the big table alias
+      MapJoinProcessor.genMapJoinLocalWork(newWork, newMapJoinOp, mapJoinPos);
       // clean up the mapred work
       newWork.getMapWork().setOpParseCtxMap(null);
       newWork.getMapWork().setJoinTree(null);
-
-      return bigTableAlias;
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -380,10 +368,8 @@ public class MapJoinProcessor implements Transform {
 
     // remove old parents
     for (pos = 0; pos < newParentOps.size(); pos++) {
-      newParentOps.get(pos).removeChild(oldReduceSinkParentOps.get(pos));
-      newParentOps.get(pos).getChildOperators().add(mapJoinOp);
+      newParentOps.get(pos).replaceChild(oldReduceSinkParentOps.get(pos), mapJoinOp);
     }
-
 
     mapJoinOp.getParentOperators().removeAll(oldReduceSinkParentOps);
     mapJoinOp.setParentOperators(newParentOps);
@@ -835,6 +821,7 @@ public class MapJoinProcessor implements Transform {
    * @param pactx
    *          current parse context
    */
+  @Override
   public ParseContext transform(ParseContext pactx) throws SemanticException {
     pGraphContext = pactx;
     List<MapJoinOperator> listMapJoinOps = new ArrayList<MapJoinOperator>();

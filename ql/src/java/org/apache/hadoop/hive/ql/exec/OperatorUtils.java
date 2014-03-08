@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.mapred.OutputCollector;
 
@@ -68,8 +69,8 @@ public class OperatorUtils {
       return;
     }
     for (Operator<? extends OperatorDesc> op : childOperators) {
-      if(op.getName().equals(ReduceSinkOperator.getOperatorName())) {
-        ((ReduceSinkOperator)op).setOutputCollector(out);
+      if (op.getName().equals(ReduceSinkOperator.getOperatorName())) {
+        op.setOutputCollector(out);
       } else {
         setChildrenCollector(op.getChildOperators(), out);
       }
@@ -90,6 +91,22 @@ public class OperatorUtils {
         }
       } else {
         setChildrenCollector(op.getChildOperators(), outMap);
+      }
+    }
+  }
+
+  public static void iterateParents(Operator<?> operator, Function<Operator<?>> function) {
+    iterateParents(operator, function, new HashSet<Operator<?>>());
+  }
+
+  private static void iterateParents(Operator<?> operator, Function<Operator<?>> function, Set<Operator<?>> visited) {
+    if (!visited.add(operator)) {
+      return;
+    }
+    function.apply(operator);
+    if (operator.getNumParent() > 0) {
+      for (Operator<?> parent : operator.getParentOperators()) {
+        iterateParents(parent, function, visited);
       }
     }
   }

@@ -285,6 +285,7 @@ public class Driver implements CommandProcessor {
 
   /**
    * Compile a new query. Any currently-planned query associated with this Driver is discarded.
+   * Do not reset id for inner queries(index, etc). Task ids are used for task identity check.
    *
    * @param command
    *          The SQL query to compile.
