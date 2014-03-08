@@ -603,6 +603,7 @@ public class TestVectorGroupByOperator {
   @Test
   public void testCountDecimal() throws HiveException {
     testAggregateDecimal(
+        "Decimal",
         "count",
         2,
         Arrays.asList(new Object[]{
@@ -615,6 +616,7 @@ public class TestVectorGroupByOperator {
   @Test
   public void testMaxDecimal() throws HiveException {
     testAggregateDecimal(
+        "Decimal",
         "max",
         2,
         Arrays.asList(new Object[]{
@@ -623,26 +625,29 @@ public class TestVectorGroupByOperator {
                 new Decimal128(3)}),
        new Decimal128(3));
     testAggregateDecimal(
-            "max",
-            2,
-            Arrays.asList(new Object[]{
-                    new Decimal128(3),
-                    new Decimal128(2),
-                    new Decimal128(1)}),
-           new Decimal128(3));
+        "Decimal",
+        "max",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(3),
+                new Decimal128(2),
+                new Decimal128(1)}),
+        new Decimal128(3));
     testAggregateDecimal(
-            "max",
-            2,
-            Arrays.asList(new Object[]{
-                    new Decimal128(2),
-                    new Decimal128(3),
-                    new Decimal128(1)}),
-           new Decimal128(3));
+        "Decimal",
+        "max",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(2),
+                new Decimal128(3),
+                new Decimal128(1)}),
+        new Decimal128(3));
   }
 
   @Test
   public void testMinDecimal() throws HiveException {
     testAggregateDecimal(
+        "Decimal",
         "min",
         2,
         Arrays.asList(new Object[]{
@@ -651,28 +656,31 @@ public class TestVectorGroupByOperator {
                 new Decimal128(3)}),
        new Decimal128(1));
     testAggregateDecimal(
-            "min",
-            2,
-            Arrays.asList(new Object[]{
-                    new Decimal128(3),
-                    new Decimal128(2),
-                    new Decimal128(1)}),
-           new Decimal128(1));
+        "Decimal",
+        "min",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(3),
+                new Decimal128(2),
+                new Decimal128(1)}),
+        new Decimal128(1));
 
     testAggregateDecimal(
-          "min",
-          2,
-          Arrays.asList(new Object[]{
-                  new Decimal128(2),
-                  new Decimal128(1),
-                  new Decimal128(3)}),
-         new Decimal128(1));
+        "Decimal",
+        "min",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(2),
+                new Decimal128(1),
+                new Decimal128(3)}),
+        new Decimal128(1));
   }
 
   @Test
   public void testSumDecimal() throws HiveException {
     testAggregateDecimal(
-        "sum",
+        "Decimal",
+       "sum",
         2,
         Arrays.asList(new Object[]{
                 new Decimal128(1),
@@ -682,8 +690,25 @@ public class TestVectorGroupByOperator {
   }
 
   @Test
+  public void testSumDecimalHive6508() throws HiveException {
+    short scale = 4;
+    testAggregateDecimal(
+        "Decimal(10,4)",
+        "sum",
+        4,
+        Arrays.asList(new Object[]{
+                new Decimal128("1234.2401", scale),
+                new Decimal128("1868.52", scale),
+                new Decimal128(0L, (short) 0),
+                new Decimal128("456.84", scale),
+                new Decimal128("121.89", scale)}),
+       new Decimal128("3681.4901", scale));
+  }
+
+  @Test
   public void testAvgDecimal() throws HiveException {
     testAggregateDecimal(
+        "Decimal",
         "avg",
         2,
         Arrays.asList(new Object[]{
@@ -696,18 +721,20 @@ public class TestVectorGroupByOperator {
   @Test
   public void testAvgDecimalNegative() throws HiveException {
     testAggregateDecimal(
-            "avg",
-            2,
-            Arrays.asList(new Object[]{
-                    new Decimal128(-1),
-                    new Decimal128(-2),
-                    new Decimal128(-3)}),
-           HiveDecimal.create((-1-2-3)/3));
+        "Decimal",
+        "avg",
+        2,
+        Arrays.asList(new Object[]{
+                new Decimal128(-1),
+                new Decimal128(-2),
+                new Decimal128(-3)}),
+        HiveDecimal.create((-1-2-3)/3));
   }
 
   @Test
   public void testVarianceDecimal () throws HiveException {
       testAggregateDecimal(
+        "Decimal",
         "variance",
         2,
         Arrays.asList(new Object[]{
@@ -721,6 +748,7 @@ public class TestVectorGroupByOperator {
   @Test
   public void testVarSampDecimal () throws HiveException {
       testAggregateDecimal(
+        "Decimal",
         "var_samp",
         2,
         Arrays.asList(new Object[]{
@@ -734,6 +762,7 @@ public class TestVectorGroupByOperator {
   @Test
   public void testStdPopDecimal () throws HiveException {
       testAggregateDecimal(
+        "Decimal",
         "stddev_pop",
         2,
         Arrays.asList(new Object[]{
@@ -747,6 +776,7 @@ public class TestVectorGroupByOperator {
   @Test
   public void testStdSampDecimal () throws HiveException {
       testAggregateDecimal(
+        "Decimal",
         "stddev_samp",
         2,
         Arrays.asList(new Object[]{
@@ -1936,14 +1966,15 @@ public class TestVectorGroupByOperator {
   }
 
   public void testAggregateDecimal (
-          String aggregateName,
-          int batchSize,
-          Iterable<Object> values,
-          Object expected) throws HiveException {
+      String typeName,
+      String aggregateName,
+      int batchSize,
+      Iterable<Object> values,
+      Object expected) throws HiveException {
 
         @SuppressWarnings("unchecked")
         FakeVectorRowBatchFromObjectIterables fdr = new FakeVectorRowBatchFromObjectIterables(
-            batchSize, new String[] {"Decimal"}, values);
+            batchSize, new String[] {typeName}, values);
         testAggregateDecimalIterable (aggregateName, fdr, expected);
       }
 

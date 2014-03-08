@@ -261,8 +261,19 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    *          object to copy from
    */
   public Decimal128 update(Decimal128 o) {
+    update(o, o.scale);
+    return this;
+  }
+
+  /**
+   * Copy the value of given object and assigns a custom scale.
+   *
+   * @param o
+   *          object to copy from
+   */
+  public Decimal128 update(Decimal128 o, short scale) {
     this.unscaledValue.update(o.unscaledValue);
-    this.scale = o.scale;
+    this.scale = scale;
     this.signum = o.signum;
     return this;
   }
