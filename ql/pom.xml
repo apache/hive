@@ -486,7 +486,7 @@
                   <include>org.apache.hive:hive-exec</include>
                   <include>org.apache.hive:hive-serde</include>
                   <include>com.esotericsoftware.kryo:kryo</include>
-                  <include>com.twiter:parquet-hadoop-bundle</include>
+                  <include>com.twitter:parquet-hadoop-bundle</include>
                   <include>org.apache.thrift:libthrift</include>
                   <include>commons-lang:commons-lang</include>
                   <include>org.json:json</include>
