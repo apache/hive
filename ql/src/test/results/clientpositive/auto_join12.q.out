@@ -32,7 +32,7 @@ STAGE PLANS:
         src1:src 
           Fetch Operator
             limit: -1
-        src3:src 
+        src2:src 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
@@ -56,17 +56,17 @@ STAGE PLANS:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
                     2 _col0 (type: string)
-        src3:src 
+        src2:src 
           TableScan
             alias: src
-            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < 100) and (key < 80)) (type: boolean)
-              Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   condition expressions:
                     0 {_col0}
@@ -82,14 +82,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < 100) and (key < 80)) (type: boolean)
-              Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string), value (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1

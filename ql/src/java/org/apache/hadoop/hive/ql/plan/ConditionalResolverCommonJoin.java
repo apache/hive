@@ -49,7 +49,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
   public static class ConditionalResolverCommonJoinCtx implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private HashMap<String, Task<? extends Serializable>> aliasToTask;
+    private HashMap<Task<? extends Serializable>, Set<String>> taskToAliases;
     HashMap<String, ArrayList<String>> pathToAliases;
     HashMap<String, Long> aliasToKnownSize;
     private Task<? extends Serializable> commonJoinTask;
@@ -60,12 +60,12 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     public ConditionalResolverCommonJoinCtx() {
     }
 
-    public HashMap<String, Task<? extends Serializable>> getAliasToTask() {
-      return aliasToTask;
+    public HashMap<Task<? extends Serializable>, Set<String>> getTaskToAliases() {
+      return taskToAliases;
     }
 
-    public void setAliasToTask(HashMap<String, Task<? extends Serializable>> aliasToTask) {
-      this.aliasToTask = aliasToTask;
+    public void setTaskToAliases(HashMap<Task<? extends Serializable>, Set<String>> taskToAliases) {
+      this.taskToAliases = taskToAliases;
     }
 
     public Task<? extends Serializable> getCommonJoinTask() {
@@ -112,7 +112,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     @Override
     public ConditionalResolverCommonJoinCtx clone() {
       ConditionalResolverCommonJoinCtx ctx = new ConditionalResolverCommonJoinCtx();
-      ctx.setAliasToTask(aliasToTask);
+      ctx.setTaskToAliases(taskToAliases);
       ctx.setCommonJoinTask(commonJoinTask);
       ctx.setPathToAliases(pathToAliases);
       ctx.setHdfsTmpDir(hdfsTmpDir);
@@ -133,15 +133,13 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     List<Task<? extends Serializable>> resTsks = new ArrayList<Task<? extends Serializable>>();
 
     // get aliasToPath and pass it to the heuristic
-    String bigTableAlias = resolveDriverAlias(ctx, conf);
+    Task<? extends Serializable> task = resolveDriverAlias(ctx, conf);
 
-    if (bigTableAlias == null) {
+    if (task == null) {
       // run common join task
       resTsks.add(ctx.getCommonJoinTask());
     } else {
-      // run the map join task
-      Task<? extends Serializable> task = ctx.getAliasToTask().get(bigTableAlias);
-      //set task tag
+      // run the map join task, set task tag
       if (task.getBackupTask() != null) {
         task.getBackupTask().setTaskTag(Task.BACKUP_COMMON_JOIN);
       }
@@ -152,7 +150,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     return resTsks;
   }
 
-  private String resolveDriverAlias(ConditionalResolverCommonJoinCtx ctx, HiveConf conf) {
+  private Task<? extends Serializable> resolveDriverAlias(ConditionalResolverCommonJoinCtx ctx, HiveConf conf) {
     try {
       resolveUnknownSizes(ctx, conf);
       return resolveMapJoinTask(ctx, conf);
@@ -162,40 +160,38 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     return null;
   }
 
-  protected String resolveMapJoinTask(
+  protected Task<? extends Serializable> resolveMapJoinTask(
       ConditionalResolverCommonJoinCtx ctx, HiveConf conf) throws Exception {
 
-    Set<String> aliases = getParticipants(ctx);
+    Set<String> participants = getParticipants(ctx);
 
     Map<String, Long> aliasToKnownSize = ctx.getAliasToKnownSize();
     Map<String, ArrayList<String>> pathToAliases = ctx.getPathToAliases();
-    Map<String, Task<? extends Serializable>> aliasToTask = ctx.getAliasToTask();
+    Map<Task<? extends Serializable>, Set<String>> taskToAliases = ctx.getTaskToAliases();
 
     long threshold = HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
 
     Long bigTableSize = null;
     Long smallTablesSize = null;
-    String bigTableFileAlias = null;
-    for (String alias : aliases) {
-      if (!aliasToTask.containsKey(alias)) {
-        continue;
-      }
-      long sumOfOthers = Utilities.sumOfExcept(aliasToKnownSize, aliases, alias);
+    Map.Entry<Task<? extends Serializable>, Set<String>> nextTask = null;
+    for (Map.Entry<Task<? extends Serializable>, Set<String>> entry : taskToAliases.entrySet()) {
+      Set<String> aliases = entry.getValue();
+      long sumOfOthers = Utilities.sumOfExcept(aliasToKnownSize, participants, aliases);
       if (sumOfOthers < 0 || sumOfOthers > threshold) {
         continue;
       }
       // at most one alias is unknown. we can safely regard it as a big alias
-      Long aliasSize = aliasToKnownSize.get(alias);
-      if (bigTableSize == null || (aliasSize != null && aliasSize > bigTableSize)) {
-        bigTableFileAlias = alias;
+      long aliasSize = Utilities.sumOf(aliasToKnownSize, aliases);
+      if (bigTableSize == null || aliasSize > bigTableSize) {
+        nextTask = entry;
         bigTableSize = aliasSize;
         smallTablesSize = sumOfOthers;
       }
     }
-    if (bigTableFileAlias != null) {
-      LOG.info("Driver alias is " + bigTableFileAlias + " with size " + bigTableSize
+    if (nextTask != null) {
+      LOG.info("Driver alias is " + nextTask.getValue() + " with size " + bigTableSize
           + " (total size of others : " + smallTablesSize + ", threshold : " + threshold + ")");
-      return bigTableFileAlias;
+      return nextTask.getKey();
     }
     LOG.info("Failed to resolve driver alias (threshold : " + threshold +
         ", length mapping : " + aliasToKnownSize + ")");

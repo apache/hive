@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -112,49 +113,53 @@ public class CorrelationOptimizer implements Transform {
       // Get total size and individual alias's size
       long aliasTotalKnownInputSize = 0;
       Map<String, Long> aliasToSize = new HashMap<String, Long>();
-      Map<Integer, String> posToAlias = new HashMap<Integer, String>();
-      for (Operator<? extends OperatorDesc> op: joinOp.getParentOperators()) {
-        TableScanOperator tsop = CorrelationUtilities.findTableScanOperator(op);
-        if (tsop == null) {
+      Map<Integer, Set<String>> posToAliases = new HashMap<Integer, Set<String>>();
+      for (int pos = 0; pos < joinOp.getNumParent(); pos++) {
+        Operator<? extends OperatorDesc> op = joinOp.getParentOperators().get(pos);
+        Set<TableScanOperator> topOps = CorrelationUtilities.findTableScanOperators(op);
+        if (topOps.isEmpty()) {
           isAbleToGuess = false;
           break;
         }
 
-        Table table = pCtx.getTopToTable().get(tsop);
-        String alias = tsop.getConf().getAlias();
-        posToAlias.put(joinOp.getParentOperators().indexOf(op), alias);
-        if (table == null) {
-          // table should not be null.
-          throw new SemanticException("The table of " +
-              tsop.getName() + " " + tsop.getIdentifier() +
-              " is null, which is not expected.");
-        }
+        Set<String> aliases = new LinkedHashSet<String>();
+        for (TableScanOperator tsop : topOps) {
+          Table table = pCtx.getTopToTable().get(tsop);
+          if (table == null) {
+            // table should not be null.
+            throw new SemanticException("The table of " +
+                tsop.getName() + " " + tsop.getIdentifier() +
+                " is null, which is not expected.");
+          }
+          String alias = tsop.getConf().getAlias();
+          aliases.add(alias);
 
-        Path p = table.getPath();
-        FileSystem fs = null;
-        ContentSummary resultCs = null;
-        try {
-          fs = table.getPath().getFileSystem(pCtx.getConf());
-          resultCs = fs.getContentSummary(p);
-        } catch (IOException e) {
-          LOG.warn("Encounter a error while querying content summary of table " +
-              table.getCompleteName() + " from FileSystem. " +
-              "Cannot guess if CommonJoinOperator will optimize " +
-              joinOp.getName() + " " + joinOp.getIdentifier());
-        }
-        if (resultCs == null) {
-          isAbleToGuess = false;
-          break;
-        }
+          Path p = table.getPath();
+          ContentSummary resultCs = null;
+          try {
+            FileSystem fs = table.getPath().getFileSystem(pCtx.getConf());
+            resultCs = fs.getContentSummary(p);
+          } catch (IOException e) {
+            LOG.warn("Encounter a error while querying content summary of table " +
+                table.getCompleteName() + " from FileSystem. " +
+                "Cannot guess if CommonJoinOperator will optimize " +
+                joinOp.getName() + " " + joinOp.getIdentifier());
+          }
+          if (resultCs == null) {
+            isAbleToGuess = false;
+            break;
+          }
 
-        long size = resultCs.getLength();
-        aliasTotalKnownInputSize += size;
-        Long es = aliasToSize.get(alias);
-        if(es == null) {
-          es = new Long(0);
+          long size = resultCs.getLength();
+          aliasTotalKnownInputSize += size;
+          Long es = aliasToSize.get(alias);
+          if(es == null) {
+            es = new Long(0);
+          }
+          es += size;
+          aliasToSize.put(alias, es);
         }
-        es += size;
-        aliasToSize.put(alias, es);
+        posToAliases.put(pos, aliases);
       }
 
       if (!isAbleToGuess) {
@@ -172,7 +177,6 @@ public class CorrelationOptimizer implements Transform {
         continue;
       }
 
-      String bigTableAlias = null;
       long ThresholdOfSmallTblSizeSum = HiveConf.getLongVar(pCtx.getConf(),
           HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
       for (int i = 0; i < numAliases; i++) {
@@ -180,8 +184,9 @@ public class CorrelationOptimizer implements Transform {
         if (!bigTableCandidates.contains(i)) {
           continue;
         }
-        bigTableAlias = posToAlias.get(i);
-        if (!CommonJoinTaskDispatcher.cannotConvert(bigTableAlias, aliasToSize,
+        Set<String> aliases = posToAliases.get(i);
+        long aliasKnownSize = Utilities.sumOf(aliasToSize, aliases);
+        if (!CommonJoinTaskDispatcher.cannotConvert(aliasKnownSize,
             aliasTotalKnownInputSize, ThresholdOfSmallTblSizeSum)) {
           mayConvert = true;
         }
