@@ -1587,28 +1587,24 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    */
   @Override
   public long longValue() {
+
+    // Avoid allocating temporary variables for special cases: signum or scale is zero
     if (signum == 0) {
       return 0L;
     }
-
-    long ret;
-    UnsignedInt128 tmp;
     if (scale == 0) {
+      long ret;
       ret = this.unscaledValue.getV1();
       ret <<= 32L;
       ret |= SqlMathUtil.LONG_MASK & this.unscaledValue.getV0();
+      if (signum >= 0) {
+        return ret;
+      } else {
+        return -ret;
+      }
     } else {
-      tmp = new UnsignedInt128(this.unscaledValue);
-      tmp.scaleDownTenDestructive(scale);
-      ret = tmp.getV1();
-      ret <<= 32L;
-      ret |= SqlMathUtil.LONG_MASK & tmp.getV0();
-    }
-
-    if (signum >= 0) {
-      return ret;
-    } else {
-      return -ret;
+      HiveDecimal hd = HiveDecimal.create(this.toBigDecimal());
+      return hd.longValue();
     }
   }
 

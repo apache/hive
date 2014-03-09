@@ -786,5 +786,11 @@ public class TestDecimal128 {
     assertEquals(4294967295L, d.longValue());
     d.update("4294967296.01", (short) 2); // 2^32 + .01
     assertEquals(4294967296L, d.longValue());
+
+    // Compare long value with HiveDecimal#longValue
+    d.update(37.678, (short)5);
+    HiveDecimal hd = HiveDecimal.create(BigDecimal.valueOf(37.678));
+    assertEquals(hd.longValue(), d.longValue());
   }
+
 }
