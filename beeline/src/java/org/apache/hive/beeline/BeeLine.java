@@ -714,6 +714,10 @@ public class BeeLine {
       handleException(e);
     }
 
+    if (inputStream instanceof FileInputStream) {
+      // from script.. no need to load history and no need of completor, either
+      return consoleReader;
+    }
     try {
       // now load in the previous history
       if (historyBuffer != null) {
