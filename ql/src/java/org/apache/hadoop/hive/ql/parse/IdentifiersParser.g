@@ -106,13 +106,7 @@ orderByClause
 @init { gParent.pushMsg("order by clause", state); }
 @after { gParent.popMsg(state); }
     :
-    KW_ORDER KW_BY
-    LPAREN columnRefOrder
-    ( COMMA columnRefOrder)* RPAREN -> ^(TOK_ORDERBY columnRefOrder+)
-    |
-    KW_ORDER KW_BY
-    columnRefOrder
-    ( COMMA columnRefOrder)* -> ^(TOK_ORDERBY columnRefOrder+)
+    KW_ORDER KW_BY columnRefOrder ( COMMA columnRefOrder)* -> ^(TOK_ORDERBY columnRefOrder+)
     ;
 
 clusterByClause
