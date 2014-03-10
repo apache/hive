@@ -8,7 +8,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1 , consists of Stage-5, Stage-2
   Stage-5
-  Stage-2 depends on stages: Stage-1, Stage-5
+  Stage-2 depends on stages: Stage-5
   Stage-0 depends on stages: Stage-2
   Stage-8 depends on stages: Stage-0
   Stage-3 depends on stages: Stage-8
