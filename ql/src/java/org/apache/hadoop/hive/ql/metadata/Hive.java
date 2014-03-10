@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
@@ -1791,8 +1792,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       short limit)
   throws HiveException {
     if (!tbl.isPartitioned()) {
-      throw new HiveException("Partition spec should only be supplied for a " +
-          "partitioned table");
+      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
     }
 
     List<String> partialPvals = MetaStoreUtils.getPvals(tbl.getPartCols(), partialPartSpec);
@@ -1845,8 +1845,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException {
 
     if (!tbl.isPartitioned()) {
-      throw new HiveException("Partition spec should only be supplied for a " +
-                "partitioned table");
+      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
     }
 
     List<String> names = getPartitionNames(tbl.getDbName(), tbl.getTableName(),
@@ -1870,8 +1869,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException {
 
     if (!tbl.isPartitioned()) {
-      throw new HiveException("Partition spec should only be supplied for a " +
-          "partitioned table");
+      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
     }
     List<Partition> partitions = new ArrayList<Partition>(partNames.size());
 
@@ -1922,8 +1920,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException, MetaException, NoSuchObjectException, TException {
 
     if (!tbl.isPartitioned()) {
-      throw new HiveException("Partition spec should only be supplied for a " +
-          "partitioned table");
+      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
     }
 
     List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().listPartitionsByFilter(
