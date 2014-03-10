@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -62,10 +63,22 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public static FileStatus[] matchFilesOrDir(FileSystem fs, Path path)
       throws IOException {
-    FileStatus[] srcs = fs.globStatus(path);
+    FileStatus[] srcs = fs.globStatus(path, new PathFilter() {
+              @Override
+              public boolean accept(Path p) {
+                String name = p.getName();
+                return name.equals("_metadata") ? true : !name.startsWith("_") && !name.startsWith(".");
+              }
+            });
     if ((srcs != null) && srcs.length == 1) {
       if (srcs[0].isDir()) {
-        srcs = fs.listStatus(srcs[0].getPath());
+        srcs = fs.listStatus(srcs[0].getPath(), new PathFilter() {
+          @Override
+          public boolean accept(Path p) {
+            String name = p.getName();
+            return !name.startsWith("_") && !name.startsWith(".");
+          }
+        });
       }
     }
     return (srcs);
