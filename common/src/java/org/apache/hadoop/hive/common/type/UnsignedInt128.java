@@ -15,6 +15,7 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -35,7 +36,7 @@ import org.apache.hive.common.util.Decimal128FastBuffer;
  * SQL (e.g., exact POWER/SQRT).</li>
  * </ul>
  */
-public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
+public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Serializable {
 
   /** Number of ints to store this object. */
   public static final int INT_COUNT = 4;
@@ -61,7 +62,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
    * Int32 elements as little-endian (v[0] is least significant) unsigned
    * integers.
    */
-  private final int[] v = new int[INT_COUNT];
+  private int[] v = new int[INT_COUNT];
 
   /**
    * Number of leading non-zero elements in {@link #v}. For example, if the
@@ -70,7 +71,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
    *
    * @see #updateCount()
    */
-  private transient byte count;
+  private byte count;
 
   /**
    * Determines the number of ints to store one value.
@@ -2418,7 +2419,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
     }
   }
 
-  /** Updates the value of {@link #cnt} by checking {@link #v}. */
+  /** Updates the value of {@link #count} by checking {@link #v}. */
   private void updateCount() {
     if (v[3] != 0) {
       this.count = (byte) 4;
@@ -2634,4 +2635,30 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128> {
       }
       return value;
     }
+
+  public int[] getV() {
+    return v;
+  }
+
+  /**
+   * This setter is only for de-serialization, should not be used otherwise.
+   */
+  public void setV(int [] v) {
+    this.v[0] = v[0];
+    this.v[1] = v[1];
+    this.v[2] = v[2];
+    this.v[3] = v[3];
+    updateCount();
+  }
+
+  public byte getCount() {
+    return count;
+  }
+
+  /**
+   * This setter is only for de-serialization, should not be used otherwise.
+   */
+  public void setCount(byte count) {
+    this.count = count;
+  }
 }

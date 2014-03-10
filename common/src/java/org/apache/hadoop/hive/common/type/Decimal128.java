@@ -90,7 +90,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    * @serial
    * @see #getUnscaledValue()
    */
-  private final UnsignedInt128 unscaledValue;
+  private UnsignedInt128 unscaledValue;
 
   /**
    * The scale of this Decimal128, as returned by {@link #getScale()}. Unlike
@@ -742,8 +742,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
 
   /**
    * Serializes the value in a format compatible with the BigDecimal's own representation
-   * @param bytes
-   * @param offset
+   * @param scratch
    */
   public int fastSerializeForHiveDecimal( Decimal128FastBuffer scratch) {
     return this.unscaledValue.fastSerializeForHiveDecimal(scratch, this.signum);
@@ -1513,7 +1512,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
       cmp = this.unscaledValue.compareToScaleTen(val.unscaledValue,
           (short) (this.scale - val.scale));
     } else {
-      cmp = val.unscaledValue.compareToScaleTen(this.unscaledValue,
+      cmp = - val.unscaledValue.compareToScaleTen(this.unscaledValue,
           (short) (val.scale - this.scale));
     }
     return cmp * this.signum;
@@ -1898,6 +1897,27 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     this.signum = this.unscaledValue.fastUpdateFromInternalStorage(internalStorage);
 
     return this;
+  }
+
+  /**
+   * This setter is only for de-serialization, should not be used otherwise.
+   */
+  public void setUnscaledValue(UnsignedInt128 unscaledValue) {
+    this.unscaledValue = unscaledValue;
+  }
+
+  /**
+   * This setter is only for de-serialization, should not be used otherwise.
+   */
+  public void setScale(short scale) {
+    this.scale = scale;
+  }
+
+  /**
+   * This setter is only for de-serialization, should not be used otherwise.
+   */
+  public void setSignum(byte signum) {
+    this.signum = signum;
   }
 }
 
