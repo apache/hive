@@ -647,7 +647,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     boolean ret = validateDataType(typeName);
     if (!ret) {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Cannot vectorize " + desc.getExprString() + " of type " + typeName);
+        LOG.debug("Cannot vectorize " + desc.toString() + " of type " + typeName);
       }
       return false;
     }

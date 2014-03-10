@@ -1045,7 +1045,7 @@ public final class VectorExpressionWriterFactory {
     @Override
     public Object writeValue(ColumnVector column, int row)
         throws HiveException {
-      throw new HiveException("Should never reach here");
+      return baseWriter.writeValue(column, row);
     }
 
     @Override

@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -43,6 +45,10 @@ public class VectorFileSinkOperator extends FileSinkOperator {
 
   private static final long serialVersionUID = 1L;
 
+  protected transient Object[] singleRow;
+
+  protected transient VectorExpressionWriter[] valueWriters;
+
   public VectorFileSinkOperator(VectorizationContext context,
       OperatorDesc conf) {
     super();
@@ -54,35 +60,44 @@ public class VectorFileSinkOperator extends FileSinkOperator {
   }
 
   @Override
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
+    valueWriters = VectorExpressionWriterFactory.getExpressionWriters(
+        (StructObjectInspector) inputObjInspectors[0]);
+    singleRow = new Object[valueWriters.length];
+  }
+
+  @Override
   public void processOp(Object data, int tag) throws HiveException {
 
     VectorizedRowBatch vrg = (VectorizedRowBatch)data;
 
     Writable [] records = null;
     boolean vectorizedSerde = false;
-    int outputIterations = 1;
     try {
       if (serializer instanceof VectorizedSerde) {
         recordValue = ((VectorizedSerde) serializer).serializeVector(vrg,
             inputObjInspectors[0]);
         records = (Writable[]) ((ObjectWritable) recordValue).get();
         vectorizedSerde = true;
-        outputIterations = vrg.size;
       }
     } catch (SerDeException e1) {
       throw new HiveException(e1);
     }
 
-    for (int i = 0; i < outputIterations; i++) {
+    for (int i = 0; i < vrg.size; i++) {
       Writable row = null;
       if (vectorizedSerde) {
         row = records[i];
       } else {
         if (vrg.valueWriters == null) {
-          vrg.setValueWriters(VectorExpressionWriterFactory.getExpressionWriters(
-              (StructObjectInspector)inputObjInspectors[0]));
+          vrg.setValueWriters(this.valueWriters);
         }
-        row = new Text(vrg.toString());
+        try {
+          row = serializer.serialize(getRowObject(vrg, i), inputObjInspectors[0]);
+        } catch (SerDeException ex) {
+          throw new HiveException(ex);
+        }
       }
     /* Create list bucketing sub-directory only if stored-as-directories is on. */
     String lbDirName = null;
@@ -158,5 +173,18 @@ public class VectorFileSinkOperator extends FileSinkOperator {
       throw new HiveException(e);
     }
     }
+  }
+
+  private Object[] getRowObject(VectorizedRowBatch vrg, int rowIndex)
+      throws HiveException {
+    int batchIndex = rowIndex;
+    if (vrg.selectedInUse) {
+      batchIndex = vrg.selected[rowIndex];
+    }
+    for (int i = 0; i < vrg.projectionSize; i++) {
+      ColumnVector vectorColumn = vrg.cols[vrg.projectedColumns[i]];
+      singleRow[i] = vrg.valueWriters[i].writeValue(vectorColumn, batchIndex);
+    }
+    return singleRow;
   }
 }
