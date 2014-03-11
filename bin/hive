@@ -151,6 +151,11 @@ export HADOOP_HOME_WARN_SUPPRESS=true
 # pass classpath to hadoop
 export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${CLASSPATH}"
 
+# also pass hive classpath to hadoop
+if [ "$HIVE_CLASSPATH" != "" ]; then
+  export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${HIVE_CLASSPATH}";
+fi
+
 # check for hadoop in the path
 HADOOP_IN_PATH=`which hadoop 2>/dev/null`
 if [ -f ${HADOOP_IN_PATH} ]; then
