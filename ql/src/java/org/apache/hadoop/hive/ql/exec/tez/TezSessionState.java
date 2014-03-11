@@ -40,12 +40,13 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.AMConfiguration;
+import org.apache.tez.client.PreWarmContext;
 import org.apache.tez.client.TezSession;
 import org.apache.tez.client.TezSessionConfiguration;
 import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
-import org.apache.tez.client.PreWarmContext;
+import org.apache.tez.mapreduce.hadoop.MRHelpers;
 
 /**
  * Holds session state related to Tez
@@ -132,8 +133,11 @@ public class TezSessionState {
     Map<String, LocalResource> commonLocalResources = new HashMap<String, LocalResource>();
     commonLocalResources.put(utils.getBaseName(appJarLr), appJarLr);
 
-    AMConfiguration amConfig = new AMConfiguration(null, commonLocalResources,
-        tezConfig, null);
+    // Create environment for AM.
+    Map<String, String> amEnv = new HashMap<String, String>();
+    MRHelpers.updateEnvironmentForMRAM(conf, amEnv);
+
+    AMConfiguration amConfig = new AMConfiguration(amEnv, commonLocalResources, tezConfig, null);
 
     // configuration for the session
     TezSessionConfiguration sessionConfig = new TezSessionConfiguration(amConfig, tezConfig);
@@ -149,8 +153,7 @@ public class TezSessionState {
       int n = HiveConf.getIntVar(conf, ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
       LOG.info("Prewarming " + n + " containers  (id: " + sessionId
           + ", scratch dir: " + tezScratchDir + ")");
-      PreWarmContext context = utils.createPreWarmContext(sessionConfig, n,
-          commonLocalResources);
+      PreWarmContext context = utils.createPreWarmContext(sessionConfig, n, commonLocalResources);
       try {
         session.preWarm(context);
       } catch (InterruptedException ie) {
