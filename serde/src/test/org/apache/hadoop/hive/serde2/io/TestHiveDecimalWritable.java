@@ -216,5 +216,28 @@ public class TestHiveDecimalWritable {
        doTestFastStreamForHiveDecimal(value.toFormalString());
     }
 
+    @Test
+    public void testHive6594() {
+      String[] vs = new String[] {
+          "-4033.445769230769",
+          "6984454.211097692"};
+
+      Decimal128 d = new Decimal128(0L, (short) 14);
+      for (String s:vs) {
+        Decimal128 p = new Decimal128(s, (short) 14);
+        d.addDestructive(p, (short) (short) 14);
+      }
+
+      int bufferUsed = d.fastSerializeForHiveDecimal(scratch);
+      HiveDecimalWritable hdw = new HiveDecimalWritable();
+      hdw.set(scratch.getBytes(bufferUsed), d.getScale());
+
+      HiveDecimal hd = hdw.getHiveDecimal();
+
+      BigDecimal readValue = hd.bigDecimalValue();
+
+      Assert.assertEquals(d.toBigDecimal().stripTrailingZeros(),
+          readValue.stripTrailingZeros());
+    }
 }
 

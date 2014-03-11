@@ -2002,6 +2002,8 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
       SqlMathUtil.throwOverflowException();
     }
 
+    result.updateCount();
+
     return cmp > 0 ? (byte) 1 : (byte) -1;
   }
 
