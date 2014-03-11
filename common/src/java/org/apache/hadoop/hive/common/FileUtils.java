@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -297,7 +298,14 @@ public final class FileUtils {
       List<FileStatus> results) throws IOException {
 
     if (fileStatus.isDir()) {
-      for (FileStatus stat : fs.listStatus(fileStatus.getPath())) {
+      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), new PathFilter() {
+
+        @Override
+        public boolean accept(Path p) {
+          String name = p.getName();
+          return !name.startsWith("_") && !name.startsWith(".");
+        }
+      })) {
         listStatusRecursively(fs, stat, results);
       }
     } else {
