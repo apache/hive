@@ -96,13 +96,40 @@ public final class OrcFile {
     }
   }
 
-  // the table properties that control ORC files
-  public static final String COMPRESSION = "orc.compress";
-  public static final String COMPRESSION_BLOCK_SIZE = "orc.compress.size";
-  public static final String STRIPE_SIZE = "orc.stripe.size";
-  public static final String ROW_INDEX_STRIDE = "orc.row.index.stride";
-  public static final String ENABLE_INDEXES = "orc.create.index";
-  public static final String BLOCK_PADDING = "orc.block.padding";
+
+  // Note : these string definitions for table properties are deprecated,
+  // and retained only for backward compatibility, please do not add to
+  // them, add to OrcTableProperties below instead
+  @Deprecated public static final String COMPRESSION = "orc.compress";
+  @Deprecated public static final String COMPRESSION_BLOCK_SIZE = "orc.compress.size";
+  @Deprecated public static final String STRIPE_SIZE = "orc.stripe.size";
+  @Deprecated public static final String ROW_INDEX_STRIDE = "orc.row.index.stride";
+  @Deprecated public static final String ENABLE_INDEXES = "orc.create.index";
+  @Deprecated public static final String BLOCK_PADDING = "orc.block.padding";
+
+  /**
+   * Enum container for all orc table properties.
+   * If introducing a new orc-specific table property,
+   * add it here.
+   */
+  public static enum OrcTableProperties {
+    COMPRESSION("orc.compress"),
+    COMPRESSION_BLOCK_SIZE("orc.compress.size"),
+    STRIPE_SIZE("orc.stripe.size"),
+    ROW_INDEX_STRIDE("orc.row.index.stride"),
+    ENABLE_INDEXES("orc.create.index"),
+    BLOCK_PADDING("orc.block.padding");
+
+    private final String propName;
+
+    OrcTableProperties(String propName) {
+      this.propName = propName;
+    }
+
+    public String getPropName(){
+      return this.propName;
+    }
+  }
 
   // unused
   private OrcFile() {}
@@ -263,7 +290,7 @@ public final class OrcFile {
    * Create an ORC file writer. This is the public interface for creating
    * writers going forward and new options will only be added to this method.
    * @param path filename to write to
-   * @param options the options
+   * @param opts the options
    * @return a new ORC file writer
    * @throws IOException
    */
