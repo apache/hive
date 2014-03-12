@@ -91,4 +91,16 @@ public class KerberosSaslHelper {
     }
   }
 
+  public static TTransport getTokenTransport(String tokenStr, String host,
+      final TTransport underlyingTransport, Map<String, String> saslProps) throws SaslException {
+    HadoopThriftAuthBridge.Client authBridge =
+      ShimLoader.getHadoopThriftAuthBridge().createClientWithConf("kerberos");
+
+    try {
+      return authBridge.createClientTransport(null, host,
+          "DIGEST", tokenStr, underlyingTransport, saslProps);
+    } catch (IOException e) {
+      throw new SaslException("Failed to open client transport", e);
+    }
+  }
 }

@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.session;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,6 +32,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
@@ -101,17 +105,14 @@ public class SessionManager extends CompositeService {
   public SessionHandle openSession(TProtocolVersion protocol, String username, String password,
       Map<String, String> sessionConf, boolean withImpersonation, String delegationToken)
       throws HiveSQLException {
-    if (username == null) {
-      username = threadLocalUserName.get();
-    }
     HiveSession session;
     if (withImpersonation) {
       HiveSessionImplwithUGI hiveSessionUgi = new HiveSessionImplwithUGI(protocol, username, password,
-        hiveConf, sessionConf, delegationToken);
+        hiveConf, sessionConf, threadLocalIpAddress.get(), delegationToken);
       session = HiveSessionProxy.getProxy(hiveSessionUgi, hiveSessionUgi.getSessionUgi());
       hiveSessionUgi.setProxySession(session);
     } else {
-      session = new HiveSessionImpl(protocol, username, password, hiveConf, sessionConf);
+      session = new HiveSessionImpl(protocol, username, password, hiveConf, sessionConf, threadLocalIpAddress.get());
     }
     session.setSessionManager(this);
     session.setOperationManager(operationManager);
@@ -161,6 +162,10 @@ public class SessionManager extends CompositeService {
     threadLocalIpAddress.remove();
   }
 
+  public static String getIpAddress() {
+    return threadLocalIpAddress.get();
+  }
+
   private static ThreadLocal<String> threadLocalUserName = new ThreadLocal<String>(){
     @Override
     protected synchronized String initialValue() {
@@ -174,6 +179,10 @@ public class SessionManager extends CompositeService {
 
   private void clearUserName() {
     threadLocalUserName.remove();
+  }
+
+  public static String getUserName() {
+    return threadLocalUserName.get();
   }
 
   // execute session hooks
@@ -190,3 +199,4 @@ public class SessionManager extends CompositeService {
   }
 
 }
+

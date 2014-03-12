@@ -427,4 +427,28 @@ public class CLIService extends CompositeService implements ICLIService {
       fs.setPermission(scratchDir, fsPermission);
     }
   }
+
+  @Override
+  public String getDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
+      String owner, String renewer) throws HiveSQLException {
+    String delegationToken = sessionManager.getSession(sessionHandle).
+        getDelegationToken(authFactory, owner, renewer);
+    LOG.info(sessionHandle  + ": getDelegationToken()");
+    return delegationToken;
+  }
+
+  @Override
+  public void cancelDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
+      String tokenStr) throws HiveSQLException {
+    sessionManager.getSession(sessionHandle).
+        cancelDelegationToken(authFactory, tokenStr);
+    LOG.info(sessionHandle  + ": cancelDelegationToken()");
+  }
+
+  @Override
+  public void renewDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
+      String tokenStr) throws HiveSQLException {
+    sessionManager.getSession(sessionHandle).renewDelegationToken(authFactory, tokenStr);
+    LOG.info(sessionHandle  + ": renewDelegationToken()");
+  }
 }
