@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -44,6 +43,8 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils.UDFClassType;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -562,7 +563,10 @@ public final class FunctionRegistry {
         }
       }
     } catch (HiveException e) {
-      LOG.info("Unable to lookup UDF in metastore: " + e);
+      if (!((e.getCause() != null) && (e.getCause() instanceof MetaException)) &&
+         (e.getCause().getCause() != null) && (e.getCause().getCause() instanceof NoSuchObjectException))  {
+         LOG.info("Unable to lookup UDF in metastore: " + e);
+      }
     } catch (ClassNotFoundException e) {
       // Lookup of UDf class failed
       LOG.error("Unable to load UDF class: " + e);
