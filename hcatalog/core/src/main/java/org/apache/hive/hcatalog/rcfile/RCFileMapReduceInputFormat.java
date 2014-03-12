@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -44,7 +45,9 @@ public class RCFileMapReduceInputFormat<K extends LongWritable, V extends BytesR
   @Override
   public List<InputSplit> getSplits(JobContext job) throws IOException {
 
-    job.getConfiguration().setLong("mapred.min.split.size", SequenceFile.SYNC_INTERVAL);
+    job.getConfiguration().setLong(
+        ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"),
+        SequenceFile.SYNC_INTERVAL);
     return super.getSplits(job);
   }
 }

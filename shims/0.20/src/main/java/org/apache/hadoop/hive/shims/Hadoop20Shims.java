@@ -778,8 +778,8 @@ public class Hadoop20Shims implements HadoopShims {
     ret.put("HADOOPMAPREDINPUTDIRRECURSIVE", "mapred.input.dir.recursive");
     ret.put("MAPREDMAXSPLITSIZE", "mapred.max.split.size");
     ret.put("MAPREDMINSPLITSIZE", "mapred.min.split.size");
-    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapred.min.split.size.per.rack");
-    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapred.min.split.size.per.node");
+    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapred.min.split.size.per.rack");
+    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapred.min.split.size.per.node");
     ret.put("HADOOPNUMREDUCERS", "mapred.reduce.tasks");
     ret.put("HADOOPJOBNAME", "mapred.job.name");
     ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapred.reduce.tasks.speculative.execution");

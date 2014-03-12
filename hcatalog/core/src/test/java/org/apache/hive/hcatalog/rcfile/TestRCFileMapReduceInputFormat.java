@@ -228,7 +228,8 @@ public class TestRCFileMapReduceInputFormat extends TestCase {
     Configuration jonconf = new Configuration(cloneConf);
     jonconf.set("mapred.input.dir", testDir.toString());
     JobContext context = new Job(jonconf);
-    context.getConfiguration().setLong("mapred.max.split.size", maxSplitSize);
+    context.getConfiguration().setLong(
+        ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMAXSPLITSIZE"), maxSplitSize);
     List<InputSplit> splits = inputFormat.getSplits(context);
     assertEquals("splits length should be " + splitNumber, splits.size(), splitNumber);
     int readCount = 0;
