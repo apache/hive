@@ -284,7 +284,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       if (headerCount != 0 || footerCount != 0) {
         
         // Input file has header or footer, cannot be splitted.
-        conf.setLong("mapred.min.split.size", Long.MAX_VALUE);
+        conf.setLong(
+            ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"),
+            Long.MAX_VALUE);
       }
     }
 
