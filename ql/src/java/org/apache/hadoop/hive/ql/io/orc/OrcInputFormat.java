@@ -77,8 +77,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   VectorizedOrcInputFormat voif = new VectorizedOrcInputFormat();
 
   private static final Log LOG = LogFactory.getLog(OrcInputFormat.class);
-  static final String MIN_SPLIT_SIZE = "mapred.min.split.size";
-  static final String MAX_SPLIT_SIZE = "mapred.max.split.size";
+  static final String MIN_SPLIT_SIZE =
+      ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE");
+  static final String MAX_SPLIT_SIZE =
+      ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMAXSPLITSIZE");
 
   private static final long DEFAULT_MIN_SPLIT_SIZE = 16 * 1024 * 1024;
   private static final long DEFAULT_MAX_SPLIT_SIZE = 256 * 1024 * 1024;
