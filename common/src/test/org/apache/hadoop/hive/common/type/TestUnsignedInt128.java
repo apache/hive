@@ -552,8 +552,6 @@ public class TestUnsignedInt128 {
   public void testBigIntConversion() {
     BigInteger bigInteger = BigInteger.valueOf(0x1ABCDEF0123456L);
     UnsignedInt128 uInt128 = new UnsignedInt128(bigInteger);
-    System.out.println("Out = "+uInt128.toString());
-    System.out.println("Out = "+bigInteger.toString());
     assertEquals(bigInteger, uInt128.toBigIntegerSlow());
   }
 }

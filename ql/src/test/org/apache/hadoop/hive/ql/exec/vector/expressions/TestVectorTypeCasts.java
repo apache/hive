@@ -322,17 +322,17 @@ public class TestVectorTypeCasts {
     expr.evaluate(b);
     BytesColumnVector r = (BytesColumnVector) b.cols[1];
 
-    byte[] v = toBytes("1.10");
+    byte[] v = toBytes("1.1");
     Assert.assertEquals(0,
         StringExpr.compare(v, 0, v.length,
             r.vector[0], r.start[0], r.length[0]));
 
-    v = toBytes("-2.20");
+    v = toBytes("-2.2");
     Assert.assertEquals(0,
         StringExpr.compare(v, 0, v.length,
             r.vector[1], r.start[1], r.length[1]));
 
-    v = toBytes("9999999999999999.00");
+    v = toBytes("9999999999999999");
     Assert.assertEquals(0,
         StringExpr.compare(v, 0, v.length,
             r.vector[2], r.start[2], r.length[2]));
