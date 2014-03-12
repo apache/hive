@@ -136,7 +136,7 @@
 
   <property>
     <name>templeton.hive.properties</name>
-    <value>hive.metastore.local=false,hive.metastore.uris=thrift://localhost:9933,hive.metastore.sasl.enabled=false</value>
+    <value>hive.metastore.uris=thrift://localhost:9933,hive.metastore.sasl.enabled=false</value>
     <description>Properties to set when running hive.</description>
   </property>
 

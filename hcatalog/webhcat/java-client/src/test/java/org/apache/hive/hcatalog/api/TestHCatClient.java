@@ -90,7 +90,6 @@ public class TestHCatClient {
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
     hcatConf = new HiveConf(TestHCatClient.class);
-    hcatConf.set("hive.metastore.local", "false");
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
       + msPort);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

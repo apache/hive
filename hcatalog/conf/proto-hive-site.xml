@@ -29,12 +29,6 @@
 </property>
 
 <property>
-  <name>hive.metastore.local</name>
-  <value>false</value>
-  <description>controls whether to connect to remove metastore server or open a new metastore server in Hive Client JVM</description>
-</property>
-
-<property>
   <name>javax.jdo.option.ConnectionURL</name>
   <value>jdbc:mysql://DBHOSTNAME/hivemetastoredb?createDatabaseIfNotExist=true</value>
   <description>JDBC connect string for a JDBC metastore</description>

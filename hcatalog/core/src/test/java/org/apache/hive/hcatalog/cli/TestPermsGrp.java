@@ -84,7 +84,6 @@ public class TestPermsGrp extends TestCase {
     System.setSecurityManager(new NoExitSecurityManager());
 
     hcatConf = new HiveConf(this.getClass());
-    hcatConf.set("hive.metastore.local", "false");
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://127.0.0.1:" + msPort);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES, 3);

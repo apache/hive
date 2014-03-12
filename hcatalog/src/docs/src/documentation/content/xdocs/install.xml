@@ -163,10 +163,6 @@
             <th>Value to Set it to</th>
         </tr>
         <tr>
-            <td>hive.metastore.local</td>
-            <td>false</td>
-        </tr>
-        <tr>
             <td>javax.jdo.option.ConnectionURL</td>
             <td>jdbc:mysql://<em>hostname</em>/hivemetastoredb?createDatabaseIfNotExist=true where <em>hostname</em> is the name of the machine you installed MySQL on.</td>
         </tr>
