@@ -38,7 +38,7 @@ public class CastDecimalToString extends DecimalToStringUnaryUDF {
 
   @Override
   protected void func(BytesColumnVector outV, DecimalColumnVector inV, int i) {
-    String s = inV.vector[i].toFormalString();
+    String s = inV.vector[i].getHiveDecimalString();
     byte[] b = null;
     try {
       b = s.getBytes("UTF-8");
