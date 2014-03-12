@@ -19,6 +19,7 @@
 package org.apache.hive.jdbc;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.security.KeyStore;
 import java.sql.Array;
 import java.sql.Blob;
@@ -54,16 +55,23 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.KerberosSaslHelper;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.SaslQOP;
 import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.TCLIService;
+import org.apache.hive.service.cli.thrift.TCancelDelegationTokenReq;
+import org.apache.hive.service.cli.thrift.TCancelDelegationTokenResp;
 import org.apache.hive.service.cli.thrift.TCloseSessionReq;
+import org.apache.hive.service.cli.thrift.TGetDelegationTokenReq;
+import org.apache.hive.service.cli.thrift.TGetDelegationTokenResp;
 import org.apache.hive.service.cli.thrift.TOpenSessionReq;
 import org.apache.hive.service.cli.thrift.TOpenSessionResp;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.cli.thrift.TRenewDelegationTokenReq;
+import org.apache.hive.service.cli.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.cli.thrift.TSessionHandle;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -85,6 +93,7 @@ public class HiveConnection implements java.sql.Connection {
   private static final String HIVE_AUTH_TYPE= "auth";
   private static final String HIVE_AUTH_QOP = "sasl.qop";
   private static final String HIVE_AUTH_SIMPLE = "noSasl";
+  private static final String HIVE_AUTH_TOKEN = "delegationToken";
   private static final String HIVE_AUTH_USER = "user";
   private static final String HIVE_AUTH_PRINCIPAL = "principal";
   private static final String HIVE_AUTH_PASSWD = "password";
@@ -121,7 +130,12 @@ public class HiveConnection implements java.sql.Connection {
     setupLoginTimeout();
     jdbcURI = uri;
     // parse the connection uri
-    Utils.JdbcConnectionParams connParams = Utils.parseURL(jdbcURI);
+    Utils.JdbcConnectionParams connParams;
+    try {
+      connParams = Utils.parseURL(uri);
+    } catch (IllegalArgumentException e) {
+      throw new SQLException(e);
+    }
     // extract parsed connection parameters:
     // JDBC URL: jdbc:hive2://<host>:<port>/dbName;sess_var_list?hive_conf_list#hive_var_list
     // each list: <key1>=<val1>;<key2>=<val2> and so on
@@ -150,12 +164,16 @@ public class HiveConnection implements java.sql.Connection {
     if (isEmbeddedMode) {
       client = new EmbeddedThriftBinaryCLIService();
     } else {
-      // extract user/password from JDBC connection properties if its not supplied in the connection URL
+      // extract user/password from JDBC connection properties if its not supplied in the
+      // connection URL
       if (info.containsKey(HIVE_AUTH_USER)) {
         sessConfMap.put(HIVE_AUTH_USER, info.getProperty(HIVE_AUTH_USER));
         if (info.containsKey(HIVE_AUTH_PASSWD)) {
           sessConfMap.put(HIVE_AUTH_PASSWD, info.getProperty(HIVE_AUTH_PASSWD));
         }
+      }
+      if (info.containsKey(HIVE_AUTH_TYPE)) {
+        sessConfMap.put(HIVE_AUTH_TYPE, info.getProperty(HIVE_AUTH_TYPE));
       }
       // open the client transport
       openTransport();
@@ -172,7 +190,7 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V6);
 
     // open client session
-    openSession();
+    openSession(connParams.getSessionVars());
 
     configureConnection(connParams.getDbName());
   }
@@ -261,14 +279,26 @@ public class HiveConnection implements java.sql.Connection {
     }
   }
 
+  /**
+   * Create transport per the connection options
+   * Supported transport options are:
+   *   - SASL based transports over
+   *      + Kerberos
+   *      + Delegation token
+   *      + SSL
+   *      + non-SSL
+   *   - Raw (non-SASL) socket
+   *
+   *   Kerberos and Delegation token supports SASL QOP configurations
+   */
   private TTransport createBinaryTransport() throws SQLException {
     try {
       // handle secure connection if specified
       if (!HIVE_AUTH_SIMPLE.equals(sessConfMap.get(HIVE_AUTH_TYPE))) {
         // If Kerberos
+        Map<String, String> saslProps = new HashMap<String, String>();
+        SaslQOP saslQOP = SaslQOP.AUTH;
         if (sessConfMap.containsKey(HIVE_AUTH_PRINCIPAL)) {
-          Map<String, String> saslProps = new HashMap<String, String>();
-          SaslQOP saslQOP = SaslQOP.AUTH;
           if (sessConfMap.containsKey(HIVE_AUTH_QOP)) {
             try {
               saslQOP = SaslQOP.fromString(sessConfMap.get(HIVE_AUTH_QOP));
@@ -284,30 +314,42 @@ public class HiveConnection implements java.sql.Connection {
               sessConfMap.get(HIVE_AUTH_PRINCIPAL), host,
               HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps, assumeSubject);
         } else {
-          String userName = sessConfMap.get(HIVE_AUTH_USER);
-          if ((userName == null) || userName.isEmpty()) {
-            userName = HIVE_ANONYMOUS_USER;
-          }
-          String passwd = sessConfMap.get(HIVE_AUTH_PASSWD);
-          if ((passwd == null) || passwd.isEmpty()) {
-            passwd = HIVE_ANONYMOUS_PASSWD;
-          }
-          String useSslStr = sessConfMap.get(HIVE_USE_SSL);
-          if ("true".equalsIgnoreCase(useSslStr)) {
-            String sslTrustStore = sessConfMap.get(HIVE_SSL_TRUST_STORE);
-            String sslTrustStorePassword = sessConfMap.get(HIVE_SSL_TRUST_STORE_PASSWORD);
-            if (sslTrustStore == null || sslTrustStore.isEmpty()) {
-              transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout);
-            } else {
-              transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout,
-                  sslTrustStore, sslTrustStorePassword);
-            }
+          // If there's a delegation token available then use token based connection
+          String tokenStr = getClientDelegationToken(sessConfMap);
+          if (tokenStr != null) {
+            transport = KerberosSaslHelper.getTokenTransport(tokenStr,
+                  host, HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps);
           } else {
-            transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
-          }
+            // we are using PLAIN Sasl connection with user/password
+            String userName = sessConfMap.get(HIVE_AUTH_USER);
+            if ((userName == null) || userName.isEmpty()) {
+              userName = HIVE_ANONYMOUS_USER;
+            }
+            String passwd = sessConfMap.get(HIVE_AUTH_PASSWD);
+            if ((passwd == null) || passwd.isEmpty()) {
+              passwd = HIVE_ANONYMOUS_PASSWD;
+            }
+            String useSslStr = sessConfMap.get(HIVE_USE_SSL);
+            if ("true".equalsIgnoreCase(useSslStr)) {
+              // get SSL socket
+              String sslTrustStore = sessConfMap.get(HIVE_SSL_TRUST_STORE);
+              String sslTrustStorePassword = sessConfMap.get(HIVE_SSL_TRUST_STORE_PASSWORD);
+              if (sslTrustStore == null || sslTrustStore.isEmpty()) {
+                transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout);
+              } else {
+                transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout,
+                  sslTrustStore, sslTrustStorePassword);
+              }
+            } else {
+              // get non-SSL socket transport
+              transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
+            }
+          // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
           transport = PlainSaslHelper.getPlainTransport(userName, passwd, transport);
+          }
         }
       } else {
+        // Raw socket connection (non-sasl)
         transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
       }
     } catch (SaslException e) {
@@ -330,11 +372,32 @@ public class HiveConnection implements java.sql.Connection {
     return false;
   }
 
-  private void openSession() throws SQLException {
+  // Lookup the delegation token. First in the connection URL, then Configuration
+  private String getClientDelegationToken(Map<String, String> jdbcConnConf)
+      throws SQLException {
+    String tokenStr = null;
+    if (HIVE_AUTH_TOKEN.equalsIgnoreCase(jdbcConnConf.get(HIVE_AUTH_TYPE))) {
+      // check delegation token in job conf if any
+      try {
+        tokenStr = ShimLoader.getHadoopShims().
+            getTokenStrForm(HiveAuthFactory.HS2_CLIENT_TOKEN);
+      } catch (IOException e) {
+        throw new SQLException("Error reading token ", e);
+      }
+    }
+    return tokenStr;
+  }
+
+  private void openSession(Map<String, String> sessVars) throws SQLException {
     TOpenSessionReq openReq = new TOpenSessionReq();
 
     // set the session configuration
-    // openReq.setConfiguration(null);
+    if (sessVars.containsKey(HiveAuthFactory.HS2_PROXY_USER)) {
+      Map<String, String> openConf = new HashMap<String, String>();
+      openConf.put(HiveAuthFactory.HS2_PROXY_USER,
+          sessVars.get(HiveAuthFactory.HS2_PROXY_USER));
+      openReq.setConfiguration(openConf);
+    }
 
     try {
       TOpenSessionResp openResp = client.OpenSession(openReq);
@@ -421,6 +484,44 @@ public class HiveConnection implements java.sql.Connection {
   public void abort(Executor executor) throws SQLException {
     // JDK 1.7
     throw new SQLException("Method not supported");
+  }
+
+  public String getDelegationToken(String owner, String renewer) throws SQLException {
+    TGetDelegationTokenReq req = new TGetDelegationTokenReq(sessHandle, owner, renewer);
+    try {
+      TGetDelegationTokenResp tokenResp = client.GetDelegationToken(req);
+      Utils.verifySuccess(tokenResp.getStatus());
+      return tokenResp.getDelegationToken();
+    } catch (TException e) {
+      throw new SQLException("Could not retrieve token: " +
+            e.getMessage(), " 08S01", e);
+    }
+  }
+
+  public void cancelDelegationToken(String tokenStr) throws SQLException {
+    TCancelDelegationTokenReq cancelReq = new TCancelDelegationTokenReq(sessHandle, tokenStr);
+    try {
+      TCancelDelegationTokenResp cancelResp =
+              client.CancelDelegationToken(cancelReq);
+      Utils.verifySuccess(cancelResp.getStatus());
+      return;
+    } catch (TException e) {
+      throw new SQLException("Could not cancel token: " +
+            e.getMessage(), " 08S01", e);
+    }
+  }
+
+  public void renewDelegationToken(String tokenStr) throws SQLException {
+    TRenewDelegationTokenReq cancelReq = new TRenewDelegationTokenReq(sessHandle, tokenStr);
+    try {
+      TRenewDelegationTokenResp renewResp =
+              client.RenewDelegationToken(cancelReq);
+      Utils.verifySuccess(renewResp.getStatus());
+      return;
+    } catch (TException e) {
+      throw new SQLException("Could not renew token: " +
+            e.getMessage(), " 08S01", e);
+    }
   }
 
   /*

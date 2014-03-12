@@ -876,6 +876,7 @@ public class Commands {
     if (pass != null) {
       props.setProperty("password", pass);
     }
+
     return connect(props);
   }
 
@@ -922,6 +923,7 @@ public class Commands {
         "javax.jdo.option.ConnectionPassword",
         "ConnectionPassword",
     });
+    String auth = getProperty(props, new String[] {"auth"});
 
     if (url == null || url.length() == 0) {
       return beeLine.error("Property \"url\" is required");
@@ -937,14 +939,23 @@ public class Commands {
     if (username == null) {
       username = beeLine.getConsoleReader().readLine("Enter username for " + url + ": ");
     }
+    props.setProperty("user", username);
     if (password == null) {
       password = beeLine.getConsoleReader().readLine("Enter password for " + url + ": ",
           new Character('*'));
     }
+    props.setProperty("password", password);
+
+    if (auth == null) {
+      auth = beeLine.getOpts().getAuthType();
+    }
+    if (auth != null) {
+      props.setProperty("auth", auth);
+    }
 
     try {
       beeLine.getDatabaseConnections().setConnection(
-          new DatabaseConnection(beeLine, driver, url, username, password));
+          new DatabaseConnection(beeLine, driver, url, props));
       beeLine.getDatabaseConnection().getConnection();
 
       beeLine.setCompletions();
@@ -1171,8 +1182,8 @@ public class Commands {
     } catch (Exception e) {
       beeLine.handleException(e);
     }
-    beeLine.output(beeLine.loc("record-closed", beeLine.getRecordOutputFile()));
     beeLine.setRecordOutputFile(null);
+    beeLine.output(beeLine.loc("record-closed", beeLine.getRecordOutputFile()));
     return true;
   }
 
@@ -1191,8 +1202,9 @@ public class Commands {
     }
 
     try {
-      beeLine.setRecordOutputFile(new OutputFile(parts[1]));
-      beeLine.output(beeLine.loc("record-started", beeLine.getRecordOutputFile()));
+      OutputFile recordOutput = new OutputFile(parts[1]);
+      beeLine.output(beeLine.loc("record-started", recordOutput));
+      beeLine.setRecordOutputFile(recordOutput);
       return true;
     } catch (Exception e) {
       return beeLine.error(e);
