@@ -192,9 +192,20 @@
           <classifier>tests</classifier>
           <scope>test</scope>
         </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-tools</artifactId>
+          <version>${hadoop-20S.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-servlet</artifactId>
+          <scope>test</scope>
+        </dependency>
       </dependencies>
     </profile>
-   <profile>
+    <profile>
       <id>hadoop-2</id>
       <dependencies>
         <dependency>
@@ -227,6 +238,16 @@
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-server</artifactId>
           <version>${hbase.hadoop2.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-minicluster</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-servlet</artifactId>
           <scope>test</scope>
         </dependency>
       </dependencies>
