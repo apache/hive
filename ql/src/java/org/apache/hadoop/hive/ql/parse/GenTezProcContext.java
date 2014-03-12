@@ -120,6 +120,9 @@ public class GenTezProcContext implements NodeProcessorCtx{
   public final Map<Path, List<FileSinkDesc>> linkedFileSinks;
   public final Set<FileSinkOperator> fileSinkSet;
 
+  // remember which reducesinks we've already connected
+  public final Set<ReduceSinkOperator> connectedReduceSinks;
+
   @SuppressWarnings("unchecked")
   public GenTezProcContext(HiveConf conf, ParseContext parseContext,
       List<Task<MoveWork>> moveTask, List<Task<? extends Serializable>> rootTasks,
@@ -147,6 +150,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.workWithUnionOperators = new HashSet<BaseWork>();
     this.linkedFileSinks = new HashMap<Path, List<FileSinkDesc>>();
     this.fileSinkSet = new HashSet<FileSinkOperator>();
+    this.connectedReduceSinks = new HashSet<ReduceSinkOperator>();
 
     rootTasks.add(currentTask);
   }
