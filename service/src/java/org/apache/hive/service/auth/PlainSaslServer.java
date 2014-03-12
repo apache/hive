@@ -24,7 +24,10 @@ import java.util.Map;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 import javax.security.sasl.SaslServerFactory;
@@ -41,44 +44,8 @@ public class PlainSaslServer implements SaslServer  {
   private final AuthMethods authMethod;
   private String user;
   private String passwd;
+  private String authzId;
   private final CallbackHandler handler;
-
-  // Callback for external authentication
-  // The authMethod indicates the type of authentication (LDAP, Unix, Windows)
-  public static class ExternalAuthenticationCallback implements Callback {
-    private final AuthMethods authMethod;
-    private final String userName;
-    private final String passwd;
-    private boolean authenticated;
-
-    public ExternalAuthenticationCallback(AuthMethods authMethod, String userName, String passwd) {
-      this.authMethod = authMethod;
-      this.userName = userName;
-      this.passwd = passwd;
-      authenticated = false;
-    }
-
-    public AuthMethods getAuthMethod() {
-      return authMethod;
-    }
-
-    public String getUserName() {
-      return userName;
-    }
-
-    public String getPasswd() {
-      return passwd;
-    }
-
-    public void setAuthenticated (boolean authenticated) {
-      this.authenticated = authenticated;
-    }
-
-    public boolean isAuthenticated () {
-      return authenticated;
-    }
-  }
-
 
   PlainSaslServer(CallbackHandler handler, String authMethodStr) throws SaslException {
     this.handler = handler;
@@ -112,6 +79,12 @@ public class PlainSaslServer implements SaslServer  {
       }
       passwd = tokenList.removeLast();
       user = tokenList.removeLast();
+      // optional authzid
+      if (!tokenList.isEmpty()) {
+        authzId = tokenList.removeLast();
+      } else {
+        authzId = user;
+      }
       if (user == null || user.isEmpty()) {
         throw new SaslException("No user name provide");
       }
@@ -119,13 +92,15 @@ public class PlainSaslServer implements SaslServer  {
         throw new SaslException("No password name provide");
       }
 
-      // pass the user and passwd via AuthorizeCallback
-      // the caller needs to authenticate
-      ExternalAuthenticationCallback exAuth = new
-          ExternalAuthenticationCallback(authMethod, user, passwd);
-      Callback[] cbList = new Callback[] {exAuth};
+      NameCallback nameCallback = new NameCallback("User");
+      nameCallback.setName(user);
+      PasswordCallback pcCallback = new PasswordCallback("Password", false);
+      pcCallback.setPassword(passwd.toCharArray());
+      AuthorizeCallback acCallback = new AuthorizeCallback(user, authzId);
+
+      Callback[] cbList = new Callback[] {nameCallback, pcCallback, acCallback};
       handler.handle(cbList);
-      if (!exAuth.isAuthenticated()) {
+      if (!acCallback.isAuthorized()) {
         throw new SaslException("Authentication failed");
       }
     } catch (IllegalStateException eL) {
