@@ -28,6 +28,8 @@ import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
+import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
@@ -49,6 +52,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 import org.apache.thrift.TException;
 
 /**
@@ -371,6 +375,28 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     }
   }
 
+
+  @Override
+  public List<HiveRoleGrant> getPrincipalsInRoleInfo(String roleName) throws HiveAuthzPluginException, HiveAccessControlException {
+    // only user belonging to admin role can list role
+    if (!isUserAdmin()) {
+      throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
+        + " allowed get principals in a role. " + ADMIN_ONLY_MSG);
+    }
+    try {
+      GetPrincipalsInRoleResponse princGrantInfo =
+          metastoreClientFactory.getHiveMetastoreClient().get_principals_in_role(new GetPrincipalsInRoleRequest(roleName));
+
+      List<HiveRoleGrant> hiveRoleGrants = new ArrayList<HiveRoleGrant>();
+      for(RolePrincipalGrant thriftRoleGrant :  princGrantInfo.getPrincipalGrants()){
+        hiveRoleGrants.add(new HiveRoleGrant(thriftRoleGrant));
+      }
+      return hiveRoleGrants;
+    } catch (Exception e) {
+      throw new HiveAuthzPluginException("Error getting principals for all roles", e);
+    }
+  }
+
   @Override
   public List<HivePrivilegeInfo> showPrivileges(HivePrincipal principal, HivePrivilegeObject privObj)
       throws HiveAuthzPluginException {
@@ -511,4 +537,5 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     }
     return true;
   }
+
 }

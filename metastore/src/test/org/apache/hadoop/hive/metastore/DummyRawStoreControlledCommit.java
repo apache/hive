@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -459,6 +458,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<MRoleMap> listRoleMembers(String roleName) {
+    return objectStore.listRoleMembers(roleName);
+  }
+
+  @Override
   public Partition getPartitionWithAuth(String dbName, String tblName,
       List<String> partVals, String userName, List<String> groupNames)
       throws MetaException, NoSuchObjectException, InvalidObjectException {
@@ -571,6 +575,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.deleteTableColumnStatistics(dbName, tableName, colName);
   }
 
+  @Override
   public boolean deletePartitionColumnStatistics(String dbName, String tableName,
       String partName, List<String> partVals, String colName)
       throws NoSuchObjectException, MetaException, InvalidObjectException,
@@ -586,6 +591,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.updateTableColumnStatistics(statsObj);
   }
 
+  @Override
   public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
       List<String> partVals)
       throws NoSuchObjectException, MetaException, InvalidObjectException,
@@ -593,33 +599,41 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.updatePartitionColumnStatistics(statsObj, partVals);
   }
 
+  @Override
   public boolean addToken(String tokenIdentifier, String delegationToken) {
     return false;
   }
 
+  @Override
   public boolean removeToken(String tokenIdentifier) {
     return false;
   }
 
+  @Override
   public String getToken(String tokenIdentifier) {
     return "";
   }
 
+  @Override
   public List<String> getAllTokenIdentifiers() {
     return new ArrayList<String>();
   }
 
+  @Override
   public int addMasterKey(String key) throws MetaException {
     return -1;
   }
 
+  @Override
   public void updateMasterKey(Integer seqNo, String key)
     throws NoSuchObjectException, MetaException {}
 
+  @Override
   public boolean removeMasterKey(Integer keySeq) {
     return false;
   }
 
+  @Override
   public String[] getMasterKeys() {
     return new String[0];
   }
@@ -664,6 +678,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     objectStore.dropPartitions(dbName, tblName, partNames);
   }
 
+  @Override
   public void createFunction(Function func) throws InvalidObjectException,
       MetaException {
     objectStore.createFunction(func);
@@ -693,5 +708,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
       throws MetaException {
     return objectStore.getFunctions(dbName, pattern);
   }
+
 
 }

@@ -877,15 +877,15 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
           case 4: // PARAMETERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map78 = iprot.readMapBegin();
-                struct.parameters = new HashMap<String,String>(2*_map78.size);
-                for (int _i79 = 0; _i79 < _map78.size; ++_i79)
+                org.apache.thrift.protocol.TMap _map86 = iprot.readMapBegin();
+                struct.parameters = new HashMap<String,String>(2*_map86.size);
+                for (int _i87 = 0; _i87 < _map86.size; ++_i87)
                 {
-                  String _key80; // required
-                  String _val81; // required
-                  _key80 = iprot.readString();
-                  _val81 = iprot.readString();
-                  struct.parameters.put(_key80, _val81);
+                  String _key88; // required
+                  String _val89; // required
+                  _key88 = iprot.readString();
+                  _val89 = iprot.readString();
+                  struct.parameters.put(_key88, _val89);
                 }
                 iprot.readMapEnd();
               }
@@ -951,10 +951,10 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
         oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
-          for (Map.Entry<String, String> _iter82 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter90 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter82.getKey());
-            oprot.writeString(_iter82.getValue());
+            oprot.writeString(_iter90.getKey());
+            oprot.writeString(_iter90.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -1033,10 +1033,10 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       if (struct.isSetParameters()) {
         {
           oprot.writeI32(struct.parameters.size());
-          for (Map.Entry<String, String> _iter83 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter91 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter83.getKey());
-            oprot.writeString(_iter83.getValue());
+            oprot.writeString(_iter91.getKey());
+            oprot.writeString(_iter91.getValue());
           }
         }
       }
@@ -1069,15 +1069,15 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TMap _map84 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.parameters = new HashMap<String,String>(2*_map84.size);
-          for (int _i85 = 0; _i85 < _map84.size; ++_i85)
+          org.apache.thrift.protocol.TMap _map92 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.parameters = new HashMap<String,String>(2*_map92.size);
+          for (int _i93 = 0; _i93 < _map92.size; ++_i93)
           {
-            String _key86; // required
-            String _val87; // required
-            _key86 = iprot.readString();
-            _val87 = iprot.readString();
-            struct.parameters.put(_key86, _val87);
+            String _key94; // required
+            String _val95; // required
+            _key94 = iprot.readString();
+            _val95 = iprot.readString();
+            struct.parameters.put(_key94, _val95);
           }
         }
         struct.setParametersIsSet(true);

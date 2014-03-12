@@ -24,6 +24,11 @@ POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
 PUBLIC	-1			false	-1	
 src_role_wadmin	-1	user2	USER	true	-1	hive_admin_user
+PREHOOK: query: show principals src_role_wadmin
+PREHOOK: type: SHOW_ROLE_PRINCIPALS
+POSTHOOK: query: show principals src_role_wadmin
+POSTHOOK: type: SHOW_ROLE_PRINCIPALS
+user2	USER	true	hive_admin_user	USER	-1
 PREHOOK: query: set role src_role_wadmin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role src_role_wadmin
@@ -38,6 +43,20 @@ POSTHOOK: query: show role grant user user3
 POSTHOOK: type: SHOW_ROLE_GRANT
 PUBLIC	-1			false	-1	
 src_role_wadmin	-1	user3	USER	false	-1	user2
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show principals src_role_wadmin
+PREHOOK: type: SHOW_ROLE_PRINCIPALS
+POSTHOOK: query: show principals src_role_wadmin
+POSTHOOK: type: SHOW_ROLE_PRINCIPALS
+user2	USER	true	hive_admin_user	USER	-1
+user3	USER	false	user2	USER	-1
+PREHOOK: query: set role src_role_wadmin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role src_role_wadmin
+POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: revoke src_role_wadmin from user user3
 PREHOOK: type: REVOKE_ROLE
 POSTHOOK: query: revoke src_role_wadmin from user user3
@@ -47,3 +66,12 @@ PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user3
 POSTHOOK: type: SHOW_ROLE_GRANT
 PUBLIC	-1			false	-1	
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show principals src_role_wadmin
+PREHOOK: type: SHOW_ROLE_PRINCIPALS
+POSTHOOK: query: show principals src_role_wadmin
+POSTHOOK: type: SHOW_ROLE_PRINCIPALS
+user2	USER	true	hive_admin_user	USER	-1
