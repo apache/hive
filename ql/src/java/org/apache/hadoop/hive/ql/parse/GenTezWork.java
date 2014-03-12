@@ -145,6 +145,7 @@ public class GenTezWork implements NodeProcessor {
         for (ReduceSinkOperator r:
                context.linkWorkWithReduceSinkMap.get(parentWork)) {
           r.getConf().setOutputName(work.getName());
+          context.connectedReduceSinks.add(r);
         }
       }
     }
@@ -177,6 +178,7 @@ public class GenTezWork implements NodeProcessor {
       }
 
       // finally hook everything up
+      LOG.debug("Connecting union work ("+unionWork+") with work ("+work+")");
       tezWork.connect(unionWork, work, EdgeType.CONTAINS);
       unionWork.addUnionOperators(context.currentUnionOperators);
       context.currentUnionOperators.clear();
@@ -199,6 +201,9 @@ public class GenTezWork implements NodeProcessor {
 
       BaseWork followingWork = context.leafOperatorToFollowingWork.get(operator);
 
+      LOG.debug("Second pass. Leaf operator: "+operator
+        +" has common downstream work:"+followingWork);
+
       // need to add this branch to the key + value info
       assert operator instanceof ReduceSinkOperator
         && followingWork instanceof ReduceWork;
@@ -212,10 +217,13 @@ public class GenTezWork implements NodeProcessor {
       // remember the output name of the reduce sink
       rs.getConf().setOutputName(rWork.getName());
 
-      if (!context.unionWorkMap.containsKey(operator)) {
+      if (!context.connectedReduceSinks.contains(rs)) {
         // add dependency between the two work items
         tezWork.connect(work, rWork, EdgeType.SIMPLE_EDGE);
+        context.connectedReduceSinks.add(rs);
       }
+    } else {
+      LOG.debug("First pass. Leaf operator: "+operator);
     }
 
     // No children means we're at the bottom. If there are more operators to scan
