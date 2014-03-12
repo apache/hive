@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.parquet.serde.primitive.ParquetPrimitiveInspectorFactory;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -89,14 +90,22 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       } else {
         return new StandardParquetHiveMapInspector(getObjectInspector(keyTypeInfo), getObjectInspector(valueTypeInfo));
       }
-    } else if (typeInfo.equals(TypeInfoFactory.timestampTypeInfo)) {
-      throw new UnsupportedOperationException("timestamp not implemented yet");
     } else if (typeInfo.equals(TypeInfoFactory.byteTypeInfo)) {
       return ParquetPrimitiveInspectorFactory.parquetByteInspector;
     } else if (typeInfo.equals(TypeInfoFactory.shortTypeInfo)) {
       return ParquetPrimitiveInspectorFactory.parquetShortInspector;
+    } else if (typeInfo.equals(TypeInfoFactory.timestampTypeInfo)) {
+      throw new UnsupportedOperationException("Parquet does not support timestamp. See HIVE-6384");
+    } else if (typeInfo.equals(TypeInfoFactory.dateTypeInfo)) {
+      throw new UnsupportedOperationException("Parquet does not support date. See HIVE-6384");
+    } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+      throw new UnsupportedOperationException("Parquet does not support decimal. See HIVE-6384");
+    } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+      throw new UnsupportedOperationException("Parquet does not support char. See HIVE-6384");
+    } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
+      throw new UnsupportedOperationException("Parquet does not support varchar. See HIVE-6384");
     } else {
-      throw new IllegalArgumentException("Unknown field info: " + typeInfo);
+      throw new UnsupportedOperationException("Unknown field type: " + typeInfo);
     }
 
   }
