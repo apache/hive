@@ -155,8 +155,7 @@ ${env.PIG_HOME}/bin/pig
   <tr>
     <td><strong>templeton.hive.properties</strong></td>
     <td>
-<code>hive.metastore.local=false,
-hive.metastore.uris=thrift://localhost:9933,
+<code>hive.metastore.uris=thrift://localhost:9933,
 hive.metastore.sasl.enabled=false</code></td>
     <td>Properties to set when running hive. To use it in a cluster with 
 kerberos security enabled set hive.metastore.sasl.enabled=false and add hive.metastore.execute.setugi=true

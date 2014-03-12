@@ -226,7 +226,6 @@ public class TestHiveClientCache {
       securityManager = System.getSecurityManager();
       System.setSecurityManager(new NoExitSecurityManager());
       hiveConf = new HiveConf(TestHiveClientCache.class);
-      hiveConf.set("hive.metastore.local", "false");
       hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
           + MS_PORT);
       hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

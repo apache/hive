@@ -112,7 +112,6 @@ public class TestHCatPartitionPublish {
     System.setSecurityManager(new NoExitSecurityManager());
 
     hcatConf = new HiveConf(TestHCatPartitionPublish.class);
-    hcatConf.set("hive.metastore.local", "false");
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
         + msPort);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

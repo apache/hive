@@ -66,7 +66,6 @@ public class TestMsgBusConnection extends TestCase {
     HiveConf hiveConf = new HiveConf(this.getClass());
     hiveConf.set(ConfVars.METASTORE_EVENT_LISTENERS.varname,
         NotificationListener.class.getName());
-    hiveConf.set("hive.metastore.local", "true");
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
