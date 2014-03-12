@@ -378,7 +378,7 @@ public class ExpressionTree {
       }
       valString += keyEqual.length();
       if (partitionColumnIndex != (partitionColumnCount - 1)) {
-        valString += ", partitionName.indexOf(\"/\", " + indexOfKeyStr + keyEqual.length() + ")";
+        valString += ", partitionName.concat(\"/\").indexOf(\"/\", " + indexOfKeyStr + keyEqual.length() + ")";
       }
       valString += ")";
 
