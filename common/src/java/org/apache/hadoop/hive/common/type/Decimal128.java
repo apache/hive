@@ -1725,6 +1725,67 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
   }
 
   /**
+   * Temporary array used in {@link #getHiveDecimalString}
+   */
+  private int [] tmpArray = new int[2];
+
+  /**
+   * Returns the string representation of this value. It discards the trailing zeros
+   * in the fractional part to match the HiveDecimal's string representation. However,
+   * don't use this string representation for the reconstruction of the object.
+   *
+   * @return string representation of this value
+   */
+  public String getHiveDecimalString() {
+    if (this.signum == 0) {
+      return "0";
+    }
+
+    StringBuilder buf = new StringBuilder(50);
+    if (this.signum < 0) {
+      buf.append('-');
+    }
+
+    char [] unscaled = this.unscaledValue.getDigitsArray(tmpArray);
+    int unscaledLength = tmpArray[0];
+    int trailingZeros = tmpArray[1];
+    int numIntegerDigits = unscaledLength - this.scale;
+    if (numIntegerDigits > 0) {
+
+      // write out integer part first
+      // then write out fractional part
+      for (int i=0; i < numIntegerDigits; i++) {
+        buf.append(unscaled[i]);
+      }
+
+      if (this.scale > trailingZeros) {
+        buf.append('.');
+        for (int i = numIntegerDigits; i < (unscaledLength - trailingZeros); i++) {
+          buf.append(unscaled[i]);
+        }
+      }
+    } else {
+
+      // no integer part
+      buf.append('0');
+
+      if (this.scale > trailingZeros) {
+
+        // fractional part has, starting with zeros
+        buf.append('.');
+        for (int i = unscaledLength; i < this.scale; ++i) {
+          buf.append('0');
+        }
+        for (int i = 0; i < (unscaledLength - trailingZeros); i++) {
+          buf.append(unscaled[i]);
+        }
+      }
+    }
+
+    return new String(buf);
+  }
+
+  /**
    * Returns the formal string representation of this value. Unlike the debug
    * string returned by {@link #toString()}, this method returns a string that
    * can be used to re-construct this object. Remember, toString() is only for

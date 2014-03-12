@@ -18,7 +18,7 @@ package org.apache.hadoop.hive.common.type;
 import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.Random;
 
@@ -26,7 +26,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.hadoop.hive.common.type.UnsignedInt128;
 
 /**
  * This code was originally written for Microsoft PolyBase.
@@ -803,4 +802,56 @@ public class TestDecimal128 {
     assertEquals(hd.longValue(), d.longValue());
   }
 
+  @Test
+  public void testToHiveDecimalString() {
+    Decimal128 d1 = new Decimal128("4134.923076923077", (short) 15);
+    assertEquals("4134.923076923077", d1.getHiveDecimalString());
+
+    Decimal128 d2 = new Decimal128("0.00923076923", (short) 15);
+    assertEquals("0.00923076923", d2.getHiveDecimalString());
+
+    Decimal128 d3 = new Decimal128("0.00923076000", (short) 15);
+    assertEquals("0.00923076", d3.getHiveDecimalString());
+
+    Decimal128 d4 = new Decimal128("4294967296.01", (short) 15);
+    assertEquals("4294967296.01", d4.getHiveDecimalString());
+
+    Decimal128 d5 = new Decimal128("4294967296.01", (short) 2);
+    assertEquals("4294967296.01", d5.getHiveDecimalString());
+
+    Decimal128 d6 = new Decimal128();
+    HiveDecimal hd1 = HiveDecimal.create(new BigInteger("42949672"));
+    d6.update(hd1.bigDecimalValue());
+    assertEquals(hd1.toString(), d6.getHiveDecimalString());
+
+    Decimal128 d7 = new Decimal128();
+    HiveDecimal hd2 = HiveDecimal.create(new BigDecimal("0.0"));
+    d7.update(hd2.bigDecimalValue());
+    assertEquals(hd2.toString(), d7.getHiveDecimalString());
+
+    Decimal128 d8 = new Decimal128();
+    HiveDecimal hd3 = HiveDecimal.create(new BigDecimal("0.00023000"));
+    d8.update(hd3.bigDecimalValue());
+    assertEquals(hd3.toString(), d8.getHiveDecimalString());
+
+    Decimal128 d9 = new Decimal128();
+    HiveDecimal hd4 = HiveDecimal.create(new BigDecimal("0.1"));
+    d9.update(hd4.bigDecimalValue());
+    assertEquals(hd4.toString(), d9.getHiveDecimalString());
+
+    Decimal128 d10 = new Decimal128();
+    HiveDecimal hd5 = HiveDecimal.create(new BigDecimal("-00.100"));
+    d10.update(hd5.bigDecimalValue());
+    assertEquals(hd5.toString(), d10.getHiveDecimalString());
+
+    Decimal128 d11 = new Decimal128();
+    HiveDecimal hd6 = HiveDecimal.create(new BigDecimal("00.1"));
+    d11.update(hd6.bigDecimalValue());
+    assertEquals(hd6.toString(), d11.getHiveDecimalString());
+
+    Decimal128 d12 = new Decimal128(27.000, (short)3);
+    HiveDecimal hd7 = HiveDecimal.create(new BigDecimal("27.000"));
+    assertEquals(hd7.toString(), d12.getHiveDecimalString());
+    assertEquals("27", hd7.toString());
+  }
 }

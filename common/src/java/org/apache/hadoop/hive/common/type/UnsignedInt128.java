@@ -982,6 +982,63 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
     }
   }
 
+  /**
+   * Similar to {@link #toFormalString()} but returns an array of digits
+   * instead of string. The length of the array and the count of trailing
+   * zeros are returned in the array passed at first and second positions
+   * respectively.
+   * @param meta Array of size two that is populated with length of the returned array
+   *             and the count of trailing zeros.
+   * @return Digits of the this value
+   * @throws NullPointerException if meta is null.
+   * @throws ArrayIndexOutOfBoundsException if meta is less than size two.
+   */
+  public char [] getDigitsArray(int [] meta) {
+    char[] buf = new char[MAX_DIGITS + 1];
+    int bufCount = 0;
+    int nonZeroBufCount = 0;
+    int trailingZeros = 0;
+
+    final int tenScale = SqlMathUtil.MAX_POWER_TEN_INT31;
+    final int tenPower = SqlMathUtil.POWER_TENS_INT31[tenScale];
+    UnsignedInt128 tmp = new UnsignedInt128(this);
+
+    while (!tmp.isZero()) {
+      int remainder = tmp.divideDestructive(tenPower);
+      for (int i = 0; i < tenScale && bufCount < buf.length; ++i) {
+        int digit = remainder % 10;
+        remainder /= 10;
+        buf[bufCount] = (char) (digit + '0');
+        ++bufCount;
+        if (digit != 0) {
+          nonZeroBufCount = bufCount;
+        }
+        if (nonZeroBufCount == 0) {
+
+          // Count zeros until first non-zero digit is encountered.
+          trailingZeros++;
+        }
+      }
+    }
+
+    if (bufCount == 0) {
+      meta[0] = 1;
+      meta[1] = 1;
+      buf[0] = '0';
+      return buf;
+    } else {
+      // Reverse in place
+      for (int i = 0, j = nonZeroBufCount - 1; i < j; i++, j--) {
+        char t = buf[i];
+        buf[i] = buf[j];
+        buf[j] = t;
+      }
+      meta[0] = nonZeroBufCount;
+      meta[1] = trailingZeros;
+      return buf;
+    }
+  }
+
   @Override
   public String toString() {
     StringBuilder str = new StringBuilder();
