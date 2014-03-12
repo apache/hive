@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import com.facebook.fb303.FacebookBase;
-import com.facebook.fb303.fb_status;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
@@ -44,7 +42,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.apache.commons.cli.OptionBuilder;
@@ -53,7 +50,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -82,6 +78,8 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
+import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -112,6 +110,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
@@ -120,6 +119,7 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableStatsResult;
+import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -128,8 +128,6 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.txn.TxnHandler;
-import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -158,6 +156,7 @@ import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
+import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -172,8 +171,14 @@ import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.*;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TServerTransport;
+import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportFactory;
 
+import com.facebook.fb303.FacebookBase;
+import com.facebook.fb303.fb_status;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
@@ -4030,6 +4035,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+
+
     @Override
     public boolean create_role(final Role role)
         throws MetaException, TException {
@@ -4878,7 +4885,51 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new TException(e);
       }
     }
+
+    @Override
+    public GetPrincipalsInRoleResponse get_principals_in_role(GetPrincipalsInRoleRequest request)
+        throws MetaException, TException {
+
+      incrementCounter("get_principals_in_role");
+      String role_name = request.getRoleName();
+      List<RolePrincipalGrant> rolePrinGrantList = new ArrayList<RolePrincipalGrant>();
+      Exception ex = null;
+      try {
+        List<MRoleMap> roleMaps = getMS().listRoleMembers(role_name);
+        if (roleMaps != null) {
+          //convert each MRoleMap object into a thrift RolePrincipalGrant object
+          for (MRoleMap roleMap : roleMaps) {
+            String mapRoleName = roleMap.getRole().getRoleName();
+            if (!role_name.equals(mapRoleName)) {
+              // should not happen
+              throw new AssertionError("Role name " + mapRoleName + " does not match role name arg "
+                  + role_name);
+            }
+            RolePrincipalGrant rolePrinGrant = new RolePrincipalGrant(
+                role_name,
+                roleMap.getPrincipalName(),
+                PrincipalType.valueOf(roleMap.getPrincipalType()),
+                roleMap.getGrantOption(),
+                roleMap.getAddTime(),
+                roleMap.getGrantor(),
+                PrincipalType.valueOf(roleMap.getGrantorType())
+                );
+            rolePrinGrantList.add(rolePrinGrant);
+          }
+        }
+
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        ex = e;
+        rethrowException(e);
+      } finally {
+        endFunction("get_principals_in_role", ex == null, ex);
+      }
+      return new GetPrincipalsInRoleResponse(rolePrinGrantList);
+    }
   }
+
 
   public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf) throws MetaException {
     return RetryingHMSHandler.getProxy(hiveConf, name);
