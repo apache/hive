@@ -350,13 +350,13 @@ public class OpenTxnsResponse implements org.apache.thrift.TBase<OpenTxnsRespons
           case 1: // TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list378 = iprot.readListBegin();
-                struct.txn_ids = new ArrayList<Long>(_list378.size);
-                for (int _i379 = 0; _i379 < _list378.size; ++_i379)
+                org.apache.thrift.protocol.TList _list386 = iprot.readListBegin();
+                struct.txn_ids = new ArrayList<Long>(_list386.size);
+                for (int _i387 = 0; _i387 < _list386.size; ++_i387)
                 {
-                  long _elem380; // required
-                  _elem380 = iprot.readI64();
-                  struct.txn_ids.add(_elem380);
+                  long _elem388; // optional
+                  _elem388 = iprot.readI64();
+                  struct.txn_ids.add(_elem388);
                 }
                 iprot.readListEnd();
               }
@@ -382,9 +382,9 @@ public class OpenTxnsResponse implements org.apache.thrift.TBase<OpenTxnsRespons
         oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txn_ids.size()));
-          for (long _iter381 : struct.txn_ids)
+          for (long _iter389 : struct.txn_ids)
           {
-            oprot.writeI64(_iter381);
+            oprot.writeI64(_iter389);
           }
           oprot.writeListEnd();
         }
@@ -409,9 +409,9 @@ public class OpenTxnsResponse implements org.apache.thrift.TBase<OpenTxnsRespons
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.txn_ids.size());
-        for (long _iter382 : struct.txn_ids)
+        for (long _iter390 : struct.txn_ids)
         {
-          oprot.writeI64(_iter382);
+          oprot.writeI64(_iter390);
         }
       }
     }
@@ -420,13 +420,13 @@ public class OpenTxnsResponse implements org.apache.thrift.TBase<OpenTxnsRespons
     public void read(org.apache.thrift.protocol.TProtocol prot, OpenTxnsResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list383 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.txn_ids = new ArrayList<Long>(_list383.size);
-        for (int _i384 = 0; _i384 < _list383.size; ++_i384)
+        org.apache.thrift.protocol.TList _list391 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.txn_ids = new ArrayList<Long>(_list391.size);
+        for (int _i392 = 0; _i392 < _list391.size; ++_i392)
         {
-          long _elem385; // required
-          _elem385 = iprot.readI64();
-          struct.txn_ids.add(_elem385);
+          long _elem393; // optional
+          _elem393 = iprot.readI64();
+          struct.txn_ids.add(_elem393);
         }
       }
       struct.setTxn_idsIsSet(true);

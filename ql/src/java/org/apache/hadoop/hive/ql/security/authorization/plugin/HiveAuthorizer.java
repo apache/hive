@@ -102,6 +102,18 @@ public interface HiveAuthorizer {
   List<HiveRole> getRoles(HivePrincipal hivePrincipal)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
+
+  /**
+   * Get the grant information for principals granted the given role
+   * @param roleName
+   * @return
+   * @throws HiveAuthzPluginException
+   * @throws HiveAccessControlException
+   */
+  List<HiveRoleGrant> getPrincipalsInRoleInfo(String roleName)
+      throws HiveAuthzPluginException, HiveAccessControlException;
+
+
   /**
    * Grant roles in given roles list to principals in given hivePrincipals list
    * @param hivePrincipals

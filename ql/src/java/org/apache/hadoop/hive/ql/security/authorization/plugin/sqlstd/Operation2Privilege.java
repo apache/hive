@@ -199,6 +199,9 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.SHOW_ROLES, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.SHOW_ROLE_GRANT, new InOutPrivs(null,
         null));
+    op2Priv.put(HiveOperationType.SHOW_ROLE_PRINCIPALS, new InOutPrivs(null,
+        null));
+
 
   }
 

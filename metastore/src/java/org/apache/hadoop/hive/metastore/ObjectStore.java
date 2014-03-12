@@ -3105,7 +3105,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (mRol != null) {
         // first remove all the membership, the membership that this role has
         // been granted
-        List<MRoleMap> roleMap = listRoleMembers(mRol);
+        List<MRoleMap> roleMap = listRoleMembers(mRol.getRoleName());
         if (roleMap.size() > 0) {
           pm.deletePersistentAll(roleMap);
         }
@@ -4053,8 +4053,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @SuppressWarnings("unchecked")
-  private List<MRoleMap> listRoleMembers(
-      MRole mRol) {
+  @Override
+  public List<MRoleMap> listRoleMembers(String roleName) {
     boolean success = false;
     List<MRoleMap> mRoleMemeberList = null;
     try {
@@ -4065,7 +4065,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters("java.lang.String t1");
       query.setUnique(false);
       mRoleMemeberList = (List<MRoleMap>) query.execute(
-          mRol.getRoleName());
+          roleName);
       LOG.debug("Done executing query for listMSecurityUserRoleMember");
       pm.retrieveAll(mRoleMemeberList);
       success = commitTransaction();

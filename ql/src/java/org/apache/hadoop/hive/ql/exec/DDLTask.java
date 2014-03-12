@@ -47,8 +47,11 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.*;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FsShell;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -56,7 +59,26 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -68,16 +90,31 @@ import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateTask;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateWork;
-import org.apache.hadoop.hive.ql.lockmgr.*;
+import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
-import org.apache.hadoop.hive.ql.metadata.*;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.metadata.CheckResult;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
+import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
+import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
@@ -130,6 +167,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -897,7 +935,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         outStream.close();
         outStream = null;
-      } else {
+      } else if (operation.equals(RoleDDLDesc.RoleOperation.SHOW_ROLE_PRINCIPALS)) {
+        throw new HiveException("Show role principals is not currently supported in "
+            + "authorization mode V1");
+      }
+      else {
         throw new HiveException("Unkown role operation "
             + operation.getOperationName());
       }
@@ -948,12 +990,37 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     case SET_ROLE:
       authorizer.setCurrentRole(roleDDLDesc.getName());
       break;
+    case SHOW_ROLE_PRINCIPALS:
+      testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
+      List<HiveRoleGrant> roleGrants = authorizer.getPrincipalsInRoleInfo(roleDDLDesc.getName());
+      writeToFile(writeHiveRoleGrantInfo(roleGrants, testMode), roleDDLDesc.getResFile());
+      break;
     default:
       throw new HiveException("Unkown role operation "
           + operation.getOperationName());
     }
 
     return 0;
+  }
+
+  private String writeHiveRoleGrantInfo(List<HiveRoleGrant> roleGrants, boolean testMode) {
+    if (roleGrants == null || roleGrants.isEmpty()) {
+      return "";
+    }
+    StringBuilder builder = new StringBuilder();
+    // sort the list to get sorted (deterministic) output (for ease of testing)
+    Collections.sort(roleGrants);
+    for (HiveRoleGrant roleGrant : roleGrants) {
+      // schema:
+      // principal_name,principal_type,grant_option,grantor,grantor_type,grant_time
+      appendNonNull(builder, roleGrant.getPrincipalName(), true);
+      appendNonNull(builder, roleGrant.getPrincipalType());
+      appendNonNull(builder, roleGrant.isGrantOption());
+      appendNonNull(builder, roleGrant.getGrantor());
+      appendNonNull(builder, roleGrant.getGrantorType());
+      appendNonNull(builder, testMode ? -1 : roleGrant.getGrantTime() * 1000L);
+    }
+    return builder.toString();
   }
 
   /**
@@ -2652,7 +2719,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e.toString());
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) os);
+      IOUtils.closeStream(os);
     }
     return 0;
   }
