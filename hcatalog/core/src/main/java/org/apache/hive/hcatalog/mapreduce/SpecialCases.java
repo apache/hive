@@ -48,16 +48,6 @@ public class SpecialCases {
 
   static final private Log LOG = LogFactory.getLog(SpecialCases.class);
 
-  // Orc-specific parameter definitions
-  private final static List<String> orcTablePropsToCopy = Arrays.asList(
-      OrcFile.STRIPE_SIZE,
-      OrcFile.COMPRESSION,
-      OrcFile.COMPRESSION_BLOCK_SIZE,
-      OrcFile.ROW_INDEX_STRIDE,
-      OrcFile.ENABLE_INDEXES,
-      OrcFile.BLOCK_PADDING
-  );
-
   /**
    * Method to do any file-format specific special casing while
    * instantiating a storage handler to write. We set any parameters
@@ -82,7 +72,8 @@ public class SpecialCases {
       // them to job properties, so that it will be available in jobconf at runtime
       // See HIVE-5504 for details
       Map<String, String> tableProps = jobInfo.getTableInfo().getTable().getParameters();
-      for (String propName : orcTablePropsToCopy){
+      for (OrcFile.OrcTableProperties property : OrcFile.OrcTableProperties.values()){
+        String propName = property.getPropName();
         if (tableProps.containsKey(propName)){
           jobProperties.put(propName,tableProps.get(propName));
         }
