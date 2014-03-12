@@ -502,6 +502,7 @@ public class BeeLine {
     List<String> commands = new LinkedList<String>();
     List<String> files = new LinkedList<String>();
     String driver = null, user = null, pass = null, url = null, cmd = null;
+    String auth = null;
 
     for (int i = 0; i < args.length; i++) {
       if (args[i].equals("--help") || args[i].equals("-h")) {
@@ -554,6 +555,9 @@ public class BeeLine {
         driver = args[i++ + 1];
       } else if (args[i].equals("-n")) {
         user = args[i++ + 1];
+      } else if (args[i].equals("-a")) {
+        auth = args[i++ + 1];
+        getOpts().setAuthType(auth);
       } else if (args[i].equals("-p")) {
         pass = args[i++ + 1];
       } else if (args[i].equals("-u")) {

@@ -110,20 +110,16 @@ public class PlainSaslHelper {
   private static class SQLPlainProcessorFactory extends TProcessorFactory {
     private final ThriftCLIService service;
     private final HiveConf conf;
-    private final boolean doAsEnabled;
 
     public SQLPlainProcessorFactory(ThriftCLIService service) {
       super(null);
       this.service = service;
       this.conf = service.getHiveConf();
-      this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
     }
 
     @Override
     public TProcessor getProcessor(TTransport trans) {
-      TProcessor baseProcessor =  new TCLIService.Processor<Iface>(service);
-      return doAsEnabled ? new TUGIContainingProcessor(baseProcessor, conf) :
-            new TSetIpAddressProcessor<Iface>(service);
+      return new TSetIpAddressProcessor<Iface>(service);
     }
   }
 

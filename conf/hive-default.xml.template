@@ -2444,6 +2444,13 @@
     '1', and '0' as extened, legal boolean literal, in addition to 'TRUE' and 'FALSE'.
     The default is false, which means only 'TRUE' and 'FALSE' are treated as legal
     boolean literal.
+</property>
+
+<property>
+  <name>hive.server2.allow.user.substitution</name>
+  <value>true</value>
+  <description>
+    Allow alternate user to be specified as part of HiveServer2 open connection request
   </description>
 </property>
 
