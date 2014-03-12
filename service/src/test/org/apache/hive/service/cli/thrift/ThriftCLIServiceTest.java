@@ -23,23 +23,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
-import java.util.Collection;
-
-import javax.security.auth.login.LoginException;
-
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hive.service.Service;
-import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.PlainSaslHelper;
-import org.apache.hive.service.cli.CLIService;
-import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.SessionHandle;
-import org.apache.hive.service.cli.session.HiveSession;
-import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.service.server.HiveServer2;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -271,7 +257,7 @@ public abstract class ThriftCLIServiceTest {
 
     // Execute a malformed query
     // This query will give a runtime error
-    queryString = "CREATE TABLE NON_EXISTING_TAB (ID STRING) location 'hdfs://fooNN:10000/a/b/c'";
+    queryString = "CREATE TABLE NON_EXISTING_TAB (ID STRING) location 'hdfs://localhost:10000/a/b/c'";
     System.out.println("Will attempt to execute: " + queryString);
     execResp = executeQuery(queryString, sessHandle, true);
     operationHandle = execResp.getOperationHandle();
@@ -335,46 +321,6 @@ public abstract class ThriftCLIServiceTest {
       System.out.println("Exception expected: " + e.toString());
     }
     assertTrue("Exception expected", caughtEx);
-  }
-
-  /**
-   * Test setting {@link HiveConf.ConfVars}} config parameter
-   *   HIVE_SERVER2_ENABLE_DOAS for kerberos secure mode
-   * @throws IOException
-   * @throws LoginException
-   * @throws HiveSQLException
-   */
-  @Test
-  public void testDoAs() throws HiveSQLException, LoginException, IOException {
-    HiveConf hconf = new HiveConf();
-    assertTrue("default value of hive server2 doAs should be true",
-        hconf.getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS));
-
-    hconf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION,
-        HiveAuthFactory.AuthTypes.KERBEROS.toString());
-
-    CLIService cliService = new CLIService();
-    cliService.init(hconf);
-    ThriftCLIService tcliService = new ThriftBinaryCLIService(cliService);
-    TOpenSessionReq req = new TOpenSessionReq();
-    TOpenSessionResp res = new TOpenSessionResp();
-    req.setUsername("testuser1");
-    SessionHandle sHandle = tcliService.getSessionHandle(req, res);
-    SessionManager sManager = getSessionManager(cliService.getServices());
-    HiveSession session = sManager.getSession(sHandle);
-
-    //Proxy class for doing doAs on all calls is used when doAs is enabled
-    // and kerberos security is on
-    assertTrue("check if session class is a proxy", session instanceof java.lang.reflect.Proxy);
-  }
-
-  private SessionManager getSessionManager(Collection<Service> services) {
-    for(Service s : services){
-      if(s instanceof SessionManager){
-        return (SessionManager)s;
-      }
-    }
-    return null;
   }
 
   /**
