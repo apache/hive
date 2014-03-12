@@ -125,29 +125,35 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
   private OrcFile.WriterOptions getOptions(JobConf conf, Properties props) {
     OrcFile.WriterOptions options = OrcFile.writerOptions(conf);
     String propVal ;
-    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.STRIPE_SIZE,props,conf)) != null){
+    if ((propVal = getSettingFromPropsFallingBackToConf(
+        OrcFile.OrcTableProperties.STRIPE_SIZE.getPropName(),props,conf)) != null){
       options.stripeSize(Long.parseLong(propVal));
     }
 
-    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.COMPRESSION,props,conf)) != null){
+    if ((propVal = getSettingFromPropsFallingBackToConf(
+        OrcFile.OrcTableProperties.COMPRESSION.getPropName(),props,conf)) != null){
       options.compress(CompressionKind.valueOf(propVal));
     }
 
-    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.COMPRESSION_BLOCK_SIZE,props,conf)) != null){
+    if ((propVal = getSettingFromPropsFallingBackToConf(
+        OrcFile.OrcTableProperties.COMPRESSION_BLOCK_SIZE.getPropName(),props,conf)) != null){
       options.bufferSize(Integer.parseInt(propVal));
     }
 
-    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.ROW_INDEX_STRIDE,props,conf)) != null){
+    if ((propVal = getSettingFromPropsFallingBackToConf(
+        OrcFile.OrcTableProperties.ROW_INDEX_STRIDE.getPropName(),props,conf)) != null){
       options.rowIndexStride(Integer.parseInt(propVal));
     }
 
-    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.ENABLE_INDEXES,props,conf)) != null){
+    if ((propVal = getSettingFromPropsFallingBackToConf(
+        OrcFile.OrcTableProperties.ENABLE_INDEXES.getPropName(),props,conf)) != null){
       if ("false".equalsIgnoreCase(propVal)) {
         options.rowIndexStride(0);
       }
     }
 
-    if ((propVal = getSettingFromPropsFallingBackToConf(OrcFile.BLOCK_PADDING,props,conf)) != null){
+    if ((propVal = getSettingFromPropsFallingBackToConf(
+        OrcFile.OrcTableProperties.BLOCK_PADDING.getPropName(),props,conf)) != null){
       options.blockPadding(Boolean.parseBoolean(propVal));
     }
 
