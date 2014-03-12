@@ -91,11 +91,14 @@ import org.apache.thrift.transport.TTransportFactory;
      public abstract InetAddress getRemoteAddress();
      public abstract void startDelegationTokenSecretManager(Configuration conf,
        Object hmsHandler) throws IOException;
-     public abstract String getRemoteUser();
      public abstract String getDelegationToken(String owner, String renewer)
-     throws IOException, InterruptedException;
+       throws IOException, InterruptedException;
+     public abstract String getDelegationTokenWithService(String owner, String renewer, String service)
+       throws IOException, InterruptedException;
+     public abstract String getRemoteUser();
      public abstract long renewDelegationToken(String tokenStrForm) throws IOException;
      public abstract void cancelDelegationToken(String tokenStrForm) throws IOException;
+     public abstract String getUserFromToken(String tokenStr) throws IOException;
    }
  }
 

@@ -45,6 +45,6 @@ public class TestPlainSaslHelper extends TestCase {
     tcliService.init(hconf);
     TProcessorFactory procFactory = PlainSaslHelper.getPlainProcessorFactory(tcliService);
     assertEquals("doAs enabled processor for unsecure mode",
-        procFactory.getProcessor(null).getClass(), TUGIContainingProcessor.class);
+        procFactory.getProcessor(null).getClass(), TSetIpAddressProcessor.class);
   }
 }

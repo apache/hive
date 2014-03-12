@@ -556,6 +556,12 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public String addServiceToToken(String tokenStr, String tokenService) throws IOException {
+    throw new UnsupportedOperationException("Tokens are not supported in current hadoop version");
+  }
+
+
+  @Override
   public <T> T doAs(UserGroupInformation ugi, PrivilegedExceptionAction<T> pvea) throws
     IOException, InterruptedException {
     try {
@@ -637,6 +643,11 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public void authorizeProxyAccess(String proxyUser, UserGroupInformation realUserUgi,
+      String ipAddress, Configuration conf) throws IOException {
+    // This hadoop version doesn't have proxy verification
+  }
+
   public boolean isSecurityEnabled() {
     return false;
   }
