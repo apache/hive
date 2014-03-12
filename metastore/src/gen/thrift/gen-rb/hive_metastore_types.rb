@@ -291,6 +291,72 @@ class Role
   ::Thrift::Struct.generate_accessors self
 end
 
+class RolePrincipalGrant
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ROLENAME = 1
+  PRINCIPALNAME = 2
+  PRINCIPALTYPE = 3
+  GRANTOPTION = 4
+  GRANTTIME = 5
+  GRANTORNAME = 6
+  GRANTORPRINCIPALTYPE = 7
+
+  FIELDS = {
+    ROLENAME => {:type => ::Thrift::Types::STRING, :name => 'roleName'},
+    PRINCIPALNAME => {:type => ::Thrift::Types::STRING, :name => 'principalName'},
+    PRINCIPALTYPE => {:type => ::Thrift::Types::I32, :name => 'principalType', :enum_class => ::PrincipalType},
+    GRANTOPTION => {:type => ::Thrift::Types::BOOL, :name => 'grantOption'},
+    GRANTTIME => {:type => ::Thrift::Types::I32, :name => 'grantTime'},
+    GRANTORNAME => {:type => ::Thrift::Types::STRING, :name => 'grantorName'},
+    GRANTORPRINCIPALTYPE => {:type => ::Thrift::Types::I32, :name => 'grantorPrincipalType', :enum_class => ::PrincipalType}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @principalType.nil? || ::PrincipalType::VALID_VALUES.include?(@principalType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field principalType!')
+    end
+    unless @grantorPrincipalType.nil? || ::PrincipalType::VALID_VALUES.include?(@grantorPrincipalType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field grantorPrincipalType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetPrincipalsInRoleRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ROLENAME = 1
+
+  FIELDS = {
+    ROLENAME => {:type => ::Thrift::Types::STRING, :name => 'roleName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetPrincipalsInRoleResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PRINCIPALGRANTS = 1
+
+  FIELDS = {
+    PRINCIPALGRANTS => {:type => ::Thrift::Types::LIST, :name => 'principalGrants', :element => {:type => ::Thrift::Types::STRUCT, :class => ::RolePrincipalGrant}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Database
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NAME = 1

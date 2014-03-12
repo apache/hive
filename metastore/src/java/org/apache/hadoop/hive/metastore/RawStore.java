@@ -24,7 +24,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -284,6 +283,15 @@ public interface RawStore extends Configurable {
 
   public List<MRoleMap> listRoles(String principalName,
       PrincipalType principalType);
+
+
+  /**
+   * Get the role to principal grant mapping for given role
+   * @param roleName
+   * @return
+   */
+  public List<MRoleMap> listRoleMembers(String roleName);
+
 
   public abstract Partition getPartitionWithAuth(String dbName, String tblName,
       List<String> partVals, String user_name, List<String> group_names)

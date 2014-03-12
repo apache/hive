@@ -138,11 +138,35 @@ struct Role {
   1: string roleName,
   2: i32 createTime,
   3: string ownerName,
+
+  // Following fields are populated by list_roles
+  // They are ignored during other commands such as role creation
+  // See RolePrincipalGrant which gives a 'normalized' representation
+  // of this information
   4: optional string principalName,
   5: optional string principalType,
   6: optional bool grantOption,
   7: optional i32 grantTime,
   8: optional string grantor
+}
+
+// Representation of a grant for a principal to a role
+struct RolePrincipalGrant {
+  1: string roleName,
+  2: string principalName,
+  3: PrincipalType principalType,
+  4: bool grantOption,
+  5: i32 grantTime,
+  6: string grantorName,
+  7: PrincipalType grantorPrincipalType
+}
+
+struct GetPrincipalsInRoleRequest {
+  1: string roleName;
+}
+
+struct GetPrincipalsInRoleResponse {
+  1: list<RolePrincipalGrant> principalGrants;
 }
 
 // namespace for tables
@@ -915,6 +939,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   bool revoke_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type)
                         throws(1:MetaException o1)
   list<Role> list_roles(1:string principal_name, 2:PrincipalType principal_type) throws(1:MetaException o1)
+
+  // get all role-grants for users/roles that have been granted the given role
+  // Note that in the returned list of RolePrincipalGrants, the roleName is
+  // redundant as it would match the role_name argument of this function
+  GetPrincipalsInRoleResponse get_principals_in_role(1: GetPrincipalsInRoleRequest request) throws(1:MetaException o1)
 
   PrincipalPrivilegeSet get_privilege_set(1:HiveObjectRef hiveObject, 2:string user_name,
     3: list<string> group_names) throws(1:MetaException o1)

@@ -70,10 +70,9 @@ import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
-import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
-import org.apache.hadoop.hive.ql.metadata.*;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
@@ -441,6 +440,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowRoleGrant(ast);
       break;
+    case HiveParser.TOK_SHOW_ROLE_PRINCIPALS:
+      ctx.setResFile(ctx.getLocalTmpPath());
+      analyzeShowRolePrincipals(ast);
+      break;
     case HiveParser.TOK_SHOW_ROLES:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowRoles(ast);
@@ -552,7 +555,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         createShowRoleGrantTask(ast, ctx.getResFile(), getInputs(), getOutputs());
     if(task != null) {
       rootTasks.add(task);
-      setFetchTask(createFetchTask(RoleDDLDesc.getRoleDescSchema()));
+      setFetchTask(createFetchTask(RoleDDLDesc.getRoleShowGrantSchema()));
+    }
+  }
+
+  private void analyzeShowRolePrincipals(ASTNode ast) throws SemanticException {
+    Task<DDLWork> roleDDLTask = (Task<DDLWork>) hiveAuthorizationTaskFactory
+        .createShowRolePrincipalsTask(ast, ctx.getResFile(), getInputs(), getOutputs());
+
+    if (roleDDLTask != null) {
+      rootTasks.add(roleDDLTask);
+      setFetchTask(createFetchTask(RoleDDLDesc.getShowRolePrincipalsSchema()));
     }
   }
 
