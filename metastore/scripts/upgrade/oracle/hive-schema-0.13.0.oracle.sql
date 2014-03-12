@@ -756,7 +756,77 @@ CREATE INDEX FUNC_RU_N49 ON FUNC_RU (FUNC_ID);
 
 INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '0.13.0', 'Hive release version 0.13.0');
 
-------------------------------
--- Transaction and lock tables
-------------------------------
-@hive-txn-schema-0.13.0.oracle.sql;
+-- -----------------------------------------------------------------------------------------------------------------------------------------------
+-- Transaction and Lock Tables
+-- These are not part of package jdo, so if you are going to regenerate this file you need to manually add the following section back to the file.
+-- -----------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE TXNS (
+  TXN_ID NUMBER(10) PRIMARY KEY,
+  TXN_STATE char(1) NOT NULL,
+  TXN_STARTED NUMBER(10) NOT NULL,
+  TXN_LAST_HEARTBEAT NUMBER(10) NOT NULL,
+  TXN_USER varchar(128) NOT NULL,
+  TXN_HOST varchar(128) NOT NULL
+);
+
+CREATE TABLE TXN_COMPONENTS (
+  TC_TXNID NUMBER(10) REFERENCES TXNS (TXN_ID),
+  TC_DATABASE VARCHAR2(128) NOT NULL,
+  TC_TABLE VARCHAR2(128),
+  TC_PARTITION VARCHAR2(767) NULL
+);
+
+CREATE TABLE COMPLETED_TXN_COMPONENTS (
+  CTC_TXNID NUMBER(10),
+  CTC_DATABASE varchar(128) NOT NULL,
+  CTC_TABLE varchar(128),
+  CTC_PARTITION varchar(767)
+);
+
+CREATE TABLE NEXT_TXN_ID (
+  NTXN_NEXT NUMBER(10) NOT NULL
+);
+INSERT INTO NEXT_TXN_ID VALUES(1);
+
+CREATE TABLE HIVE_LOCKS (
+  HL_LOCK_EXT_ID NUMBER(10) NOT NULL,
+  HL_LOCK_INT_ID NUMBER(10) NOT NULL,
+  HL_TXNID NUMBER(10),
+  HL_DB VARCHAR2(128) NOT NULL,
+  HL_TABLE VARCHAR2(128),
+  HL_PARTITION VARCHAR2(767),
+  HL_LOCK_STATE CHAR(1) NOT NULL,
+  HL_LOCK_TYPE CHAR(1) NOT NULL,
+  HL_LAST_HEARTBEAT NUMBER(10) NOT NULL,
+  HL_ACQUIRED_AT NUMBER(10),
+  HL_USER varchar(128) NOT NULL,
+  HL_HOST varchar(128) NOT NULL,
+  PRIMARY KEY(HL_LOCK_EXT_ID, HL_LOCK_INT_ID)
+); 
+
+CREATE INDEX HL_TXNID_INDEX ON HIVE_LOCKS (HL_TXNID);
+
+CREATE TABLE NEXT_LOCK_ID (
+  NL_NEXT NUMBER(10) NOT NULL
+);
+INSERT INTO NEXT_LOCK_ID VALUES(1);
+
+CREATE TABLE COMPACTION_QUEUE (
+  CQ_ID NUMBER(10) PRIMARY KEY,
+  CQ_DATABASE varchar(128) NOT NULL,
+  CQ_TABLE varchar(128) NOT NULL,
+  CQ_PARTITION varchar(767),
+  CQ_STATE char(1) NOT NULL,
+  CQ_TYPE char(1) NOT NULL,
+  CQ_WORKER_ID varchar(128),
+  CQ_START NUMBER(10),
+  CQ_RUN_AS varchar(128)
+);
+
+CREATE TABLE NEXT_COMPACTION_QUEUE_ID (
+  NCQ_NEXT NUMBER(10) NOT NULL
+);
+INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1);
+
+
