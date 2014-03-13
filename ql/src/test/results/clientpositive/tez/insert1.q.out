@@ -270,10 +270,10 @@ POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-2
@@ -319,19 +319,6 @@ STAGE PLANS:
   Stage: Stage-3
     Dependency Collection
 
-  Stage: Stage-0
-    Move Operator
-      tables:
-          replace: false
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.insert1
-
-  Stage: Stage-4
-    Stats-Aggr Operator
-
   Stage: Stage-1
     Move Operator
       tables:
@@ -341,6 +328,19 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: x.insert1
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.insert1
 
   Stage: Stage-5
     Stats-Aggr Operator
