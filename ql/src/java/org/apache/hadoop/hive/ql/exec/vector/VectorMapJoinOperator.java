@@ -159,7 +159,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
 
       @Override
       public MapJoinKey evaluate(VectorHashKeyWrapper kw) throws HiveException {
-        MapJoinKey refKey = (key == null ? loader.getKeyType() : key);
+        MapJoinKey refKey = getRefKey(key, alias);
         key = MapJoinKey.readFromVector(
             output, refKey, kw, keyOutputWriters, keyWrapperBatch, refKey == key);
         return key;

@@ -35,4 +35,6 @@ public interface MapJoinTableContainer {
 
   public void clear();
 
+  public MapJoinKey getAnyKey();
+
 }
