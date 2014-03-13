@@ -1,0 +1,79 @@
+PREHOOK: query: -- Tests truncating a column from a list bucketing table
+
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
+
+CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: -- Tests truncating a column from a list bucketing table
+
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
+
+CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_tab
+PREHOOK: query: ALTER TABLE test_tab SKEWED BY (key) ON ("484") STORED AS DIRECTORIES
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@test_tab
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: ALTER TABLE test_tab SKEWED BY (key) ON ("484") STORED AS DIRECTORIES
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@test_tab
+POSTHOOK: Output: default@test_tab
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab PARTITION (part = '1') SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_tab@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab PARTITION (part = '1') SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_tab@part=1
+POSTHOOK: Lineage: test_tab PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted test_tab partition (part='1')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted test_tab partition (part='1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_tab PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	test_tab            	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	2                   
+	numRows             	500                 
+	rawDataSize         	4812                
+	totalSize           	5370                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Stored As SubDirectories:	Yes                 	 
+Skewed Columns:     	[key]               	 
+Skewed Values:      	[[484]]             	 
+#### A masked pattern was here ####
+Skewed Value to Truncated Path:	{[484]=/test_tab/part=1/key=484}	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
