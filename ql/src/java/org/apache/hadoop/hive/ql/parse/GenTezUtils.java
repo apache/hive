@@ -107,6 +107,7 @@ public class GenTezUtils {
     tezWork.connect(
         context.preceedingWork,
         reduceWork, EdgeType.SIMPLE_EDGE);
+    context.connectedReduceSinks.add(reduceSink);
 
     return reduceWork;
   }

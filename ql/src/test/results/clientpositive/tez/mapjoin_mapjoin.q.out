@@ -80,9 +80,137 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-PREHOOK: query: explain select count(*) from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) group by ds
+PREHOOK: query: explain
+select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) where srcpart.value > 'val_450'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) group by ds
+POSTHOOK: query: explain
+select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) where srcpart.value > 'val_450'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE), Map 3 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 116 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (value > 'val_450') (type: boolean)
+                    Statistics: Num rows: 38 Data size: 7615 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      condition expressions:
+                        0 {key}
+                        1 
+                      keys:
+                        0 value (type: string)
+                        1 value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 41 Data size: 8376 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        condition expressions:
+                          0 {_col0}
+                          1 
+                        keys:
+                          0 _col0 (type: string)
+                          1 key (type: string)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 45 Data size: 9213 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: _col0 (type: string)
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 45 Data size: 9213 Basic stats: COMPLETE Column stats: NONE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 45 Data size: 9213 Basic stats: COMPLETE Column stats: NONE
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: key (type: string)
+                    sort order: +
+                    Map-reduce partition columns: key (type: string)
+                    Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (value > 'val_450') (type: boolean)
+                    Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) where srcpart.value > 'val_450'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) where srcpart.value > 'val_450'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+98
+98
+66
+98
+98
+98
+98
+66
+98
+98
+98
+98
+66
+98
+98
+98
+98
+66
+98
+98
+PREHOOK: query: explain
+select count(*) from srcpart join src on (srcpart.value=src.value) join src src1 on (srcpart.key=src1.key) group by ds
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from srcpart join src on (srcpart.value=src.value) join src src1 on (srcpart.key=src1.key) group by ds
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -143,12 +271,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: string)
                     sort order: +
                     Map-reduce partition columns: key (type: string)
-                    Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -183,7 +311,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-PREHOOK: query: select count(*) from srcpart join src src on (srcpart.value=src.value) join src src1 on (srcpart.key=src1.key) group by ds
+PREHOOK: query: select count(*) from srcpart join src on (srcpart.value=src.value) join src src1 on (srcpart.key=src1.key) group by ds
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
@@ -192,7 +320,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join src src on (srcpart.value=src.value) join src src1 on (srcpart.key=src1.key) group by ds
+POSTHOOK: query: select count(*) from srcpart join src on (srcpart.value=src.value) join src src1 on (srcpart.key=src1.key) group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart

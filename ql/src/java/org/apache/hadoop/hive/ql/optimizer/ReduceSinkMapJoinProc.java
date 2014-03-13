@@ -109,6 +109,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
 
           // remember the output name of the reduce sink
           parentRS.getConf().setOutputName(myWork.getName());
+          context.connectedReduceSinks.add(parentRS);
 
         } else {
           List<BaseWork> linkWorkList = context.linkOpWithWorkMap.get(childOp);
