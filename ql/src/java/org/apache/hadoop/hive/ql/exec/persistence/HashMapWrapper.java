@@ -102,4 +102,9 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
     metaData.put(LOAD_NAME, String.valueOf(loadFactor));
     return metaData;
   }
+
+  @Override
+  public MapJoinKey getAnyKey() {
+    return mHash.isEmpty() ? null : mHash.keySet().iterator().next();
+  }
 }

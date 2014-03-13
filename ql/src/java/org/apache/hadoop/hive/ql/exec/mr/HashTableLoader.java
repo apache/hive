@@ -155,9 +155,4 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
     Arrays.fill(tables, null);
   }
-
-  @Override
-  public MapJoinKey getKeyType() {
-    return new MapJoinKeyObject(); // always use Object-array keys
-  }
 }
