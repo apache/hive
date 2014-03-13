@@ -134,30 +134,42 @@ public abstract class AbstractParquetMapInspector implements SettableMapObjectIn
   }
 
   @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result
+        + ((keyInspector == null) ? 0 : keyInspector.hashCode());
+    result = prime * result
+        + ((valueInspector == null) ? 0 : valueInspector.hashCode());
+    return result;
+  }
+
+  @Override
   public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
     if (obj == null) {
       return false;
     }
     if (getClass() != obj.getClass()) {
       return false;
     }
-    final StandardParquetHiveMapInspector other = (StandardParquetHiveMapInspector) obj;
-    if (this.keyInspector != other.keyInspector &&
-        (this.keyInspector == null || !this.keyInspector.equals(other.keyInspector))) {
+    final AbstractParquetMapInspector other = (AbstractParquetMapInspector) obj;
+    if (keyInspector == null) {
+      if (other.keyInspector != null) {
+        return false;
+      }
+    } else if (!keyInspector.equals(other.keyInspector)) {
       return false;
     }
-    if (this.valueInspector != other.valueInspector &&
-        (this.valueInspector == null || !this.valueInspector.equals(other.valueInspector))) {
+    if (valueInspector == null) {
+      if (other.valueInspector != null) {
+        return false;
+      }
+    } else if (!valueInspector.equals(other.valueInspector)) {
       return false;
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    int hash = 7;
-    hash = 59 * hash + (this.keyInspector != null ? this.keyInspector.hashCode() : 0);
-    hash = 59 * hash + (this.valueInspector != null ? this.valueInspector.hashCode() : 0);
-    return hash;
   }
 }
