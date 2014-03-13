@@ -35,6 +35,4 @@ public interface HashTableLoader {
 
   void load(MapJoinTableContainer[] mapJoinTables, MapJoinTableContainerSerDe[] mapJoinTableSerdes)
       throws HiveException;
-
-  MapJoinKey getKeyType();
 }

@@ -170,10 +170,24 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   protected transient final Output outputForMapJoinKey = new Output();
   protected MapJoinKey computeMapJoinKey(Object row, byte alias) throws HiveException {
-    MapJoinKey refKey = (key == null ? loader.getKeyType() : key);
+    MapJoinKey refKey = getRefKey(key, alias);
     return MapJoinKey.readFromRow(outputForMapJoinKey,
         refKey, row, joinKeys[alias], joinKeysObjectInspectors[alias], key == refKey);
   }
+
+  protected MapJoinKey getRefKey(MapJoinKey prevKey, byte alias) {
+    if (prevKey != null) return prevKey;
+    // We assume that since we are joining on the same key, all tables would have either
+    // optimized or non-optimized key; hence, we can pass any key in any table as reference.
+    // We do it so that MJKB could determine whether it can use optimized keys.
+    for (byte pos = 0; pos < order.length; pos++) {
+      if (pos == alias) continue;
+      MapJoinKey refKey = mapJoinTables[pos].getAnyKey();
+      if (refKey != null) return refKey;
+    }
+    return null; // All join tables have 0 keys, doesn't matter what we generate.
+  }
+
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {

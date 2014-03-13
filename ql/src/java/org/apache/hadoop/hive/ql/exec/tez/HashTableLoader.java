@@ -124,12 +124,4 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       lastKey = new MapJoinKeyObject(); // No rows in tables, the key type doesn't matter.
     }
   }
-
-  @Override
-  public MapJoinKey getKeyType() {
-    if (lastKey == null) {
-      throw new AssertionError("Should be called after loading tables");
-    }
-    return lastKey;
-  }
 }
