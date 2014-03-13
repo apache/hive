@@ -14,14 +14,9 @@ POSTHOOK: type: LOAD
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
-  Stage-2 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-0
-    Copy
-#### A masked pattern was here ####
-
-  Stage: Stage-1
     Move Operator
       tables:
           replace: false
@@ -31,7 +26,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.input4
 
-  Stage: Stage-2
+  Stage: Stage-1
     Stats-Aggr Operator
 
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4

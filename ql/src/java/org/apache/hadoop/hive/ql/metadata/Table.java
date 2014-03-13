@@ -655,10 +655,14 @@ public class Table implements Serializable {
    *
    * @param srcf
    *          Source directory
+   * @param isSrcLocal
+   *          If the source directory is LOCAL
    */
-  protected void replaceFiles(Path srcf) throws HiveException {
+  protected void replaceFiles(Path srcf, boolean isSrcLocal)
+      throws HiveException {
     Path tableDest = getPath();
-    Hive.replaceFiles(srcf, tableDest, tableDest, Hive.get().getConf());
+    Hive.replaceFiles(srcf, tableDest, tableDest, Hive.get().getConf(),
+        isSrcLocal);
   }
 
   /**
@@ -666,12 +670,14 @@ public class Table implements Serializable {
    *
    * @param srcf
    *          Files to be moved. Leaf directories or globbed file paths
+   * @param isSrcLocal
+   *          If the source directory is LOCAL
    */
-  protected void copyFiles(Path srcf) throws HiveException {
+  protected void copyFiles(Path srcf, boolean isSrcLocal) throws HiveException {
     FileSystem fs;
     try {
       fs = getDataLocation().getFileSystem(Hive.get().getConf());
-      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs);
+      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs, isSrcLocal);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }
