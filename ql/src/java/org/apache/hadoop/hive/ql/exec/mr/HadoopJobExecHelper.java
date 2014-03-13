@@ -26,6 +26,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +51,7 @@ import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.Counters.Counter;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
@@ -67,9 +69,9 @@ public class HadoopJobExecHelper {
 
   protected transient int mapProgress = 0;
   protected transient int reduceProgress = 0;
-  public transient String jobId;
-  private LogHelper console;
-  private HadoopJobExecHook callBackObj;
+  public transient JobID jobId;
+  private final LogHelper console;
+  private final HadoopJobExecHook callBackObj;
 
   /**
    * Update counters relevant to this task.
@@ -89,7 +91,7 @@ public class HadoopJobExecHelper {
    * @param jobId
    * @return
    */
-  private static String getJobStartMsg(String jobId) {
+  private static String getJobStartMsg(JobID jobId) {
     return "Starting Job = " + jobId;
   }
 
@@ -99,7 +101,7 @@ public class HadoopJobExecHelper {
    * @param jobId
    * @return the job end message
    */
-  public static String getJobEndMsg(String jobId) {
+  public static String getJobEndMsg(JobID jobId) {
     return "Ended Job = " + jobId;
   }
 
@@ -120,11 +122,11 @@ public class HadoopJobExecHelper {
   }
 
 
-  public String getJobId() {
+  public JobID getJobId() {
     return jobId;
   }
 
-  public void setJobId(String jobId) {
+  public void setJobId(JobID jobId) {
     this.jobId = jobId;
   }
 
@@ -148,8 +150,8 @@ public class HadoopJobExecHelper {
    * running jobs in the event of an unexpected shutdown - i.e., the JVM shuts down while there are
    * still jobs running.
    */
-  public static Map<String, String> runningJobKillURIs = Collections
-      .synchronizedMap(new HashMap<String, String>());
+  public static List<RunningJob> runningJobs = Collections
+      .synchronizedList(new LinkedList<RunningJob>());
 
 
   /**
@@ -161,32 +163,23 @@ public class HadoopJobExecHelper {
    *
    */
   static {
-    if (new org.apache.hadoop.conf.Configuration()
-        .getBoolean("webinterface.private.actions", false)) {
       Runtime.getRuntime().addShutdownHook(new Thread() {
         @Override
         public void run() {
           killRunningJobs();
         }
       });
-    }
   }
 
   public static void killRunningJobs() {
-    synchronized (runningJobKillURIs) {
-      for (String uri : runningJobKillURIs.values()) {
+    synchronized (runningJobs) {
+      for (RunningJob rj : runningJobs) {
         try {
-          System.err.println("killing job with: " + uri);
-          java.net.HttpURLConnection conn = (java.net.HttpURLConnection) new java.net.URL(uri)
-               .openConnection();
-          conn.setRequestMethod("POST");
-          int retCode = conn.getResponseCode();
-          if (retCode != 200) {
-            System.err.println("Got an error trying to kill job with URI: " + uri + " = "
-                + retCode);
-          }
+          System.err.println("killing job with: " + rj.getID());
+          rj.killJob();
         } catch (Exception e) {
-          System.err.println("trying to kill job, caught: " + e);
+          LOG.warn(e);
+          System.err.println("Failed to kill job: "+ rj.getID());
           // do nothing
         }
       }
@@ -252,7 +245,7 @@ public class HadoopJobExecHelper {
         String logMapper;
         String logReducer;
 
-        TaskReport[] mappers = jc.getMapTaskReports(rj.getJobID());
+        TaskReport[] mappers = jc.getMapTaskReports(rj.getID());
         if (mappers == null) {
           logMapper = "no information for number of mappers; ";
         } else {
@@ -264,7 +257,7 @@ public class HadoopJobExecHelper {
           logMapper = "number of mappers: " + numMap + "; ";
         }
 
-        TaskReport[] reducers = jc.getReduceTaskReports(rj.getJobID());
+        TaskReport[] reducers = jc.getReduceTaskReports(rj.getID());
         if (reducers == null) {
           logReducer = "no information for number of reducers. ";
         } else {
@@ -281,13 +274,13 @@ public class HadoopJobExecHelper {
         initOutputPrinted = true;
       }
 
-      RunningJob newRj = jc.getJob(rj.getJobID());
+      RunningJob newRj = jc.getJob(rj.getID());
       if (newRj == null) {
         // under exceptional load, hadoop may not be able to look up status
         // of finished jobs (because it has purged them from memory). From
         // hive's perspective - it's equivalent to the job having failed.
         // So raise a meaningful exception
-        throw new IOException("Could not find status of job:" + rj.getJobID());
+        throw new IOException("Could not find status of job:" + rj.getID());
       } else {
         th.setRunningJob(newRj);
         rj = newRj;
@@ -428,12 +421,12 @@ public class HadoopJobExecHelper {
     } else {
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setTaskProperty(SessionState.get().getQueryId(),
-            getId(), Keys.TASK_HADOOP_ID, rj.getJobID());
+            getId(), Keys.TASK_HADOOP_ID, rj.getID().toString());
       }
-      console.printInfo(getJobStartMsg(rj.getJobID()) + ", Tracking URL = "
+      console.printInfo(getJobStartMsg(rj.getID()) + ", Tracking URL = "
           + rj.getTrackingURL());
       console.printInfo("Kill Command = " + HiveConf.getVar(job, HiveConf.ConfVars.HADOOPBIN)
-          + " job  -kill " + rj.getJobID());
+          + " job  -kill " + rj.getID());
     }
   }
 
@@ -509,7 +502,7 @@ public class HadoopJobExecHelper {
 
 
   public int progress(RunningJob rj, JobClient jc) throws IOException {
-    jobId = rj.getJobID();
+    jobId = rj.getID();
 
     int returnVal = 0;
 
@@ -527,7 +520,7 @@ public class HadoopJobExecHelper {
 
     // add to list of running jobs to kill in case of abnormal shutdown
 
-    runningJobKillURIs.put(rj.getJobID(), rj.getTrackingURL() + "&action=kill");
+    runningJobs.add(rj);
 
     ExecDriverTaskHandle th = new ExecDriverTaskHandle(jc, rj);
     jobInfo(rj);
@@ -548,7 +541,7 @@ public class HadoopJobExecHelper {
 
     boolean success = mapRedStats.isSuccess();
 
-    String statusMesg = getJobEndMsg(rj.getJobID());
+    String statusMesg = getJobEndMsg(rj.getID());
     if (!success) {
       statusMesg += " with errors";
       returnVal = 2;
@@ -592,8 +585,7 @@ public class HadoopJobExecHelper {
       }
     }
     // Compute the reducers run time statistics for the job
-    ReducerTimeStatsPerJob reducerTimeStatsPerJob = new ReducerTimeStatsPerJob(reducersRunTimes,
-        new String(this.jobId));
+    ReducerTimeStatsPerJob reducerTimeStatsPerJob = new ReducerTimeStatsPerJob(reducersRunTimes);
     // Adding the reducers run time statistics for the job in the QueryPlan
     this.task.getQueryPlan().getReducerTimeStatsPerJobList().add(reducerTimeStatsPerJob);
     return;

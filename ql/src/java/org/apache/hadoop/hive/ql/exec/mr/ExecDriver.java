@@ -182,6 +182,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    *
    * @return true if fatal errors happened during job execution, false otherwise.
    */
+  @Override
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
      Counters.Counter cntr = ctrs.findCounter(
         HiveConf.getVar(job, HiveConf.ConfVars.HIVECOUNTERGROUP),
@@ -450,7 +451,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           if (returnVal != 0) {
             rj.killJob();
           }
-          HadoopJobExecHelper.runningJobKillURIs.remove(rj.getJobID());
+          HadoopJobExecHelper.runningJobs.remove(rj);
           jobID = rj.getID().toString();
         }
       } catch (Exception e) {

@@ -241,7 +241,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
           if (returnVal != 0) {
             rj.killJob();
           }
-          HadoopJobExecHelper.runningJobKillURIs.remove(rj.getJobID());
+          HadoopJobExecHelper.runningJobs.remove(rj);
           jobID = rj.getID().toString();
         }
         RCFileMergeMapper.jobClose(outputPath, success, job, console,
@@ -372,5 +372,5 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
   @Override
   public void logPlanProgress(SessionState ss) throws IOException {
     // no op
-  }  
+  }
 }
