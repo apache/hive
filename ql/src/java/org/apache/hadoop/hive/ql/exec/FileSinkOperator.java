@@ -914,11 +914,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       String lbSpec = split[1];
 
       String prefix;
-      String postfix;
+      String postfix=null;
       if (taskIndependent) {
         // key = "database.table/SP/DP/"LB/
         prefix = conf.getTableInfo().getTableName();
-        postfix = Utilities.join(lbSpec);
       } else {
         // key = "prefix/SP/DP/"LB/taskID/
         prefix = conf.getStatsAggPrefix();

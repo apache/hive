@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.stats.fs;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -71,7 +72,15 @@ public class FSStatsPublisher implements StatsPublisher, StatsCollectionTaskInde
   public boolean publishStat(String partKV, Map<String, String> stats) {
     LOG.debug("Putting in map : " + partKV + "\t" + stats);
     // we need to do new hashmap, since stats object is reused across calls.
-    statsMap.put(partKV, new HashMap<String, String>(stats));
+    Map<String,String> cpy = new HashMap<String, String>(stats);
+    Map<String,String> statMap = statsMap.get(partKV);
+    if (null != statMap) {
+      // In case of LB, we might get called repeatedly.
+      for (Entry<String, String> e : statMap.entrySet()) {
+        cpy.put(e.getKey(), String.valueOf(Long.valueOf(e.getValue()) + Long.valueOf(cpy.get(e.getKey()))));
+      }
+    }
+    statsMap.put(partKV, cpy);
     return true;
   }
 
