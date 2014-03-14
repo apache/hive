@@ -108,12 +108,13 @@ public class AuthorizationUtils {
    * @param privilege
    * @param grantorPrincipal
    * @param grantOption
+   * @param grantTime
    * @return
    * @throws HiveException
    */
   public static PrivilegeGrantInfo getThriftPrivilegeGrantInfo(HivePrivilege privilege,
-      HivePrincipal grantorPrincipal, boolean grantOption) throws HiveException {
-    return new PrivilegeGrantInfo(privilege.getName(), 0 /* time gets added by server */,
+      HivePrincipal grantorPrincipal, boolean grantOption, int grantTime) throws HiveException {
+    return new PrivilegeGrantInfo(privilege.getName(), grantTime,
         grantorPrincipal.getName(), getThriftPrincipalType(grantorPrincipal.getType()), grantOption);
   }
 
@@ -125,6 +126,9 @@ public class AuthorizationUtils {
    * @throws HiveException
    */
   public static HiveObjectType getThriftHiveObjType(HivePrivilegeObjectType type) throws HiveException {
+    if (type == null) {
+      return null;
+    }
     switch(type){
     case DATABASE:
       return HiveObjectType.DATABASE;
