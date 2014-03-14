@@ -5,6 +5,6 @@ set user.name=hive_admin_user;
 set role ADMIN;
 show current roles;
 create role r1;
-set role NONE;
+set role ALL;
 show current roles;
 drop role r1;

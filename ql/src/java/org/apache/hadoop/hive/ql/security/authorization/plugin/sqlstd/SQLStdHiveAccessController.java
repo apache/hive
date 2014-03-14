@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,6 +62,9 @@ import org.apache.thrift.TException;
  */
 @Private
 public class SQLStdHiveAccessController implements HiveAccessController {
+
+  private static final String ALL = "ALL", DEFAULT = "DEFAULT", NONE = "NONE";
+  private static final ImmutableSet<String> RESERVED_ROLE_NAMES = ImmutableSet.of(ALL, DEFAULT, NONE);
 
   private final HiveMetastoreClientFactory metastoreClientFactory;
   private final HiveAuthenticationProvider authenticator;
@@ -175,7 +180,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   private List<HivePrivilege> expandAllPrivileges(List<HivePrivilege> hivePrivileges) {
     Set<HivePrivilege> hivePrivSet = new HashSet<HivePrivilege>();
     for (HivePrivilege hivePrivilege : hivePrivileges) {
-      if (hivePrivilege.getName().equals("ALL")) {
+      if (hivePrivilege.getName().equals(ALL)) {
         // expand to all supported privileges
         for (SQLPrivilegeType privType : SQLPrivilegeType.values()) {
           hivePrivSet.add(new HivePrivilege(privType.name(), hivePrivilege.getColumns()));
@@ -222,6 +227,10 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     if (!isUserAdmin()) {
       throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
       + " allowed to add roles. " + ADMIN_ONLY_MSG);
+    }
+    if (RESERVED_ROLE_NAMES.contains(roleName.trim().toUpperCase())) {
+      throw new HiveAuthzPluginException("Role name cannot be one of the reserved roles: " +
+          RESERVED_ROLE_NAMES);
     }
     try {
       String grantorName = adminGrantor == null ? null : adminGrantor.getName();
@@ -418,8 +427,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     HiveAuthzPluginException {
 
     initUserRoles();
-    if ("NONE".equalsIgnoreCase(roleName)) {
-      // for set role NONE, reset roles to default roles.
+    if (ALL.equalsIgnoreCase(roleName)) {
+      // for set role ALL, reset roles to default roles.
       currentRoles.clear();
       currentRoles.addAll(getRolesFromMS());
       return;
