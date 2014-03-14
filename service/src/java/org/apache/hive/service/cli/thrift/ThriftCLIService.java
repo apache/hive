@@ -29,10 +29,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.auth.TSetIpAddressProcessor;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.GetInfoType;
@@ -43,7 +42,6 @@ import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
-import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
 
@@ -205,16 +203,16 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     if (hiveAuthFactory != null) {
       return hiveAuthFactory.getIpAddress();
     }
-    return SessionManager.getIpAddress();
+    return TSetIpAddressProcessor.getUserIpAddress();
   }
 
   private String getUserName(TOpenSessionReq req) throws HiveSQLException {
-    String userName;
-    if (hiveAuthFactory != null
-        && hiveAuthFactory.getRemoteUser() != null) {
-      userName = hiveAuthFactory.getRemoteUser();
-    } else {
-      userName = SessionManager.getUserName();
+    String userName = null;
+    if (hiveAuthFactory != null) {
+      userName = hiveAuthFactory.getRemoteUser(); // kerberos
+    }
+    if (userName == null) {
+      userName = TSetIpAddressProcessor.getUserName();  // except kerberos, nosasl
     }
     if (userName == null) {
       userName = req.getUsername();
@@ -231,12 +229,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     SessionHandle sessionHandle;
     if (cliService.getHiveConf().getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS) &&
         (userName != null)) {
-      String delegationTokenStr = null;
-      try {
-        delegationTokenStr = cliService.getDelegationTokenFromMetaStore(userName);
-      } catch (UnsupportedOperationException e) {
-        // The delegation token is not applicable in the given deployment mode
-      }
+      String delegationTokenStr = getDelegationToken(userName);
       sessionHandle = cliService.openSessionWithImpersonation(protocol, userName,
           req.getPassword(), req.getConfiguration(), delegationTokenStr);
     } else {
@@ -245,6 +238,21 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     }
     res.setServerProtocolVersion(protocol);
     return sessionHandle;
+  }
+
+
+  private String getDelegationToken(String userName)
+      throws HiveSQLException, LoginException, IOException {
+    if (userName == null || !cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
+        .equals(HiveAuthFactory.AuthTypes.KERBEROS.toString())) {
+      return null;
+    }
+    try {
+      return cliService.getDelegationTokenFromMetaStore(userName);
+    } catch (UnsupportedOperationException e) {
+      // The delegation token is not applicable in the given deployment mode
+    }
+    return null;
   }
 
   private TProtocolVersion getMinVersion(TProtocolVersion... versions) {
