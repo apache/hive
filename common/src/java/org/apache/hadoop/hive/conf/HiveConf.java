@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
+import org.apache.hive.common.HiveCompat;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
@@ -970,7 +971,13 @@ public class HiveConf extends Configuration {
     // column: implies column names can contain any character.
     HIVE_QUOTEDID_SUPPORT("hive.support.quoted.identifiers", "column",
         new PatternValidator("none", "column")),
-    USERS_IN_ADMIN_ROLE("hive.users.in.admin.role","")
+    USERS_IN_ADMIN_ROLE("hive.users.in.admin.role",""),
+
+    // Enable (configurable) deprecated behaviors by setting desired level of backward compatbility
+    // Setting to 0.12:
+    //   Maintains division behavior: int / int => double
+    // Setting to 0.13:
+    HIVE_COMPAT("hive.compat", HiveCompat.DEFAULT_COMPAT_LEVEL)
     ;
 
     public final String varname;

@@ -1490,6 +1490,14 @@ public final class FunctionRegistry {
     }
 
     if (clonedUDF != null) {
+      // Copy info that may be required in the new copy.
+      // The SettableUDF calls below could be replaced using this mechanism as well.
+      try {
+        genericUDF.copyToNewInstance(clonedUDF);
+      } catch (UDFArgumentException err) {
+        throw new IllegalArgumentException(err);
+      }
+
       // The original may have settable info that needs to be added to the new copy.
       if (genericUDF instanceof SettableUDF) {
         try {

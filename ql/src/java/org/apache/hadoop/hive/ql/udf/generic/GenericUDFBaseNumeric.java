@@ -22,12 +22,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.NoMatchingMethodException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -40,6 +42,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -48,6 +51,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hive.common.HiveCompat;
+import org.apache.hive.common.HiveCompat.CompatLevel;
 
 /**
  * GenericUDF Base Class for operations.
@@ -72,6 +77,9 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
   protected DoubleWritable doubleWritable = new DoubleWritable();
   protected HiveDecimalWritable decimalWritable = new HiveDecimalWritable();
 
+  protected boolean confLookupNeeded = true;
+  protected boolean ansiSqlArithmetic = false;
+
   public GenericUDFBaseNumeric() {
     opName = getClass().getSimpleName();
   }
@@ -91,6 +99,16 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
             + Category.PRIMITIVE.toString().toLowerCase() + " type, but "
             + category.toString().toLowerCase() + " is found");
       }
+    }
+
+    // During map/reduce tasks, there may not be a valid HiveConf from the SessionState.
+    // So lookup and save any needed conf information during query compilation in the Hive conf
+    // (where there should be valid HiveConf from SessionState).  Plan serialization will ensure
+    // we have access to these values in the map/reduce tasks.
+    if (confLookupNeeded) {
+      CompatLevel compatLevel = HiveCompat.getCompatLevel(SessionState.get().getConf());
+      ansiSqlArithmetic = compatLevel.ordinal() > CompatLevel.HIVE_0_12.ordinal();
+      confLookupNeeded = false;
     }
 
     leftOI = (PrimitiveObjectInspector) arguments[0];
@@ -203,10 +221,41 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
 
     // If any of the type isn't exact, double is chosen.
     if (!FunctionRegistry.isExactNumericType(left) || !FunctionRegistry.isExactNumericType(right)) {
-      return TypeInfoFactory.doubleTypeInfo;
+      return deriveResultApproxTypeInfo();
     }
 
     return deriveResultExactTypeInfo();
+  }
+
+  /**
+   * Default implementation for getting the approximate type info for the operator result.
+   * Divide operator overrides this.
+   * @return
+   */
+  protected PrimitiveTypeInfo deriveResultApproxTypeInfo() {
+    PrimitiveTypeInfo left = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(leftOI);
+    PrimitiveTypeInfo right = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(rightOI);
+
+    // string types get converted to double
+    if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(left.getPrimitiveCategory())
+            == PrimitiveGrouping.STRING_GROUP) {
+      left = TypeInfoFactory.doubleTypeInfo;
+    }
+    if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(right.getPrimitiveCategory())
+        == PrimitiveGrouping.STRING_GROUP) {
+      right = TypeInfoFactory.doubleTypeInfo;
+    }    
+
+    // Use type promotion
+    PrimitiveCategory commonCat = FunctionRegistry.getCommonCategory(left, right);
+    if (commonCat == PrimitiveCategory.DECIMAL) {
+      // Hive 0.12 behavior where double * decimal -> decimal is gone.
+      return TypeInfoFactory.doubleTypeInfo;
+    } else if (commonCat == null) {
+      return TypeInfoFactory.doubleTypeInfo;
+    } else {
+      return left.getPrimitiveCategory() == commonCat ? left : right;
+    }
   }
 
   /**
@@ -247,4 +296,10 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
     return "(" + children[0] + " " + opDisplayName + " " + children[1] + ")";
   }
 
+  public void copyToNewInstance(Object newInstance) throws UDFArgumentException {
+    super.copyToNewInstance(newInstance);
+    GenericUDFBaseNumeric other = (GenericUDFBaseNumeric) newInstance;
+    other.confLookupNeeded = this.confLookupNeeded;
+    other.ansiSqlArithmetic = this.ansiSqlArithmetic;
+  }
 }

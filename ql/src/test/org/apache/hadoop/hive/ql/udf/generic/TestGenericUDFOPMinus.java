@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -37,7 +39,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestGenericUDFOPMinus {
+public class TestGenericUDFOPMinus extends TestGenericUDFOPNumeric {
 
   @Test
   public void testByteMinusShort() throws HiveException {
@@ -141,9 +143,9 @@ public class TestGenericUDFOPMinus {
     };
 
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
-    Assert.assertEquals(oi.getTypeInfo(), TypeInfoFactory.doubleTypeInfo);
-    DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(4.5), new Double(res.get()));
+    Assert.assertEquals(oi.getTypeInfo(), TypeInfoFactory.floatTypeInfo);
+    FloatWritable res = (FloatWritable) udf.evaluate(args);
+    Assert.assertEquals(new Float(4.5), new Float(res.get()));
   }
 
   @Test
@@ -201,4 +203,45 @@ public class TestGenericUDFOPMinus {
     Assert.assertEquals(TypeInfoFactory.getDecimalTypeInfo(6, 2), oi.getTypeInfo());
   }
 
+  @Test
+  public void testReturnTypeBackwardCompat() throws Exception {
+    // Disable ansi sql arithmetic changes
+    SessionState.get().getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "0.12");
+
+    verifyReturnType(new GenericUDFOPMinus(), "int", "int", "int");
+    verifyReturnType(new GenericUDFOPMinus(), "int", "float", "float");
+    verifyReturnType(new GenericUDFOPMinus(), "int", "double", "double");
+    verifyReturnType(new GenericUDFOPMinus(), "int", "decimal(10,2)", "decimal(13,2)");
+
+    verifyReturnType(new GenericUDFOPMinus(), "float", "float", "float");
+    verifyReturnType(new GenericUDFOPMinus(), "float", "double", "double");
+    verifyReturnType(new GenericUDFOPMinus(), "float", "decimal(10,2)", "double");
+
+    verifyReturnType(new GenericUDFOPMinus(), "double", "double", "double");
+    verifyReturnType(new GenericUDFOPMinus(), "double", "decimal(10,2)", "double");
+
+    verifyReturnType(new GenericUDFOPMinus(), "decimal(10,2)", "decimal(10,2)", "decimal(11,2)");
+
+    // Most tests are done with ANSI SQL mode enabled, set it back to true
+    SessionState.get().getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "latest");
+  }
+
+  @Test
+  public void testReturnTypeAnsiSql() throws Exception {
+    SessionState.get().getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "latest");
+
+    verifyReturnType(new GenericUDFOPMinus(), "int", "int", "int");
+    verifyReturnType(new GenericUDFOPMinus(), "int", "float", "float");
+    verifyReturnType(new GenericUDFOPMinus(), "int", "double", "double");
+    verifyReturnType(new GenericUDFOPMinus(), "int", "decimal(10,2)", "decimal(13,2)");
+
+    verifyReturnType(new GenericUDFOPMinus(), "float", "float", "float");
+    verifyReturnType(new GenericUDFOPMinus(), "float", "double", "double");
+    verifyReturnType(new GenericUDFOPMinus(), "float", "decimal(10,2)", "double");
+
+    verifyReturnType(new GenericUDFOPMinus(), "double", "double", "double");
+    verifyReturnType(new GenericUDFOPMinus(), "double", "decimal(10,2)", "double");
+
+    verifyReturnType(new GenericUDFOPMinus(), "decimal(10,2)", "decimal(10,2)", "decimal(11,2)");
+  }
 }
