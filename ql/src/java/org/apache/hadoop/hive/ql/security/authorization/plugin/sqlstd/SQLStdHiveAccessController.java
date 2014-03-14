@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
@@ -156,7 +155,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
         metastoreClient, authenticator.getUserName(), getCurrentRoles(), isUserAdmin());
 
     // grant
-    PrivilegeBag privBag = getThriftPrivilegesBag(hivePrincipals, hivePrivileges, hivePrivObject,
+    PrivilegeBag privBag = SQLAuthorizationUtils.getThriftPrivilegesBag(hivePrincipals, hivePrivileges, hivePrivObject,
         grantorPrincipal, grantOption);
     try {
       metastoreClient.grant_privileges(privBag);
@@ -188,49 +187,6 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     return new ArrayList<HivePrivilege>(hivePrivSet);
   }
 
-  /**
-   * Create thrift privileges bag
-   *
-   * @param hivePrincipals
-   * @param hivePrivileges
-   * @param hivePrivObject
-   * @param grantorPrincipal
-   * @param grantOption
-   * @return
-   * @throws HiveAuthzPluginException
-   */
-  private PrivilegeBag getThriftPrivilegesBag(List<HivePrincipal> hivePrincipals,
-      List<HivePrivilege> hivePrivileges, HivePrivilegeObject hivePrivObject,
-      HivePrincipal grantorPrincipal, boolean grantOption) throws HiveAuthzPluginException {
-
-    HiveObjectRef privObj = SQLAuthorizationUtils.getThriftHiveObjectRef(hivePrivObject);
-    PrivilegeBag privBag = new PrivilegeBag();
-    for (HivePrivilege privilege : hivePrivileges) {
-      if (privilege.getColumns() != null && privilege.getColumns().size() > 0) {
-        throw new HiveAuthzPluginException("Privileges on columns not supported currently"
-            + " in sql standard authorization mode");
-      }
-
-      PrivilegeGrantInfo grantInfo = getThriftPrivilegeGrantInfo(privilege, grantorPrincipal,
-          grantOption);
-      for (HivePrincipal principal : hivePrincipals) {
-        HiveObjectPrivilege objPriv = new HiveObjectPrivilege(privObj, principal.getName(),
-            AuthorizationUtils.getThriftPrincipalType(principal.getType()), grantInfo);
-        privBag.addToPrivileges(objPriv);
-      }
-    }
-    return privBag;
-  }
-
-  private PrivilegeGrantInfo getThriftPrivilegeGrantInfo(HivePrivilege privilege,
-      HivePrincipal grantorPrincipal, boolean grantOption) throws HiveAuthzPluginException {
-    try {
-      return AuthorizationUtils.getThriftPrivilegeGrantInfo(privilege, grantorPrincipal,
-          grantOption);
-    } catch (HiveException e) {
-      throw new HiveAuthzPluginException(e);
-    }
-  }
 
   @Override
   public void revokePrivileges(List<HivePrincipal> hivePrincipals,
@@ -430,7 +386,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
             AuthorizationUtils.getHivePrincipalType(msGrantInfo.getGrantorType()));
 
         HivePrivilegeInfo resPrivInfo = new HivePrivilegeInfo(resPrincipal, resPrivilege,
-            resPrivObj, grantorPrincipal, msGrantInfo.isGrantOption());
+            resPrivObj, grantorPrincipal, msGrantInfo.isGrantOption(), msGrantInfo.getCreateTime());
         resPrivInfos.add(resPrivInfo);
       }
       return resPrivInfos;
