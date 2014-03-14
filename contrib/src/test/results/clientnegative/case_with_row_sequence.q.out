@@ -5,9 +5,11 @@ POSTHOOK: type: DROPFUNCTION
 PREHOOK: query: create temporary function row_sequence as 
 'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: create temporary function row_sequence as 
 'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: -- make sure a stateful function inside of CASE throws an exception
 -- since the short-circuiting requirements are contradictory
 SELECT CASE WHEN 3 > 2 THEN 10 WHEN row_sequence() > 5 THEN 20 ELSE 30 END
