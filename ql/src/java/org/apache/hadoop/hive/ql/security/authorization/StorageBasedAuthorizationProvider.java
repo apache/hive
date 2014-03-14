@@ -26,12 +26,15 @@ import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -65,6 +68,8 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
 
   private Warehouse wh;
   private boolean isRunFromMetaStore = false;
+
+  private static Log LOG = LogFactory.getLog(StorageBasedAuthorizationProvider.class);
 
   /**
    * Make sure that the warehouse variable is set up properly.
@@ -319,6 +324,13 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       final EnumSet<FsAction> actions, String user, List<String> groups) throws IOException,
       AccessControlException {
 
+    String superGroupName = getSuperGroupName(fs.getConf());
+    if (userBelongsToSuperGroup(superGroupName, groups)) {
+      LOG.info("User \"" + user + "\" belongs to super-group \"" + superGroupName + "\". " +
+          "Permission granted for actions: (" + actions + ").");
+      return;
+    }
+
     final FileStatus stat;
 
     try {
@@ -351,6 +363,14 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       throw new AccessControlException("action " + action + " not permitted on path "
           + path + " for user " + user);
     }
+  }
+
+  private static String getSuperGroupName(Configuration configuration) {
+    return configuration.get(DFSConfigKeys.DFS_PERMISSIONS_SUPERUSERGROUP_KEY, "");
+  }
+
+  private static boolean userBelongsToSuperGroup(String superGroupName, List<String> groups) {
+    return groups.contains(superGroupName);
   }
 
   protected Path getDbLocation(Database db) throws HiveException {
