@@ -131,6 +131,11 @@ public class HiveSessionImpl implements HiveSession {
     this.operationManager = operationManager;
   }
 
+  @Override
+  public void open() {
+    SessionState.start(sessionState);
+  }
+
   protected synchronized void acquire() throws HiveSQLException {
     // need to make sure that the this connections session state is
     // stored in the thread local for sessions.
