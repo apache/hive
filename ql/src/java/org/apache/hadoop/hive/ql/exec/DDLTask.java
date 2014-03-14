@@ -657,7 +657,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
         PrivilegeGrantInfo grantInfo =
             AuthorizationUtils.getThriftPrivilegeGrantInfo(priv, privInfo.getGrantorPrincipal(),
-                privInfo.isGrantOption());
+                privInfo.isGrantOption(), privInfo.getGrantTime());
 
         //only grantInfo is used
         HiveObjectPrivilege thriftObjectPriv = new HiveObjectPrivilege(new HiveObjectRef(
@@ -672,18 +672,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException("Error in show grant statement", e);
     }
     return 0;
-  }
-
-  private static void sortPrivileges(List<HiveObjectPrivilege> privileges) {
-    Collections.sort(privileges, new Comparator<HiveObjectPrivilege>() {
-
-      @Override
-      public int compare(HiveObjectPrivilege one, HiveObjectPrivilege other) {
-        return one.getGrantInfo().getPrivilege().compareTo(other.getGrantInfo().getPrivilege());
-      }
-
-    });
-
   }
 
   private int grantOrRevokePrivileges(List<PrincipalDesc> principals,
@@ -854,6 +842,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
       throws HiveException {
+
     String [] dbTable = Utilities.getDbTableName(privSubjectDesc.getObject());
     return new HivePrivilegeObject(getPrivObjectType(privSubjectDesc), dbTable[0], dbTable[1]);
   }
@@ -877,6 +866,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private HivePrivilegeObjectType getPrivObjectType(PrivilegeObjectDesc privSubjectDesc) {
+    if (privSubjectDesc.getObject() == null) {
+      return null;
+    }
     return privSubjectDesc.getTable() ? HivePrivilegeObjectType.TABLE_OR_VIEW : HivePrivilegeObjectType.DATABASE;
   }
 

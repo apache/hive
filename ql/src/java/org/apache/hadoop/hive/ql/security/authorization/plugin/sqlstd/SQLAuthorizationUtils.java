@@ -35,7 +35,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -43,7 +42,6 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
@@ -91,7 +89,7 @@ public class SQLAuthorizationUtils {
             + " is not supported in sql standard authorization mode");
       }
       PrivilegeGrantInfo grantInfo = getThriftPrivilegeGrantInfo(privilege, grantorPrincipal,
-          grantOption);
+          grantOption, 0 /*real grant time added by metastore*/);
       for (HivePrincipal principal : hivePrincipals) {
         HiveObjectPrivilege objPriv = new HiveObjectPrivilege(privObj, principal.getName(),
             AuthorizationUtils.getThriftPrincipalType(principal.getType()), grantInfo);
@@ -102,10 +100,11 @@ public class SQLAuthorizationUtils {
   }
 
   static PrivilegeGrantInfo getThriftPrivilegeGrantInfo(HivePrivilege privilege,
-      HivePrincipal grantorPrincipal, boolean grantOption) throws HiveAuthzPluginException {
+      HivePrincipal grantorPrincipal, boolean grantOption, int grantTime)
+          throws HiveAuthzPluginException {
     try {
       return AuthorizationUtils.getThriftPrivilegeGrantInfo(privilege, grantorPrincipal,
-          grantOption);
+          grantOption, grantTime);
     } catch (HiveException e) {
       throw new HiveAuthzPluginException(e);
     }
