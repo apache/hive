@@ -54,6 +54,9 @@ enum TProtocolVersion {
 
   // V6 uses binary type for binary payload (was string) and uses columnar result set
   HIVE_CLI_SERVICE_PROTOCOL_V6
+
+  // V7 adds support for delegation token based connection
+  HIVE_CLI_SERVICE_PROTOCOL_V7
 }
 
 enum TTypeId {
