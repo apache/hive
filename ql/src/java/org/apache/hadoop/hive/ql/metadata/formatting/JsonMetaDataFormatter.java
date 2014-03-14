@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -189,9 +190,11 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     if (tbl.isPartitioned()) {
       builder.put("partitionColumns", makeColsUnformatted(tbl.getPartCols()));
     }
-
-    putFileSystemsStats(builder, makeTableStatusLocations(tbl, db, par),
+    if(tbl.getTableType() != TableType.VIRTUAL_VIEW) {
+      //tbl.getPath() is null for views
+      putFileSystemsStats(builder, makeTableStatusLocations(tbl, db, par),
         conf, tbl.getPath());
+    }
 
     return builder.build();
   }
@@ -222,6 +225,10 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     return locations;
   }
 
+  /**
+   * @param tblPath not NULL
+   * @throws IOException
+   */
   // Duplicates logic in TextMetaDataFormatter
   private void putFileSystemsStats(MapBuilder builder, List<Path> locations,
       HiveConf conf, Path tblPath)
