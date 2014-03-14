@@ -1094,13 +1094,19 @@ public class Server {
     if (theSecurityContext == null) { 
       return null;
     }
+    String userName = null;
     if (theSecurityContext.getUserPrincipal() == null) {
+      userName = Main.UserNameHandler.getUserName(request);
+    }
+    else {
+      userName = theSecurityContext.getUserPrincipal().getName();
+    }
+    if(userName == null) {
       return null;
     }
     //map hue/foo.bar@something.com->hue since user group checks 
     // and config files are in terms of short name
-    return UserGroupInformation.createRemoteUser(
-        theSecurityContext.getUserPrincipal().getName()).getShortUserName();
+    return UserGroupInformation.createRemoteUser(userName).getShortUserName();
   }
 
   /**
