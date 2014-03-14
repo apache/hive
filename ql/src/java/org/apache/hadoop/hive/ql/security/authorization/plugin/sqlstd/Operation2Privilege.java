@@ -169,10 +169,10 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.SHOWINDEXES, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.SHOWPARTITIONS, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.SHOWLOCKS, new InOutPrivs(null, null));
-    op2Priv.put(HiveOperationType.CREATEFUNCTION, new InOutPrivs(null, null));
-    op2Priv.put(HiveOperationType.DROPFUNCTION, new InOutPrivs(null, null));
-    op2Priv.put(HiveOperationType.CREATEMACRO, new InOutPrivs(null, null));
-    op2Priv.put(HiveOperationType.DROPMACRO, new InOutPrivs(null, null));
+    op2Priv.put(HiveOperationType.CREATEFUNCTION, new InOutPrivs(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROPFUNCTION, new InOutPrivs(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.CREATEMACRO, new InOutPrivs(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROPMACRO, new InOutPrivs(null, ADMIN_PRIV_AR));
 
     op2Priv.put(HiveOperationType.LOCKTABLE, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.UNLOCKTABLE, new InOutPrivs(null, null));

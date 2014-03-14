@@ -1,4 +1,5 @@
 PREHOOK: query: create function default.badfunc as 'java.lang.String'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 FAILED: Class java.lang.String does not implement UDF, GenericUDF, or UDAF
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask
