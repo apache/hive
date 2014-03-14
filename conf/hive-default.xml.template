@@ -2377,10 +2377,11 @@
 
 <property>
   <name>hive.jar.directory</name>
-  <value>hdfs:///user/hive/</value>
+  <value></value>
   <description>
     This is the location hive in tez mode will look for to find a site wide 
-    installed hive instance.
+    installed hive instance. If not set, the directory under hive.user.install.directory 
+    corresponding to current user name will be used.
   </description>
 </property>
 
