@@ -18,7 +18,6 @@
 
 package org.apache.hive.service.cli.session;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,10 +31,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
-import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.CompositeService;
+import org.apache.hive.service.auth.TSetIpAddressProcessor;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.OperationManager;
@@ -108,15 +105,16 @@ public class SessionManager extends CompositeService {
     HiveSession session;
     if (withImpersonation) {
       HiveSessionImplwithUGI hiveSessionUgi = new HiveSessionImplwithUGI(protocol, username, password,
-        hiveConf, sessionConf, threadLocalIpAddress.get(), delegationToken);
+        hiveConf, sessionConf, TSetIpAddressProcessor.getUserIpAddress(), delegationToken);
       session = HiveSessionProxy.getProxy(hiveSessionUgi, hiveSessionUgi.getSessionUgi());
       hiveSessionUgi.setProxySession(session);
     } else {
-      session = new HiveSessionImpl(protocol, username, password, hiveConf, sessionConf, threadLocalIpAddress.get());
+      session = new HiveSessionImpl(protocol, username, password, hiveConf, sessionConf,
+          TSetIpAddressProcessor.getUserIpAddress());
     }
     session.setSessionManager(this);
     session.setOperationManager(operationManager);
-
+    session.open();
     handleToSession.put(session.getSessionHandle(), session);
 
     try {
@@ -145,44 +143,6 @@ public class SessionManager extends CompositeService {
 
   public OperationManager getOperationManager() {
     return operationManager;
-  }
-
-  private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
-    @Override
-    protected synchronized String initialValue() {
-      return null;
-    }
-  };
-
-  public static void setIpAddress(String ipAddress) {
-    threadLocalIpAddress.set(ipAddress);
-  }
-
-  private void clearIpAddress() {
-    threadLocalIpAddress.remove();
-  }
-
-  public static String getIpAddress() {
-    return threadLocalIpAddress.get();
-  }
-
-  private static ThreadLocal<String> threadLocalUserName = new ThreadLocal<String>(){
-    @Override
-    protected synchronized String initialValue() {
-      return null;
-    }
-  };
-
-  public static void setUserName(String userName) {
-    threadLocalUserName.set(userName);
-  }
-
-  private void clearUserName() {
-    threadLocalUserName.remove();
-  }
-
-  public static String getUserName() {
-    return threadLocalUserName.get();
   }
 
   // execute session hooks
