@@ -12,8 +12,10 @@ STAGE PLANS:
 
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_translate AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestTranslate'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_translate AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestTranslate'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE dest1(c1 STRING, c2 STRING, c3 STRING, c4 STRING, c5 STRING, c6 STRING, c7 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -72,8 +74,10 @@ POSTHOOK: Lineage: dest1.c7 EXPRESSION []
 bbc	bcc	NULL	NULL	NULL	bc	abc
 PREHOOK: query: DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_translate
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default
 POSTHOOK: Lineage: dest1.c1 EXPRESSION []
 POSTHOOK: Lineage: dest1.c2 EXPRESSION []
 POSTHOOK: Lineage: dest1.c3 EXPRESSION []

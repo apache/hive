@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TEMPORARY FUNCTION example_format AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleFormat'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION example_format AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleFormat'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: EXPLAIN
 SELECT example_format("abc"),
        example_format("%1$s", 1.1),
@@ -65,5 +67,7 @@ POSTHOOK: Input: default@src
 abc	1.1	1.1 1.200000e+00	a 12 10
 PREHOOK: query: DROP TEMPORARY FUNCTION example_format
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTION example_format
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default

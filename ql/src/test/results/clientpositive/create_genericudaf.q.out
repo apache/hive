@@ -12,8 +12,10 @@ STAGE PLANS:
 
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_avg AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_avg AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: EXPLAIN
 SELECT
     test_avg(1),
@@ -89,5 +91,7 @@ POSTHOOK: Input: default@src
 1.0	260.182
 PREHOOK: query: DROP TEMPORARY FUNCTIOn test_avg
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTIOn test_avg
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default
