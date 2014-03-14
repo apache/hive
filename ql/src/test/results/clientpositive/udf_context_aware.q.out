@@ -1,7 +1,9 @@
 PREHOOK: query: create temporary function counter as 'org.apache.hadoop.hive.ql.udf.generic.DummyContextUDF'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: create temporary function counter as 'org.apache.hadoop.hive.ql.udf.generic.DummyContextUDF'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: select *, counter(key) from src limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

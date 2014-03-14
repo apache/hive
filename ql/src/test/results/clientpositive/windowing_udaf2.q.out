@@ -1,9 +1,11 @@
 PREHOOK: query: -- user-added aggregates should be usable as windowing functions
 create temporary function mysum as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: -- user-added aggregates should be usable as windowing functions
 create temporary function mysum as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: select sum(key) over (), mysum(key) over () from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

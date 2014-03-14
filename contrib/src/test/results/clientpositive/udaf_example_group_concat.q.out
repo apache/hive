@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TEMPORARY FUNCTION example_group_concat AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleGroupConcat'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION example_group_concat AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleGroupConcat'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: EXPLAIN
 SELECT substr(value,5,1), example_group_concat("(", key, ":", value, ")")
 FROM src
@@ -86,5 +88,7 @@ POSTHOOK: Input: default@src
 9	(90:val_90)(90:val_90)(90:val_90)(92:val_92)(95:val_95)(95:val_95)(96:val_96)(97:val_97)(97:val_97)(98:val_98)(98:val_98)(9:val_9)
 PREHOOK: query: DROP TEMPORARY FUNCTION example_group_concat
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTION example_group_concat
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default

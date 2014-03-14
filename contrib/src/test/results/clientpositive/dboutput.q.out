@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
 PREHOOK: query: DESCRIBE FUNCTION dboutput
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION dboutput
@@ -180,5 +182,7 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: DROP TEMPORARY FUNCTION dboutput
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTION dboutput
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default
