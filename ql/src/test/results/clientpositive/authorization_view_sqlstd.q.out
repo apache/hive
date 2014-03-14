@@ -23,6 +23,22 @@ create view vt2 as select * from t1 where i > 1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@vt2
+PREHOOK: query: show grant user user1 on all
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user1 on all
+POSTHOOK: type: SHOW_GRANT
+default	t1			user1	USER	DELETE	true	-1	user1
+default	t1			user1	USER	INSERT	true	-1	user1
+default	t1			user1	USER	SELECT	true	-1	user1
+default	t1			user1	USER	UPDATE	true	-1	user1
+default	vt1			user1	USER	DELETE	true	-1	user1
+default	vt1			user1	USER	INSERT	true	-1	user1
+default	vt1			user1	USER	SELECT	true	-1	user1
+default	vt1			user1	USER	UPDATE	true	-1	user1
+default	vt2			user1	USER	DELETE	true	-1	user1
+default	vt2			user1	USER	INSERT	true	-1	user1
+default	vt2			user1	USER	SELECT	true	-1	user1
+default	vt2			user1	USER	UPDATE	true	-1	user1
 PREHOOK: query: --view grant to user
 -- try with and without table keyword
 
@@ -75,6 +91,15 @@ default	vt2			user2	USER	DELETE	false	-1	user1
 default	vt2			user2	USER	INSERT	false	-1	user1
 default	vt2			user2	USER	SELECT	false	-1	user1
 default	vt2			user2	USER	UPDATE	false	-1	user1
+PREHOOK: query: show grant user user2 on all
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user2 on all
+POSTHOOK: type: SHOW_GRANT
+default	vt1			user2	USER	SELECT	false	-1	user1
+default	vt2			user2	USER	DELETE	false	-1	user1
+default	vt2			user2	USER	INSERT	false	-1	user1
+default	vt2			user2	USER	SELECT	false	-1	user1
+default	vt2			user2	USER	UPDATE	false	-1	user1
 PREHOOK: query: revoke all on vt2 from user user2
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@vt2
@@ -94,6 +119,10 @@ POSTHOOK: Output: default@vt1
 PREHOOK: query: show grant user user2 on table vt1
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user2 on table vt1
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant user user2 on all
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user2 on all
 POSTHOOK: type: SHOW_GRANT
 PREHOOK: query: -- grant privileges on roles for view, after next statement
 show grant user user3 on table vt1

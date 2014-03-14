@@ -70,9 +70,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -81,6 +78,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import org.antlr.runtime.CommonToken;
 import org.apache.commons.codec.binary.Base64;
@@ -2029,6 +2029,9 @@ public final class Utilities {
    * @throws HiveException
    */
   public static String[] getDbTableName(String dbtable) throws HiveException{
+    if(dbtable == null){
+      return new String[2];
+    }
     String[] names =  dbtable.split("\\.");
     switch (names.length) {
     case 2:
