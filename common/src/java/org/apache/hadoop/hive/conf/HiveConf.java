@@ -930,7 +930,7 @@ public class HiveConf extends Configuration {
 
     HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr",
         new StringsValidator("mr", "tez")),
-    HIVE_JAR_DIRECTORY("hive.jar.directory", "hdfs:///user/hive/"),
+    HIVE_JAR_DIRECTORY("hive.jar.directory", null),
     HIVE_USER_INSTALL_DIR("hive.user.install.directory", "hdfs:///user/"),
 
     // Vectorization enabled
