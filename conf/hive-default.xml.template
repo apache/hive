@@ -2455,4 +2455,12 @@
   </description>
 </property>
 
+<property>
+  <name>hive.compat</name>
+  <value>0.12</value>
+  <description>
+    Enable (configurable) deprecated behaviors by setting desired level of backward compatbility
+  </description>
+</property>
+
 </configuration>

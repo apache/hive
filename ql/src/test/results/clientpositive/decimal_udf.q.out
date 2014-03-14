@@ -175,7 +175,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key + (value / 2)) (type: decimal(21,10))
+            expressions: (key + (value / 2)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -188,19 +188,19 @@ POSTHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--2200
+-2200.0
 NULL
-0
-0
-150
-15
+0.0
+0.0
+150.0
+15.0
 1.5
 0.1
 0.01
-300
-30
-3
-0
+300.0
+30.0
+3.0
+0.0
 0.2
 0.02
 0.3
@@ -210,22 +210,22 @@ NULL
 -0.33
 -0.333
 1.5
-3
-4.64
+3.0
+4.640000000000001
 -1.62
 -1.62
 -6.622
 1.62
 1.622
-186
+186.0
 187.7
 -1882.99
-4.64
-4.64
-5.14
+4.640000000000001
+4.640000000000001
+5.140000000000001
 1.5
--1851851835.123456789
-1851851835.12345678
+-1.8518518351234567E9
+1.8518518351234567E9
 PREHOOK: query: EXPLAIN SELECT key + '1.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key + '1.0' FROM DECIMAL_UDF
@@ -445,7 +445,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key - (value / 2)) (type: decimal(21,10))
+            expressions: (key - (value / 2)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -458,19 +458,19 @@ POSTHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--6600
+-6600.0
 NULL
-0
-0
-50
-5
+0.0
+0.0
+50.0
+5.0
 0.5
 0.1
 0.01
-100
-10
-1
-0
+100.0
+10.0
+1.0
+0.0
 0.2
 0.02
 0.3
@@ -480,22 +480,22 @@ NULL
 -0.33
 -0.333
 0.5
-1
-1.64
--0.62
--0.62
+1.0
+1.6400000000000001
+-0.6200000000000001
+-0.6200000000000001
 4.378
-0.62
-0.622
-62
+0.6200000000000001
+0.6220000000000001
+62.0
 62.7
 -627.99
-1.64
-1.64
-1.14
+1.6400000000000001
+1.6400000000000001
+1.1400000000000001
 0.5
--617283945.123456789
-617283945.12345678
+-6.172839451234567E8
+6.172839451234567E8
 PREHOOK: query: EXPLAIN SELECT key - '1.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key - '1.0' FROM DECIMAL_UDF
@@ -715,7 +715,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key * (value / 2)) (type: decimal(37,16))
+            expressions: (key * (value / 2)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -728,44 +728,44 @@ POSTHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--9680000
+-9680000.0
 NULL
-0
-0
-5000
-50
+0.0
+0.0
+5000.0
+50.0
 0.5
-0
-0
-20000
-200
-2
-0
-0
-0
-0
-0
-0
-0
-0
-0
+0.0
+0.0
+20000.0
+200.0
+2.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+-0.0
+-0.0
+-0.0
 0.5
-2
+2.0
 4.71
 0.56
 0.56
 6.171
 0.56
 0.561
-7688
-7825
+7688.0
+7825.0
 787819.975
 4.71
 4.71
 6.28
 0.5
-762078937585733943.750952605
-762078937585733938.1953971
+7.6207893758573389E17
+7.6207893758573389E17
 PREHOOK: query: EXPLAIN SELECT key * '2.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key * '2.0' FROM DECIMAL_UDF
@@ -1042,7 +1042,7 @@ STAGE PLANS:
             predicate: (value is not null and (value <> 0)) (type: boolean)
             Statistics: Num rows: 2 Data size: 239 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (key / (value / 2)) (type: decimal(38,24))
+              expressions: (key / (value / 2)) (type: double)
               outputColumnNames: _col0
               Statistics: Num rows: 2 Data size: 239 Basic stats: COMPLETE Column stats: NONE
               ListSink
@@ -1055,30 +1055,30 @@ POSTHOOK: query: SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not nul
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--2
-2
-2
-2
-2
-2
-2
-2
-2
-2.093333333333333333333333
+-2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0933333333333333
 2.24
 2.24
-0.204
+0.20400000000000001
 2.24
 2.244
-2
+2.0
 2.0032
-2.00078087649402390438247
-2.093333333333333333333333
-2.093333333333333333333333
+2.000780876494024
+2.0933333333333333
+2.0933333333333333
 1.57
-2
+2.0
 2.0000000002
-2.00000000019999998542
+2.0000000002
 PREHOOK: query: EXPLAIN SELECT key / '2.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key / '2.0' FROM DECIMAL_UDF
