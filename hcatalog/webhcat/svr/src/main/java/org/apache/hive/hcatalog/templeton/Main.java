@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hdfs.web.AuthFilter;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
+import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
@@ -43,6 +45,8 @@ import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * The main executable that starts up and runs the Server.
@@ -205,6 +209,7 @@ public class Main {
   // is enabled.
   public FilterHolder makeAuthFilter() {
     FilterHolder authFilter = new FilterHolder(AuthFilter.class);
+    UserNameHandler.allowAnonymous(authFilter);
     if (UserGroupInformation.isSecurityEnabled()) {
       //http://hadoop.apache.org/docs/r1.1.1/api/org/apache/hadoop/security/authentication/server/AuthenticationFilter.html
       authFilter.setInitParameter("dfs.web.authentication.signature.secret",
@@ -257,5 +262,38 @@ public class Main {
   public static void main(String[] args) {
     Main templeton = new Main(args);
     templeton.run();
+  }
+
+  /**
+   * as of 3/6/2014 all WebHCat gives examples of POST requests that send user.name as a form 
+   * parameter (in simple security mode).  That is no longer supported by PseudoAuthenticationHandler.
+   * This class compensates for it.  
+   * Alternatively, WebHCat could have implemented it's own version of PseudoAuthenticationHandler
+   * and make sure that it's picked up by AuthenticationFilter.init(); (HADOOP-10193 has some context)
+   * @deprecated since 0.13; callers should submit user.name as a query parameter.  user.name as a 
+   * form param will be de-supported in 0.15
+   */
+  static final class UserNameHandler {
+    static void allowAnonymous(FilterHolder authFilter) {
+      /*note that will throw if Anonymous mode is not allowed & user.name is not in query string of the request;
+      * this ensures that in the context of WebHCat, PseudoAuthenticationHandler allows Anonymous even though
+      * WebHCat itself will throw if it can't figure out user.name*/
+      authFilter.setInitParameter("dfs.web.authentication." + PseudoAuthenticationHandler.ANONYMOUS_ALLOWED, "true");
+    }
+    static String getUserName(HttpServletRequest request) {
+      if(!UserGroupInformation.isSecurityEnabled() && "POST".equalsIgnoreCase(request.getMethod())) {
+      /*as of hadoop 2.3.0, PseudoAuthenticationHandler only expects user.name as a query param
+      * (not as a form param in a POST request.  For backwards compatibility, we this logic
+      * to get user.name when it's sent as a form parameter.
+      * This is added in Hive 0.13 and should be de-supported in 0.15*/
+        String userName = request.getParameter(PseudoAuthenticator.USER_NAME);
+        if(userName != null) {
+          LOG.warn(PseudoAuthenticator.USER_NAME + 
+            " is sent as form parameter which is deprecated as of Hive 0.13.  Should send it in the query string.");
+        }
+        return userName;
+      }
+      return null;
+    }
   }
 }
