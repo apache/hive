@@ -598,18 +598,20 @@ public class DagUtils {
     // need to localize the additional jars and files
 
     // we need the directory on hdfs to which we shall put all these files
-    String hdfsDirPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_JAR_DIRECTORY);
-    Path hdfsDirPath = new Path(hdfsDirPathStr);
-    FileSystem fs = hdfsDirPath.getFileSystem(conf);
-    if (!(fs instanceof DistributedFileSystem)) {
-      throw new IOException(ErrorMsg.INVALID_HDFS_URI.format(hdfsDirPathStr));
-    }
-
+    // Use HIVE_JAR_DIRECTORY only if it's set explicitly; otherwise use default directory
     FileStatus fstatus = null;
-    try {
-      fstatus = fs.getFileStatus(hdfsDirPath);
-    } catch (FileNotFoundException fe) {
-      // do nothing
+    String hdfsDirPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_JAR_DIRECTORY, null);
+    if (hdfsDirPathStr != null) {
+      Path hdfsDirPath = new Path(hdfsDirPathStr);
+      FileSystem fs = hdfsDirPath.getFileSystem(conf);
+      if (!(fs instanceof DistributedFileSystem)) {
+        throw new IOException(ErrorMsg.INVALID_HDFS_URI.format(hdfsDirPathStr));
+      }
+      try {
+        fstatus = fs.getFileStatus(hdfsDirPath);
+      } catch (FileNotFoundException fe) {
+        // do nothing
+      }
     }
 
     if ((fstatus == null) || (!fstatus.isDir())) {
