@@ -19,6 +19,7 @@ CREATE TABLE list_bucketing_dynamic_part (key String, value STRING)
     stored as DIRECTORIES
     STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 
 -- list bucketing DML : dynamic partition (one level) , merge , one skewed column
@@ -40,6 +41,7 @@ CREATE TABLE list_bucketing_dynamic_part (key String, value STRING)
     stored as DIRECTORIES
     STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_dynamic_part
 PREHOOK: query: -- list bucketing DML without merge. use bucketize to generate a few small files.
 explain extended

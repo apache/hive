@@ -45,6 +45,7 @@ create table list_bucketing_dynamic_part (key String, value String)
     stored as DIRECTORIES
     STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- list bucketing DML: dynamic partition. multiple skewed columns. merge.
 -- The following explains merge example used in this test case
 -- DML will generated 2 partitions
@@ -92,6 +93,7 @@ create table list_bucketing_dynamic_part (key String, value String)
     stored as DIRECTORIES
     STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_dynamic_part
 PREHOOK: query: -- list bucketing DML without merge. use bucketize to generate a few small files.
 explain extended

@@ -9,6 +9,7 @@ create table list_bucketing_mul_col (col1 String, col2 String, col3 String, col4
     stored as DIRECTORIES
     STORED AS RCFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Ensure skewed value map has escaped directory name
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
@@ -20,6 +21,7 @@ create table list_bucketing_mul_col (col1 String, col2 String, col3 String, col4
     stored as DIRECTORIES
     STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_mul_col
 PREHOOK: query: -- list bucketing DML 
 explain extended
