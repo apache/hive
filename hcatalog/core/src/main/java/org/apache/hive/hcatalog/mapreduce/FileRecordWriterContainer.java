@@ -83,7 +83,7 @@ class FileRecordWriterContainer extends RecordWriterContainer {
                    TaskAttemptContext context) throws IOException, InterruptedException {
     super(context, baseWriter);
     this.context = context;
-    jobInfo = HCatOutputFormat.getJobInfo(context.getConfiguration());
+    jobInfo = HCatOutputFormat.getJobInfo(context);
 
     storageHandler = HCatUtil.getStorageHandler(context.getConfiguration(), jobInfo.getTableInfo().getStorerInfo());
     serDe = ReflectionUtils.newInstance(storageHandler.getSerDeClass(), context.getConfiguration());
@@ -181,7 +181,7 @@ class FileRecordWriterContainer extends RecordWriterContainer {
 
         org.apache.hadoop.mapred.TaskAttemptContext currTaskContext = HCatMapRedUtil.createTaskAttemptContext(context);
         configureDynamicStorageHandler(currTaskContext, dynamicPartValues);
-        localJobInfo = HCatBaseOutputFormat.getJobInfo(currTaskContext.getConfiguration());
+        localJobInfo = HCatBaseOutputFormat.getJobInfo(currTaskContext);
 
         //setup serDe
         SerDe currSerDe = ReflectionUtils.newInstance(storageHandler.getSerDeClass(), currTaskContext.getJobConf());
@@ -233,7 +233,7 @@ class FileRecordWriterContainer extends RecordWriterContainer {
         baseDynamicCommitters.put(dynKey, baseOutputCommitter);
         dynamicContexts.put(dynKey, currTaskContext);
         dynamicObjectInspectors.put(dynKey, InternalUtil.createStructObjectInspector(jobInfo.getOutputSchema()));
-        dynamicOutputJobInfo.put(dynKey, HCatOutputFormat.getJobInfo(dynamicContexts.get(dynKey).getConfiguration()));
+        dynamicOutputJobInfo.put(dynKey, HCatOutputFormat.getJobInfo(dynamicContexts.get(dynKey)));
       }
 
       localJobInfo = dynamicOutputJobInfo.get(dynKey);

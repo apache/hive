@@ -52,7 +52,7 @@ class DefaultRecordWriterContainer extends RecordWriterContainer {
   public DefaultRecordWriterContainer(TaskAttemptContext context,
                     org.apache.hadoop.mapred.RecordWriter<? super WritableComparable<?>, ? super Writable> baseRecordWriter) throws IOException, InterruptedException {
     super(context, baseRecordWriter);
-    jobInfo = HCatOutputFormat.getJobInfo(context.getConfiguration());
+    jobInfo = HCatOutputFormat.getJobInfo(context);
     storageHandler = HCatUtil.getStorageHandler(context.getConfiguration(), jobInfo.getTableInfo().getStorerInfo());
     HCatOutputFormat.configureOutputStorageHandler(context);
     serDe = ReflectionUtils.newInstance(storageHandler.getSerDeClass(), context.getConfiguration());
