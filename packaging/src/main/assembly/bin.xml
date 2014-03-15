@@ -339,6 +339,10 @@
       <source>${project.parent.basedir}/hcatalog/README.txt</source>
       <outputDirectory>hcatalog/share/doc/hcatalog</outputDirectory>
     </file>
+    <file>
+      <source>${project.parent.basedir}/hcatalog/storage-handlers/hbase/conf/revision-manager-site.xml</source>
+      <outputDirectory>hcatalog/share/hcatalog/storage-handlers/hbase/conf</outputDirectory>
+    </file>
   </files>
 
 </assembly>
