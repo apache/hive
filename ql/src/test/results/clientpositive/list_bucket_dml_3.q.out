@@ -5,6 +5,7 @@ PREHOOK: query: -- list bucketing DML : static partition and 2 stage query plan.
 -- create a skewed table
 create table list_bucketing_static_part (key String, value String) partitioned by (ds String, hr String) skewed by (key) on ("484") stored as DIRECTORIES
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- list bucketing DML : static partition and 2 stage query plan.
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
@@ -12,6 +13,7 @@ POSTHOOK: query: -- list bucketing DML : static partition and 2 stage query plan
 -- create a skewed table
 create table list_bucketing_static_part (key String, value String) partitioned by (ds String, hr String) skewed by (key) on ("484") stored as DIRECTORIES
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_static_part
 PREHOOK: query: -- list bucketing DML
 explain extended
