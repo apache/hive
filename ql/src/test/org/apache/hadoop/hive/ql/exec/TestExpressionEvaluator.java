@@ -22,12 +22,14 @@ import java.util.ArrayList;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -58,6 +60,10 @@ public class TestExpressionEvaluator extends TestCase {
   TypeInfo dataType;
 
   public TestExpressionEvaluator() {
+    // Arithmetic operations rely on getting conf from SessionState, need to initialize here.
+    SessionState ss = new SessionState(new HiveConf());
+    SessionState.setCurrentSessionState(ss);
+
     col1 = new ArrayList<Text>();
     col1.add(new Text("0"));
     col1.add(new Text("1"));
