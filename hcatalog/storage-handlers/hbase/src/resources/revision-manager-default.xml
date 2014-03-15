@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+
+<configuration>
+  <property>
+    <name>revision.manager.impl.class</name>
+    <value>org.apache.hcatalog.hbase.snapshot.ZKBasedRevisionManager</value>
+    <description>
+        Which revision manager implementation to use.
+    </description>
+  </property>
+  <property>
+    <name>revision.manager.endpoint.impl.class</name>
+    <value>org.apache.hcatalog.hbase.snapshot.ZKBasedRevisionManager</value>
+    <description> </description>
+  </property>
+  <property>
+    <name>revision.manager.zk.dataDir</name>
+    <value>/revision-management</value>
+    <description>zookeeper base directory</description>
+  </property>
+  <property>
+    <name>revision.manager.writeTxn.timeout</name>
+    <value>14400000</value>
+    <description>timeout for write transactions in seconds</description>
+  </property>
+</configuration>

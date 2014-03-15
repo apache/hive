@@ -58,7 +58,7 @@ setlocal enabledelayedexpansion
     set TEMPLETON_LOG4J=file:%HCATALOG_HOME%\conf\webhcat-log4j.properties
   )
   set TEMPLETON_OPTS=-Dtempleton.log.dir=%TEMPLETON_LOG_DIR% -Dlog4j.configuration=%TEMPLETON_LOG4J% %HADOOP_OPTS%
-  set arguments=%JAVA_HEAP_MAX% %TEMPLETON_OPTS% -classpath %CLASSPATH% org.apache.hive.hcatalog.templeton.Main
+  set arguments=%JAVA_HEAP_MAX% %TEMPLETON_OPTS% -classpath %CLASSPATH% org.apache.hcatalog.templeton.Main
   
   if defined service_entry (
     call :makeServiceXml %arguments%

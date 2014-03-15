@@ -43,6 +43,7 @@
     <module>server-extensions</module>
     <module>webhcat/java-client</module>
     <module>webhcat/svr</module>
+    <module>storage-handlers/hbase</module>
   </modules>
 
   <profiles>

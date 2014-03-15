@@ -145,7 +145,7 @@ public class TestHCatOutputFormat extends TestCase {
     OutputJobInfo info = OutputJobInfo.create(dbName, tblName, partitionValues);
 
     HCatOutputFormat.setOutput(job, info);
-    OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(job.getConfiguration());
+    OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(job);
 
     assertNotNull(jobInfo.getTableInfo());
     assertEquals(1, jobInfo.getPartitionValues().size());

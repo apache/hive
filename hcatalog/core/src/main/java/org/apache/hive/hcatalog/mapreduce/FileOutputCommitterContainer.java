@@ -99,7 +99,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   public FileOutputCommitterContainer(JobContext context,
                     org.apache.hadoop.mapred.OutputCommitter baseCommitter) throws IOException {
     super(context, baseCommitter);
-    jobInfo = HCatOutputFormat.getJobInfo(context.getConfiguration());
+    jobInfo = HCatOutputFormat.getJobInfo(context);
     dynamicPartitioningUsed = jobInfo.isDynamicPartitioningUsed();
 
     this.partitionsDiscovered = !dynamicPartitioningUsed;
@@ -177,7 +177,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         }
       }
       Path src;
-      OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(jobContext.getConfiguration());
+      OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(jobContext);
       Path tblPath = new Path(jobInfo.getTableInfo().getTableLocation());
       if (dynamicPartitioningUsed) {
         if (!customDynamicLocationUsed) {
@@ -230,7 +230,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     }
     registerPartitions(jobContext);
     // create _SUCCESS FILE if so requested.
-    OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(jobContext.getConfiguration());
+    OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(jobContext);
     if (getOutputDirMarking(jobContext.getConfiguration())) {
       Path outputPath = new Path(jobInfo.getLocation());
       FileSystem fileSys = outputPath.getFileSystem(jobContext
@@ -666,7 +666,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   private void discoverPartitions(JobContext context) throws IOException {
     if (!partitionsDiscovered) {
       //      LOG.info("discover ptns called");
-      OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(context.getConfiguration());
+      OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(context);
 
       harProcessor.setEnabled(jobInfo.getHarRequested());
 
@@ -739,7 +739,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     if (dynamicPartitioningUsed){
       discoverPartitions(context);
     }
-    OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(context.getConfiguration());
+    OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(context);
     Configuration conf = context.getConfiguration();
     Table table = new Table(jobInfo.getTableInfo().getTable());
     Path tblPath = new Path(table.getTTable().getSd().getLocation());

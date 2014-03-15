@@ -134,8 +134,7 @@ similarly for mapKeyType/mapKeyTypeInfo */
   String fieldName = null;
   String comment = null;
   /**
-   * @deprecated as of 0.13, slated for removal with 0.15
-   * use {@link #typeInfo} instead
+   * @deprecated use {@link #typeInfo}
    */
   Type type = null;
   Category category = null;
@@ -147,7 +146,7 @@ similarly for mapKeyType/mapKeyTypeInfo */
   HCatSchema subSchema = null;
 
   // populated if column is Map type
-  @Deprecated // @deprecated as of 0.13, slated for removal with 0.15
+  @Deprecated
   Type mapKeyType = null;
 
   private String typeString = null;
@@ -168,8 +167,7 @@ similarly for mapKeyType/mapKeyTypeInfo */
   /**
    * Returns type of the field
    * @return type of the field
-   * @deprecated as of 0.13, slated for removal with 0.15
-   * use {@link #getTypeInfo()} instead
+   * @deprecated use {@link #getTypeInfo()}
    */
   public Type getType() {
     return type;
@@ -205,8 +203,7 @@ similarly for mapKeyType/mapKeyTypeInfo */
    * @param fieldName Name of the primitive field
    * @param type Type of the primitive field
    * @throws HCatException if call made on non-primitive types
-   * @deprecated as of 0.13, slated for removal with 0.15
-   * use {@link #HCatFieldSchema(String, org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo, String)}
+   * @deprecated as of Hive 0.13; use {@link #HCatFieldSchema(String, org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo, String)}
    */
   public HCatFieldSchema(String fieldName, Type type, String comment) throws HCatException {
     assertTypeInCategory(type, Category.PRIMITIVE, fieldName);
@@ -258,8 +255,7 @@ similarly for mapKeyType/mapKeyTypeInfo */
    * @param mapKeyType - key type of the Map
    * @param mapValueSchema - subschema of the value of the Map
    * @throws HCatException if call made on non-Map types
-   * @deprecated as of 0.13, slated for removal with 0.15
-   * use {@link #createMapTypeFieldSchema(String, org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo, HCatSchema, String)}
+   * @deprecated use {@link #createMapTypeFieldSchema(String, org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo, HCatSchema, String)}
    */
   public HCatFieldSchema(String fieldName, Type type, Type mapKeyType, HCatSchema mapValueSchema, String comment) throws HCatException {
     assertTypeInCategory(type, Category.MAP, fieldName);
@@ -295,8 +291,7 @@ similarly for mapKeyType/mapKeyTypeInfo */
     return subSchema;
   }
   /**
-   * @deprecated as of 0.13, slated for removal with 0.15
-   * use {@link #getMapKeyTypeInfo()} instead
+   * @deprecated use {@link #getMapKeyTypeInfo()}
    */
   public Type getMapKeyType() throws HCatException {
     assertTypeInCategory(this.type, Category.MAP, this.fieldName);
