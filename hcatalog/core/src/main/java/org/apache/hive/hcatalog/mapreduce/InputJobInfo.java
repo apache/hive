@@ -79,21 +79,6 @@ public class InputJobInfo implements Serializable {
     return new InputJobInfo(databaseName, tableName, filter, properties);
   }
 
-  /**
-   * Initializes a new InputJobInfo
-   * for reading data from a table.
-   * @param databaseName the db name
-   * @param tableName the table name
-   * @param filter the partition filter
-   */
-  @Deprecated
-  public static InputJobInfo create(String databaseName,
-                    String tableName,
-                    String filter) {
-    return create(databaseName, tableName, filter, null);
-  }
-
-
   private InputJobInfo(String databaseName,
              String tableName,
              String filter,
