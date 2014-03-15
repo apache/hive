@@ -198,4 +198,16 @@ public abstract class GenericUDF implements Closeable {
   public String getUdfName() {
     return getClass().getName();
   }
+
+  /**
+   * Some information may be set during initialize() which needs to be saved when the UDF is copied.
+   * This will be called by FunctionRegistry.cloneGenericUDF()
+   */
+  public void copyToNewInstance(Object newInstance) throws UDFArgumentException {
+    // newInstance should always be the same type of object as this
+    if (this.getClass() != newInstance.getClass()) {
+      throw new UDFArgumentException("Invalid copy between " + this.getClass().getName()
+          + " and " + newInstance.getClass().getName());
+    }
+  }
 }

@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -30,6 +32,7 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -37,7 +40,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestGenericUDFOPDivide {
+public class TestGenericUDFOPDivide extends TestGenericUDFOPNumeric {
 
   @Test
   public void testByteDivideShort() throws HiveException {
@@ -248,4 +251,45 @@ public class TestGenericUDFOPDivide {
     Assert.assertEquals(TypeInfoFactory.getDecimalTypeInfo(prec3, scale3), oi.getTypeInfo());
   }
 
+  @Test
+  public void testReturnTypeBackwardCompat() throws Exception {
+    // Disable ansi sql arithmetic changes
+    SessionState.get().getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "0.12");
+
+    verifyReturnType(new GenericUDFOPDivide(), "int", "int", "double"); // different from sql compat mode
+    verifyReturnType(new GenericUDFOPDivide(), "int", "float", "double");
+    verifyReturnType(new GenericUDFOPDivide(), "int", "double", "double");
+    verifyReturnType(new GenericUDFOPDivide(), "int", "decimal(10,2)", "decimal(23,11)");
+
+    verifyReturnType(new GenericUDFOPDivide(), "float", "float", "double");
+    verifyReturnType(new GenericUDFOPDivide(), "float", "double", "double");
+    verifyReturnType(new GenericUDFOPDivide(), "float", "decimal(10,2)", "double");
+
+    verifyReturnType(new GenericUDFOPDivide(), "double", "double", "double");
+    verifyReturnType(new GenericUDFOPDivide(), "double", "decimal(10,2)", "double");
+
+    verifyReturnType(new GenericUDFOPDivide(), "decimal(10,2)", "decimal(10,2)", "decimal(23,13)");
+
+    // Most tests are done with ANSI SQL mode enabled, set it back to true
+    SessionState.get().getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "latest");
+  }
+
+  @Test
+  public void testReturnTypeAnsiSql() throws Exception {
+    SessionState.get().getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "latest");
+
+    verifyReturnType(new GenericUDFOPDivide(), "int", "int", "decimal(21,11)");
+    verifyReturnType(new GenericUDFOPDivide(), "int", "float", "double");
+    verifyReturnType(new GenericUDFOPDivide(), "int", "double", "double");
+    verifyReturnType(new GenericUDFOPDivide(), "int", "decimal(10,2)", "decimal(23,11)");
+
+    verifyReturnType(new GenericUDFOPDivide(), "float", "float", "double");
+    verifyReturnType(new GenericUDFOPDivide(), "float", "double", "double");
+    verifyReturnType(new GenericUDFOPDivide(), "float", "decimal(10,2)", "double");
+
+    verifyReturnType(new GenericUDFOPDivide(), "double", "double", "double");
+    verifyReturnType(new GenericUDFOPDivide(), "double", "decimal(10,2)", "double");
+
+    verifyReturnType(new GenericUDFOPDivide(), "decimal(10,2)", "decimal(10,2)", "decimal(23,13)");
+  }
 }
