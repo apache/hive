@@ -16,6 +16,7 @@ partitioned by (ds String, hr String)
 skewed by (key, value) on (('484','val_484'),('238','val_238')) 
 stored as DIRECTORIES
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
 
 -- List bucketing query logic test case. We simulate the directory structure by DML here.
@@ -34,6 +35,7 @@ partitioned by (ds String, hr String)
 skewed by (key, value) on (('484','val_484'),('238','val_238')) 
 stored as DIRECTORIES
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fact_daily
 PREHOOK: query: insert overwrite table fact_daily partition (ds = '1', hr = '4')
 select key, value from src

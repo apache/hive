@@ -8,6 +8,7 @@ partitioned by (ds String, hr String)
 skewed by (key) on ("484")
 stored as DIRECTORIES
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- list bucketing DML : dynamic partition and 2 stage query plan.
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
@@ -18,6 +19,7 @@ partitioned by (ds String, hr String)
 skewed by (key) on ("484")
 stored as DIRECTORIES
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_dynamic_part
 PREHOOK: query: -- list bucketing DML
 explain extended

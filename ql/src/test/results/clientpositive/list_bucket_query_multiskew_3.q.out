@@ -16,6 +16,7 @@ PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 create table fact_daily (key String, value String) 
 partitioned by (ds String, hr String)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
 
 -- List bucketing query logic test case. We simulate the directory structure by DML here.
@@ -34,6 +35,7 @@ POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 create table fact_daily (key String, value String) 
 partitioned by (ds String, hr String)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fact_daily
 PREHOOK: query: -- partition no skew
 insert overwrite table fact_daily partition (ds = '1', hr = '1')
