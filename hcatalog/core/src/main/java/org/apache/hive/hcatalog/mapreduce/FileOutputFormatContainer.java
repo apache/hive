@@ -91,7 +91,7 @@ class FileOutputFormatContainer extends OutputFormatContainer {
       sd.getSerializedClass().getName());
 
     RecordWriter<WritableComparable<?>, HCatRecord> rw;
-    if (HCatBaseOutputFormat.getJobInfo(context).isDynamicPartitioningUsed()){
+    if (HCatBaseOutputFormat.getJobInfo(context.getConfiguration()).isDynamicPartitioningUsed()){
       // When Dynamic partitioning is used, the RecordWriter instance initialized here isn't used. Can use null.
       // (That's because records can't be written until the values of the dynamic partitions are deduced.
       // By that time, a new local instance of RecordWriter, with the correct output-path, will be constructed.)
@@ -113,7 +113,7 @@ class FileOutputFormatContainer extends OutputFormatContainer {
 
   @Override
   public void checkOutputSpecs(JobContext context) throws IOException, InterruptedException {
-    OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(context);
+    OutputJobInfo jobInfo = HCatOutputFormat.getJobInfo(context.getConfiguration());
     HiveMetaStoreClient client = null;
     try {
       HiveConf hiveConf = HCatUtil.getHiveConf(context.getConfiguration());
@@ -143,7 +143,7 @@ class FileOutputFormatContainer extends OutputFormatContainer {
     //this needs to be manually set, under normal circumstances MR Task does this
     setWorkOutputPath(context);
     return new FileOutputCommitterContainer(context,
-      HCatBaseOutputFormat.getJobInfo(context).isDynamicPartitioningUsed() ?
+      HCatBaseOutputFormat.getJobInfo(context.getConfiguration()).isDynamicPartitioningUsed() ?
         null :
         new JobConf(context.getConfiguration()).getOutputCommitter());
   }
