@@ -54,6 +54,11 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
     ColumnVector inputColVector1 = batch.cols[colNum1];
     ColumnVector inputColVector2 = batch.cols[colNum2];
     int[] sel = batch.selected;
@@ -208,12 +213,14 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
       output.isNull[0] = input.isNull[0];
       output.isRepeating = true;
 
-      String string = new String(input.vector[0], input.start[0], input.length[0]);
-      try {
-        date.setTime(formatter.parse(string).getTime());
-        output.vector[0] = DateWritable.dateToDays(date);
-      } catch (ParseException e) {
-        output.isNull[0] = true;
+      if (!input.isNull[0]) {
+        String string = new String(input.vector[0], input.start[0], input.length[0]);
+        try {
+          date.setTime(formatter.parse(string).getTime());
+          output.vector[0] = DateWritable.dateToDays(date);
+        } catch (ParseException e) {
+          output.isNull[0] = true;
+        }
       }
       return;
     }
@@ -221,19 +228,18 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     // Handle normal case
 
     // Copy data values over
-    if (selectedInUse) {
-      for (int j = 0; j < size; j++) {
-        int i = sel[j];
-        setDays(input, output, i);
+    if (input.noNulls) {
+      if (selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = sel[j];
+          setDays(input, output, i);
+        }
+      } else {
+        for (int i = 0; i < size; i++) {
+          setDays(input, output, i);
+        }
       }
     } else {
-      for (int i = 0; i < size; i++) {
-        setDays(input, output, i);
-      }
-    }
-
-    // Copy nulls over if needed
-    if (!input.noNulls) {
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
@@ -243,20 +249,32 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
       else {
         System.arraycopy(input.isNull, 0, output.isNull, 0, size);
       }
+
+      if (selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = sel[j];
+          if (!input.isNull[i]) {
+           setDays(input, output, i);
+          }
+        }
+      } else {
+        for (int i = 0; i < size; i++) {
+          if (!input.isNull[i]) {
+            setDays(input, output, i);
+          }
+        }
+      }
     }
   }
 
   private void setDays(BytesColumnVector input, LongColumnVector output, int i) {
-    if (input.isNull[i]) {
-      output.isNull[i] = true;
-      return;
-    }
     String string = new String(input.vector[i], input.start[i], input.length[i]);
     try {
       date.setTime(formatter.parse(string).getTime());
       output.vector[i] = DateWritable.dateToDays(date);
     } catch (ParseException e) {
       output.isNull[i] = true;
+      output.noNulls = false;
     }
   }
 

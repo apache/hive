@@ -102,3 +102,21 @@ SELECT
   date_sub(fl_time, 2) = date_sub(fl_date, 2),
   datediff(fl_time, "2000-01-01") = datediff(fl_date, "2000-01-01")
 FROM date_udf_flight_orc;
+
+EXPLAIN SELECT 
+  fl_date, 
+  to_date(date_add(fl_date, 2)), 
+  to_date(date_sub(fl_date, 2)),
+  datediff(fl_date, date_add(fl_date, 2)), 
+  datediff(fl_date, date_sub(fl_date, 2)),
+  datediff(date_add(fl_date, 2), date_sub(fl_date, 2)) 
+FROM date_udf_flight_orc LIMIT 10;
+
+SELECT 
+  fl_date, 
+  to_date(date_add(fl_date, 2)), 
+  to_date(date_sub(fl_date, 2)),
+  datediff(fl_date, date_add(fl_date, 2)), 
+  datediff(fl_date, date_sub(fl_date, 2)),
+  datediff(date_add(fl_date, 2), date_sub(fl_date, 2)) 
+FROM date_udf_flight_orc LIMIT 10;
