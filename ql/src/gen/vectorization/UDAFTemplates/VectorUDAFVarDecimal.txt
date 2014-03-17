@@ -54,7 +54,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       private static final long serialVersionUID = 1L;
 
-      transient private final Decimal128 sum;
+      transient private double sum;
       transient private long count;
       transient private double variance;
 
@@ -64,12 +64,11 @@ public class <ClassName> extends VectorAggregateExpression {
       transient private boolean isNull = true;
 
       public Aggregation() {
-        sum = new Decimal128();
       }
 
       public void init() {
         isNull = false;
-        sum.zeroClear();
+        sum = 0f;
         count = 0;
         variance = 0f;
       }
@@ -79,28 +78,25 @@ public class <ClassName> extends VectorAggregateExpression {
         throw new UnsupportedOperationException();
       }
 
-      public void updateValueWithCheckAndInit(Decimal128 scratch, Decimal128 value, short scale) {
+      public void updateValueWithCheckAndInit(Decimal128 value, short scale) {
         if (this.isNull) {
           this.init();
         }
-        this.sum.addDestructive(value, scale);
+
+        double dval = value.doubleValue();
+        this.sum += dval;
         this.count += 1;
         if(this.count > 1) {
-           scratch.update(count);
-           scratch.multiplyDestructive(value, scale);
-           scratch.subtractDestructive(sum, scale);
-           double t = scratch.doubleValue();
+           double t = this.count*dval - this.sum;
            this.variance += (t*t) / ((double)this.count*(this.count-1));
         }
       }
 
-      public void updateValueNoCheck(Decimal128 scratch, Decimal128 value, short scale) {
-        this.sum.addDestructive(value, scale);
+      public void updateValueNoCheck(Decimal128 value, short scale) {
+        double dval = value.doubleValue();
+        this.sum += dval;
         this.count += 1;
-        scratch.update(count);
-        scratch.multiplyDestructive(value, scale);
-        scratch.subtractDestructive(sum, scale);
-        double t = scratch.doubleValue();
+        double t = this.count*dval - this.sum;
         this.variance += (t*t) / ((double)this.count*(this.count-1));
       }
 
@@ -113,9 +109,6 @@ public class <ClassName> extends VectorAggregateExpression {
     transient private Object[] partialResult;
 
     transient private ObjectInspector soi;
-
-    transient private final Decimal128 scratchDecimal;
-
 
     public <ClassName>(VectorExpression inputExpression) {
       this();
@@ -132,7 +125,6 @@ public class <ClassName> extends VectorAggregateExpression {
       partialResult[1] = resultSum;
       partialResult[2] = resultVariance;
       initPartialResultInspector();
-      scratchDecimal = new Decimal128();
     }
 
   private void initPartialResultInspector() {
@@ -218,7 +210,7 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        myagg.updateValueWithCheckAndInit(scratchDecimal, value, scale);
+        myagg.updateValueWithCheckAndInit(value, scale);
       }
     }
 
@@ -239,7 +231,7 @@ public class <ClassName> extends VectorAggregateExpression {
         int i = selected[j];
         if (!isNull[i]) {
           Decimal128 value = vector[i];
-          myagg.updateValueWithCheckAndInit(scratchDecimal, value, scale);
+          myagg.updateValueWithCheckAndInit(value, scale);
         }
       }
     }
@@ -258,7 +250,7 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregateIndex,
           i);
         Decimal128 value = vector[selected[i]];
-        myagg.updateValueWithCheckAndInit(scratchDecimal, value, scale);
+        myagg.updateValueWithCheckAndInit(value, scale);
       }
     }
 
@@ -277,7 +269,7 @@ public class <ClassName> extends VectorAggregateExpression {
             aggregateIndex,
           i);
           Decimal128 value = vector[i];
-          myagg.updateValueWithCheckAndInit(scratchDecimal, value, scale);
+          myagg.updateValueWithCheckAndInit(value, scale);
         }
       }
     }
@@ -295,7 +287,7 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregateIndex,
           i);
         Decimal128 value = vector[i];
-        myagg.updateValueWithCheckAndInit(scratchDecimal, value, scale);
+        myagg.updateValueWithCheckAndInit(value, scale);
       }
     }
 
@@ -347,11 +339,11 @@ public class <ClassName> extends VectorAggregateExpression {
       // TODO: conjure a formula w/o iterating
       //
 
-      myagg.updateValueWithCheckAndInit(scratchDecimal, value, scale);
+      myagg.updateValueWithCheckAndInit(value, scale);
 
       // We pulled out i=0 so we can remove the count > 1 check in the loop
       for (int i=1; i<batchSize; ++i) {
-        myagg.updateValueNoCheck(scratchDecimal, value, scale);
+        myagg.updateValueNoCheck(value, scale);
       }
     }
 
@@ -367,7 +359,7 @@ public class <ClassName> extends VectorAggregateExpression {
         int i = selected[j];
         if (!isNull[i]) {
           Decimal128 value = vector[i];
-          myagg.updateValueWithCheckAndInit(scratchDecimal, value, scale);
+          myagg.updateValueWithCheckAndInit(value, scale);
         }
       }
     }
@@ -384,13 +376,13 @@ public class <ClassName> extends VectorAggregateExpression {
       }
 
       Decimal128 value = vector[selected[0]];
-      myagg.updateValueWithCheckAndInit(scratchDecimal, value, scale);
+      myagg.updateValueWithCheckAndInit(value, scale);
 
       // i=0 was pulled out to remove the count > 1 check in the loop
       //
       for (int i=1; i< batchSize; ++i) {
         value = vector[selected[i]];
-        myagg.updateValueNoCheck(scratchDecimal, value, scale);
+        myagg.updateValueNoCheck(value, scale);
       }
     }
 
@@ -404,7 +396,7 @@ public class <ClassName> extends VectorAggregateExpression {
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
           Decimal128 value = vector[i];
-          myagg.updateValueWithCheckAndInit(scratchDecimal, value, scale);
+          myagg.updateValueWithCheckAndInit(value, scale);
         }
       }
     }
@@ -420,12 +412,12 @@ public class <ClassName> extends VectorAggregateExpression {
       }
 
       Decimal128 value = vector[0];
-      myagg.updateValueWithCheckAndInit(scratchDecimal, value, scale);
+      myagg.updateValueWithCheckAndInit(value, scale);
 
       // i=0 was pulled out to remove count > 1 check
       for (int i=1; i<batchSize; ++i) {
         value = vector[i];
-        myagg.updateValueNoCheck(scratchDecimal, value, scale);
+        myagg.updateValueNoCheck(value, scale);
       }
     }
 
@@ -449,9 +441,9 @@ public class <ClassName> extends VectorAggregateExpression {
       }
       else {
         assert(0 < myagg.count);
-        resultCount.set (myagg.count);
-        resultSum.set (myagg.sum.doubleValue());
-        resultVariance.set (myagg.variance);
+        resultCount.set(myagg.count);
+        resultSum.set(myagg.sum);
+        resultVariance.set(myagg.variance);
         return partialResult;
       }
     }
