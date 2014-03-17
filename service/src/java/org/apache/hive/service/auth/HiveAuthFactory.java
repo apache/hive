@@ -32,9 +32,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TServerSocket;
@@ -55,7 +55,7 @@ public class HiveAuthFactory {
     KERBEROS("KERBEROS"),
     CUSTOM("CUSTOM");
 
-    private String authType; // Auth type for SASL
+    private String authType;
 
     AuthTypes(String authType) {
       this.authType = authType;
@@ -69,6 +69,7 @@ public class HiveAuthFactory {
 
   private HadoopThriftAuthBridge.Server saslServer = null;
   private String authTypeStr;
+  private String transportMode;
   private final HiveConf conf;
 
   public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
@@ -76,40 +77,48 @@ public class HiveAuthFactory {
 
   public HiveAuthFactory() throws TTransportException {
     conf = new HiveConf();
-
+    transportMode = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
     authTypeStr = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION);
-    if (authTypeStr == null) {
-      authTypeStr = AuthTypes.NONE.getAuthName();
-    }
-    if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())
-        && ShimLoader.getHadoopShims().isSecureShimImpl()) {
-      saslServer = ShimLoader.getHadoopThriftAuthBridge().createServer(
-        conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
-        conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL)
-        );
-      // start delegation token manager
-      try {
-        saslServer.startDelegationTokenSecretManager(conf, null);
-      } catch (IOException e) {
-        throw new TTransportException("Failed to start token manager", e);
-      }
 
+    // In http mode we use NOSASL as the default auth type
+    if (transportMode.equalsIgnoreCase("http")) {
+      if (authTypeStr == null) {
+        authTypeStr = AuthTypes.NOSASL.getAuthName();
+      }
+    }
+    else {
+      if (authTypeStr == null) {
+        authTypeStr = AuthTypes.NONE.getAuthName();
+      }
+      if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())
+          && ShimLoader.getHadoopShims().isSecureShimImpl()) {
+        saslServer = ShimLoader.getHadoopThriftAuthBridge().createServer(
+            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
+            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL)
+            );
+        // start delegation token manager
+        try {
+          saslServer.startDelegationTokenSecretManager(conf, null);
+        } catch (IOException e) {
+          throw new TTransportException("Failed to start token manager", e);
+        }
+      }
     }
   }
 
   public Map<String, String> getSaslProperties() {
     Map<String, String> saslProps = new HashMap<String, String>();
     SaslQOP saslQOP =
-            SaslQOP.fromString(conf.getVar(ConfVars.HIVE_SERVER2_THRIFT_SASL_QOP));
+        SaslQOP.fromString(conf.getVar(ConfVars.HIVE_SERVER2_THRIFT_SASL_QOP));
     // hadoop.rpc.protection being set to a higher level than hive.server2.thrift.rpc.protection
     // does not make sense in most situations. Log warning message in such cases.
     Map<String, String> hadoopSaslProps =  ShimLoader.getHadoopThriftAuthBridge().
-            getHadoopSaslProperties(conf);
+        getHadoopSaslProperties(conf);
     SaslQOP hadoopSaslQOP = SaslQOP.fromString(hadoopSaslProps.get(Sasl.QOP));
     if(hadoopSaslQOP.ordinal() > saslQOP.ordinal()) {
       LOG.warn(MessageFormat.format("\"hadoop.rpc.protection\" is set to higher security level " +
-              "{0} then {1} which is set to {2}", hadoopSaslQOP.toString(),
-              ConfVars.HIVE_SERVER2_THRIFT_SASL_QOP.varname, saslQOP.toString()));
+          "{0} then {1} which is set to {2}", hadoopSaslQOP.toString(),
+          ConfVars.HIVE_SERVER2_THRIFT_SASL_QOP.varname, saslQOP.toString()));
     }
     saslProps.put(Sasl.QOP, saslQOP.toString());
     saslProps.put(Sasl.SERVER_AUTH, "true");
@@ -142,10 +151,15 @@ public class HiveAuthFactory {
 
   public TProcessorFactory getAuthProcFactory(ThriftCLIService service)
       throws LoginException {
-    if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
-      return KerberosSaslHelper.getKerberosProcessorFactory(saslServer, service);
-    } else {
-      return PlainSaslHelper.getPlainProcessorFactory(service);
+    if (transportMode.equalsIgnoreCase("http")) {
+      return HttpAuthUtils.getAuthProcFactory(service);
+    }
+    else {
+      if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
+        return KerberosSaslHelper.getKerberosProcessorFactory(saslServer, service);
+      } else {
+        return PlainSaslHelper.getPlainProcessorFactory(service);
+      }
     }
   }
 
@@ -161,14 +175,11 @@ public class HiveAuthFactory {
     return saslServer != null ? saslServer.getRemoteAddress().toString() : null;
   }
 
-  /* perform kerberos login using the hadoop shim API if the configuration is available */
+  // Perform kerberos login using the hadoop shim API if the configuration is available
   public static void loginFromKeytab(HiveConf hiveConf) throws IOException {
     String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
     String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
-    if (principal.isEmpty() && keyTabFile.isEmpty()) {
-      // no security configuration available
-      return;
-    } else if (!principal.isEmpty() && !keyTabFile.isEmpty()) {
+    if (!principal.isEmpty() && !keyTabFile.isEmpty()) {
       ShimLoader.getHadoopShims().loginUserFromKeytab(principal, keyTabFile);
     } else {
       throw new IOException ("HiveServer2 kerberos principal or keytab is not correctly configured");
@@ -289,7 +300,7 @@ public class HiveAuthFactory {
       }
       if (!proxyUser.equalsIgnoreCase(realUser)) {
         ShimLoader.getHadoopShims().
-          authorizeProxyAccess(proxyUser, sessionUgi, ipAddress, hiveConf);
+        authorizeProxyAccess(proxyUser, sessionUgi, ipAddress, hiveConf);
       }
     } catch (IOException e) {
       throw new HiveSQLException("Failed to validate proxy privilage of " + realUser +

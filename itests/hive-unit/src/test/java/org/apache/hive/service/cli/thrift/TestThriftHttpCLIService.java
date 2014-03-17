@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.HttpBasicAuthInterceptor;
 import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
-import org.apache.hive.service.server.HiveServer2;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.thrift.transport.THttpClient;
 import org.apache.thrift.transport.TTransport;
@@ -168,40 +167,6 @@ public class TestThriftHttpCLIService extends ThriftCLIServiceTest {
     catch (Exception e) {
       fail("Exception: " + e);
     }
-  }
-
-
-  private void testWithAuthMode(AuthTypes authType) throws Exception {
-    // Stop and restart HiveServer2 in given incorrect auth mode
-    stopHiveServer2();
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, authType.toString());
-    hiveServer2 = new HiveServer2();
-    // HiveServer2 in Http mode will not start using KERBEROS/LDAP/CUSTOM auth types
-    startHiveServer2WithConf(hiveConf);
-
-    // This will throw an expected exception since Http server is not running
-    testOpenSessionExpectedException();
-
-    // Stop and restart back with the original config
-    stopHiveServer2();
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, AuthTypes.NOSASL.toString());
-    hiveServer2 = new HiveServer2();
-    startHiveServer2WithConf(hiveConf);
-  }
-
-  @Test
-  public void testKerberosMode()  throws Exception {
-    testWithAuthMode(AuthTypes.KERBEROS);
-  }
-
-  @Test
-  public void testLDAPMode()  throws Exception {
-    testWithAuthMode(AuthTypes.LDAP);
-  }
-
-  @Test
-  public void testCustomMode()  throws Exception {
-    testWithAuthMode(AuthTypes.CUSTOM);
   }
 
   private static TTransport createHttpTransport() throws Exception {

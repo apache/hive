@@ -34,11 +34,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -64,8 +66,7 @@ public class CLIService extends CompositeService implements ICLIService {
   private HiveConf hiveConf;
   private SessionManager sessionManager;
   private IMetaStoreClient metastoreClient;
-  private String serverUserName = null;
-
+  private UserGroupInformation serviceUGI;
 
   public CLIService() {
     super("CLIService");
@@ -74,19 +75,27 @@ public class CLIService extends CompositeService implements ICLIService {
   @Override
   public synchronized void init(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
-
     sessionManager = new SessionManager();
     addService(sessionManager);
-    try {
-      HiveAuthFactory.loginFromKeytab(hiveConf);
-      serverUserName = ShimLoader.getHadoopShims().
-          getShortUserName(ShimLoader.getHadoopShims().getUGIForConf(hiveConf));
-    } catch (IOException e) {
-      throw new ServiceException("Unable to login to kerberos with given principal/keytab", e);
-    } catch (LoginException e) {
-      throw new ServiceException("Unable to login to kerberos with given principal/keytab", e);
+    /**
+     * If auth mode is Kerberos, do a kerberos login for the service from the keytab
+     */
+    if (hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION).equalsIgnoreCase(
+        HiveAuthFactory.AuthTypes.KERBEROS.toString())) {
+      try {
+        HiveAuthFactory.loginFromKeytab(hiveConf);
+        this.serviceUGI = ShimLoader.getHadoopShims().getUGIForConf(hiveConf);
+      } catch (IOException e) {
+        throw new ServiceException("Unable to login to kerberos with given principal/keytab", e);
+      } catch (LoginException e) {
+        throw new ServiceException("Unable to login to kerberos with given principal/keytab", e);
+      }
     }
     super.init(hiveConf);
+  }
+
+  public UserGroupInformation getServiceUGI() {
+    return this.serviceUGI;
   }
 
   @Override
@@ -441,7 +450,7 @@ public class CLIService extends CompositeService implements ICLIService {
   public void cancelDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
       String tokenStr) throws HiveSQLException {
     sessionManager.getSession(sessionHandle).
-        cancelDelegationToken(authFactory, tokenStr);
+    cancelDelegationToken(authFactory, tokenStr);
     LOG.info(sessionHandle  + ": cancelDelegationToken()");
   }
 
