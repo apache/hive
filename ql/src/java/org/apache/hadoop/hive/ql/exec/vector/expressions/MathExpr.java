@@ -46,11 +46,23 @@ public class MathExpr {
   }
 
   public static double sign(double v) {
-    return v >= 0 ? 1.0 : -1.0;
+    if (v == 0) {
+      return 0;
+    } else if (v > 0) {
+      return 1.0;
+    } else {
+      return -1.0;
+    }
   }
 
   public static double sign(long v) {
-    return v >= 0 ? 1.0 : -1.0;
+    if (v == 0) {
+      return 0;
+    } else if (v > 0) {
+      return 1.0;
+    } else {
+      return -1.0;
+    }
   }
 
   // for casting integral types to boolean
