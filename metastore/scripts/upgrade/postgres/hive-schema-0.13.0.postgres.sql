@@ -1453,7 +1453,6 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
-INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '0.13.0', 'Hive release version 0.13.0');
 --
 -- PostgreSQL database dump complete
 --
@@ -1532,4 +1531,8 @@ CREATE TABLE NEXT_COMPACTION_QUEUE_ID (
 INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1);
 
 
+-- -----------------------------------------------------------------
+-- Record schema version. Should be the last step in the init script
+-- -----------------------------------------------------------------
+INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '0.13.0', 'Hive release version 0.13.0');
 
