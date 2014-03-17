@@ -60,6 +60,11 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
     LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
     ColumnVector inputCol = batch.cols[this.colNum];
     /* every line below this is identical for evaluateLong & evaluateString */

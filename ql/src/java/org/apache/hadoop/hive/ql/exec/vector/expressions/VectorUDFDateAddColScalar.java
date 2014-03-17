@@ -56,6 +56,11 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
     BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
     ColumnVector inputCol = batch.cols[this.colNum];
     /* every line below this is identical for evaluateLong & evaluateString */

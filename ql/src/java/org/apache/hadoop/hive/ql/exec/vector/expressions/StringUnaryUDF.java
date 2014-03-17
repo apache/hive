@@ -105,7 +105,7 @@ public class StringUnaryUDF extends VectorExpression {
       } else {
 
         // Set all elements to not null. The setString call can override this.
-        Arrays.fill(outV.isNull, 0, n - 1, false);
+        Arrays.fill(outV.isNull, 0, n, false);
         for(int i = 0; i != n; i++) {
           s.set(vector[i], start[i], length[i]);
           t = func.evaluate(s);
