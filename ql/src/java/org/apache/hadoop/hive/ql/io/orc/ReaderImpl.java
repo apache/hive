@@ -531,6 +531,8 @@ final class ReaderImpl implements Reader {
       // statistics is not required as protocol buffers takes care of it.
       return colStat.getBinaryStatistics().getSum();
     case STRING:
+    case CHAR:
+    case VARCHAR:
       // old orc format doesn't support sum for string statistics. checking for
       // existence is not required as protocol buffers takes care of it.
 
