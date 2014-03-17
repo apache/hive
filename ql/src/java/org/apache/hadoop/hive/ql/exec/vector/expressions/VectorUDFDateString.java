@@ -20,16 +20,13 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.io.Text;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.sql.Date;
 
 public class VectorUDFDateString extends StringUnaryUDF {
   private static final long serialVersionUID = 1L;
 
   public VectorUDFDateString(int colNum, int outputColumn) {
     super(colNum, outputColumn, new StringUnaryUDF.IUDFUnaryString() {
-      SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
       Text t = new Text();
 
       @Override
@@ -38,10 +35,11 @@ public class VectorUDFDateString extends StringUnaryUDF {
           return null;
         }
         try {
-          Date date = formatter.parse(s.toString());
-          t.set(formatter.format(date)) ;
+          Date date = Date.valueOf(s.toString());
+          t.set(date.toString());
           return t;
-        } catch (ParseException e) {
+        } catch (IllegalArgumentException e) {
+          e.printStackTrace();
           return null;
         }
       }
