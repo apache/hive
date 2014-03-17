@@ -25,6 +25,7 @@ import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.impl.auth.AuthSchemeBase;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.protocol.HttpContext;
 
@@ -34,20 +35,22 @@ import org.apache.http.protocol.HttpContext;
  *
  */
 public class HttpBasicAuthInterceptor implements HttpRequestInterceptor {
+  UsernamePasswordCredentials credentials;
+  AuthSchemeBase authScheme;
 
-  Header basicAuthHeader;
-  public HttpBasicAuthInterceptor(String username, String password){
+  public HttpBasicAuthInterceptor(String username, String password) {
     if(username != null){
-      UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
-      basicAuthHeader = BasicScheme.authenticate(creds, "UTF-8", false);
+      credentials = new UsernamePasswordCredentials(username, password);
     }
+    authScheme = new BasicScheme();
   }
 
   @Override
-  public void process(HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
-    if(basicAuthHeader != null){
-      httpRequest.addHeader(basicAuthHeader);
-    }
+  public void process(HttpRequest httpRequest, HttpContext httpContext)
+      throws HttpException, IOException {
+    Header basicAuthHeader = authScheme.authenticate(
+        credentials, httpRequest, httpContext);
+    httpRequest.addHeader(basicAuthHeader);
   }
 
 }

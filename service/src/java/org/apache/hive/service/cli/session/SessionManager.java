@@ -101,7 +101,7 @@ public class SessionManager extends CompositeService {
 
   public SessionHandle openSession(TProtocolVersion protocol, String username, String password,
       Map<String, String> sessionConf, boolean withImpersonation, String delegationToken)
-      throws HiveSQLException {
+          throws HiveSQLException {
     HiveSession session;
     if (withImpersonation) {
       HiveSessionImplwithUGI hiveSessionUgi = new HiveSessionImplwithUGI(protocol, username, password,
@@ -143,6 +143,44 @@ public class SessionManager extends CompositeService {
 
   public OperationManager getOperationManager() {
     return operationManager;
+  }
+
+  private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
+    @Override
+    protected synchronized String initialValue() {
+      return null;
+    }
+  };
+
+  public static void setIpAddress(String ipAddress) {
+    threadLocalIpAddress.set(ipAddress);
+  }
+
+  public static void clearIpAddress() {
+    threadLocalIpAddress.remove();
+  }
+
+  public static String getIpAddress() {
+    return threadLocalIpAddress.get();
+  }
+
+  private static ThreadLocal<String> threadLocalUserName = new ThreadLocal<String>(){
+    @Override
+    protected synchronized String initialValue() {
+      return null;
+    }
+  };
+
+  public static void setUserName(String userName) {
+    threadLocalUserName.set(userName);
+  }
+
+  public static void clearUserName() {
+    threadLocalUserName.remove();
+  }
+
+  public static String getUserName() {
+    return threadLocalUserName.get();
   }
 
   // execute session hooks

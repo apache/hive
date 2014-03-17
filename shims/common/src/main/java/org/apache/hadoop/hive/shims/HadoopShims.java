@@ -43,7 +43,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -80,15 +79,15 @@ public interface HadoopShims {
    *  @return TaskAttempt Log Url
    */
   String getTaskAttemptLogUrl(JobConf conf,
-    String taskTrackerHttpAddress,
-    String taskAttemptId)
-    throws MalformedURLException;
+      String taskTrackerHttpAddress,
+      String taskAttemptId)
+          throws MalformedURLException;
 
   /**
    * Returns a shim to wrap MiniMrCluster
    */
   public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers,
-                                     String nameNode, int numDir) throws IOException;
+      String nameNode, int numDir) throws IOException;
 
   /**
    * Shim for MiniMrCluster
@@ -125,7 +124,7 @@ public interface HadoopShims {
       String archiveName) throws Exception;
 
   public URI getHarUri(URI original, URI base, URI originalBase)
-        throws URISyntaxException;
+      throws URISyntaxException;
   /**
    * Hive uses side effect files exclusively for it's output. It also manages
    * the setup/cleanup/commit of output from the hive client. As a result it does
@@ -165,7 +164,7 @@ public interface HadoopShims {
    * @throws InterruptedException
    */
   public <T> T doAs(UserGroupInformation ugi, PrivilegedExceptionAction<T> pvea) throws
-    IOException, InterruptedException;
+  IOException, InterruptedException;
 
   /**
    * Once a delegation token is stored in a file, the location is specified
@@ -188,13 +187,13 @@ public interface HadoopShims {
 
 
   /**
-   * Used by metastore server to creates UGI object for a remote user.
+   * Used to creates UGI object for a remote user.
    * @param userName remote User Name
    * @param groupNames group names associated with remote user name
    * @return UGI created for the remote user.
    */
-
   public UserGroupInformation createRemoteUser(String userName, List<String> groupNames);
+
   /**
    * Get the short name corresponding to the subject in the passed UGI
    *
@@ -240,7 +239,7 @@ public interface HadoopShims {
    * @throws IOException
    */
   public void setTokenStr(UserGroupInformation ugi, String tokenStr, String tokenService)
-    throws IOException;
+      throws IOException;
 
   /**
    * Add given service to the string format token
@@ -250,7 +249,7 @@ public interface HadoopShims {
    * @throws IOException
    */
   public String addServiceToToken(String tokenStr, String tokenService)
-    throws IOException;
+      throws IOException;
 
   enum JobTrackerState { INITIALIZING, RUNNING };
 
@@ -331,7 +330,7 @@ public interface HadoopShims {
    * @throws IOException
    */
   public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
-          throws IOException;
+      throws IOException;
 
   /**
    * Get the default block size for the path. FileSystem alone is not sufficient to
@@ -382,6 +381,7 @@ public interface HadoopShims {
   public interface InputSplitShim extends InputSplit {
     JobConf getJob();
 
+    @Override
     long getLength();
 
     /** Returns an array containing the startoffsets of the files in the split. */
@@ -406,14 +406,18 @@ public interface HadoopShims {
     Path[] getPaths();
 
     /** Returns all the Paths where this input-split resides. */
+    @Override
     String[] getLocations() throws IOException;
 
     void shrinkSplit(long length);
 
+    @Override
     String toString();
 
+    @Override
     void readFields(DataInput in) throws IOException;
 
+    @Override
     void write(DataOutput out) throws IOException;
   }
 
@@ -445,7 +449,7 @@ public interface HadoopShims {
    * @throws IOException
    */
   Iterator<FileStatus> listLocatedStatus(FileSystem fs, Path path,
-                                         PathFilter filter) throws IOException;
+      PathFilter filter) throws IOException;
 
   /**
    * For file status returned by listLocatedStatus, convert them into a list
@@ -456,7 +460,7 @@ public interface HadoopShims {
    * @throws IOException
    */
   BlockLocation[] getLocations(FileSystem fs,
-                               FileStatus status) throws IOException;
+      FileStatus status) throws IOException;
 
   public HCatHadoopShims getHCatShim();
   public interface HCatHadoopShims {
@@ -468,10 +472,10 @@ public interface HadoopShims {
     public TaskAttemptID createTaskAttemptID();
 
     public org.apache.hadoop.mapreduce.TaskAttemptContext createTaskAttemptContext(Configuration conf,
-                                                                                   TaskAttemptID taskId);
+        TaskAttemptID taskId);
 
     public org.apache.hadoop.mapred.TaskAttemptContext createTaskAttemptContext(JobConf conf,
-                                                                                org.apache.hadoop.mapred.TaskAttemptID taskId, Progressable progressable);
+        org.apache.hadoop.mapred.TaskAttemptID taskId, Progressable progressable);
 
     public JobContext createJobContext(Configuration conf, JobID jobId);
 
@@ -603,7 +607,7 @@ public interface HadoopShims {
   }
 
   public DirectDecompressorShim getDirectDecompressor(DirectCompressionType codec);
-  
+
   /**
    * Get configuration from JobContext
    */
