@@ -1452,8 +1452,6 @@ ALTER TABLE ONLY "FUNC_RU"
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
-
-INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '0.14.0', 'Hive release version 0.14.0');
 --
 -- PostgreSQL database dump complete
 --
@@ -1462,3 +1460,8 @@ INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1,
 -- Transaction and lock tables
 ------------------------------
 \i hive-txn-schema-0.13.0.postgres.sql;
+
+-- -----------------------------------------------------------------
+-- Record schema version. Should be the last step in the init script
+-- -----------------------------------------------------------------
+INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '0.14.0', 'Hive release version 0.14.0');

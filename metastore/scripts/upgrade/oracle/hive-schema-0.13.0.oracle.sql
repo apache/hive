@@ -754,8 +754,6 @@ ALTER TABLE FUNC_RU ADD CONSTRAINT FUNC_RU_FK1 FOREIGN KEY (FUNC_ID) REFERENCES 
 CREATE INDEX FUNC_RU_N49 ON FUNC_RU (FUNC_ID);
 
 
-INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '0.13.0', 'Hive release version 0.13.0');
-
 -- -----------------------------------------------------------------------------------------------------------------------------------------------
 -- Transaction and Lock Tables
 -- These are not part of package jdo, so if you are going to regenerate this file you need to manually add the following section back to the file.
@@ -829,4 +827,9 @@ CREATE TABLE NEXT_COMPACTION_QUEUE_ID (
 );
 INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1);
 
+
+-- -----------------------------------------------------------------
+-- Record schema version. Should be the last step in the init script
+-- -----------------------------------------------------------------
+INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '0.13.0', 'Hive release version 0.13.0');
 
