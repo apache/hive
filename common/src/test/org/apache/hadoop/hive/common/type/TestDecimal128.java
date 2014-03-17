@@ -854,4 +854,12 @@ public class TestDecimal128 {
     assertEquals(hd7.toString(), d12.getHiveDecimalString());
     assertEquals("27", hd7.toString());
   }
+
+  @Test
+  public void testUpdateWithScale() {
+    Decimal128 d1 = new Decimal128(1234.123, (short)4);
+    Decimal128 d2 = new Decimal128(0, (short)3);
+    d2.update(d1, (short)3);
+    assertEquals(0, d1.compareTo(d2));
+  }
 }
