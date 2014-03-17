@@ -527,7 +527,6 @@ public class HiveConf extends Configuration {
         true),
     // Define the default compression codec for ORC file
     HIVE_ORC_DEFAULT_COMPRESS("hive.exec.orc.default.compress", "ZLIB"),
-
     HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS("hive.orc.splits.include.file.footer", false),
     HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE("hive.orc.cache.stripe.details.size", 10000),
     HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS("hive.orc.compute.splits.num.threads", 10),
@@ -653,6 +652,10 @@ public class HiveConf extends Configuration {
     CLIENT_STATS_COUNTERS("hive.client.stats.counters", ""),
     //Subset of counters that should be of interest for hive.client.stats.publishers (when one wants to limit their publishing). Non-display names should be used".
     HIVE_STATS_RELIABLE("hive.stats.reliable", false),
+    // number of threads used by partialscan/noscan stats gathering for partitioned tables.
+    // This is applicable only for file formats that implement StatsProvidingRecordReader
+    // interface (like ORC)
+    HIVE_STATS_GATHER_NUM_THREADS("hive.stats.gather.num.threads", 10),
     // Collect table access keys information for operators that can benefit from bucketing
     HIVE_STATS_COLLECT_TABLEKEYS("hive.stats.collect.tablekeys", false),
     // Collect column access information

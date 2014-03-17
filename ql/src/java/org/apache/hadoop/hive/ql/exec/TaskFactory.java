@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.StatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
@@ -86,6 +87,7 @@ public final class TaskFactory {
         MapredLocalTask.class));
     taskvec.add(new TaskTuple<StatsWork>(StatsWork.class,
         StatsTask.class));
+    taskvec.add(new TaskTuple<StatsNoJobWork>(StatsNoJobWork.class, StatsNoJobTask.class));
     taskvec.add(new TaskTuple<ColumnStatsWork>(ColumnStatsWork.class, ColumnStatsTask.class));
     taskvec.add(new TaskTuple<MergeWork>(MergeWork.class,
         BlockMergeTask.class));

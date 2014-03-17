@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
 import org.apache.hadoop.hive.ql.io.orc.Metadata;
 import org.apache.hadoop.hive.ql.io.orc.Reader.FileMetaInfo;
 import org.apache.hadoop.hive.ql.io.orc.RecordReader;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
@@ -99,21 +101,26 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   private static final double MIN_INCLUDED_LOCATION = 0.80;
 
   private static class OrcRecordReader
-      implements org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct> {
+      implements org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct>,
+      StatsProvidingRecordReader {
     private final RecordReader reader;
     private final long offset;
     private final long length;
     private final int numColumns;
     private float progress = 0.0f;
+    private final Reader file;
+    private final SerDeStats stats;
 
 
     OrcRecordReader(Reader file, Configuration conf,
                     long offset, long length) throws IOException {
       List<OrcProto.Type> types = file.getTypes();
+      this.file = file;
       numColumns = (types.size() == 0) ? 0 : types.get(0).getSubtypesCount();
       this.reader = createReaderFromFile(file, conf, offset, length);
       this.offset = offset;
       this.length = length;
+      this.stats = new SerDeStats();
     }
 
     @Override
@@ -150,6 +157,13 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     @Override
     public float getProgress() throws IOException {
       return progress;
+    }
+
+    @Override
+    public SerDeStats getStats() {
+      stats.setRawDataSize(file.getRawDataSize());
+      stats.setRowCount(file.getNumberOfRows());
+      return stats;
     }
   }
   
@@ -867,33 +881,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       return true;
     }
 
-    private Object getMax(ColumnStatistics index) {
-      if (index instanceof IntegerColumnStatistics) {
-        return ((IntegerColumnStatistics) index).getMaximum();
-      } else if (index instanceof DoubleColumnStatistics) {
-        return ((DoubleColumnStatistics) index).getMaximum();
-      } else if (index instanceof StringColumnStatistics) {
-        return ((StringColumnStatistics) index).getMaximum();
-      } else if (index instanceof DateColumnStatistics) {
-        return ((DateColumnStatistics) index).getMaximum();
-      } else {
-        return null;
-      }
-    }
-
-    private Object getMin(ColumnStatistics index) {
-      if (index instanceof IntegerColumnStatistics) {
-        return ((IntegerColumnStatistics) index).getMinimum();
-      } else if (index instanceof DoubleColumnStatistics) {
-        return ((DoubleColumnStatistics) index).getMinimum();
-      } else if (index instanceof StringColumnStatistics) {
-        return ((StringColumnStatistics) index).getMinimum();
-      } else if (index instanceof DateColumnStatistics) {
-        return ((DateColumnStatistics) index).getMinimum();
-      } else {
-        return null;
-      }
-    }
   }
 
   static List<Context.FileSplitInfo> generateSplitsInfo(Configuration conf)
