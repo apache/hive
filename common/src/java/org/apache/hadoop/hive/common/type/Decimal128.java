@@ -261,7 +261,9 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    *          object to copy from
    */
   public Decimal128 update(Decimal128 o) {
-    update(o, o.scale);
+    this.unscaledValue.update(o.unscaledValue);
+    this.scale = o.scale;
+    this.signum = o.signum;
     return this;
   }
 
@@ -272,9 +274,8 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    *          object to copy from
    */
   public Decimal128 update(Decimal128 o, short scale) {
-    this.unscaledValue.update(o.unscaledValue);
-    this.scale = scale;
-    this.signum = o.signum;
+    update(o);
+    this.changeScaleDestructive(scale);
     return this;
   }
 
