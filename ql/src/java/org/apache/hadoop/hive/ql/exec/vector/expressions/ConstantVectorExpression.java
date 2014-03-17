@@ -126,11 +126,6 @@ public class ConstantVectorExpression extends VectorExpression {
     return outputColumn;
   }
 
-  @Override
-  public String getOutputType() {
-    return getTypeString();
-  }
-
   public long getLongValue() {
     return longValue;
   }
