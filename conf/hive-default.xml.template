@@ -2368,6 +2368,15 @@
 </property>
 
 <property>
+  <name>hive.stats.gather.num.threads</name>
+  <value>10</value>
+  <description>
+    Number of threads used by partialscan/noscan analyze command for partitioned tables.
+    This is applicable only for file formats that implement StatsProvidingRecordReader (like ORC).
+  </description>
+</property>
+
+<property>
   <name>hive.exec.orc.zerocopy</name>.
   <value>false</value>
   <description>

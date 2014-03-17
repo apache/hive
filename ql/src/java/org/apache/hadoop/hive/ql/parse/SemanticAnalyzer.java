@@ -86,6 +86,7 @@ import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -1311,6 +1312,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             Class<? extends InputFormat> inputFormatClass = null;
             switch (ts.specType) {
             case TABLE_ONLY:
+            case DYNAMIC_PARTITION:
               inputFormatClass = ts.tableHandle.getInputFormatClass();
               break;
             case STATIC_PARTITION:
@@ -1319,8 +1321,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             default:
               assert false;
             }
-            // throw a HiveException for non-rcfile.
-            if (!inputFormatClass.equals(RCFileInputFormat.class)) {
+            // throw a HiveException for formats other than rcfile or orcfile.
+            if (!(inputFormatClass.equals(RCFileInputFormat.class) || inputFormatClass
+                .equals(OrcInputFormat.class))) {
               throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_NON_RCFILE.getMsg());
             }
           }
