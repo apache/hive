@@ -22,6 +22,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,9 +42,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
-
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -72,7 +70,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.HiveTestUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -80,6 +77,8 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import com.google.common.collect.Lists;
 
 /**
  * Tests for the top level reader/streamFactory of ORC files.
@@ -473,6 +472,46 @@ public class TestOrcFile {
     // handle the close up
     assertEquals(false, rows.hasNext());
     rows.close();
+  }
+
+  @Test
+  public void testTimestamp() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Timestamp.class,
+          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000).bufferSize(10000)
+            .version(OrcFile.Version.V_0_11));
+    List<Timestamp> tslist = Lists.newArrayList();
+    tslist.add(Timestamp.valueOf("9999-01-01 00:00:00.000999"));
+    tslist.add(Timestamp.valueOf("2003-01-01 00:00:00.000000222"));
+    tslist.add(Timestamp.valueOf("1999-01-01 00:00:00.999999999"));
+    tslist.add(Timestamp.valueOf("1995-01-01 00:00:00.688888888"));
+    tslist.add(Timestamp.valueOf("2002-01-01 00:00:00.1"));
+    tslist.add(Timestamp.valueOf("2010-03-02 00:00:00.000009001"));
+    tslist.add(Timestamp.valueOf("2005-01-01 00:00:00.000002229"));
+    tslist.add(Timestamp.valueOf("2006-01-01 00:00:00.900203003"));
+    tslist.add(Timestamp.valueOf("2003-01-01 00:00:00.800000007"));
+    tslist.add(Timestamp.valueOf("1996-08-02 00:00:00.723100809"));
+    tslist.add(Timestamp.valueOf("1998-11-02 00:00:00.857340643"));
+    tslist.add(Timestamp.valueOf("2008-10-02 00:00:00"));
+
+    for (Timestamp ts : tslist) {
+      writer.addRow(ts);
+    }
+
+    writer.close();
+
+    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    RecordReader rows = reader.rows(null);
+    int idx = 0;
+    while (rows.hasNext()) {
+      Object row = rows.next(null);
+      assertEquals(tslist.get(idx++).getNanos(), ((Timestamp) row).getNanos());
+    }
   }
 
   @Test
