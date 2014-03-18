@@ -26,6 +26,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -44,6 +48,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -284,9 +289,7 @@ final class SearchArgumentImpl implements SearchArgument {
           case LONG:
             return PredicateLeaf.Type.INTEGER;
           case CHAR:
-            return PredicateLeaf.Type.CHAR;
           case VARCHAR:
-            return PredicateLeaf.Type.VARCHAR;
           case STRING:
             return PredicateLeaf.Type.STRING;
           case FLOAT:
@@ -327,9 +330,12 @@ final class SearchArgumentImpl implements SearchArgument {
         case INTEGER:
           return ((Number) lit.getValue()).longValue();
         case STRING:
-          return lit.getValue().toString();
+          return StringUtils.stripEnd(lit.getValue().toString(), null);
         case FLOAT:
           return ((Number) lit.getValue()).doubleValue();
+        case DATE:
+        case DECIMAL:
+          return lit;
         default:
           throw new IllegalArgumentException("Unknown literal " + getType(lit));
       }
@@ -900,10 +906,17 @@ final class SearchArgumentImpl implements SearchArgument {
     private static Object boxLiteral(Object literal) {
       if (literal instanceof String ||
           literal instanceof Long ||
-          literal instanceof Double) {
+          literal instanceof Double ||
+          literal instanceof DateWritable ||
+          literal instanceof HiveDecimal) {
         return literal;
-      } else if (literal instanceof Integer) {
-        return Long.valueOf((Integer) literal);
+      } else if (literal instanceof HiveChar ||
+          literal instanceof HiveVarchar) {
+        return StringUtils.stripEnd(literal.toString(), null);
+      } else if (literal instanceof Byte ||
+          literal instanceof Short ||
+          literal instanceof Integer) {
+        return Long.valueOf(literal.toString());
       } else if (literal instanceof Float) {
         return Double.valueOf((Float) literal);
       } else {
@@ -913,12 +926,22 @@ final class SearchArgumentImpl implements SearchArgument {
     }
 
     private static PredicateLeaf.Type getType(Object literal) {
-      if (literal instanceof Long) {
+      if (literal instanceof Byte ||
+          literal instanceof Short ||
+          literal instanceof Integer ||
+          literal instanceof Long) {
         return PredicateLeaf.Type.INTEGER;
-      } else if (literal instanceof String) {
+      } else if (literal instanceof HiveChar ||
+          literal instanceof HiveVarchar ||
+          literal instanceof String) {
         return PredicateLeaf.Type.STRING;
-      } else if (literal instanceof Double) {
+      } else if (literal instanceof Float ||
+          literal instanceof Double) {
         return PredicateLeaf.Type.FLOAT;
+      } else if (literal instanceof DateWritable) {
+        return PredicateLeaf.Type.DATE;
+      } else if (literal instanceof HiveDecimal) {
+        return PredicateLeaf.Type.DECIMAL;
       }
       throw new IllegalArgumentException("Unknown type for literal " + literal);
     }

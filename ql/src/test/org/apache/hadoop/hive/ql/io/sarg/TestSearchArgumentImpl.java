@@ -27,12 +27,17 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionBuilder;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionTree;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.junit.Test;
+
+import com.google.common.collect.Sets;
 
 /**
  * These test the SARG implementation.
@@ -2806,6 +2811,38 @@ public class TestSearchArgumentImpl {
         .build();
     assertEquals("leaf-0 = (IS_NULL x)\n" +
         "leaf-1 = (BETWEEN y 10 20)\n" +
+        "leaf-2 = (IN z 1 2 3)\n" +
+        "leaf-3 = (NULL_SAFE_EQUALS a stinger)\n" +
+        "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))", sarg.toString());
+  }
+
+  @Test
+  public void testBuilderComplexTypes() throws Exception {
+    SearchArgument sarg =
+        SearchArgument.FACTORY.newBuilder()
+            .startAnd()
+              .lessThan("x", new DateWritable(10))
+              .lessThanEquals("y", new HiveChar("hi", 10))
+              .equals("z", HiveDecimal.create("1.0"))
+            .end()
+            .build();
+    assertEquals("leaf-0 = (LESS_THAN x 1970-01-11)\n" +
+        "leaf-1 = (LESS_THAN_EQUALS y hi)\n" +
+        "leaf-2 = (EQUALS z 1)\n" +
+        "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
+
+    sarg = SearchArgument.FACTORY.newBuilder()
+        .startNot()
+           .startOr()
+             .isNull("x")
+             .between("y", HiveDecimal.create(10), 20.0)
+             .in("z", (byte)1, (short)2, (int)3)
+             .nullSafeEquals("a", new HiveVarchar("stinger", 100))
+           .end()
+        .end()
+        .build();
+    assertEquals("leaf-0 = (IS_NULL x)\n" +
+        "leaf-1 = (BETWEEN y 10 20.0)\n" +
         "leaf-2 = (IN z 1 2 3)\n" +
         "leaf-3 = (NULL_SAFE_EQUALS a stinger)\n" +
         "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))", sarg.toString());
