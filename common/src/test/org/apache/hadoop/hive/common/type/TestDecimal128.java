@@ -852,7 +852,12 @@ public class TestDecimal128 {
     Decimal128 d12 = new Decimal128(27.000, (short)3);
     HiveDecimal hd7 = HiveDecimal.create(new BigDecimal("27.000"));
     assertEquals(hd7.toString(), d12.getHiveDecimalString());
-    assertEquals("27", hd7.toString());
+    assertEquals("27", d12.getHiveDecimalString());
+
+    Decimal128 d13 = new Decimal128(1234123000, (short)3);
+    HiveDecimal hd8 = HiveDecimal.create(new BigDecimal("1234123000"));
+    assertEquals(hd8.toString(), d13.getHiveDecimalString());
+    assertEquals("1234123000", d13.getHiveDecimalString());
   }
 
   @Test
