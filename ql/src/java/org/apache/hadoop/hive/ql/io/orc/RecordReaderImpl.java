@@ -1068,7 +1068,7 @@ class RecordReaderImpl implements RecordReader {
 
     private static int parseNanos(long serialized) {
       int zeros = 7 & (int) serialized;
-      int result = (int) serialized >>> 3;
+      int result = (int) (serialized >>> 3);
       if (zeros != 0) {
         for(int i =0; i <= zeros; ++i) {
           result *= 10;
