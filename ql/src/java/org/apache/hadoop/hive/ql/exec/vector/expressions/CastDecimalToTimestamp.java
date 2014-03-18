@@ -53,6 +53,8 @@ public class CastDecimalToTimestamp extends FuncDecimalToLong {
   @Override
   protected void func(LongColumnVector outV, DecimalColumnVector inV,  int i) {
     tmp.update(inV.vector[i]);
+
+    // Reduce scale at most by 9, therefore multiplication will not require rounding.
     int newScale = inV.scale > 9 ? (inV.scale - 9) : 0;
     tmp.multiplyDestructive(tenE9, (short) newScale);
 
