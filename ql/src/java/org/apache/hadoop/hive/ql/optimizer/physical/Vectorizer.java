@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -421,7 +422,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       VectorizationContext vContext = null;
 
       if (op instanceof TableScanOperator) {
-        vContext = getVectorizationContext(op, physicalContext);
+        vContext = getVectorizationContext((TableScanOperator) op, physicalContext);
         for (String onefile : mWork.getPathToAliases().keySet()) {
           List<String> aliases = mWork.getPathToAliases().get(onefile);
           for (String alias : aliases) {
@@ -719,27 +720,20 @@ public class Vectorizer implements PhysicalPlanResolver {
     return supportedDataTypesPattern.matcher(type.toLowerCase()).matches();
   }
 
-  private VectorizationContext getVectorizationContext(Operator<? extends OperatorDesc> op,
+  private VectorizationContext getVectorizationContext(TableScanOperator op,
       PhysicalContext pctx) {
     RowSchema rs = op.getSchema();
 
     Map<String, Integer> cmap = new HashMap<String, Integer>();
     int columnCount = 0;
     for (ColumnInfo c : rs.getSignature()) {
-      if (!c.getIsVirtualCol()) {
+      if (!isVirtualColumn(c)) {
         cmap.put(c.getInternalName(), columnCount++);
       }
     }
-    PrunedPartitionList partList = pctx.getParseContext().getOpToPartList().get(op);
-    if (partList != null) {
-      Table tab = partList.getSourceTable();
-      if (tab.getPartitionKeys() != null) {
-        for (FieldSchema fs : tab.getPartitionKeys()) {
-          cmap.put(fs.getName(), columnCount++);
-        }
-      }
-    }
-    return new VectorizationContext(cmap, columnCount);
+
+    VectorizationContext vc =  new VectorizationContext(cmap, columnCount);
+    return vc;
   }
 
   Operator<? extends OperatorDesc> vectorizeOperator(Operator<? extends OperatorDesc> op,
@@ -777,5 +771,17 @@ public class Vectorizer implements PhysicalPlanResolver {
       ((AbstractOperatorDesc) vectorOp.getConf()).setVectorMode(true);
     }
     return vectorOp;
+  }
+
+  private boolean isVirtualColumn(ColumnInfo column) {
+
+    // Not using method column.getIsVirtualCol() because partitioning columns are also
+    // treated as virtual columns in ColumnInfo.
+    for (VirtualColumn vc : VirtualColumn.VIRTUAL_COLUMNS) {
+      if (column.getInternalName().equals(vc.getName())) {
+        return true;
+      }
+    }
+    return false;
   }
 }
