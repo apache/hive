@@ -36,8 +36,8 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.tez.runtime.api.LogicalInput;
@@ -75,6 +75,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR);
     boolean useLazyRows = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEMAPJOINLAZYHASHTABLE);
 
+    TezCacheAccess tezCacheAccess = TezCacheAccess.createInstance(hconf);
     // We only check if we can use optimized keys here; that is ok because we don't
     // create optimized keys in MapJoin if hash map doesn't have optimized keys.
     if (!HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDKEYS)) {
@@ -86,7 +87,8 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         continue;
       }
 
-      LogicalInput input = tezContext.getInput(parentToInput.get(pos));
+      String inputName = parentToInput.get(pos);
+      LogicalInput input = tezContext.getInput(inputName);
 
       try {
         KeyValueReader kvReader = (KeyValueReader) input.getReader();
@@ -119,6 +121,9 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       } catch (Exception e) {
         throw new HiveException(e);
       }
+      // Register that the Input has been cached.
+      tezCacheAccess.registerCachedInput(inputName);
+      LOG.info("Setting Input: " + inputName + " as cached");
     }
     if (lastKey == null) {
       lastKey = new MapJoinKeyObject(); // No rows in tables, the key type doesn't matter.
