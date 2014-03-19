@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.tez.tools.InputMerger;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -53,8 +55,13 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
+import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
+import org.apache.tez.runtime.api.LogicalOutput;
+import org.apache.tez.runtime.api.TezProcessorContext;
 import org.apache.tez.runtime.library.api.KeyValuesReader;
+
+import com.google.common.collect.Lists;
 
 /**
  * Process input from tez LogicalInput and write output - for a map plan
@@ -88,10 +95,10 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
 
   @Override
-  void init(JobConf jconf, MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
-      Map<String, OutputCollector> outMap){
+  void init(JobConf jconf, TezProcessorContext processorContext, MRTaskReporter mrReporter,
+      Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
-    super.init(jconf, mrReporter, inputs, outMap);
+    super.init(jconf, processorContext, mrReporter, inputs, outputs);
 
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
 
@@ -163,6 +170,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       if (dummyOps != null) {
         children.addAll(dummyOps);
       }
+      createOutputMap();
       OperatorUtils.setChildrenCollector(children, outMap);
 
       reducer.setReporter(reporter);
@@ -182,10 +190,20 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   }
 
   @Override
-  void run() throws IOException{
+  void run() throws Exception {
     List<LogicalInput> shuffleInputs = getShuffleInputs(inputs);
-    KeyValuesReader kvsReader;
+    if (shuffleInputs != null) {
+      l4j.info("Waiting for ShuffleInputs to become ready");
+      processorContext.waitForAllInputsReady(new ArrayList<Input>(shuffleInputs));
+    }
 
+    for (Entry<String, LogicalOutput> outputEntry : outputs.entrySet()) {
+      l4j.info("Starting Output: " + outputEntry.getKey());
+      ((TezKVOutputCollector) outMap.get(outputEntry.getKey())).initialize();
+      outputEntry.getValue().start();
+    }
+
+    KeyValuesReader kvsReader;
     try {
       if(shuffleInputs.size() == 1){
         //no merging of inputs required
