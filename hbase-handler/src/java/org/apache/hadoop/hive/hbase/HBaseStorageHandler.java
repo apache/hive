@@ -155,7 +155,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       Map<String, String> serdeParam = tbl.getSd().getSerdeInfo().getParameters();
       String hbaseColumnsMapping = serdeParam.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
 
-      List<ColumnMapping> columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping);
+      List<ColumnMapping> columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping, true);
 
       HTableDescriptor tableDesc;
 

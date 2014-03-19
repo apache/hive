@@ -466,7 +466,7 @@ public class TestLazyHBaseObject extends TestCase {
     List<ColumnMapping> columnsMapping = null;
 
     try {
-      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColsMapping);
+      columnsMapping = parseColumnsMapping(hbaseColsMapping);
     } catch (SerDeException e) {
       fail(e.toString());
     }
@@ -591,7 +591,7 @@ public class TestLazyHBaseObject extends TestCase {
     String hbaseColsMapping = ":key,cfa:a,cfa:b,cfb:,cfc:d";
 
     try {
-      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColsMapping);
+      columnsMapping = parseColumnsMapping(hbaseColsMapping);
     } catch (SerDeException e) {
       fail(e.toString());
     }
@@ -716,7 +716,7 @@ public class TestLazyHBaseObject extends TestCase {
     List<ColumnMapping> columnsMapping = null;
 
     try {
-      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping);
+      columnsMapping = parseColumnsMapping(hbaseColumnsMapping);
     } catch (SerDeException sde) {
       fail(sde.toString());
     }
@@ -850,4 +850,19 @@ public class TestLazyHBaseObject extends TestCase {
       }
     }
   }
+
+  /**
+   * Parses the HBase columns mapping specifier to identify the column families, qualifiers
+   * and also caches the byte arrays corresponding to them. One of the Hive table
+   * columns maps to the HBase row key, by default the first column.
+   *
+   * @param columnsMappingSpec string hbase.columns.mapping specified when creating table
+   * @return List<ColumnMapping> which contains the column mapping information by position
+   * @throws SerDeException
+   */
+  public static List<ColumnMapping> parseColumnsMapping(String columnsMappingSpec)
+      throws SerDeException {
+    return HBaseSerDe.parseColumnsMapping(columnsMappingSpec, true);
+  }
+
 }
