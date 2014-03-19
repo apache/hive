@@ -506,7 +506,7 @@ public class HiveSchemaTool {
       System.err.println("*** schemaTool failed ***");
       System.exit(1);
     }
-    System.out.println("schemaTool completeted");
+    System.out.println("schemaTool completed");
 
   }
 }
