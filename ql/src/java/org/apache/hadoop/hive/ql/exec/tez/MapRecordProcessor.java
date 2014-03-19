@@ -35,24 +35,26 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.LogicalInput;
+import org.apache.tez.runtime.api.LogicalOutput;
+import org.apache.tez.runtime.api.TezProcessorContext;
 import org.apache.tez.runtime.library.api.KeyValueReader;
 
 /**
  * Process input from tez LogicalInput and write output - for a map plan
  * Just pump the records through the query plan.
  */
-public class MapRecordProcessor  extends RecordProcessor{
+public class MapRecordProcessor extends RecordProcessor {
 
 
   private MapOperator mapOp;
@@ -63,23 +65,26 @@ public class MapRecordProcessor  extends RecordProcessor{
   private MapWork mapWork;
 
   @Override
-  void init(JobConf jconf, MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
-      Map<String, OutputCollector> outMap){
+  void init(JobConf jconf, TezProcessorContext processorContext, MRTaskReporter mrReporter,
+      Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
-    super.init(jconf, mrReporter, inputs, outMap);
+    super.init(jconf, processorContext, mrReporter, inputs, outputs);
 
     //Update JobConf using MRInput, info like filename comes via this
-    MRInputLegacy mrInput = getMRInput(inputs);
-    try {
-      mrInput.init();
-    } catch (IOException e) {
-      throw new RuntimeException("Failed while initializing MRInput", e);
-    }
+    MRInputLegacy mrInput = TezProcessor.getMRInput(inputs);
     Configuration updatedConf = mrInput.getConfigUpdates();
     if (updatedConf != null) {
       for (Entry<String, String> entry : updatedConf) {
         jconf.set(entry.getKey(), entry.getValue());
       }
+    }
+
+    createOutputMap();
+    // Start all the Outputs.
+    for (Entry<String, LogicalOutput> outputEntry : outputs.entrySet()) {
+      l4j.info("Starting Output: " + outputEntry.getKey());
+      ((TezKVOutputCollector) outMap.get(outputEntry.getKey())).initialize();
+      outputEntry.getValue().start();
     }
 
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
@@ -143,25 +148,10 @@ public class MapRecordProcessor  extends RecordProcessor{
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
   }
 
-  private MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) {
-    //there should be only one MRInput
-    MRInputLegacy theMRInput = null;
-    for(LogicalInput inp : inputs.values()){
-      if(inp instanceof MRInputLegacy){
-        if(theMRInput != null){
-          throw new IllegalArgumentException("Only one MRInput is expected");
-        }
-        //a better logic would be to find the alias
-        theMRInput = (MRInputLegacy)inp;
-      }
-    }
-    return theMRInput;
-  }
-
   @Override
   void run() throws IOException{
 
-    MRInputLegacy in = getMRInput(inputs);
+    MRInputLegacy in = TezProcessor.getMRInput(inputs);
     KeyValueReader reader = in.getReader();
 
     //process records until done

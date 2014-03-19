@@ -16,20 +16,26 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.exec.tez;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.LogicalInput;
+import org.apache.tez.runtime.api.LogicalOutput;
+import org.apache.tez.runtime.api.TezProcessorContext;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 
 /**
  * Process input from tez LogicalInput and write output
@@ -39,7 +45,9 @@ public abstract class RecordProcessor  {
 
   protected JobConf jconf;
   protected Map<String, LogicalInput> inputs;
+  protected Map<String, LogicalOutput> outputs;
   protected Map<String, OutputCollector> outMap;
+  protected TezProcessorContext processorContext;
 
   public static final Log l4j = LogFactory.getLog(RecordProcessor.class);
 
@@ -54,20 +62,22 @@ public abstract class RecordProcessor  {
   protected PerfLogger perfLogger = PerfLogger.getPerfLogger();
   protected String CLASS_NAME = RecordProcessor.class.getName();
 
-
   /**
    * Common initialization code for RecordProcessors
    * @param jconf
+   * @param processorContext the {@link TezProcessorContext}
    * @param mrReporter
-   * @param inputs
-   * @param out
+   * @param inputs map of Input names to {@link LogicalInput}s
+   * @param outputs map of Output names to {@link LogicalOutput}s
+   * @throws Exception
    */
-  void init(JobConf jconf, MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
-      Map<String, OutputCollector> outMap){
+  void init(JobConf jconf, TezProcessorContext processorContext, MRTaskReporter mrReporter,
+      Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
     this.jconf = jconf;
     this.reporter = mrReporter;
     this.inputs = inputs;
-    this.outMap = outMap;
+    this.outputs = outputs;
+    this.processorContext = processorContext;
 
     // Allocate the bean at the beginning -
     memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -92,9 +102,9 @@ public abstract class RecordProcessor  {
 
   /**
    * start processing the inputs and writing output
-   * @throws IOException
+   * @throws Exception
    */
-  abstract void run() throws IOException;
+  abstract void run() throws Exception;
 
 
   abstract void close();
@@ -132,4 +142,12 @@ public abstract class RecordProcessor  {
     return 10 * cntr;
   }
 
+  protected void createOutputMap() {
+    Preconditions.checkState(outMap == null, "Outputs should only be setup once");
+    outMap = Maps.newHashMap();
+    for (Entry<String, LogicalOutput> entry : outputs.entrySet()) {
+      TezKVOutputCollector collector = new TezKVOutputCollector(entry.getValue());
+      outMap.put(entry.getKey(), collector);
+    }
+  }
 }
