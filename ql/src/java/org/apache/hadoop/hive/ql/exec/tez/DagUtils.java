@@ -599,6 +599,24 @@ public class DagUtils {
 
     // we need the directory on hdfs to which we shall put all these files
     // Use HIVE_JAR_DIRECTORY only if it's set explicitly; otherwise use default directory
+    String hdfsDirPathStr = getHiveJarDirectory(conf);
+
+    String allFiles = auxJars + "," + addedJars + "," + addedFiles + "," + addedArchives;
+    String[] allFilesArr = allFiles.split(",");
+    for (String file : allFilesArr) {
+      if (!StringUtils.isNotBlank(file)) {
+        continue;
+      }
+      String hdfsFilePathStr = hdfsDirPathStr + "/" + getResourceBaseName(file);
+      LocalResource localResource = localizeResource(new Path(file),
+          new Path(hdfsFilePathStr), conf);
+      tmpResources.add(localResource);
+    }
+
+    return tmpResources;
+  }
+
+  public String getHiveJarDirectory(Configuration conf) throws IOException, LoginException {
     FileStatus fstatus = null;
     String hdfsDirPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_JAR_DIRECTORY, null);
     if (hdfsDirPathStr != null) {
@@ -618,20 +636,7 @@ public class DagUtils {
       Path destDir = getDefaultDestDir(conf);
       hdfsDirPathStr = destDir.toString();
     }
-
-    String allFiles = auxJars + "," + addedJars + "," + addedFiles + "," + addedArchives;
-    String[] allFilesArr = allFiles.split(",");
-    for (String file : allFilesArr) {
-      if (!StringUtils.isNotBlank(file)) {
-        continue;
-      }
-      String hdfsFilePathStr = hdfsDirPathStr + "/" + getResourceBaseName(file);
-      LocalResource localResource = localizeResource(new Path(file),
-          new Path(hdfsFilePathStr), conf);
-      tmpResources.add(localResource);
-    }
-
-    return tmpResources;
+    return hdfsDirPathStr;
   }
 
   // the api that finds the jar being used by this class on disk

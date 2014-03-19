@@ -247,7 +247,7 @@ public class TezSessionState {
    */
   private LocalResource createHiveExecLocalResource()
     throws IOException, LoginException, URISyntaxException {
-    String hiveJarDir = conf.getVar(HiveConf.ConfVars.HIVE_JAR_DIRECTORY);
+    String hiveJarDir = utils.getHiveJarDirectory(conf);
     String currentVersionPathStr = utils.getExecJarPathLocal();
     String currentJarName = utils.getResourceBaseName(currentVersionPathStr);
     FileSystem fs = null;
