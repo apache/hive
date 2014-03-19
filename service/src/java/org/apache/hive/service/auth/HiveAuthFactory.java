@@ -228,7 +228,7 @@ public class HiveAuthFactory {
     } else {
       serverAddress = InetAddress.getByName(hiveHost);
     }
-    return TSSLTransportFactory.getServerSocket(portNum, 10000, serverAddress, params);
+    return TSSLTransportFactory.getServerSocket(portNum, 0, serverAddress, params);
   }
 
   // retrieve delegation token for the given user
