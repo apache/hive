@@ -163,11 +163,11 @@ POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT DEST1.* FROM DEST1
+PREHOOK: query: SELECT DEST1.* FROM DEST1 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: query: SELECT DEST1.* FROM DEST1 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
@@ -176,19 +176,72 @@ POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	0.0
+2	2.0
+4	4.0
+5	15.0
+8	8.0
+9	9.0
 10	10.0
+11	11.0
+12	24.0
+15	30.0
+17	17.0
+18	36.0
+19	19.0
+20	20.0
+24	48.0
+26	52.0
+27	27.0
+28	28.0
+30	30.0
+33	33.0
+34	34.0
+35	105.0
+37	74.0
+41	41.0
+42	84.0
+43	43.0
+44	44.0
+47	47.0
+51	102.0
+53	53.0
+54	54.0
+57	57.0
+58	116.0
+64	64.0
+65	65.0
+66	66.0
+67	134.0
+69	69.0
+70	210.0
+72	144.0
+74	74.0
+76	152.0
+77	77.0
+78	78.0
+80	80.0
+82	82.0
+83	166.0
+84	168.0
+85	85.0
+86	86.0
+87	87.0
+90	270.0
+92	92.0
+95	190.0
+96	96.0
+97	194.0
+98	196.0
 100	200.0
 103	206.0
 104	208.0
 105	105.0
-11	11.0
 111	111.0
 113	226.0
 114	114.0
 116	116.0
 118	236.0
 119	357.0
-12	24.0
 120	240.0
 125	250.0
 126	126.0
@@ -204,7 +257,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 145	145.0
 146	292.0
 149	298.0
-15	30.0
 150	150.0
 152	304.0
 153	153.0
@@ -221,7 +273,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 167	501.0
 168	168.0
 169	676.0
-17	17.0
 170	170.0
 172	344.0
 174	348.0
@@ -230,14 +281,12 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 177	177.0
 178	178.0
 179	358.0
-18	36.0
 180	180.0
 181	181.0
 183	183.0
 186	186.0
 187	561.0
 189	189.0
-19	19.0
 190	190.0
 191	382.0
 192	192.0
@@ -247,8 +296,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 196	196.0
 197	394.0
 199	597.0
-2	2.0
-20	20.0
 200	400.0
 201	201.0
 202	202.0
@@ -276,7 +323,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 237	474.0
 238	476.0
 239	478.0
-24	48.0
 241	241.0
 242	484.0
 244	244.0
@@ -288,20 +334,17 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 256	512.0
 257	257.0
 258	258.0
-26	52.0
 260	260.0
 262	262.0
 263	263.0
 265	530.0
 266	266.0
-27	27.0
 272	544.0
 273	819.0
 274	274.0
 275	275.0
 277	1108.0
 278	556.0
-28	28.0
 280	560.0
 281	562.0
 282	564.0
@@ -316,7 +359,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 292	292.0
 296	296.0
 298	894.0
-30	30.0
 302	302.0
 305	305.0
 306	306.0
@@ -334,7 +376,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 323	323.0
 325	650.0
 327	981.0
-33	33.0
 331	662.0
 332	332.0
 333	666.0
@@ -342,13 +383,11 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 336	336.0
 338	338.0
 339	339.0
-34	34.0
 341	341.0
 342	684.0
 344	688.0
 345	345.0
 348	1740.0
-35	105.0
 351	351.0
 353	706.0
 356	356.0
@@ -360,7 +399,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 367	734.0
 368	368.0
 369	1107.0
-37	74.0
 373	373.0
 374	374.0
 375	375.0
@@ -378,7 +416,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 396	1188.0
 397	794.0
 399	798.0
-4	4.0
 400	400.0
 401	2005.0
 402	402.0
@@ -387,19 +424,16 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 406	1624.0
 407	407.0
 409	1227.0
-41	41.0
 411	411.0
 413	826.0
 414	828.0
 417	1251.0
 418	418.0
 419	419.0
-42	84.0
 421	421.0
 424	848.0
 427	427.0
 429	858.0
-43	43.0
 430	1290.0
 431	1293.0
 432	432.0
@@ -408,7 +442,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 437	437.0
 438	1314.0
 439	878.0
-44	44.0
 443	443.0
 444	444.0
 446	446.0
@@ -428,7 +461,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 467	467.0
 468	1872.0
 469	2345.0
-47	47.0
 470	470.0
 472	472.0
 475	475.0
@@ -452,43 +484,11 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 496	496.0
 497	497.0
 498	1494.0
-5	15.0
-51	102.0
-53	53.0
-54	54.0
-57	57.0
-58	116.0
-64	64.0
-65	65.0
-66	66.0
-67	134.0
-69	69.0
-70	210.0
-72	144.0
-74	74.0
-76	152.0
-77	77.0
-78	78.0
-8	8.0
-80	80.0
-82	82.0
-83	166.0
-84	168.0
-85	85.0
-86	86.0
-87	87.0
-9	9.0
-90	270.0
-92	92.0
-95	190.0
-96	96.0
-97	194.0
-98	196.0
-PREHOOK: query: SELECT DEST2.* FROM DEST2
+PREHOOK: query: SELECT DEST2.* FROM DEST2 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST2.* FROM DEST2
+POSTHOOK: query: SELECT DEST2.* FROM DEST2 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
@@ -497,19 +497,72 @@ POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	0.0
+2	2.0
+4	4.0
+5	15.0
+8	8.0
+9	9.0
 10	10.0
+11	11.0
+12	24.0
+15	30.0
+17	17.0
+18	36.0
+19	19.0
+20	20.0
+24	48.0
+26	52.0
+27	27.0
+28	28.0
+30	30.0
+33	33.0
+34	34.0
+35	105.0
+37	74.0
+41	41.0
+42	84.0
+43	43.0
+44	44.0
+47	47.0
+51	102.0
+53	53.0
+54	54.0
+57	57.0
+58	116.0
+64	64.0
+65	65.0
+66	66.0
+67	134.0
+69	69.0
+70	210.0
+72	144.0
+74	74.0
+76	152.0
+77	77.0
+78	78.0
+80	80.0
+82	82.0
+83	166.0
+84	168.0
+85	85.0
+86	86.0
+87	87.0
+90	270.0
+92	92.0
+95	190.0
+96	96.0
+97	194.0
+98	196.0
 100	200.0
 103	206.0
 104	208.0
 105	105.0
-11	11.0
 111	111.0
 113	226.0
 114	114.0
 116	116.0
 118	236.0
 119	357.0
-12	24.0
 120	240.0
 125	250.0
 126	126.0
@@ -525,7 +578,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 145	145.0
 146	292.0
 149	298.0
-15	30.0
 150	150.0
 152	304.0
 153	153.0
@@ -542,7 +594,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 167	501.0
 168	168.0
 169	676.0
-17	17.0
 170	170.0
 172	344.0
 174	348.0
@@ -551,14 +602,12 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 177	177.0
 178	178.0
 179	358.0
-18	36.0
 180	180.0
 181	181.0
 183	183.0
 186	186.0
 187	561.0
 189	189.0
-19	19.0
 190	190.0
 191	382.0
 192	192.0
@@ -568,8 +617,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 196	196.0
 197	394.0
 199	597.0
-2	2.0
-20	20.0
 200	400.0
 201	201.0
 202	202.0
@@ -597,7 +644,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 237	474.0
 238	476.0
 239	478.0
-24	48.0
 241	241.0
 242	484.0
 244	244.0
@@ -609,20 +655,17 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 256	512.0
 257	257.0
 258	258.0
-26	52.0
 260	260.0
 262	262.0
 263	263.0
 265	530.0
 266	266.0
-27	27.0
 272	544.0
 273	819.0
 274	274.0
 275	275.0
 277	1108.0
 278	556.0
-28	28.0
 280	560.0
 281	562.0
 282	564.0
@@ -637,7 +680,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 292	292.0
 296	296.0
 298	894.0
-30	30.0
 302	302.0
 305	305.0
 306	306.0
@@ -655,7 +697,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 323	323.0
 325	650.0
 327	981.0
-33	33.0
 331	662.0
 332	332.0
 333	666.0
@@ -663,13 +704,11 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 336	336.0
 338	338.0
 339	339.0
-34	34.0
 341	341.0
 342	684.0
 344	688.0
 345	345.0
 348	1740.0
-35	105.0
 351	351.0
 353	706.0
 356	356.0
@@ -681,7 +720,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 367	734.0
 368	368.0
 369	1107.0
-37	74.0
 373	373.0
 374	374.0
 375	375.0
@@ -699,7 +737,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 396	1188.0
 397	794.0
 399	798.0
-4	4.0
 400	400.0
 401	2005.0
 402	402.0
@@ -708,19 +745,16 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 406	1624.0
 407	407.0
 409	1227.0
-41	41.0
 411	411.0
 413	826.0
 414	828.0
 417	1251.0
 418	418.0
 419	419.0
-42	84.0
 421	421.0
 424	848.0
 427	427.0
 429	858.0
-43	43.0
 430	1290.0
 431	1293.0
 432	432.0
@@ -729,7 +763,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 437	437.0
 438	1314.0
 439	878.0
-44	44.0
 443	443.0
 444	444.0
 446	446.0
@@ -749,7 +782,6 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 467	467.0
 468	1872.0
 469	2345.0
-47	47.0
 470	470.0
 472	472.0
 475	475.0
@@ -773,35 +805,3 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 496	496.0
 497	497.0
 498	1494.0
-5	15.0
-51	102.0
-53	53.0
-54	54.0
-57	57.0
-58	116.0
-64	64.0
-65	65.0
-66	66.0
-67	134.0
-69	69.0
-70	210.0
-72	144.0
-74	74.0
-76	152.0
-77	77.0
-78	78.0
-8	8.0
-80	80.0
-82	82.0
-83	166.0
-84	168.0
-85	85.0
-86	86.0
-87	87.0
-9	9.0
-90	270.0
-92	92.0
-95	190.0
-96	96.0
-97	194.0
-98	196.0

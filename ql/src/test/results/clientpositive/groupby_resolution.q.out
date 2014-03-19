@@ -507,6 +507,7 @@ select key, count(*), rank() over(order by count(*))
 from src b
 where key < '12'
 group by b.key
+order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -515,27 +516,29 @@ select key, count(*), rank() over(order by count(*))
 from src b
 where key < '12'
 group by b.key
+order by b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+0	3	12
 10	1	1
-105	1	1
-11	1	1
-111	1	1
-114	1	1
-116	1	1
-118	2	7
 100	2	7
 103	2	7
 104	2	7
+105	1	1
+11	1	1
+111	1	1
 113	2	7
-0	3	12
+114	1	1
+116	1	1
+118	2	7
 119	3	12
 PREHOOK: query: -- having after group by
 select key, count(*)
 from src b
 group by b.key
 having key < '12'
+order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -544,6 +547,7 @@ select key, count(*)
 from src b
 group by b.key
 having key < '12'
+order by b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -565,6 +569,7 @@ select key, count(*), rank() over(order by count(*))
 from src b
 group by b.key
 having key < '12'
+order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -573,21 +578,22 @@ select key, count(*), rank() over(order by count(*))
 from src b
 group by b.key
 having key < '12'
+order by b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+0	3	12
 10	1	1
-105	1	1
-11	1	1
-111	1	1
-114	1	1
-116	1	1
-118	2	7
 100	2	7
 103	2	7
 104	2	7
+105	1	1
+11	1	1
+111	1	1
 113	2	7
-0	3	12
+114	1	1
+116	1	1
+118	2	7
 119	3	12
 PREHOOK: query: explain
 select key, count(*), rank() over(order by count(*))
