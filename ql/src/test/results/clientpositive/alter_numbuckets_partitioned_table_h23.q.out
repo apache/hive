@@ -1,8 +1,8 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
 create table tst1(key string, value string) partitioned by (ds string) clustered by (key) into 10 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
 create table tst1(key string, value string) partitioned by (ds string) clustered by (key) into 10 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -84,7 +84,7 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	8                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -153,7 +153,7 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	12                  
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -287,7 +287,7 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	12                  
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -381,7 +381,7 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 #### A masked pattern was here ####
-	numFiles            	1                   
+	numFiles            	12                  
 	numRows             	-1                  
 	rawDataSize         	-1                  
 	totalSize           	5812                

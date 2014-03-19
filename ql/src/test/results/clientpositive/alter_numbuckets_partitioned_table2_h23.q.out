@@ -1,11 +1,11 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
 -- Tests that when overwriting a partition in a table after altering the bucketing/sorting metadata
 -- the partition metadata is updated as well.
 
 CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
 -- Tests that when overwriting a partition in a table after altering the bucketing/sorting metadata
 -- the partition metadata is updated as well.
 
@@ -185,7 +185,7 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	8                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -296,7 +296,7 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	8                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -415,7 +415,7 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	8                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -542,7 +542,7 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -677,7 +677,7 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -820,7 +820,7 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -971,7 +971,7 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
