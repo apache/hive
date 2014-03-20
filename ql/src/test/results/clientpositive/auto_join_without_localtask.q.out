@@ -145,6 +145,8 @@ POSTHOOK: query: select a.* from src a join src b on a.key=b.key limit 40
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+RUN: Stage-5:CONDITIONAL
+RUN: Stage-3:MAPRED
 238	val_238
 238	val_238
 86	val_86
@@ -435,6 +437,10 @@ POSTHOOK: query: select a.* from src a join src b on a.key=b.key join src c on a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+RUN: Stage-10:CONDITIONAL
+RUN: Stage-8:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-5:MAPRED
 238	val_238
 238	val_238
 238	val_238
@@ -761,6 +767,11 @@ POSTHOOK: query: select a.* from src a join src b on a.key=b.key join src c on a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+RUN: Stage-10:CONDITIONAL
+RUN: Stage-14:MAPREDLOCAL
+RUN: Stage-9:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-5:MAPRED
 238	val_238
 238	val_238
 238	val_238
@@ -823,7 +834,7 @@ Obtaining error information
 
 Task failed!
 Task ID:
-  Stage-6
+  Stage-5
 
 Logs:
 
@@ -835,6 +846,12 @@ select a.* from src a join src b on a.key=b.key join src c on a.value=c.value wh
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+RUN: Stage-10:CONDITIONAL
+RUN: Stage-14:MAPREDLOCAL
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-5:MAPRED
+RUN: Stage-2:MAPRED
 103	val_103
 103	val_103
 103	val_103

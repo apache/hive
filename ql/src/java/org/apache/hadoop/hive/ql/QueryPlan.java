@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -392,9 +393,6 @@ public class QueryPlan implements Serializable {
           done.add(task.getId() + "_MAP");
         }
         if (mrTask.hasReduce()) {
-          Collection<Operator<? extends OperatorDesc>> reducerTopOps =
-            new ArrayList<Operator<? extends OperatorDesc>>();
-          reducerTopOps.add(mrTask.getWork().getReduceWork().getReducer());
           if (mrTask.reduceStarted()) {
             started.add(task.getId() + "_REDUCE");
           }
@@ -586,6 +584,10 @@ public class QueryPlan implements Serializable {
     sb.deleteCharAt(sb.length() - 1);
     sb.append("}");
     return sb.toString();
+  }
+
+  public boolean isExplain() {
+    return rootTasks.size() == 1 && rootTasks.get(0) instanceof ExplainTask;
   }
 
   @Override
