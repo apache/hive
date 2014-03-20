@@ -1,4 +1,6 @@
-CREATE TABLE src_4( 
+set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecutePrinter,org.apache.hadoop.hive.ql.hooks.PrintCompletedTasksHook;
+
+CREATE TABLE src_4(
   key STRING, 
   value STRING
 )
