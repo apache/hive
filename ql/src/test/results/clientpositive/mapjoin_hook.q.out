@@ -1,8 +1,10 @@
 PREHOOK: query: drop table dest1
 PREHOOK: type: DROPTABLE
+RUN: Stage-0:DDL
 PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+RUN: Stage-0:DDL
 PREHOOK: query: INSERT OVERWRITE TABLE dest1 
 SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 PREHOOK: type: QUERY
@@ -10,12 +12,18 @@ PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@dest1
 [MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 1 HINTED_MAPJOIN_LOCAL: 0 CONVERTED_MAPJOIN: 0 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 0
+RUN: Stage-1:MAPRED
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key = src3.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1
 [MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 1 HINTED_MAPJOIN_LOCAL: 0 CONVERTED_MAPJOIN: 0 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 0
+RUN: Stage-5:MAPRED
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src2.value 
 where (src1.ds = '2008-04-08' or src1.ds = '2008-04-09' )and (src1.hr = '12' or src1.hr = '11')
@@ -40,6 +48,11 @@ Logs:
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 [MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 0 HINTED_MAPJOIN_LOCAL: 0 CONVERTED_MAPJOIN: 1 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 1
+RUN: Stage-6:CONDITIONAL
+RUN: Stage-4:MAPRED
+RUN: Stage-1:MAPRED
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value
 PREHOOK: type: QUERY
@@ -62,7 +75,7 @@ Obtaining error information
 
 Task failed!
 Task ID:
-  Stage-7
+  Stage-6
 
 Logs:
 
@@ -70,3 +83,11 @@ Logs:
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 [MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 0 HINTED_MAPJOIN_LOCAL: 0 CONVERTED_MAPJOIN: 2 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 2
+RUN: Stage-11:CONDITIONAL
+RUN: Stage-10:MAPRED
+RUN: Stage-1:MAPRED
+RUN: Stage-8:CONDITIONAL
+RUN: Stage-6:MAPRED
+RUN: Stage-2:MAPRED
+RUN: Stage-0:MOVE
+RUN: Stage-3:STATS
