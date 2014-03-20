@@ -177,7 +177,8 @@ public class HCatLoader extends HCatBaseLoader {
     throws IOException {
     Table table = phutil.getTable(location,
       hcatServerUri != null ? hcatServerUri : PigHCatUtil.getHCatServerUri(job),
-      PigHCatUtil.getHCatServerPrincipal(job));
+      PigHCatUtil.getHCatServerPrincipal(job),
+          job);   // Pass job to initialize metastore conf overrides
     List<FieldSchema> tablePartitionKeys = table.getPartitionKeys();
     String[] partitionKeys = new String[tablePartitionKeys.size()];
     for (int i = 0; i < tablePartitionKeys.size(); i++) {
@@ -193,7 +194,9 @@ public class HCatLoader extends HCatBaseLoader {
 
     Table table = phutil.getTable(location,
       hcatServerUri != null ? hcatServerUri : PigHCatUtil.getHCatServerUri(job),
-      PigHCatUtil.getHCatServerPrincipal(job));
+      // Pass job to initialize metastore conf overrides for embedded metastore case
+      // (hive.metastore.uris = "").
+      PigHCatUtil.getHCatServerPrincipal(job), job);
     HCatSchema hcatTableSchema = HCatUtil.getTableSchemaWithPtnCols(table);
     try {
       PigHCatUtil.validateHCatTableSchemaFollowsPigRules(hcatTableSchema);
