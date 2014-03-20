@@ -70,6 +70,9 @@ public class TestBeeLineWithArgs {
   @BeforeClass
   public static void preTests() throws Exception {
     HiveConf hiveConf = new HiveConf();
+    // Set to non-zk lock manager to prevent HS2 from trying to connect
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
+
     //  hiveConf.logVars(System.err);
     // System.err.flush();
 
@@ -427,7 +430,10 @@ public class TestBeeLineWithArgs {
 	  argList.add("--hivevar");
     argList.add("DUMMY_TBL=embedded_table");
     final String TEST_NAME = "testEmbeddedBeelineConnection";
-    final String SCRIPT_TEXT = "create table ${DUMMY_TBL} (d int);\nshow tables;\n";
+    // Set to non-zk lock manager to avoid trying to connect to zookeeper
+    final String SCRIPT_TEXT =
+        "set hive.lock.manager=org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager;\n" +
+        "create table ${DUMMY_TBL} (d int);\nshow tables;\n";
     final String EXPECTED_PATTERN = "embedded_table";
     testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
