@@ -5,6 +5,7 @@ POSTHOOK: query: create table smallTbl1(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smallTbl1
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table smallTbl1 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -15,6 +16,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@smalltbl1
 POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: create table smallTbl2(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -24,6 +30,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smallTbl2
 POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table smallTbl2 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -36,6 +43,11 @@ POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: create table smallTbl3(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -47,6 +59,7 @@ POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table smallTbl3 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -61,6 +74,11 @@ POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: create table smallTbl4(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -74,6 +92,7 @@ POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table smallTbl4 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -90,6 +109,11 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: create table bigTbl(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -105,6 +129,7 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table bigTbl
 select * from
 (
@@ -167,6 +192,11 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -316,6 +346,7 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-2:MAPRED
 580
 PREHOOK: query: -- Now run a query with two-way join, which should be converted into a
 -- map-join followed by groupby - two MR jobs overall 
@@ -470,6 +501,7 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-2:MAPRED
 580
 PREHOOK: query: -- Now run a query with two-way join, which should first be converted into a
 -- map-join followed by groupby and then finally into a single MR job.
@@ -637,6 +669,7 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-2:MAPRED
 270
 10
 10
@@ -661,6 +694,7 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: create table bigTbl(key1 string, key2 string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -678,6 +712,7 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-0:DDL
 PREHOOK: query: insert overwrite table bigTbl
 select * from
 (
@@ -743,6 +778,11 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-1:MAPRED
+RUN: Stage-7:CONDITIONAL
+RUN: Stage-4:MOVE
+RUN: Stage-0:MOVE
+RUN: Stage-2:STATS
 PREHOOK: query: -- First disable noconditionaltask
 EXPLAIN
 SELECT SUM(HASH(join3.key1)),
@@ -1421,6 +1461,15 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-20:CONDITIONAL
+RUN: Stage-18:MAPRED
+RUN: Stage-17:CONDITIONAL
+RUN: Stage-15:MAPRED
+RUN: Stage-14:CONDITIONAL
+RUN: Stage-12:MAPRED
+RUN: Stage-11:CONDITIONAL
+RUN: Stage-9:MAPRED
+RUN: Stage-4:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
 PREHOOK: query: -- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
 -- to 10000, which is large enough to fit all four small tables (smallTbl1 to smallTbl4).
@@ -1730,6 +1779,7 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-4:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
 PREHOOK: query: -- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
 -- to 200, which is large enough to fit two small tables. We will have two jobs to evaluate this
@@ -2057,6 +2107,8 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-11:MAPRED
+RUN: Stage-4:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
 PREHOOK: query: -- Enable noconditionaltask and but set the size of hive.auto.convert.join.noconditionaltask.size
 -- to 0. The plan will be the same as the one with a disabled nonconditionaltask.
@@ -2738,4 +2790,13 @@ POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+RUN: Stage-20:CONDITIONAL
+RUN: Stage-18:MAPRED
+RUN: Stage-17:CONDITIONAL
+RUN: Stage-15:MAPRED
+RUN: Stage-14:CONDITIONAL
+RUN: Stage-12:MAPRED
+RUN: Stage-11:CONDITIONAL
+RUN: Stage-9:MAPRED
+RUN: Stage-4:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780

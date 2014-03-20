@@ -488,9 +488,8 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         // create map join task and set big table as i
         MapRedTask newTask = convertTaskToMapJoinTask(newWork, pos);
 
-        MapWork mapWork = newTask.getWork().getMapWork();
         Operator<?> startOp = joinOp.getParentOperators().get(pos);
-        Set<String> aliases = GenMapRedUtils.findAliases(mapWork, startOp);
+        Set<String> aliases = GenMapRedUtils.findAliases(currWork, startOp);
 
         long aliasKnownSize = Utilities.sumOf(aliasToSize, aliases);
         if (cannotConvert(aliasKnownSize, aliasTotalKnownInputSize, ThresholdOfSmallTblSizeSum)) {
