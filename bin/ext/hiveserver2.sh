@@ -28,6 +28,6 @@ hiveserver2() {
 }
 
 hiveserver2_help() {
-  hiveserver2 -h
+  hiveserver2 -H
 }
 
