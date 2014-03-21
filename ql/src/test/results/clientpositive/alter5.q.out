@@ -49,13 +49,13 @@ PREHOOK: query: describe extended alter5 partition (dt='a')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
-col1                	string              	None                
-dt                  	string              	None                
+col1                	string              	                    
+dt                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
+dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
@@ -89,13 +89,13 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
-col1                	string              	None                
-dt                  	string              	None                
+col1                	string              	                    
+dt                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
+dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- Cleanup
@@ -191,13 +191,13 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
-col1                	string              	None                
-dt                  	string              	None                
+col1                	string              	                    
+dt                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
+dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
@@ -234,12 +234,12 @@ POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
-col1                	string              	None                
-dt                  	string              	None                
+col1                	string              	                    
+dt                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
+dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####

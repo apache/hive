@@ -37,6 +37,9 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
 /**
  * TestSerDe.
  *
@@ -94,7 +97,7 @@ public class TestSerDe extends AbstractSerDe {
     } else {
       columnNames = Arrays.asList(columnProperty.split(","));
       cachedObjectInspector = MetadataListStructObjectInspector
-          .getInstance(columnNames);
+          .getInstance(columnNames,Lists.newArrayList(Splitter.on('\0').split(tbl.getProperty("columns.comments"))));
     }
     LOG.info(getClass().getName() + ": initialized with columnNames: "
         + columnNames);

@@ -19,14 +19,14 @@ POSTHOOK: query: describe extended nzhang_part9
 POSTHOOK: type: DESCTABLE
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: explain

@@ -32,8 +32,8 @@ POSTHOOK: query: DESC FORMATTED table2
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-a                   	int                 	None                
-b                   	string              	None                
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

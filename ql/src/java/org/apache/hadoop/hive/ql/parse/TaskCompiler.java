@@ -221,7 +221,7 @@ public abstract class TaskCompiler {
       // generate a DDL task and make it a dependent task of the leaf
       CreateTableDesc crtTblDesc = qb.getTableDesc();
 
-      crtTblDesc.validate();
+      crtTblDesc.validate(conf);
 
       // Clear the output for CTAS since we don't need the output from the
       // mapredWork, the
@@ -339,7 +339,7 @@ public abstract class TaskCompiler {
   /*
    * Called at the beginning of the compile phase to have another chance to optimize the operator plan
    */
-  protected void optimizeOperatorPlan(ParseContext pCtxSet, Set<ReadEntity> inputs, 
+  protected void optimizeOperatorPlan(ParseContext pCtxSet, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException {
   }
 

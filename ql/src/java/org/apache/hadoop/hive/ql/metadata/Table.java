@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -610,18 +611,18 @@ public class Table implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
-    boolean getColsFromSerDe = SerDeUtils.shouldGetColsFromSerDe(
-      getSerializationLib());
-    if (!getColsFromSerDe) {
-      return tTable.getSd().getCols();
-    } else {
-      try {
+
+    try {
+      if (null == getSerializationLib() || Hive.get().getConf().getStringCollection(
+        ConfVars.SERDESUSINGMETASTOREFORSCHEMA.varname).contains(getSerializationLib())) {
+        return tTable.getSd().getCols();
+      } else {
         return Hive.getFieldsFromDeserializer(getTableName(), getDeserializer());
-      } catch (HiveException e) {
-        LOG.error("Unable to get field from serde: " + getSerializationLib(), e);
       }
-      return new ArrayList<FieldSchema>();
+    } catch (HiveException e) {
+      LOG.error("Unable to get field from serde: " + getSerializationLib(), e);
     }
+    return new ArrayList<FieldSchema>();
   }
 
   /**

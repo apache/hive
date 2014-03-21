@@ -33,8 +33,8 @@ POSTHOOK: query: describe columnTable_Bigdata
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: columntable_bigdata.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: columntable_bigdata.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 PREHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columntable_bigdata

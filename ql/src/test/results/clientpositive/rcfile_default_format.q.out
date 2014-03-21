@@ -11,7 +11,7 @@ POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
+key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -46,8 +46,8 @@ POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_ctas
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -97,7 +97,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
+key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -139,8 +139,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -182,8 +182,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	from deserializer   
-value               	string              	from deserializer   
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -225,7 +225,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	from deserializer   
+key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -262,8 +262,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	from deserializer   
-value               	string              	from deserializer   
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -305,7 +305,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	from deserializer   
+key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

@@ -23,10 +23,10 @@ PREHOOK: query: DESCRIBE EXTENDED base_tab
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED base_tab
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	string              	None                
-c                   	string              	None                
-d                   	string              	None                
+a                   	string              	                    
+b                   	string              	                    
+c                   	string              	                    
+d                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- table with non-default null format
@@ -141,8 +141,8 @@ PREHOOK: query: DESCRIBE EXTENDED null_tab3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED null_tab3
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	string              	None                
+a                   	string              	                    
+b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW CREATE TABLE null_tab3

@@ -456,6 +456,11 @@ public class HiveConf extends Configuration {
     HIVEDEFAULTRCFILESERDE("hive.default.rcfile.serde",
                            "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe"),
 
+    SERDESUSINGMETASTOREFORSCHEMA("hive.serdes.using.metastore.for.schema","org.apache.hadoop.hive.ql.io.orc.OrcSerde,"
+      + "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe,"
+      + "org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe,"
+      + "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe,org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe,"
+      + "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"),
     //Location of Hive run time structured log file
     HIVEHISTORYFILELOC("hive.querylog.location", System.getProperty("java.io.tmpdir") + File.separator + System.getProperty("user.name")),
 

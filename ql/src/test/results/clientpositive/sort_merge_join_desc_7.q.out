@@ -237,6 +237,7 @@ STAGE PLANS:
                         bucket_count 2
                         bucket_field_name key
                         columns key,value
+                        columns.comments  
                         columns.types int:string
 #### A masked pattern was here ####
                         name default.srcbucket_mapjoin_part_2
@@ -257,6 +258,7 @@ STAGE PLANS:
                           bucket_count 2
                           bucket_field_name key
                           columns key,value
+                          columns.comments  
                           columns.types int:string
 #### A masked pattern was here ####
                           name default.srcbucket_mapjoin_part_2
@@ -278,6 +280,7 @@ STAGE PLANS:
                         bucket_count 2
                         bucket_field_name key
                         columns key,value
+                        columns.comments  
                         columns.types int:string
 #### A masked pattern was here ####
                         name default.srcbucket_mapjoin_part_2
@@ -298,6 +301,7 @@ STAGE PLANS:
                           bucket_count 2
                           bucket_field_name key
                           columns key,value
+                          columns.comments  
                           columns.types int:string
 #### A masked pattern was here ####
                           name default.srcbucket_mapjoin_part_2
@@ -330,6 +334,7 @@ STAGE PLANS:
               bucket_count 2
               bucket_field_name key
               columns key,value
+              columns.comments  
               columns.types int:string
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part_1
@@ -350,6 +355,7 @@ STAGE PLANS:
                 bucket_count 2
                 bucket_field_name key
                 columns key,value
+                columns.comments  
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin_part_1
@@ -373,6 +379,7 @@ STAGE PLANS:
               bucket_count 2
               bucket_field_name key
               columns key,value
+              columns.comments  
               columns.types int:string
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part_1
@@ -393,6 +400,7 @@ STAGE PLANS:
                 bucket_count 2
                 bucket_field_name key
                 columns key,value
+                columns.comments  
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin_part_1

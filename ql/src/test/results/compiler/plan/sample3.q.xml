@@ -122,6 +122,10 @@
                                   <string>key,value</string> 
                                  </void> 
                                  <void method="put"> 
+                                  <string>columns.comments</string> 
+                                  <string>default<char code="#0"/>default</string> 
+                                 </void> 
+                                 <void method="put"> 
                                   <string>bucket_count</string> 
                                   <string>-1</string> 
                                  </void> 
@@ -293,6 +297,10 @@
                            <string>key,value</string> 
                           </void> 
                           <void method="put"> 
+                           <string>columns.comments</string> 
+                           <string>default<char code="#0"/>default</string> 
+                          </void> 
+                          <void method="put"> 
                            <string>bucket_count</string> 
                            <string>-1</string> 
                           </void> 
@@ -447,6 +455,10 @@
                        <string>key,value</string> 
                       </void> 
                       <void method="put"> 
+                       <string>columns.comments</string> 
+                       <string>default<char code="#0"/>default</string> 
+                      </void> 
+                      <void method="put"> 
                        <string>bucket_count</string> 
                        <string>-1</string> 
                       </void> 
@@ -588,6 +600,10 @@
            <string>1</string> 
           </void> 
           <void method="put"> 
+           <string>columns.comments</string> 
+           <string><char code="#0"/></string> 
+          </void> 
+          <void method="put"> 
            <string>bucket_count</string> 
            <string>2</string> 
           </void> 
@@ -620,72 +636,76 @@
           <void property="properties"> 
            <object class="java.util.Properties"> 
             <void method="put"> 
-             <string>name</string> 
-             <string>default.srcbucket</string> 
-            </void> 
-            <void method="put"> 
-             <string>numFiles</string> 
-             <string>2</string> 
-            </void> 
-            <void method="put"> 
              <string>columns.types</string> 
              <string>int:string</string> 
-            </void> 
-            <void method="put"> 
-             <string>bucket_field_name</string> 
-             <string>key</string> 
-            </void> 
-            <void method="put"> 
-             <string>serialization.ddl</string> 
-             <string>struct srcbucket { i32 key, string value}</string> 
-            </void> 
-            <void method="put"> 
-             <string>columns</string> 
-             <string>key,value</string> 
-            </void> 
-            <void method="put"> 
-             <string>serialization.format</string> 
-             <string>1</string> 
-            </void> 
-            <void method="put"> 
-             <string>rawDataSize</string> 
-             <string>0</string> 
-            </void> 
-            <void method="put"> 
-             <string>numRows</string> 
-             <string>0</string> 
-            </void> 
-            <void method="put"> 
-             <string>bucket_count</string> 
-             <string>2</string> 
-            </void> 
-            <void method="put"> 
-             <string>serialization.lib</string> 
-             <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-            </void> 
-            <void method="put"> 
-             <string>COLUMN_STATS_ACCURATE</string> 
-             <string>true</string> 
-            </void> 
-            <void method="put"> 
-             <string>file.inputformat</string> 
-             <string>org.apache.hadoop.mapred.TextInputFormat</string> 
-            </void> 
-            <void method="put"> 
-             <string>totalSize</string> 
-             <string>11603</string> 
-            </void> 
-            <void method="put"> 
-             <string>file.outputformat</string> 
-             <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
             </void> 
             <void method="put"> 
              <string>location</string> 
              #### A masked pattern was here #### 
             </void> 
             <void method="put"> 
+             <string>columns</string> 
+             <string>key,value</string> 
+            </void> 
+            <void method="put"> 
+             <string>COLUMN_STATS_ACCURATE</string> 
+             <string>true</string> 
+            </void> 
+            <void method="put"> 
+             <string>serialization.format</string> 
+             <string>1</string> 
+            </void> 
+            <void method="put"> 
+             <string>numRows</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
+             <string>numFiles</string> 
+             <string>2</string> 
+            </void> 
+            <void method="put"> 
+             <string>serialization.ddl</string> 
+             <string>struct srcbucket { i32 key, string value}</string> 
+            </void> 
+            <void method="put"> 
              <string>transient_lastDdlTime</string> 
              #### A masked pattern was here #### 
+            </void> 
+            <void method="put"> 
+             <string>rawDataSize</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
+             <string>columns.comments</string> 
+             <string><char code="#0"/></string> 
+            </void> 
+            <void method="put"> 
+             <string>totalSize</string> 
+             <string>11603</string> 
+            </void> 
+            <void method="put"> 
+             <string>bucket_count</string> 
+             <string>2</string> 
+            </void> 
+            <void method="put"> 
+             <string>file.outputformat</string> 
+             <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
+            </void> 
+            <void method="put"> 
+             <string>serialization.lib</string> 
+             <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+            </void> 
+            <void method="put"> 
+             <string>bucket_field_name</string> 
+             <string>key</string> 
+            </void> 
+            <void method="put"> 
+             <string>file.inputformat</string> 
+             <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+            </void> 
+            <void method="put"> 
+             <string>name</string> 
+             <string>default.srcbucket</string> 
             </void> 
            </object> 
           </void> 
@@ -1179,72 +1199,76 @@
         <void property="properties"> 
          <object class="java.util.Properties"> 
           <void method="put"> 
-           <string>name</string> 
-           <string>default.srcbucket</string> 
-          </void> 
-          <void method="put"> 
-           <string>numFiles</string> 
-           <string>2</string> 
-          </void> 
-          <void method="put"> 
            <string>columns.types</string> 
            <string>int:string</string> 
-          </void> 
-          <void method="put"> 
-           <string>bucket_field_name</string> 
-           <string>key</string> 
-          </void> 
-          <void method="put"> 
-           <string>serialization.ddl</string> 
-           <string>struct srcbucket { i32 key, string value}</string> 
-          </void> 
-          <void method="put"> 
-           <string>columns</string> 
-           <string>key,value</string> 
-          </void> 
-          <void method="put"> 
-           <string>serialization.format</string> 
-           <string>1</string> 
-          </void> 
-          <void method="put"> 
-           <string>rawDataSize</string> 
-           <string>0</string> 
-          </void> 
-          <void method="put"> 
-           <string>numRows</string> 
-           <string>0</string> 
-          </void> 
-          <void method="put"> 
-           <string>bucket_count</string> 
-           <string>2</string> 
-          </void> 
-          <void method="put"> 
-           <string>serialization.lib</string> 
-           <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-          </void> 
-          <void method="put"> 
-           <string>COLUMN_STATS_ACCURATE</string> 
-           <string>true</string> 
-          </void> 
-          <void method="put"> 
-           <string>file.inputformat</string> 
-           <string>org.apache.hadoop.mapred.TextInputFormat</string> 
-          </void> 
-          <void method="put"> 
-           <string>totalSize</string> 
-           <string>11603</string> 
-          </void> 
-          <void method="put"> 
-           <string>file.outputformat</string> 
-           <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
           </void> 
           <void method="put"> 
            <string>location</string> 
            #### A masked pattern was here #### 
           </void> 
           <void method="put"> 
+           <string>columns</string> 
+           <string>key,value</string> 
+          </void> 
+          <void method="put"> 
+           <string>COLUMN_STATS_ACCURATE</string> 
+           <string>true</string> 
+          </void> 
+          <void method="put"> 
+           <string>serialization.format</string> 
+           <string>1</string> 
+          </void> 
+          <void method="put"> 
+           <string>numRows</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
+           <string>numFiles</string> 
+           <string>2</string> 
+          </void> 
+          <void method="put"> 
+           <string>serialization.ddl</string> 
+           <string>struct srcbucket { i32 key, string value}</string> 
+          </void> 
+          <void method="put"> 
            <string>transient_lastDdlTime</string> 
            #### A masked pattern was here #### 
+          </void> 
+          <void method="put"> 
+           <string>rawDataSize</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
+           <string>columns.comments</string> 
+           <string><char code="#0"/></string> 
+          </void> 
+          <void method="put"> 
+           <string>totalSize</string> 
+           <string>11603</string> 
+          </void> 
+          <void method="put"> 
+           <string>bucket_count</string> 
+           <string>2</string> 
+          </void> 
+          <void method="put"> 
+           <string>file.outputformat</string> 
+           <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
+          </void> 
+          <void method="put"> 
+           <string>serialization.lib</string> 
+           <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+          </void> 
+          <void method="put"> 
+           <string>bucket_field_name</string> 
+           <string>key</string> 
+          </void> 
+          <void method="put"> 
+           <string>file.inputformat</string> 
+           <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+          </void> 
+          <void method="put"> 
+           <string>name</string> 
+           <string>default.srcbucket</string> 
           </void> 
          </object> 
         </void> 

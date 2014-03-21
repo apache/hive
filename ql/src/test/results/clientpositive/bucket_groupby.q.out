@@ -9,14 +9,14 @@ PREHOOK: query: describe extended clustergroupby
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended clustergroupby
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
-value               	string              	None                
-ds                  	string              	None                
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table clustergroupby clustered by (key) into 1 buckets
@@ -126,14 +126,14 @@ POSTHOOK: query: describe extended clustergroupby
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key                 	string              	None                
-value               	string              	None                
-ds                  	string              	None                
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table clustergroupby partition (ds='101') select key, value from src distribute by key
@@ -1069,14 +1069,14 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key                 	string              	None                
-value               	string              	None                
-ds                  	string              	None                
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table clustergroupby partition (ds='102') select key, value from src distribute by value sort by key, value
@@ -1421,14 +1421,14 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key                 	string              	None                
-value               	string              	None                
-ds                  	string              	None                
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table clustergroupby partition (ds='103') select key, value from src distribute by value, key sort by key

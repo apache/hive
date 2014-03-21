@@ -33,28 +33,28 @@ PREHOOK: query: DESCRIBE EXTENDED INPUTDDL6
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL6
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
-value               	string              	None                
-ds                  	string              	None                
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-08')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
-value               	string              	None                
-ds                  	string              	None                
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS INPUTDDL6

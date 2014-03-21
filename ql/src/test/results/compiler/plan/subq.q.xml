@@ -416,6 +416,10 @@
            <string>key,value</string> 
           </void> 
           <void method="put"> 
+           <string>columns.comments</string> 
+           <string>default<char code="#0"/>default</string> 
+          </void> 
+          <void method="put"> 
            <string>bucket_count</string> 
            <string>-1</string> 
           </void> 
@@ -474,6 +478,10 @@
             <void method="put"> 
              <string>rawDataSize</string> 
              <string>0</string> 
+            </void> 
+            <void method="put"> 
+             <string>columns.comments</string> 
+             <string>default<char code="#0"/>default</string> 
             </void> 
             <void method="put"> 
              <string>numRows</string> 
@@ -935,6 +943,10 @@
           <void method="put"> 
            <string>rawDataSize</string> 
            <string>0</string> 
+          </void> 
+          <void method="put"> 
+           <string>columns.comments</string> 
+           <string>default<char code="#0"/>default</string> 
           </void> 
           <void method="put"> 
            <string>numRows</string> 

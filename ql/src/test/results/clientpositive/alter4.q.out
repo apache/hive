@@ -9,8 +9,8 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-key                 	int                 	None                
-value               	string              	None                
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE set_bucketing_test NOT CLUSTERED
@@ -25,8 +25,8 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-key                 	int                 	None                
-value               	string              	None                
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- Cleanup
@@ -79,8 +79,8 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-key                 	int                 	None                
-value               	string              	None                
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE set_bucketing_test NOT CLUSTERED
@@ -95,8 +95,8 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-key                 	int                 	None                
-value               	string              	None                
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE set_bucketing_test

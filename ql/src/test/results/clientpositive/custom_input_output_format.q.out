@@ -13,8 +13,8 @@ PREHOOK: query: DESCRIBE EXTENDED src1_rot13_iof
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED src1_rot13_iof
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM src1 ORDER BY key, value

@@ -9,7 +9,7 @@ PREHOOK: query: DESC EXTENDED table_p1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESC EXTENDED table_p1
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
+a                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE table_p2 LIKE table_p1
@@ -23,7 +23,7 @@ PREHOOK: query: DESC EXTENDED table_p2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESC EXTENDED table_p2
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
+a                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE table_p3 AS SELECT * FROM table_p1
@@ -37,6 +37,6 @@ PREHOOK: query: DESC EXTENDED table_p3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESC EXTENDED table_p3
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
+a                   	string              	                    
 	 	 
 #### A masked pattern was here ####

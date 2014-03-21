@@ -110,14 +110,14 @@ POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table T2 partition (ds = '2010-06-21', hr = '1') select key, value from src where key > 10
@@ -150,14 +150,14 @@ POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table T2 partition (ds = '2010-06-21', hr='1') select /*+ HOLD_DDLTIME */ key, value from src where key > 10
@@ -194,14 +194,14 @@ POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table T2 partition (ds='2010-06-01', hr='1') select key, value from src where key > 10
@@ -242,13 +242,13 @@ POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
