@@ -49,14 +49,14 @@ POSTHOOK: query: describe formatted dummy partition (ds='2008', hr='11')
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2008, 11]          	 
@@ -89,14 +89,14 @@ POSTHOOK: query: describe formatted dummy partition (ds='2008', hr='12')
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2008, 12]          	 
@@ -174,14 +174,14 @@ POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[10, 11]            	 
@@ -218,14 +218,14 @@ POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[10, 12]            	 
@@ -335,12 +335,12 @@ POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(nam
 POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	None                
+key                 	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-hr                  	int                 	None                
+hr                  	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1997]              	 
@@ -381,12 +381,12 @@ POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(nam
 POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	None                
+key                 	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-hr                  	int                 	None                
+hr                  	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1994]              	 
@@ -427,12 +427,12 @@ POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(nam
 POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	None                
+key                 	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-hr                  	int                 	None                
+hr                  	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1998]              	 
@@ -473,12 +473,12 @@ POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(nam
 POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	None                
+key                 	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-hr                  	int                 	None                
+hr                  	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1996]              	 
