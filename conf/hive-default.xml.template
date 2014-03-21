@@ -1876,6 +1876,17 @@
 </property>
 
 <property>
+  <name>hive.display.partition.cols.separately</name>
+  <value>true</value>
+  <description>
+    In older Hive version (0.10 and earlier) no distinction was made between
+    partition columns or non-partition columns while displaying columns in describe
+    table. From 0.12 onwards, they are displayed separately. This flag will let you
+    get old behavior, if desired. See, test-case in patch for HIVE-6689.
+  </description>
+</property>
+
+<property>
   <name>hive.transform.escape.input</name>
   <value>false</value>
   <description>
