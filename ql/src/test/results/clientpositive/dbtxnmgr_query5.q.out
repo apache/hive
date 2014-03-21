@@ -37,14 +37,14 @@ PREHOOK: query: describe T1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe T1
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
-val                 	string              	None                
-ds                  	string              	None                
+key                 	string              	                    
+val                 	string              	                    
+ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 PREHOOK: query: drop view V1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: foo@v1

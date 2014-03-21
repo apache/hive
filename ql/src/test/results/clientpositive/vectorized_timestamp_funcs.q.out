@@ -27,8 +27,8 @@ LIMIT 40
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@alltypesorc_string
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 PREHOOK: query: CREATE TABLE alltypesorc_wrong(stimestamp1 string) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -36,8 +36,8 @@ POSTHOOK: query: CREATE TABLE alltypesorc_wrong(stimestamp1 string) STORED AS OR
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypesorc_wrong
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 PREHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT 'abcd' FROM alltypesorc LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -46,8 +46,8 @@ POSTHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT 'abcd' FROM alltypes
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@alltypesorc_wrong
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 PREHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '2000:01:01 00-00-00' FROM alltypesorc LIMIT 1
 PREHOOK: type: QUERY
@@ -57,8 +57,8 @@ POSTHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '2000:01:01 00-00-00
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@alltypesorc_wrong
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 PREHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '0000-00-00 99:99:99' FROM alltypesorc LIMIT 1
@@ -69,8 +69,8 @@ POSTHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '0000-00-00 99:99:99
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@alltypesorc_wrong
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
@@ -98,8 +98,8 @@ POSTHOOK: query: EXPLAIN SELECT
   second(ctimestamp1)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
@@ -159,8 +159,8 @@ FROM alltypesorc_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
@@ -228,8 +228,8 @@ POSTHOOK: query: EXPLAIN SELECT
   second(stimestamp1)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
@@ -289,8 +289,8 @@ FROM alltypesorc_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
@@ -358,8 +358,8 @@ POSTHOOK: query: EXPLAIN SELECT
   second(ctimestamp1) = second(stimestamp1)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
@@ -421,8 +421,8 @@ FROM alltypesorc_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
@@ -492,8 +492,8 @@ EXPLAIN SELECT
   second(stimestamp1)
 FROM alltypesorc_wrong
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
@@ -553,8 +553,8 @@ FROM alltypesorc_wrong
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_wrong
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []

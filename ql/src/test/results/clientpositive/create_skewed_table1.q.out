@@ -25,8 +25,8 @@ POSTHOOK: query: describe formatted list_bucket_single_2
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -56,8 +56,8 @@ POSTHOOK: query: describe formatted list_bucket_single
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -87,9 +87,9 @@ POSTHOOK: query: describe formatted list_bucket_multiple
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-col1                	string              	None                
-col2                	int                 	None                
-col3                	string              	None                
+col1                	string              	                    
+col2                	int                 	                    
+col3                	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -499,12 +500,12 @@ public class Partition implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
-    if (!SerDeUtils.shouldGetColsFromSerDe(
-        tPartition.getSd().getSerdeInfo().getSerializationLib())) {
-      return tPartition.getSd().getCols();
-    }
 
     try {
+      if (Hive.get().getConf().getStringCollection(ConfVars.SERDESUSINGMETASTOREFORSCHEMA.varname)
+        .contains(tPartition.getSd().getSerdeInfo().getSerializationLib())) {
+        return tPartition.getSd().getCols();
+      }
       return Hive.getFieldsFromDeserializer(table.getTableName(), getDeserializer());
     } catch (HiveException e) {
       LOG.error("Unable to get cols from serde: " +

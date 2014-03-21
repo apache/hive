@@ -35,8 +35,8 @@ PREHOOK: query: DESCRIBE EXTENDED dest1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED dest1
 POSTHOOK: type: DESCTABLE
-key                 	int                 	None                
-value               	string              	None                
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: FROM src

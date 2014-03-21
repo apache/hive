@@ -45,7 +45,7 @@ PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
+col                 	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl1 disable offline
@@ -60,7 +60,7 @@ PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
+col                 	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from tbl1
@@ -146,13 +146,13 @@ PREHOOK: query: desc extended tbl2 partition (p='p1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2 partition (p='p1')
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
-p                   	string              	None                
+col                 	string              	                    
+p                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p                   	string              	None                
+p                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 enable offline
@@ -167,13 +167,13 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
-p                   	string              	None                
+col                 	string              	                    
+p                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p                   	string              	None                
+p                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 enable no_drop
@@ -188,13 +188,13 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
-p                   	string              	None                
+col                 	string              	                    
+p                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p                   	string              	None                
+p                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 drop partition (p='p3')
@@ -217,13 +217,13 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
-p                   	string              	None                
+col                 	string              	                    
+p                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p                   	string              	None                
+p                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 disable no_drop
@@ -238,13 +238,13 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
-p                   	string              	None                
+col                 	string              	                    
+p                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p                   	string              	None                
+p                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from tbl2 where p='p2'
@@ -280,13 +280,13 @@ PREHOOK: query: desc extended tbl2 partition (p='p1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2 partition (p='p1')
 POSTHOOK: type: DESCTABLE
-col                 	string              	None                
-p                   	string              	None                
+col                 	string              	                    
+p                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p                   	string              	None                
+p                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from tbl2 where p='p1'

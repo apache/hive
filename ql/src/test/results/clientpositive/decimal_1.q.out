@@ -21,9 +21,9 @@ PREHOOK: query: desc decimal_1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc decimal_1
 POSTHOOK: type: DESCTABLE
-t                   	decimal(4,2)        	from deserializer   
-u                   	decimal(5,0)        	from deserializer   
-v                   	decimal(10,0)       	from deserializer   
+t                   	decimal(4,2)        	                    
+u                   	decimal(5,0)        	                    
+v                   	decimal(10,0)       	                    
 PREHOOK: query: insert overwrite table decimal_1
   select cast('17.29' as decimal(4,2)), 3.1415926BD, 3115926.54321BD from src tablesample (1 rows)
 PREHOOK: type: QUERY

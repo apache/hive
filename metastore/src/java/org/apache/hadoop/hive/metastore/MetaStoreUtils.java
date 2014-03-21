@@ -202,7 +202,7 @@ public class MetaStoreUtils {
           }
           params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.FALSE);
         } else {
-          params.remove(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK);	
+          params.remove(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK);
           params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.TRUE);
         }
       }
@@ -233,7 +233,7 @@ public class MetaStoreUtils {
     if(newPart.getParameters().containsKey(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK)) {
       return true;
     }
-    
+
     // requires to calculate stats if new and old have different fast stats
     if ((oldPart != null) && (oldPart.getParameters() != null)) {
       for (String stat : StatsSetupConst.fastStats) {
@@ -472,14 +472,14 @@ public class MetaStoreUtils {
     }
     return false;
   }
-  
+
   /*
    * At the Metadata level there are no restrictions on Column Names.
    */
   public static final boolean validateColumnName(String name) {
     return true;
   }
-  
+
   static public String validateTblColumns(List<FieldSchema> cols) {
     for (FieldSchema fieldSchema : cols) {
       if (!validateColumnName(fieldSchema.getName())) {
@@ -927,14 +927,17 @@ public class MetaStoreUtils {
     }
     StringBuilder colNameBuf = new StringBuilder();
     StringBuilder colTypeBuf = new StringBuilder();
+    StringBuilder colComment = new StringBuilder();
     boolean first = true;
     for (FieldSchema col : tblsd.getCols()) {
       if (!first) {
         colNameBuf.append(",");
         colTypeBuf.append(":");
+        colComment.append('\0');
       }
       colNameBuf.append(col.getName());
       colTypeBuf.append(col.getType());
+      colComment.append((null != col.getComment()) ? col.getComment() : "");
       first = false;
     }
     String colNames = colNameBuf.toString();
@@ -945,6 +948,7 @@ public class MetaStoreUtils {
     schema.setProperty(
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMN_TYPES,
         colTypes);
+    schema.setProperty("columns.comments", colComment.toString());
     if (sd.getCols() != null) {
       schema.setProperty(
           org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_DDL,
@@ -1150,7 +1154,7 @@ public class MetaStoreUtils {
 
   private static final String FROM_SERIALIZER = "from deserializer";
   private static String determineFieldComment(String comment) {
-    return (comment == null || comment.isEmpty()) ? FROM_SERIALIZER : comment;
+    return (comment == null) ? FROM_SERIALIZER : comment;
   }
 
   /**
@@ -1235,6 +1239,7 @@ public class MetaStoreUtils {
    * Filter that filters out hidden files
    */
   private static final PathFilter hiddenFileFilter = new PathFilter() {
+    @Override
     public boolean accept(Path p) {
       String name = p.getName();
       return !name.startsWith("_") && !name.startsWith(".");

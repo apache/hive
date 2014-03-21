@@ -56,11 +56,11 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_create
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-str                 	string              	from deserializer   
-mp                  	map<string,string>  	from deserializer   
-lst                 	array<string>       	from deserializer   
-strct               	struct<A:string,B:string>	from deserializer   
+id                  	int                 	                    
+str                 	string              	                    
+mp                  	map<string,string>  	                    
+lst                 	array<string>       	                    
+strct               	struct<A:string,B:string>	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

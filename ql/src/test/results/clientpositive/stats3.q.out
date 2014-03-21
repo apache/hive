@@ -46,6 +46,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns col1
+                columns.comments 
                 columns.types string
 #### A masked pattern was here ####
                 name default.hive_test_src
@@ -73,7 +74,7 @@ POSTHOOK: query: desc formatted hive_test_src
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-col1                	string              	None                
+col1                	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -224,13 +225,13 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-col1                	string              	None                
+col1                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-pcol1               	string              	None                
-pcol2               	string              	None                
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

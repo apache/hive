@@ -311,6 +311,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns deptid,deptname
+              columns.comments  
               columns.types int:string
               field.delim |
 #### A masked pattern was here ####
@@ -331,6 +332,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns deptid,deptname
+                columns.comments  
                 columns.types int:string
                 field.delim |
 #### A masked pattern was here ####
@@ -355,6 +357,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns lastname,deptid
+              columns.comments  
               columns.types string:int
               field.delim |
 #### A masked pattern was here ####
@@ -375,6 +378,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns lastname,deptid
+                columns.comments  
                 columns.types string:int
                 field.delim |
 #### A masked pattern was here ####
@@ -549,6 +553,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns deptid,deptname
+              columns.comments  
               columns.types int:string
               field.delim |
 #### A masked pattern was here ####
@@ -569,6 +574,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns deptid,deptname
+                columns.comments  
                 columns.types int:string
                 field.delim |
 #### A masked pattern was here ####
@@ -593,6 +599,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns lastname,deptid
+              columns.comments  
               columns.types string:int
               field.delim |
 #### A masked pattern was here ####
@@ -613,6 +620,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns lastname,deptid
+                columns.comments  
                 columns.types string:int
                 field.delim |
 #### A masked pattern was here ####
@@ -787,6 +795,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns deptid,deptname
+              columns.comments  
               columns.types int:string
               field.delim |
 #### A masked pattern was here ####
@@ -807,6 +816,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns deptid,deptname
+                columns.comments  
                 columns.types int:string
                 field.delim |
 #### A masked pattern was here ####
@@ -831,6 +841,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns lastname,deptid
+              columns.comments  
               columns.types string:int
               field.delim |
 #### A masked pattern was here ####
@@ -851,6 +862,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns lastname,deptid
+                columns.comments  
                 columns.types string:int
                 field.delim |
 #### A masked pattern was here ####
@@ -875,6 +887,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns state,locid,zip,year
+              columns.comments    
               columns.types string:int:bigint:int
               field.delim |
 #### A masked pattern was here ####
@@ -895,6 +908,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns state,locid,zip,year
+                columns.comments    
                 columns.types string:int:bigint:int
                 field.delim |
 #### A masked pattern was here ####
@@ -1072,6 +1086,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns deptid,deptname
+              columns.comments  
               columns.types int:string
               field.delim |
 #### A masked pattern was here ####
@@ -1092,6 +1107,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns deptid,deptname
+                columns.comments  
                 columns.types int:string
                 field.delim |
 #### A masked pattern was here ####
@@ -1116,6 +1132,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns lastname,deptid
+              columns.comments  
               columns.types string:int
               field.delim |
 #### A masked pattern was here ####
@@ -1136,6 +1153,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns lastname,deptid
+                columns.comments  
                 columns.types string:int
                 field.delim |
 #### A masked pattern was here ####
@@ -1160,6 +1178,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns state,locid,zip,year
+              columns.comments    
               columns.types string:int:bigint:int
               field.delim |
 #### A masked pattern was here ####
@@ -1180,6 +1199,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns state,locid,zip,year
+                columns.comments    
                 columns.types string:int:bigint:int
                 field.delim |
 #### A masked pattern was here ####
@@ -1342,6 +1362,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns deptid,deptname
+              columns.comments  
               columns.types int:string
               field.delim |
 #### A masked pattern was here ####
@@ -1362,6 +1383,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns deptid,deptname
+                columns.comments  
                 columns.types int:string
                 field.delim |
 #### A masked pattern was here ####
@@ -1386,6 +1408,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns lastname,deptid
+              columns.comments  
               columns.types string:int
               field.delim |
 #### A masked pattern was here ####
@@ -1406,6 +1429,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns lastname,deptid
+                columns.comments  
                 columns.types string:int
                 field.delim |
 #### A masked pattern was here ####
@@ -1600,6 +1624,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns deptid,deptname
+              columns.comments  
               columns.types int:string
               field.delim |
 #### A masked pattern was here ####
@@ -1620,6 +1645,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns deptid,deptname
+                columns.comments  
                 columns.types int:string
                 field.delim |
 #### A masked pattern was here ####
@@ -1644,6 +1670,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns lastname,deptid
+              columns.comments  
               columns.types string:int
               field.delim |
 #### A masked pattern was here ####
@@ -1664,6 +1691,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns lastname,deptid
+                columns.comments  
                 columns.types string:int
                 field.delim |
 #### A masked pattern was here ####
@@ -1688,6 +1716,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns state,locid,zip,year
+              columns.comments    
               columns.types string:int:bigint:int
               field.delim |
 #### A masked pattern was here ####
@@ -1708,6 +1737,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns state,locid,zip,year
+                columns.comments    
                 columns.types string:int:bigint:int
                 field.delim |
 #### A masked pattern was here ####

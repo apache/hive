@@ -2,10 +2,12 @@ PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 
 create table nzhang_Tmp(a int, b string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 
 create table nzhang_Tmp(a int, b string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_Tmp
 PREHOOK: query: select * from nzhang_Tmp
 PREHOOK: type: QUERY
@@ -127,8 +129,8 @@ POSTHOOK: query: describe formatted nzhang_CTAS1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-k                   	string              	None                
-value               	string              	None                
+k                   	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -267,8 +269,8 @@ POSTHOOK: query: describe formatted nzhang_CTAS2
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -408,8 +410,8 @@ POSTHOOK: query: describe formatted nzhang_CTAS3
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-half_key            	double              	None                
-conb                	string              	None                
+half_key            	double              	                    
+conb                	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -471,8 +473,8 @@ POSTHOOK: query: describe formatted nzhang_CTAS3
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-half_key            	double              	None                
-conb                	string              	None                
+half_key            	double              	                    
+conb                	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -612,8 +614,8 @@ POSTHOOK: query: describe formatted nzhang_CTAS4
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -722,6 +724,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments default default
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
@@ -741,6 +744,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
+                columns.comments default default
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src
@@ -880,8 +884,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@nzhang_ctas5
 PREHOOK: query: create table nzhang_ctas6 (key string, `to` string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table nzhang_ctas6 (key string, `to` string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_ctas6
 PREHOOK: query: insert overwrite table nzhang_ctas6 select key, value from src tablesample (10 rows)
 PREHOOK: type: QUERY

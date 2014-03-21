@@ -159,7 +159,6 @@ import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
@@ -2899,9 +2898,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } catch (NoSuchObjectException e) {
           throw new UnknownTableException(e.getMessage());
         }
-        boolean getColsFromSerDe = SerDeUtils.shouldGetColsFromSerDe(
-            tbl.getSd().getSerdeInfo().getSerializationLib());
-        if (!getColsFromSerDe) {
+        if (null == tbl.getSd().getSerdeInfo().getSerializationLib() ||
+          hiveConf.getStringCollection(ConfVars.SERDESUSINGMETASTOREFORSCHEMA.varname).contains
+          (tbl.getSd().getSerdeInfo().getSerializationLib())) {
           ret = tbl.getSd().getCols();
         } else {
           try {

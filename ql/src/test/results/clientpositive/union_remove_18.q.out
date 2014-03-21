@@ -12,6 +12,7 @@ PREHOOK: query: -- This is to test the union->selectstar->filesink optimization
 
 create table inputTbl1(key string, ds string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
 -- Union of 2 map-reduce subqueries is performed followed by select star and a file sink
 -- There is no need to write the temporary results of the sub-queries, and then read them 
@@ -26,17 +27,22 @@ POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
 
 create table inputTbl1(key string, ds string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputTbl1
 PREHOOK: query: create table outputTbl1(key string, values bigint) partitioned by (ds string) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table outputTbl1(key string, values bigint) partitioned by (ds string) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
 PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
 PREHOOK: Output: default@inputtbl1
 POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
 POSTHOOK: Output: default@inputtbl1
 PREHOOK: query: explain
 insert overwrite table outputTbl1 partition (ds)
@@ -213,13 +219,13 @@ POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).key EXPRESSION [(inputtbl1)inputt
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-values              	bigint              	None                
+key                 	string              	                    
+values              	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

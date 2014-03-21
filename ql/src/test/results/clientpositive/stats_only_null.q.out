@@ -285,15 +285,15 @@ POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temp
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-a                   	double              	None                
-b                   	int                 	None                
-c                   	string              	None                
-d                   	smallint            	None                
+a                   	double              	                    
+b                   	int                 	                    
+c                   	string              	                    
+d                   	smallint            	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
+dt                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2010]              	 
@@ -338,15 +338,15 @@ POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temp
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-a                   	double              	None                
-b                   	int                 	None                
-c                   	string              	None                
-d                   	smallint            	None                
+a                   	double              	                    
+b                   	int                 	                    
+c                   	string              	                    
+d                   	smallint            	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
+dt                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2011]              	 

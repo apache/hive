@@ -24,8 +24,8 @@ POSTHOOK: query: DESCRIBE FORMATTED table_db1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-name                	string              	None                
-value               	int                 	None                
+name                	string              	                    
+value               	int                 	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	db1                 	 
@@ -84,8 +84,8 @@ POSTHOOK: query: DESCRIBE FORMATTED table_db2
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-name                	string              	None                
-value               	int                 	None                
+name                	string              	                    
+value               	int                 	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	db2                 	 

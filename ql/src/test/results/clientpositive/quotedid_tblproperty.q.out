@@ -13,5 +13,5 @@ PREHOOK: query: describe xyz
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe xyz
 POSTHOOK: type: DESCTABLE
-valid_colname       	string              	from deserializer   
-invalid.colname     	string              	from deserializer   
+valid_colname       	string              	                    
+invalid.colname     	string              	                    
