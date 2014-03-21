@@ -81,11 +81,11 @@ POSTHOOK: Lineage: orc_create_people.last_name SIMPLE [(orc_create_people_stagin
 POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
-state               	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+state               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -185,11 +185,11 @@ POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)or
 POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
-state               	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+state               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -348,15 +348,15 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-state               	string              	None                
+state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
@@ -407,15 +407,15 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-state               	string              	None                
+state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Or]                	 
@@ -576,15 +576,15 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-state               	string              	None                
+state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
@@ -643,15 +643,15 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-state               	string              	None                
+state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Or]                	 
@@ -896,15 +896,15 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-state               	string              	None                
+state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
@@ -971,15 +971,15 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-state               	string              	None                
+state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Or]                	 
@@ -1210,15 +1210,15 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-state               	string              	None                
+state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
@@ -1293,15 +1293,15 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-state               	string              	None                
+state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Or]                	 
@@ -1739,15 +1739,15 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-state               	string              	None                
+state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
@@ -1830,15 +1830,15 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-address             	string              	from deserializer   
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-state               	string              	None                
+state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[OH]                	 
