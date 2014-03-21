@@ -42,6 +42,7 @@ import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
 
@@ -208,11 +209,19 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
   private String getUserName(TOpenSessionReq req) throws HiveSQLException {
     String userName = null;
+    // Kerberos
     if (hiveAuthFactory != null) {
-      userName = hiveAuthFactory.getRemoteUser(); // kerberos
+      userName = hiveAuthFactory.getRemoteUser();
     }
+    // Except kerberos, NOSASL
     if (userName == null) {
-      userName = TSetIpAddressProcessor.getUserName();  // except kerberos, nosasl
+      userName = TSetIpAddressProcessor.getUserName();
+    }
+    // Http transport mode.
+    // We set the thread local username, in ThriftHttpServlet.
+    if (cliService.getHiveConf().getVar(
+        ConfVars.HIVE_SERVER2_TRANSPORT_MODE).equalsIgnoreCase("http")) {
+      userName = SessionManager.getUserName();
     }
     if (userName == null) {
       userName = req.getUsername();
