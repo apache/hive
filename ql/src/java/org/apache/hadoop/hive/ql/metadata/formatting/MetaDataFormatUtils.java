@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -92,14 +93,14 @@ public final class MetaDataFormatUtils {
    * @return string with formatted column information
    */
   public static String getAllColumnsInformation(List<FieldSchema> cols,
-      List<FieldSchema> partCols, boolean printHeader, boolean isOutputPadded) {
+      List<FieldSchema> partCols, boolean printHeader, boolean isOutputPadded, boolean showPartColsSep) {
     StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
     if(printHeader){
       formatColumnsHeader(columnInformation);
     }
     formatAllFields(columnInformation, cols, isOutputPadded);
 
-    if ((partCols != null) && (!partCols.isEmpty())) {
+    if ((partCols != null) && !partCols.isEmpty() && showPartColsSep) {
       columnInformation.append(LINE_DELIM).append("# Partition Information")
       .append(LINE_DELIM);
       formatColumnsHeader(columnInformation);
@@ -371,7 +372,7 @@ public final class MetaDataFormatUtils {
     if ("json".equals(conf.get(HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text"))) {
       return new JsonMetaDataFormatter();
     } else {
-      return new TextMetaDataFormatter(conf.getIntVar(HiveConf.ConfVars.CLIPRETTYOUTPUTNUMCOLS));
+      return new TextMetaDataFormatter(conf.getIntVar(HiveConf.ConfVars.CLIPRETTYOUTPUTNUMCOLS), conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY));
     }
   }
 }
