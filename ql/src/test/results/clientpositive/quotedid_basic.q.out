@@ -11,9 +11,9 @@ PREHOOK: query: describe t1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe t1
 POSTHOOK: type: DESCTABLE
-x+1                 	string              	None                
-y&y                 	string              	None                
-!@#$%^&*()_q        	string              	None                
+x+1                 	string              	                    
+y&y                 	string              	                    
+!@#$%^&*()_q        	string              	                    
 PREHOOK: query: select `x+1`, `y&y`, `!@#$%^&*()_q` from t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
@@ -314,8 +314,8 @@ PREHOOK: query: describe t4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe t4
 POSTHOOK: type: DESCTABLE
-x+1`                	string              	None                
-y&y                 	string              	None                
+x+1`                	string              	                    
+y&y                 	string              	                    
 PREHOOK: query: insert into table t4 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

@@ -21,7 +21,7 @@ PREHOOK: query: DESCRIBE INPUTDDL5
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE INPUTDDL5
 POSTHOOK: type: DESCTABLE
-name                	string              	None                
+name                	string              	                    
 PREHOOK: query: SELECT INPUTDDL5.name from INPUTDDL5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputddl5

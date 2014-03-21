@@ -3198,11 +3198,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         cols = (part == null || tbl.getTableType() == TableType.VIRTUAL_VIEW) ?
             tbl.getCols() : part.getCols();
 
-            if (!descTbl.isFormatted()) {
-              if (tableName.equals(colPath)) {
-                cols.addAll(tbl.getPartCols());
-              }
-            }
+        if (!descTbl.isFormatted()) {
+          cols.addAll(tbl.getPartCols());
+        }
       } else {
         cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
       }
@@ -3504,8 +3502,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
               alterTbl.getProps());
         }
-        tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), tbl.
-            getDeserializer()));
+        if (!conf.getStringCollection(ConfVars.SERDESUSINGMETASTOREFORSCHEMA.varname)
+            .contains(serdeName)) {
+          tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), tbl.
+              getDeserializer()));
+        }
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
       if(part != null) {

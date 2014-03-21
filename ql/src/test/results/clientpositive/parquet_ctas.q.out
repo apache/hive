@@ -50,8 +50,8 @@ POSTHOOK: query: describe parquet_ctas
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
+key                 	int                 	                    
+value               	string              	                    
 PREHOOK: query: select * from parquet_ctas
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_ctas
@@ -87,8 +87,8 @@ POSTHOOK: query: describe parquet_ctas_advanced
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-_c0                 	int                 	from deserializer   
-_c1                 	string              	from deserializer   
+_c0                 	int                 	                    
+_c1                 	string              	                    
 PREHOOK: query: select * from parquet_ctas_advanced
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_ctas_advanced
@@ -124,8 +124,8 @@ POSTHOOK: query: describe parquet_ctas_alias
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-mykey               	int                 	from deserializer   
-myvalue             	string              	from deserializer   
+mykey               	int                 	                    
+myvalue             	string              	                    
 PREHOOK: query: select * from parquet_ctas_alias
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_ctas_alias
@@ -161,9 +161,9 @@ POSTHOOK: query: describe parquet_ctas_mixed
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key                 	int                 	from deserializer   
-_c1                 	int                 	from deserializer   
-myvalue             	string              	from deserializer   
+key                 	int                 	                    
+_c1                 	int                 	                    
+myvalue             	string              	                    
 PREHOOK: query: select * from parquet_ctas_mixed
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_ctas_mixed

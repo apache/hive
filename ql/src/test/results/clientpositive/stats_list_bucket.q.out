@@ -18,6 +18,7 @@ skewed by (c1, c2) on  (('466','val_466'),('287','val_287'),('82','val_82'))
 stored as directories
 stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: create table stats_list_bucket (
   c1 string,
   c2 string
@@ -26,6 +27,7 @@ skewed by (c1, c2) on  (('466','val_466'),('287','val_287'),('82','val_82'))
 stored as directories
 stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_list_bucket
 PREHOOK: query: -- Make sure we use hashed IDs during stats publishing.
 -- Try partitioned table with list bucketing.
@@ -55,14 +57,14 @@ POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(
 POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-c1                  	string              	None                
-c2                  	string              	None                
+c1                  	string              	                    
+c2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 11]    	 
@@ -72,6 +74,7 @@ Table:              	stats_list_bucket
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	4                   
 	numRows             	500                 
 	rawDataSize         	4812                
@@ -104,6 +107,7 @@ skewed by (c1, c2) on  (('466','val_466'),('287','val_287'),('82','val_82'))
 stored as directories
 stored as rcfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: -- Also try non-partitioned table with list bucketing.
 -- Stats should show the same number of rows.
 
@@ -115,6 +119,7 @@ skewed by (c1, c2) on  (('466','val_466'),('287','val_287'),('82','val_82'))
 stored as directories
 stored as rcfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_list_bucket_1
 POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -142,8 +147,8 @@ POSTHOOK: Lineage: stats_list_bucket_1.c1 SIMPLE [(src)src.FieldSchema(name:key,
 POSTHOOK: Lineage: stats_list_bucket_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-c1                  	string              	None                
-c2                  	string              	None                
+c1                  	string              	                    
+c2                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -153,11 +158,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	4                   
-	numPartitions       	0                   
 	numRows             	500                 
 	rawDataSize         	4812                
-	totalSize           	5522                
+	totalSize           	408                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

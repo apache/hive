@@ -130,12 +130,12 @@ POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSche
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-x                   	int                 	None                
+x                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -272,6 +272,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x
+              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.fact_daily
@@ -292,6 +293,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x
+                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -417,6 +419,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x
+              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.fact_daily
@@ -437,6 +440,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x
+                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -558,6 +562,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x
+              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.fact_daily
@@ -578,6 +583,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x
+                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 name default.fact_daily

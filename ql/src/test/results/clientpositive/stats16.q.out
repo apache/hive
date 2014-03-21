@@ -15,8 +15,8 @@ POSTHOOK: query: desc formatted stats16
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	None                
-value               	string              	None                
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -66,8 +66,8 @@ POSTHOOK: Lineage: stats16.key EXPRESSION [(src)src.FieldSchema(name:key, type:s
 POSTHOOK: Lineage: stats16.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	None                
-value               	string              	None                
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

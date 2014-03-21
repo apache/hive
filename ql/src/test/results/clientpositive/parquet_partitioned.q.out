@@ -44,13 +44,13 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_partitioned
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-id                  	int                 	from deserializer   
-str                 	string              	from deserializer   
+id                  	int                 	                    
+str                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

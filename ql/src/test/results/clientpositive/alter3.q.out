@@ -68,15 +68,15 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter3_renamed
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-col1                	string              	None                
-pcol1               	string              	None                
-pcol2               	string              	None                
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-pcol1               	string              	None                
-pcol2               	string              	None                
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: describe extended alter3_renamed partition (pCol1='test_part:', pcol2='test_part:')
@@ -84,15 +84,15 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter3_renamed partition (pCol1='test_part:', pcol2='test_part:')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-col1                	string              	None                
-pcol1               	string              	None                
-pcol2               	string              	None                
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-pcol1               	string              	None                
-pcol2               	string              	None                
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from alter3_renamed where pcol1='test_part:' and pcol2='test_part:'
@@ -143,15 +143,15 @@ POSTHOOK: query: describe extended alter3_like_renamed
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-col1                	string              	None                
-pcol1               	string              	None                
-pcol2               	string              	None                
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-pcol1               	string              	None                
-pcol2               	string              	None                
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- Cleanup
@@ -309,15 +309,15 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-col1                	string              	None                
-pcol1               	string              	None                
-pcol2               	string              	None                
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-pcol1               	string              	None                
-pcol2               	string              	None                
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED alter3_renamed PARTITION (pCol1='test_part:', pcol2='test_part:')
@@ -327,15 +327,15 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-col1                	string              	None                
-pcol1               	string              	None                
-pcol2               	string              	None                
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-pcol1               	string              	None                
-pcol2               	string              	None                
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM alter3_renamed WHERE pcol1='test_part:' AND pcol2='test_part:'
@@ -394,14 +394,14 @@ POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMP
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-col1                	string              	None                
-pcol1               	string              	None                
-pcol2               	string              	None                
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-pcol1               	string              	None                
-pcol2               	string              	None                
+pcol1               	string              	                    
+pcol2               	string              	                    
 	 	 
 #### A masked pattern was here ####

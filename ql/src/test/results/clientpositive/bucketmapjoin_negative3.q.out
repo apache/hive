@@ -273,6 +273,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.test1
@@ -294,6 +295,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test1
@@ -448,6 +450,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name value
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.test2
@@ -469,6 +472,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name value
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test2
@@ -612,6 +616,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.test1
@@ -633,6 +638,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test1
@@ -779,6 +785,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.test1
@@ -800,6 +807,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test1
@@ -946,6 +954,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.test1
@@ -967,6 +976,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test1
@@ -1113,6 +1123,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.test1
@@ -1134,6 +1145,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test1
@@ -1280,6 +1292,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name value
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.test2
@@ -1301,6 +1314,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name value
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test2
@@ -1447,6 +1461,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name value
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.test2
@@ -1468,6 +1483,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name value
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test2
@@ -1614,6 +1630,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.test3
@@ -1635,6 +1652,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test3

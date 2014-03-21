@@ -11,8 +11,8 @@ POSTHOOK: query: desc formatted alter_table_not_sorted
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
+a                   	int                 	                    
+b                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -49,8 +49,8 @@ POSTHOOK: query: desc formatted alter_table_not_sorted
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
+a                   	int                 	                    
+b                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

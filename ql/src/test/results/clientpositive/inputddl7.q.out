@@ -112,39 +112,39 @@ PREHOOK: query: DESCRIBE EXTENDED T1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T1
 POSTHOOK: type: DESCTABLE
-name                	string              	None                
+name                	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED T2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T2
 POSTHOOK: type: DESCTABLE
-name                	string              	None                
+name                	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
 POSTHOOK: type: DESCTABLE
-name                	string              	None                
-ds                  	string              	None                
+name                	string              	                    
+ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
 POSTHOOK: type: DESCTABLE
-name                	string              	None                
-ds                  	string              	None                
+name                	string              	                    
+ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####

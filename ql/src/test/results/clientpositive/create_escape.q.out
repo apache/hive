@@ -13,14 +13,14 @@ PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	string              	None                
+a                   	string              	                    
+b                   	string              	                    
 PREHOOK: query: DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	string              	None                
+a                   	string              	                    
+b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, '\\\t\\' FROM src WHERE key = 86

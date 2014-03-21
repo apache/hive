@@ -15,10 +15,10 @@ POSTHOOK: query: DESCRIBE FORMATTED testView
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
-ds                  	string              	None                
-hr                  	string              	None                
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -54,7 +54,7 @@ POSTHOOK: query: DESCRIBE FORMATTED testView
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-value               	string              	None                
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -98,8 +98,8 @@ POSTHOOK: query: DESCRIBE FORMATTED testView
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

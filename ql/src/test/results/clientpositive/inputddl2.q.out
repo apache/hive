@@ -28,13 +28,13 @@ PREHOOK: query: DESCRIBE INPUTDDL2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE INPUTDDL2
 POSTHOOK: type: DESCTABLE
-key                 	int                 	None                
-value               	string              	None                
-ds                  	string              	None                
-country             	string              	None                
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+country             	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-country             	string              	None                
+ds                  	string              	                    
+country             	string              	                    

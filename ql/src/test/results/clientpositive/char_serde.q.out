@@ -122,8 +122,8 @@ POSTHOOK: query: insert overwrite table char_serde_lb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_regex
 POSTHOOK: Output: default@char_serde_lb
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
 PREHOOK: query: select * from char_serde_lb limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_serde_lb
@@ -132,8 +132,8 @@ POSTHOOK: query: select * from char_serde_lb limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_lb
 #### A masked pattern was here ####
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
 474            	val_475             
 62             	val_63              
 468            	val_469             
@@ -147,8 +147,8 @@ POSTHOOK: query: select value, count(*) from char_serde_lb group by value limit 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_lb
 #### A masked pattern was here ####
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
 val_0               	3
 val_1               	2
 val_10              	1
@@ -173,8 +173,8 @@ create table  char_serde_ls (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_serde_ls
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
 PREHOOK: query: alter table char_serde_ls set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@char_serde_ls
@@ -183,8 +183,8 @@ POSTHOOK: query: alter table char_serde_ls set serde 'org.apache.hadoop.hive.ser
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@char_serde_ls
 POSTHOOK: Output: default@char_serde_ls
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
 PREHOOK: query: insert overwrite table char_serde_ls
   select key, value from char_serde_lb
 PREHOOK: type: QUERY
@@ -195,10 +195,10 @@ POSTHOOK: query: insert overwrite table char_serde_ls
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_lb
 POSTHOOK: Output: default@char_serde_ls
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: select * from char_serde_ls limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_serde_ls
@@ -207,10 +207,10 @@ POSTHOOK: query: select * from char_serde_ls limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_ls
 #### A masked pattern was here ####
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 474            	val_475             
 62             	val_63              
 468            	val_469             
@@ -224,10 +224,10 @@ POSTHOOK: query: select value, count(*) from char_serde_ls group by value limit 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_ls
 #### A masked pattern was here ####
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 val_0               	3
 val_1               	2
 val_10              	1
@@ -252,10 +252,10 @@ create table  char_serde_c (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_serde_c
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: alter table char_serde_c set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@char_serde_c
@@ -264,10 +264,10 @@ POSTHOOK: query: alter table char_serde_c set serde 'org.apache.hadoop.hive.serd
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@char_serde_c
 POSTHOOK: Output: default@char_serde_c
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: insert overwrite table char_serde_c
   select key, value from char_serde_ls
 PREHOOK: type: QUERY
@@ -278,12 +278,12 @@ POSTHOOK: query: insert overwrite table char_serde_c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_ls
 POSTHOOK: Output: default@char_serde_c
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: select * from char_serde_c limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_serde_c
@@ -292,12 +292,12 @@ POSTHOOK: query: select * from char_serde_c limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_c
 #### A masked pattern was here ####
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 474            	val_475             
 62             	val_63              
 468            	val_469             
@@ -311,12 +311,12 @@ POSTHOOK: query: select value, count(*) from char_serde_c group by value limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_c
 #### A masked pattern was here ####
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 val_0               	3
 val_1               	2
 val_10              	1
@@ -341,12 +341,12 @@ create table char_serde_lbc (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_serde_lbc
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: alter table char_serde_lbc set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@char_serde_lbc
@@ -355,12 +355,12 @@ POSTHOOK: query: alter table char_serde_lbc set serde 'org.apache.hadoop.hive.se
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@char_serde_lbc
 POSTHOOK: Output: default@char_serde_lbc
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: insert overwrite table char_serde_lbc
   select key, value from char_serde_c
 PREHOOK: type: QUERY
@@ -371,14 +371,14 @@ POSTHOOK: query: insert overwrite table char_serde_lbc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_c
 POSTHOOK: Output: default@char_serde_lbc
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: select * from char_serde_lbc limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_serde_lbc
@@ -387,14 +387,14 @@ POSTHOOK: query: select * from char_serde_lbc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_lbc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 474            	val_475             
 62             	val_63              
 468            	val_469             
@@ -408,14 +408,14 @@ POSTHOOK: query: select value, count(*) from char_serde_lbc group by value limit
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_lbc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 val_0               	3
 val_1               	2
 val_10              	1
@@ -440,14 +440,14 @@ create table char_serde_orc (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_serde_orc
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: alter table char_serde_orc set serde 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@char_serde_orc
@@ -456,14 +456,14 @@ POSTHOOK: query: alter table char_serde_orc set serde 'org.apache.hadoop.hive.ql
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@char_serde_orc
 POSTHOOK: Output: default@char_serde_orc
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: insert overwrite table char_serde_orc
   select key, value from char_serde_lbc
 PREHOOK: type: QUERY
@@ -474,16 +474,16 @@ POSTHOOK: query: insert overwrite table char_serde_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_lbc
 POSTHOOK: Output: default@char_serde_orc
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: select * from char_serde_orc limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_serde_orc
@@ -492,16 +492,16 @@ POSTHOOK: query: select * from char_serde_orc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:null), ]
 474            	val_475             
 62             	val_63              
 468            	val_469             
@@ -515,16 +515,16 @@ POSTHOOK: query: select value, count(*) from char_serde_orc group by value limit
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:null), ]
 val_0               	3
 val_1               	2
 val_10              	1
@@ -538,16 +538,16 @@ POSTHOOK: query: drop table if exists char_serde_regex
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_regex
 POSTHOOK: Output: default@char_serde_regex
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: drop table if exists char_serde_lb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_serde_lb
@@ -556,16 +556,16 @@ POSTHOOK: query: drop table if exists char_serde_lb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_lb
 POSTHOOK: Output: default@char_serde_lb
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: drop table if exists char_serde_ls
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_serde_ls
@@ -574,16 +574,16 @@ POSTHOOK: query: drop table if exists char_serde_ls
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_ls
 POSTHOOK: Output: default@char_serde_ls
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: drop table if exists char_serde_c
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_serde_c
@@ -592,16 +592,16 @@ POSTHOOK: query: drop table if exists char_serde_c
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_c
 POSTHOOK: Output: default@char_serde_c
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: drop table if exists char_serde_lbc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_serde_lbc
@@ -610,16 +610,16 @@ POSTHOOK: query: drop table if exists char_serde_lbc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_lbc
 POSTHOOK: Output: default@char_serde_lbc
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: drop table if exists char_serde_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_serde_orc
@@ -628,13 +628,13 @@ POSTHOOK: query: drop table if exists char_serde_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_orc
 POSTHOOK: Output: default@char_serde_orc
-POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
-POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_c.key SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_c.value SIMPLE [(char_serde_ls)char_serde_ls.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lbc.key SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_lbc.value SIMPLE [(char_serde_c)char_serde_c.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.key SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_ls.value SIMPLE [(char_serde_lb)char_serde_lb.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.key SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:key, type:char(15), comment:null), ]
+POSTHOOK: Lineage: char_serde_orc.value SIMPLE [(char_serde_lbc)char_serde_lbc.FieldSchema(name:value, type:char(20), comment:null), ]

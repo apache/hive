@@ -58,8 +58,8 @@ POSTHOOK: query: insert into table vsmb_bucket_1 select cint, cstring1 from allt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@vsmb_bucket_1
-POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 PREHOOK: query: insert into table vsmb_bucket_2 select cint, cstring1 from alltypesorc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -68,10 +68,10 @@ POSTHOOK: query: insert into table vsmb_bucket_2 select cint, cstring1 from allt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@vsmb_bucket_2
-POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 PREHOOK: query: insert into table vsmb_bucket_RC select cint, cstring1 from alltypesorc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -80,12 +80,12 @@ POSTHOOK: query: insert into table vsmb_bucket_RC select cint, cstring1 from all
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@vsmb_bucket_rc
-POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 PREHOOK: query: insert into table vsmb_bucket_TXT select cint, cstring1 from alltypesorc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -94,28 +94,28 @@ POSTHOOK: query: insert into table vsmb_bucket_TXT select cint, cstring1 from al
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@vsmb_bucket_txt
-POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 PREHOOK: query: explain
 select /*+MAPJOIN(a)*/ * from vsmb_bucket_1 a join vsmb_bucket_2 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+MAPJOIN(a)*/ * from vsmb_bucket_1 a join vsmb_bucket_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -162,14 +162,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vsmb_bucket_1
 POSTHOOK: Input: default@vsmb_bucket_2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
@@ -180,14 +180,14 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_RC b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -234,14 +234,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vsmb_bucket_1
 POSTHOOK: Input: default@vsmb_bucket_rc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
@@ -262,14 +262,14 @@ POSTHOOK: query: -- RC file does not yet provide the vectorized CommonRCFileform
 explain
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_TXT b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -316,14 +316,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vsmb_bucket_1
 POSTHOOK: Input: default@vsmb_bucket_txt
 #### A masked pattern was here ####
-POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: vsmb_bucket_1.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_1.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_2.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_rc.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p

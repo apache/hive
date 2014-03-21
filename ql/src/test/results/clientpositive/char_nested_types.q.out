@@ -72,7 +72,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
-c1                  	array<char(20)>     	None                
+c1                  	array<char(20)>     	                    
 PREHOOK: query: select * from char_nested_array
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_nested_array
@@ -119,7 +119,7 @@ POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, 
 POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
 POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
-c1                  	map<int,char(20)>   	None                
+c1                  	map<int,char(20)>   	                    
 PREHOOK: query: select * from char_nested_map
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_nested_map
@@ -176,7 +176,7 @@ POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:val
 POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
 POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
 POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
-c1                  	struct<a:int,b:char(20),c:string>	None                
+c1                  	struct<a:int,b:char(20),c:string>	                    
 PREHOOK: query: select * from char_nested_struct
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_nested_struct
@@ -216,7 +216,7 @@ POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:val
 POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
 POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
 POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
-c1                  	struct<a:int,b:char(20),c:string>	None                
+c1                  	struct<a:int,b:char(20),c:string>	                    
 PREHOOK: query: select * from char_nested_cta
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_nested_cta
@@ -256,7 +256,7 @@ POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:val
 POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
 POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
 POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
-c1                  	struct<a:int,b:char(20),c:string>	None                
+c1                  	struct<a:int,b:char(20),c:string>	                    
 PREHOOK: query: select * from char_nested_view
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_nested_view

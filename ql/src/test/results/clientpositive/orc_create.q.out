@@ -47,10 +47,10 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create_staging
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-str                 	string              	None                
-mp                  	map<string,string>  	None                
-lst                 	array<string>       	None                
-strct               	struct<A:string,B:string>	None                
+str                 	string              	                    
+mp                  	map<string,string>  	                    
+lst                 	array<string>       	                    
+strct               	struct<A:string,B:string>	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -92,13 +92,13 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -143,13 +143,13 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	None                
-value               	string              	None                
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -185,13 +185,13 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -236,13 +236,13 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
+ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -287,10 +287,10 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create_complex
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-str                 	string              	from deserializer   
-mp                  	map<string,string>  	from deserializer   
-lst                 	array<string>       	from deserializer   
-strct               	struct<A:string,B:string>	from deserializer   
+str                 	string              	                    
+mp                  	map<string,string>  	                    
+lst                 	array<string>       	                    
+strct               	struct<A:string,B:string>	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

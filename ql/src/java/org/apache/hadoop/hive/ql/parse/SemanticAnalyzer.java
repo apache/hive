@@ -1551,7 +1551,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return false;
   }
-  
+
   /*
    * This method is invoked for unqualified column references in join conditions.
    * This is passed in the Alias to Operator mapping in the QueryBlock so far.
@@ -1874,7 +1874,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("rawtypes")
-  private void parseJoinCondition(QBJoinTree joinTree, ASTNode joinCond, List<String> leftSrc, 
+  private void parseJoinCondition(QBJoinTree joinTree, ASTNode joinCond, List<String> leftSrc,
       Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
     if (joinCond == null) {
@@ -2038,14 +2038,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("rawtypes")
-  private void extractJoinCondsFromWhereClause(QBJoinTree joinTree, QB qb, String dest, ASTNode predicate, 
+  private void extractJoinCondsFromWhereClause(QBJoinTree joinTree, QB qb, String dest, ASTNode predicate,
       Map<String, Operator> aliasToOpInfo) throws SemanticException {
 
     switch (predicate.getType()) {
     case HiveParser.KW_AND:
-      extractJoinCondsFromWhereClause(joinTree, qb, dest, 
+      extractJoinCondsFromWhereClause(joinTree, qb, dest,
           (ASTNode) predicate.getChild(0), aliasToOpInfo);
-      extractJoinCondsFromWhereClause(joinTree, qb, dest, 
+      extractJoinCondsFromWhereClause(joinTree, qb, dest,
           (ASTNode) predicate.getChild(1), aliasToOpInfo);
       break;
     case HiveParser.EQUAL_NS:
@@ -8940,7 +8940,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           String dest = dests.iterator().next();
           ASTNode whereClause = qb.getParseInfo().getWhrForClause(dest);
           if ( whereClause != null ) {
-            extractJoinCondsFromWhereClause(joinTree, qb, dest, 
+            extractJoinCondsFromWhereClause(joinTree, qb, dest,
                 (ASTNode) whereClause.getChild(0),
                 aliasToOpInfo );
           }
@@ -9907,7 +9907,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
       crtTblDesc.setNullFormat(rowFormatParams.nullFormat);
 
-      crtTblDesc.validate();
+      crtTblDesc.validate(conf);
       // outputs is empty, which means this create table happens in the current
       // database.
       SessionState.get().setCommandType(HiveOperation.CREATETABLE);

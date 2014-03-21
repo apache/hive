@@ -7,8 +7,8 @@ PREHOOK: query: DESCRIBE j1_41
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE j1_41
 POSTHOOK: type: DESCTABLE
-a                   	string              	None                
-b                   	int                 	None                
+a                   	string              	                    
+b                   	int                 	                    
 PREHOOK: query: SELECT * from j1_41
 PREHOOK: type: QUERY
 PREHOOK: Input: default@j1_41

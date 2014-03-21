@@ -20,9 +20,9 @@ PREHOOK: query: DESCRIBE view_j5jbymsx8e_1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view_j5jbymsx8e_1
 POSTHOOK: type: DESCTABLE
-key                 	int                 	None                
-value               	string              	None                
-ds                  	string              	None                
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
 PREHOOK: query: ALTER VIEW view_j5jbymsx8e_1 RENAME TO view_j5jbymsx8e_2
 PREHOOK: type: ALTERVIEW_RENAME
 PREHOOK: Input: default@view_j5jbymsx8e_1

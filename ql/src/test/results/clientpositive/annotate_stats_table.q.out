@@ -314,6 +314,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns lastname,deptid
+              columns.comments  
               columns.types string:int
               field.delim |
 #### A masked pattern was here ####
@@ -334,6 +335,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns lastname,deptid
+                columns.comments  
                 columns.types string:int
                 field.delim |
 #### A masked pattern was here ####
@@ -484,6 +486,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns lastname,deptid
+              columns.comments  
               columns.types string:int
               field.delim |
 #### A masked pattern was here ####
@@ -504,6 +507,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns lastname,deptid
+                columns.comments  
                 columns.types string:int
                 field.delim |
 #### A masked pattern was here ####
@@ -600,6 +604,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns lastname,deptid
+              columns.comments  
               columns.types string:int
               field.delim |
 #### A masked pattern was here ####
@@ -620,6 +625,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns lastname,deptid
+                columns.comments  
                 columns.types string:int
                 field.delim |
 #### A masked pattern was here ####
@@ -719,6 +725,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns lastname,deptid
+              columns.comments  
               columns.types string:int
               field.delim |
 #### A masked pattern was here ####
@@ -739,6 +746,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns lastname,deptid
+                columns.comments  
                 columns.types string:int
                 field.delim |
 #### A masked pattern was here ####

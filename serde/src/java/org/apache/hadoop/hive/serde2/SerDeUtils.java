@@ -68,49 +68,6 @@ public final class SerDeUtils {
 
   public static final Log LOG = LogFactory.getLog(SerDeUtils.class.getName());
 
-  public static void registerSerDe(String name, Class<?> serde) {}
-
-  private static List<String> nativeSerDeNames = new ArrayList<String>();
-  static {
-    nativeSerDeNames
-        .add(org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe.class
-        .getName());
-    nativeSerDeNames
-        .add(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
-        .getName());
-    // For backward compatibility
-    nativeSerDeNames.add("org.apache.hadoop.hive.serde.thrift.columnsetSerDe");
-    nativeSerDeNames
-        .add(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
-    nativeSerDeNames.add(org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe.class.getName());
-  }
-
-  public static boolean shouldGetColsFromSerDe(String serde) {
-    return (serde != null) && !nativeSerDeNames.contains(serde);
-  }
-
-  private static boolean initCoreSerDes = registerCoreSerDes();
-
-  protected static boolean registerCoreSerDes() {
-    // Eagerly load SerDes so they will register their symbolic names even on
-    // Lazy Loading JVMs
-    try {
-      // loading these classes will automatically register the short names
-      Class
-          .forName(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
-          .getName());
-      Class.forName(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class
-          .getName());
-      Class
-          .forName(org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer.class
-          .getName());
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(
-          "IMPOSSIBLE Exception: Unable to initialize core serdes", e);
-    }
-    return true;
-  }
-
   /**
    * Escape a String in JSON format.
    */

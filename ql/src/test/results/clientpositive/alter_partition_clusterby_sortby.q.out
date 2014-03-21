@@ -31,13 +31,13 @@ POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
+a                   	int                 	                    
+b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-c                   	string              	None                
+c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[abc]               	 
@@ -84,13 +84,13 @@ POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
+a                   	int                 	                    
+b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-c                   	string              	None                
+c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[abc]               	 
@@ -137,13 +137,13 @@ POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
+a                   	int                 	                    
+b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-c                   	string              	None                
+c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[abc]               	 
@@ -181,13 +181,13 @@ desc formatted alter_table_partition_clusterby_sortby
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
+a                   	int                 	                    
+b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-c                   	string              	None                
+c                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

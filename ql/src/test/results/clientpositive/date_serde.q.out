@@ -267,8 +267,8 @@ POSTHOOK: query: insert overwrite table date_serde_lb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_regex
 POSTHOOK: Output: default@date_serde_lb
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
 PREHOOK: query: select * from date_serde_lb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_serde_lb
@@ -277,8 +277,8 @@ POSTHOOK: query: select * from date_serde_lb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_lb
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
 2010-10-20	1064
 PREHOOK: query: select c1, sum(c2) from date_serde_lb group by c1
 PREHOOK: type: QUERY
@@ -288,8 +288,8 @@ POSTHOOK: query: select c1, sum(c2) from date_serde_lb group by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_lb
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
 2010-10-20	1064
 PREHOOK: query: --
 -- LazySimple
@@ -310,8 +310,8 @@ create table date_serde_ls (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_serde_ls
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
 PREHOOK: query: alter table date_serde_ls set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@date_serde_ls
@@ -320,8 +320,8 @@ POSTHOOK: query: alter table date_serde_ls set serde 'org.apache.hadoop.hive.ser
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@date_serde_ls
 POSTHOOK: Output: default@date_serde_ls
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
 PREHOOK: query: insert overwrite table date_serde_ls 
   select c1, c2 from date_serde_lb limit 1
 PREHOOK: type: QUERY
@@ -332,10 +332,10 @@ POSTHOOK: query: insert overwrite table date_serde_ls
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_lb
 POSTHOOK: Output: default@date_serde_ls
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: select * from date_serde_ls
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_serde_ls
@@ -344,10 +344,10 @@ POSTHOOK: query: select * from date_serde_ls
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_ls
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 2010-10-20	1064
 PREHOOK: query: select c1, sum(c2) from date_serde_ls group by c1
 PREHOOK: type: QUERY
@@ -357,10 +357,10 @@ POSTHOOK: query: select c1, sum(c2) from date_serde_ls group by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_ls
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 2010-10-20	1064
 PREHOOK: query: --
 -- Columnar
@@ -381,10 +381,10 @@ create table date_serde_c (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_serde_c
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: alter table date_serde_c set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@date_serde_c
@@ -393,10 +393,10 @@ POSTHOOK: query: alter table date_serde_c set serde 'org.apache.hadoop.hive.serd
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@date_serde_c
 POSTHOOK: Output: default@date_serde_c
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: insert overwrite table date_serde_c 
   select c1, c2 from date_serde_ls limit 1
 PREHOOK: type: QUERY
@@ -407,12 +407,12 @@ POSTHOOK: query: insert overwrite table date_serde_c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_ls
 POSTHOOK: Output: default@date_serde_c
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: select * from date_serde_c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_serde_c
@@ -421,12 +421,12 @@ POSTHOOK: query: select * from date_serde_c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_c
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 2010-10-20	1064
 PREHOOK: query: select c1, sum(c2) from date_serde_c group by c1
 PREHOOK: type: QUERY
@@ -436,12 +436,12 @@ POSTHOOK: query: select c1, sum(c2) from date_serde_c group by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_c
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 2010-10-20	1064
 PREHOOK: query: --
 -- LazyBinaryColumnar
@@ -462,12 +462,12 @@ create table date_serde_lbc (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_serde_lbc
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: alter table date_serde_lbc set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@date_serde_lbc
@@ -476,12 +476,12 @@ POSTHOOK: query: alter table date_serde_lbc set serde 'org.apache.hadoop.hive.se
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@date_serde_lbc
 POSTHOOK: Output: default@date_serde_lbc
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: insert overwrite table date_serde_lbc 
   select c1, c2 from date_serde_c limit 1
 PREHOOK: type: QUERY
@@ -492,14 +492,14 @@ POSTHOOK: query: insert overwrite table date_serde_lbc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_c
 POSTHOOK: Output: default@date_serde_lbc
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: select * from date_serde_lbc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_serde_lbc
@@ -508,14 +508,14 @@ POSTHOOK: query: select * from date_serde_lbc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_lbc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 2010-10-20	1064
 PREHOOK: query: select c1, sum(c2) from date_serde_lbc group by c1
 PREHOOK: type: QUERY
@@ -525,14 +525,14 @@ POSTHOOK: query: select c1, sum(c2) from date_serde_lbc group by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_lbc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 2010-10-20	1064
 PREHOOK: query: --
 -- ORC
@@ -553,14 +553,14 @@ create table date_serde_orc (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_serde_orc
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: alter table date_serde_orc set serde 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@date_serde_orc
@@ -569,14 +569,14 @@ POSTHOOK: query: alter table date_serde_orc set serde 'org.apache.hadoop.hive.ql
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@date_serde_orc
 POSTHOOK: Output: default@date_serde_orc
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: insert overwrite table date_serde_orc 
   select c1, c2 from date_serde_lbc limit 1
 PREHOOK: type: QUERY
@@ -587,16 +587,16 @@ POSTHOOK: query: insert overwrite table date_serde_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_lbc
 POSTHOOK: Output: default@date_serde_orc
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: select * from date_serde_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_serde_orc
@@ -605,16 +605,16 @@ POSTHOOK: query: select * from date_serde_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:null), ]
 2010-10-20	1064
 PREHOOK: query: select c1, sum(c2) from date_serde_orc group by c1
 PREHOOK: type: QUERY
@@ -624,16 +624,16 @@ POSTHOOK: query: select c1, sum(c2) from date_serde_orc group by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:null), ]
 2010-10-20	1064
 PREHOOK: query: drop table date_serde_regex
 PREHOOK: type: DROPTABLE
@@ -643,16 +643,16 @@ POSTHOOK: query: drop table date_serde_regex
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_serde_regex
 POSTHOOK: Output: default@date_serde_regex
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: drop table date_serde_lb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_serde_lb
@@ -661,16 +661,16 @@ POSTHOOK: query: drop table date_serde_lb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_serde_lb
 POSTHOOK: Output: default@date_serde_lb
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: drop table date_serde_ls
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_serde_ls
@@ -679,16 +679,16 @@ POSTHOOK: query: drop table date_serde_ls
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_serde_ls
 POSTHOOK: Output: default@date_serde_ls
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: drop table date_serde_c
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_serde_c
@@ -697,16 +697,16 @@ POSTHOOK: query: drop table date_serde_c
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_serde_c
 POSTHOOK: Output: default@date_serde_c
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: drop table date_serde_lbc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_serde_lbc
@@ -715,16 +715,16 @@ POSTHOOK: query: drop table date_serde_lbc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_serde_lbc
 POSTHOOK: Output: default@date_serde_lbc
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:null), ]
 PREHOOK: query: drop table date_serde_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_serde_orc
@@ -733,13 +733,13 @@ POSTHOOK: query: drop table date_serde_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_serde_orc
 POSTHOOK: Output: default@date_serde_orc
-POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:from deserializer), ]
-POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:null), ]

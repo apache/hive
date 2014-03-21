@@ -33,8 +33,8 @@ POSTHOOK: query: describe columnTable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 PREHOOK: query: SELECT columnTable.* FROM columnTable ORDER BY key ASC, value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columntable
