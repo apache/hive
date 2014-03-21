@@ -122,8 +122,8 @@ POSTHOOK: query: DESCRIBE FORMATTED table_db1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	db1                 	 

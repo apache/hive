@@ -57,14 +57,14 @@ POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSch
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1, 4]              	 
@@ -202,6 +202,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -221,6 +222,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -244,6 +246,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -263,6 +266,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -409,6 +413,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -428,6 +433,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -597,6 +603,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -616,6 +623,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -639,6 +647,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -658,6 +667,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily

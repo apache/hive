@@ -9,8 +9,8 @@ PREHOOK: query: DESCRIBE tmp_select
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE tmp_select
 POSTHOOK: type: DESCTABLE
-a                   	int                 	None                
-b                   	string              	None                
+a                   	int                 	                    
+b                   	string              	                    
 PREHOOK: query: INSERT OVERWRITE TABLE tmp_select SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

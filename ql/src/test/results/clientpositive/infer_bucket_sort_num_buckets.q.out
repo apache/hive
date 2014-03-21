@@ -133,14 +133,14 @@ POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).key EXPRESSION [(src
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	None                
-value               	string              	None                
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 0]     	 
@@ -177,14 +177,14 @@ POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).key EXPRESSION [(src
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	None                
-value               	string              	None                
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 1]     	 

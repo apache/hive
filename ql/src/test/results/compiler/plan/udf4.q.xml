@@ -46,6 +46,10 @@
            <string>key,value</string> 
           </void> 
           <void method="put"> 
+           <string>columns.comments</string> 
+           <string>default<char code="#0"/>default</string> 
+          </void> 
+          <void method="put"> 
            <string>bucket_count</string> 
            <string>-1</string> 
           </void> 
@@ -96,6 +100,10 @@
             <void method="put"> 
              <string>columns</string> 
              <string>key,value</string> 
+            </void> 
+            <void method="put"> 
+             <string>columns.comments</string> 
+             <string>default<char code="#0"/>default</string> 
             </void> 
             <void method="put"> 
              <string>bucket_count</string> 
@@ -1725,6 +1733,10 @@
           <void method="put"> 
            <string>columns</string> 
            <string>key,value</string> 
+          </void> 
+          <void method="put"> 
+           <string>columns.comments</string> 
+           <string>default<char code="#0"/>default</string> 
           </void> 
           <void method="put"> 
            <string>bucket_count</string> 

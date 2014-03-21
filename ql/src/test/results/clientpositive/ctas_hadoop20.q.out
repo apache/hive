@@ -129,8 +129,8 @@ POSTHOOK: query: describe formatted nzhang_CTAS1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-k                   	string              	None                
-value               	string              	None                
+k                   	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -269,8 +269,8 @@ POSTHOOK: query: describe formatted nzhang_CTAS2
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -410,8 +410,8 @@ POSTHOOK: query: describe formatted nzhang_CTAS3
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-half_key            	double              	None                
-conb                	string              	None                
+half_key            	double              	                    
+conb                	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -473,8 +473,8 @@ POSTHOOK: query: describe formatted nzhang_CTAS3
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-half_key            	double              	None                
-conb                	string              	None                
+half_key            	double              	                    
+conb                	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -614,8 +614,8 @@ POSTHOOK: query: describe formatted nzhang_CTAS4
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -724,6 +724,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments default default
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
@@ -743,6 +744,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
+                columns.comments default default
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src
@@ -921,7 +923,7 @@ POSTHOOK: query: desc nzhang_ctas8
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-_c0                 	decimal(3,2)        	None                
+_c0                 	decimal(3,2)        	                    
 PREHOOK: query: drop table nzhang_ctas8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nzhang_ctas8

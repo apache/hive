@@ -311,7 +311,7 @@ public final class MetaDataFormatUtils {
   }
 
   static String getComment(FieldSchema col) {
-    return col.getComment() != null ? col.getComment() : "None";
+    return col.getComment() != null ? col.getComment() : "";
   }
 
   private static String formatDate(long timeInSeconds) {

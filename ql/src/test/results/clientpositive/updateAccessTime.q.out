@@ -13,8 +13,8 @@ PREHOOK: query: desc extended tstsrc
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tstsrc
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select count(1) from tstsrc
@@ -30,8 +30,8 @@ PREHOOK: query: desc extended tstsrc
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tstsrc
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: drop table tstsrc
@@ -94,14 +94,14 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: desc extended tstsrcpart partition (ds='2008-04-08', hr='11')
@@ -118,14 +118,14 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: desc extended tstsrcpart partition (ds='2008-04-08', hr='12')
@@ -142,14 +142,14 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select count(1) from tstsrcpart where ds = '2008-04-08' and hr = '11'
@@ -185,14 +185,14 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: desc extended tstsrcpart partition (ds='2008-04-08', hr='11')
@@ -209,14 +209,14 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: desc extended tstsrcpart partition (ds='2008-04-08', hr='12')
@@ -233,14 +233,14 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	default             
 value               	string              	default             
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-ds                  	string              	None                
-hr                  	string              	None                
+ds                  	string              	                    
+hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: drop table tstsrcpart

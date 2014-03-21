@@ -139,14 +139,14 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- DESCRIBE table in non-default DB
 DESCRIBE test_table
 POSTHOOK: type: DESCTABLE
-col1                	string              	None                
+col1                	string              	                    
 PREHOOK: query: -- DESCRIBE EXTENDED in non-default DB
 DESCRIBE EXTENDED test_table
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- DESCRIBE EXTENDED in non-default DB
 DESCRIBE EXTENDED test_table
 POSTHOOK: type: DESCTABLE
-col1                	string              	None                
+col1                	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- CREATE LIKE in non-default DB
@@ -168,7 +168,7 @@ PREHOOK: query: DESCRIBE EXTENDED test_table_like
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED test_table_like
 POSTHOOK: type: DESCTABLE
-col1                	string              	None                
+col1                	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- LOAD and SELECT

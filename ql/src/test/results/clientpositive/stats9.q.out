@@ -54,8 +54,8 @@ POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchem
 POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	int                 	None                
-value               	string              	None                
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

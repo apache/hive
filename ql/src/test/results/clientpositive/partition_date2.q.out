@@ -379,16 +379,16 @@ POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=2000-01-01,region=2).key SIMPL
 POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE []
 POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE []
-key                 	string              	None                
-value               	string              	None                
-dt                  	date                	None                
-region              	int                 	None                
+key                 	string              	                    
+value               	string              	                    
+dt                  	date                	                    
+region              	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	date                	None                
-region              	int                 	None                
+dt                  	date                	                    
+region              	int                 	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table partition_date2_1 partition(dt=date '1980-01-02', region=3)
@@ -477,16 +477,16 @@ POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=2000-01-01,region=2).key SIMPL
 POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE []
 POSTHOOK: Lineage: partition_date2_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE []
-key                 	string              	None                
-value               	string              	None                
-dt                  	date                	None                
-region              	int                 	None                
+key                 	string              	                    
+value               	string              	                    
+dt                  	date                	                    
+region              	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	date                	None                
-region              	int                 	None                
+dt                  	date                	                    
+region              	int                 	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- alter table touch

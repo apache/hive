@@ -87,10 +87,10 @@ POSTHOOK: query: describe formatted summary
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-_col0               	double              	None                
-_col1               	bigint              	None                
-_c1                 	double              	None                
-_c2                 	bigint              	None                
+_col0               	double              	                    
+_col1               	bigint              	                    
+_c1                 	double              	                    
+_c2                 	bigint              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -201,9 +201,9 @@ POSTHOOK: query: describe formatted x4
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
-rr                  	int                 	None                
+key                 	string              	                    
+value               	string              	                    
+rr                  	int                 	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -361,9 +361,9 @@ POSTHOOK: query: describe formatted x5
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
-lead1               	string              	None                
+key                 	string              	                    
+value               	string              	                    
+lead1               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -501,8 +501,8 @@ POSTHOOK: query: describe formatted x6
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-_col0               	string              	None                
-_c1                 	string              	None                
+_col0               	string              	                    
+_c1                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -620,7 +620,7 @@ POSTHOOK: query: describe formatted x7
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-_col0               	string              	None                
+_col0               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -1049,7 +1049,7 @@ POSTHOOK: query: describe formatted x8
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-_col0               	string              	None                
+_col0               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -1180,8 +1180,8 @@ POSTHOOK: query: describe formatted x9
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
-_c0                 	string              	None                
-key                 	string              	None                
+_c0                 	string              	                    
+key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

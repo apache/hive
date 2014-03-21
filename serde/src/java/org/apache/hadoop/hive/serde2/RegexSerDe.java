@@ -47,6 +47,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
 /**
  * RegexSerDe uses regular expression (regex) to deserialize data. It doesn't
  * support data serialization.
@@ -141,7 +144,7 @@ public class RegexSerDe extends AbstractSerDe {
 
     // StandardStruct uses ArrayList to store the row.
     rowOI = ObjectInspectorFactory.getStandardStructObjectInspector(
-        columnNames, columnOIs);
+        columnNames,columnOIs,Lists.newArrayList(Splitter.on('\0').split(tbl.getProperty("columns.comments"))));
 
     row = new ArrayList<Object>(numColumns);
     // Constructing the row object, etc, which will be reused for all rows.

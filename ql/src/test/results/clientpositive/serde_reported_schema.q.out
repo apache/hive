@@ -22,12 +22,12 @@ POSTHOOK: type: DESCTABLE
 myint               	int                 	from deserializer   
 mystring            	string              	from deserializer   
 underscore_int      	int                 	from deserializer   
-b                   	string              	None                
+b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-b                   	string              	None                
+b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table int_string add partition (b='part1')
@@ -44,11 +44,11 @@ POSTHOOK: type: DESCTABLE
 myint               	int                 	from deserializer   
 mystring            	string              	from deserializer   
 underscore_int      	int                 	from deserializer   
-b                   	string              	None                
+b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-b                   	string              	None                
+b                   	string              	                    
 	 	 
 #### A masked pattern was here ####

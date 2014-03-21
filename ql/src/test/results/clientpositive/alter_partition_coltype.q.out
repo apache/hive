@@ -25,16 +25,16 @@ POSTHOOK: query: desc alter_coltype
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-key                 	string              	None                
-value               	string              	None                
-dt                  	string              	None                
-ts                  	string              	None                
+key                 	string              	                    
+value               	string              	                    
+dt                  	string              	                    
+ts                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
-ts                  	string              	None                
+dt                  	string              	                    
+ts                  	string              	                    
 PREHOOK: query: -- select with paritition predicate.
 select count(*) from alter_coltype where dt = '100x'
 PREHOOK: type: QUERY
@@ -161,6 +161,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype
@@ -180,6 +181,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
@@ -373,6 +375,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype
@@ -392,6 +395,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
@@ -547,6 +551,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype
@@ -566,6 +571,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
@@ -589,6 +595,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype
@@ -608,6 +615,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
@@ -631,6 +639,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype
@@ -650,6 +659,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
@@ -892,6 +902,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype
@@ -911,6 +922,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
@@ -934,6 +946,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype
@@ -953,6 +966,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
@@ -976,6 +990,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype
@@ -995,6 +1010,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
@@ -1135,6 +1151,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype
@@ -1154,6 +1171,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
@@ -1177,6 +1195,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype
@@ -1196,6 +1215,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
@@ -1219,6 +1239,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.alter_coltype
@@ -1238,6 +1259,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
@@ -1300,16 +1322,16 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).key SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-key                 	string              	None                
-value               	string              	None                
-dt                  	string              	None                
-ts                  	double              	None                
+key                 	string              	                    
+value               	string              	                    
+dt                  	string              	                    
+ts                  	double              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
-ts                  	double              	None                
+dt                  	string              	                    
+ts                  	double              	                    
 PREHOOK: query: desc alter_coltype partition (dt='100x', ts='6:30pm')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc alter_coltype partition (dt='100x', ts='6:30pm')
@@ -1320,16 +1342,16 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).key SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-key                 	string              	None                
-value               	string              	None                
-dt                  	string              	None                
-ts                  	double              	None                
+key                 	string              	                    
+value               	string              	                    
+dt                  	string              	                    
+ts                  	double              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
-ts                  	double              	None                
+dt                  	string              	                    
+ts                  	double              	                    
 PREHOOK: query: desc alter_coltype partition (dt='100x', ts=3.0)
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc alter_coltype partition (dt='100x', ts=3.0)
@@ -1340,16 +1362,16 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).key SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-key                 	string              	None                
-value               	string              	None                
-dt                  	string              	None                
-ts                  	double              	None                
+key                 	string              	                    
+value               	string              	                    
+dt                  	string              	                    
+ts                  	double              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
-ts                  	double              	None                
+dt                  	string              	                    
+ts                  	double              	                    
 PREHOOK: query: desc alter_coltype partition (dt=10, ts=3.0)
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc alter_coltype partition (dt=10, ts=3.0)
@@ -1360,16 +1382,16 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).key SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-key                 	string              	None                
-value               	string              	None                
-dt                  	string              	None                
-ts                  	double              	None                
+key                 	string              	                    
+value               	string              	                    
+dt                  	string              	                    
+ts                  	double              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	string              	None                
-ts                  	double              	None                
+dt                  	string              	                    
+ts                  	double              	                    
 PREHOOK: query: drop table alter_coltype
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_coltype

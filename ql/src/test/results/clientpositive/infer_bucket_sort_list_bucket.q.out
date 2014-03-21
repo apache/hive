@@ -45,13 +45,13 @@ POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).key SIMPLE [(src)src.F
 POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
@@ -126,13 +126,13 @@ POSTHOOK: Lineage: list_bucketing_table2 PARTITION(part=1).key SIMPLE [(src)src.
 POSTHOOK: Lineage: list_bucketing_table2 PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	None                
-value               	string              	None                
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-part                	string              	None                
+part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 

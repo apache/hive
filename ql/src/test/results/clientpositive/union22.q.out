@@ -256,6 +256,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns k0,k1,k2,k3,k4,k5
+                    columns.comments      
                     columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
                     name default.dst_union22_delta
@@ -275,6 +276,7 @@ STAGE PLANS:
                     properties:
                       bucket_count -1
                       columns k0,k1,k2,k3,k4,k5
+                      columns.comments      
                       columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
                       name default.dst_union22_delta
@@ -372,6 +374,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns k1,k2,k3,k4
+              columns.comments    
               columns.types string:string:string:string
 #### A masked pattern was here ####
               name default.dst_union22
@@ -391,6 +394,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns k1,k2,k3,k4
+                columns.comments    
                 columns.types string:string:string:string
 #### A masked pattern was here ####
                 name default.dst_union22
@@ -413,6 +417,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns k0,k1,k2,k3,k4,k5
+              columns.comments      
               columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
               name default.dst_union22_delta
@@ -432,6 +437,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns k0,k1,k2,k3,k4,k5
+                columns.comments      
                 columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
                 name default.dst_union22_delta
@@ -471,6 +477,7 @@ STAGE PLANS:
                       properties:
                         bucket_count -1
                         columns k1,k2,k3,k4
+                        columns.comments    
                         columns.types string:string:string:string
 #### A masked pattern was here ####
                         name default.dst_union22
@@ -516,6 +523,7 @@ STAGE PLANS:
                           properties:
                             bucket_count -1
                             columns k1,k2,k3,k4
+                            columns.comments    
                             columns.types string:string:string:string
 #### A masked pattern was here ####
                             name default.dst_union22
@@ -563,6 +571,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns k0,k1,k2,k3,k4,k5
+              columns.comments      
               columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
               name default.dst_union22_delta
@@ -582,6 +591,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns k0,k1,k2,k3,k4,k5
+                columns.comments      
                 columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
                 name default.dst_union22_delta
@@ -610,6 +620,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns k1,k2,k3,k4
+                columns.comments    
                 columns.types string:string:string:string
 #### A masked pattern was here ####
                 name default.dst_union22
@@ -676,6 +687,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns k1,k2,k3,k4
+              columns.comments    
               columns.types string:string:string:string
 #### A masked pattern was here ####
               name default.dst_union22
@@ -695,6 +707,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns k1,k2,k3,k4
+                columns.comments    
                 columns.types string:string:string:string
 #### A masked pattern was here ####
                 name default.dst_union22
@@ -717,6 +730,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns k0,k1,k2,k3,k4,k5
+              columns.comments      
               columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
               name default.dst_union22_delta
@@ -736,6 +750,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns k0,k1,k2,k3,k4,k5
+                columns.comments      
                 columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
                 name default.dst_union22_delta

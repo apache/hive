@@ -264,6 +264,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,keymap
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1_mapping
@@ -283,6 +284,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,keymap
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_mapping
@@ -305,6 +307,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns keymap,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1_old
@@ -324,6 +327,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns keymap,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_old
@@ -674,6 +678,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
+              columns.comments  
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1_new
@@ -693,6 +698,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
+                columns.comments  
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_new
