@@ -135,16 +135,23 @@ public class SQLOperation extends ExecuteStatementOperation {
       // case, when calling fetch queries since execute() has returned.
       // For now, we disable the test attempts.
       driver.setTryCount(Integer.MAX_VALUE);
-
       response = driver.run();
       if (0 != response.getResponseCode()) {
         throw new HiveSQLException("Error while processing statement: "
             + response.getErrorMessage(), response.getSQLState(), response.getResponseCode());
       }
-
     } catch (HiveSQLException e) {
-      setState(OperationState.ERROR);
-      throw e;
+      // If the operation was cancelled by another thread,
+      // Driver#run will return a non-zero response code.
+      // We will simply return if the operation state is CANCELED,
+      // otherwise throw an exception
+      if (getStatus().getState() == OperationState.CANCELED) {
+        return;
+      }
+      else {
+        setState(OperationState.ERROR);
+        throw e;
+      }
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);
