@@ -253,6 +253,8 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
   private Scan createFilterScan(JobConf jobConf, int iKey, boolean isKeyBinary)
       throws IOException {
 
+    // TODO: assert iKey is HBaseSerDe#HBASE_KEY_COL
+
     Scan scan = new Scan();
     String filterExprSerialized = jobConf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
     if (filterExprSerialized == null) {
@@ -270,18 +272,15 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     ExprNodeDesc residualPredicate =
       analyzer.analyzePredicate(filterExpr, searchConditions);
 
-    // There should be no residual since we already negotiated
-    // that earlier in HBaseStorageHandler.decomposePredicate.
+    // There should be no residual since we already negotiated that earlier in
+    // HBaseStorageHandler.decomposePredicate. However, with hive.optimize.index.filter
+    // OpProcFactory#pushFilterToStorageHandler pushes the original filter back down again.
+    // Since pushed-down filters are not ommitted at the higher levels (and thus the
+    // contract of negotiation is ignored anyway), just ignore the residuals.
+    // Re-assess this when negotiation is honored and the duplicate evaluation is removed.
+    // THIS IGNORES RESIDUAL PARSING FROM HBaseStorageHandler#decomposePredicate
     if (residualPredicate != null) {
-      throw new RuntimeException(
-        "Unexpected residual predicate " + residualPredicate.getExprString());
-    }
-
-    // There should be exactly one predicate since we already
-    // negotiated that also.
-    if (searchConditions.size() < 1 || searchConditions.size() > 2) {
-      throw new RuntimeException(
-        "Either one or two search conditions expected in push down");
+      LOG.debug("Ignoring residual predicate " + residualPredicate.getExprString());
     }
 
     // Convert the search condition into a restriction on the HBase scan
@@ -292,7 +291,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
       PrimitiveObjectInspector objInspector;
       Object writable;
 
-      try{
+      try {
         objInspector = (PrimitiveObjectInspector)eval.initialize(null);
         writable = eval.evaluate(null);
       } catch (ClassCastException cce) {
