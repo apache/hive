@@ -17,6 +17,12 @@ explain select * from hbase_pushdown where key=90 and value like '%90%';
 
 select * from hbase_pushdown where key=90 and value like '%90%';
 
+set hive.optimize.index.filter=true;
+-- with partial pushdown with optimization (HIVE-6650)
+explain select * from hbase_pushdown where key=90 and value like '%90%';
+select * from hbase_pushdown where key=90 and value like '%90%';
+set hive.optimize.index.filter=false;
+
 -- with two residuals
 
 explain select * from hbase_pushdown
