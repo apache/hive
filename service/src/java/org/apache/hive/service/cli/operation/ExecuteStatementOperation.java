@@ -17,8 +17,6 @@
  */
 package org.apache.hive.service.cli.operation;
 
-
-
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;

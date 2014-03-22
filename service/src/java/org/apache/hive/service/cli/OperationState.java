@@ -40,7 +40,6 @@ public enum OperationState {
     this.tOperationState = tOperationState;
   }
 
-
   public static OperationState getOperationState(TOperationState tOperationState) {
     // TODO: replace this with a Map?
     for (OperationState opState : values()) {
@@ -51,13 +50,15 @@ public enum OperationState {
     return OperationState.UNKNOWN;
   }
 
-  public static void validateTransition(OperationState oldState, OperationState newState)
-      throws HiveSQLException {
+  public static void validateTransition(OperationState oldState,
+      OperationState newState)
+          throws HiveSQLException {
     switch (oldState) {
     case INITIALIZED:
       switch (newState) {
       case PENDING:
       case RUNNING:
+      case CANCELED:
       case CLOSED:
         return;
       }
