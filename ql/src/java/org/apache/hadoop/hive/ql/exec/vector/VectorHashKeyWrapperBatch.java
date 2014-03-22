@@ -617,9 +617,8 @@ public class VectorHashKeyWrapperBatch {
     compiledKeyWrapperBatch.vectorHashKeyWrappers =
         new VectorHashKeyWrapper[VectorizedRowBatch.DEFAULT_SIZE];
     for(int i=0;i<VectorizedRowBatch.DEFAULT_SIZE; ++i) {
-      compiledKeyWrapperBatch.vectorHashKeyWrappers[i] =
-          new VectorHashKeyWrapper(longIndicesIndex, doubleIndicesIndex,
-                  stringIndicesIndex, decimalIndicesIndex);
+      compiledKeyWrapperBatch.vectorHashKeyWrappers[i] = 
+          compiledKeyWrapperBatch.allocateKeyWrapper();
     }
 
     JavaDataModel model = JavaDataModel.get();
@@ -642,6 +641,11 @@ public class VectorHashKeyWrapperBatch {
         model.lengthForBooleanArrayOfSize(keyExpressions.length);
 
     return compiledKeyWrapperBatch;
+  }
+  
+  public VectorHashKeyWrapper allocateKeyWrapper() {
+    return new VectorHashKeyWrapper(longIndices.length, doubleIndices.length,
+        stringIndices.length, decimalIndices.length);
   }
 
   /**

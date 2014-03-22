@@ -83,6 +83,13 @@ public class VectorUDAFAvgDecimal extends VectorAggregateExpression {
       public int getVariableSize() {
         throw new UnsupportedOperationException();
       }
+
+      @Override
+      public void reset() {
+        isNull = true;
+        sum.zeroClear();
+        count = 0L;
+      }
     }
 
     private VectorExpression inputExpression;
@@ -463,7 +470,7 @@ public class VectorUDAFAvgDecimal extends VectorAggregateExpression {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       Aggregation myAgg = (Aggregation) agg;
-      myAgg.isNull = true;
+      myAgg.reset();
     }
 
     @Override

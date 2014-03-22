@@ -73,6 +73,14 @@ public class <ClassName> extends VectorAggregateExpression {
       public int getVariableSize() {
         throw new UnsupportedOperationException();
       }
+
+      @Override
+      public void reset () {
+        isNull = true;
+        sum = 0;
+        count = 0;
+        variance = 0;
+      }
     }
 
     private VectorExpression inputExpression;
@@ -475,7 +483,7 @@ public class <ClassName> extends VectorAggregateExpression {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       Aggregation myAgg = (Aggregation) agg;
-      myAgg.isNull = true;
+      myAgg.reset();
     }
 
     @Override
