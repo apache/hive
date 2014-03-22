@@ -446,9 +446,6 @@
                    </void> 
                   </object> 
                  </void> 
-                 <void property="inputAlias"> 
-                  <string>a</string> 
-                 </void> 
                  <void property="operatorId"> 
                   <string>RS_9</string> 
                  </void> 
@@ -1001,9 +998,6 @@
                    </void> 
                   </object> 
                  </void> 
-                 <void property="inputAlias"> 
-                  <string>b</string> 
-                 </void> 
                  <void property="operatorId"> 
                   <string>RS_10</string> 
                  </void> 
@@ -1543,9 +1537,6 @@
                     </object> 
                    </void> 
                   </object> 
-                 </void> 
-                 <void property="inputAlias"> 
-                  <string>c</string> 
                  </void> 
                  <void property="operatorId"> 
                   <string>RS_11</string> 

@@ -1135,15 +1135,15 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((_col0 < 9) and _col1 is not null) (type: boolean)
-            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+            predicate: _col1 is not null (type: boolean)
+            Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 801 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
