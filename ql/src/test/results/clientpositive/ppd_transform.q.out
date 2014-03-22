@@ -342,3 +342,83 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
+PREHOOK: query: -- test described in HIVE-4598
+
+EXPLAIN
+FROM (
+    FROM ( SELECT * FROM src ) mapout REDUCE * USING 'cat' AS x,y
+) reduced
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+POSTHOOK: query: -- test described in HIVE-4598
+
+EXPLAIN
+FROM (
+    FROM ( SELECT * FROM src ) mapout REDUCE * USING 'cat' AS x,y
+) reduced
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Transform Operator
+                command: cat
+                output info:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: ((_col0 = 'a') or (_col0 = 'b')) (type: boolean)
+                  Statistics: Num rows: 28 Data size: 5611 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 28 Data size: 5611 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 28 Data size: 5611 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Filter Operator
+                  predicate: ((_col0 = 'c') or (_col0 = 'd')) (type: boolean)
+                  Statistics: Num rows: 28 Data size: 5611 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 28 Data size: 5611 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 28 Data size: 5611 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: false
+#### A masked pattern was here ####
+
+  Stage: Stage-1
+    Move Operator
+      files:
+          hdfs directory: false
+#### A masked pattern was here ####
+

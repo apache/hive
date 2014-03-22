@@ -474,39 +474,38 @@ public final class ColumnPrunerProcFactory {
       List<String> cols = cppCtx.genColLists(op);
 
       Map<String, ExprNodeDesc> colExprMap = op.getColumnExprMap();
-
       // As columns go down the DAG, the LVJ will transform internal column
       // names from something like 'key' to '_col0'. Because of this, we need
       // to undo this transformation using the column expression map as the
       // column names propagate up the DAG.
-      List<String> colsAfterReplacement = new ArrayList<String>();
-      for (String col : cols) {
-        if (colExprMap.containsKey(col)) {
-          ExprNodeDesc expr = colExprMap.get(col);
-          colsAfterReplacement.addAll(expr.getCols());
-        } else {
-          colsAfterReplacement.add(col);
-        }
-      }
+
       // this is SEL(*) cols + UDTF cols
       List<String> outputCols = op.getConf().getOutputInternalColNames();
-      if (outputCols.size() != cols.size()) {
-        // cause we cannot prune columns from UDTF branch currently, extract
-        // columns from SEL(*) branch only and append all columns from UDTF branch to it
-        ArrayList<String> newColNames = new ArrayList<String>();
-        for (String col : cols) {
-          int index = outputCols.indexOf(col);
-          // colExprMap.size() == size of cols from SEL(*) branch
-          if (index >= 0 && index < colExprMap.size()) {
-            newColNames.add(col);
-          }
-        }
-        newColNames.addAll(outputCols.subList(colExprMap.size(), outputCols.size()));
-        op.getConf().setOutputInternalColNames(newColNames);
-      }
 
-      cppCtx.getPrunedColLists().put(op,
-          colsAfterReplacement);
+      // cause we cannot prune columns from UDTF branch currently, extract
+      // columns from SEL(*) branch only and append all columns from UDTF branch to it
+      int numSelColumns = op.getConf().getNumSelColumns();
+
+      List<String> colsAfterReplacement = new ArrayList<String>();
+      ArrayList<String> newColNames = new ArrayList<String>();
+      for (String col : cols) {
+        int index = outputCols.indexOf(col);
+        // colExprMap.size() == size of cols from SEL(*) branch
+        if (index >= 0 && index < numSelColumns) {
+          ExprNodeDesc transformed = colExprMap.get(col);
+          Utilities.mergeUniqElems(colsAfterReplacement, transformed.getCols());
+          newColNames.add(col);
+        }
+      }
+      // update number of columns from sel(*)
+      op.getConf().setNumSelColumns(newColNames.size());
+
+      // add all UDTF columns
+      // following SEL will do CP for columns from UDTF, not adding SEL in here
+      newColNames.addAll(outputCols.subList(numSelColumns, outputCols.size()));
+      op.getConf().setOutputInternalColNames(newColNames);
+
+      cppCtx.getPrunedColLists().put(op, colsAfterReplacement);
       return null;
     }
   }

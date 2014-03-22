@@ -24,9 +24,9 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
+import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDTFOperator;
@@ -91,18 +91,15 @@ public class PredicatePushDown implements Transform {
       FilterOperator.getOperatorName() + "%"),
       OpProcFactory.getFilterProc());
     opRules.put(new RuleRegExp("R2",
-        PTFOperator.getOperatorName() + "%"),
-        OpProcFactory.getPTFProc());
+      PTFOperator.getOperatorName() + "%"),
+      OpProcFactory.getPTFProc());
     opRules.put(new RuleRegExp("R3",
       CommonJoinOperator.getOperatorName() + "%"),
       OpProcFactory.getJoinProc());
     opRules.put(new RuleRegExp("R4",
-      ReduceSinkOperator.getOperatorName() + "%"),
-      OpProcFactory.getRSProc());
-    opRules.put(new RuleRegExp("R5",
       TableScanOperator.getOperatorName() + "%"),
       OpProcFactory.getTSProc());
-    opRules.put(new RuleRegExp("R6",
+    opRules.put(new RuleRegExp("R5",
       ScriptOperator.getOperatorName() + "%"),
       OpProcFactory.getSCRProc());
     opRules.put(new RuleRegExp("R6",
@@ -114,6 +111,9 @@ public class PredicatePushDown implements Transform {
     opRules.put(new RuleRegExp("R8",
       LateralViewForwardOperator.getOperatorName() + "%"),
       OpProcFactory.getLVFProc());
+    opRules.put(new RuleRegExp("R9",
+      LateralViewJoinOperator.getOperatorName() + "%"),
+      OpProcFactory.getLVJProc());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

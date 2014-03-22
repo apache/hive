@@ -19,9 +19,11 @@ package org.apache.hadoop.hive.ql.ppd;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -287,6 +289,21 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    */
   public Map<String, List<ExprNodeDesc>> getNonFinalCandidates() {
     return nonFinalPreds;
+  }
+
+  public Map<String, List<ExprNodeDesc>> getResidualPredicates(boolean clear) {
+    Map<String, List<ExprNodeDesc>> oldExprs = new HashMap<String, List<ExprNodeDesc>>();
+    for (Map.Entry<String, List<ExprNodeDesc>> entry : nonFinalPreds.entrySet()) {
+      List<ExprNodeDesc> converted = new ArrayList<ExprNodeDesc>();
+      for (ExprNodeDesc newExpr : entry.getValue()) {
+        converted.add(newToOldExprMap.get(newExpr));
+      }
+      oldExprs.put(entry.getKey(), converted);
+    }
+    if (clear) {
+      nonFinalPreds.clear();
+    }
+    return oldExprs;
   }
 
   /**
