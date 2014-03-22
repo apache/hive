@@ -71,5 +71,14 @@ public class VectorAggregationBufferRow {
     this.index  = index;
     this.version = version;
   }
+
+  /**
+   * Resets the aggregation buffers for reuse
+   */
+  public void reset() {
+    for(int i = 0; i < aggregationBuffers.length; ++i) {
+      aggregationBuffers[i].reset();
+    }
+  }
   
 }

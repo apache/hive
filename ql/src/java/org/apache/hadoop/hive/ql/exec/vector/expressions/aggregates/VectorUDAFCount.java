@@ -60,6 +60,12 @@ public class VectorUDAFCount extends VectorAggregateExpression {
       public int getVariableSize() {
         throw new UnsupportedOperationException();
       }
+
+      @Override
+      public void reset() {
+        isNull = true;
+        value = 0L;
+      }
     }
 
     private VectorExpression inputExpression = null;
@@ -240,7 +246,7 @@ public class VectorUDAFCount extends VectorAggregateExpression {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       Aggregation myAgg = (Aggregation) agg;
-      myAgg.isNull = true;
+      myAgg.reset();
     }
 
     @Override
