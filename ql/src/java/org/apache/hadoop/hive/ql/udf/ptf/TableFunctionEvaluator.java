@@ -137,5 +137,12 @@ public abstract class TableFunctionEvaluator {
   protected PTFPartition _transformRawInput(PTFPartition iPart) throws HiveException {
     return null;
   }
+
+  public void close() {
+    if (outputPartition != null) {
+      outputPartition.close();
+    }
+    outputPartition = null;
+  }
 }
 
