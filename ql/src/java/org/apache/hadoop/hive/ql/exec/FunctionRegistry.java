@@ -575,7 +575,8 @@ public final class FunctionRegistry {
     return ret;
   }
 
-  private static <T> T getQualifiedFunctionInfo(Map<String, T> mFunctions, String functionName) {
+  private static <T extends CommonFunctionInfo> T getQualifiedFunctionInfo(
+      Map<String, T> mFunctions, String functionName) {
     T functionInfo =  mFunctions.get(functionName);
     if (functionInfo == null) {
       // Try looking up in metastore.
@@ -585,10 +586,55 @@ public final class FunctionRegistry {
         functionInfo = mFunctions.get(functionName);
       }
     }
+
+    // HIVE-6672: In HiveServer2 the JARs for this UDF may have been loaded by a different thread,
+    // and the current thread may not be able to resolve the UDF. Test for this condition
+    // and if necessary load the JARs in this thread.
+    if (functionInfo != null) {
+      loadFunctionResourcesIfNecessary(functionName, functionInfo);
+    }
+    
     return functionInfo;
   }
 
-  private static <T> T getFunctionInfo(Map<String, T> mFunctions, String functionName) {
+  private static void checkFunctionClass(CommonFunctionInfo cfi) throws ClassNotFoundException {
+    // This call will fail for non-generic UDFs using GenericUDFBridge
+    Class<?> udfClass = cfi.getFunctionClass();
+    // Even if we have a reference to the class (which will be the case for GenericUDFs),
+    // the classloader may not be able to resolve the class, which would mean reflection-based
+    // methods would fail such as for plan deserialization. Make sure this works too.
+    Class.forName(udfClass.getName(), true, JavaUtils.getClassLoader());
+  }
+
+  private static void loadFunctionResourcesIfNecessary(String functionName, CommonFunctionInfo cfi) {
+    try {
+      // Check if the necessary JARs have been loaded for this function.
+      checkFunctionClass(cfi);
+    } catch (Exception e) {
+      // Unable to resolve the UDF with the classloader.
+      // Look up the function in the metastore and load any resources.
+      LOG.debug("Attempting to reload resources for " + functionName);
+      try {
+        String[] parts = FunctionUtils.getQualifiedFunctionNameParts(functionName);
+        HiveConf conf = SessionState.get().getConf();
+        Function func = Hive.get(conf).getFunction(parts[0], parts[1]);
+        if (func != null) {
+          FunctionTask.addFunctionResources(func.getResourceUris());
+          // Check again now that we've loaded the resources in this thread.
+          checkFunctionClass(cfi);
+        } else {
+          // Couldn't find the function .. just rethrow the original error
+          LOG.error("Unable to reload resources for " + functionName);
+          throw e;
+        }
+      } catch (Exception err) {
+        throw new RuntimeException(err);
+      }
+    }
+  }
+
+  private static <T extends CommonFunctionInfo> T getFunctionInfo(
+      Map<String, T> mFunctions, String functionName) {
     functionName = functionName.toLowerCase();
     T functionInfo = null;
     if (FunctionUtils.isQualifiedFunctionName(functionName)) {
