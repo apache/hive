@@ -96,6 +96,9 @@ public class GenericUDFDateAdd extends GenericUDF {
     ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     switch (inputType1) {
     case STRING:
+    case VARCHAR:
+    case CHAR:
+      inputType1 = PrimitiveCategory.STRING;
       textConverter = ObjectInspectorConverters.getConverter(
         (PrimitiveObjectInspector) arguments[0],
         PrimitiveObjectInspectorFactory.writableStringObjectInspector);
@@ -129,7 +132,14 @@ public class GenericUDFDateAdd extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
 
+    if (arguments[0].get() == null) {
+      return null;
+    }
     IntWritable toBeAdded = (IntWritable) intWritableConverter.convert(arguments[1].get());
+    if (toBeAdded == null) {
+      return null;
+    }
+
     switch (inputType1) {
     case STRING:
       String dateString = textConverter.convert(arguments[0].get()).toString();

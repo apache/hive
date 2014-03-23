@@ -47,6 +47,16 @@ public class TestGenericUDFDateAdd extends TestCase {
     Text output = (Text) udf.evaluate(args);
 
     assertEquals("date_add() test for STRING failed ", "2009-07-22", output.toString());
+
+    // Test with null args
+    args = new DeferredObject[] { new DeferredJavaObject(null), valueObj2 };
+    assertNull("date_add() 1st arg null", udf.evaluate(args));
+
+    args = new DeferredObject[] { valueObj1, new DeferredJavaObject(null) };
+    assertNull("date_add() 2nd arg null", udf.evaluate(args));
+
+    args = new DeferredObject[] { new DeferredJavaObject(null), new DeferredJavaObject(null) };
+    assertNull("date_add() both args null", udf.evaluate(args));
   }
 
   public void testTimestampToDate() throws HiveException {
@@ -63,6 +73,16 @@ public class TestGenericUDFDateAdd extends TestCase {
     Text output = (Text) udf.evaluate(args);
 
     assertEquals("date_add() test for TIMESTAMP failed ", "2009-07-23", output.toString());
+
+    // Test with null args
+    args = new DeferredObject[] { new DeferredJavaObject(null), valueObj2 };
+    assertNull("date_add() 1st arg null", udf.evaluate(args));
+
+    args = new DeferredObject[] { valueObj1, new DeferredJavaObject(null) };
+    assertNull("date_add() 2nd arg null", udf.evaluate(args));
+
+    args = new DeferredObject[] { new DeferredJavaObject(null), new DeferredJavaObject(null) };
+    assertNull("date_add() both args null", udf.evaluate(args));
   }
 
   public void testDateWritablepToDate() throws HiveException {
@@ -79,6 +99,16 @@ public class TestGenericUDFDateAdd extends TestCase {
     Text output = (Text) udf.evaluate(args);
 
     assertEquals("date_add() test for DATEWRITABLE failed ", "2009-07-24", output.toString());
+
+    // Test with null args
+    args = new DeferredObject[] { new DeferredJavaObject(null), valueObj2 };
+    assertNull("date_add() 1st arg null", udf.evaluate(args));
+
+    args = new DeferredObject[] { valueObj1, new DeferredJavaObject(null) };
+    assertNull("date_add() 2nd arg null", udf.evaluate(args));
+
+    args = new DeferredObject[] { new DeferredJavaObject(null), new DeferredJavaObject(null) };
+    assertNull("date_add() both args null", udf.evaluate(args));
   }
 
 }
