@@ -123,6 +123,10 @@ public class LineageCtx implements NodeProcessorCtx {
         old_dep.setExpr(null);
       }
     }
+
+    public void clear() {
+      depMap.clear();
+    }
   }
 
   /**
