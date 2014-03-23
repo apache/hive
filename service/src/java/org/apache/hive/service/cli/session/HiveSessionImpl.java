@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.exec.FetchFormatter;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -144,7 +143,7 @@ public class HiveSessionImpl implements HiveSession {
 
   protected synchronized void release() {
     assert sessionState != null;
-    // no need to release sessionState...
+    SessionState.detachSession();
   }
 
   @Override
@@ -411,10 +410,10 @@ public class HiveSessionImpl implements HiveSession {
         hiveHist.closeStream();
       }
       sessionState.close();
-      release();
     } catch (IOException ioe) {
-      release();
       throw new HiveSQLException("Failure to close", ioe);
+    } finally {
+      release();
     }
   }
 

@@ -96,7 +96,14 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
       }
     }
     inputPart.close();
-	}
+    inputPart = null;
+
+    for (PTFInputDef iDef = conf.getFuncDef(); iDef != null; iDef = iDef.getInput()) {
+      if (iDef instanceof PartitionedTableFunctionDef) {
+        ((PartitionedTableFunctionDef)iDef).getTFunction().close();
+      }
+    }
+  }
 
 	@Override
 	public void processOp(Object row, int tag) throws HiveException
