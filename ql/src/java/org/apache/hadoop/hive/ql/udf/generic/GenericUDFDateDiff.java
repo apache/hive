@@ -113,9 +113,14 @@ public class GenericUDFDateDiff extends GenericUDF {
     throws HiveException {
     assert(converter != null);
     assert(argument != null);
+    if (argument.get() == null) {
+      return null;
+    }
     Date date = new Date();
     switch (inputType) {
     case STRING:
+    case VARCHAR:
+    case CHAR:
       String dateString = converter.convert(argument.get()).toString();
       try {
         date = formatter.parse(dateString);
@@ -149,6 +154,8 @@ public class GenericUDFDateDiff extends GenericUDF {
     Converter converter;
     switch (inputType) {
     case STRING:
+    case VARCHAR:
+    case CHAR:
       converter = ObjectInspectorConverters.getConverter(
         (PrimitiveObjectInspector) arguments[i],
         PrimitiveObjectInspectorFactory.writableStringObjectInspector);
