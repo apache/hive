@@ -78,6 +78,14 @@ public class <ClassName> extends VectorAggregateExpression {
         throw new UnsupportedOperationException();
       }
 
+      @Override
+      public void reset () {
+        isNull = true;
+        sum = 0f;
+        count = 0;
+        variance = 0f;
+      }
+
       public void updateValueWithCheckAndInit(Decimal128 value, short scale) {
         if (this.isNull) {
           this.init();
@@ -429,7 +437,7 @@ public class <ClassName> extends VectorAggregateExpression {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       Aggregation myAgg = (Aggregation) agg;
-      myAgg.isNull = true;
+      myAgg.reset();
     }
 
     @Override
