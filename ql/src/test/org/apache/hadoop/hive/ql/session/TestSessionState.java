@@ -88,4 +88,45 @@ public class TestSessionState {
     ss.close();
     assertNull(ss.getTezSession());
   }
+
+  class RegisterJarRunnable implements Runnable {
+    String jar;
+    ClassLoader loader;
+    SessionState ss;
+
+    public RegisterJarRunnable(String jar, SessionState ss) {
+      this.jar = jar;
+      this.ss = ss;
+    }
+
+    public void run() {
+      SessionState.start(ss);
+      SessionState.registerJar(jar);
+      loader = Thread.currentThread().getContextClassLoader();
+    }
+  }
+
+  @Test
+  public void testClassLoaderEquality() throws Exception {
+    HiveConf conf = new HiveConf();
+    final SessionState ss1 = new SessionState(conf);
+    RegisterJarRunnable otherThread = new RegisterJarRunnable("./build/contrib/test/test-udfs.jar", ss1);
+    Thread th1 = new Thread(otherThread);
+    th1.start();
+    th1.join();
+
+    // set state in current thread
+    SessionState.start(ss1);
+    SessionState ss2 = SessionState.get();
+    ClassLoader loader2 = ss2.conf.getClassLoader();
+
+    System.out.println("Loader1:(Set in other thread) " + otherThread.loader);
+    System.out.println("Loader2:(Set in SessionState.conf) " + loader2);
+    System.out.println("Loader3:(CurrentThread.getContextClassLoader()) " +
+        Thread.currentThread().getContextClassLoader());
+    assertEquals("Other thread loader and session state loader",
+        otherThread.loader, loader2);
+    assertEquals("Other thread loader and current thread loader",
+        otherThread.loader, Thread.currentThread().getContextClassLoader());
+  }
 }
