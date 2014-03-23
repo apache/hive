@@ -890,6 +890,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private HivePrincipal getHivePrincipal(PrincipalDesc principal) throws HiveException {
+    if (principal == null) {
+      return null;
+    }
     return new HivePrincipal(principal.getName(),
         AuthorizationUtils.getHivePrincipalType(principal.getType()));
   }

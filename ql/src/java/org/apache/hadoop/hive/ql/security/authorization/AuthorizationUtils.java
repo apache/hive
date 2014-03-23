@@ -153,6 +153,9 @@ public class AuthorizationUtils {
    * @throws HiveException
    */
   public static HiveObjectRef getThriftHiveObjectRef(HivePrivilegeObject privObj) throws HiveException {
+    if (privObj == null) {
+      return null;
+    }
     HiveObjectType objType = getThriftHiveObjType(privObj.getType());
     return new HiveObjectRef(objType, privObj.getDbname(), privObj.getTableViewURI(), null, null);
   }

@@ -4,7 +4,10 @@ set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.Sessi
 set hive.security.authorization.enabled=true;
 set user.name=user1;
 
+-- Test view authorization , and 'show grant' variants
+
 create table t1(i int, j int, k int);
+show grant on table t1;
 
 -- protecting certain columns
 create view vt1 as select i,k from t1;
@@ -36,6 +39,9 @@ show grant user user2 on all;
 revoke all on vt2 from user user2;
 show grant user user2 on table vt2;
 
+show grant on table vt2;
+
+
 revoke select on table vt1 from user user2;
 show grant user user2 on table vt1;
 
@@ -57,3 +63,4 @@ show grant role role_v on table vt2;
 
 revoke delete on table vt2 from role role_v;
 show grant role role_v on table vt2;
+show grant on table vt2;
