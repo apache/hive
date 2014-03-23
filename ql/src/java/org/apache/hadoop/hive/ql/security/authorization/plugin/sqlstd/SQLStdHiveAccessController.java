@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
-import com.google.common.collect.ImmutableSet;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +53,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 import org.apache.thrift.TException;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Implements functionality of access control statements for sql standard based
@@ -368,9 +368,13 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     try {
       IMetaStoreClient mClient = metastoreClientFactory.getHiveMetastoreClient();
       List<HivePrivilegeInfo> resPrivInfos = new ArrayList<HivePrivilegeInfo>();
+      String principalName = principal == null ? null : principal.getName();
+      PrincipalType principalType = principal == null ? null :
+          AuthorizationUtils.getThriftPrincipalType(principal.getType());
+
       // get metastore/thrift privilege object using metastore api
-      List<HiveObjectPrivilege> msObjPrivs = mClient.list_privileges(principal.getName(),
-          AuthorizationUtils.getThriftPrincipalType(principal.getType()),
+      List<HiveObjectPrivilege> msObjPrivs = mClient.list_privileges(principalName,
+          principalType,
           SQLAuthorizationUtils.getThriftHiveObjectRef(privObj));
 
 

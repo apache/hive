@@ -1,10 +1,22 @@
-PREHOOK: query: create table t1(i int, j int, k int)
+PREHOOK: query: -- Test view authorization , and 'show grant' variants
+
+create table t1(i int, j int, k int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: create table t1(i int, j int, k int)
+POSTHOOK: query: -- Test view authorization , and 'show grant' variants
+
+create table t1(i int, j int, k int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
+PREHOOK: query: show grant on table t1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant on table t1
+POSTHOOK: type: SHOW_GRANT
+default	t1			user1	USER	DELETE	true	-1	user1
+default	t1			user1	USER	INSERT	true	-1	user1
+default	t1			user1	USER	SELECT	true	-1	user1
+default	t1			user1	USER	UPDATE	true	-1	user1
 PREHOOK: query: -- protecting certain columns
 create view vt1 as select i,k from t1
 PREHOOK: type: CREATEVIEW
@@ -110,6 +122,14 @@ PREHOOK: query: show grant user user2 on table vt2
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user2 on table vt2
 POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant on table vt2
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant on table vt2
+POSTHOOK: type: SHOW_GRANT
+default	vt2			user1	USER	DELETE	true	-1	user1
+default	vt2			user1	USER	INSERT	true	-1	user1
+default	vt2			user1	USER	SELECT	true	-1	user1
+default	vt2			user1	USER	UPDATE	true	-1	user1
 PREHOOK: query: revoke select on table vt1 from user user2
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@vt1
@@ -190,3 +210,14 @@ POSTHOOK: type: SHOW_GRANT
 default	vt2			role_v	ROLE	INSERT	false	-1	hive_admin_user
 default	vt2			role_v	ROLE	SELECT	false	-1	hive_admin_user
 default	vt2			role_v	ROLE	UPDATE	false	-1	hive_admin_user
+PREHOOK: query: show grant on table vt2
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant on table vt2
+POSTHOOK: type: SHOW_GRANT
+default	vt2			role_v	ROLE	INSERT	false	-1	hive_admin_user
+default	vt2			role_v	ROLE	SELECT	false	-1	hive_admin_user
+default	vt2			role_v	ROLE	UPDATE	false	-1	hive_admin_user
+default	vt2			user1	USER	DELETE	true	-1	user1
+default	vt2			user1	USER	INSERT	true	-1	user1
+default	vt2			user1	USER	SELECT	true	-1	user1
+default	vt2			user1	USER	UPDATE	true	-1	user1
