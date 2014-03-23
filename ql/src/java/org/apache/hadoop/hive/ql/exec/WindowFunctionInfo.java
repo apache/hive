@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 
 @SuppressWarnings("deprecation")
-public class WindowFunctionInfo
+public class WindowFunctionInfo implements CommonFunctionInfo
 {
 	boolean supportsWindow = true;
 	boolean pivotResult = false;
@@ -59,4 +59,9 @@ public class WindowFunctionInfo
 	{
 		return fInfo;
 	}
+
+  @Override
+  public Class<?> getFunctionClass() {
+    return getfInfo().getFunctionClass();
+  }
 }

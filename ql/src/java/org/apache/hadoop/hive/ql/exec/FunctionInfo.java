@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction;
  * FunctionInfo.
  *
  */
-public class FunctionInfo {
+public class FunctionInfo implements CommonFunctionInfo {
 
   private final boolean isNative;
 
