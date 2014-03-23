@@ -64,6 +64,12 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       public int getVariableSize() {
         throw new UnsupportedOperationException();
       }
+
+      @Override
+      public void reset() {
+        isNull = true;
+        sum.zeroClear();
+      }
     }
 
     private VectorExpression inputExpression;
@@ -411,7 +417,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       Aggregation myAgg = (Aggregation) agg;
-      myAgg.isNull = true;
+      myAgg.reset();
     }
 
     @Override
