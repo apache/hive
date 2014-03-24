@@ -207,11 +207,17 @@ final public class OrcStruct implements Writable {
 
     @Override
     public Object getStructFieldData(Object object, StructField field) {
+      if (object == null) {
+        return null;
+      }
       return ((OrcStruct) object).fields[((Field) field).offset];
     }
 
     @Override
     public List<Object> getStructFieldsDataAsList(Object object) {
+      if (object == null) {
+        return null;
+      }
       OrcStruct struct = (OrcStruct) object;
       List<Object> result = new ArrayList<Object>(struct.fields.length);
       for (Object child: struct.fields) {
