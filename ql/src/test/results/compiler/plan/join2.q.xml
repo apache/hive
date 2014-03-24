@@ -427,6 +427,9 @@
                    </void> 
                   </object> 
                  </void> 
+                 <void property="numBuckets"> 
+                  <int>-1</int> 
+                 </void> 
                  <void property="numDistributionKeys"> 
                   <int>1</int> 
                  </void> 
@@ -688,6 +691,9 @@
                     </object> 
                    </void> 
                   </object> 
+                 </void> 
+                 <void property="numBuckets"> 
+                  <int>-1</int> 
                  </void> 
                  <void property="numDistributionKeys"> 
                   <int>1</int> 
@@ -1100,6 +1106,11 @@
                     <void property="dirName"> 
                      <object class="org.apache.hadoop.fs.Path"> 
                       #### A masked pattern was here #### 
+                     </object> 
+                    </void> 
+                    <void property="dpSortState"> 
+                     <object id="FileSinkDesc$DPSortState0" class="org.apache.hadoop.hive.ql.plan.FileSinkDesc$DPSortState" method="valueOf"> 
+                      <string>NONE</string> 
                      </object> 
                     </void> 
                     <void property="gatherStats"> 
@@ -1753,6 +1764,9 @@
                </void> 
               </object> 
              </void> 
+             <void property="numBuckets"> 
+              <int>-1</int> 
+             </void> 
              <void property="numDistributionKeys"> 
               <int>1</int> 
              </void> 
@@ -2035,6 +2049,9 @@
                 </object> 
                </void> 
               </object> 
+             </void> 
+             <void property="numBuckets"> 
+              <int>-1</int> 
              </void> 
              <void property="numDistributionKeys"> 
               <int>1</int> 
@@ -2371,6 +2388,9 @@
               <object class="org.apache.hadoop.fs.Path"> 
                #### A masked pattern was here #### 
               </object> 
+             </void> 
+             <void property="dpSortState"> 
+              <object idref="FileSinkDesc$DPSortState0"/> 
              </void> 
              <void property="numFiles"> 
               <int>1</int> 

@@ -150,6 +150,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
         ois.add(keyObjectInspector);
         ois.add(valueObjectInspector[tag]);
+        reducer.setGroupKeyObjectInspector(keyObjectInspector);
         rowObjectInspector[tag] = ObjectInspectorFactory
             .getStandardStructObjectInspector(Utilities.reduceFieldNameList, ois);
       }
@@ -227,8 +228,8 @@ public class ExecReducer extends MapReduceBase implements Reducer {
 
         groupKey.set(keyWritable.get(), 0, keyWritable.getSize());
         l4j.trace("Start Group");
-        reducer.startGroup();
         reducer.setGroupKeyObject(keyObject);
+        reducer.startGroup();
       }
       // System.err.print(keyObject.toString());
       while (values.hasNext()) {

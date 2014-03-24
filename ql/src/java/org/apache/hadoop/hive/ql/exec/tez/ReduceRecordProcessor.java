@@ -124,6 +124,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
           .getDeserializerClass(), null);
       inputKeyDeserializer.initialize(null, keyTableDesc.getProperties());
       keyObjectInspector = inputKeyDeserializer.getObjectInspector();
+      reducer.setGroupKeyObjectInspector(keyObjectInspector);
       valueTableDesc = new TableDesc[redWork.getTagToValueDesc().size()];
       for (int tag = 0; tag < redWork.getTagToValueDesc().size(); tag++) {
         // We should initialize the SerDe with the TypeInfo when available.
@@ -291,8 +292,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
         groupKey.set(keyWritable.get(), 0, keyWritable.getSize());
         l4j.trace("Start Group");
-        reducer.startGroup();
         reducer.setGroupKeyObject(keyObject);
+        reducer.startGroup();
       }
 
       //process all the values we have for this key

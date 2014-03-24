@@ -503,6 +503,14 @@
 </property>
 
 <property>
+  <name>hive.optimize.sort.dynamic.partition</name>
+  <value>true</value>
+  <description>When enabled dynamic partitioning column will be globally sorted.
+  This way we can keep only one record writer open for each partition value
+  in the reducer thereby reducing the memory pressure on reducers.</description>
+</property>
+
+<property>
   <name>hive.optimize.skewjoin.compiletime</name>
   <value>false</value>
   <description>Whether to create a separate plan for skewed keys for the tables in the join.
