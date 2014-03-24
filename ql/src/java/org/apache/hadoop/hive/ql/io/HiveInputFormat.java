@@ -308,10 +308,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         try {
           List<Path> paths = Utilities.getInputPathsTez(job, mrwork);
           dirs = paths.toArray(new Path[paths.size()]);
-          if (dirs.length == 0) {
-            // if we still don't have any files it's time to fail.
-            throw new IOException("No input paths specified in job");
-          }
         } catch (Exception e) {
           throw new IOException("Could not create input files", e);
         }
@@ -373,11 +369,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       currentInputFormatClass = inputFormatClass;
     }
 
-    LOG.info("Generating splits");
-    addSplitsForGroup(currentDirs, currentTableScan, newjob,
-        getInputFormatFromCache(currentInputFormatClass, job),
-        currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
-        currentTable, result);
+    if (dirs.length != 0) {
+      LOG.info("Generating splits");
+      addSplitsForGroup(currentDirs, currentTableScan, newjob,
+          getInputFormatFromCache(currentInputFormatClass, job),
+          currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
+          currentTable, result);
+    }
 
     LOG.info("number of splits " + result.size());
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
