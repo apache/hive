@@ -67,6 +67,23 @@ public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writab
     return isNull ? 0 : data.hashCode();
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof LazyPrimitive<?, ?>)) {
+      return false;
+    }
+
+    if (data == obj) {
+      return true;
+    }
+
+    if (data == null || obj == null) {
+      return false;
+    }
+
+    return data.equals(((LazyPrimitive<?, ?>) obj).getWritableObject());
+  }
+
   public void logExceptionMessage(ByteArrayRef bytes, int start, int length, String dataType) {
     try {
       if(LOG.isDebugEnabled()) {

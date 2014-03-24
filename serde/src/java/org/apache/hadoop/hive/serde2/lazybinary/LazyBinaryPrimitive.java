@@ -65,4 +65,21 @@ public abstract class LazyBinaryPrimitive<OI extends ObjectInspector, T extends 
   public int hashCode() {
     return data == null ? 0 : data.hashCode();
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof LazyBinaryPrimitive<?, ?>)) {
+      return false;
+    }
+
+    if (data == obj) {
+      return true;
+    }
+
+    if (data == null || obj == null) {
+      return false;
+    }
+
+    return data.equals(((LazyBinaryPrimitive<?, ?>) obj).getWritableObject());
+  }
 }
