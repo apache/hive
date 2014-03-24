@@ -606,6 +606,10 @@ public class HiveConf extends Configuration {
     HIVEOPTSORTMERGEBUCKETMAPJOIN("hive.optimize.bucketmapjoin.sortedmerge", false), // try to use sorted merge bucket map join
     HIVEOPTREDUCEDEDUPLICATION("hive.optimize.reducededuplication", true),
     HIVEOPTREDUCEDEDUPLICATIONMINREDUCER("hive.optimize.reducededuplication.min.reducer", 4),
+    // when enabled dynamic partitioning column will be globally sorted.
+    // this way we can keep only one record writer open for each partition value
+    // in the reducer thereby reducing the memory pressure on reducers
+    HIVEOPTSORTDYNAMICPARTITION("hive.optimize.sort.dynamic.partition", true),
 
     HIVESAMPLINGFORORDERBY("hive.optimize.sampling.orderby", false),
     HIVESAMPLINGNUMBERFORORDERBY("hive.optimize.sampling.orderby.number", 1000),

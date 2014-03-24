@@ -378,6 +378,9 @@
                      </void> 
                     </object> 
                    </void> 
+                   <void property="numBuckets"> 
+                    <int>-1</int> 
+                   </void> 
                    <void property="numDistributionKeys"> 
                     <int>1</int> 
                    </void> 
@@ -927,6 +930,9 @@
                      </void> 
                     </object> 
                    </void> 
+                   <void property="numBuckets"> 
+                    <int>-1</int> 
+                   </void> 
                    <void property="numDistributionKeys"> 
                     <int>1</int> 
                    </void> 
@@ -1466,6 +1472,9 @@
                       </object> 
                      </void> 
                     </object> 
+                   </void> 
+                   <void property="numBuckets"> 
+                    <int>-1</int> 
                    </void> 
                    <void property="numDistributionKeys"> 
                     <int>1</int> 
@@ -2056,6 +2065,11 @@
                 <void property="dirName"> 
                  <object class="org.apache.hadoop.fs.Path"> 
                   #### A masked pattern was here #### 
+                 </object> 
+                </void> 
+                <void property="dpSortState"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc$DPSortState" method="valueOf"> 
+                  <string>NONE</string> 
                  </object> 
                 </void> 
                 <void property="numFiles"> 

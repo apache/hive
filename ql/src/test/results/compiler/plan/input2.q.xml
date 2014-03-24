@@ -88,6 +88,11 @@
                                #### A masked pattern was here #### 
                               </object> 
                              </void> 
+                             <void property="dpSortState"> 
+                              <object id="FileSinkDesc$DPSortState0" class="org.apache.hadoop.hive.ql.plan.FileSinkDesc$DPSortState" method="valueOf"> 
+                               <string>NONE</string> 
+                              </object> 
+                             </void> 
                              <void property="numFiles"> 
                               <int>1</int> 
                              </void> 
@@ -634,6 +639,9 @@
                                #### A masked pattern was here #### 
                               </object> 
                              </void> 
+                             <void property="dpSortState"> 
+                              <object idref="FileSinkDesc$DPSortState0"/> 
+                             </void> 
                              <void property="numFiles"> 
                               <int>1</int> 
                              </void> 
@@ -1116,6 +1124,9 @@
                               <object class="org.apache.hadoop.fs.Path"> 
                                #### A masked pattern was here #### 
                               </object> 
+                             </void> 
+                             <void property="dpSortState"> 
+                              <object idref="FileSinkDesc$DPSortState0"/> 
                              </void> 
                              <void property="numFiles"> 
                               <int>1</int> 
@@ -1708,6 +1719,9 @@
                      #### A masked pattern was here #### 
                     </object> 
                    </void> 
+                   <void property="dpSortState"> 
+                    <object idref="FileSinkDesc$DPSortState0"/> 
+                   </void> 
                    <void property="gatherStats"> 
                     <boolean>true</boolean> 
                    </void> 
@@ -1974,6 +1988,9 @@
                     <object class="org.apache.hadoop.fs.Path"> 
                      #### A masked pattern was here #### 
                     </object> 
+                   </void> 
+                   <void property="dpSortState"> 
+                    <object idref="FileSinkDesc$DPSortState0"/> 
                    </void> 
                    <void property="gatherStats"> 
                     <boolean>true</boolean> 
@@ -2255,6 +2272,9 @@
                     <object class="org.apache.hadoop.fs.Path"> 
                      #### A masked pattern was here #### 
                     </object> 
+                   </void> 
+                   <void property="dpSortState"> 
+                    <object idref="FileSinkDesc$DPSortState0"/> 
                    </void> 
                    <void property="gatherStats"> 
                     <boolean>true</boolean> 
