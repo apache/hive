@@ -32,6 +32,9 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Heartbeater;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.tez.dag.api.TezException;
@@ -93,9 +96,12 @@ public class TezJobMonitor {
    * status retrieval.
    *
    * @param dagClient client that was used to kick off the job
+   * @param txnMgr transaction manager for this operation
+   * @param conf configuration file for this operation
    * @return int 0 - success, 1 - killed, 2 - failed
    */
-  public int monitorExecution(final DAGClient dagClient) throws InterruptedException {
+  public int monitorExecution(final DAGClient dagClient, HiveTxnManager txnMgr,
+                              HiveConf conf) throws InterruptedException {
     DAGStatus status = null;
     completed = new HashSet<String>();
 
@@ -106,6 +112,7 @@ public class TezJobMonitor {
     DAGStatus.State lastState = null;
     String lastReport = null;
     Set<StatusGetOpts> opts = new HashSet<StatusGetOpts>();
+    Heartbeater heartbeater = new Heartbeater(txnMgr, conf);
 
     shutdownList.add(dagClient);
 
@@ -119,6 +126,7 @@ public class TezJobMonitor {
         status = dagClient.getDAGStatus(opts);
         Map<String, Progress> progressMap = status.getVertexProgress();
         DAGStatus.State state = status.getState();
+        heartbeater.heartbeat();
 
         if (state != lastState || state == RUNNING) {
           lastState = state;
