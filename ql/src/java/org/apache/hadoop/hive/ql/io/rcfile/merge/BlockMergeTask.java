@@ -213,7 +213,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
 
-      returnVal = jobExecHelper.progress(rj, jc);
+      returnVal = jobExecHelper.progress(rj, jc, null);
       success = (returnVal == 0);
 
     } catch (Exception e) {
