@@ -153,6 +153,11 @@
                   #### A masked pattern was here #### 
                  </object> 
                 </void> 
+                <void property="dpSortState"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc$DPSortState" method="valueOf"> 
+                  <string>NONE</string> 
+                 </object> 
+                </void> 
                 <void property="numFiles"> 
                  <int>1</int> 
                 </void> 

@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -47,7 +48,11 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
+
+import com.google.common.collect.Lists;
 
 /**
  * If two reducer sink operators share the same partition/sort columns and order,
@@ -296,6 +301,20 @@ public class ReduceSinkDeDuplication implements Transform {
         pRS.getConf().setNumReducers(cRS.getConf().getNumReducers());
       }
 
+      if (result[4] > 0) {
+        // This case happens only when pRS key is empty in which case we can use
+        // number of distribution keys and key serialization info from cRS
+        pRS.getConf().setNumDistributionKeys(cRS.getConf().getNumDistributionKeys());
+        List<FieldSchema> fields = PlanUtils.getFieldSchemasFromColumnList(pRS.getConf()
+            .getKeyCols(), "reducesinkkey");
+        TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(fields, pRS.getConf().getOrder());
+        ArrayList<String> outputKeyCols = Lists.newArrayList();
+        for (int i = 0; i < fields.size(); i++) {
+          outputKeyCols.add(fields.get(i).getName());
+        }
+        pRS.getConf().setOutputKeyColumnNames(outputKeyCols);
+        pRS.getConf().setKeySerializeInfo(keyTable);
+      }
       return true;
     }
 
@@ -333,7 +352,28 @@ public class ReduceSinkDeDuplication implements Transform {
       if (movePartitionColTo == null) {
         return null;
       }
-      return new int[] {moveKeyColTo, movePartitionColTo, moveRSOrderTo, moveReducerNumTo};
+      Integer moveNumDistKeyTo = checkNumDistributionKey(cConf.getNumDistributionKeys(),
+          pConf.getNumDistributionKeys());
+      return new int[] {moveKeyColTo, movePartitionColTo, moveRSOrderTo,
+          moveReducerNumTo, moveNumDistKeyTo};
+    }
+
+    private Integer checkNumDistributionKey(int cnd, int pnd) {
+      // number of distribution keys of cRS is chosen only when numDistKeys of pRS
+      // is 0 or less. In all other cases, distribution of the keys is based on
+      // the pRS which is more generic than cRS.
+      // Examples:
+      // case 1: if pRS sort key is (a, b) and cRS sort key is (a, b, c) and number of
+      // distribution keys are 2 and 3 resp. then after merge the sort keys will
+      // be (a, b, c) while the number of distribution keys will be 2.
+      // case 2: if pRS sort key is empty and number of distribution keys is 0
+      // and if cRS sort key is (a, b) and number of distribution keys is 2 then
+      // after merge new sort key will be (a, b) and number of distribution keys
+      // will be 2.
+      if (pnd <= 0) {
+        return 1;
+      }
+      return 0;
     }
 
     /**

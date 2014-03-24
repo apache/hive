@@ -202,7 +202,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	1342                
+	totalSize           	1383                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -250,7 +250,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	1342                
+	totalSize           	1343                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -339,7 +339,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	719                 
+	totalSize           	722                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -347,9 +347,9 @@ SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
 OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	1                   	 
-Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:1)]	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='12')
@@ -391,7 +391,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	722                 
+	totalSize           	754                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -399,9 +399,9 @@ SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
 OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	1                   	 
-Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:1)]	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: CREATE TABLE srcpart_merge_dp LIKE srcpart
@@ -637,13 +637,14 @@ POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpar
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
-  Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
-  Stage-2 depends on stages: Stage-0
-  Stage-3
+  Stage-2 depends on stages: Stage-1
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-6 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-3 depends on stages: Stage-0
+  Stage-4
+  Stage-6
+  Stage-7 depends on stages: Stage-6
 
 STAGE PLANS:
   Stage: Stage-1
@@ -681,17 +682,37 @@ STAGE PLANS:
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               table:
-                  input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                  name: default.test_table
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-7
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col2 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col2 (type: string)
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+      Reduce Operator Tree:
+        Extract
+          Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                name: default.test_table
+
+  Stage: Stage-8
     Conditional Operator
 
-  Stage: Stage-4
+  Stage: Stage-5
     Move Operator
       files:
           hdfs directory: true
@@ -710,16 +731,16 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.test_table
 
-  Stage: Stage-2
+  Stage: Stage-3
     Stats-Aggr Operator
 
-  Stage: Stage-3
-    Block level merge
-
-  Stage: Stage-5
+  Stage: Stage-4
     Block level merge
 
   Stage: Stage-6
+    Block level merge
+
+  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true
@@ -813,7 +834,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	115                 
+	totalSize           	95                  
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -870,10 +891,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	2                   
+	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	1427                
+	totalSize           	1346                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

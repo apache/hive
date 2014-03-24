@@ -1993,6 +1993,14 @@ public final class Utilities {
     return names;
   }
 
+  public static List<String> getInternalColumnNamesFromSignature(List<ColumnInfo> colInfos) {
+    List<String> names = new ArrayList<String>();
+    for (ColumnInfo ci : colInfos) {
+      names.add(ci.getInternalName());
+    }
+    return names;
+  }
+
   public static List<String> getColumnNames(Properties props) {
     List<String> names = new ArrayList<String>();
     String colNames = props.getProperty(serdeConstants.LIST_COLUMNS);

@@ -492,6 +492,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     LOG.debug("Starting group for children:");
     for (Operator<? extends OperatorDesc> op : childOperators) {
+      op.setGroupKeyObjectInspector(groupKeyOI);
+      op.setGroupKeyObject(groupKeyObject);
       op.startGroup();
     }
 
@@ -958,6 +960,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   protected transient Object groupKeyObject;
+  protected transient ObjectInspector groupKeyOI;
 
   public String getOperatorId() {
     return operatorId;
@@ -1253,5 +1256,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     } else {
       LOG.warn("Cannot set stats when there's no descriptor: "+this);
     }
+  }
+
+  public void setGroupKeyObjectInspector(ObjectInspector keyObjectInspector) {
+    this.groupKeyOI = keyObjectInspector;
+  }
+
+  public ObjectInspector getGroupKeyObjectInspector() {
+    return groupKeyOI;
   }
 }
