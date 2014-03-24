@@ -56,7 +56,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> implements
     Serializable {
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(HashTableSinkOperator.class.getName());
+  protected static final Log LOG = LogFactory.getLog(HashTableSinkOperator.class.getName());
 
   /**
    * The expressions for join inputs's join keys.
