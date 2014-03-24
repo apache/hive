@@ -370,7 +370,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	14350               
-	totalSize           	1728                
+	totalSize           	1783                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -429,7 +429,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	14450               
-	totalSize           	1744                
+	totalSize           	1785                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -598,7 +598,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	14350               
-	totalSize           	1728                
+	totalSize           	1783                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -665,7 +665,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	14450               
-	totalSize           	1744                
+	totalSize           	1785                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -915,10 +915,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	14350               
-	totalSize           	1728                
+	rawDataSize         	14380               
+	totalSize           	3892                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -990,10 +990,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	14450               
-	totalSize           	1744                
+	rawDataSize         	14448               
+	totalSize           	3982                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1229,10 +1229,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	14350               
-	totalSize           	1728                
+	rawDataSize         	14380               
+	totalSize           	3892                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1312,10 +1312,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	14450               
-	totalSize           	1744                
+	rawDataSize         	14448               
+	totalSize           	3982                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1761,7 +1761,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	14350               
-	totalSize           	1728                
+	totalSize           	1783                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

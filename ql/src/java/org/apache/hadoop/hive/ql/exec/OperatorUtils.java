@@ -64,6 +64,36 @@ public class OperatorUtils {
     return found;
   }
 
+  public static <T> Set<T> findOperatorsUpstream(Operator<?> start, Class<T> clazz) {
+    return findOperatorsUpstream(start, clazz, new HashSet<T>());
+  }
+
+  public static <T> T findSingleOperatorUpstream(Operator<?> start, Class<T> clazz) {
+    Set<T> found = findOperatorsUpstream(start, clazz, new HashSet<T>());
+    return found.size() == 1 ? found.iterator().next() : null;
+  }
+
+  public static <T> Set<T> findOperatorsUpstream(Collection<Operator<?>> starts, Class<T> clazz) {
+    Set<T> found = new HashSet<T>();
+    for (Operator<?> start : starts) {
+      findOperatorsUpstream(start, clazz, found);
+    }
+    return found;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> Set<T> findOperatorsUpstream(Operator<?> start, Class<T> clazz, Set<T> found) {
+    if (clazz.isInstance(start)) {
+      found.add((T) start);
+    }
+    if (start.getParentOperators() != null) {
+      for (Operator<?> parent : start.getParentOperators()) {
+        findOperatorsUpstream(parent, clazz, found);
+      }
+    }
+    return found;
+  }
+
   public static void setChildrenCollector(List<Operator<? extends OperatorDesc>> childOperators, OutputCollector out) {
     if (childOperators == null) {
       return;
