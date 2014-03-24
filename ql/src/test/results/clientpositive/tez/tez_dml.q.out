@@ -1499,6 +1499,41 @@ POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldS
 169	val_169
 403	val_403
 97	val_97
+PREHOOK: query: -- create empty table
+CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@tmp_src_part
+POSTHOOK: query: -- create empty table
+CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@tmp_src_part
+POSTHOOK: Output: default@empty
+POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty
+#### A masked pattern was here ####
+POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: -- drop the tables
 DROP TABLE even
 PREHOOK: type: DROPTABLE
