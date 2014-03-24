@@ -513,16 +513,17 @@ public class TestJdbcDriver extends TestCase {
     assertEquals(
       "Unexpected column count", expectedColCount, meta.getColumnCount());
 
+    String colQualifier = ((tableName != null) && !tableName.isEmpty()) ? tableName.toLowerCase() + "."  : "";
     boolean moreRow = res.next();
     while (moreRow) {
       try {
         i++;
-        assertEquals(res.getInt(1), res.getInt("under_col"));
-        assertEquals(res.getString(1), res.getString("under_col"));
-        assertEquals(res.getString(2), res.getString("value"));
+        assertEquals(res.getInt(1), res.getInt(colQualifier + "under_col"));
+        assertEquals(res.getString(1), res.getString(colQualifier + "under_col"));
+        assertEquals(res.getString(2), res.getString(colQualifier + "value"));
         if (isPartitionTable) {
           assertEquals(res.getString(3), partitionedColumnValue);
-          assertEquals(res.getString(3), res.getString(partitionedColumnName));
+          assertEquals(res.getString(3), res.getString(colQualifier + partitionedColumnName));
         }
         assertFalse("Last result value was not null", res.wasNull());
         assertNull("No warnings should be found on ResultSet", res
