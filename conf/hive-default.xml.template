@@ -2476,6 +2476,16 @@
 </property>
 
 <property>
+  <name>hive.resultset.use.unique.column.names</name>
+  <value>true</value>
+  <description>
+    Make column names unique in the result set by qualifying column names with table alias if needed.
+    Table alias will be added to column names for queries of type "select *" or
+    if query explicitly uses table alias "select r1.x..".
+  </description>
+</property>
+
+<property>
   <name>hive.compat</name>
   <value>0.12</value>
   <description>

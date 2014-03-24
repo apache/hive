@@ -221,6 +221,9 @@ public class HiveConf extends Configuration {
     // Max number of lines of footer user can set for a table file.
     HIVE_FILE_MAX_FOOTER("hive.file.max.footer", 100),
 
+    // Make column names unique in the result set by using table alias if needed
+    HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES("hive.resultset.use.unique.column.names", true),
+
     // Hadoop Configuration Properties
     // Properties with null values are ignored and exist only for the purpose of giving us
     // a symbolic name to reference in the Hive source code. Properties with non-null
