@@ -29,6 +29,10 @@ INSERT INTO TABLE odd SELECT key, value WHERE key % 2 = 1;
 SELECT * FROM even;
 SELECT * FROM odd;
 
+-- create empty table
+CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000;
+SELECT * FROM empty;
+
 -- drop the tables
 DROP TABLE even;
 DROP TABLE odd;
