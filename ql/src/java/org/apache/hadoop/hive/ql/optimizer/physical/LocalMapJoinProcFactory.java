@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
@@ -58,6 +60,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
  * OOM in group by operator.
  */
 public final class LocalMapJoinProcFactory {
+  private static final Log LOG = LogFactory.getLog(LocalMapJoinProcFactory.class);
 
   public static NodeProcessor getJoinProc() {
     return new LocalMapJoinProcessor();
@@ -133,6 +136,9 @@ public final class LocalMapJoinProcFactory {
         hashtableMemoryUsage = conf.getFloatVar(
             HiveConf.ConfVars.HIVEHASHTABLEMAXMEMORYUSAGE);
       }
+      mapJoinOp.getConf().setHashTableMemoryUsage(hashtableMemoryUsage);
+      LOG.info("Setting max memory usage to " + hashtableMemoryUsage + " for table sink "
+          + (context.isFollowedByGroupBy() ? "" : "not") + " followed by group by");
       hashTableSinkOp.getConf().setHashtableMemoryUsage(hashtableMemoryUsage);
 
       // get the last operator for processing big tables
