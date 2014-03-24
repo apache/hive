@@ -1483,11 +1483,10 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super.write(obj);
       if (obj != null) {
         MapObjectInspector insp = (MapObjectInspector) inspector;
-        int len = insp.getMapSize(obj);
-        lengths.write(len);
         // this sucks, but it will have to do until we can get a better
         // accessor in the MapObjectInspector.
         Map<?, ?> valueMap = insp.getMap(obj);
+        lengths.write(valueMap.size());
         for(Map.Entry<?, ?> entry: valueMap.entrySet()) {
           childrenWriters[0].write(entry.getKey());
           childrenWriters[1].write(entry.getValue());
