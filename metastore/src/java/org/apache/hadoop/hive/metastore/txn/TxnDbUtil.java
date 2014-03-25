@@ -30,8 +30,6 @@ import java.util.Properties;
  * here in a separate class so it can be shared across unit tests.
  */
 public class TxnDbUtil {
-  private final static String jdbcString = "jdbc:derby:;databaseName=metastore_db;create=true";
-  private final static String jdbcDriver = "org.apache.derby.jdbc.EmbeddedDriver";
   private final static String txnMgr = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
 
   /**
@@ -41,8 +39,6 @@ public class TxnDbUtil {
    * @param conf HiveConf to add these values to.
    */
   public static void setConfValues(HiveConf conf) {
-    conf.setVar(HiveConf.ConfVars.HIVE_TXN_JDBC_DRIVER, jdbcDriver);
-    conf.setVar(HiveConf.ConfVars.HIVE_TXN_JDBC_CONNECT_STRING, jdbcString);
     conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, txnMgr);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
   }
@@ -52,8 +48,7 @@ public class TxnDbUtil {
     // intended for creating derby databases, and thus will inexorably get
     // out of date with it.  I'm open to any suggestions on how to make this
     // read the file in a build friendly way.
-    Driver driver = (Driver)Class.forName(jdbcDriver).newInstance();
-    Connection conn = driver.connect(jdbcString, new Properties());
+    Connection conn = getConnection();
     Statement s = conn.createStatement();
     s.execute("CREATE TABLE TXNS (" +
         "  TXN_ID bigint PRIMARY KEY," +
@@ -115,8 +110,7 @@ public class TxnDbUtil {
   }
 
   public static void cleanDb() throws  Exception {
-    Driver driver = (Driver)Class.forName(jdbcDriver).newInstance();
-    Connection conn = driver.connect(jdbcString, new Properties());
+    Connection conn = getConnection();
     Statement s = conn.createStatement();
     // We want to try these, whether they succeed or fail.
     try {
@@ -178,8 +172,7 @@ public class TxnDbUtil {
    * @return number of components, or 0 if there is no lock
    */
   public static int countLockComponents(long lockId) throws  Exception {
-    Driver driver = (Driver)Class.forName(jdbcDriver).newInstance();
-    Connection conn = driver.connect(jdbcString, new Properties());
+    Connection conn = getConnection();
     Statement s = conn.createStatement();
     ResultSet rs = s.executeQuery("select count(*) from hive_locks where " +
         "hl_lock_ext_id = " + lockId);
@@ -191,8 +184,7 @@ public class TxnDbUtil {
   }
 
   public static int findNumCurrentLocks() throws Exception {
-    Driver driver = (Driver)Class.forName(jdbcDriver).newInstance();
-    Connection conn = driver.connect(jdbcString, new Properties());
+    Connection conn = getConnection();
     Statement s = conn.createStatement();
     ResultSet rs = s.executeQuery("select count(*) from hive_locks");
     if (!rs.next()) return 0;
@@ -200,6 +192,19 @@ public class TxnDbUtil {
     conn.rollback();
     conn.close();
     return rc;
+  }
+
+  private static Connection getConnection() throws Exception {
+    HiveConf conf = new HiveConf();
+    String jdbcDriver = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
+    Driver driver = (Driver)Class.forName(jdbcDriver).newInstance();
+    Properties prop = new Properties();
+    String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
+    String user = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
+    String passwd = HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREPWD);
+    prop.put("user", user);
+    prop.put("password", passwd);
+    return driver.connect(driverUrl, prop);
   }
 
 }

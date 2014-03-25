@@ -920,25 +920,6 @@ public class TestTxnHandler {
     }
   }
 
-  @Ignore // This test breaks the others when it unsets the value
-  @Test
-  public void testNoJDBCDriver() throws Exception {
-    HiveConf confCopy = new HiveConf(conf);
-    confCopy.unset(HiveConf.ConfVars.HIVE_TXN_JDBC_DRIVER.varname);
-    boolean sawException = false;
-    try {
-      TxnHandler tt = new TxnHandler(confCopy);
-    } catch (Exception e) {
-      if (e instanceof RuntimeException && e.getMessage().contains("JDBC " +
-          "driver for transaction db not set")) {
-        sawException = true;
-      } else {
-        throw e;
-      }
-    }
-    assertTrue(sawException);
-  }
-
   @Test
   public void testCompactMajorWithPartition() throws Exception {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MAJOR);
