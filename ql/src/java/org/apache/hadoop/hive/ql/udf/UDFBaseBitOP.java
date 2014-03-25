@@ -30,13 +30,6 @@ import org.apache.hadoop.io.LongWritable;
  */
 public abstract class UDFBaseBitOP extends UDF {
 
-  /**
-   * Constructor.
-   */
-  public UDFBaseBitOP() {
-    super();
-  }
-
   protected ByteWritable byteWritable = new ByteWritable();
   protected ShortWritable shortWritable = new ShortWritable();
   protected IntWritable intWritable = new IntWritable();

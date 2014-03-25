@@ -19,33 +19,30 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnLongToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * UDFLn.
- *
  */
 @Description(name = "ln",
-    value = "_FUNC_(x) - Returns the natural logarithm of x",
-    extended = "Example:\n"
-    + "  > SELECT _FUNC_(1) FROM src LIMIT 1;\n" + "  0")
+             value = "_FUNC_(x) - Returns the natural logarithm of x",
+             extended = "Example:\n"
+                        + "  > SELECT _FUNC_(1) FROM src LIMIT 1;\n"
+                        + "  0")
 @VectorizedExpressions({FuncLnLongToDouble.class, FuncLnDoubleToDouble.class})
 public class UDFLn extends UDFMath {
-  private final DoubleWritable result = new DoubleWritable();
 
-  public UDFLn() {
-  }
+  private final DoubleWritable result = new DoubleWritable();
 
   /**
    * Returns the natural logarithm of "a".
    */
-  public DoubleWritable evaluate(DoubleWritable a) {
-    if (a == null || a.get() <= 0.0) {
+  @Override
+  protected DoubleWritable doEvaluate(DoubleWritable a) {
+    if (a.get() <= 0.0) {
       return null;
     } else {
       result.set(Math.log(a.get()));
