@@ -75,10 +75,8 @@ public class TxnHandler {
     checkQFileTestHack();
 
     // Set up the JDBC connection pool
-    String connString =
-        HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TXN_JDBC_CONNECT_STRING);
     try {
-      setupJdbcConnectionPool(connString);
+      setupJdbcConnectionPool();
     } catch (SQLException e) {
       String msg = "Unable to instantiate JDBC connection pooling, " + e.getMessage();
       LOG.error(msg);
@@ -1261,13 +1259,19 @@ public class TxnHandler {
     }
   }
 
-  private synchronized void setupJdbcConnectionPool(String driverUrl) throws SQLException {
+  private synchronized void setupJdbcConnectionPool() throws SQLException {
     if (connPool != null) return;
+
+    String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
+    String user = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
+    String passwd = HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREPWD);
 
     BoneCPConfig config = new BoneCPConfig();
     config.setJdbcUrl(driverUrl);
     config.setMaxConnectionsPerPartition(10);
     config.setPartitionCount(1);
+    config.setUser(user);
+    config.setPassword(passwd);
     connPool = new BoneCP(config);
   }
 
