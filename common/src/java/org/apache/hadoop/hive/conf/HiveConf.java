@@ -125,8 +125,6 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.USERS_IN_ADMIN_ROLE,
       HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
       HiveConf.ConfVars.HIVE_TXN_MANAGER,
-      HiveConf.ConfVars.HIVE_TXN_JDBC_DRIVER,
-      HiveConf.ConfVars.HIVE_TXN_JDBC_CONNECT_STRING,
       HiveConf.ConfVars.HIVE_TXN_TIMEOUT,
       HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
       };
@@ -718,8 +716,6 @@ public class HiveConf extends Configuration {
     // Transactions
     HIVE_TXN_MANAGER("hive.txn.manager",
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager"),
-    HIVE_TXN_JDBC_DRIVER("hive.txn.driver", ""),
-    HIVE_TXN_JDBC_CONNECT_STRING("hive.txn.connection.string", ""),
     // time after which transactions are declared aborted if the client has
     // not sent a heartbeat, in seconds.
     HIVE_TXN_TIMEOUT("hive.txn.timeout", 300),
