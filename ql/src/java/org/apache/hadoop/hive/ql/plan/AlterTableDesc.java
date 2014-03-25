@@ -48,7 +48,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN, ADDPARTITION,
     TOUCH, ARCHIVE, UNARCHIVE, ALTERPROTECTMODE, ALTERPARTITIONPROTECTMODE,
     ALTERLOCATION, DROPPARTITION, RENAMEPARTITION, ADDSKEWEDBY, ALTERSKEWEDLOCATION,
-    ALTERBUCKETNUM, ALTERPARTITION
+    ALTERBUCKETNUM, ALTERPARTITION, COMPACT
   }
 
   public static enum ProtectModeType {
@@ -701,5 +701,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   public boolean getIsDropIfExists() {
     return isDropIfExists;
   }
+
 
 }

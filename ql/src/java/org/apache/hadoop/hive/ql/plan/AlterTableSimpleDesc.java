@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ public class AlterTableSimpleDesc extends DDLDesc {
   private String tableName;
   private String dbName;
   private LinkedHashMap<String, String> partSpec;
+  private String compactionType;
 
   AlterTableTypes type;
 
@@ -55,6 +57,22 @@ public class AlterTableSimpleDesc extends DDLDesc {
       this.partSpec = new LinkedHashMap<String,String>(partSpec);
     }
     this.type = type;
+  }
+
+  /**
+   * Constructor for ALTER TABLE ... COMPACT.
+   * @param dbname name of the database containing the table
+   * @param tableName name of the table to compact
+   * @param partSpec partition to compact
+   * @param compactionType currently supported values: 'major' and 'minor'
+   */
+  public AlterTableSimpleDesc(String dbname, String tableName,
+                              LinkedHashMap<String,  String> partSpec,  String compactionType) {
+    type = AlterTableTypes.COMPACT;
+    this.compactionType = compactionType;
+    this.dbName = dbname;
+    this.tableName = tableName;
+    this.partSpec = partSpec;
   }
 
   public String getTableName() {
@@ -87,6 +105,14 @@ public class AlterTableSimpleDesc extends DDLDesc {
 
   public void setPartSpec(LinkedHashMap<String, String> partSpec) {
     this.partSpec = partSpec;
+  }
+
+  /**
+   * Get what type of compaction is being done by a ALTER TABLE ... COMPACT statement.
+   * @return Compaction type, currently supported values are 'major' and 'minor'.
+   */
+  public String getCompactionType() {
+    return compactionType;
   }
 
 }
