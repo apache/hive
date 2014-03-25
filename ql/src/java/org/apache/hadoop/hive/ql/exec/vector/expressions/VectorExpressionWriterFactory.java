@@ -447,28 +447,24 @@ public final class VectorExpressionWriterFactory {
       SettableHiveDecimalObjectInspector fieldObjInspector) throws HiveException {
 
     return new VectorExpressionWriterDecimal() {
-      private HiveDecimal hd;
       private Object obj;
 
       public VectorExpressionWriter init(SettableHiveDecimalObjectInspector objInspector) throws HiveException {
         super.init(objInspector);
-        hd = HiveDecimal.create(BigDecimal.ZERO);
         obj = initValue(null);
         return this;
       }
 
       @Override
       public Object writeValue(Decimal128 value) throws HiveException {
-        hd.setNormalize(value.toBigDecimal());
-        ((SettableHiveDecimalObjectInspector) this.objectInspector).set(obj, hd);
-        return obj;
+        return ((SettableHiveDecimalObjectInspector) this.objectInspector).set(obj,
+            HiveDecimal.create(value.toBigDecimal()));
       }
 
       @Override
       public Object setValue(Object field, Decimal128 value) {
-        hd.setNormalize(value.toBigDecimal());
-        ((SettableHiveDecimalObjectInspector) this.objectInspector).set(field, hd);
-        return field;
+        return ((SettableHiveDecimalObjectInspector) this.objectInspector).set(field,
+            HiveDecimal.create(value.toBigDecimal()));
       }
 
       @Override

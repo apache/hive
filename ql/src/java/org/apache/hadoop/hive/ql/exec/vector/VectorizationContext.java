@@ -120,6 +120,11 @@ public class VectorizationContext {
   //Map column number to type
   private final OutputColumnManager ocm;
 
+  // File key is used by operators to retrieve the scratch vectors
+  // from mapWork at runtime. The operators that modify the structure of
+  // a vector row batch, need to allocate scratch vectors as well. Every
+  // operator that creates a new Vectorization context should set a unique
+  // fileKey.
   private String fileKey = null;
 
   // Set of UDF classes for type casting data types in row-mode.
@@ -151,6 +156,19 @@ public class VectorizationContext {
     vMap = new VectorExpressionDescriptor();
   }
 
+  /**
+   * This constructor inherits the OutputColumnManger and from
+   * the 'parent' constructor, therefore this should be used only by operators
+   * that don't create a new vectorized row batch. This should be used only by
+   * operators that want to modify the columnName map without changing the row batch.
+   */
+  public VectorizationContext(VectorizationContext parent) {
+    this.columnMap = new HashMap<String, Integer>(parent.columnMap);
+    this.ocm = parent.ocm;
+    this.firstOutputColumnIndex = parent.firstOutputColumnIndex;
+    vMap = new VectorExpressionDescriptor();
+  }
+
   public String getFileKey() {
     return fileKey;
   }
@@ -170,7 +188,7 @@ public class VectorizationContext {
     return columnMap.get(colExpr.getColumn());
   }
 
-  private class OutputColumnManager {
+  private static class OutputColumnManager {
     private final int initialOutputCol;
     private int outputColCount = 0;
 
