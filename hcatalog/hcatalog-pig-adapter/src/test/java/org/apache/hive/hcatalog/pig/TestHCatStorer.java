@@ -358,7 +358,7 @@ public class TestHCatStorer extends HCatBaseTest {
     }
     Assert.assertEquals("Expected " + NUM_ROWS + " rows; got " + numRowsRead + " file=" + INPUT_FILE_NAME, NUM_ROWS, numRowsRead);
   }
-  private static void dumpFile(String fileName) throws Exception {
+  static void dumpFile(String fileName) throws Exception {
     File file = new File(fileName);
     BufferedReader reader = new BufferedReader(new FileReader(file));
     String line = null;

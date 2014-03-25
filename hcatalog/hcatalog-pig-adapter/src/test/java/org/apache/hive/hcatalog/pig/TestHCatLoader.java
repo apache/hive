@@ -94,7 +94,7 @@ public class TestHCatLoader {
     dropTable(tablename, driver);
   }
   static void dropTable(String tablename, Driver driver) throws IOException, CommandNeedRetryException {
-    driver.run("drop table " + tablename);
+    driver.run("drop table if exists " + tablename);
   }
 
   private void createTable(String tablename, String schema, String partitionedBy) throws IOException, CommandNeedRetryException {
