@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 /**
  * Select operator implementation.
  */
-public class VectorSelectOperator extends SelectOperator {
+public class VectorSelectOperator extends SelectOperator implements VectorizationContextRegion {
 
   private static final long serialVersionUID = 1L;
 
@@ -47,6 +47,9 @@ public class VectorSelectOperator extends SelectOperator {
   private transient int [] projectedColumns = null;
 
   private transient VectorExpressionWriter [] valueWriters = null;
+
+  // Create a new outgoing vectorization context because column name map will change.
+  private VectorizationContext vOutContext;
 
   public VectorSelectOperator(VectorizationContext vContext, OperatorDesc conf)
       throws HiveException {
@@ -59,14 +62,21 @@ public class VectorSelectOperator extends SelectOperator {
       vExpressions[i] = ve;
     }
 
-    Map<String, Integer> cMap = vContext.getColumnMap();
+    /**
+     * Create a new vectorization context to update the column map but same output column manager
+     * must be inherited to track the scratch the columns.
+     */
+    vOutContext = new VectorizationContext(vContext);
+
+    // Set a fileKey, although this operator doesn't use it.
+    vOutContext.setFileKey(vContext.getFileKey() + "/_SELECT_");
+
+    // Update column map
+    vOutContext.getColumnMap().clear();
     for (int i=0; i < colList.size(); ++i) {
       String columnName = this.conf.getOutputColumnNames().get(i);
-      if (!cMap.containsKey(columnName)) {
-        VectorExpression ve = vExpressions[i];
-        // Update column map with output column names
-        vContext.addToColumnMap(columnName, ve.getOutputColumn());
-      }
+      VectorExpression ve = vExpressions[i];
+      vOutContext.addToColumnMap(columnName, ve.getOutputColumn());
     }
   }
 
@@ -152,5 +162,10 @@ public class VectorSelectOperator extends SelectOperator {
 
   public void setVExpressions(VectorExpression[] vExpressions) {
     this.vExpressions = vExpressions;
+  }
+
+  @Override
+  public VectorizationContext getOuputVectorizationContext() {
+    return vOutContext;
   }
 }
