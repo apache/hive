@@ -205,7 +205,7 @@ public class TxnHandler {
 
       Statement stmt = dbConn.createStatement();
       LOG.debug("Going to execute query <select ntxn_next from NEXT_TXN_ID " +
-          "for update>");
+          " for update>");
       ResultSet rs =
           stmt.executeQuery("select ntxn_next from NEXT_TXN_ID for update");
       if (!rs.next()) {
@@ -806,7 +806,7 @@ public class TxnHandler {
       if (txnid > 0) {
         // We need to check whether this transaction is valid and open
         String s = "select txn_state from TXNS where txn_id = " +
-            txnid + "for update";
+            txnid + " for update";
         LOG.debug("Going to execute query <" + s + ">");
         ResultSet rs = stmt.executeQuery(s);
         if (!rs.next()) {
@@ -1157,7 +1157,7 @@ public class TxnHandler {
       long now = System.currentTimeMillis();
       // We need to check whether this transaction is valid and open
       String s = "select txn_state from TXNS where txn_id = " +
-          txnid + "for update";
+          txnid + " for update";
       LOG.debug("Going to execute query <" + s + ">");
       ResultSet rs = stmt.executeQuery(s);
       if (!rs.next()) {
