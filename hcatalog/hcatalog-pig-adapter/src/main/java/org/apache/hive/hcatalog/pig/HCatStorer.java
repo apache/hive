@@ -149,9 +149,6 @@ public class HCatStorer extends HCatBaseStorer {
    */
   @Override
   public void setStoreLocation(String location, Job job) throws IOException {
-    HCatContext.INSTANCE.setConf(job.getConfiguration()).getConf().get()
-      .setBoolean(HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION, false);
-
     Configuration config = job.getConfiguration();
     config.set(INNER_SIGNATURE, INNER_SIGNATURE_PREFIX + "_" + sign);
     Properties udfProps = UDFContext.getUDFContext().getUDFProperties(
