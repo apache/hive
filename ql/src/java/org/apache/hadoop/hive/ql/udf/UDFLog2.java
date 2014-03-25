@@ -26,29 +26,28 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 /**
  * UDFLog2.
- *
  */
 @Description(name = "log2",
-    value = "_FUNC_(x) - Returns the logarithm of x with base 2",
-    extended = "Example:\n"
-    + "  > SELECT _FUNC_(2) FROM src LIMIT 1;\n" + "  1")
+             value = "_FUNC_(x) - Returns the logarithm of x with base 2",
+             extended = "Example:\n"
+                        + "  > SELECT _FUNC_(2) FROM src LIMIT 1;\n"
+                        + "  1")
 @VectorizedExpressions({FuncLog2LongToDouble.class, FuncLog2DoubleToDouble.class})
 public class UDFLog2 extends UDFMath {
-  private static double log2 = Math.log(2.0);
+
+  private static final double LOG_2 = Math.log(2.0);
 
   private final DoubleWritable result = new DoubleWritable();
-
-  public UDFLog2() {
-  }
 
   /**
    * Returns the logarithm of "a" with base 2.
    */
-  public DoubleWritable evaluate(DoubleWritable a) {
-    if (a == null || a.get() <= 0.0) {
+  @Override
+  protected DoubleWritable doEvaluate(DoubleWritable a) {
+    if (a.get() <= 0.0) {
       return null;
     } else {
-      result.set(Math.log(a.get()) / log2);
+      result.set(Math.log(a.get()) / LOG_2);
       return result;
     }
   }
