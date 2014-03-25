@@ -30,8 +30,11 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -40,7 +43,61 @@ import java.util.List;
  * please consider @{link TestHCatLoader} or @{link TestHCatStorer}.
  */
 public class TestHCatLoaderStorer extends HCatBaseTest {
+  private static final Logger LOG = LoggerFactory.getLogger(TestHCatLoaderStorer.class);
 
+  /**
+   * Test round trip of smallint/tinyint: Hive->Pig->Hive.  This is a more general use case in HCatalog:
+   * 'read some data from Hive, process it in Pig, write result back to a Hive table'
+   */
+  @Test
+  public void testReadWrite() throws Exception {
+    final String tblName = "small_ints_table";
+    final String tblName2 = "pig_hcatalog_1";
+    File dataDir = new File(TEST_DATA_DIR + File.separator + "testReadWrite");
+    FileUtil.fullyDelete(dataDir); // Might not exist
+    Assert.assertTrue(dataDir.mkdir());
+    final String INPUT_FILE_NAME = dataDir + "/inputtrw.data";
+
+    TestHCatLoader.dropTable(tblName, driver);
+    HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, new String[]{"40\t1"});
+
+    TestHCatLoader.executeStatementOnDriver("create external table " + tblName +
+      " (my_small_int smallint, my_tiny_int tinyint)" +
+      " row format delimited fields terminated by '\t' stored as textfile location '" +
+      dataDir + "'", driver);
+    TestHCatLoader.dropTable(tblName2, driver);
+    TestHCatLoader.createTable(tblName2, "my_small_int smallint, my_tiny_int tinyint", null, driver,
+      "textfile");
+
+    LOG.debug("File=" + INPUT_FILE_NAME);
+    TestHCatStorer.dumpFile(INPUT_FILE_NAME);
+    PigServer server = createPigServer(true);
+    try {
+      int queryNumber = 1;
+      logAndRegister(server,
+        "A = load '" + tblName +
+          "' using org.apache.hive.hcatalog.pig.HCatLoader() as (my_small_int:int, my_tiny_int:int);",
+        queryNumber++);
+      logAndRegister(server,
+        "b = foreach A generate my_small_int + my_tiny_int as my_small_int, my_tiny_int;",
+        queryNumber++);
+      logAndRegister(server, "store b into '" + tblName2 +
+        "' using org.apache.hive.hcatalog.pig.HCatStorer();", queryNumber);
+      //perform simple checksum here; make sure nothing got turned to NULL
+      TestHCatLoader.executeStatementOnDriver("select my_small_int from " + tblName2, driver);
+      ArrayList l = new ArrayList();
+      driver.getResults(l);
+      for(Object t : l) {
+        LOG.debug("t=" + t);
+      }
+      Assert.assertEquals("Expected '1' rows; got '" + l.size() + "'", 1, l.size());
+      int result = Integer.parseInt((String)l.get(0));
+      Assert.assertEquals("Expected value '41'; got '" + result + "'", 41, result);
+    }
+    finally {
+      server.shutdown();
+    }
+  }
   /**
    * Ensure Pig can read/write tinyint/smallint columns.
    */
@@ -137,5 +194,5 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
       "store data into 'test_tbl' using org.apache.hive.hcatalog.pig.HCatStorer('','','-onOutOfRangeValue Throw');");
     List<ExecJob> jobs = server.executeBatch();
     Assert.assertEquals(expectedStatus, jobs.get(0).getStatus());
-  }
+    }
 }
