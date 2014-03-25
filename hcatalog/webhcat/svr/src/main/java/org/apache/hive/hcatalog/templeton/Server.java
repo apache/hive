@@ -48,6 +48,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator.JobType;
@@ -1155,5 +1156,8 @@ public class Server {
   private void checkEnableLogPrerequisite(boolean enablelog, String statusdir) throws BadParam {
     if (enablelog && !TempletonUtils.isset(statusdir))
       throw new BadParam("enablelog is only applicable when statusdir is set");
+    if(enablelog && "0.23".equalsIgnoreCase(ShimLoader.getMajorVersion())) {
+      throw new BadParam("enablelog=true is only supported with Hadoop 1.x");
+    }
   }
 }
