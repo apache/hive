@@ -52,6 +52,8 @@ public class DDLWork implements Serializable {
   private UnlockTableDesc unlockTblDesc;
   private ShowFunctionsDesc showFuncsDesc;
   private ShowLocksDesc showLocksDesc;
+  private ShowCompactionsDesc showCompactionsDesc;
+  private ShowTxnsDesc showTxnsDesc;
   private DescFunctionDesc descFunctionDesc;
   private ShowPartitionsDesc showPartsDesc;
   private ShowCreateTableDesc showCreateTblDesc;
@@ -323,7 +325,19 @@ public class DDLWork implements Serializable {
     this.showLocksDesc = showLocksDesc;
   }
 
-  /**
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+                 ShowCompactionsDesc showCompactionsDesc) {
+    this(inputs, outputs);
+    this.showCompactionsDesc = showCompactionsDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+                 ShowTxnsDesc showTxnsDesc) {
+    this(inputs, outputs);
+    this.showTxnsDesc = showTxnsDesc;
+  }
+
+   /**
    * @param descFuncDesc
    */
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -711,6 +725,16 @@ public class DDLWork implements Serializable {
     return showLocksDesc;
   }
 
+  @Explain(displayName = "Show Compactions Operator")
+  public ShowCompactionsDesc getShowCompactionsDesc() {
+    return showCompactionsDesc;
+  }
+
+  @Explain(displayName = "Show Transactions Operator")
+  public ShowTxnsDesc getShowTxnsDesc() {
+    return showTxnsDesc;
+  }
+
   /**
    * @return the lockTblDesc
    */
@@ -749,6 +773,14 @@ public class DDLWork implements Serializable {
    */
   public void setShowLocksDesc(ShowLocksDesc showLocksDesc) {
     this.showLocksDesc = showLocksDesc;
+  }
+
+  public void setShowCompactionsDesc(ShowCompactionsDesc showCompactionsDesc) {
+    this.showCompactionsDesc = showCompactionsDesc;
+  }
+
+  public void setShowTxnsDesc(ShowTxnsDesc showTxnsDesc) {
+    this.showTxnsDesc = showTxnsDesc;
   }
 
   /**

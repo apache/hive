@@ -68,9 +68,11 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -84,6 +86,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -2588,6 +2591,47 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       getMSC().cancelDelegationToken(tokenStrForm);
     }  catch(Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Enqueue a compaction request.
+   * @param dbname name of the database, if null default will be used.
+   * @param tableName name of the table, cannot be null
+   * @param partName name of the partition, if null table will be compacted (valid only for
+   *                 non-partitioned tables).
+   * @param compactType major or minor
+   * @throws HiveException
+   */
+  public void compact(String dbname, String tableName, String partName,  String compactType)
+      throws HiveException {
+    try {
+      CompactionType cr = null;
+      if ("major".equals(compactType)) cr = CompactionType.MAJOR;
+      else if ("minor".equals(compactType)) cr = CompactionType.MINOR;
+      else throw new RuntimeException("Unknown compaction type " + compactType);
+      getMSC().compact(dbname, tableName, partName, cr);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+  }
+
+  public ShowCompactResponse showCompactions() throws HiveException {
+    try {
+      return getMSC().showCompactions();
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+  }
+
+  public GetOpenTxnsInfoResponse showTransactions() throws HiveException {
+    try {
+      return getMSC().showTxns();
+    } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
