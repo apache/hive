@@ -117,6 +117,7 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.ALTERPARTITION_MERGEFILES, new InOutPrivs(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_SKEWED, new InOutPrivs(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTBLPART_SKEWED_LOCATION, new InOutPrivs(OWNER_PRIV_AR, OWNER_INS_SEL_DEL_NOGRANT_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_COMPACT, new InOutPrivs(OWNER_PRIV_AR,  OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.TRUNCATETABLE, new InOutPrivs(OWNER_PRIV_AR, OWNER_PRIV_AR));
 
     //table ownership for create/drop/alter index
@@ -173,6 +174,9 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.DROPFUNCTION, new InOutPrivs(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.CREATEMACRO, new InOutPrivs(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.DROPMACRO, new InOutPrivs(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.SHOW_COMPACTIONS, new InOutPrivs(null, null));
+    op2Priv.put(HiveOperationType.SHOW_TRANSACTIONS, new InOutPrivs(null, null));
+    op2Priv.put(HiveOperationType.DROPFUNCTION, new InOutPrivs(null, null));
 
     op2Priv.put(HiveOperationType.LOCKTABLE, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.UNLOCKTABLE, new InOutPrivs(null, null));
