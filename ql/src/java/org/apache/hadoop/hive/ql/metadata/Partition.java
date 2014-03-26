@@ -178,7 +178,7 @@ public class Partition implements Serializable {
    * @throws HiveException
    *           Thrown if we cannot initialize the partition
    */
-  private void initialize(Table table,
+  protected void initialize(Table table,
       org.apache.hadoop.hive.metastore.api.Partition tPartition) throws HiveException {
 
     this.table = table;
@@ -213,11 +213,13 @@ public class Partition implements Serializable {
       }
     }
 
-    // This will set up field: inputFormatClass
-    getInputFormatClass();
-    // This will set up field: outputFormatClass
-    getOutputFormatClass();
-    getDeserializer();
+    // Note that we do not set up fields like inputFormatClass, outputFormatClass
+    // and deserializer because the Partition needs to be accessed from across
+    // the metastore side as well, which will result in attempting to load
+    // the class associated with them, which might not be available, and
+    // the main reason to instantiate them would be to pre-cache them for
+    // performance. Since those fields are null/cache-check by their accessors
+    // anyway, that's not a concern.
   }
 
   public String getName() {
