@@ -46,6 +46,8 @@ import javax.security.auth.login.LoginException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnListImpl;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
@@ -103,12 +105,14 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
+import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
@@ -1526,80 +1530,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     client.cancel_delegation_token(tokenStrForm);
   }
 
-  public static class ValidTxnListImpl implements ValidTxnList {
-
-    private GetOpenTxnsResponse txns;
-
-    public ValidTxnListImpl() {
-    }
-
-    public ValidTxnListImpl(GetOpenTxnsResponse t) {
-      txns = t;
-    }
-
-    @Override
-    public boolean isTxnCommitted(long txnid) {
-      if (txns.getTxn_high_water_mark() < txnid) return false;
-      return !txns.getOpen_txns().contains(txnid);
-    }
-
-    @Override
-    public RangeResponse isTxnRangeCommitted(long minTxnId, long maxTxnId) {
-      if (txns.getTxn_high_water_mark() < minTxnId) return RangeResponse.NONE;
-
-      RangeResponse rc = RangeResponse.ALL;
-      boolean foundCommitted = false;
-      for (long id = minTxnId; id <= maxTxnId; id++) {
-        if (isTxnCommitted(id)) foundCommitted = true;
-        else rc = RangeResponse.SOME;
-      }
-      if (!foundCommitted) rc = RangeResponse.NONE;
-      return rc;
-    }
-
-    @Override
-    public GetOpenTxnsResponse getOpenTxns() {
-      return txns;
-    }
-
-    @Override
-    public String toString() {
-      StringBuffer buf = new StringBuffer();
-      buf.append(getOpenTxns().getTxn_high_water_mark());
-      Set<Long> openTxns = getOpenTxns().getOpen_txns();
-      if (openTxns != null && openTxns.size() > 0) {
-        for (long txn : openTxns) {
-          buf.append(':');
-          buf.append(txn);
-        }
-      } else {
-        buf.append(':');
-      }
-      return buf.toString();
-    }
-
-    @Override
-    public void fromString(String src) {
-      // Make sure we have a non-null value in txns so that any future calls to this don't NPE.
-      txns = new GetOpenTxnsResponse();
-      if (src == null) {
-        txns.setTxn_high_water_mark(Long.MAX_VALUE);
-        txns.setOpen_txns(new HashSet<Long>());
-        return;
-      }
-
-      String[] tString = src.split(":");
-      txns.setTxn_high_water_mark(Long.valueOf(tString[0]));
-      Set<Long> openTxns = new HashSet<Long>();
-      for (int i = 1; i < tString.length; i++) openTxns.add(Long.valueOf(tString[i]));
-      txns.setOpen_txns(openTxns);
-    }
-  }
-
   @Override
   public ValidTxnList getValidTxns() throws TException {
-    GetOpenTxnsResponse txns = client.get_open_txns();
-    return new ValidTxnListImpl(txns);
+    return TxnHandler.createValidTxnList(client.get_open_txns());
   }
 
   @Override

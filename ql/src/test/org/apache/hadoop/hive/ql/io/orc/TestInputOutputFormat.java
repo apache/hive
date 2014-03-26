@@ -23,14 +23,20 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
@@ -42,21 +48,34 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
+import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.FSRecordWriter;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.shims.CombineHiveKey;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -154,13 +173,14 @@ public class TestInputOutputFormat {
   public void testFileGenerator() throws Exception {
     TestContext context = new TestContext(conf);
     MockFileSystem fs = new MockFileSystem(conf,
-        new MockFile("/a/b/part-00", 1000, new byte[0]),
-        new MockFile("/a/b/part-01", 1000, new byte[0]),
-        new MockFile("/a/b/_part-02", 1000, new byte[0]),
-        new MockFile("/a/b/.part-03", 1000, new byte[0]),
-        new MockFile("/a/b/part-04", 1000, new byte[0]));
+        new MockFile("mock:/a/b/part-00", 1000, new byte[0]),
+        new MockFile("mock:/a/b/part-01", 1000, new byte[0]),
+        new MockFile("mock:/a/b/_part-02", 1000, new byte[0]),
+        new MockFile("mock:/a/b/.part-03", 1000, new byte[0]),
+        new MockFile("mock:/a/b/part-04", 1000, new byte[0]));
     OrcInputFormat.FileGenerator gen =
-      new OrcInputFormat.FileGenerator(context, fs, new Path("/a/b"));
+      new OrcInputFormat.FileGenerator(context, fs,
+          new MockPath(fs, "mock:/a/b"));
     gen.run();
     if (context.getErrors().size() > 0) {
       for(Throwable th: context.getErrors()) {
@@ -170,34 +190,50 @@ public class TestInputOutputFormat {
     }
     assertEquals(-1, context.getSchedulers());
     assertEquals(3, context.queue.size());
-    assertEquals(new Path("/a/b/part-00"),
+    assertEquals(new Path("mock:/a/b/part-00"),
         ((OrcInputFormat.SplitGenerator) context.queue.get(0)).getPath());
-    assertEquals(new Path("/a/b/part-01"),
+    assertEquals(new Path("mock:/a/b/part-01"),
         ((OrcInputFormat.SplitGenerator) context.queue.get(1)).getPath());
-    assertEquals(new Path("/a/b/part-04"),
+    assertEquals(new Path("mock:/a/b/part-04"),
         ((OrcInputFormat.SplitGenerator) context.queue.get(2)).getPath());
   }
 
-  static final Charset UTF8 = Charset.forName("UTF-8");
-
-  static class MockBlock {
+  public static class MockBlock {
     int offset;
     int length;
     final String[] hosts;
 
-    MockBlock(String... hosts) {
+    public MockBlock(String... hosts) {
       this.hosts = hosts;
+    }
+
+    public String toString() {
+      StringBuilder buffer = new StringBuilder();
+      buffer.append("block{offset: ");
+      buffer.append(offset);
+      buffer.append(", length: ");
+      buffer.append(length);
+      buffer.append(", hosts: [");
+      for(int i=0; i < hosts.length; i++) {
+        if (i != 0) {
+          buffer.append(", ");
+        }
+        buffer.append(hosts[i]);
+      }
+      buffer.append("]}");
+      return buffer.toString();
     }
   }
 
-  static class MockFile {
+  public static class MockFile {
     final Path path;
-    final int blockSize;
-    final int length;
-    final MockBlock[] blocks;
-    final byte[] content;
+    int blockSize;
+    int length;
+    MockBlock[] blocks;
+    byte[] content;
 
-    MockFile(String path, int blockSize, byte[] content, MockBlock... blocks) {
+    public MockFile(String path, int blockSize, byte[] content,
+                    MockBlock... blocks) {
       this.path = new Path(path);
       this.blockSize = blockSize;
       this.blocks = blocks;
@@ -209,6 +245,25 @@ public class TestInputOutputFormat {
         block.length = Math.min(length - offset, blockSize);
         offset += block.length;
       }
+    }
+
+    public String toString() {
+      StringBuilder buffer = new StringBuilder();
+      buffer.append("mockFile{path: ");
+      buffer.append(path.toString());
+      buffer.append(", blkSize: ");
+      buffer.append(blockSize);
+      buffer.append(", len: ");
+      buffer.append(length);
+      buffer.append(", blocks: [");
+      for(int i=0; i < blocks.length; i++) {
+        if (i != 0) {
+          buffer.append(", ");
+        }
+        buffer.append(blocks[i]);
+      }
+      buffer.append("]}");
+      return buffer.toString();
     }
   }
 
@@ -244,13 +299,66 @@ public class TestInputOutputFormat {
     }
   }
 
-  static class MockFileSystem extends FileSystem {
-    final MockFile[] files;
+  public static class MockPath extends Path {
+    private final FileSystem fs;
+    public MockPath(FileSystem fs, String path) {
+      super(path);
+      this.fs = fs;
+    }
+    @Override
+    public FileSystem getFileSystem(Configuration conf) {
+      return fs;
+    }
+  }
+
+  public static class MockOutputStream extends FSDataOutputStream {
+    private final MockFile file;
+
+    public MockOutputStream(MockFile file) throws IOException {
+      super(new DataOutputBuffer(), null);
+      this.file = file;
+    }
+
+    public void setBlocks(MockBlock... blocks) {
+      file.blocks = blocks;
+      int offset = 0;
+      int i = 0;
+      while (offset < file.length && i < blocks.length) {
+        blocks[i].offset = offset;
+        blocks[i].length = Math.min(file.length - offset, file.blockSize);
+        offset += blocks[i].length;
+        i += 1;
+      }
+    }
+
+    public void close() throws IOException {
+      super.close();
+      DataOutputBuffer buf = (DataOutputBuffer) getWrappedStream();
+      file.length = buf.getLength();
+      file.content = new byte[file.length];
+      System.arraycopy(buf.getData(), 0, file.content, 0, file.length);
+    }
+  }
+
+  public static class MockFileSystem extends FileSystem {
+    final List<MockFile> files = new ArrayList<MockFile>();
     Path workingDir = new Path("/");
 
-    MockFileSystem(Configuration conf, MockFile... files) {
+    public MockFileSystem() {
+      // empty
+    }
+
+    public void initialize(URI uri, Configuration conf) {
       setConf(conf);
-      this.files = files;
+    }
+
+    public MockFileSystem(Configuration conf, MockFile... files) {
+      setConf(conf);
+      this.files.addAll(Arrays.asList(files));
+    }
+
+    void clear() {
+      files.clear();
     }
 
     @Override
@@ -274,17 +382,30 @@ public class TestInputOutputFormat {
 
     @Override
     public FSDataOutputStream create(Path path, FsPermission fsPermission,
-                                     boolean b, int i, short i2, long l,
+                                     boolean overwrite, int bufferSize,
+                                     short replication, long blockSize,
                                      Progressable progressable
                                      ) throws IOException {
-      throw new UnsupportedOperationException("no writes");
+      MockFile file = null;
+      for(MockFile currentFile: files) {
+        if (currentFile.path.equals(path)) {
+          file = currentFile;
+          break;
+        }
+      }
+      if (file == null) {
+        file = new MockFile(path.toString(), (int) blockSize, new byte[0]);
+        files.add(file);
+      }
+      return new MockOutputStream(file);
     }
 
     @Override
-    public FSDataOutputStream append(Path path, int i,
+    public FSDataOutputStream append(Path path, int bufferSize,
                                      Progressable progressable
                                      ) throws IOException {
-      throw new UnsupportedOperationException("no writes");
+      return create(path, FsPermission.getDefault(), true, bufferSize,
+          (short) 3, 256 * 1024, progressable);
     }
 
     @Override
@@ -304,11 +425,28 @@ public class TestInputOutputFormat {
 
     @Override
     public FileStatus[] listStatus(Path path) throws IOException {
+      path = path.makeQualified(this);
       List<FileStatus> result = new ArrayList<FileStatus>();
+      String pathname = path.toString();
+      String pathnameAsDir = pathname + "/";
+      Set<String> dirs = new TreeSet<String>();
       for(MockFile file: files) {
-        if (file.path.getParent().equals(path)) {
-          result.add(getFileStatus(file.path));
+        String filename = file.path.toString();
+        if (pathname.equals(filename)) {
+          return new FileStatus[]{createStatus(file)};
+        } else if (filename.startsWith(pathnameAsDir)) {
+          String tail = filename.substring(pathnameAsDir.length());
+          int nextSlash = tail.indexOf('/');
+          if (nextSlash > 0) {
+            dirs.add(tail.substring(0, nextSlash));
+          } else {
+            result.add(createStatus(file));
+          }
         }
+      }
+      // for each directory add it once
+      for(String dir: dirs) {
+        result.add(createDirectory(new MockPath(this, pathnameAsDir + dir)));
       }
       return result.toArray(new FileStatus[result.size()]);
     }
@@ -328,16 +466,29 @@ public class TestInputOutputFormat {
       return false;
     }
 
+    private FileStatus createStatus(MockFile file) {
+      return new FileStatus(file.length, false, 1, file.blockSize, 0, 0,
+          FsPermission.createImmutable((short) 644), "owen", "group",
+          file.path);
+    }
+
+    private FileStatus createDirectory(Path dir) {
+      return new FileStatus(0, true, 0, 0, 0, 0,
+          FsPermission.createImmutable((short) 755), "owen", "group", dir);
+    }
+
     @Override
     public FileStatus getFileStatus(Path path) throws IOException {
+      path = path.makeQualified(this);
+      String pathnameAsDir = path.toString() + "/";
       for(MockFile file: files) {
         if (file.path.equals(path)) {
-          return new FileStatus(file.length, false, 1, file.blockSize, 0, 0,
-              FsPermission.createImmutable((short) 644), "owen", "group",
-              file.path);
+          return createStatus(file);
+        } else if (file.path.toString().startsWith(pathnameAsDir)) {
+          return createDirectory(path);
         }
       }
-      return null;
+      throw new FileNotFoundException("File " + path + " does not exist");
     }
 
     @Override
@@ -357,6 +508,20 @@ public class TestInputOutputFormat {
         }
       }
       return new BlockLocation[0];
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buffer = new StringBuilder();
+      buffer.append("mockFs{files:[");
+      for(int i=0; i < files.size(); ++i) {
+        if (i != 0) {
+          buffer.append(", ");
+        }
+        buffer.append(files.get(i));
+      }
+      buffer.append("]}");
+      return buffer.toString();
     }
   }
 
@@ -416,7 +581,7 @@ public class TestInputOutputFormat {
   public void testAddSplit() throws Exception {
     // create a file with 5 blocks spread around the cluster
     MockFileSystem fs = new MockFileSystem(conf,
-        new MockFile("/a/file", 500,
+        new MockFile("mock:/a/file", 500,
           createMockOrcFile(197, 300, 600, 200, 200, 100, 100, 100, 100, 100),
           new MockBlock("host1-1", "host1-2", "host1-3"),
           new MockBlock("host2-1", "host0", "host2-3"),
@@ -426,12 +591,13 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(context, fs,
-            fs.getFileStatus(new Path("/a/file")), null);
+            fs.getFileStatus(new Path("/a/file")), null, true,
+            new ArrayList<Long>(), true);
     splitter.createSplit(0, 200, null);
-    OrcInputFormat.Context.FileSplitInfo result = context.getResult(-1);
+    OrcSplit result = context.getResult(-1);
     assertEquals(0, result.getStart());
     assertEquals(200, result.getLength());
-    assertEquals("/a/file", result.getPath().toString());
+    assertEquals("mock:/a/file", result.getPath().toString());
     String[] locs = result.getLocations();
     assertEquals(3, locs.length);
     assertEquals("host1-1", locs[0]);
@@ -457,7 +623,7 @@ public class TestInputOutputFormat {
     long[] stripeSizes =
         new long[]{197, 300, 600, 200, 200, 100, 100, 100, 100, 100};
     MockFileSystem fs = new MockFileSystem(conf,
-        new MockFile("/a/file", 500,
+        new MockFile("mock:/a/file", 500,
           createMockOrcFile(stripeSizes),
           new MockBlock("host1-1", "host1-2", "host1-3"),
           new MockBlock("host2-1", "host0", "host2-3"),
@@ -469,7 +635,8 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(context, fs,
-            fs.getFileStatus(new Path("/a/file")), null);
+            fs.getFileStatus(new Path("/a/file")), null, true,
+            new ArrayList<Long>(), true);
     splitter.run();
     if (context.getErrors().size() > 0) {
       for(Throwable th: context.getErrors()) {
@@ -477,7 +644,7 @@ public class TestInputOutputFormat {
       }
       throw new IOException("Errors during splitting");
     }
-    OrcInputFormat.Context.FileSplitInfo result = context.getResult(0);
+    OrcSplit result = context.getResult(0);
     assertEquals(3, result.getStart());
     assertEquals(497, result.getLength());
     result = context.getResult(1);
@@ -497,7 +664,8 @@ public class TestInputOutputFormat {
     conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 0);
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(context, fs,
-      fs.getFileStatus(new Path("/a/file")), null);
+      fs.getFileStatus(new Path("/a/file")), null, true, new ArrayList<Long>(),
+        true);
     splitter.run();
     if (context.getErrors().size() > 0) {
       for(Throwable th: context.getErrors()) {
@@ -512,6 +680,7 @@ public class TestInputOutputFormat {
   }
 
   @Test
+  @SuppressWarnings("unchecked,deprecation")
   public void testInOutFormat() throws Exception {
     Properties properties = new Properties();
     StructObjectInspector inspector;
@@ -625,8 +794,8 @@ public class TestInputOutputFormat {
   }
 
   @Test
+  @SuppressWarnings("unchecked,deprecation")
   public void testMROutput() throws Exception {
-    JobConf job = new JobConf(conf);
     Properties properties = new Properties();
     StructObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -682,8 +851,8 @@ public class TestInputOutputFormat {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testEmptyFile() throws Exception {
-    JobConf job = new JobConf(conf);
     Properties properties = new Properties();
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
     FSRecordWriter writer =
@@ -720,8 +889,8 @@ public class TestInputOutputFormat {
   }
 
   @Test
+  @SuppressWarnings("unchecked,deprecation")
   public void testDefaultTypes() throws Exception {
-    JobConf job = new JobConf(conf);
     Properties properties = new Properties();
     StructObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -779,5 +948,294 @@ public class TestInputOutputFormat {
         getStructFieldData(value, fields.get(0))));
     assertEquals(false, reader.next(key, value));
     reader.close();
+  }
+
+  /**
+   * Create a mock execution environment that has enough detail that
+   * ORC, vectorization, HiveInputFormat, and CombineHiveInputFormat don't
+   * explode.
+   * @param workDir a local filesystem work directory
+   * @param warehouseDir a mock filesystem warehouse directory
+   * @param objectInspector object inspector for the row
+   * @param isVectorized should run vectorized
+   * @return a JobConf that contains the necessary information
+   * @throws IOException
+   */
+  JobConf createMockExecutionEnvironment(Path workDir,
+                                         Path warehouseDir,
+                                         ObjectInspector objectInspector,
+                                         boolean isVectorized
+                                         ) throws IOException {
+    JobConf conf = new JobConf();
+    conf.set("hive.exec.plan", workDir.toString());
+    conf.set("mapred.job.tracker", "local");
+    conf.set("hive.vectorized.execution.enabled", Boolean.toString(isVectorized));
+    conf.set("fs.mock.impl", MockFileSystem.class.getName());
+    conf.set("mapred.mapper.class", ExecMapper.class.getName());
+    Path root = new Path(warehouseDir, "table/p=0");
+    conf.set("mapred.input.dir", root.toString());
+    StringBuilder columnIds = new StringBuilder();
+    StringBuilder columnNames = new StringBuilder();
+    StringBuilder columnTypes = new StringBuilder();
+    StructObjectInspector structOI = (StructObjectInspector) objectInspector;
+    List<? extends StructField> fields = structOI.getAllStructFieldRefs();
+    int numCols = fields.size();
+    for(int i=0; i < numCols; ++i) {
+      if (i != 0) {
+        columnIds.append(',');
+        columnNames.append(',');
+        columnTypes.append(',');
+      }
+      columnIds.append(i);
+      columnNames.append(fields.get(i).getFieldName());
+      columnTypes.append(fields.get(i).getFieldObjectInspector().getTypeName());
+    }
+    conf.set("hive.io.file.readcolumn.ids", columnIds.toString());
+    conf.set("partition_columns", "p");
+    MockFileSystem fs = (MockFileSystem) warehouseDir.getFileSystem(conf);
+    fs.clear();
+
+    Properties tblProps = new Properties();
+    tblProps.put("serialization.lib", OrcSerde.class.getName());
+    tblProps.put("columns", columnNames.toString());
+    tblProps.put("columns.types", columnTypes.toString());
+    TableDesc tbl = new TableDesc(OrcInputFormat.class, OrcOutputFormat.class,
+        tblProps);
+    LinkedHashMap<String, String> partSpec =
+        new LinkedHashMap<String, String>();
+    PartitionDesc part = new PartitionDesc(tbl, partSpec);
+
+    MapWork mapWork = new MapWork();
+    mapWork.setVectorMode(isVectorized);
+    mapWork.setUseBucketizedHiveInputFormat(false);
+    LinkedHashMap<String, ArrayList<String>> aliasMap =
+        new LinkedHashMap<String, ArrayList<String>>();
+    ArrayList<String> aliases = new ArrayList<String>();
+    aliases.add("tbl");
+    aliasMap.put(root.toString(), aliases);
+    mapWork.setPathToAliases(aliasMap);
+    LinkedHashMap<String, PartitionDesc> partMap =
+        new LinkedHashMap<String, PartitionDesc>();
+    partMap.put(root.toString(), part);
+    mapWork.setPathToPartitionInfo(partMap);
+    mapWork.setScratchColumnMap(new HashMap<String, Map<String, Integer>>());
+    mapWork.setScratchColumnVectorTypes(new HashMap<String,
+        Map<Integer, String>>());
+
+    // write the plan out
+    FileSystem localFs = FileSystem.getLocal(conf).getRaw();
+    FSDataOutputStream planStream =
+        localFs.create(new Path(workDir, "map.xml"));
+    Utilities.serializePlan(mapWork, planStream, conf);
+    planStream.close();
+    return conf;
+  }
+
+  /**
+   * Test vectorization, non-acid, non-combine.
+   * @throws Exception
+   */
+  @Test
+  public void testVectorization() throws Exception {
+    // get the object inspector for MyRow
+    StructObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = (StructObjectInspector)
+          ObjectInspectorFactory.getReflectionObjectInspector(MyRow.class,
+              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
+        inspector, true);
+
+    // write the orc file to the mock file system
+    Writer writer =
+        OrcFile.createWriter(new Path(conf.get("mapred.input.dir") + "/0_0"),
+           OrcFile.writerOptions(conf).blockPadding(false)
+                  .bufferSize(1024).inspector(inspector));
+    for(int i=0; i < 10; ++i) {
+      writer.addRow(new MyRow(i, 2*i));
+    }
+    writer.close();
+    ((MockOutputStream) ((WriterImpl) writer).getStream())
+        .setBlocks(new MockBlock("host0", "host1"));
+
+    // call getsplits
+    HiveInputFormat<?,?> inputFormat =
+        new HiveInputFormat<WritableComparable, Writable>();
+    InputSplit[] splits = inputFormat.getSplits(conf, 10);
+    assertEquals(1, splits.length);
+
+    org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch>
+        reader = inputFormat.getRecordReader(splits[0], conf, Reporter.NULL);
+    NullWritable key = reader.createKey();
+    VectorizedRowBatch value = reader.createValue();
+    assertEquals(true, reader.next(key, value));
+    assertEquals(10, value.count());
+    LongColumnVector col0 = (LongColumnVector) value.cols[0];
+    for(int i=0; i < 10; i++) {
+      assertEquals("checking " + i, i, col0.vector[i]);
+    }
+    assertEquals(false, reader.next(key, value));
+  }
+
+  // test acid with vectorization, no combine
+  @Test
+  public void testVectorizationWithAcid() throws Exception {
+    // get the object inspector for MyRow
+    StructObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = (StructObjectInspector)
+          ObjectInspectorFactory.getReflectionObjectInspector(MyRow.class,
+              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
+        inspector, true);
+
+    // write the orc file to the mock file system
+    Path partDir = new Path(conf.get("mapred.input.dir"));
+    OrcRecordUpdater writer = new OrcRecordUpdater(partDir,
+        new AcidOutputFormat.Options(conf).maximumTransactionId(10)
+            .writingBase(true).bucket(0).inspector(inspector));
+    for(int i=0; i < 10; ++i) {
+      writer.insert(10, new MyRow(i, 2 * i));
+    }
+    WriterImpl baseWriter = (WriterImpl) writer.getWriter();
+    writer.close(false);
+    ((MockOutputStream) baseWriter.getStream())
+        .setBlocks(new MockBlock("host0", "host1"));
+
+    // call getsplits
+    HiveInputFormat<?,?> inputFormat =
+        new HiveInputFormat<WritableComparable, Writable>();
+    InputSplit[] splits = inputFormat.getSplits(conf, 10);
+    assertEquals(1, splits.length);
+
+    try {
+      org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch>
+          reader = inputFormat.getRecordReader(splits[0], conf, Reporter.NULL);
+      assertTrue("should throw here", false);
+    } catch (IOException ioe) {
+      assertEquals("java.io.IOException: Vectorization and ACID tables are incompatible.",
+          ioe.getMessage());
+    }
+  }
+
+  // test non-vectorized, non-acid, combine
+  @Test
+  public void testCombinationInputFormat() throws Exception {
+    // get the object inspector for MyRow
+    StructObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = (StructObjectInspector)
+          ObjectInspectorFactory.getReflectionObjectInspector(MyRow.class,
+              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
+        inspector, false);
+
+    // write the orc file to the mock file system
+    Path partDir = new Path(conf.get("mapred.input.dir"));
+    Writer writer =
+        OrcFile.createWriter(new Path(partDir, "0_0"),
+            OrcFile.writerOptions(conf).blockPadding(false)
+                .bufferSize(1024).inspector(inspector));
+    for(int i=0; i < 10; ++i) {
+      writer.addRow(new MyRow(i, 2*i));
+    }
+    writer.close();
+    MockOutputStream outputStream = (MockOutputStream) ((WriterImpl) writer).getStream();
+    outputStream.setBlocks(new MockBlock("host0", "host1"));
+    int length0 = outputStream.file.length;
+    writer =
+        OrcFile.createWriter(new Path(partDir, "1_0"),
+            OrcFile.writerOptions(conf).blockPadding(false)
+                .bufferSize(1024).inspector(inspector));
+    for(int i=10; i < 20; ++i) {
+      writer.addRow(new MyRow(i, 2*i));
+    }
+    writer.close();
+    outputStream = (MockOutputStream) ((WriterImpl) writer).getStream();
+    outputStream.setBlocks(new MockBlock("host1", "host2"));
+
+    // call getsplits
+    HiveInputFormat<?,?> inputFormat =
+        new CombineHiveInputFormat<WritableComparable, Writable>();
+    InputSplit[] splits = inputFormat.getSplits(conf, 1);
+    assertEquals(1, splits.length);
+    CombineHiveInputFormat.CombineHiveInputSplit split =
+        (CombineHiveInputFormat.CombineHiveInputSplit) splits[0];
+
+    // check split
+    assertEquals(2, split.getNumPaths());
+    assertEquals(partDir.toString() + "/0_0", split.getPath(0).toString());
+    assertEquals(partDir.toString() + "/1_0", split.getPath(1).toString());
+    assertEquals(length0, split.getLength(0));
+    assertEquals(outputStream.file.length, split.getLength(1));
+    assertEquals(0, split.getOffset(0));
+    assertEquals(0, split.getOffset(1));
+    // hadoop-1 gets 3 and hadoop-2 gets 0. *sigh*
+    // best answer would be 1.
+    assertTrue(3 >= split.getLocations().length);
+
+    // read split
+    org.apache.hadoop.mapred.RecordReader<CombineHiveKey, OrcStruct> reader =
+        inputFormat.getRecordReader(split, conf, Reporter.NULL);
+    CombineHiveKey key = reader.createKey();
+    OrcStruct value = reader.createValue();
+    for(int i=0; i < 20; i++) {
+      assertEquals(true, reader.next(key, value));
+      assertEquals(i, ((IntWritable) value.getFieldValue(0)).get());
+    }
+    assertEquals(false, reader.next(key, value));
+  }
+
+  // test non-vectorized, acid, combine
+  @Test
+  public void testCombinationInputFormatWithAcid() throws Exception {
+    // get the object inspector for MyRow
+    StructObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = (StructObjectInspector)
+          ObjectInspectorFactory.getReflectionObjectInspector(MyRow.class,
+              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
+        inspector, false);
+
+    // write the orc file to the mock file system
+    Path partDir = new Path(conf.get("mapred.input.dir"));
+    OrcRecordUpdater writer = new OrcRecordUpdater(partDir,
+        new AcidOutputFormat.Options(conf).maximumTransactionId(10)
+            .writingBase(true).bucket(0).inspector(inspector));
+    for(int i=0; i < 10; ++i) {
+      writer.insert(10, new MyRow(i, 2 * i));
+    }
+    WriterImpl baseWriter = (WriterImpl) writer.getWriter();
+    writer.close(false);
+    MockOutputStream outputStream = (MockOutputStream) baseWriter.getStream();
+    int length0 = outputStream.file.length;
+    writer = new OrcRecordUpdater(partDir,
+        new AcidOutputFormat.Options(conf).maximumTransactionId(10)
+            .writingBase(true).bucket(1).inspector(inspector));
+    for(int i=10; i < 20; ++i) {
+      writer.insert(10, new MyRow(i, 2*i));
+    }
+    baseWriter = (WriterImpl) writer.getWriter();
+    writer.close(false);
+    outputStream = (MockOutputStream) baseWriter.getStream();
+    outputStream.setBlocks(new MockBlock("host1", "host2"));
+
+    // call getsplits
+    HiveInputFormat<?,?> inputFormat =
+        new CombineHiveInputFormat<WritableComparable, Writable>();
+    try {
+      InputSplit[] splits = inputFormat.getSplits(conf, 1);
+      assertTrue("shouldn't reach here", false);
+    } catch (IOException ioe) {
+      assertEquals("CombineHiveInputFormat is incompatible"
+          + "  with ACID tables. Please set hive.input.format=org.apache.hadoop"
+          + ".hive.ql.io.HiveInputFormat",
+          ioe.getMessage());
+    }
   }
 }

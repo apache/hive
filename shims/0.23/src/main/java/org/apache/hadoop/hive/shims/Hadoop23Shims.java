@@ -22,8 +22,10 @@ import java.lang.Integer;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.net.URI;
@@ -34,6 +36,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -465,51 +468,19 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public Iterator<FileStatus> listLocatedStatus(final FileSystem fs,
-                                                final Path path,
-                                                final PathFilter filter
-  ) throws IOException {
-    return new Iterator<FileStatus>() {
-      private final RemoteIterator<LocatedFileStatus> inner =
-          fs.listLocatedStatus(path);
-      private FileStatus next;
-      {
-        next = null;
-        while (inner.hasNext() && next == null) {
-          next = inner.next();
-          if (filter != null && !filter.accept(next.getPath())) {
-            next = null;
-          }
-        }
+  public List<FileStatus> listLocatedStatus(final FileSystem fs,
+                                            final Path path,
+                                            final PathFilter filter
+                                           ) throws IOException {
+    RemoteIterator<LocatedFileStatus> itr = fs.listLocatedStatus(path);
+    List<FileStatus> result = new ArrayList<FileStatus>();
+    while(itr.hasNext()) {
+      FileStatus stat = itr.next();
+      if (filter == null || filter.accept(stat.getPath())) {
+        result.add(stat);
       }
-
-      @Override
-      public boolean hasNext() {
-        return next != null;
-      }
-
-      @Override
-      public FileStatus next() {
-        FileStatus result = next;
-        next = null;
-        try {
-          while (inner.hasNext() && next == null) {
-            next = inner.next();
-            if (filter != null && !filter.accept(next.getPath())) {
-              next = null;
-            }
-          }
-        } catch (IOException ioe) {
-          throw new IllegalArgumentException("Iterator exception", ioe);
-        }
-        return result;
-      }
-
-      @Override
-      public void remove() {
-        throw new IllegalArgumentException("Not supported");
-      }
-    };
+    }
+    return result;
   }
 
   @Override
@@ -520,6 +491,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     } else {
       return fs.getFileBlockLocations(status, 0, status.getLen());
     }
+  }
+
+  @Override
+  public void hflush(FSDataOutputStream stream) throws IOException {
+    stream.hflush();
   }
 
   class ProxyFileSystem23 extends ProxyFileSystem {

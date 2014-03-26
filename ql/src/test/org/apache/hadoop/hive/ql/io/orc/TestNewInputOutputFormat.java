@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -191,7 +192,8 @@ public class TestNewInputOutputFormat {
     
     Path outputFilePath = new Path(outputPath, "part-m-00000");
     assertTrue(localFs.exists(outputFilePath));
-    Reader reader = OrcFile.createReader(localFs, outputFilePath, conf);
+    Reader reader = OrcFile.createReader(outputFilePath,
+        OrcFile.readerOptions(conf).filesystem(localFs));
     assertTrue(reader.getNumberOfRows() == rownum);
     assertEquals(reader.getCompression(), CompressionKind.ZLIB);
     StructObjectInspector soi =
@@ -205,7 +207,7 @@ public class TestNewInputOutputFormat {
         .getPrimitiveCategory(),
         PrimitiveObjectInspector.PrimitiveCategory.STRING);
     
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     Object row = rows.next(null);
     
     IntWritable intWritable = (IntWritable)soi.getStructFieldData(row,
@@ -248,7 +250,8 @@ public class TestNewInputOutputFormat {
     assertTrue(result);
     
     Path outputFilePath = new Path(outputPath, "part-m-00000");
-    Reader reader = OrcFile.createReader(localFs, outputFilePath, conf);
+    Reader reader = OrcFile.createReader(outputFilePath,
+        OrcFile.readerOptions(conf).filesystem(localFs));
     assertEquals(reader.getCompression(), CompressionKind.SNAPPY);
     
     localFs.delete(outputPath, true);
@@ -298,6 +301,7 @@ public class TestNewInputOutputFormat {
       struct.add(0, key.get());
       struct.add(1, count);
       List<List<Object>> lastWordInfoList = new ArrayList<List<Object>>();
+      Collections.sort(lastwords);
       for (String word : lastwords) {
         List<Object> info = new ArrayList<Object>(2);
         info.add(0, word);
@@ -351,9 +355,10 @@ public class TestNewInputOutputFormat {
     assertTrue(result);
     
     Path outputFilePath = new Path(outputPath, "part-r-00000");
-    Reader reader = OrcFile.createReader(localFs, outputFilePath, conf);
+    Reader reader = OrcFile.createReader(outputFilePath,
+        OrcFile.readerOptions(conf).filesystem(localFs));
     
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     ObjectInspector orcOi = reader.getObjectInspector();
     ObjectInspector stoi = TypeInfoUtils
         .getStandardJavaObjectInspectorFromTypeInfo(OrcTestReducer3.typeInfo);
@@ -362,36 +367,36 @@ public class TestNewInputOutputFormat {
     
     Object row = rows.next(null);
     List<Object> converted = (List<Object>)converter.convert(row);
-    assertEquals(converted.get(0), 1);
-    assertEquals(converted.get(1), 1);
+    assertEquals(1, converted.get(0));
+    assertEquals(1, converted.get(1));
     List<Object> list = (List<Object>)converted.get(2);
     assertEquals(list.size(), 1);
-    assertEquals(((List<Object>)list.get(0)).get(0), "saving");
-    assertEquals(((List<Object>)list.get(0)).get(1), 6);
+    assertEquals("saving", ((List<Object>)list.get(0)).get(0));
+    assertEquals(6, ((List<Object>)list.get(0)).get(1));
     Map<String, Integer> map = (Map<String, Integer>)converted.get(3);
     assertEquals(map.size(), 1);
     assertEquals(map.get("saving"), new Integer(1));
     
     row = rows.next(null);
     converted = (List<Object>)converter.convert(row);
-    assertEquals(converted.get(0), 2);
-    assertEquals(converted.get(1), 6);
+    assertEquals(2, converted.get(0));
+    assertEquals(6, converted.get(1));
     list = (List<Object>)converted.get(2);
     assertEquals(list.size(), 6);
-    assertEquals(((List<Object>)list.get(0)).get(0), "plums");
-    assertEquals(((List<Object>)list.get(0)).get(1), 5);
+    assertEquals("breakfast", ((List<Object>)list.get(0)).get(0));
+    assertEquals(9, ((List<Object>)list.get(0)).get(1));
     map = (Map<String, Integer>)converted.get(3);
     assertEquals(map.size(), 11);
     assertEquals(map.get("the"), new Integer(2));
     
     row = rows.next(null);
     converted = (List<Object>)converter.convert(row);
-    assertEquals(converted.get(0), 3);
-    assertEquals(converted.get(1), 5);
+    assertEquals(3, converted.get(0));
+    assertEquals(5, converted.get(1));
     list = (List<Object>)converted.get(2);
     assertEquals(list.size(), 5);
-    assertEquals(((List<Object>)list.get(0)).get(0), "eaten");
-    assertEquals(((List<Object>)list.get(0)).get(1), 5);
+    assertEquals("cold", ((List<Object>)list.get(0)).get(0));
+    assertEquals(4, ((List<Object>)list.get(0)).get(1));
     map = (Map<String, Integer>)converted.get(3);
     assertEquals(map.size(), 13);
     assertEquals(map.get("were"), new Integer(3));

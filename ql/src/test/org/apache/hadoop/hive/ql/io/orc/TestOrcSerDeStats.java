@@ -25,6 +25,7 @@ import static junit.framework.Assert.assertNull;
 import java.io.File;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,9 +97,7 @@ public class TestOrcSerDeStats {
 
     MiddleStruct(InnerStruct... items) {
       list.clear();
-      for (InnerStruct item : items) {
-        list.add(item);
-      }
+      list.addAll(Arrays.asList(items));
     }
   }
 
@@ -158,9 +157,7 @@ public class TestOrcSerDeStats {
 
   private static List<InnerStruct> list(InnerStruct... items) {
     List<InnerStruct> result = new ArrayList<InnerStruct>();
-    for (InnerStruct s : items) {
-      result.add(s);
-    }
+    result.addAll(Arrays.asList(items));
     return result;
   }
 
@@ -212,7 +209,8 @@ public class TestOrcSerDeStats {
     writer.close();
     assertEquals(4, writer.getNumberOfRows());
     assertEquals(273, writer.getRawDataSize());
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     assertEquals(4, reader.getNumberOfRows());
     assertEquals(273, reader.getRawDataSize());
     assertEquals(15, reader.getRawDataSizeOfColumns(Lists.newArrayList("bytes1")));
@@ -248,7 +246,7 @@ public class TestOrcSerDeStats {
         getStructFieldRef("bytes1").getFieldObjectInspector();
     StringObjectInspector st = (StringObjectInspector) readerInspector.
         getStructFieldRef("string1").getFieldObjectInspector();
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     Object row = rows.next(null);
     assertNotNull(row);
     // check the contents of the first row
@@ -310,7 +308,8 @@ public class TestOrcSerDeStats {
     assertEquals(5000, writer.getNumberOfRows());
     assertEquals(430000000, writer.getRawDataSize());
 
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     // stats from reader
     assertEquals(5000, reader.getNumberOfRows());
     assertEquals(430000000, reader.getRawDataSize());
@@ -341,7 +340,8 @@ public class TestOrcSerDeStats {
     assertEquals(1000, writer.getNumberOfRows());
     assertEquals(950000, writer.getRawDataSize());
 
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     // stats from reader
     assertEquals(1000, reader.getNumberOfRows());
     assertEquals(950000, reader.getRawDataSize());
@@ -372,7 +372,8 @@ public class TestOrcSerDeStats {
     assertEquals(1000, writer.getNumberOfRows());
     assertEquals(44500, writer.getRawDataSize());
 
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     // stats from reader
     assertEquals(1000, reader.getNumberOfRows());
     assertEquals(44500, reader.getRawDataSize());
@@ -413,7 +414,8 @@ public class TestOrcSerDeStats {
     long rawDataSize = writer.getRawDataSize();
     assertEquals(2, rowCount);
     assertEquals(1740, rawDataSize);
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
 
     assertEquals(2, reader.getNumberOfRows());
     assertEquals(1740, reader.getRawDataSize());
@@ -506,7 +508,8 @@ public class TestOrcSerDeStats {
     long rawDataSize = writer.getRawDataSize();
     assertEquals(2, rowCount);
     assertEquals(1740, rawDataSize);
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
 
     assertEquals(2, reader.getNumberOfRows());
     assertEquals(1740, reader.getRawDataSize());
@@ -573,7 +576,8 @@ public class TestOrcSerDeStats {
   @Test(expected = ClassCastException.class)
   public void testSerdeStatsOldFormat() throws Exception {
     Path oldFilePath = new Path(HiveTestUtils.getFileFromClasspath("orc-file-11-format.orc"));
-    Reader reader = OrcFile.createReader(fs, oldFilePath, conf);
+    Reader reader = OrcFile.createReader(oldFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
 
     int stripeCount = 0;
     int rowCount = 0;
