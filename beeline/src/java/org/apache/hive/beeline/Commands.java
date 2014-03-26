@@ -801,8 +801,8 @@ public class Commands {
     try {
       if (beeLine.getDatabaseConnection().getConnection() != null
           && !(beeLine.getDatabaseConnection().getConnection().isClosed())) {
-        beeLine.info(beeLine.loc("closing",
-            beeLine.getDatabaseConnection().getConnection().getClass().getName()));
+        int index = beeLine.getDatabaseConnections().getIndex();
+        beeLine.info(beeLine.loc("closing", index, beeLine.getDatabaseConnection()));
         beeLine.getDatabaseConnection().getConnection().close();
       } else {
         beeLine.info(beeLine.loc("already-closed"));

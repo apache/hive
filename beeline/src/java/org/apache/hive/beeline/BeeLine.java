@@ -779,19 +779,27 @@ public class BeeLine {
       for (int i = 0; i < commandHandlers.length; i++) {
         String match = commandHandlers[i].matches(line);
         if (match != null) {
-          cmdMap.put(match, commandHandlers[i]);
+          CommandHandler prev = cmdMap.put(match, commandHandlers[i]);
+          if (prev != null) {
+            return error(loc("multiple-matches",
+                Arrays.asList(prev.getName(), commandHandlers[i].getName())));
+          }
         }
       }
 
       if (cmdMap.size() == 0) {
         return error(loc("unknown-command", line));
-      } else if (cmdMap.size() > 1) {
-        return error(loc("multiple-matches",
-            cmdMap.keySet().toString()));
-      } else {
-        return cmdMap.values().iterator().next()
-            .execute(line);
       }
+      if (cmdMap.size() > 1) {
+        // any exact match?
+        CommandHandler handler = cmdMap.get(line);
+        if (handler == null) {
+          return error(loc("multiple-matches", cmdMap.keySet().toString()));
+        }
+        return handler.execute(line);
+      }
+      return cmdMap.values().iterator().next()
+          .execute(line);
     } else {
       return commands.sql(line);
     }
