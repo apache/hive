@@ -1,0 +1,102 @@
+PREHOOK: query: create table part (c int) partitioned by (d string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table part (c int) partitioned by (d string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part
+PREHOOK: query: insert into table part partition (d)
+select hr,ds from srcpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@part
+POSTHOOK: query: insert into table part partition (d)
+select hr,ds from srcpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@part@d=2008-04-08
+POSTHOOK: Output: default@part@d=2008-04-09
+POSTHOOK: Lineage: part PARTITION(d=2008-04-08).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: part PARTITION(d=2008-04-09).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+PREHOOK: query: explain select count(*) from part
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(*) from part
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: part PARTITION(d=2008-04-08).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: part PARTITION(d=2008-04-09).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+PREHOOK: query: select count(*) from part
+PREHOOK: type: QUERY
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part
+POSTHOOK: type: QUERY
+#### A masked pattern was here ####
+POSTHOOK: Lineage: part PARTITION(d=2008-04-08).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: part PARTITION(d=2008-04-09).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+2000
+PREHOOK: query: explain select count(*) from part
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(*) from part
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: part PARTITION(d=2008-04-08).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: part PARTITION(d=2008-04-09).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: part
+            Statistics: Num rows: 2000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 2000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count()
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+FAILED: SemanticException Number of partitions scanned (=2) on table part exceeds limit (=1). This is controlled by hive.limit.query.max.table.partition.

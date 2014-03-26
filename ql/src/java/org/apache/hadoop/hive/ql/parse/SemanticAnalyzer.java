@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -9268,6 +9269,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     optm.setPctx(pCtx);
     optm.initialize(conf);
     pCtx = optm.optimize();
+    
+    FetchTask origFetchTask = pCtx.getFetchTask();
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("After logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
@@ -9291,7 +9294,47 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.info("Completed plan generation");
 
+    if (!ctx.getExplain()) {
+      // if desired check we're not going over partition scan limits
+      enforceScanLimits(pCtx, origFetchTask);
+    }
+    
     return;
+  }
+
+  private void enforceScanLimits(ParseContext pCtx, FetchTask fTask)
+      throws SemanticException {
+    int scanLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVELIMITTABLESCANPARTITION);
+
+    if (scanLimit > -1) {
+      // a scan limit on the number of partitions has been set by the user
+      if (fTask != null) {
+        // having a fetch task at this point means that we're not going to
+        // launch a job on the cluster
+        if (!fTask.getWork().isNotPartitioned() && fTask.getWork().getLimit() == -1
+            && scanLimit < fTask.getWork().getPartDir().size()) {
+          throw new SemanticException(ErrorMsg.PARTITION_SCAN_LIMIT_EXCEEDED, ""
+              + fTask.getWork().getPartDir().size(), ""
+              + fTask.getWork().getTblDesc().getTableName(), "" + scanLimit);
+        }
+      } else {
+        // At this point we've run the partition pruner for all top ops. Let's
+        // check whether any of them break the limit
+        for (Operator<?> topOp : topOps.values()) {
+          if (topOp instanceof TableScanOperator) {
+            if (((TableScanDesc)topOp.getConf()).getIsMetadataOnly()) {
+              continue;
+            }
+            PrunedPartitionList parts = pCtx.getOpToPartList().get((TableScanOperator) topOp);
+            if (parts.getPartitions().size() > scanLimit) {
+              throw new SemanticException(ErrorMsg.PARTITION_SCAN_LIMIT_EXCEEDED, ""
+                  + parts.getPartitions().size(), "" + parts.getSourceTable().getTableName(), ""
+                  + scanLimit);
+            }
+          }
+        }
+      }
+    }
   }
 
   @Override
