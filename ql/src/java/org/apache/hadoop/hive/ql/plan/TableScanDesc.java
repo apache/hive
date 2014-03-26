@@ -70,6 +70,8 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
+  
+  private boolean isMetadataOnly = false;
 
   @SuppressWarnings("nls")
   public TableScanDesc() {
@@ -191,5 +193,13 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public void setBucketFileNameMapping(Map<String, Integer> bucketFileNameMapping) {
     this.bucketFileNameMapping = bucketFileNameMapping;
+  }
+  
+  public void setIsMetadataOnly(boolean metadata_only) {
+    isMetadataOnly = metadata_only;
+  }
+  
+  public boolean getIsMetadataOnly() {
+    return isMetadataOnly;
   }
 }

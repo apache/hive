@@ -305,6 +305,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
 
       while (iterator.hasNext()) {
         TableScanOperator tso = iterator.next();
+        ((TableScanDesc)tso.getConf()).setIsMetadataOnly(true);
         MapWork work = ((MapredWork) task.getWork()).getMapWork();
         String alias = getAliasForTableScanOperator(work, tso);
         LOG.info("Metadata only table scan for " + alias);
