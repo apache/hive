@@ -29,6 +29,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColOrCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.DoubleColumnInList;
@@ -124,8 +125,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFPower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFRound;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
@@ -1130,6 +1133,7 @@ public class TestVectorizationContext {
 
     // timestamp scalar/column
     children1.set(2, col3Expr);
+    ve = vc.getVectorExpression(exprDesc);
     assertTrue(IfExprLongColumnLongColumn.class == ve.getClass()
         || IfExprLongScalarLongColumn.class == ve.getClass());
 
@@ -1185,4 +1189,25 @@ public class TestVectorizationContext {
     ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprStringScalarStringColumn);
   }
+
+  @Test
+  public void testFoldConstantsForUnaryExpression() throws HiveException {
+    ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(new Integer(1));
+    GenericUDFToDecimal udf = new GenericUDFToDecimal();
+    udf.setTypeInfo(new DecimalTypeInfo(5, 2));
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+    children.add(constDesc);
+    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
+    exprDesc.setGenericUDF(udf);
+    exprDesc.setChildren(children);
+    exprDesc.setTypeInfo(new DecimalTypeInfo(5, 2));
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("col1", 1);
+    VectorizationContext vc = new VectorizationContext(columnMap, 1);
+    ExprNodeDesc constFoldNodeDesc = vc.foldConstantsForUnaryExpression(exprDesc); 
+    assertTrue(constFoldNodeDesc instanceof ExprNodeConstantDesc);
+    assertTrue(((HiveDecimal)
+      (((ExprNodeConstantDesc)constFoldNodeDesc).getValue())).toString().equals("1"));
+  }  
+
 }
