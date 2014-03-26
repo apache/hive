@@ -40,4 +40,13 @@
    <module>qtest</module>
   </modules>
 
+  <profiles>
+    <profile>
+      <id>hadoop-2</id>
+      <modules>
+        <module>hive-minikdc</module>
+      </modules>
+    </profile>
+  </profiles>
+
 </project>
