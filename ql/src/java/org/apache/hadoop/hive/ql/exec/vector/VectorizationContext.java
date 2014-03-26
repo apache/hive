@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,11 +39,33 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.ArgumentType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.InputExpressionType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Mode;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastBooleanToStringViaLongToString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDoubleToDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastLongToDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastLongToString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.DoubleColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterConstantBooleanVectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterDoubleColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterLongColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IDoubleInExpr;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ILongInExpr;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IStringInExpr;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLength;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorCoalesce;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFAvgDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCount;
@@ -90,12 +112,46 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.udf.*;
-import org.apache.hadoop.hive.ql.udf.generic.*;
+import org.apache.hadoop.hive.ql.udf.SettableUDF;
+import org.apache.hadoop.hive.ql.udf.UDFConv;
+import org.apache.hadoop.hive.ql.udf.UDFHex;
+import org.apache.hadoop.hive.ql.udf.UDFSign;
+import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
+import org.apache.hadoop.hive.ql.udf.UDFToByte;
+import org.apache.hadoop.hive.ql.udf.UDFToDouble;
+import org.apache.hadoop.hive.ql.udf.UDFToFloat;
+import org.apache.hadoop.hive.ql.udf.UDFToInteger;
+import org.apache.hadoop.hive.ql.udf.UDFToLong;
+import org.apache.hadoop.hive.ql.udf.UDFToShort;
+import org.apache.hadoop.hive.ql.udf.UDFToString;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNegative;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFRound;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUtcTimestamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.*;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * Context class for vectorization execution.
@@ -325,6 +381,10 @@ public class VectorizationContext {
     if (ve == null) {
       throw new HiveException("Could not vectorize expression: "+exprDesc.getName());
     }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Input Expression = " + exprDesc.getTypeInfo()
+          + ", Vectorized Expression = " + ve.toString());
+    }
     return ve;
   }
 
@@ -416,7 +476,7 @@ public class VectorizationContext {
       return returnType;
     }
     PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) inputTypeInfo;
-    int precision = HiveDecimalUtils.getPrecisionForType(ptinfo);
+    int precision = getPrecisionForType(ptinfo);
     int scale = HiveDecimalUtils.getScaleForType(ptinfo);
     return new DecimalTypeInfo(precision, scale);
   }
@@ -450,6 +510,9 @@ public class VectorizationContext {
       // If castType is decimal, try not to lose precision for numeric types.
       castType = updatePrecision(inputTypeInfo, (DecimalTypeInfo) castType);
       GenericUDFToDecimal castToDecimalUDF = new GenericUDFToDecimal();
+      castToDecimalUDF.setTypeInfo(new DecimalTypeInfo( 
+        getPrecisionForType((PrimitiveTypeInfo) castType),
+        HiveDecimalUtils.getScaleForType((PrimitiveTypeInfo) castType)));
       List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
       children.add(child);
       ExprNodeDesc desc = new ExprNodeGenericFuncDesc(castType, castToDecimalUDF, children);
@@ -474,6 +537,13 @@ public class VectorizationContext {
       }
     }
     return null;
+  }
+  
+  private int getPrecisionForType(PrimitiveTypeInfo typeInfo) {
+    if (isFloatFamily(typeInfo.getTypeName())) {
+      return HiveDecimal.MAX_PRECISION;
+    }
+    return HiveDecimalUtils.getPrecisionForType(typeInfo);
   }
 
   private GenericUDF getGenericUDFForCast(TypeInfo castType) throws HiveException {
@@ -524,6 +594,9 @@ public class VectorizationContext {
       genericUdf = new GenericUDFBridge();
       ((GenericUDFBridge) genericUdf).setUdfClassName(udfClass.getClass().getName());
     }
+    if (genericUdf instanceof SettableUDF) {
+	((SettableUDF)genericUdf).setTypeInfo(castType);
+    }    
     return genericUdf;
   }
 
@@ -611,27 +684,30 @@ public class VectorizationContext {
    *         expression.
    * @throws HiveException
    */
-  private ExprNodeDesc foldConstantsForUnaryExpression(ExprNodeDesc exprDesc) throws HiveException {
+  ExprNodeDesc foldConstantsForUnaryExpression(ExprNodeDesc exprDesc) throws HiveException {
     if (!(exprDesc instanceof ExprNodeGenericFuncDesc)) {
       return exprDesc;
     }
-
+    
     if (exprDesc.getChildren() == null || (exprDesc.getChildren().size() != 1) ||
         (!( exprDesc.getChildren().get(0) instanceof ExprNodeConstantDesc))) {
       return exprDesc;
     }
 
+    ExprNodeConstantDesc encd = (ExprNodeConstantDesc) exprDesc.getChildren().get(0);    
+    ObjectInspector childoi = encd.getWritableObjectInspector();
     GenericUDF gudf = ((ExprNodeGenericFuncDesc) exprDesc).getGenericUDF();
+
     if (gudf instanceof GenericUDFOPNegative || gudf instanceof GenericUDFOPPositive
-        || castExpressionUdfs.contains(gudf)
+        || castExpressionUdfs.contains(gudf.getClass())
         || ((gudf instanceof GenericUDFBridge)
             && castExpressionUdfs.contains(((GenericUDFBridge) gudf).getUdfClass()))) {
       ExprNodeEvaluator<?> evaluator = ExprNodeEvaluatorFactory.get(exprDesc);
-      ObjectInspector output = evaluator.initialize(null);
+      ObjectInspector output = evaluator.initialize(childoi);
       Object constant = evaluator.evaluate(null);
-      Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);
-      return new ExprNodeConstantDesc(java);
-    }
+      Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);  
+      return new ExprNodeConstantDesc(exprDesc.getTypeInfo(), java);
+     }
 
     return exprDesc;
   }
@@ -772,7 +848,7 @@ public class VectorizationContext {
             }
             arguments[i] = colIndex;
         } else if (child instanceof ExprNodeConstantDesc) {
-          Object scalarValue = getScalarValue((ExprNodeConstantDesc) child);
+          Object scalarValue = getVectorTypeScalarValue((ExprNodeConstantDesc) child);
           arguments[i] = scalarValue;
         } else {
           throw new HiveException("Cannot handle expression type: " + child.getClass().getSimpleName());
@@ -959,8 +1035,8 @@ public class VectorizationContext {
       }
       expr = createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION, colTypeInfo);
       ((IDoubleInExpr) expr).setInListValues(inValsD);
-    }
-
+    } 
+    
     // Return the desired VectorExpression if found. Otherwise, return null to cause
     // execution to fall back to row mode.
     return expr;
@@ -1089,7 +1165,7 @@ public class VectorizationContext {
 
       // float types require no conversion, so use a no-op
       return getIdentityExpression(childExpr);
-    }
+    } 
     // The string type is deliberately omitted -- it's handled elsewhere. See isLegacyPathUDF.
 
     return null;
@@ -1186,7 +1262,7 @@ public class VectorizationContext {
       } else {
         cl = FilterLongColumnBetween.class;
       }
-    }
+    } 
 
     return createVectorExpression(cl, childrenAfterNot, Mode.PROJECTION, null);
   }
@@ -1270,6 +1346,14 @@ public class VectorizationContext {
     return resultType.equalsIgnoreCase("timestamp") || resultType.equalsIgnoreCase("date");
   }
 
+  public static boolean isTimestampFamily(String resultType) {
+    return resultType.equalsIgnoreCase("timestamp");
+  }
+  
+  public static boolean isDateFamily(String resultType) {
+    return resultType.equalsIgnoreCase("date");
+  }
+  
   // return true if this is any kind of float
   public static boolean isFloatFamily(String resultType) {
     return resultType.equalsIgnoreCase("double")
@@ -1339,6 +1423,17 @@ public class VectorizationContext {
       return (Long) o;
     }
     throw new HiveException("Unexpected type when converting to double");
+  }
+
+  private Object getVectorTypeScalarValue(ExprNodeConstantDesc constDesc) throws HiveException {
+    String t = constDesc.getTypeInfo().getTypeName();
+    if (isTimestampFamily(t)) {
+      return TimestampUtils.getTimeNanoSec((Timestamp) getScalarValue(constDesc));
+    } else if (isDateFamily(t)) {
+      return DateWritable.dateToDays((Date) getScalarValue(constDesc));
+    } else {
+      return getScalarValue(constDesc);
+    }
   }
 
   // Get a timestamp as a long in number of nanos, from a string constant or cast
