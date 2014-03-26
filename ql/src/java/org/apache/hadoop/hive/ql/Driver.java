@@ -36,6 +36,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -812,8 +813,8 @@ public class Driver implements CommandProcessor {
   // the input format.
   private int recordValidTxns() {
     try {
-      IMetaStoreClient.ValidTxnList txns = txnMgr.getValidTxns();
-      ctx.getConf().set(IMetaStoreClient.ValidTxnList.VALID_TXNS_KEY, txns.toString());
+      ValidTxnList txns = txnMgr.getValidTxns();
+      ctx.getConf().set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
       return 0;
     } catch (LockException e) {
       errorMessage = "FAILED: Error in determing valid transactions: " + e.getMessage();

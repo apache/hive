@@ -77,7 +77,15 @@ final public class OrcStruct implements Writable {
     }
   }
 
-   @Override
+  /**
+   * Destructively make this object link to other's values.
+   * @param other the value to point to
+   */
+  void linkFields(OrcStruct other) {
+    fields = other.fields;
+  }
+
+  @Override
   public void write(DataOutput dataOutput) throws IOException {
     throw new UnsupportedOperationException("write unsupported");
   }
@@ -169,6 +177,11 @@ final public class OrcStruct implements Writable {
     protected OrcStructInspector() {
       super();
     }
+
+    OrcStructInspector(List<StructField> fields) {
+      this.fields = fields;
+    }
+
     OrcStructInspector(StructTypeInfo info) {
       ArrayList<String> fieldNames = info.getAllStructFieldNames();
       ArrayList<TypeInfo> fieldTypes = info.getAllStructFieldTypeInfos();

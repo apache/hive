@@ -2102,6 +2102,13 @@ public final class Utilities {
    *          configuration which receives configured properties
    */
   public static void copyTableJobPropertiesToConf(TableDesc tbl, JobConf job) {
+    String bucketString = tbl.getProperties()
+        .getProperty(hive_metastoreConstants.BUCKET_COUNT);
+    // copy the bucket count
+    if (bucketString != null) {
+      job.set(hive_metastoreConstants.BUCKET_COUNT, bucketString);
+    }
+
     Map<String, String> jobProperties = tbl.getJobProperties();
     if (jobProperties == null) {
       return;
@@ -2109,9 +2116,6 @@ public final class Utilities {
     for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
       job.set(entry.getKey(), entry.getValue());
     }
-    // copy the bucket count
-    job.set(hive_metastoreConstants.BUCKET_COUNT,
-        tbl.getProperties().getProperty(hive_metastoreConstants.BUCKET_COUNT));
   }
 
   private static final Object INPUT_SUMMARY_LOCK = new Object();

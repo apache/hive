@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -118,6 +119,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private long rowsInStripe = 0;
   private long rawDataSize = 0;
   private int rowsInIndex = 0;
+  private int stripesAtLastFlush = -1;
   private final List<OrcProto.StripeInformation> stripes =
     new ArrayList<OrcProto.StripeInformation>();
   private final Map<String, ByteString> userMetadata =
@@ -130,6 +132,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private final MemoryManager memoryManager;
   private final OrcFile.Version version;
   private final Configuration conf;
+  private final OrcFile.WriterCallback callback;
+  private final OrcFile.WriterContext callbackContext;
 
   WriterImpl(FileSystem fs,
              Path path,
@@ -141,10 +145,23 @@ class WriterImpl implements Writer, MemoryManager.Callback {
              int rowIndexStride,
              MemoryManager memoryManager,
              boolean addBlockPadding,
-             OrcFile.Version version) throws IOException {
+             OrcFile.Version version,
+             OrcFile.WriterCallback callback) throws IOException {
     this.fs = fs;
     this.path = path;
     this.conf = conf;
+    this.callback = callback;
+    if (callback != null) {
+      callbackContext = new OrcFile.WriterContext(){
+
+        @Override
+        public Writer getWriter() {
+          return WriterImpl.this;
+        }
+      };
+    } else {
+      callbackContext = null;
+    }
     this.stripeSize = stripeSize;
     this.version = version;
     this.addBlockPadding = addBlockPadding;
@@ -1727,7 +1744,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
   }
 
-  private void ensureWriter() throws IOException {
+  @VisibleForTesting
+  FSDataOutputStream getStream() throws IOException {
     if (rawWriter == null) {
       rawWriter = fs.create(path, false, HDFS_BUFFER_SIZE,
                             fs.getDefaultReplication(), blockSize);
@@ -1737,6 +1755,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
                              new DirectStream(rawWriter));
       protobufWriter = CodedOutputStream.newInstance(writer);
     }
+    return rawWriter;
   }
 
   private void createRowIndexEntry() throws IOException {
@@ -1745,12 +1764,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private void flushStripe() throws IOException {
-    ensureWriter();
+    getStream();
     if (buildIndex && rowsInIndex != 0) {
       createRowIndexEntry();
     }
     if (rowsInStripe != 0) {
-
+      if (callback != null) {
+        callback.preStripeWrite(callbackContext);
+      }
       // finalize the data for the stripe
       int requiredIndexEntries = rowIndexStride == 0 ? 0 :
           (int) ((rowsInStripe + rowIndexStride - 1) / rowIndexStride);
@@ -1910,7 +1931,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private int writeMetadata(long bodyLength) throws IOException {
-    ensureWriter();
+    getStream();
     OrcProto.Metadata.Builder builder = OrcProto.Metadata.newBuilder();
     for(OrcProto.StripeStatistics.Builder ssb : treeWriter.stripeStatsBuilders) {
       builder.addStripeStats(ssb.build());
@@ -1925,7 +1946,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private int writeFooter(long bodyLength) throws IOException {
-    ensureWriter();
+    getStream();
     OrcProto.Footer.Builder builder = OrcProto.Footer.newBuilder();
     builder.setContentLength(bodyLength);
     builder.setHeaderLength(headerLength);
@@ -2009,6 +2030,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   @Override
   public void close() throws IOException {
+    if (callback != null) {
+      callback.preFooterWrite(callbackContext);
+    }
     // remove us from the memory manager so that we don't get any callbacks
     memoryManager.removeWriter(path);
     // actually close the file
@@ -2037,5 +2061,20 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   @Override
   public long getNumberOfRows() {
     return rowCount;
+  }
+
+  @Override
+  public synchronized long writeIntermediateFooter() throws IOException {
+    // flush any buffered rows
+    flushStripe();
+    // write a footer
+    if (stripesAtLastFlush != stripes.size()) {
+      int metaLength = writeMetadata(rawWriter.getPos());
+      int footLength = writeFooter(rawWriter.getPos() - metaLength);
+      rawWriter.writeByte(writePostScript(footLength, metaLength));
+      stripesAtLastFlush = stripes.size();
+      OrcInputFormat.SHIMS.hflush(rawWriter);
+    }
+    return rawWriter.getPos();
   }
 }

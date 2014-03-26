@@ -48,8 +48,8 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
     Path path = fileSplit.getPath();
     Configuration conf = ShimLoader.getHadoopShims()
         .getConfiguration(context);
-    FileSystem fs = path.getFileSystem(conf);
-    return new OrcRecordReader(OrcFile.createReader(fs, path, conf),
+    return new OrcRecordReader(OrcFile.createReader(path,
+                                                   OrcFile.readerOptions(conf)),
         ShimLoader.getHadoopShims().getConfiguration(context),
         fileSplit.getStart(), fileSplit.getLength());
   }
@@ -118,15 +118,14 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
   public List<InputSplit> getSplits(JobContext jobContext)
       throws IOException, InterruptedException {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
-    List<OrcInputFormat.Context.FileSplitInfo> splits =
+    Configuration conf =
+        ShimLoader.getHadoopShims().getConfiguration(jobContext);
+    List<OrcSplit> splits =
         OrcInputFormat.generateSplitsInfo(ShimLoader.getHadoopShims()
         .getConfiguration(jobContext));
     List<InputSplit> result = new ArrayList<InputSplit>();
-    for (OrcInputFormat.Context.FileSplitInfo split : splits) {
-      FileSplit newSplit = new OrcNewSplit(split.getPath(),
-          split.getStart(), split.getLength(), split.getLocations(),
-          split.getFileMetaInfo());
-      result.add(newSplit);
+    for(OrcSplit split: OrcInputFormat.generateSplitsInfo(conf)) {
+      result.add(new OrcNewSplit(split));
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
     return result;

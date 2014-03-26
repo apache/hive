@@ -19,14 +19,13 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnListImpl;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -43,8 +42,6 @@ import java.util.*;
  * transactions.  This provides default Hive behavior.
  */
 class DummyTxnManager extends HiveTxnManagerImpl {
-  private static final int separator = Utilities.tabCode;
-  private static final int terminator = Utilities.newLineCode;
   static final private Log LOG =
       LogFactory.getLog(DummyTxnManager.class.getName());
 
@@ -197,33 +194,8 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public IMetaStoreClient.ValidTxnList getValidTxns() throws LockException {
-    return new IMetaStoreClient.ValidTxnList() {
-      @Override
-      public boolean isTxnCommitted(long txnid) {
-        return false;
-      }
-
-      @Override
-      public RangeResponse isTxnRangeCommitted(long min, long max) {
-        return RangeResponse.NONE;
-      }
-
-      @Override
-      public GetOpenTxnsResponse getOpenTxns() {
-        return null;
-      }
-
-      @Override
-      public void fromString(String src) {
-      }
-
-      @Override
-      public String toString() {
-        return "";
-      }
-
-    };
+  public ValidTxnList getValidTxns() throws LockException {
+    return new ValidTxnListImpl();
   }
 
   @Override

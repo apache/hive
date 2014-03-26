@@ -108,7 +108,8 @@ public class TestOrcNullOptimization {
                                Lists.newArrayList(new InnerStruct(100))));
     writer.close();
 
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     // check the stats
     ColumnStatistics[] stats = reader.getStatistics();
     assertEquals(20000, reader.getNumberOfRows());
@@ -123,8 +124,7 @@ public class TestOrcNullOptimization {
 
     assertEquals("a", ((StringColumnStatistics) stats[2]).getMaximum());
     assertEquals("a", ((StringColumnStatistics) stats[2]).getMinimum());
-    assertEquals(19998,
-                 ((StringColumnStatistics) stats[2]).getNumberOfValues());
+    assertEquals(19998, stats[2].getNumberOfValues());
     assertEquals("count: 19998 min: a max: a sum: 19998",
         stats[2].toString());
 
@@ -136,7 +136,7 @@ public class TestOrcNullOptimization {
     assertEquals("struct<a:int,b:string,c:boolean,list:array<struct<z:int>>>",
         readerInspector.getTypeName());
 
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
 
     List<Boolean> expected = Lists.newArrayList();
     for (StripeInformation sinfo : reader.getStripes()) {
@@ -212,7 +212,8 @@ public class TestOrcNullOptimization {
                                Lists.newArrayList(new InnerStruct(100))));
     writer.close();
 
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     // check the stats
     ColumnStatistics[] stats = reader.getStatistics();
     assertEquals(20000, reader.getNumberOfRows());
@@ -227,8 +228,7 @@ public class TestOrcNullOptimization {
 
     assertEquals("b", ((StringColumnStatistics) stats[2]).getMaximum());
     assertEquals("a", ((StringColumnStatistics) stats[2]).getMinimum());
-    assertEquals(20000,
-                 ((StringColumnStatistics) stats[2]).getNumberOfValues());
+    assertEquals(20000, stats[2].getNumberOfValues());
     assertEquals("count: 20000 min: a max: b sum: 20000",
         stats[2].toString());
 
@@ -240,7 +240,7 @@ public class TestOrcNullOptimization {
     assertEquals("struct<a:int,b:string,c:boolean,list:array<struct<z:int>>>",
         readerInspector.getTypeName());
 
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
 
     // none of the stripes will have PRESENT stream
     List<Boolean> expected = Lists.newArrayList();
@@ -313,7 +313,8 @@ public class TestOrcNullOptimization {
                                Lists.newArrayList(new InnerStruct(100))));
     writer.close();
 
-    Reader reader = OrcFile.createReader(fs, testFilePath, conf);
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
     // check the stats
     ColumnStatistics[] stats = reader.getStatistics();
     assertEquals(8, reader.getNumberOfRows());
@@ -328,7 +329,7 @@ public class TestOrcNullOptimization {
 
     assertEquals("h", ((StringColumnStatistics) stats[2]).getMaximum());
     assertEquals("a", ((StringColumnStatistics) stats[2]).getMinimum());
-    assertEquals(7, ((StringColumnStatistics) stats[2]).getNumberOfValues());
+    assertEquals(7, stats[2].getNumberOfValues());
     assertEquals("count: 7 min: a max: h sum: 7",
         stats[2].toString());
 
@@ -340,7 +341,7 @@ public class TestOrcNullOptimization {
     assertEquals("struct<a:int,b:string,c:boolean,list:array<struct<z:int>>>",
         readerInspector.getTypeName());
 
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     // only the last strip will have PRESENT stream
     List<Boolean> expected = Lists.newArrayList();
     for (StripeInformation sinfo : reader.getStripes()) {

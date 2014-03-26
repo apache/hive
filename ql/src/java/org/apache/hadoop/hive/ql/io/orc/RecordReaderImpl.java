@@ -188,44 +188,77 @@ class RecordReaderImpl implements RecordReader {
     }
   }
 
-  RecordReaderImpl(Iterable<StripeInformation> stripes,
+  /**
+   * Given a list of column names, find the given column and return the index.
+   * @param columnNames the list of potential column names
+   * @param columnName the column name to look for
+   * @param rootColumn offset the result with the rootColumn
+   * @return the column number or -1 if the column wasn't found
+   */
+  static int findColumns(String[] columnNames,
+                         String columnName,
+                         int rootColumn) {
+    for(int i=0; i < columnNames.length; ++i) {
+      if (columnName.equals(columnNames[i])) {
+        return i + rootColumn;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Find the mapping from predicate leaves to columns.
+   * @param sargLeaves the search argument that we need to map
+   * @param columnNames the names of the columns
+   * @param rootColumn the offset of the top level row, which offsets the
+   *                   result
+   * @return an array mapping the sarg leaves to concrete column numbers
+   */
+  static int[] mapSargColumns(List<PredicateLeaf> sargLeaves,
+                             String[] columnNames,
+                             int rootColumn) {
+    int[] result = new int[sargLeaves.size()];
+    Arrays.fill(result, -1);
+    for(int i=0; i < result.length; ++i) {
+      String colName = sargLeaves.get(i).getColumnName();
+      result[i] = findColumns(columnNames, colName, rootColumn);
+    }
+    return result;
+  }
+
+  RecordReaderImpl(List<StripeInformation> stripes,
                    FileSystem fileSystem,
                    Path path,
-                   long offset, long length,
+                   Reader.Options options,
                    List<OrcProto.Type> types,
                    CompressionCodec codec,
                    int bufferSize,
-                   boolean[] included,
                    long strideRate,
-                   SearchArgument sarg,
-                   String[] columnNames,
                    Configuration conf
                   ) throws IOException {
     this.file = fileSystem.open(path);
     this.codec = codec;
     this.types = types;
     this.bufferSize = bufferSize;
-    this.included = included;
+    this.included = options.getInclude();
     this.conf = conf;
-    this.sarg = sarg;
+    this.sarg = options.getSearchArgument();
     if (sarg != null) {
       sargLeaves = sarg.getLeaves();
-      filterColumns = new int[sargLeaves.size()];
-      for(int i=0; i < filterColumns.length; ++i) {
-        String colName = sargLeaves.get(i).getColumnName();
-        filterColumns[i] = findColumns(columnNames, colName);
-      }
+      filterColumns = mapSargColumns(sargLeaves, options.getColumnNames(), 0);
     } else {
       sargLeaves = null;
       filterColumns = null;
     }
     long rows = 0;
     long skippedRows = 0;
+    long offset = options.getOffset();
+    long maxOffset = options.getMaxOffset();
     for(StripeInformation stripe: stripes) {
       long stripeStart = stripe.getOffset();
       if (offset > stripeStart) {
         skippedRows += stripe.getNumberOfRows();
-      } else if (stripeStart < offset + length) {
+      } else if (stripeStart < maxOffset) {
         this.stripes.add(stripe);
         rows += stripe.getNumberOfRows();
       }
@@ -249,16 +282,6 @@ class RecordReaderImpl implements RecordReader {
     indexes = new OrcProto.RowIndex[types.size()];
     rowIndexStride = strideRate;
     advanceToNextRow(0L);
-  }
-
-  static int findColumns(String[] columnNames,
-                                 String columnName) {
-    for(int i=0; i < columnNames.length; ++i) {
-      if (columnName.equals(columnNames[i])) {
-        return i;
-      }
-    }
-    return -1;
   }
 
   private static final class PositionProviderImpl implements PositionProvider {
@@ -2227,7 +2250,7 @@ class RecordReaderImpl implements RecordReader {
    *   predicate.
    */
   static TruthValue evaluatePredicate(OrcProto.ColumnStatistics index,
-                               PredicateLeaf predicate) {
+                                      PredicateLeaf predicate) {
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(index);
     Object minValue = getMin(cs);
     // if we didn't have any values, everything must have been null
@@ -2967,6 +2990,10 @@ class RecordReaderImpl implements RecordReader {
     // find the next row
     rowInStripe += 1;
     advanceToNextRow(rowInStripe + rowBaseInStripe);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("row from " + reader.path);
+      LOG.debug("orc row = " + result);
+    }
     return result;
   }
 
