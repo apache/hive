@@ -75,8 +75,8 @@ public class HiveAuthFactory {
   public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
   public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
 
-  public HiveAuthFactory() throws TTransportException {
-    conf = new HiveConf();
+  public HiveAuthFactory(HiveConf conf) throws TTransportException {
+    this.conf = conf;
     transportMode = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
     authTypeStr = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION);
 
@@ -172,7 +172,11 @@ public class HiveAuthFactory {
   }
 
   public String getIpAddress() {
-    return saslServer != null ? saslServer.getRemoteAddress().toString() : null;
+    if(saslServer != null && saslServer.getRemoteAddress() != null) {
+      return saslServer.getRemoteAddress().toString();
+    } else {
+      return null;
+    }
   }
 
   // Perform kerberos login using the hadoop shim API if the configuration is available

@@ -147,6 +147,7 @@
     <xerces.version>2.9.1</xerces.version>
     <zookeeper.version>3.4.5</zookeeper.version>
     <jpam.version>1.1</jpam.version>
+    <felix.version>2.4.0</felix.version>
   </properties>
 
   <repositories>
@@ -630,6 +631,11 @@
             </dependency>
           </dependencies>
         </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>${felix.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -752,6 +758,7 @@
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc</test.src.tables>
+            <java.security.krb5.conf>${test.tmp.dir}/conf/krb5.conf</java.security.krb5.conf>
           </systemPropertyVariables>
         </configuration>
       </plugin>
@@ -960,6 +967,11 @@
           <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mapreduce-client-core</artifactId>
+            <version>${hadoop-23.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-minikdc</artifactId>
             <version>${hadoop-23.version}</version>
           </dependency>
           <dependency>

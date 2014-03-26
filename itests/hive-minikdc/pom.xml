@@ -23,39 +23,23 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>hive-it-unit</artifactId>
+  <artifactId>hive-it-minikdc</artifactId>
   <packaging>jar</packaging>
-  <name>Hive Integration - Unit Tests</name>
+  <name>Hive Integration - Unit Tests with miniKdc</name>
 
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
   </properties>
 
   <dependencies>
-    <!-- intra-project --> 
+    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
+    <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-jdbc</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-service</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-exec</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
-    <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-beeline</artifactId>
@@ -70,7 +54,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-it-util</artifactId>
+      <artifactId>hive-it-unit</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-jdbc</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
@@ -78,6 +68,13 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-metastore</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-metastore</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
@@ -90,12 +87,26 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-service</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <!-- test inter-project -->
@@ -121,6 +132,7 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-core</artifactId>
           <version>${hadoop-20S.version}</version>
+          <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
@@ -200,6 +212,7 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-common</artifactId>
           <version>${hadoop-23.version}</version>
+          <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
@@ -218,6 +231,12 @@
         <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-mapreduce-client-core</artifactId>
+          <version>${hadoop-23.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-minikdc</artifactId>
           <version>${hadoop-23.version}</version>
           <scope>test</scope>
         </dependency>
@@ -244,25 +263,10 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>setup-metastore-scripts</id>
-            <phase>process-test-resources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <mkdir dir="${test.tmp.dir}/scripts/metastore" />
-                <copy todir="${test.tmp.dir}/scripts/metastore">
-                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
-                </copy>
-              </target>
-            </configuration>
-          </execution>
-        </executions>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <inherited>true</inherited>
+        <extensions>true</extensions>
       </plugin>
     </plugins>
   </build>
