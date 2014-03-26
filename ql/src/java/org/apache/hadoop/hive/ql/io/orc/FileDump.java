@@ -33,8 +33,8 @@ public final class FileDump {
     for(String filename: args) {
       System.out.println("Structure for " + filename);
       Path path = new Path(filename);
-      Reader reader = OrcFile.createReader(path.getFileSystem(conf), path, conf);
-      RecordReaderImpl rows = (RecordReaderImpl) reader.rows(null);
+      Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
+      RecordReaderImpl rows = (RecordReaderImpl) reader.rows();
       System.out.println("Rows: " + reader.getNumberOfRows());
       System.out.println("Compression: " + reader.getCompression());
       if (reader.getCompression() != CompressionKind.NONE) {
@@ -47,7 +47,8 @@ public final class FileDump {
         System.out.println("  Stripe " + (n + 1) + ":");
         StripeStatistics ss = metadata.getStripeStatistics().get(n);
         for (int i = 0; i < ss.getColumnStatistics().length; ++i) {
-          System.out.println("    Column " + i + ": " + ss.getColumnStatistics()[i].toString());
+          System.out.println("    Column " + i + ": " +
+              ss.getColumnStatistics()[i].toString());
         }
       }
       ColumnStatistics[] stats = reader.getStatistics();

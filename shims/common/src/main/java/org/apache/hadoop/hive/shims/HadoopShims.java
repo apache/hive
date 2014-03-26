@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -445,11 +446,11 @@ public interface HadoopShims {
    * @param fs the file system
    * @param path the directory name to get the status and block locations
    * @param filter a filter that needs to accept the file (or null)
-   * @return an iterator for the located file status objects
+   * @return an list for the located file status objects
    * @throws IOException
    */
-  Iterator<FileStatus> listLocatedStatus(FileSystem fs, Path path,
-      PathFilter filter) throws IOException;
+  List<FileStatus> listLocatedStatus(FileSystem fs, Path path,
+                                     PathFilter filter) throws IOException;
 
   /**
    * For file status returned by listLocatedStatus, convert them into a list
@@ -461,6 +462,13 @@ public interface HadoopShims {
    */
   BlockLocation[] getLocations(FileSystem fs,
       FileStatus status) throws IOException;
+
+  /**
+   * Flush and make visible to other users the changes to the given stream.
+   * @param stream the stream to hflush.
+   * @throws IOException
+   */
+  public void hflush(FSDataOutputStream stream) throws IOException;
 
   public HCatHadoopShims getHCatShim();
   public interface HCatHadoopShims {

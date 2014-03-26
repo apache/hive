@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -269,7 +270,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public IMetaStoreClient.ValidTxnList getValidTxns() throws LockException {
+  public ValidTxnList getValidTxns() throws LockException {
     init();
     try {
       return client.getValidTxns();

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -87,7 +88,7 @@ public interface HiveTxnManager {
 
   /**
    * Get the transactions that are currently valid.  The resulting
-   * {@link IMetaStoreClient.ValidTxnList} object is a thrift object and can
+   * {@link ValidTxnList} object is a thrift object and can
    * be  passed to  the processing
    * tasks for use in the reading the data.  This call should be made once up
    * front by the planner and should never be called on the backend,
@@ -95,7 +96,7 @@ public interface HiveTxnManager {
    * @return list of valid transactions.
    * @throws LockException
    */
-  IMetaStoreClient.ValidTxnList getValidTxns() throws LockException;
+  ValidTxnList getValidTxns() throws LockException;
 
   /**
    * This call closes down the transaction manager.  All open transactions

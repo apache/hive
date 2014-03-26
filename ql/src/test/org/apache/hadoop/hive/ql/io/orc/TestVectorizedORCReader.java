@@ -22,7 +22,6 @@ import junit.framework.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -64,6 +63,7 @@ public class TestVectorizedORCReader {
     fs.delete(testFilePath, false);
   }
 
+  @SuppressWarnings("unused")
   static class MyRecord {
     private final Boolean bo;
     private final Byte by;
@@ -131,10 +131,12 @@ public class TestVectorizedORCReader {
 
   private void checkVectorizedReader() throws Exception {
 
-    Reader vreader = OrcFile.createReader(testFilePath.getFileSystem(conf), testFilePath, conf);
-    Reader reader = OrcFile.createReader(testFilePath.getFileSystem(conf), testFilePath, conf);
-    RecordReaderImpl vrr = (RecordReaderImpl) vreader.rows(null);
-    RecordReaderImpl rr = (RecordReaderImpl) reader.rows(null);
+    Reader vreader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf));
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf));
+    RecordReaderImpl vrr = (RecordReaderImpl) vreader.rows();
+    RecordReaderImpl rr = (RecordReaderImpl) reader.rows();
     VectorizedRowBatch batch = null;
     OrcStruct row = null;
 
@@ -142,7 +144,7 @@ public class TestVectorizedORCReader {
     while (vrr.hasNext()) {
       batch = vrr.nextBatch(batch);
       for (int i = 0; i < batch.size; i++) {
-        row = (OrcStruct) rr.next((Object) row);
+        row = (OrcStruct) rr.next(row);
         for (int j = 0; j < batch.cols.length; j++) {
           Object a = (row.getFieldValue(j));
           Object b = batch.cols[j].getWritableObject(i);

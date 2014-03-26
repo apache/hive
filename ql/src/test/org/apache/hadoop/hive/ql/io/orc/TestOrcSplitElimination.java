@@ -88,6 +88,8 @@ public class TestOrcSplitElimination {
     conf.set("columns", "userid,string1,subtype,decimal1,ts");
     conf.set("columns.types", "bigint,string,double,decimal,timestamp");
     // needed columns
+    conf.set(ColumnProjectionUtils.READ_ALL_COLUMNS, "false");
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,2");
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, "userid,subtype");
     fs = FileSystem.getLocal(conf);
     testFilePath = new Path(workDir, "TestOrcFile." +
