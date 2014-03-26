@@ -1,0 +1,610 @@
+PREHOOK: query: explain select ds from srcpart where hr=11 and ds='2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select ds from srcpart where hr=11 and ds='2008-04-08'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: srcpart
+            Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+            Select Operator
+              expressions: ds (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: select ds from srcpart where hr=11 and ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select ds from srcpart where hr=11 and ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+2008-04-08
+PREHOOK: query: explain select distinct hr from srcpart
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select distinct hr from srcpart
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: srcpart
+            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+            Select Operator
+              expressions: hr (type: string)
+              outputColumnNames: hr
+              Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+              Group By Operator
+                keys: hr (type: string)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+          Select Operator
+            expressions: _col0 (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: select distinct hr from srcpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct hr from srcpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+11
+12
