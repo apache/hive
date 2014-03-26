@@ -55,7 +55,7 @@ public interface Reader {
    * Get the user metadata keys.
    * @return the set of metadata keys
    */
-  Iterable<String> getMetadataKeys();
+  List<String> getMetadataKeys();
 
   /**
    * Get a user metadata value.
@@ -63,6 +63,13 @@ public interface Reader {
    * @return the bytes associated with the given key
    */
   ByteBuffer getMetadataValue(String key);
+
+  /**
+   * Did the user set the given metadata value.
+   * @param key the key to check
+   * @return true if the metadata value was set
+   */
+  boolean hasMetadataValue(String key);
 
   /**
    * Get the compression kind.
@@ -87,7 +94,7 @@ public interface Reader {
    * Get the list of stripes.
    * @return the information about the stripes in order
    */
-  Iterable<StripeInformation> getStripes();
+  List<StripeInformation> getStripes();
 
   /**
    * Get the object inspector for looking at the objects.
@@ -122,31 +129,146 @@ public interface Reader {
   List<OrcProto.Type> getTypes();
 
   /**
-   * FileMetaInfo - represents file metadata stored in footer and postscript sections of the file
-   * that is useful for Reader implementation
-   *
+   * Options for creating a RecordReader.
    */
-  class FileMetaInfo{
-    final String compressionType;
-    final int bufferSize;
-    final int metadataSize;
-    final ByteBuffer footerBuffer;
-    FileMetaInfo(String compressionType, int bufferSize, int metadataSize, ByteBuffer footerBuffer){
-      this.compressionType = compressionType;
-      this.bufferSize = bufferSize;
-      this.metadataSize = metadataSize;
-      this.footerBuffer = footerBuffer;
+  public static class Options {
+    private boolean[] include;
+    private long offset = 0;
+    private long length = Long.MAX_VALUE;
+    private SearchArgument sarg = null;
+    private String[] columnNames = null;
+
+    /**
+     * Set the list of columns to read.
+     * @param include a list of columns to read
+     * @return this
+     */
+    public Options include(boolean[] include) {
+      this.include = include;
+      return this;
+    }
+
+    /**
+     * Set the range of bytes to read
+     * @param offset the starting byte offset
+     * @param length the number of bytes to read
+     * @return this
+     */
+    public Options range(long offset, long length) {
+      this.offset = offset;
+      this.length = length;
+      return this;
+    }
+
+    /**
+     * Set search argument for predicate push down.
+     * @param sarg the search argument
+     * @param columnNames the column names for
+     * @return
+     */
+    public Options searchArgument(SearchArgument sarg, String[] columnNames) {
+      this.sarg = sarg;
+      this.columnNames = columnNames;
+      return this;
+    }
+
+    public boolean[] getInclude() {
+      return include;
+    }
+
+    public long getOffset() {
+      return offset;
+    }
+
+    public long getLength() {
+      return length;
+    }
+
+    public SearchArgument getSearchArgument() {
+      return sarg;
+    }
+
+    public String[] getColumnNames() {
+      return columnNames;
+    }
+
+    public long getMaxOffset() {
+      long result = offset + length;
+      if (result < 0) {
+        result = Long.MAX_VALUE;
+      }
+      return result;
+    }
+
+    public Options clone() {
+      Options result = new Options();
+      result.include = include;
+      result.offset = offset;
+      result.length = length;
+      result.sarg = sarg;
+      result.columnNames = columnNames;
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buffer = new StringBuilder();
+      buffer.append("{include: ");
+      if (include == null) {
+        buffer.append("null");
+      } else {
+        buffer.append("[");
+        for(int i=0; i < include.length; ++i) {
+          if (i != 0) {
+            buffer.append(", ");
+          }
+          buffer.append(include[i]);
+        }
+        buffer.append("]");
+      }
+      buffer.append(", offset: ");
+      buffer.append(offset);
+      buffer.append(", length: ");
+      buffer.append(length);
+      if (sarg != null) {
+        buffer.append(", sarg: ");
+        buffer.append(sarg.toString());
+        buffer.append(", columns: [");
+        for(int i=0; i < columnNames.length; ++i) {
+          if (i != 0) {
+            buffer.append(", ");
+          }
+          buffer.append("'");
+          buffer.append(columnNames[i]);
+          buffer.append("'");
+        }
+        buffer.append("]");
+      }
+      buffer.append("}");
+      return buffer.toString();
     }
   }
 
   /**
-   * Get the metadata stored in footer and postscript sections of the file
-   * @return MetaInfo object with file metadata
+   * Create a RecordReader that reads everything with the default options.
+   * @return a new RecordReader
+   * @throws IOException
    */
-  FileMetaInfo getFileMetaInfo();
+  RecordReader rows() throws IOException;
+
+  /**
+   * Create a RecordReader that uses the options given.
+   * This method can't be named rows, because many callers used rows(null)
+   * before the rows() method was introduced.
+   * @param options the options to read with
+   * @return a new RecordReader
+   * @throws IOException
+   */
+  RecordReader rowsOptions(Options options) throws IOException;
 
   /**
    * Create a RecordReader that will scan the entire file.
+   * This is a legacy method and rowsOptions is preferred.
    * @param include true for each column that should be included
    * @return A new RecordReader
    * @throws IOException
@@ -158,14 +280,13 @@ public interface Reader {
    * offset up to the stripe that starts at offset + length. This is intended
    * to work with MapReduce's FileInputFormat where divisions are picked
    * blindly, but they must cover all of the rows.
+   * This is a legacy method and rowsOptions is preferred.
    * @param offset a byte offset in the file
    * @param length a number of bytes in the file
    * @param include true for each column that should be included
    * @return a new RecordReader that will read the specified rows.
    * @throws IOException
-   * @deprecated
    */
-  @Deprecated
   RecordReader rows(long offset, long length,
                     boolean[] include) throws IOException;
 
@@ -174,6 +295,7 @@ public interface Reader {
    * at the first stripe after the offset and continues to the stripe that
    * starts at offset + length. It also accepts a list of columns to read and a
    * search argument.
+   * This is a legacy method and rowsOptions is preferred.
    * @param offset the minimum offset of the first stripe to read
    * @param length the distance from offset of the first address to stop reading
    *               at

@@ -18,6 +18,21 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.thrift.TException;
+
 import java.util.List;
 import java.util.Map;
 
@@ -1034,61 +1049,6 @@ public interface IMetaStoreClient {
 
   public List<String> getFunctions(String dbName, String pattern)
       throws MetaException, TException;
-
-  // Transaction and locking methods
-  public interface ValidTxnList {
-
-    /**
-     * Key used to store valid txn list in a {@link org.apache.hadoop.conf.Configuration} object.
-     */
-    public static final String VALID_TXNS_KEY = "hive.txn.valid.txns";
-
-    /**
-     * The response to a range query.  NONE means no values in this range match,
-     * SOME mean that some do, and ALL means that every value does.
-     */
-    public enum RangeResponse {NONE, SOME, ALL};
-
-    /**
-     * Indicates whether a given transaction has been committed and should be
-     * viewed as valid for read.
-     * @param txnid id for the transaction
-     * @return true if committed, false otherwise
-     */
-    public boolean isTxnCommitted(long txnid);
-
-    /**
-     * Find out if a range of transaction ids have been committed.
-     * @param minTxnId minimum txnid to look for, inclusive
-     * @param maxTxnId maximum txnid to look for, inclusive
-     * @return Indicate whether none, some, or all of these transactions have been committed.
-     */
-    public RangeResponse isTxnRangeCommitted(long minTxnId, long maxTxnId);
-
-    /**
-     * Get at the underlying OpenTxn structure.  This is useful if the user
-     * wishes to get a list of all open transactions for more efficient
-     * filtering.
-     * @return open transactions
-     */
-    public GetOpenTxnsResponse getOpenTxns();
-
-    /**
-     * Write this validTxnList into a string.  Obviously all implementations will already
-     * implement this, but it is being called out specifically here to make clear that the
-     * implementation needs to override the default implementation.  This should produce a string
-     * that can be used by {@link #fromString(String)} to populate a validTxnsList.
-     */
-    @Override
-    public String toString();
-
-    /**
-     * Populate this validTxnList from the string.  It is assumed that the string was created via
-     * {@link #toString()}.
-     * @param src source string.
-     */
-    public void fromString(String src);
-  }
 
   /**
    * Get a structure that details valid transactions.

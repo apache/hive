@@ -22,6 +22,8 @@ import com.jolbox.bonecp.BoneCPConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnListImpl;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.util.StringUtils;
@@ -190,6 +192,17 @@ public class TxnHandler {
     } finally {
       closeDbConn(dbConn);
     }
+  }
+
+  public static ValidTxnList createValidTxnList(GetOpenTxnsResponse txns) {
+    long highWater = txns.getTxn_high_water_mark();
+    Set<Long> open = txns.getOpen_txns();
+    long[] exceptions = new long[open.size()];
+    int i = 0;
+    for(long txn: open) {
+      exceptions[i++] = txn;
+    }
+    return new ValidTxnListImpl(exceptions, highWater);
   }
 
   public OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException {

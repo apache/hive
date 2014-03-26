@@ -18,12 +18,13 @@
 package org.apache.hadoop.hive.metastore;
 
 import junit.framework.Assert;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnListImpl;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
@@ -33,9 +34,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Unit tests for {@link org.apache.hadoop.hive.metastore.HiveMetaStoreClient}.  For now this just has
@@ -68,7 +67,7 @@ public class TestHiveMetaStoreTxns {
     Assert.assertEquals(3L, (long) tids.get(2));
     client.rollbackTxn(1);
     client.commitTxn(2);
-    IMetaStoreClient.ValidTxnList validTxns = client.getValidTxns();
+    ValidTxnList validTxns = client.getValidTxns();
     Assert.assertFalse(validTxns.isTxnCommitted(1));
     Assert.assertTrue(validTxns.isTxnCommitted(2));
     Assert.assertFalse(validTxns.isTxnCommitted(3));
@@ -77,39 +76,55 @@ public class TestHiveMetaStoreTxns {
 
   @Test
   public void testTxnRange() throws Exception {
-    IMetaStoreClient.ValidTxnList validTxns = client.getValidTxns();
-    Assert.assertEquals(IMetaStoreClient.ValidTxnList.RangeResponse.NONE,
+    ValidTxnList validTxns = client.getValidTxns();
+    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
         validTxns.isTxnRangeCommitted(1L, 3L));
-
     List<Long> tids = client.openTxns("me", 5).getTxn_ids();
+
     client.rollbackTxn(1L);
     client.commitTxn(2L);
     client.commitTxn(3L);
     client.commitTxn(4L);
     validTxns = client.getValidTxns();
-    Assert.assertEquals(IMetaStoreClient.ValidTxnList.RangeResponse.ALL,
+    System.out.println("validTxns = " + validTxns);
+    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
         validTxns.isTxnRangeCommitted(2L, 2L));
-    Assert.assertEquals(IMetaStoreClient.ValidTxnList.RangeResponse.ALL,
+    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
         validTxns.isTxnRangeCommitted(2L, 3L));
-    Assert.assertEquals(IMetaStoreClient.ValidTxnList.RangeResponse.ALL,
+    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
         validTxns.isTxnRangeCommitted(2L, 4L));
-    Assert.assertEquals(IMetaStoreClient.ValidTxnList.RangeResponse.ALL,
+    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
         validTxns.isTxnRangeCommitted(3L, 4L));
 
-    Assert.assertEquals(IMetaStoreClient.ValidTxnList.RangeResponse.SOME,
+    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
         validTxns.isTxnRangeCommitted(1L, 4L));
-    Assert.assertEquals(IMetaStoreClient.ValidTxnList.RangeResponse.SOME,
+    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
         validTxns.isTxnRangeCommitted(2L, 5L));
-    Assert.assertEquals(IMetaStoreClient.ValidTxnList.RangeResponse.SOME,
+    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
         validTxns.isTxnRangeCommitted(1L, 2L));
-    Assert.assertEquals(IMetaStoreClient.ValidTxnList.RangeResponse.SOME,
+    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
         validTxns.isTxnRangeCommitted(4L, 5L));
 
-    Assert.assertEquals(IMetaStoreClient.ValidTxnList.RangeResponse.NONE,
+    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
         validTxns.isTxnRangeCommitted(1L, 1L));
-    Assert.assertEquals(IMetaStoreClient.ValidTxnList.RangeResponse.NONE,
+    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
         validTxns.isTxnRangeCommitted(5L, 10L));
 
+    validTxns = new ValidTxnListImpl("10:4:5:6");
+    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
+        validTxns.isTxnRangeCommitted(4,6));
+    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
+        validTxns.isTxnRangeCommitted(7, 10));
+    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
+        validTxns.isTxnRangeCommitted(7, 11));
+    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
+        validTxns.isTxnRangeCommitted(3, 6));
+    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
+        validTxns.isTxnRangeCommitted(4, 7));
+    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
+        validTxns.isTxnRangeCommitted(1, 12));
+    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
+        validTxns.isTxnRangeCommitted(1, 3));
   }
 
   @Test
@@ -184,43 +199,32 @@ public class TestHiveMetaStoreTxns {
   @Test
   public void stringifyValidTxns() throws Exception {
     // Test with just high water mark
-    GetOpenTxnsResponse rsp = new GetOpenTxnsResponse();
-    rsp.setTxn_high_water_mark(1);
-    IMetaStoreClient.ValidTxnList validTxns = new HiveMetaStoreClient.ValidTxnListImpl(rsp);
+    ValidTxnList validTxns = new ValidTxnListImpl("1:");
     String asString = validTxns.toString();
     Assert.assertEquals("1:", asString);
-    validTxns = new HiveMetaStoreClient.ValidTxnListImpl();
-    validTxns.fromString(asString);
-    Assert.assertEquals(1, validTxns.getOpenTxns().getTxn_high_water_mark());
-    Assert.assertNotNull(validTxns.getOpenTxns().getOpen_txns());
-    Assert.assertEquals(0, validTxns.getOpenTxns().getOpen_txnsSize());
+    validTxns = new ValidTxnListImpl(asString);
+    Assert.assertEquals(1, validTxns.getHighWatermark());
+    Assert.assertNotNull(validTxns.getOpenTransactions());
+    Assert.assertEquals(0, validTxns.getOpenTransactions().length);
     asString = validTxns.toString();
     Assert.assertEquals("1:", asString);
-    validTxns = new HiveMetaStoreClient.ValidTxnListImpl();
-    validTxns.fromString(asString);
-    Assert.assertEquals(1, validTxns.getOpenTxns().getTxn_high_water_mark());
-    Assert.assertNotNull(validTxns.getOpenTxns().getOpen_txns());
-    Assert.assertEquals(0, validTxns.getOpenTxns().getOpen_txnsSize());
+    validTxns = new ValidTxnListImpl(asString);
+    Assert.assertEquals(1, validTxns.getHighWatermark());
+    Assert.assertNotNull(validTxns.getOpenTransactions());
+    Assert.assertEquals(0, validTxns.getOpenTransactions().length);
 
     // Test with open transactions
-    rsp = new GetOpenTxnsResponse();
-    rsp.setTxn_high_water_mark(10);
-    Set<Long> openTxns = new HashSet<Long>(2);
-    openTxns.add(3L);
-    openTxns.add(5L);
-    rsp.setOpen_txns(openTxns);
-    validTxns = new HiveMetaStoreClient.ValidTxnListImpl(rsp);
+    validTxns = new ValidTxnListImpl("10:5:3");
     asString = validTxns.toString();
     if (!asString.equals("10:3:5") && !asString.equals("10:5:3")) {
       Assert.fail("Unexpected string value " + asString);
     }
-    validTxns = new HiveMetaStoreClient.ValidTxnListImpl();
-    validTxns.fromString(asString);
-    Assert.assertEquals(10, validTxns.getOpenTxns().getTxn_high_water_mark());
-    Assert.assertNotNull(validTxns.getOpenTxns().getOpen_txns());
-    Assert.assertEquals(2, validTxns.getOpenTxns().getOpen_txnsSize());
+    validTxns = new ValidTxnListImpl(asString);
+    Assert.assertEquals(10, validTxns.getHighWatermark());
+    Assert.assertNotNull(validTxns.getOpenTransactions());
+    Assert.assertEquals(2, validTxns.getOpenTransactions().length);
     boolean sawThree = false, sawFive = false;
-    for (long tid : validTxns.getOpenTxns().getOpen_txns()) {
+    for (long tid : validTxns.getOpenTransactions()) {
       if (tid == 3)  sawThree = true;
       else if (tid == 5) sawFive = true;
       else  Assert.fail("Unexpected value " + tid);
