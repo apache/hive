@@ -83,8 +83,8 @@ public class MapRecordProcessor extends RecordProcessor {
     // Start all the Outputs.
     for (Entry<String, LogicalOutput> outputEntry : outputs.entrySet()) {
       l4j.info("Starting Output: " + outputEntry.getKey());
-      ((TezKVOutputCollector) outMap.get(outputEntry.getKey())).initialize();
       outputEntry.getValue().start();
+      ((TezKVOutputCollector) outMap.get(outputEntry.getKey())).initialize();
     }
 
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
