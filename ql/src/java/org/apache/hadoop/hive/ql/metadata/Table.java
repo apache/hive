@@ -96,13 +96,19 @@ public class Table implements Serializable {
   }
 
   public Table(org.apache.hadoop.hive.metastore.api.Table table) {
+    initialize(table);
+  }
+
+  // Do initialization here, so as to keep the ctor minimal.
+  protected void initialize(org.apache.hadoop.hive.metastore.api.Table table) {
     tTable = table;
-    if (!isView()) {
-      // This will set up field: inputFormatClass
-      getInputFormatClass();
-      // This will set up field: outputFormatClass
-      getOutputFormatClass();
-    }
+    // Note that we do not set up fields like inputFormatClass, outputFormatClass
+    // and deserializer because the Partition needs to be accessed from across
+    // the metastore side as well, which will result in attempting to load
+    // the class associated with them, which might not be available, and
+    // the main reason to instantiate them would be to pre-cache them for
+    // performance. Since those fields are null/cache-check by their accessors
+    // anyway, that's not a concern.
   }
 
   public Table(String databaseName, String tableName) {

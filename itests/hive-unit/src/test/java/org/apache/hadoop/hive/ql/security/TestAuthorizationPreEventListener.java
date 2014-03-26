@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.security;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -31,6 +32,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.security.DummyHiveMetastoreAuthorizationProvider.AuthCallContext;
@@ -114,7 +116,7 @@ public class TestAuthorizationPreEventListener extends TestCase {
   }
 
   private void validateAddPartition(Partition expectedPartition, Partition actualPartition) {
-    validatePartition(expectedPartition,actualPartition);
+    validatePartition(expectedPartition, actualPartition);
   }
 
   private void validatePartition(Partition expectedPartition, Partition actualPartition) {
@@ -254,7 +256,6 @@ public class TestAuthorizationPreEventListener extends TestCase {
         renamedTable);
     assertFalse(tbl.getTableName().equals(renamedTable.getTableName()));
 
-
     //change the table name back
     driver.run(String.format("alter table %s rename to %s", renamed, tblName));
     listSize++;
@@ -280,6 +281,60 @@ public class TestAuthorizationPreEventListener extends TestCase {
 
 
     validateDropTable(tbl, tableFromDropTableEvent);
+
+    // verify that we can create a table with IF/OF to some custom non-existent format
+    Table tCustom = tbl.deepCopy();
+    tCustom.getSd().setInputFormat("org.apache.hive.dummy.DoesNotExistInputFormat");
+    tCustom.getSd().setOutputFormat("org.apache.hive.dummy.DoesNotExistOutputFormat");
+    if (tCustom.getSd().getSerdeInfo() == null){
+      tCustom.getSd().setSerdeInfo(
+          new SerDeInfo(
+              "dummy"
+              ,"org.apache.hive.dummy.DoesNotExistSerDe"
+              , new HashMap<String,String>()
+          )
+      );
+    } else {
+      tCustom.getSd().getSerdeInfo().setSerializationLib(
+          "org.apache.hive.dummy.DoesNotExistSerDe");
+    }
+
+    tCustom.setTableName(tbl.getTableName() + "_custom");
+    msc.createTable(tCustom);
+    listSize++;
+
+    Table customCreatedTable = msc.getTable(tCustom.getDbName(), tCustom.getTableName());
+    Table customCreatedTableFromEvent = (
+        (org.apache.hadoop.hive.ql.metadata.Table)
+            assertAndExtractSingleObjectFromEvent(listSize, authCalls,
+                DummyHiveMetastoreAuthorizationProvider.AuthCallContextType.TABLE))
+        .getTTable();
+
+    validateCreateTable(tCustom,customCreatedTable);
+    validateCreateTable(tCustom,customCreatedTableFromEvent);
+
+    assertEquals(tCustom.getSd().getInputFormat(),
+        customCreatedTable.getSd().getInputFormat());
+    assertEquals(tCustom.getSd().getOutputFormat(),
+        customCreatedTable.getSd().getOutputFormat());
+    assertEquals(tCustom.getSd().getSerdeInfo().getSerializationLib(),
+        customCreatedTable.getSd().getSerdeInfo().getSerializationLib());
+    assertEquals(tCustom.getSd().getInputFormat(),
+        customCreatedTableFromEvent.getSd().getInputFormat());
+    assertEquals(tCustom.getSd().getOutputFormat(),
+        customCreatedTableFromEvent.getSd().getOutputFormat());
+    assertEquals(tCustom.getSd().getSerdeInfo().getSerializationLib(),
+        customCreatedTableFromEvent.getSd().getSerdeInfo().getSerializationLib());
+
+    msc.dropTable(tCustom.getDbName(),tCustom.getTableName());
+    listSize++;
+    Table table2FromDropTableEvent = (
+        (org.apache.hadoop.hive.ql.metadata.Table)
+            assertAndExtractSingleObjectFromEvent(listSize, authCalls,
+                DummyHiveMetastoreAuthorizationProvider.AuthCallContextType.TABLE))
+        .getTTable();
+
+    validateDropTable(tCustom, table2FromDropTableEvent);
 
     driver.run("drop database " + dbName);
     listSize++;
