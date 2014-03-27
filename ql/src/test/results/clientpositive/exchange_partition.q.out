@@ -20,22 +20,22 @@ PREHOOK: query: SHOW PARTITIONS exchange_part_test2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
 POSTHOOK: type: SHOWPARTITIONS
-PREHOOK: query: ALTER TABLE exchange_part_test1 ADD PARTITION (ds='2013-04-05')
+PREHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@exchange_part_test1
-POSTHOOK: query: ALTER TABLE exchange_part_test1 ADD PARTITION (ds='2013-04-05')
+PREHOOK: Output: default@exchange_part_test2
+POSTHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@exchange_part_test1
-POSTHOOK: Output: default@exchange_part_test1@ds=2013-04-05
+POSTHOOK: Output: default@exchange_part_test2
+POSTHOOK: Output: default@exchange_part_test2@ds=2013-04-05
 PREHOOK: query: SHOW PARTITIONS exchange_part_test1
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
 POSTHOOK: type: SHOWPARTITIONS
-ds=2013-04-05
 PREHOOK: query: SHOW PARTITIONS exchange_part_test2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
 POSTHOOK: type: SHOWPARTITIONS
+ds=2013-04-05
 PREHOOK: query: ALTER TABLE exchange_part_test1 EXCHANGE PARTITION (ds='2013-04-05') WITH TABLE exchange_part_test2
 PREHOOK: type: null
 POSTHOOK: query: ALTER TABLE exchange_part_test1 EXCHANGE PARTITION (ds='2013-04-05') WITH TABLE exchange_part_test2
@@ -44,8 +44,8 @@ PREHOOK: query: SHOW PARTITIONS exchange_part_test1
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
 POSTHOOK: type: SHOWPARTITIONS
+ds=2013-04-05
 PREHOOK: query: SHOW PARTITIONS exchange_part_test2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
 POSTHOOK: type: SHOWPARTITIONS
-ds=2013-04-05
