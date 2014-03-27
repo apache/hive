@@ -143,7 +143,6 @@ public class TezCompiler extends TaskCompiler {
         genTezWork);
 
     opRules.put(new RuleRegExp("No more walking on ReduceSink-MapJoin",
-        ReduceSinkOperator.getOperatorName() + "%" +
         MapJoinOperator.getOperatorName() + "%"), new ReduceSinkMapJoinProc());
 
     opRules.put(new RuleRegExp("Split Work + Move/Merge - FileSink",
@@ -154,7 +153,7 @@ public class TezCompiler extends TaskCompiler {
         TableScanOperator.getOperatorName() + "%"),
         new ProcessAnalyzeTable(GenTezUtils.getUtils()));
 
-    opRules.put(new RuleRegExp("Handle union",
+    opRules.put(new RuleRegExp("Remember union",
         UnionOperator.getOperatorName() + "%"), new NodeProcessor()
     {
       @Override
