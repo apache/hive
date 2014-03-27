@@ -132,6 +132,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.setValueSerializeInfo((TableDesc) getValueSerializeInfo().clone());
     desc.setNumBuckets(numBuckets);
     desc.setBucketCols(bucketCols);
+    desc.setStatistics(this.getStatistics());
     return desc;
   }
 
