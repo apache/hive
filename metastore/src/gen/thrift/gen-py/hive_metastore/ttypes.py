@@ -3106,6 +3106,189 @@ class BinaryColumnStatsData:
   def __ne__(self, other):
     return not (self == other)
 
+class Decimal:
+  """
+  Attributes:
+   - unscaled
+   - scale
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'unscaled', None, None, ), # 1
+    None, # 2
+    (3, TType.I16, 'scale', None, None, ), # 3
+  )
+
+  def __init__(self, unscaled=None, scale=None,):
+    self.unscaled = unscaled
+    self.scale = scale
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.unscaled = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I16:
+          self.scale = iprot.readI16();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('Decimal')
+    if self.unscaled is not None:
+      oprot.writeFieldBegin('unscaled', TType.STRING, 1)
+      oprot.writeString(self.unscaled)
+      oprot.writeFieldEnd()
+    if self.scale is not None:
+      oprot.writeFieldBegin('scale', TType.I16, 3)
+      oprot.writeI16(self.scale)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.unscaled is None:
+      raise TProtocol.TProtocolException(message='Required field unscaled is unset!')
+    if self.scale is None:
+      raise TProtocol.TProtocolException(message='Required field scale is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class DecimalColumnStatsData:
+  """
+  Attributes:
+   - lowValue
+   - highValue
+   - numNulls
+   - numDVs
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'lowValue', (Decimal, Decimal.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'highValue', (Decimal, Decimal.thrift_spec), None, ), # 2
+    (3, TType.I64, 'numNulls', None, None, ), # 3
+    (4, TType.I64, 'numDVs', None, None, ), # 4
+  )
+
+  def __init__(self, lowValue=None, highValue=None, numNulls=None, numDVs=None,):
+    self.lowValue = lowValue
+    self.highValue = highValue
+    self.numNulls = numNulls
+    self.numDVs = numDVs
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.lowValue = Decimal()
+          self.lowValue.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.highValue = Decimal()
+          self.highValue.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.numNulls = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I64:
+          self.numDVs = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('DecimalColumnStatsData')
+    if self.lowValue is not None:
+      oprot.writeFieldBegin('lowValue', TType.STRUCT, 1)
+      self.lowValue.write(oprot)
+      oprot.writeFieldEnd()
+    if self.highValue is not None:
+      oprot.writeFieldBegin('highValue', TType.STRUCT, 2)
+      self.highValue.write(oprot)
+      oprot.writeFieldEnd()
+    if self.numNulls is not None:
+      oprot.writeFieldBegin('numNulls', TType.I64, 3)
+      oprot.writeI64(self.numNulls)
+      oprot.writeFieldEnd()
+    if self.numDVs is not None:
+      oprot.writeFieldBegin('numDVs', TType.I64, 4)
+      oprot.writeI64(self.numDVs)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.lowValue is None:
+      raise TProtocol.TProtocolException(message='Required field lowValue is unset!')
+    if self.highValue is None:
+      raise TProtocol.TProtocolException(message='Required field highValue is unset!')
+    if self.numNulls is None:
+      raise TProtocol.TProtocolException(message='Required field numNulls is unset!')
+    if self.numDVs is None:
+      raise TProtocol.TProtocolException(message='Required field numDVs is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class ColumnStatisticsData:
   """
   Attributes:
@@ -3114,6 +3297,7 @@ class ColumnStatisticsData:
    - doubleStats
    - stringStats
    - binaryStats
+   - decimalStats
   """
 
   thrift_spec = (
@@ -3123,14 +3307,16 @@ class ColumnStatisticsData:
     (3, TType.STRUCT, 'doubleStats', (DoubleColumnStatsData, DoubleColumnStatsData.thrift_spec), None, ), # 3
     (4, TType.STRUCT, 'stringStats', (StringColumnStatsData, StringColumnStatsData.thrift_spec), None, ), # 4
     (5, TType.STRUCT, 'binaryStats', (BinaryColumnStatsData, BinaryColumnStatsData.thrift_spec), None, ), # 5
+    (6, TType.STRUCT, 'decimalStats', (DecimalColumnStatsData, DecimalColumnStatsData.thrift_spec), None, ), # 6
   )
 
-  def __init__(self, booleanStats=None, longStats=None, doubleStats=None, stringStats=None, binaryStats=None,):
+  def __init__(self, booleanStats=None, longStats=None, doubleStats=None, stringStats=None, binaryStats=None, decimalStats=None,):
     self.booleanStats = booleanStats
     self.longStats = longStats
     self.doubleStats = doubleStats
     self.stringStats = stringStats
     self.binaryStats = binaryStats
+    self.decimalStats = decimalStats
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3171,6 +3357,12 @@ class ColumnStatisticsData:
           self.binaryStats.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRUCT:
+          self.decimalStats = DecimalColumnStatsData()
+          self.decimalStats.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3200,6 +3392,10 @@ class ColumnStatisticsData:
     if self.binaryStats is not None:
       oprot.writeFieldBegin('binaryStats', TType.STRUCT, 5)
       self.binaryStats.write(oprot)
+      oprot.writeFieldEnd()
+    if self.decimalStats is not None:
+      oprot.writeFieldBegin('decimalStats', TType.STRUCT, 6)
+      self.decimalStats.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
