@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HashTableDummyDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
@@ -63,11 +64,15 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procContext, Object... nodeOutputs)
       throws SemanticException {
     GenTezProcContext context = (GenTezProcContext) procContext;
+    MapJoinOperator mapJoinOp = (MapJoinOperator)nd;
+
+    if (stack.size() < 2 || !(stack.get(stack.size() - 2) instanceof ReduceSinkOperator)) {
+      context.currentMapJoinOperators.add(mapJoinOp);
+      return null;
+    }
+
     context.preceedingWork = null;
     context.currentRootOperator = null;
-
-    MapJoinOperator mapJoinOp = (MapJoinOperator)nd;
-    Operator<? extends OperatorDesc> childOp = mapJoinOp.getChildOperators().get(0);
 
     ReduceSinkOperator parentRS = (ReduceSinkOperator)stack.get(stack.size() - 2);
 
@@ -77,66 +82,72 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
       context.mapJoinParentMap.put(mapJoinOp, parents);
     }
 
-    BaseWork myWork = null;
+    List<BaseWork> mapJoinWork = null;
 
-    while (childOp != null) {
-      if ((childOp instanceof ReduceSinkOperator) || (childOp instanceof FileSinkOperator)) {
-        /*
-         *  if there was a pre-existing work generated for the big-table mapjoin side,
-         *  we need to hook the work generated for the RS (associated with the RS-MJ pattern)
-         *  with the pre-existing work.
-         *
-         *  Otherwise, we need to associate that the reduce sink/file sink down the MJ path
-         *  to be linked to the RS work (associated with the RS-MJ pattern).
-         *
-         */
+    /*
+     *  if there was a pre-existing work generated for the big-table mapjoin side,
+     *  we need to hook the work generated for the RS (associated with the RS-MJ pattern)
+     *  with the pre-existing work.
+     *
+     *  Otherwise, we need to associate that the mapjoin op
+     *  to be linked to the RS work (associated with the RS-MJ pattern).
+     *
+     */
+    mapJoinWork = context.mapJoinWorkMap.get(mapJoinOp);
+    BaseWork parentWork;
+    if (context.unionWorkMap.containsKey(parentRS)) {
+      parentWork = context.unionWorkMap.get(parentRS);
+    } else {
+      assert context.childToWorkMap.get(parentRS).size() == 1;
+      parentWork = context.childToWorkMap.get(parentRS).get(0);
+    }
 
-        myWork = context.operatorWorkMap.get(childOp);
-        BaseWork parentWork = context.operatorWorkMap.get(parentRS);
+    // set the link between mapjoin and parent vertex
+    int pos = context.mapJoinParentMap.get(mapJoinOp).indexOf(parentRS);
+    if (pos == -1) {
+      throw new SemanticException("Cannot find position of parent in mapjoin");
+    }
+    LOG.debug("Mapjoin "+mapJoinOp+", pos: "+pos+" --> "+parentWork.getName());
+    mapJoinOp.getConf().getParentToInput().put(pos, parentWork.getName());
 
-        // set the link between mapjoin and parent vertex
-        int pos = context.mapJoinParentMap.get(mapJoinOp).indexOf(parentRS);
-        if (pos == -1) {
-          throw new SemanticException("Cannot find position of parent in mapjoin");
-        }
-        LOG.debug("Mapjoin "+mapJoinOp+", pos: "+pos+" --> "+parentWork.getName());
-        mapJoinOp.getConf().getParentToInput().put(pos, parentWork.getName());
-
-        if (myWork != null) {
-          // link the work with the work associated with the reduce sink that triggered this rule
-          TezWork tezWork = context.currentTask.getWork();
-          tezWork.connect(parentWork, myWork, EdgeType.BROADCAST_EDGE);
-
-          // remember the output name of the reduce sink
-          parentRS.getConf().setOutputName(myWork.getName());
-          context.connectedReduceSinks.add(parentRS);
-
+    if (mapJoinWork != null) {
+      for (BaseWork myWork: mapJoinWork) {
+        // link the work with the work associated with the reduce sink that triggered this rule
+        TezWork tezWork = context.currentTask.getWork();
+        LOG.debug("connecting "+parentWork.getName()+" with "+myWork.getName());
+        tezWork.connect(parentWork, myWork, EdgeType.BROADCAST_EDGE);
+        
+        ReduceSinkOperator r = null;
+        if (parentRS.getConf().getOutputName() != null) {
+          LOG.debug("Cloning reduce sink for multi-child broadcast edge");
+          // we've already set this one up. Need to clone for the next work.
+          r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
+              (ReduceSinkDesc) parentRS.getConf().clone(), parentRS.getParentOperators());
+          context.clonedReduceSinks.add(r);
         } else {
-          List<BaseWork> linkWorkList = context.linkOpWithWorkMap.get(childOp);
-          if (linkWorkList == null) {
-            linkWorkList = new ArrayList<BaseWork>();
-          }
-          linkWorkList.add(parentWork);
-          context.linkOpWithWorkMap.put(childOp, linkWorkList);
-
-          List<ReduceSinkOperator> reduceSinks 
-            = context.linkWorkWithReduceSinkMap.get(parentWork);
-          if (reduceSinks == null) {
-            reduceSinks = new ArrayList<ReduceSinkOperator>();
-          }
-          reduceSinks.add(parentRS);
-          context.linkWorkWithReduceSinkMap.put(parentWork, reduceSinks);
+          r = parentRS;
         }
-
-        break;
-      }
-
-      if ((childOp.getChildOperators() != null) && (childOp.getChildOperators().size() >= 1)) {
-        childOp = childOp.getChildOperators().get(0);
-      } else {
-        break;
+        // remember the output name of the reduce sink
+        r.getConf().setOutputName(myWork.getName());
+        context.connectedReduceSinks.add(r);
       }
     }
+
+    // remember in case we need to connect additional work later
+    List<BaseWork> linkWorkList = context.linkOpWithWorkMap.get(mapJoinOp);
+    if (linkWorkList == null) {
+      linkWorkList = new ArrayList<BaseWork>();
+    }
+    linkWorkList.add(parentWork);
+    context.linkOpWithWorkMap.put(mapJoinOp, linkWorkList);
+    
+    List<ReduceSinkOperator> reduceSinks 
+      = context.linkWorkWithReduceSinkMap.get(parentWork);
+    if (reduceSinks == null) {
+      reduceSinks = new ArrayList<ReduceSinkOperator>();
+    }
+    reduceSinks.add(parentRS);
+    context.linkWorkWithReduceSinkMap.put(parentWork, reduceSinks);
 
     // create the dummy operators
     List<Operator<? extends OperatorDesc>> dummyOperators =
@@ -178,17 +189,18 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
 
     // the "work" needs to know about the dummy operators. They have to be separately initialized
     // at task startup
-    if (myWork != null) {
-      myWork.addDummyOp(dummyOp);
-    } else {
-      List<Operator<?>> dummyList = dummyOperators;
-      if (context.linkChildOpWithDummyOp.containsKey(childOp)) {
-        dummyList = context.linkChildOpWithDummyOp.get(childOp);
+    if (mapJoinWork != null) {
+      for (BaseWork myWork: mapJoinWork) {
+        myWork.addDummyOp(dummyOp);
       }
-      dummyList.add(dummyOp);
-      context.linkChildOpWithDummyOp.put(childOp, dummyList);
     }
+    if (context.linkChildOpWithDummyOp.containsKey(mapJoinOp)) {
+      for (Operator<?> op: context.linkChildOpWithDummyOp.get(mapJoinOp)) {
+        dummyOperators.add(op);
+      }
+    }
+    context.linkChildOpWithDummyOp.put(mapJoinOp, dummyOperators);
+
     return true;
   }
-
 }
