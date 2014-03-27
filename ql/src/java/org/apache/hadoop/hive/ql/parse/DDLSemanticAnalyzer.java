@@ -637,25 +637,27 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeExchangePartition(ASTNode ast) throws SemanticException {
-    Table sourceTable =  getTable(getUnescapedName((ASTNode)ast.getChild(0)));
-    Table destTable = getTable(getUnescapedName((ASTNode)ast.getChild(2)));
+    Table destTable =  getTable(getUnescapedName((ASTNode)ast.getChild(0)));
+    Table sourceTable = getTable(getUnescapedName((ASTNode)ast.getChild(2)));
 
     // Get the partition specs
     Map<String, String> partSpecs = getPartSpec((ASTNode) ast.getChild(1));
     validatePartitionValues(partSpecs);
     boolean sameColumns = MetaStoreUtils.compareFieldColumns(
-        sourceTable.getAllCols(), destTable.getAllCols());
+        destTable.getAllCols(), sourceTable.getAllCols());
     boolean samePartitions = MetaStoreUtils.compareFieldColumns(
-        sourceTable.getPartitionKeys(), destTable.getPartitionKeys());
+        destTable.getPartitionKeys(), sourceTable.getPartitionKeys());
     if (!sameColumns || !samePartitions) {
       throw new SemanticException(ErrorMsg.TABLES_INCOMPATIBLE_SCHEMAS.getMsg());
     }
-    List<Partition> partitions = getPartitions(sourceTable, partSpecs, true);
+    // check if source partition exists
+    getPartitions(sourceTable, partSpecs, true);
 
     // Verify that the partitions specified are continuous
     // If a subpartition value is specified without specifying a partition's value
     // then we throw an exception
-    if (!isPartitionValueContinuous(sourceTable.getPartitionKeys(), partSpecs)) {
+    int counter = isPartitionValueContinuous(sourceTable.getPartitionKeys(), partSpecs);
+    if (counter < 0) {
       throw new SemanticException(
           ErrorMsg.PARTITION_VALUE_NOT_CONTINUOUS.getMsg(partSpecs.toString()));
     }
@@ -679,24 +681,20 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * @param partitionKeys the list of partition keys of the table
    * @param partSpecs the partition specs given by the user
-   * @return true if no subpartition value is specified without a partition's
-   *         value being specified else it returns false
+   * @return >=0 if no subpartition value is specified without a partition's
+   *         value being specified else it returns -1
    */
-  private boolean isPartitionValueContinuous(List<FieldSchema> partitionKeys,
+  private int isPartitionValueContinuous(List<FieldSchema> partitionKeys,
       Map<String, String> partSpecs) {
-    boolean partitionMissing = false;
-    for (FieldSchema partitionKey: partitionKeys) {
-      if (!partSpecs.containsKey(partitionKey.getName())) {
-        partitionMissing = true;
-      } else {
-        if (partitionMissing) {
-          // A subpartition value exists after a missing partition
-          // The partition value specified are not continuous, return false
-          return false;
-        }
+    int counter = 0;
+    for (FieldSchema partitionKey : partitionKeys) {
+      if (partSpecs.containsKey(partitionKey.getName())) {
+        counter++;
+        continue;
       }
+      return partSpecs.size() == counter ? counter : -1;
     }
-    return true;
+    return counter;
   }
 
   private void analyzeCreateDatabase(ASTNode ast) throws SemanticException {
