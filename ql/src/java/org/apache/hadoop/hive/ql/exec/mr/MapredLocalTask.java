@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -81,7 +82,7 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public class MapredLocalTask extends Task<MapredLocalWork> implements Serializable {
 
-  private Map<String, FetchOperator> fetchOperators = new HashMap<String, FetchOperator>();
+  private final Map<String, FetchOperator> fetchOperators = new HashMap<String, FetchOperator>();
   protected HadoopJobExecHelper jobExecHelper;
   private JobConf job;
   public static transient final Log l4j = LogFactory.getLog(MapredLocalTask.class);
@@ -138,7 +139,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       String hiveJar = conf.getJar();
 
       String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
-
+      conf.setVar(ConfVars.HIVEADDEDJARS, Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR));
       // write out the plan to a local file
       Path planPath = new Path(ctx.getLocalTmpPath(), "plan.xml");
       OutputStream out = FileSystem.getLocal(conf).create(planPath);
@@ -458,7 +459,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     BucketMapJoinContext bucketMatcherCxt = this.work.getBucketMapjoinContext();
 
     Class<? extends BucketMatcher> bucketMatcherCls = bucketMatcherCxt.getBucketMatcherClass();
-    BucketMatcher bucketMatcher = (BucketMatcher) ReflectionUtils.newInstance(bucketMatcherCls,
+    BucketMatcher bucketMatcher = ReflectionUtils.newInstance(bucketMatcherCls,
         null);
     bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt.getAliasBucketFileNameMapping());
 
