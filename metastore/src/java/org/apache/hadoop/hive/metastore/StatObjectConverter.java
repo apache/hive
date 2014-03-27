@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +30,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
@@ -74,6 +79,11 @@ public class StatObjectConverter {
        DoubleColumnStatsData doubleStats = statsObj.getStatsData().getDoubleStats();
        mColStats.setDoubleStats(doubleStats.getNumNulls(), doubleStats.getNumDVs(),
            doubleStats.getLowValue(), doubleStats.getHighValue());
+     } else if (statsObj.getStatsData().isSetDecimalStats()) {
+       DecimalColumnStatsData decimalStats = statsObj.getStatsData().getDecimalStats();
+       String low = createJdoDecimalString(decimalStats.getLowValue()),
+           high = createJdoDecimalString(decimalStats.getHighValue());
+       mColStats.setDecimalStats(decimalStats.getNumNulls(), decimalStats.getNumDVs(), low, high);
      } else if (statsObj.getStatsData().isSetStringStats()) {
        StringColumnStatsData stringStats = statsObj.getStatsData().getStringStats();
        mColStats.setStringStats(stringStats.getNumNulls(), stringStats.getNumDVs(),
@@ -94,6 +104,8 @@ public class StatObjectConverter {
     oldStatsObj.setLastAnalyzed(mStatsObj.getLastAnalyzed());
     oldStatsObj.setLongLowValue(mStatsObj.getLongLowValue());
     oldStatsObj.setDoubleLowValue(mStatsObj.getDoubleLowValue());
+    oldStatsObj.setDecimalLowValue(mStatsObj.getDecimalLowValue());
+    oldStatsObj.setDecimalHighValue(mStatsObj.getDecimalHighValue());
     oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
     oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
     oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
@@ -109,6 +121,8 @@ public class StatObjectConverter {
     oldStatsObj.setLastAnalyzed(mStatsObj.getLastAnalyzed());
     oldStatsObj.setLongLowValue(mStatsObj.getLongLowValue());
     oldStatsObj.setDoubleLowValue(mStatsObj.getDoubleLowValue());
+    oldStatsObj.setDecimalLowValue(mStatsObj.getDecimalLowValue());
+    oldStatsObj.setDecimalHighValue(mStatsObj.getDecimalHighValue());
     oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
     oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
     oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
@@ -160,6 +174,13 @@ public class StatObjectConverter {
       doubleStats.setLowValue(mStatsObj.getDoubleLowValue());
       doubleStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setDoubleStats(doubleStats);
+    } else if (colType.equals("decimal")) {
+      DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
+      decimalStats.setNumNulls(mStatsObj.getNumNulls());
+      decimalStats.setHighValue(createThriftDecimal(mStatsObj.getDecimalHighValue()));
+      decimalStats.setLowValue(createThriftDecimal(mStatsObj.getDecimalLowValue()));
+      decimalStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setDecimalStats(decimalStats);
     }
     statsObj.setStatsData(colStatsData);
     return statsObj;
@@ -203,6 +224,11 @@ public class StatObjectConverter {
       DoubleColumnStatsData doubleStats = statsObj.getStatsData().getDoubleStats();
       mColStats.setDoubleStats(doubleStats.getNumNulls(), doubleStats.getNumDVs(),
           doubleStats.getLowValue(), doubleStats.getHighValue());
+    } else if (statsObj.getStatsData().isSetDecimalStats()) {
+      DecimalColumnStatsData decimalStats = statsObj.getStatsData().getDecimalStats();
+      String low = createJdoDecimalString(decimalStats.getLowValue()),
+          high = createJdoDecimalString(decimalStats.getHighValue());
+      mColStats.setDecimalStats(decimalStats.getNumNulls(), decimalStats.getNumDVs(), low, high);
     } else if (statsObj.getStatsData().isSetStringStats()) {
       StringColumnStatsData stringStats = statsObj.getStatsData().getStringStats();
       mColStats.setStringStats(stringStats.getNumNulls(), stringStats.getNumDVs(),
@@ -259,6 +285,13 @@ public class StatObjectConverter {
      doubleStats.setLowValue(mStatsObj.getDoubleLowValue());
      doubleStats.setNumDVs(mStatsObj.getNumDVs());
      colStatsData.setDoubleStats(doubleStats);
+   } else if (colType.equals("decimal")) {
+     DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
+     decimalStats.setNumNulls(mStatsObj.getNumNulls());
+     decimalStats.setHighValue(createThriftDecimal(mStatsObj.getDecimalHighValue()));
+     decimalStats.setLowValue(createThriftDecimal(mStatsObj.getDecimalLowValue()));
+     decimalStats.setNumDVs(mStatsObj.getNumDVs());
+     colStatsData.setDecimalStats(decimalStats);
    }
    statsObj.setStatsData(colStatsData);
    return statsObj;
@@ -277,8 +310,8 @@ public class StatObjectConverter {
 
   // SQL
   public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
-      Object llow, Object lhigh, Object dlow, Object dhigh, Object nulls, Object dist,
-      Object avglen, Object maxlen, Object trues, Object falses) {
+      Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
+      Object nulls, Object dist, Object avglen, Object maxlen, Object trues, Object falses) {
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
       boolStats.setNumFalses((Long)falses);
@@ -315,6 +348,22 @@ public class StatObjectConverter {
       doubleStats.setLowValue((Double)dlow);
       doubleStats.setNumDVs((Long)dist);
       data.setDoubleStats(doubleStats);
+    } else if (colType.equals("decimal")) {
+      DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
+      decimalStats.setNumNulls((Long)nulls);
+      decimalStats.setHighValue(createThriftDecimal((String)dechigh));
+      decimalStats.setLowValue(createThriftDecimal((String)declow));
+      decimalStats.setNumDVs((Long)dist);
+      data.setDecimalStats(decimalStats);
     }
+  }
+
+  private static Decimal createThriftDecimal(String s) {
+    BigDecimal d = new BigDecimal(s);
+    return new Decimal(ByteBuffer.wrap(d.unscaledValue().toByteArray()), (short)d.scale());
+  }
+
+  private static String createJdoDecimalString(Decimal d) {
+    return new BigDecimal(new BigInteger(d.getUnscaled()), d.getScale()).toString();
   }
 }
