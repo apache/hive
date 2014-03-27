@@ -44,4 +44,4 @@ PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
 POSTHOOK: type: SHOWPARTITIONS
 ds=2013-04-05
-FAILED: SemanticException [Error 10118]: Partition already exists [exchange_part_test2(ds=2013-04-05)]
+FAILED: SemanticException [Error 10118]: Partition already exists [exchange_part_test1(ds=2013-04-05)]
