@@ -1952,20 +1952,123 @@ class BinaryColumnStatsData {
 
 void swap(BinaryColumnStatsData &a, BinaryColumnStatsData &b);
 
+
+class Decimal {
+ public:
+
+  static const char* ascii_fingerprint; // = "C4DDF6759F9B17C5C380806CE743DE8E";
+  static const uint8_t binary_fingerprint[16]; // = {0xC4,0xDD,0xF6,0x75,0x9F,0x9B,0x17,0xC5,0xC3,0x80,0x80,0x6C,0xE7,0x43,0xDE,0x8E};
+
+  Decimal() : unscaled(), scale(0) {
+  }
+
+  virtual ~Decimal() throw() {}
+
+  std::string unscaled;
+  int16_t scale;
+
+  void __set_unscaled(const std::string& val) {
+    unscaled = val;
+  }
+
+  void __set_scale(const int16_t val) {
+    scale = val;
+  }
+
+  bool operator == (const Decimal & rhs) const
+  {
+    if (!(unscaled == rhs.unscaled))
+      return false;
+    if (!(scale == rhs.scale))
+      return false;
+    return true;
+  }
+  bool operator != (const Decimal &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Decimal & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(Decimal &a, Decimal &b);
+
+
+class DecimalColumnStatsData {
+ public:
+
+  static const char* ascii_fingerprint; // = "3AE5C36598A014EE815B87600C3087B5";
+  static const uint8_t binary_fingerprint[16]; // = {0x3A,0xE5,0xC3,0x65,0x98,0xA0,0x14,0xEE,0x81,0x5B,0x87,0x60,0x0C,0x30,0x87,0xB5};
+
+  DecimalColumnStatsData() : numNulls(0), numDVs(0) {
+  }
+
+  virtual ~DecimalColumnStatsData() throw() {}
+
+  Decimal lowValue;
+  Decimal highValue;
+  int64_t numNulls;
+  int64_t numDVs;
+
+  void __set_lowValue(const Decimal& val) {
+    lowValue = val;
+  }
+
+  void __set_highValue(const Decimal& val) {
+    highValue = val;
+  }
+
+  void __set_numNulls(const int64_t val) {
+    numNulls = val;
+  }
+
+  void __set_numDVs(const int64_t val) {
+    numDVs = val;
+  }
+
+  bool operator == (const DecimalColumnStatsData & rhs) const
+  {
+    if (!(lowValue == rhs.lowValue))
+      return false;
+    if (!(highValue == rhs.highValue))
+      return false;
+    if (!(numNulls == rhs.numNulls))
+      return false;
+    if (!(numDVs == rhs.numDVs))
+      return false;
+    return true;
+  }
+  bool operator != (const DecimalColumnStatsData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DecimalColumnStatsData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(DecimalColumnStatsData &a, DecimalColumnStatsData &b);
+
 typedef struct _ColumnStatisticsData__isset {
-  _ColumnStatisticsData__isset() : booleanStats(false), longStats(false), doubleStats(false), stringStats(false), binaryStats(false) {}
+  _ColumnStatisticsData__isset() : booleanStats(false), longStats(false), doubleStats(false), stringStats(false), binaryStats(false), decimalStats(false) {}
   bool booleanStats;
   bool longStats;
   bool doubleStats;
   bool stringStats;
   bool binaryStats;
+  bool decimalStats;
 } _ColumnStatisticsData__isset;
 
 class ColumnStatisticsData {
  public:
 
-  static const char* ascii_fingerprint; // = "3D106F26C0761EF37E58CAFAA3F1651C";
-  static const uint8_t binary_fingerprint[16]; // = {0x3D,0x10,0x6F,0x26,0xC0,0x76,0x1E,0xF3,0x7E,0x58,0xCA,0xFA,0xA3,0xF1,0x65,0x1C};
+  static const char* ascii_fingerprint; // = "343F5865568AF7DA61829A616EB8C57C";
+  static const uint8_t binary_fingerprint[16]; // = {0x34,0x3F,0x58,0x65,0x56,0x8A,0xF7,0xDA,0x61,0x82,0x9A,0x61,0x6E,0xB8,0xC5,0x7C};
 
   ColumnStatisticsData() {
   }
@@ -1977,6 +2080,7 @@ class ColumnStatisticsData {
   DoubleColumnStatsData doubleStats;
   StringColumnStatsData stringStats;
   BinaryColumnStatsData binaryStats;
+  DecimalColumnStatsData decimalStats;
 
   _ColumnStatisticsData__isset __isset;
 
@@ -2000,6 +2104,10 @@ class ColumnStatisticsData {
     binaryStats = val;
   }
 
+  void __set_decimalStats(const DecimalColumnStatsData& val) {
+    decimalStats = val;
+  }
+
   bool operator == (const ColumnStatisticsData & rhs) const
   {
     if (!(booleanStats == rhs.booleanStats))
@@ -2011,6 +2119,8 @@ class ColumnStatisticsData {
     if (!(stringStats == rhs.stringStats))
       return false;
     if (!(binaryStats == rhs.binaryStats))
+      return false;
+    if (!(decimalStats == rhs.decimalStats))
       return false;
     return true;
   }
@@ -2031,8 +2141,8 @@ void swap(ColumnStatisticsData &a, ColumnStatisticsData &b);
 class ColumnStatisticsObj {
  public:
 
-  static const char* ascii_fingerprint; // = "DEE09584C51BCAF60824FE4509B59567";
-  static const uint8_t binary_fingerprint[16]; // = {0xDE,0xE0,0x95,0x84,0xC5,0x1B,0xCA,0xF6,0x08,0x24,0xFE,0x45,0x09,0xB5,0x95,0x67};
+  static const char* ascii_fingerprint; // = "CFDBB9DFF4F1670367EA5356861EC180";
+  static const uint8_t binary_fingerprint[16]; // = {0xCF,0xDB,0xB9,0xDF,0xF4,0xF1,0x67,0x03,0x67,0xEA,0x53,0x56,0x86,0x1E,0xC1,0x80};
 
   ColumnStatisticsObj() : colName(), colType() {
   }
@@ -2160,8 +2270,8 @@ void swap(ColumnStatisticsDesc &a, ColumnStatisticsDesc &b);
 class ColumnStatistics {
  public:
 
-  static const char* ascii_fingerprint; // = "681BDBD0CBB53373AC1C9C0C2E26BEAB";
-  static const uint8_t binary_fingerprint[16]; // = {0x68,0x1B,0xDB,0xD0,0xCB,0xB5,0x33,0x73,0xAC,0x1C,0x9C,0x0C,0x2E,0x26,0xBE,0xAB};
+  static const char* ascii_fingerprint; // = "37AA2F226C29DF25254CCCE6A7DDBAF3";
+  static const uint8_t binary_fingerprint[16]; // = {0x37,0xAA,0x2F,0x22,0x6C,0x29,0xDF,0x25,0x25,0x4C,0xCC,0xE6,0xA7,0xDD,0xBA,0xF3};
 
   ColumnStatistics() {
   }
@@ -2420,8 +2530,8 @@ void swap(PartitionsByExprRequest &a, PartitionsByExprRequest &b);
 class TableStatsResult {
  public:
 
-  static const char* ascii_fingerprint; // = "3A0CB62070A0D93EE2CE174AF08C0E92";
-  static const uint8_t binary_fingerprint[16]; // = {0x3A,0x0C,0xB6,0x20,0x70,0xA0,0xD9,0x3E,0xE2,0xCE,0x17,0x4A,0xF0,0x8C,0x0E,0x92};
+  static const char* ascii_fingerprint; // = "178DBEC75B48CDDEDB3B8338EF6FBF2F";
+  static const uint8_t binary_fingerprint[16]; // = {0x17,0x8D,0xBE,0xC7,0x5B,0x48,0xCD,0xDE,0xDB,0x3B,0x83,0x38,0xEF,0x6F,0xBF,0x2F};
 
   TableStatsResult() {
   }
@@ -2457,8 +2567,8 @@ void swap(TableStatsResult &a, TableStatsResult &b);
 class PartitionsStatsResult {
  public:
 
-  static const char* ascii_fingerprint; // = "9790481369E1B27F6E70DED62CFCA4E3";
-  static const uint8_t binary_fingerprint[16]; // = {0x97,0x90,0x48,0x13,0x69,0xE1,0xB2,0x7F,0x6E,0x70,0xDE,0xD6,0x2C,0xFC,0xA4,0xE3};
+  static const char* ascii_fingerprint; // = "0E3D549A0384CD453E2CB90C734A6245";
+  static const uint8_t binary_fingerprint[16]; // = {0x0E,0x3D,0x54,0x9A,0x03,0x84,0xCD,0x45,0x3E,0x2C,0xB9,0x0C,0x73,0x4A,0x62,0x45};
 
   PartitionsStatsResult() {
   }

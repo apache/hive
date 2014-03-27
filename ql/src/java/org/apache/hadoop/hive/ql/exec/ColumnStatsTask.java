@@ -20,11 +20,15 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
@@ -32,6 +36,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
@@ -48,6 +54,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
@@ -108,6 +115,27 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       double d = ((DoubleObjectInspector) oi).get(o);
       statsObj.getStatsData().getDoubleStats().setLowValue(d);
     }
+  }
+
+  private void unpackDecimalStats(ObjectInspector oi, Object o, String fName,
+      ColumnStatisticsObj statsObj) {
+    if (fName.equals("countnulls")) {
+      long v = ((LongObjectInspector) oi).get(o);
+      statsObj.getStatsData().getDecimalStats().setNumNulls(v);
+    } else if (fName.equals("numdistinctvalues")) {
+      long v = ((LongObjectInspector) oi).get(o);
+      statsObj.getStatsData().getDecimalStats().setNumDVs(v);
+    } else if (fName.equals("max")) {
+      HiveDecimal d = ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getDecimalStats().setHighValue(convertToThriftDecimal(d));
+    } else if (fName.equals("min")) {
+      HiveDecimal d = ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getDecimalStats().setLowValue(convertToThriftDecimal(d));
+    }
+  }
+
+  private Decimal convertToThriftDecimal(HiveDecimal d) {
+    return new Decimal(ByteBuffer.wrap(d.unscaledValue().toByteArray()), (short)d.scale());
   }
 
   private void unpackLongStats(ObjectInspector oi, Object o, String fName,
@@ -186,6 +214,10 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
         statsData.setBinaryStats(binaryStats);
         statsObj.setStatsData(statsData);
+      } else if (s.equalsIgnoreCase("decimal")) {
+        DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
+        statsData.setDecimalStats(decimalStats);
+        statsObj.setStatsData(statsData);
       }
     } else {
       // invoke the right unpack method depending on data type of the column
@@ -199,6 +231,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         unpackStringStats(oi, o, fieldName, statsObj);
       } else if (statsObj.getStatsData().isSetBinaryStats()) {
         unpackBinaryStats(oi, o, fieldName, statsObj);
+      } else if (statsObj.getStatsData().isSetDecimalStats()) {
+        unpackDecimalStats(oi, o, fieldName, statsObj);
       }
     }
   }
