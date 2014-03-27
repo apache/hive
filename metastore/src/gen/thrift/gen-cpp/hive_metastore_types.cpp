@@ -3547,8 +3547,200 @@ void swap(BinaryColumnStatsData &a, BinaryColumnStatsData &b) {
   swap(a.numNulls, b.numNulls);
 }
 
-const char* ColumnStatisticsData::ascii_fingerprint = "3D106F26C0761EF37E58CAFAA3F1651C";
-const uint8_t ColumnStatisticsData::binary_fingerprint[16] = {0x3D,0x10,0x6F,0x26,0xC0,0x76,0x1E,0xF3,0x7E,0x58,0xCA,0xFA,0xA3,0xF1,0x65,0x1C};
+const char* Decimal::ascii_fingerprint = "C4DDF6759F9B17C5C380806CE743DE8E";
+const uint8_t Decimal::binary_fingerprint[16] = {0xC4,0xDD,0xF6,0x75,0x9F,0x9B,0x17,0xC5,0xC3,0x80,0x80,0x6C,0xE7,0x43,0xDE,0x8E};
+
+uint32_t Decimal::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_unscaled = false;
+  bool isset_scale = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->unscaled);
+          isset_unscaled = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I16) {
+          xfer += iprot->readI16(this->scale);
+          isset_scale = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_unscaled)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_scale)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t Decimal::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("Decimal");
+
+  xfer += oprot->writeFieldBegin("unscaled", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeBinary(this->unscaled);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("scale", ::apache::thrift::protocol::T_I16, 3);
+  xfer += oprot->writeI16(this->scale);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(Decimal &a, Decimal &b) {
+  using ::std::swap;
+  swap(a.unscaled, b.unscaled);
+  swap(a.scale, b.scale);
+}
+
+const char* DecimalColumnStatsData::ascii_fingerprint = "3AE5C36598A014EE815B87600C3087B5";
+const uint8_t DecimalColumnStatsData::binary_fingerprint[16] = {0x3A,0xE5,0xC3,0x65,0x98,0xA0,0x14,0xEE,0x81,0x5B,0x87,0x60,0x0C,0x30,0x87,0xB5};
+
+uint32_t DecimalColumnStatsData::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_lowValue = false;
+  bool isset_highValue = false;
+  bool isset_numNulls = false;
+  bool isset_numDVs = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->lowValue.read(iprot);
+          isset_lowValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->highValue.read(iprot);
+          isset_highValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numNulls);
+          isset_numNulls = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numDVs);
+          isset_numDVs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_lowValue)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_highValue)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_numNulls)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_numDVs)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t DecimalColumnStatsData::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("DecimalColumnStatsData");
+
+  xfer += oprot->writeFieldBegin("lowValue", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->lowValue.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("highValue", ::apache::thrift::protocol::T_STRUCT, 2);
+  xfer += this->highValue.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("numNulls", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->numNulls);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("numDVs", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->numDVs);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DecimalColumnStatsData &a, DecimalColumnStatsData &b) {
+  using ::std::swap;
+  swap(a.lowValue, b.lowValue);
+  swap(a.highValue, b.highValue);
+  swap(a.numNulls, b.numNulls);
+  swap(a.numDVs, b.numDVs);
+}
+
+const char* ColumnStatisticsData::ascii_fingerprint = "343F5865568AF7DA61829A616EB8C57C";
+const uint8_t ColumnStatisticsData::binary_fingerprint[16] = {0x34,0x3F,0x58,0x65,0x56,0x8A,0xF7,0xDA,0x61,0x82,0x9A,0x61,0x6E,0xB8,0xC5,0x7C};
 
 uint32_t ColumnStatisticsData::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -3610,6 +3802,14 @@ uint32_t ColumnStatisticsData::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->decimalStats.read(iprot);
+          this->__isset.decimalStats = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -3646,6 +3846,10 @@ uint32_t ColumnStatisticsData::write(::apache::thrift::protocol::TProtocol* opro
   xfer += this->binaryStats.write(oprot);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("decimalStats", ::apache::thrift::protocol::T_STRUCT, 6);
+  xfer += this->decimalStats.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -3658,11 +3862,12 @@ void swap(ColumnStatisticsData &a, ColumnStatisticsData &b) {
   swap(a.doubleStats, b.doubleStats);
   swap(a.stringStats, b.stringStats);
   swap(a.binaryStats, b.binaryStats);
+  swap(a.decimalStats, b.decimalStats);
   swap(a.__isset, b.__isset);
 }
 
-const char* ColumnStatisticsObj::ascii_fingerprint = "DEE09584C51BCAF60824FE4509B59567";
-const uint8_t ColumnStatisticsObj::binary_fingerprint[16] = {0xDE,0xE0,0x95,0x84,0xC5,0x1B,0xCA,0xF6,0x08,0x24,0xFE,0x45,0x09,0xB5,0x95,0x67};
+const char* ColumnStatisticsObj::ascii_fingerprint = "CFDBB9DFF4F1670367EA5356861EC180";
+const uint8_t ColumnStatisticsObj::binary_fingerprint[16] = {0xCF,0xDB,0xB9,0xDF,0xF4,0xF1,0x67,0x03,0x67,0xEA,0x53,0x56,0x86,0x1E,0xC1,0x80};
 
 uint32_t ColumnStatisticsObj::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -3882,8 +4087,8 @@ void swap(ColumnStatisticsDesc &a, ColumnStatisticsDesc &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* ColumnStatistics::ascii_fingerprint = "681BDBD0CBB53373AC1C9C0C2E26BEAB";
-const uint8_t ColumnStatistics::binary_fingerprint[16] = {0x68,0x1B,0xDB,0xD0,0xCB,0xB5,0x33,0x73,0xAC,0x1C,0x9C,0x0C,0x2E,0x26,0xBE,0xAB};
+const char* ColumnStatistics::ascii_fingerprint = "37AA2F226C29DF25254CCCE6A7DDBAF3";
+const uint8_t ColumnStatistics::binary_fingerprint[16] = {0x37,0xAA,0x2F,0x22,0x6C,0x29,0xDF,0x25,0x25,0x4C,0xCC,0xE6,0xA7,0xDD,0xBA,0xF3};
 
 uint32_t ColumnStatistics::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -4412,8 +4617,8 @@ void swap(PartitionsByExprRequest &a, PartitionsByExprRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* TableStatsResult::ascii_fingerprint = "3A0CB62070A0D93EE2CE174AF08C0E92";
-const uint8_t TableStatsResult::binary_fingerprint[16] = {0x3A,0x0C,0xB6,0x20,0x70,0xA0,0xD9,0x3E,0xE2,0xCE,0x17,0x4A,0xF0,0x8C,0x0E,0x92};
+const char* TableStatsResult::ascii_fingerprint = "178DBEC75B48CDDEDB3B8338EF6FBF2F";
+const uint8_t TableStatsResult::binary_fingerprint[16] = {0x17,0x8D,0xBE,0xC7,0x5B,0x48,0xCD,0xDE,0xDB,0x3B,0x83,0x38,0xEF,0x6F,0xBF,0x2F};
 
 uint32_t TableStatsResult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -4496,8 +4701,8 @@ void swap(TableStatsResult &a, TableStatsResult &b) {
   swap(a.tableStats, b.tableStats);
 }
 
-const char* PartitionsStatsResult::ascii_fingerprint = "9790481369E1B27F6E70DED62CFCA4E3";
-const uint8_t PartitionsStatsResult::binary_fingerprint[16] = {0x97,0x90,0x48,0x13,0x69,0xE1,0xB2,0x7F,0x6E,0x70,0xDE,0xD6,0x2C,0xFC,0xA4,0xE3};
+const char* PartitionsStatsResult::ascii_fingerprint = "0E3D549A0384CD453E2CB90C734A6245";
+const uint8_t PartitionsStatsResult::binary_fingerprint[16] = {0x0E,0x3D,0x54,0x9A,0x03,0x84,0xCD,0x45,0x3E,0x2C,0xB9,0x0C,0x73,0x4A,0x62,0x45};
 
 uint32_t PartitionsStatsResult::read(::apache::thrift::protocol::TProtocol* iprot) {
 

@@ -712,6 +712,52 @@ class BinaryColumnStatsData
   ::Thrift::Struct.generate_accessors self
 end
 
+class Decimal
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  UNSCALED = 1
+  SCALE = 3
+
+  FIELDS = {
+    UNSCALED => {:type => ::Thrift::Types::STRING, :name => 'unscaled', :binary => true},
+    SCALE => {:type => ::Thrift::Types::I16, :name => 'scale'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field unscaled is unset!') unless @unscaled
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scale is unset!') unless @scale
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class DecimalColumnStatsData
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  LOWVALUE = 1
+  HIGHVALUE = 2
+  NUMNULLS = 3
+  NUMDVS = 4
+
+  FIELDS = {
+    LOWVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'lowValue', :class => ::Decimal},
+    HIGHVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'highValue', :class => ::Decimal},
+    NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
+    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lowValue is unset!') unless @lowValue
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field highValue is unset!') unless @highValue
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numNulls is unset!') unless @numNulls
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numDVs is unset!') unless @numDVs
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class ColumnStatisticsData < ::Thrift::Union
   include ::Thrift::Struct_Union
   class << self
@@ -734,6 +780,10 @@ class ColumnStatisticsData < ::Thrift::Union
     def binaryStats(val)
       ColumnStatisticsData.new(:binaryStats, val)
     end
+
+    def decimalStats(val)
+      ColumnStatisticsData.new(:decimalStats, val)
+    end
   end
 
   BOOLEANSTATS = 1
@@ -741,13 +791,15 @@ class ColumnStatisticsData < ::Thrift::Union
   DOUBLESTATS = 3
   STRINGSTATS = 4
   BINARYSTATS = 5
+  DECIMALSTATS = 6
 
   FIELDS = {
     BOOLEANSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'booleanStats', :class => ::BooleanColumnStatsData},
     LONGSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'longStats', :class => ::LongColumnStatsData},
     DOUBLESTATS => {:type => ::Thrift::Types::STRUCT, :name => 'doubleStats', :class => ::DoubleColumnStatsData},
     STRINGSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'stringStats', :class => ::StringColumnStatsData},
-    BINARYSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'binaryStats', :class => ::BinaryColumnStatsData}
+    BINARYSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'binaryStats', :class => ::BinaryColumnStatsData},
+    DECIMALSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'decimalStats', :class => ::DecimalColumnStatsData}
   }
 
   def struct_fields; FIELDS; end

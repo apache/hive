@@ -1,0 +1,37 @@
+PREHOOK: query: create table tab_decimal(a decimal(10,3))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table tab_decimal(a decimal(10,3))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab_decimal
+PREHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../../data/files/decimal.txt" INTO TABLE tab_decimal
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tab_decimal
+POSTHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../../data/files/decimal.txt" INTO TABLE tab_decimal
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tab_decimal
+PREHOOK: query: select count(*) from tab_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tab_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_decimal
+#### A masked pattern was here ####
+18
+PREHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 18) from tab_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 18) from tab_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_decimal
+#### A masked pattern was here ####
+{"columntype":"Decimal","min":-87.2,"max":435.331,"countnulls":2,"numdistinctvalues":13}
