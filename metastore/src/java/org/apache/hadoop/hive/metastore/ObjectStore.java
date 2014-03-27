@@ -2844,7 +2844,7 @@ public class ObjectStore implements RawStore, Configurable {
           "Underlying index table does not exist for the given index.");
     }
 
-    return new MIndex(index.getIndexName(), origTable, index.getCreateTime(),
+    return new MIndex(index.getIndexName().toLowerCase(), origTable, index.getCreateTime(),
         index.getLastAccessTime(), index.getParameters(), indexTable, msd,
         index.getIndexHandlerClass(), index.isDeferredRebuild());
   }
@@ -2885,7 +2885,7 @@ public class ObjectStore implements RawStore, Configurable {
         "origTable.tableName == t1 && origTable.database.name == t2 && indexName == t3");
       query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
       query.setUnique(true);
-      midx = (MIndex) query.execute(originalTblName, dbName, indexName);
+      midx = (MIndex) query.execute(originalTblName, dbName, indexName.toLowerCase());
       pm.retrieve(midx);
       commited = commitTransaction();
     } finally {
