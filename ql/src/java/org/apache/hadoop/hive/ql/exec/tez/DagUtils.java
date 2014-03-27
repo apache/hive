@@ -657,6 +657,7 @@ public class DagUtils {
    * @return the name of the resource from a given path string.
    */
   public String getResourceBaseName(String pathStr) {
+    // TODO: this should probably use Path::getName
     String[] splits = pathStr.split("/");
     return splits[splits.length - 1];
   }
