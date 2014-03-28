@@ -2218,7 +2218,36 @@
     Kerberos keytab file for server principal
   </description>
 </property>
- 
+
+<property>
+  <name>hive.server2.authentication.spnego.principal</name>
+  <value></value>
+  <description>
+    SPNego service principal, optional,
+    typical value would look like HTTP/_HOST@EXAMPLE.COM
+    SPNego service principal would be used by hiveserver2 when kerberos security is enabled
+    and HTTP transport mode is used.
+    This needs to be set only if SPNEGO is to be used in authentication.
+  </description>
+</property>
+
+<property>
+  <name>hive.server2.authentication.spnego.keytab</name>
+  <value></value>
+  <description>
+    keytab file for SPNego principal, optional,
+    typical value would look like /etc/security/keytabs/spnego.service.keytab,
+    This keytab would be used by hiveserver2 when kerberos security is enabled
+    and HTTP transport mode is used.
+    This needs to be set only if SPNEGO is to be used in authentication.
+    SPNego authentication would be honored only if valid
+    hive.server2.authentication.spnego.principal
+    and
+    hive.server2.authentication.spnego.keytab
+    are specified
+  </description>
+</property>
+
 <property>
   <name>hive.server2.authentication.ldap.url</name>
   <value></value>

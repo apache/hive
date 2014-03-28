@@ -58,12 +58,14 @@ public class ThriftHttpServlet extends TServlet {
   public static final Log LOG = LogFactory.getLog(ThriftHttpServlet.class.getName());
   private final String authType;
   private final UserGroupInformation serviceUGI;
+  private final UserGroupInformation httpUGI;
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
-      String authType, UserGroupInformation serviceUGI) {
+      String authType, UserGroupInformation serviceUGI, UserGroupInformation httpUGI) {
     super(processor, protocolFactory);
     this.authType = authType;
     this.serviceUGI = serviceUGI;
+    this.httpUGI = httpUGI;
   }
 
   @Override
@@ -73,24 +75,25 @@ public class ThriftHttpServlet extends TServlet {
     try {
       // For a kerberos setup
       if(isKerberosAuthMode(authType)) {
-        clientUserName = doKerberosAuth(request, serviceUGI);
+        clientUserName = doKerberosAuth(request);
       }
       else {
         clientUserName = doPasswdAuth(request, authType);
       }
 
       LOG.info("Client username: " + clientUserName);
-      
+
       // Set the thread local username to be used for doAs if true
       SessionManager.setUserName(clientUserName);
       super.doPost(request, response);
     }
     catch (HttpAuthenticationException e) {
-      // Send a 403 to the client
       LOG.error("Error: ", e);
-      response.setContentType("application/x-thrift");
-      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-      // Send the response back to the client
+      // Send a 401 to the client
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      if(isKerberosAuthMode(authType)) {
+        response.addHeader(HttpAuthUtils.WWW_AUTHENTICATE, HttpAuthUtils.NEGOTIATE);
+      }
       response.getWriter().println("Authentication Error: " + e.getMessage());
     }
     finally {
@@ -127,24 +130,38 @@ public class ThriftHttpServlet extends TServlet {
    * Do the GSS-API kerberos authentication.
    * We already have a logged in subject in the form of serviceUGI,
    * which GSS-API will extract information from.
+   * In case of a SPNego request we use the httpUGI,
+   * for the authenticating service tickets.
    * @param request
    * @return
    * @throws HttpAuthenticationException
    */
-  private String doKerberosAuth(HttpServletRequest request, 
-      UserGroupInformation serviceUGI) throws HttpAuthenticationException {
+  private String doKerberosAuth(HttpServletRequest request)
+      throws HttpAuthenticationException {
+    // Try authenticating with the http/_HOST principal
+    if (httpUGI != null) {
+      try {
+        return httpUGI.doAs(new HttpKerberosServerAction(request, httpUGI));
+      } catch (Exception e) {
+        LOG.info("Failed to authenticate with http/_HOST kerberos principal, " +
+            "trying with hive/_HOST kerberos principal");
+      }
+    }
+    // Now try with hive/_HOST principal
     try {
       return serviceUGI.doAs(new HttpKerberosServerAction(request, serviceUGI));
     } catch (Exception e) {
+      LOG.error("Failed to authenticate with hive/_HOST kerberos principal");
       throw new HttpAuthenticationException(e);
     }
+
   }
 
   class HttpKerberosServerAction implements PrivilegedExceptionAction<String> {
     HttpServletRequest request;
     UserGroupInformation serviceUGI;
-    
-    HttpKerberosServerAction(HttpServletRequest request, 
+
+    HttpKerberosServerAction(HttpServletRequest request,
         UserGroupInformation serviceUGI) {
       this.request = request;
       this.serviceUGI = serviceUGI;
@@ -152,14 +169,16 @@ public class ThriftHttpServlet extends TServlet {
 
     @Override
     public String run() throws HttpAuthenticationException {
-   // Get own Kerberos credentials for accepting connection
+      // Get own Kerberos credentials for accepting connection
       GSSManager manager = GSSManager.getInstance();
       GSSContext gssContext = null;
       String serverPrincipal = getPrincipalWithoutRealm(
           serviceUGI.getUserName());
       try {
         // This Oid for Kerberos GSS-API mechanism.
-        Oid mechOid = new Oid("1.2.840.113554.1.2.2");
+        Oid kerberosMechOid = new Oid("1.2.840.113554.1.2.2");
+        // Oid for SPNego GSS-API mechanism.
+        Oid spnegoMechOid = new Oid("1.3.6.1.5.5.2");
         // Oid for kerberos principal name
         Oid krb5PrincipalOid = new Oid("1.2.840.113554.1.2.2.1");
 
@@ -168,7 +187,9 @@ public class ThriftHttpServlet extends TServlet {
 
         // GSS credentials for server
         GSSCredential serverCreds = manager.createCredential(serverName,
-            GSSCredential.DEFAULT_LIFETIME,  mechOid, GSSCredential.ACCEPT_ONLY);
+            GSSCredential.DEFAULT_LIFETIME,
+            new Oid[]{kerberosMechOid, spnegoMechOid},
+            GSSCredential.ACCEPT_ONLY);
 
         // Create a GSS context
         gssContext = manager.createContext(serverCreds);
@@ -275,6 +296,7 @@ public class ThriftHttpServlet extends TServlet {
   private boolean isKerberosAuthMode(String authType) {
     return authType.equalsIgnoreCase(HiveAuthFactory.AuthTypes.KERBEROS.toString());
   }
+
 }
 
 
