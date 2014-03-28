@@ -46,9 +46,10 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
-import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 
 /**
  * GenTezUtils is a collection of shared helper methods to produce
@@ -104,9 +105,10 @@ public class GenTezUtils {
     setupReduceSink(context, reduceWork, reduceSink);
 
     tezWork.add(reduceWork);
+    TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.SIMPLE_EDGE);
     tezWork.connect(
         context.preceedingWork,
-        reduceWork, EdgeType.SIMPLE_EDGE);
+        reduceWork, edgeProp);
     context.connectedReduceSinks.add(reduceSink);
 
     return reduceWork;

@@ -42,9 +42,10 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
-import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
@@ -222,7 +223,7 @@ public class TezTask extends Task<TezWork> {
         // split the children into vertices that make up the union and vertices that are
         // proper children of the union
         for (BaseWork v: work.getChildren(w)) {
-          EdgeType type = work.getEdgeProperty(w, v);
+          EdgeType type = work.getEdgeProperty(w, v).getEdgeType();
           if (type == EdgeType.CONTAINS) {
             unionWorkItems.add(v);
           } else {
@@ -257,7 +258,7 @@ public class TezTask extends Task<TezWork> {
         // Regular vertices
         JobConf wxConf = utils.initializeVertexConf(conf, w);
         Vertex wx = utils.createVertex(wxConf, w, tezDir, appJarLr, 
-          additionalLr, fs, ctx, !isFinal);
+          additionalLr, fs, ctx, !isFinal, work);
         dag.addVertex(wx);
         utils.addCredentials(w, dag);
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + w.getName());
@@ -269,9 +270,9 @@ public class TezTask extends Task<TezWork> {
           assert workToVertex.containsKey(v);
           Edge e = null;
 
-          EdgeType edgeType = work.getEdgeProperty(w, v);
-          
-          e = utils.createEdge(wxConf, wx, workToConf.get(v), workToVertex.get(v), edgeType);
+          TezEdgeProperty edgeProp = work.getEdgeProperty(w, v);
+
+          e = utils.createEdge(wxConf, wx, workToConf.get(v), workToVertex.get(v), edgeProp);
           dag.addEdge(e);
         }
       }

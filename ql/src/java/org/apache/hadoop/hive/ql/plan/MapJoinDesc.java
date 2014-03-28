@@ -49,6 +49,9 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   // for tez. used to remember which position maps to which logical input
   private Map<Integer, String> parentToInput = new HashMap<Integer, String>();
+  
+  // for tez. used to remember which type of a Bucket Map Join this is.
+  private boolean customBucketMapJoin;
 
   // table alias (small) --> input file name (big) --> target file names (small)
   private Map<String, Map<String, List<String>>> aliasBucketFileNameMapping;
@@ -81,6 +84,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.bigTablePartSpecToFileMapping = clone.bigTablePartSpecToFileMapping;
     this.dumpFilePrefix = clone.dumpFilePrefix;
     this.parentToInput = clone.parentToInput;
+    this.customBucketMapJoin = clone.customBucketMapJoin;
   }
 
   public MapJoinDesc(final Map<Byte, List<ExprNodeDesc>> keys,
@@ -279,5 +283,13 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public float getHashTableMemoryUsage() {
     return hashtableMemoryUsage;
+  }
+  
+  public void setCustomBucketMapJoin(boolean customBucketMapJoin) {
+    this.customBucketMapJoin = customBucketMapJoin;
+  }
+  
+  public boolean getCustomBucketMapJoin() {
+    return this.customBucketMapJoin;
   }
 }

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -44,8 +45,9 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
 
 public class ReduceSinkMapJoinProc implements NodeProcessor {
 
@@ -110,12 +112,24 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     LOG.debug("Mapjoin "+mapJoinOp+", pos: "+pos+" --> "+parentWork.getName());
     mapJoinOp.getConf().getParentToInput().put(pos, parentWork.getName());
 
+    int numBuckets = -1;
+    EdgeType edgeType = EdgeType.BROADCAST_EDGE;
+    if (mapJoinOp.getConf().isBucketMapJoin()) {
+      numBuckets = (Integer) mapJoinOp.getConf().getBigTableBucketNumMapping().values().toArray()[0];
+      if (mapJoinOp.getConf().getCustomBucketMapJoin()) {
+        edgeType = EdgeType.CUSTOM_EDGE;
+      } else {
+        edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+      }
+    }
+    TezEdgeProperty edgeProp = new TezEdgeProperty(null, edgeType, numBuckets);
+
     if (mapJoinWork != null) {
       for (BaseWork myWork: mapJoinWork) {
         // link the work with the work associated with the reduce sink that triggered this rule
         TezWork tezWork = context.currentTask.getWork();
         LOG.debug("connecting "+parentWork.getName()+" with "+myWork.getName());
-        tezWork.connect(parentWork, myWork, EdgeType.BROADCAST_EDGE);
+        tezWork.connect(parentWork, myWork, edgeProp);
         
         ReduceSinkOperator r = null;
         if (parentRS.getConf().getOutputName() != null) {
@@ -134,12 +148,14 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     }
 
     // remember in case we need to connect additional work later
-    List<BaseWork> linkWorkList = context.linkOpWithWorkMap.get(mapJoinOp);
-    if (linkWorkList == null) {
-      linkWorkList = new ArrayList<BaseWork>();
+    Map<BaseWork, TezEdgeProperty> linkWorkMap = null;
+    if (context.linkOpWithWorkMap.containsKey(mapJoinOp)) {
+      linkWorkMap = context.linkOpWithWorkMap.get(mapJoinOp);
+    } else {
+      linkWorkMap = new HashMap<BaseWork, TezEdgeProperty>();
     }
-    linkWorkList.add(parentWork);
-    context.linkOpWithWorkMap.put(mapJoinOp, linkWorkList);
+    linkWorkMap.put(parentWork, edgeProp);
+    context.linkOpWithWorkMap.put(mapJoinOp, linkWorkMap);
     
     List<ReduceSinkOperator> reduceSinks 
       = context.linkWorkWithReduceSinkMap.get(parentWork);
