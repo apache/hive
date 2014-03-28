@@ -142,6 +142,11 @@ elif [ "${HIVE_AUX_JARS_PATH}" != "" ]; then
   HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HIVE_AUX_JARS_PATH
 fi
 
+# also pass hive classpath to hadoop
+if [ "$HIVE_CLASSPATH" != "" ]; then
+  export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${HIVE_CLASSPATH}";
+fi
+
 # Put external jars, hcat jar, and config file in the classpath
 HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${HCAT_CLASSPATH}:${HCAT_JAR}:${HIVE_CONF_DIR}
 
@@ -161,6 +166,11 @@ fi
 
 export HADOOP_CLASSPATH=$HADOOP_CLASSPATH
 export HADOOP_OPTS=$HADOOP_OPTS
+
+if [ ! -d "${HADOOP_LIBEXEC_DIR}" ]; then
+  export HADOOP_LIBEXEC_DIR=$HADOOP_PREFIX/libexec;
+fi
+
 # run it
 if [ "$debug" == "true" ]; then
 	echo "Would run:"
