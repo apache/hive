@@ -2447,7 +2447,7 @@
   <value>hdfs:///user/</value>
   <description>
     If hive (in tez mode only) cannot find a usable hive jar in "hive.jar.directory", 
-    it will upload the hive jar to &lthive.user.install.directory&gt/&ltuser name&gt 
+    it will upload the hive jar to &lt;hive.user.install.directory&gt;/&lt;user name&gt; 
     and use it to run queries.
   </description>
 </property>
@@ -2502,6 +2502,7 @@
     '1', and '0' as extened, legal boolean literal, in addition to 'TRUE' and 'FALSE'.
     The default is false, which means only 'TRUE' and 'FALSE' are treated as legal
     boolean literal.
+  </description>
 </property>
 
 <property>
@@ -2527,6 +2528,62 @@
   <value>0.12</value>
   <description>
     Enable (configurable) deprecated behaviors by setting desired level of backward compatbility
+  </description>
+</property>
+
+<property>
+  <name>hive.metastore.try.direct.sql</name>
+  <value>true</value>
+  <description>
+  Whether Hive metastore should try to use direct SQL queries instead of DataNucleus for certain
+  read paths. Can improve metastore performance when fetching many partitions or column stats by
+  orders of magnitude; however, is not guaranteed to work on all RDBMS-es and all versions. In case
+  of SQL failures, metastore will fall back to DataNucleus, so it's safe even if SQL doesn't work
+  for all queries on your datastore. If all SQL queries fail (e.g. your metastore is backed by
+  MongoDB), you might want to disable this to save the try-and-fall-back cost.
+  </description>
+</property>
+
+<property>
+  <name>hive.metastore.try.direct.sql.ddl</name>
+  <value>true</value>
+  <description>
+  Same as hive.metastore.try.direct.sql, for read statements within a transaction that modifies
+  metastore data. Due to non-standard behavior in Postgres, if direct SQL select query has
+  incorrect syntax or something inside a transaction, entire transaction will fail and fall-back to
+  DataNucleus will not be possible. You should disable the usage of direct SQL inside transactions
+  if that happens in your case.
+  </description>
+</property>
+
+<property>
+  <name>hive.metastore.integral.jdo.pushdown</name>
+  <value>false</value>
+  <description>
+  Whether to enable JDO pushdown for integral types. Off by default. Irrelevant if
+  hive.metastore.try.direct.sql is enabled. Otherwise, filter pushdown in metastore can improve
+  performance, but for partition columns storing integers in non-canonical form, (e.g. '012'),
+  it can produce incorrect results.
+  </description>
+</property>
+
+
+<property>
+  <name>hive.mapjoin.optimized.keys</name>
+  <value>true</value>
+  <description>
+  Whether MapJoin hashtable should use optimized (size-wise), keys, allowing the table to take less
+  memory. Depending on key, the memory savings for entire table can be 5-15% or so.
+  </description>
+</property>
+
+<property>
+  <name>hive.mapjoin.lazy.hashtable</name>
+  <value>true</value>
+  <description>
+  Whether MapJoin hashtable should deserialize values on demand. Depending on how many values in
+  the table the join will actually touch, it can save a lot of memory by not creating objects for
+  rows that are not needed. If all rows are needed obviously there's no gain.
   </description>
 </property>
 
