@@ -22,12 +22,14 @@ PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
-src_role_wadmin	-1	user2	USER	true	-1	hive_admin_user
+role	grant_option	grant_time	grantor
+PUBLIC	false	-1	
+src_role_wadmin	true	-1	hive_admin_user
 PREHOOK: query: show principals src_role_wadmin
 PREHOOK: type: SHOW_ROLE_PRINCIPALS
 POSTHOOK: query: show principals src_role_wadmin
 POSTHOOK: type: SHOW_ROLE_PRINCIPALS
+principal_name	principal_type	grant_option	grantor	grantor_type	grant_time
 user2	USER	true	hive_admin_user	USER	-1
 PREHOOK: query: set role src_role_wadmin
 PREHOOK: type: SHOW_ROLES
@@ -41,8 +43,9 @@ PREHOOK: query: show role grant user user3
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user3
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
-src_role_wadmin	-1	user3	USER	false	-1	user2
+role	grant_option	grant_time	grantor
+PUBLIC	false	-1	
+src_role_wadmin	false	-1	user2
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
@@ -51,6 +54,7 @@ PREHOOK: query: show principals src_role_wadmin
 PREHOOK: type: SHOW_ROLE_PRINCIPALS
 POSTHOOK: query: show principals src_role_wadmin
 POSTHOOK: type: SHOW_ROLE_PRINCIPALS
+principal_name	principal_type	grant_option	grantor	grantor_type	grant_time
 user2	USER	true	hive_admin_user	USER	-1
 user3	USER	false	user2	USER	-1
 PREHOOK: query: set role src_role_wadmin
@@ -65,7 +69,8 @@ PREHOOK: query: show role grant user user3
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user3
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
+role	grant_option	grant_time	grantor
+PUBLIC	false	-1	
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
@@ -74,4 +79,5 @@ PREHOOK: query: show principals src_role_wadmin
 PREHOOK: type: SHOW_ROLE_PRINCIPALS
 POSTHOOK: query: show principals src_role_wadmin
 POSTHOOK: type: SHOW_ROLE_PRINCIPALS
+principal_name	principal_type	grant_option	grantor	grantor_type	grant_time
 user2	USER	true	hive_admin_user	USER	-1

@@ -66,11 +66,6 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
   }
 
   @Override
-  public List<HiveRole> getRoles(HivePrincipal hivePrincipal) throws HiveAuthzPluginException, HiveAccessControlException {
-    return accessController.getRoles(hivePrincipal);
-  }
-
-  @Override
   public void grantRole(List<HivePrincipal> hivePrincipals, List<String> roles,
       boolean grantOption, HivePrincipal grantorPrinc) throws HiveAuthzPluginException, HiveAccessControlException {
     accessController.grantRole(hivePrincipals, roles, grantOption, grantorPrinc);
@@ -110,13 +105,19 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
   }
 
   @Override
-  public List<HiveRole> getCurrentRoles() throws HiveAuthzPluginException {
-    return accessController.getCurrentRoles();
+  public List<String> getCurrentRoleNames() throws HiveAuthzPluginException {
+    return accessController.getCurrentRoleNames();
   }
 
   @Override
-  public List<HiveRoleGrant> getPrincipalsInRoleInfo(String roleName)
+  public List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName)
       throws HiveAuthzPluginException, HiveAccessControlException {
-    return accessController.getPrincipalsInRoleInfo(roleName);
+    return accessController.getPrincipalGrantInfoForRole(roleName);
+  }
+
+  @Override
+  public List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal)
+      throws HiveAuthzPluginException, HiveAccessControlException {
+    return accessController.getRoleGrantInfoForPrincipal(principal);
   }
 }

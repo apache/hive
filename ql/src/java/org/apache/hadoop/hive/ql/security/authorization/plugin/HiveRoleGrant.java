@@ -47,7 +47,8 @@ public class HiveRoleGrant implements Comparable<HiveRoleGrant> {
     this.grantOption = thriftRoleGrant.isGrantOption();
     this.grantTime = thriftRoleGrant.getGrantTime();
     this.grantor = thriftRoleGrant.getGrantorName();
-    this.grantorType = thriftRoleGrant.getGrantorPrincipalType().name();
+    this.grantorType = thriftRoleGrant.getGrantorPrincipalType() == null ? null :
+      thriftRoleGrant.getGrantorPrincipalType().name();
 
   }
 

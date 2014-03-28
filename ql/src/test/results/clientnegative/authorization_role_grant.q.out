@@ -32,9 +32,9 @@ PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
-role_noadmin	-1	user2	USER	false	-1	hive_admin_user
-src_role_wadmin	-1	user2	USER	true	-1	hive_admin_user
+PUBLIC	false	-1	
+role_noadmin	false	-1	hive_admin_user
+src_role_wadmin	true	-1	hive_admin_user
 PREHOOK: query: set role role_noadmin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role role_noadmin

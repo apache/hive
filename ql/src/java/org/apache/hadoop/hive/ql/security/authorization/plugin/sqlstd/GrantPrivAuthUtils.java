@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
 
 /**
  * Utility class to authorize grant/revoke privileges
@@ -36,7 +35,7 @@ public class GrantPrivAuthUtils {
 
   static void authorize(List<HivePrincipal> hivePrincipals, List<HivePrivilege> hivePrivileges,
       HivePrivilegeObject hivePrivObject, boolean grantOption, IMetaStoreClient metastoreClient,
-      String userName, List<HiveRole> curRoles, boolean isAdmin)
+      String userName, List<String> curRoles, boolean isAdmin)
           throws HiveAuthzPluginException, HiveAccessControlException {
 
     // check if this user has grant privileges for this privileges on this
@@ -51,7 +50,7 @@ public class GrantPrivAuthUtils {
 
   private static void checkRequiredPrivileges(
       RequiredPrivileges reqPrivileges, HivePrivilegeObject hivePrivObject,
-      IMetaStoreClient metastoreClient, String userName, List<HiveRole> curRoles, boolean isAdmin)
+      IMetaStoreClient metastoreClient, String userName, List<String> curRoles, boolean isAdmin)
           throws HiveAuthzPluginException, HiveAccessControlException {
 
     // keep track of the principals on which privileges have been checked for
