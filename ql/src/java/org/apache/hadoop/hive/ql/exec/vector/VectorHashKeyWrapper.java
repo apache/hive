@@ -222,7 +222,8 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   }
 
   public void assignDecimal(int index, Decimal128 value) {
-      decimalValues[index].update(value);
+    decimalValues[index].update(value);
+    isNull[longValues.length + doubleValues.length + byteValues.length + index] = false;
   }
 
   public void assignNullDecimal(int index) {
