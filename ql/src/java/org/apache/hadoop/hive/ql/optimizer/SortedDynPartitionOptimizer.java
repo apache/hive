@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -124,9 +125,19 @@ public class SortedDynPartitionOptimizer implements Transform {
       // RS then ReduceSinkDeDuplication optimization should merge them
       FileSinkOperator fsOp = (FileSinkOperator) nd;
 
+      LOG.info("Sorted dynamic partitioning optimization kicked in..");
+
       // if not dynamic partitioning then bail out
       if (fsOp.getConf().getDynPartCtx() == null) {
-        LOG.debug("Bailing out of sort dynamic partition optimization as dpCtx is null");
+        LOG.debug("Bailing out of sort dynamic partition optimization as dynamic partitioning context is null");
+        return null;
+      }
+
+      // if list bucketing then bail out
+      ListBucketingCtx lbCtx = fsOp.getConf().getLbCtx();
+      if (lbCtx != null && !lbCtx.getSkewedColNames().isEmpty()
+          && !lbCtx.getSkewedColValues().isEmpty()) {
+        LOG.debug("Bailing out of sort dynamic partition optimization as list bucketing is enabled");
         return null;
       }
 
