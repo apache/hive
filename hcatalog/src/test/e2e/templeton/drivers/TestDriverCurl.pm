@@ -458,6 +458,11 @@ sub execCurlCmd(){
 
   my $url = $testCmd->{ $argPrefix . 'url'};
 
+  #allow curl to make insecure ssl connections and transfers
+  if ($url =~ /^https:/) {
+    push @curl_cmd, '-k';
+  }
+
   my @options = ();
   if (defined $testCmd->{$argPrefix . 'post_options'}) {
     @options = @{$testCmd->{$argPrefix . 'post_options'}};
