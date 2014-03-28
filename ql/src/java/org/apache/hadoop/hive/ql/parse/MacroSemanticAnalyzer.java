@@ -171,6 +171,6 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void addEntities() throws SemanticException {
     Database database = getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME);
     // This restricts macro creation to privileged users.
-    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_METADATA_ONLY));
+    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 }
