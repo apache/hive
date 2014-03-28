@@ -1,0 +1,47 @@
+PREHOOK: query: -- Create a table with one column, write to it, then add an additional column
+-- This can break reads
+
+CREATE TABLE test_orc (key STRING)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: -- Create a table with one column, write to it, then add an additional column
+-- This can break reads
+
+CREATE TABLE test_orc (key STRING)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_orc
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT key FROM src LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_orc
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT key FROM src LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_orc
+POSTHOOK: Lineage: test_orc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: ALTER TABLE test_orc ADD COLUMNS (value STRING)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@test_orc
+PREHOOK: Output: default@test_orc
+POSTHOOK: query: ALTER TABLE test_orc ADD COLUMNS (value STRING)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@test_orc
+POSTHOOK: Output: default@test_orc
+POSTHOOK: Lineage: test_orc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM test_orc order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_orc order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_orc
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_orc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+165	NULL
+238	NULL
+27	NULL
+311	NULL
+86	NULL
