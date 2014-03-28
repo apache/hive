@@ -435,14 +435,14 @@ public class PartitionsByExprResult implements org.apache.thrift.TBase<Partition
           case 1: // PARTITIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list264 = iprot.readListBegin();
-                struct.partitions = new ArrayList<Partition>(_list264.size);
-                for (int _i265 = 0; _i265 < _list264.size; ++_i265)
+                org.apache.thrift.protocol.TList _list272 = iprot.readListBegin();
+                struct.partitions = new ArrayList<Partition>(_list272.size);
+                for (int _i273 = 0; _i273 < _list272.size; ++_i273)
                 {
-                  Partition _elem266; // optional
-                  _elem266 = new Partition();
-                  _elem266.read(iprot);
-                  struct.partitions.add(_elem266);
+                  Partition _elem274; // optional
+                  _elem274 = new Partition();
+                  _elem274.read(iprot);
+                  struct.partitions.add(_elem274);
                 }
                 iprot.readListEnd();
               }
@@ -476,9 +476,9 @@ public class PartitionsByExprResult implements org.apache.thrift.TBase<Partition
         oprot.writeFieldBegin(PARTITIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitions.size()));
-          for (Partition _iter267 : struct.partitions)
+          for (Partition _iter275 : struct.partitions)
           {
-            _iter267.write(oprot);
+            _iter275.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -506,9 +506,9 @@ public class PartitionsByExprResult implements org.apache.thrift.TBase<Partition
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.partitions.size());
-        for (Partition _iter268 : struct.partitions)
+        for (Partition _iter276 : struct.partitions)
         {
-          _iter268.write(oprot);
+          _iter276.write(oprot);
         }
       }
       oprot.writeBool(struct.hasUnknownPartitions);
@@ -518,14 +518,14 @@ public class PartitionsByExprResult implements org.apache.thrift.TBase<Partition
     public void read(org.apache.thrift.protocol.TProtocol prot, PartitionsByExprResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list269 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.partitions = new ArrayList<Partition>(_list269.size);
-        for (int _i270 = 0; _i270 < _list269.size; ++_i270)
+        org.apache.thrift.protocol.TList _list277 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.partitions = new ArrayList<Partition>(_list277.size);
+        for (int _i278 = 0; _i278 < _list277.size; ++_i278)
         {
-          Partition _elem271; // optional
-          _elem271 = new Partition();
-          _elem271.read(iprot);
-          struct.partitions.add(_elem271);
+          Partition _elem279; // optional
+          _elem279 = new Partition();
+          _elem279.read(iprot);
+          struct.partitions.add(_elem279);
         }
       }
       struct.setPartitionsIsSet(true);

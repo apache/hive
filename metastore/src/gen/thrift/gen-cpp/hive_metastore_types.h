@@ -621,24 +621,19 @@ class PrincipalPrivilegeSet {
 void swap(PrincipalPrivilegeSet &a, PrincipalPrivilegeSet &b);
 
 typedef struct _Role__isset {
-  _Role__isset() : roleName(false), createTime(false), ownerName(false), principalName(false), principalType(false), grantOption(false), grantTime(false), grantor(false) {}
+  _Role__isset() : roleName(false), createTime(false), ownerName(false) {}
   bool roleName;
   bool createTime;
   bool ownerName;
-  bool principalName;
-  bool principalType;
-  bool grantOption;
-  bool grantTime;
-  bool grantor;
 } _Role__isset;
 
 class Role {
  public:
 
-  static const char* ascii_fingerprint; // = "8DEBC3096AEF414FFF38C357ECEEA8BC";
-  static const uint8_t binary_fingerprint[16]; // = {0x8D,0xEB,0xC3,0x09,0x6A,0xEF,0x41,0x4F,0xFF,0x38,0xC3,0x57,0xEC,0xEE,0xA8,0xBC};
+  static const char* ascii_fingerprint; // = "70563A0628F75DF9555F4D24690B1E26";
+  static const uint8_t binary_fingerprint[16]; // = {0x70,0x56,0x3A,0x06,0x28,0xF7,0x5D,0xF9,0x55,0x5F,0x4D,0x24,0x69,0x0B,0x1E,0x26};
 
-  Role() : roleName(), createTime(0), ownerName(), principalName(), principalType(), grantOption(0), grantTime(0), grantor() {
+  Role() : roleName(), createTime(0), ownerName() {
   }
 
   virtual ~Role() throw() {}
@@ -646,11 +641,6 @@ class Role {
   std::string roleName;
   int32_t createTime;
   std::string ownerName;
-  std::string principalName;
-  std::string principalType;
-  bool grantOption;
-  int32_t grantTime;
-  std::string grantor;
 
   _Role__isset __isset;
 
@@ -666,31 +656,6 @@ class Role {
     ownerName = val;
   }
 
-  void __set_principalName(const std::string& val) {
-    principalName = val;
-    __isset.principalName = true;
-  }
-
-  void __set_principalType(const std::string& val) {
-    principalType = val;
-    __isset.principalType = true;
-  }
-
-  void __set_grantOption(const bool val) {
-    grantOption = val;
-    __isset.grantOption = true;
-  }
-
-  void __set_grantTime(const int32_t val) {
-    grantTime = val;
-    __isset.grantTime = true;
-  }
-
-  void __set_grantor(const std::string& val) {
-    grantor = val;
-    __isset.grantor = true;
-  }
-
   bool operator == (const Role & rhs) const
   {
     if (!(roleName == rhs.roleName))
@@ -698,26 +663,6 @@ class Role {
     if (!(createTime == rhs.createTime))
       return false;
     if (!(ownerName == rhs.ownerName))
-      return false;
-    if (__isset.principalName != rhs.__isset.principalName)
-      return false;
-    else if (__isset.principalName && !(principalName == rhs.principalName))
-      return false;
-    if (__isset.principalType != rhs.__isset.principalType)
-      return false;
-    else if (__isset.principalType && !(principalType == rhs.principalType))
-      return false;
-    if (__isset.grantOption != rhs.__isset.grantOption)
-      return false;
-    else if (__isset.grantOption && !(grantOption == rhs.grantOption))
-      return false;
-    if (__isset.grantTime != rhs.__isset.grantTime)
-      return false;
-    else if (__isset.grantTime && !(grantTime == rhs.grantTime))
-      return false;
-    if (__isset.grantor != rhs.__isset.grantor)
-      return false;
-    else if (__isset.grantor && !(grantor == rhs.grantor))
       return false;
     return true;
   }
@@ -825,10 +770,87 @@ class RolePrincipalGrant {
 
 void swap(RolePrincipalGrant &a, RolePrincipalGrant &b);
 
-typedef struct _GetPrincipalsInRoleRequest__isset {
-  _GetPrincipalsInRoleRequest__isset() : roleName(false) {}
-  bool roleName;
-} _GetPrincipalsInRoleRequest__isset;
+
+class GetRoleGrantsForPrincipalRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "D6FD826D949221396F4FFC3ECCD3D192";
+  static const uint8_t binary_fingerprint[16]; // = {0xD6,0xFD,0x82,0x6D,0x94,0x92,0x21,0x39,0x6F,0x4F,0xFC,0x3E,0xCC,0xD3,0xD1,0x92};
+
+  GetRoleGrantsForPrincipalRequest() : principal_name(), principal_type((PrincipalType::type)0) {
+  }
+
+  virtual ~GetRoleGrantsForPrincipalRequest() throw() {}
+
+  std::string principal_name;
+  PrincipalType::type principal_type;
+
+  void __set_principal_name(const std::string& val) {
+    principal_name = val;
+  }
+
+  void __set_principal_type(const PrincipalType::type val) {
+    principal_type = val;
+  }
+
+  bool operator == (const GetRoleGrantsForPrincipalRequest & rhs) const
+  {
+    if (!(principal_name == rhs.principal_name))
+      return false;
+    if (!(principal_type == rhs.principal_type))
+      return false;
+    return true;
+  }
+  bool operator != (const GetRoleGrantsForPrincipalRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetRoleGrantsForPrincipalRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GetRoleGrantsForPrincipalRequest &a, GetRoleGrantsForPrincipalRequest &b);
+
+
+class GetRoleGrantsForPrincipalResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "5926B4B3541A62E17663820C7E3BE690";
+  static const uint8_t binary_fingerprint[16]; // = {0x59,0x26,0xB4,0xB3,0x54,0x1A,0x62,0xE1,0x76,0x63,0x82,0x0C,0x7E,0x3B,0xE6,0x90};
+
+  GetRoleGrantsForPrincipalResponse() {
+  }
+
+  virtual ~GetRoleGrantsForPrincipalResponse() throw() {}
+
+  std::vector<RolePrincipalGrant>  principalGrants;
+
+  void __set_principalGrants(const std::vector<RolePrincipalGrant> & val) {
+    principalGrants = val;
+  }
+
+  bool operator == (const GetRoleGrantsForPrincipalResponse & rhs) const
+  {
+    if (!(principalGrants == rhs.principalGrants))
+      return false;
+    return true;
+  }
+  bool operator != (const GetRoleGrantsForPrincipalResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetRoleGrantsForPrincipalResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GetRoleGrantsForPrincipalResponse &a, GetRoleGrantsForPrincipalResponse &b);
+
 
 class GetPrincipalsInRoleRequest {
  public:
@@ -842,8 +864,6 @@ class GetPrincipalsInRoleRequest {
   virtual ~GetPrincipalsInRoleRequest() throw() {}
 
   std::string roleName;
-
-  _GetPrincipalsInRoleRequest__isset __isset;
 
   void __set_roleName(const std::string& val) {
     roleName = val;
@@ -868,10 +888,6 @@ class GetPrincipalsInRoleRequest {
 
 void swap(GetPrincipalsInRoleRequest &a, GetPrincipalsInRoleRequest &b);
 
-typedef struct _GetPrincipalsInRoleResponse__isset {
-  _GetPrincipalsInRoleResponse__isset() : principalGrants(false) {}
-  bool principalGrants;
-} _GetPrincipalsInRoleResponse__isset;
 
 class GetPrincipalsInRoleResponse {
  public:
@@ -885,8 +901,6 @@ class GetPrincipalsInRoleResponse {
   virtual ~GetPrincipalsInRoleResponse() throw() {}
 
   std::vector<RolePrincipalGrant>  principalGrants;
-
-  _GetPrincipalsInRoleResponse__isset __isset;
 
   void __set_principalGrants(const std::vector<RolePrincipalGrant> & val) {
     principalGrants = val;

@@ -1464,6 +1464,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_principals_in_role failed: unknown result')
     end
 
+    def get_role_grants_for_principal(request)
+      send_get_role_grants_for_principal(request)
+      return recv_get_role_grants_for_principal()
+    end
+
+    def send_get_role_grants_for_principal(request)
+      send_message('get_role_grants_for_principal', Get_role_grants_for_principal_args, :request => request)
+    end
+
+    def recv_get_role_grants_for_principal()
+      result = receive_message(Get_role_grants_for_principal_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_role_grants_for_principal failed: unknown result')
+    end
+
     def get_privilege_set(hiveObject, user_name, group_names)
       send_get_privilege_set(hiveObject, user_name, group_names)
       return recv_get_privilege_set()
@@ -2937,6 +2953,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'get_principals_in_role', seqid)
+    end
+
+    def process_get_role_grants_for_principal(seqid, iprot, oprot)
+      args = read_args(iprot, Get_role_grants_for_principal_args)
+      result = Get_role_grants_for_principal_result.new()
+      begin
+        result.success = @handler.get_role_grants_for_principal(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_role_grants_for_principal', seqid)
     end
 
     def process_get_privilege_set(seqid, iprot, oprot)
@@ -6504,6 +6531,40 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetPrincipalsInRoleResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_role_grants_for_principal_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::GetRoleGrantsForPrincipalRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_role_grants_for_principal_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetRoleGrantsForPrincipalResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

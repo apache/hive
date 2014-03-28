@@ -48,8 +48,8 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
    * thrift ddl for the result of show role grant principalName
    */
   private static final String roleShowGrantSchema =
-      "role,create_time,principal_name,principal_type,grant_option,grant_time,grantor#" +
-      "string:bigint:string:string:boolean:bigint:string";
+      "role,grant_option,grant_time,grantor#" +
+      "string:boolean:bigint:string";
 
   /**
    * thrift ddl for the result of describe role roleName

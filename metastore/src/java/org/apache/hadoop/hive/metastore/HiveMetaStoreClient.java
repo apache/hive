@@ -71,6 +71,8 @@ import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
+import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
+import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -1462,6 +1464,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  public GetRoleGrantsForPrincipalResponse get_role_grants_for_principal(
+      GetRoleGrantsForPrincipalRequest getRolePrincReq) throws MetaException, TException {
+    return client.get_role_grants_for_principal(getRolePrincReq);
+  }
+
+  @Override
   public boolean grant_privileges(PrivilegeBag privileges)
       throws MetaException, TException {
     return client.grant_privileges(privileges);
@@ -1709,4 +1717,5 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       throws MetaException, TException {
     return client.get_functions(dbName, pattern);
   }
+
 }
