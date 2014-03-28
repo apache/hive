@@ -159,6 +159,7 @@ public class TestLazyArrayMapStruct extends TestCase {
 
         assertEquals("{2:'def',-1:null,0:'0',8:'abc'}".replace('\'', '\"'),
             SerDeUtils.getJSONString(b, oi));
+        assertEquals(4, b.getMapSize());
       }
 
       {
@@ -184,6 +185,7 @@ public class TestLazyArrayMapStruct extends TestCase {
 
         assertEquals("{'2':'d\\tf','-1':null,'0':'0','8':'abc'}"
             .replace('\'', '\"'), SerDeUtils.getJSONString(b, oi));
+        assertEquals(4, b.getMapSize());
       }
 
     } catch (Throwable e) {
@@ -220,6 +222,7 @@ public class TestLazyArrayMapStruct extends TestCase {
         assertEquals("{2:'def',-1:null,0:'0'}".replace('\'', '\"'),
             SerDeUtils.getJSONString(b, oi));
 
+        assertEquals(3, b.getMapSize());
         assertEquals(3, b.getMap().size());
       }
 
@@ -244,6 +247,7 @@ public class TestLazyArrayMapStruct extends TestCase {
         assertEquals("{'2':'d\\tf','-1':null,'0':'0'}"
             .replace('\'', '\"'), SerDeUtils.getJSONString(b, oi));
 
+        assertEquals(3, b.getMapSize());
         assertEquals(3, b.getMap().size());
       }
 
