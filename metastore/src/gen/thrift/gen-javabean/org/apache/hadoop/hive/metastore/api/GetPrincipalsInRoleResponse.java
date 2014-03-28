@@ -106,7 +106,7 @@ public class GetPrincipalsInRoleResponse implements org.apache.thrift.TBase<GetP
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.PRINCIPAL_GRANTS, new org.apache.thrift.meta_data.FieldMetaData("principalGrants", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.PRINCIPAL_GRANTS, new org.apache.thrift.meta_data.FieldMetaData("principalGrants", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RolePrincipalGrant.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -306,6 +306,10 @@ public class GetPrincipalsInRoleResponse implements org.apache.thrift.TBase<GetP
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
+    if (!isSetPrincipalGrants()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'principalGrants' is unset! Struct:" + toString());
+    }
+
     // check for sub-struct validity
   }
 
@@ -346,14 +350,14 @@ public class GetPrincipalsInRoleResponse implements org.apache.thrift.TBase<GetP
           case 1: // PRINCIPAL_GRANTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list78 = iprot.readListBegin();
-                struct.principalGrants = new ArrayList<RolePrincipalGrant>(_list78.size);
-                for (int _i79 = 0; _i79 < _list78.size; ++_i79)
+                org.apache.thrift.protocol.TList _list86 = iprot.readListBegin();
+                struct.principalGrants = new ArrayList<RolePrincipalGrant>(_list86.size);
+                for (int _i87 = 0; _i87 < _list86.size; ++_i87)
                 {
-                  RolePrincipalGrant _elem80; // optional
-                  _elem80 = new RolePrincipalGrant();
-                  _elem80.read(iprot);
-                  struct.principalGrants.add(_elem80);
+                  RolePrincipalGrant _elem88; // optional
+                  _elem88 = new RolePrincipalGrant();
+                  _elem88.read(iprot);
+                  struct.principalGrants.add(_elem88);
                 }
                 iprot.readListEnd();
               }
@@ -379,9 +383,9 @@ public class GetPrincipalsInRoleResponse implements org.apache.thrift.TBase<GetP
         oprot.writeFieldBegin(PRINCIPAL_GRANTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.principalGrants.size()));
-          for (RolePrincipalGrant _iter81 : struct.principalGrants)
+          for (RolePrincipalGrant _iter89 : struct.principalGrants)
           {
-            _iter81.write(oprot);
+            _iter89.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -404,18 +408,11 @@ public class GetPrincipalsInRoleResponse implements org.apache.thrift.TBase<GetP
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, GetPrincipalsInRoleResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      BitSet optionals = new BitSet();
-      if (struct.isSetPrincipalGrants()) {
-        optionals.set(0);
-      }
-      oprot.writeBitSet(optionals, 1);
-      if (struct.isSetPrincipalGrants()) {
+      {
+        oprot.writeI32(struct.principalGrants.size());
+        for (RolePrincipalGrant _iter90 : struct.principalGrants)
         {
-          oprot.writeI32(struct.principalGrants.size());
-          for (RolePrincipalGrant _iter82 : struct.principalGrants)
-          {
-            _iter82.write(oprot);
-          }
+          _iter90.write(oprot);
         }
       }
     }
@@ -423,21 +420,18 @@ public class GetPrincipalsInRoleResponse implements org.apache.thrift.TBase<GetP
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetPrincipalsInRoleResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(1);
-      if (incoming.get(0)) {
+      {
+        org.apache.thrift.protocol.TList _list91 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.principalGrants = new ArrayList<RolePrincipalGrant>(_list91.size);
+        for (int _i92 = 0; _i92 < _list91.size; ++_i92)
         {
-          org.apache.thrift.protocol.TList _list83 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.principalGrants = new ArrayList<RolePrincipalGrant>(_list83.size);
-          for (int _i84 = 0; _i84 < _list83.size; ++_i84)
-          {
-            RolePrincipalGrant _elem85; // optional
-            _elem85 = new RolePrincipalGrant();
-            _elem85.read(iprot);
-            struct.principalGrants.add(_elem85);
-          }
+          RolePrincipalGrant _elem93; // optional
+          _elem93 = new RolePrincipalGrant();
+          _elem93.read(iprot);
+          struct.principalGrants.add(_elem93);
         }
-        struct.setPrincipalGrantsIsSet(true);
       }
+      struct.setPrincipalGrantsIsSet(true);
     }
   }
 

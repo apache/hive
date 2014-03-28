@@ -106,7 +106,7 @@ public class GetPrincipalsInRoleRequest implements org.apache.thrift.TBase<GetPr
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.ROLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("roleName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.ROLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("roleName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetPrincipalsInRoleRequest.class, metaDataMap);
@@ -286,6 +286,10 @@ public class GetPrincipalsInRoleRequest implements org.apache.thrift.TBase<GetPr
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
+    if (!isSetRoleName()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'roleName' is unset! Struct:" + toString());
+    }
+
     // check for sub-struct validity
   }
 
@@ -366,24 +370,14 @@ public class GetPrincipalsInRoleRequest implements org.apache.thrift.TBase<GetPr
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, GetPrincipalsInRoleRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      BitSet optionals = new BitSet();
-      if (struct.isSetRoleName()) {
-        optionals.set(0);
-      }
-      oprot.writeBitSet(optionals, 1);
-      if (struct.isSetRoleName()) {
-        oprot.writeString(struct.roleName);
-      }
+      oprot.writeString(struct.roleName);
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetPrincipalsInRoleRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(1);
-      if (incoming.get(0)) {
-        struct.roleName = iprot.readString();
-        struct.setRoleNameIsSet(true);
-      }
+      struct.roleName = iprot.readString();
+      struct.setRoleNameIsSet(true);
     }
   }
 

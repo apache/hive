@@ -18,8 +18,8 @@ PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
-src_role2	-1	user2	USER	false	-1	hive_admin_user
+PUBLIC	false	-1	
+src_role2	false	-1	hive_admin_user
 PREHOOK: query: show roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show roles
@@ -38,7 +38,7 @@ PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
+PUBLIC	false	-1	
 PREHOOK: query: show roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show roles
@@ -67,8 +67,8 @@ PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
-src_role_wadmin	-1	user2	USER	true	-1	hive_admin_user
+PUBLIC	false	-1	
+src_role_wadmin	true	-1	hive_admin_user
 PREHOOK: query: -- revoke role without role keyword
 revoke src_role_wadmin from user user2
 PREHOOK: type: REVOKE_ROLE
@@ -79,7 +79,7 @@ PREHOOK: query: show role grant user user2
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
+PUBLIC	false	-1	
 PREHOOK: query: -- drop roles
 show roles
 PREHOOK: type: SHOW_ROLES

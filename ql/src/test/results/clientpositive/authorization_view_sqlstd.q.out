@@ -173,8 +173,8 @@ PREHOOK: query: show role grant user user4
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user4
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
-role_v	-1	user4	USER	false	-1	hive_admin_user
+PUBLIC	false	-1	
+role_v	false	-1	hive_admin_user
 PREHOOK: query: show roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show roles

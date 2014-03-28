@@ -447,6 +447,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_principals_in_role\n");
   }
 
+  void get_role_grants_for_principal(GetRoleGrantsForPrincipalResponse& _return, const GetRoleGrantsForPrincipalRequest& request) {
+    // Your implementation goes here
+    printf("get_role_grants_for_principal\n");
+  }
+
   void get_privilege_set(PrincipalPrivilegeSet& _return, const HiveObjectRef& hiveObject, const std::string& user_name, const std::vector<std::string> & group_names) {
     // Your implementation goes here
     printf("get_privilege_set\n");

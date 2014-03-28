@@ -93,26 +93,25 @@ public interface HiveAuthorizer {
       throws HiveAuthzPluginException, HiveAccessControlException;
 
   /**
-   * Get roles that this user/role belongs to
-   * @param hivePrincipal - user or role
-   * @return list of roles
-   * @throws HiveAuthzPluginException
-   * @throws HiveAccessControlException
-   */
-  List<HiveRole> getRoles(HivePrincipal hivePrincipal)
-      throws HiveAuthzPluginException, HiveAccessControlException;
-
-
-  /**
    * Get the grant information for principals granted the given role
    * @param roleName
    * @return
    * @throws HiveAuthzPluginException
    * @throws HiveAccessControlException
    */
-  List<HiveRoleGrant> getPrincipalsInRoleInfo(String roleName)
+  List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
+
+  /**
+   * Get the grant information of roles the given principal belongs to
+   * @param principal
+   * @return
+   * @throws HiveAuthzPluginException
+   * @throws HiveAccessControlException
+   */
+  List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal)
+      throws HiveAuthzPluginException, HiveAccessControlException;
 
   /**
    * Grant roles in given roles list to principals in given hivePrincipals list
@@ -174,9 +173,7 @@ public interface HiveAuthorizer {
 
   void setCurrentRole(String roleName) throws HiveAccessControlException, HiveAuthzPluginException;
 
-  List<HiveRole> getCurrentRoles() throws HiveAuthzPluginException;
+  List<String> getCurrentRoleNames() throws HiveAuthzPluginException;
 
-  //other functions to be added -
-  //showUsersInRole(rolename)
 }
 
