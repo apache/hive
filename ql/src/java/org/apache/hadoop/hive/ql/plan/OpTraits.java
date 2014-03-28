@@ -16,18 +16,36 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io;
+package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.mapred.lib.HashPartitioner;
+import java.util.List;
 
-/** Partition keys by their {@link Object#hashCode()}. */
-public class DefaultHivePartitioner<K2, V2> extends HashPartitioner<K2, V2> implements HivePartitioner<K2, V2> {
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 
-  /** Use {@link Object#hashCode()} to partition. */
-  public int getBucket(K2 key, V2 value, int numBuckets) {
-    return (key.hashCode() & Integer.MAX_VALUE) % numBuckets;
+public class OpTraits {
+  
+  List<List<String>> bucketColNames;
+  int numBuckets;
+  
+  public OpTraits(List<List<String>> bucketColNames, int numBuckets) {
+    this.bucketColNames = bucketColNames;
+    this.numBuckets = numBuckets;
   }
 
+  public List<List<String>> getBucketColNames() {
+    return bucketColNames;
+  }
+
+  public int getNumBuckets() {
+    return numBuckets;
+  }
+
+  public void setBucketColNames(List<List<String>> bucketColNames) {
+    this.bucketColNames = bucketColNames;    
+  }
+
+  public void setNumBuckets(int numBuckets) {
+    this.numBuckets = numBuckets;
+  }
 }

@@ -32,6 +32,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
+import org.apache.tez.dag.api.EdgeProperty;
 
 /**
  * TezWork. This class encapsulates all the work objects that can be executed
@@ -43,12 +45,6 @@ import org.apache.commons.logging.LogFactory;
 @Explain(displayName = "Tez")
 public class TezWork extends AbstractOperatorDesc {
 
-  public enum EdgeType {
-    SIMPLE_EDGE,
-    BROADCAST_EDGE,
-    CONTAINS
-  }
-
   private static transient final Log LOG = LogFactory.getLog(TezWork.class);
 
   private static int counter;
@@ -57,8 +53,8 @@ public class TezWork extends AbstractOperatorDesc {
   private final Set<BaseWork> leaves = new HashSet<BaseWork>();
   private final Map<BaseWork, List<BaseWork>> workGraph = new HashMap<BaseWork, List<BaseWork>>();
   private final Map<BaseWork, List<BaseWork>> invertedWorkGraph = new HashMap<BaseWork, List<BaseWork>>();
-  private final Map<Pair<BaseWork, BaseWork>, EdgeType> edgeProperties =
-      new HashMap<Pair<BaseWork, BaseWork>, EdgeType>();
+  private final Map<Pair<BaseWork, BaseWork>, TezEdgeProperty> edgeProperties =
+      new HashMap<Pair<BaseWork, BaseWork>, TezEdgeProperty>();
 
   public TezWork(String name) {
     this.name = name + ":" + (++counter);
@@ -147,19 +143,6 @@ public class TezWork extends AbstractOperatorDesc {
   }
 
   /**
-   * connect adds an edge between a and b. Both nodes have
-   * to be added prior to calling connect.
-   */
-  public void connect(BaseWork a, BaseWork b, EdgeType edgeType) {
-    workGraph.get(a).add(b);
-    invertedWorkGraph.get(b).add(a);
-    roots.remove(b);
-    leaves.remove(a);
-    ImmutablePair workPair = new ImmutablePair(a, b);
-    edgeProperties.put(workPair, edgeType);
-  }
-
-  /**
    * disconnect removes an edge between a and b. Both a and
    * b have to be in the graph. If there is no matching edge
    * no change happens.
@@ -242,10 +225,14 @@ public class TezWork extends AbstractOperatorDesc {
     invertedWorkGraph.remove(work);
   }
 
+  public EdgeType getEdgeType(BaseWork a, BaseWork b) {
+    return edgeProperties.get(new ImmutablePair(a,b)).getEdgeType();
+  }
+
   /**
    * returns the edge type connecting work a and b
    */
-  public EdgeType getEdgeProperty(BaseWork a, BaseWork b) {
+  public TezEdgeProperty getEdgeProperty(BaseWork a, BaseWork b) {
     return edgeProperties.get(new ImmutablePair(a,b));
   }
 
@@ -275,7 +262,7 @@ public class TezWork extends AbstractOperatorDesc {
       for (BaseWork d: entry.getValue()) {
         Dependency dependency = new Dependency();
         dependency.w = d;
-        dependency.type = getEdgeProperty(d, entry.getKey());
+        dependency.type = getEdgeType(d, entry.getKey());
         dependencies.add(dependency);
       }
       if (!dependencies.isEmpty()) {
@@ -283,5 +270,20 @@ public class TezWork extends AbstractOperatorDesc {
       }
     }
     return result;
+  }
+
+  /**
+   * connect adds an edge between a and b. Both nodes have
+   * to be added prior to calling connect.
+   * @param  
+   */
+  public void connect(BaseWork a, BaseWork b,
+      TezEdgeProperty edgeProp) {
+    workGraph.get(a).add(b);
+    invertedWorkGraph.get(b).add(a);
+    roots.remove(b);
+    leaves.remove(a);
+    ImmutablePair workPair = new ImmutablePair(a, b);
+    edgeProperties.put(workPair, edgeProp);
   }
 }

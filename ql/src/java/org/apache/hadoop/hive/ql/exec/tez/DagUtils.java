@@ -24,12 +24,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.security.auth.login.LoginException;
@@ -59,13 +61,16 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
-import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
+import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure.NullOutputCommitter;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -80,6 +85,7 @@ import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
+import org.apache.tez.dag.api.EdgeManagerDescriptor;
 import org.apache.tez.dag.api.EdgeProperty;
 import org.apache.tez.dag.api.EdgeProperty.DataMovementType;
 import org.apache.tez.dag.api.EdgeProperty.DataSourceType;
@@ -89,6 +95,7 @@ import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.Vertex;
+import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
 import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.client.PreWarmContext;
@@ -129,7 +136,7 @@ public class DagUtils {
           return new Path(input).toUri();
         }
       });
-    
+
       Set<URI> uris = new HashSet<URI>();
       Iterators.addAll(uris, pathIterator);
 
@@ -201,31 +208,45 @@ public class DagUtils {
    * @param group The parent VertexGroup
    * @param wConf The job conf of the child vertex
    * @param w The child vertex
-   * @param edgeType the type of connection between the two
+   * @param edgeProp the edge property of connection between the two
    * endpoints.
    */
   public GroupInputEdge createEdge(VertexGroup group, JobConf wConf,
-      Vertex w, EdgeType edgeType)
-      throws IOException {
-    
+      Vertex w, TezEdgeProperty edgeProp)
+    throws IOException {
+
     Class mergeInputClass;
-    
+
     LOG.info("Creating Edge between " + group.getGroupName() + " and " + w.getVertexName());
     w.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(wConf));
 
+    EdgeType edgeType = edgeProp.getEdgeType();
     switch (edgeType) {
-    case BROADCAST_EDGE:
-      mergeInputClass = ConcatenatedMergedKeyValueInput.class;
-      break;
+      case BROADCAST_EDGE:
+        mergeInputClass = ConcatenatedMergedKeyValueInput.class;
+        break;
+      case CUSTOM_EDGE:
+        mergeInputClass = ConcatenatedMergedKeyValueInput.class;
+        int numBuckets = edgeProp.getNumBuckets();
+        VertexManagerPluginDescriptor desc = new VertexManagerPluginDescriptor(
+            CustomPartitionVertex.class.getName());
+        byte[] userPayload = ByteBuffer.allocate(4).putInt(numBuckets).array();
+        desc.setUserPayload(userPayload);
+        w.setVertexManagerPlugin(desc);
+        break;
 
-    case SIMPLE_EDGE:
-    default:
-      mergeInputClass = TezMergedLogicalInput.class;
-      break;
+      case CUSTOM_SIMPLE_EDGE:
+        mergeInputClass = ConcatenatedMergedKeyValueInput.class;
+        break;
+
+      case SIMPLE_EDGE:
+      default:
+        mergeInputClass = TezMergedLogicalInput.class;
+        break;
     }
 
-    return new GroupInputEdge(group, w, createEdgeProperty(edgeType),
-         new InputDescriptor(mergeInputClass.getName()));
+    return new GroupInputEdge(group, w, createEdgeProperty(edgeProp),
+        new InputDescriptor(mergeInputClass.getName()));
   }
 
   /**
@@ -253,43 +274,83 @@ public class DagUtils {
    * @return
    */
   public Edge createEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w,
-      EdgeType edgeType)
-      throws IOException {
+      TezEdgeProperty edgeProp)
+    throws IOException {
 
     updateConfigurationForEdge(vConf, v, wConf, w);
 
-    return new Edge(v, w, createEdgeProperty(edgeType));
+    if (edgeProp.getEdgeType() == EdgeType.CUSTOM_EDGE) {
+      int numBuckets = edgeProp.getNumBuckets();
+      byte[] userPayload = ByteBuffer.allocate(4).putInt(numBuckets).array();
+      VertexManagerPluginDescriptor desc = new VertexManagerPluginDescriptor(
+          CustomPartitionVertex.class.getName());
+      desc.setUserPayload(userPayload);
+      w.setVertexManagerPlugin(desc);
+    }
+
+    return new Edge(v, w, createEdgeProperty(edgeProp));
   }
 
   /*
    * Helper function to create an edge property from an edge type.
    */
-  private EdgeProperty createEdgeProperty(EdgeType edgeType) {
+  private EdgeProperty createEdgeProperty(TezEdgeProperty edgeProp) throws IOException {
     DataMovementType dataMovementType;
     Class logicalInputClass;
     Class logicalOutputClass;
 
+    EdgeProperty edgeProperty = null;
+    EdgeType edgeType = edgeProp.getEdgeType();
     switch (edgeType) {
-    case BROADCAST_EDGE:
-      dataMovementType = DataMovementType.BROADCAST;
-      logicalOutputClass = OnFileUnorderedKVOutput.class;
-      logicalInputClass = ShuffledUnorderedKVInput.class;
-      break;
+      case BROADCAST_EDGE:
+        dataMovementType = DataMovementType.BROADCAST;
+        logicalOutputClass = OnFileUnorderedKVOutput.class;
+        logicalInputClass = ShuffledUnorderedKVInput.class;
+        break;
 
-    case SIMPLE_EDGE:
-    default:
-      dataMovementType = DataMovementType.SCATTER_GATHER;
-      logicalOutputClass = OnFileSortedOutput.class;
-      logicalInputClass = ShuffledMergedInputLegacy.class;
-      break;
+      case CUSTOM_EDGE:
+        
+        dataMovementType = DataMovementType.CUSTOM;
+        logicalOutputClass = OnFileSortedOutput.class;
+        logicalInputClass = ShuffledUnorderedKVInput.class;
+        EdgeManagerDescriptor edgeDesc = new EdgeManagerDescriptor(
+            CustomPartitionEdge.class.getName());
+        CustomEdgeConfiguration edgeConf = 
+            new CustomEdgeConfiguration(edgeProp.getNumBuckets(), null);
+          DataOutputBuffer dob = new DataOutputBuffer();
+          edgeConf.write(dob);
+          byte[] userPayload = dob.getData();
+        edgeDesc.setUserPayload(userPayload);
+        edgeProperty =
+          new EdgeProperty(edgeDesc,
+              DataSourceType.PERSISTED,
+              SchedulingType.SEQUENTIAL,
+              new OutputDescriptor(logicalOutputClass.getName()),
+              new InputDescriptor(logicalInputClass.getName()));
+        break;
+
+      case CUSTOM_SIMPLE_EDGE:
+        dataMovementType = DataMovementType.SCATTER_GATHER;
+        logicalOutputClass = OnFileSortedOutput.class;
+        logicalInputClass = ShuffledUnorderedKVInput.class;
+        break;
+
+      case SIMPLE_EDGE:
+      default:
+        dataMovementType = DataMovementType.SCATTER_GATHER;
+        logicalOutputClass = OnFileSortedOutput.class;
+        logicalInputClass = ShuffledMergedInputLegacy.class;
+        break;
     }
 
-    EdgeProperty edgeProperty =
+    if (edgeProperty == null) {
+      edgeProperty =
         new EdgeProperty(dataMovementType,
             DataSourceType.PERSISTED,
             SchedulingType.SEQUENTIAL,
             new OutputDescriptor(logicalOutputClass.getName()),
             new InputDescriptor(logicalInputClass.getName()));
+    }
 
     return edgeProperty;
   }
@@ -305,7 +366,7 @@ public class DagUtils {
       HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
       conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
     int cpus = conf.getInt(MRJobConfig.MAP_CPU_VCORES,
-                           MRJobConfig.DEFAULT_MAP_CPU_VCORES);
+        MRJobConfig.DEFAULT_MAP_CPU_VCORES);
     return Resource.newInstance(memory, cpus);
   }
 
@@ -328,7 +389,7 @@ public class DagUtils {
    */
   private Vertex createVertex(JobConf conf, MapWork mapWork,
       LocalResource appJarLr, List<LocalResource> additionalLr, FileSystem fs,
-      Path mrScratchDir, Context ctx) throws Exception {
+      Path mrScratchDir, Context ctx, TezWork tezWork) throws Exception {
 
     Path tezDir = getTezDir(mrScratchDir);
 
@@ -353,11 +414,30 @@ public class DagUtils {
     Class inputFormatClass = conf.getClass("mapred.input.format.class",
         InputFormat.class);
 
-    // we'll set up tez to combine spits for us iff the input format
-    // is HiveInputFormat
-    if (inputFormatClass == HiveInputFormat.class) {
-      useTezGroupedSplits = true;
-      conf.setClass("mapred.input.format.class", TezGroupedSplitsInputFormat.class, InputFormat.class);
+    boolean vertexHasCustomInput = false;
+    if (tezWork != null) {
+      for (BaseWork baseWork : tezWork.getParents(mapWork)) {
+        if (tezWork.getEdgeType(baseWork, mapWork) == EdgeType.CUSTOM_EDGE) {
+          vertexHasCustomInput = true;
+        }
+      }
+    }
+    if (vertexHasCustomInput) {
+      useTezGroupedSplits = false;
+      // grouping happens in execution phase. Setting the class to TezGroupedSplitsInputFormat 
+      // here would cause pre-mature grouping which would be incorrect.
+      inputFormatClass = HiveInputFormat.class;
+      conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
+      // mapreduce.tez.input.initializer.serialize.event.payload should be set to false when using
+      // this plug-in to avoid getting a serialized event at run-time.
+      conf.setBoolean("mapreduce.tez.input.initializer.serialize.event.payload", false);
+    } else {
+      // we'll set up tez to combine spits for us iff the input format
+      // is HiveInputFormat
+      if (inputFormatClass == HiveInputFormat.class) {
+        useTezGroupedSplits = true;
+        conf.setClass("mapred.input.format.class", TezGroupedSplitsInputFormat.class, InputFormat.class);
+      }
     }
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_AM_SPLIT_GENERATION)) {
@@ -374,7 +454,7 @@ public class DagUtils {
     byte[] serializedConf = MRHelpers.createUserPayloadFromConf(conf);
     map = new Vertex(mapWork.getName(),
         new ProcessorDescriptor(MapTezProcessor.class.getName()).
-             setUserPayload(serializedConf), numTasks, getContainerResource(conf));
+        setUserPayload(serializedConf), numTasks, getContainerResource(conf));
     Map<String, String> environment = new HashMap<String, String>();
     MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
     map.setTaskEnvironment(environment);
@@ -393,7 +473,7 @@ public class DagUtils {
     }
     map.addInput(alias,
         new InputDescriptor(MRInputLegacy.class.getName()).
-               setUserPayload(mrInput), amSplitGeneratorClass);
+        setUserPayload(mrInput), amSplitGeneratorClass);
 
     Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
     localResources.put(getBaseName(appJarLr), appJarLr);
@@ -447,7 +527,7 @@ public class DagUtils {
     // create the vertex
     Vertex reducer = new Vertex(reduceWork.getName(),
         new ProcessorDescriptor(ReduceTezProcessor.class.getName()).
-             setUserPayload(MRHelpers.createUserPayloadFromConf(conf)),
+        setUserPayload(MRHelpers.createUserPayloadFromConf(conf)),
         reduceWork.getNumReduceTasks(), getContainerResource(conf));
 
     Map<String, String> environment = new HashMap<String, String>();
@@ -501,7 +581,7 @@ public class DagUtils {
    * @return prewarm context object
    */
   public PreWarmContext createPreWarmContext(TezSessionConfiguration sessionConfig, int numContainers,
-               Map<String, LocalResource> localResources) throws IOException, TezException {
+      Map<String, LocalResource> localResources) throws IOException, TezException {
 
     Configuration conf = sessionConfig.getTezConfiguration();
 
@@ -524,7 +604,7 @@ public class DagUtils {
     }
 
     if(localResources != null) {
-       combinedResources.putAll(localResources);
+      combinedResources.putAll(localResources);
     }
 
     context.setLocalResources(combinedResources);
@@ -641,7 +721,7 @@ public class DagUtils {
 
   // the api that finds the jar being used by this class on disk
   public String getExecJarPathLocal () throws URISyntaxException {
-      // returns the location on disc of the jar of this class.
+    // returns the location on disc of the jar of this class.
     return DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
   }
 
@@ -670,7 +750,7 @@ public class DagUtils {
    * @throws IOException when any file system related call fails
    */
   private boolean checkPreExisting(Path src, Path dest, Configuration conf)
-      throws IOException {
+    throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
 
     if (!destFS.exists(dest)) {
@@ -699,7 +779,7 @@ public class DagUtils {
    * @throws IOException when any file system related calls fails.
    */
   public LocalResource localizeResource(Path src, Path dest, Configuration conf)
-      throws IOException {
+    throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
     if (!(destFS instanceof DistributedFileSystem)) {
       throw new IOException(ErrorMsg.INVALID_HDFS_URI.format(dest.toString()));
@@ -776,6 +856,7 @@ public class DagUtils {
    * @param work The instance of BaseWork representing the actual work to be performed
    * by this vertex.
    * @param scratchDir HDFS scratch dir for this execution unit.
+   * @param list 
    * @param appJarLr Local resource for hive-exec.
    * @param additionalLr
    * @param fileSystem FS corresponding to scratchDir and LocalResources
@@ -783,15 +864,16 @@ public class DagUtils {
    * @return Vertex
    */
   public Vertex createVertex(JobConf conf, BaseWork work,
-      Path scratchDir, LocalResource appJarLr, List<LocalResource> additionalLr,
-      FileSystem fileSystem, Context ctx, boolean hasChildren) throws Exception {
+      Path scratchDir, LocalResource appJarLr, 
+      List<LocalResource> additionalLr,
+      FileSystem fileSystem, Context ctx, boolean hasChildren, TezWork tezWork) throws Exception {
 
     Vertex v = null;
     // simply dispatch the call to the right method for the actual (sub-) type of
     // BaseWork.
     if (work instanceof MapWork) {
       v = createVertex(conf, (MapWork) work, appJarLr,
-          additionalLr, fileSystem, scratchDir, ctx);
+          additionalLr, fileSystem, scratchDir, ctx, tezWork);
     } else if (work instanceof ReduceWork) {
       v = createVertex(conf, (ReduceWork) work, appJarLr,
           additionalLr, fileSystem, scratchDir, ctx);
@@ -820,7 +902,7 @@ public class DagUtils {
     if (!hasChildren) {
       v.addOutput("out_"+work.getName(),
           new OutputDescriptor(MROutput.class.getName())
-               .setUserPayload(MRHelpers.createUserPayloadFromConf(conf)));
+          .setUserPayload(MRHelpers.createUserPayloadFromConf(conf)));
     }
 
     return v;
@@ -842,7 +924,7 @@ public class DagUtils {
    * be used with Tez. Assumes scratchDir exists.
    */
   public Path createTezDir(Path scratchDir, Configuration conf)
-      throws IOException {
+    throws IOException {
     Path tezDir = getTezDir(scratchDir);
     FileSystem fs = tezDir.getFileSystem(conf);
     fs.mkdirs(tezDir);
