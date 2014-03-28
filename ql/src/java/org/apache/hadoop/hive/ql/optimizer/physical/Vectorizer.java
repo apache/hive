@@ -356,7 +356,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         Object... nodeOutputs) throws SemanticException {
       for (Node n : stack) {
         Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) n;
-        if (op.getType().equals(OperatorType.REDUCESINK) &&
+        if ((op.getType().equals(OperatorType.REDUCESINK) || op.getType().equals(OperatorType.FILESINK)) &&
             op.getParentOperators().get(0).getType().equals(OperatorType.GROUPBY)) {
           return new Boolean(true);
         }
@@ -450,7 +450,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       assert vContext != null;
 
-      if (op.getType().equals(OperatorType.REDUCESINK) &&
+      if ((op.getType().equals(OperatorType.REDUCESINK) || op.getType().equals(OperatorType.FILESINK)) &&
           op.getParentOperators().get(0).getType().equals(OperatorType.GROUPBY)) {
         // No need to vectorize
         if (!opsDone.contains(op)) {
