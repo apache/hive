@@ -391,29 +391,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   }
 
   private int computeHashCode(Object row, int buckNum) throws HiveException {
-    // Evaluate the HashCode
-    int keyHashCode = 0;
-    if (partitionEval.length == 0) {
-      // If no partition cols, just distribute the data uniformly to provide better
-      // load balance. If the requirement is to have a single reducer, we should set
-      // the number of reducers to 1.
-      // Use a constant seed to make the code deterministic.
-      if (random == null) {
-        random = new Random(12345);
-      }
-      keyHashCode = random.nextInt();
-    } else {
-      // partitionEval will include all columns from distribution columns i.e;
-      // partition columns + bucket number columns. Bucket number column is
-      // initialized with -1. Ignore that and use bucket number instead
-      for (int i = 0; i < partitionEval.length - 1; i++) {
-        Object o = partitionEval[i].evaluate(row);
-        keyHashCode = keyHashCode * 31
-            + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
-      }
-
-      keyHashCode = keyHashCode * 31 + buckNum;
-    }
+    int keyHashCode = computeHashCode(row);
+    keyHashCode = keyHashCode * 31 + buckNum;
     return keyHashCode;
   }
 
