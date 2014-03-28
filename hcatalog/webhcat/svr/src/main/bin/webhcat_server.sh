@@ -211,13 +211,7 @@ else
 fi
 
 if [[ -z "$WEBHCAT_LOG4J" ]]; then
-        if [[ -f "$base_dir/conf/webhcat-log4j.properties" ]]; then
-                WEBHCAT_LOG4J="$base_dir/conf/webhcat-log4j.properties";
-        elif [[ -f "$base_dir/conf/webhcat-log4j.properties" ]]; then
-                WEBHCAT_LOG4J="$base_dir/conf/webhcat-log4j.properties";
-        else
-                WEBHCAT_LOG4J="webhcat-log4j.properties";
-        fi
+  WEBHCAT_LOG4J="file://$base_dir/etc/webhcat/webhcat-log4j.properties";
 fi
 
 export HADOOP_USER_CLASSPATH_FIRST=true
