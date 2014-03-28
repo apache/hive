@@ -16,39 +16,40 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.optimizer.metainfo.annotation;
 
-public class AbstractOperatorDesc implements OperatorDesc {
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 
-  protected boolean vectorMode = false;
-  protected transient Statistics statistics;
-  protected transient OpTraits opTraits;
+public class AnnotateOpTraitsProcCtx implements NodeProcessorCtx {
 
-  @Override
-  @Explain(skipHeader = true, displayName = "Statistics")
-  public Statistics getStatistics() {
-    return statistics;
-  }
-
-  @Override
-  public void setStatistics(Statistics statistics) {
-    this.statistics = statistics;
-  }
-
-  @Override
-  public Object clone() throws CloneNotSupportedException {
-    throw new CloneNotSupportedException("clone not supported");
-  }
-
-  public void setVectorMode(boolean vm) {
-    this.vectorMode = vm;
-  }
+  ParseContext parseContext;
+  HiveConf conf;
   
-  public OpTraits getOpTraits() {
-    return opTraits;
+  public AnnotateOpTraitsProcCtx(ParseContext parseContext) {
+    this.setParseContext(parseContext);
+    if(parseContext != null) {
+      this.setConf(parseContext.getConf());
+    } else {
+      this.setConf(null);
+    }
   }
-  
-  public void setOpTraits(OpTraits opTraits) {
-    this.opTraits = opTraits;
+
+  public HiveConf getConf() {
+    return conf;
   }
+
+  public void setConf(HiveConf conf) {
+    this.conf = conf;
+  }
+
+  public ParseContext getParseContext() {
+    return parseContext;
+  }
+
+  public void setParseContext(ParseContext parseContext) {
+    this.parseContext = parseContext;
+  }
+
 }

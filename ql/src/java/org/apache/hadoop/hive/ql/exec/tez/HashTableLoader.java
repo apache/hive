@@ -49,7 +49,7 @@ import org.apache.tez.runtime.library.api.KeyValueReader;
  */
 public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTableLoader {
 
-  private static final Log LOG = LogFactory.getLog(MapJoinOperator.class.getName());
+  private static final Log LOG = LogFactory.getLog(HashTableLoader.class.getName());
 
   private ExecMapperContext context;
   private Configuration hconf;
@@ -122,8 +122,13 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         throw new HiveException(e);
       }
       // Register that the Input has been cached.
-      tezCacheAccess.registerCachedInput(inputName);
-      LOG.info("Setting Input: " + inputName + " as cached");
+      LOG.info("Is this a bucket map join: " + desc.isBucketMapJoin());
+      // cache is disabled for bucket map join because of the same reason
+      // given in loadHashTable in MapJoinOperator.
+      if (!desc.isBucketMapJoin()) {
+        tezCacheAccess.registerCachedInput(inputName);
+        LOG.info("Setting Input: " + inputName + " as cached");
+      }
     }
     if (lastKey == null) {
       lastKey = new MapJoinKeyObject(); // No rows in tables, the key type doesn't matter.

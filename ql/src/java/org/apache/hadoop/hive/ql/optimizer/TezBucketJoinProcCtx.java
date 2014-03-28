@@ -16,18 +16,35 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io;
+package org.apache.hadoop.hive.ql.optimizer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.mapred.lib.HashPartitioner;
+import java.util.List;
+import java.util.Map;
 
-/** Partition keys by their {@link Object#hashCode()}. */
-public class DefaultHivePartitioner<K2, V2> extends HashPartitioner<K2, V2> implements HivePartitioner<K2, V2> {
+import org.apache.hadoop.hive.conf.HiveConf;
 
-  /** Use {@link Object#hashCode()} to partition. */
-  public int getBucket(K2 key, V2 value, int numBuckets) {
-    return (key.hashCode() & Integer.MAX_VALUE) % numBuckets;
+public class TezBucketJoinProcCtx extends BucketJoinProcCtx {
+  // determines if we need to use custom edge or one-to-one edge
+  boolean isSubQuery = false;
+  int numBuckets = -1;
+
+  public TezBucketJoinProcCtx(HiveConf conf) {
+    super(conf);
   }
 
+  public void setIsSubQuery (boolean isSubQuery) {
+    this.isSubQuery = isSubQuery;
+  }
+
+  public boolean isSubQuery () {
+    return isSubQuery;
+  }
+
+  public void setNumBuckets(int numBuckets) {
+    this.numBuckets = numBuckets;
+  }
+
+  public Integer getNumBuckets() {
+    return numBuckets;
+  }
 }
