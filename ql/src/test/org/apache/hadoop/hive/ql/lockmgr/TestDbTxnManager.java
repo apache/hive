@@ -181,8 +181,8 @@ public class TestDbTxnManager {
   }
 
   @Test
-  public void testDDL() throws Exception {
-    WriteEntity we = addTableOutput(WriteEntity.WriteType.DDL);
+  public void testDDLExclusive() throws Exception {
+    WriteEntity we = addTableOutput(WriteEntity.WriteType.DDL_EXCLUSIVE);
     QueryPlan qp = new MockQueryPlan(this);
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
@@ -193,6 +193,30 @@ public class TestDbTxnManager {
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
+
+  @Test
+  public void testDDLShared() throws Exception {
+    WriteEntity we = addTableOutput(WriteEntity.WriteType.DDL_SHARED);
+    QueryPlan qp = new MockQueryPlan(this);
+    txnMgr.acquireLocks(qp, ctx, "fred");
+    List<HiveLock> locks = ctx.getHiveLocks();
+    Assert.assertEquals(1, locks.size());
+    Assert.assertEquals(1,
+        TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
+    txnMgr.getLockManager().unlock(locks.get(0));
+    locks = txnMgr.getLockManager().getLocks(false, false);
+    Assert.assertEquals(0, locks.size());
+  }
+
+  @Test
+  public void testDDLNoLock() throws Exception {
+    WriteEntity we = addTableOutput(WriteEntity.WriteType.DDL_NO_LOCK);
+    QueryPlan qp = new MockQueryPlan(this);
+    txnMgr.acquireLocks(qp, ctx, "fred");
+    List<HiveLock> locks = ctx.getHiveLocks();
+    Assert.assertNull(locks);
+  }
+
 
   @Before
   public void setUp() throws Exception {
