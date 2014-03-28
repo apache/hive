@@ -62,14 +62,37 @@ public class TxnHandler {
   static final private char LOCK_SHARED = 'r';
   static final private char LOCK_SEMI_SHARED = 'w';
 
-  static final private String CLASS_NAME = TxnHandler.class.getName();
-  static final private Log LOG = LogFactory.getLog(CLASS_NAME);
+  static final private int ALLOWED_REPEATED_DEADLOCKS = 5;
+  static final private Log LOG = LogFactory.getLog(TxnHandler.class.getName());
 
   static private BoneCP connPool;
+  private static Boolean lockLock = new Boolean("true"); // Random object to lock on for the lock
+  // method
+
+  /**
+   * Number of consecutive deadlocks we have seen
+   */
+  protected int deadlockCnt;
+  protected HiveConf conf;
 
   // Transaction timeout, in milliseconds.
   private long timeout;
-  protected HiveConf conf;
+
+  // DEADLOCK DETECTION AND HANDLING
+  // A note to developers of this class.  ALWAYS access HIVE_LOCKS before TXNS to avoid deadlock
+  // between simultaneous accesses.  ALWAYS access TXN_COMPONENTS before HIVE_LOCKS .
+  //
+  // Private methods should never catch SQLException and then throw MetaException.  The public
+  // methods depend on SQLException coming back so they can detect and handle deadlocks.  Private
+  // methods should only throw MetaException when they explicitly know there's a logic error and
+  // they want to throw past the public methods.
+  //
+  // All public methods that write to the database have to check for deadlocks when a SQLException
+  // comes back and handle it if they see one.  This has to be done with the connection pooling
+  // in mind.  To do this they should call detectDeadlock AFTER rolling back the db transaction,
+  // and then in an outer loop they should catch DeadlockException.  In the catch for this they
+  // should increment the deadlock counter and recall themselves.  See commitTxn for an example.
+  // the connection has been closed and returned to the pool.
 
   public TxnHandler(HiveConf conf) {
     this.conf = conf;
@@ -78,7 +101,7 @@ public class TxnHandler {
 
     // Set up the JDBC connection pool
     try {
-      setupJdbcConnectionPool();
+      setupJdbcConnectionPool(conf);
     } catch (SQLException e) {
       String msg = "Unable to instantiate JDBC connection pooling, " + e.getMessage();
       LOG.error(msg);
@@ -86,6 +109,7 @@ public class TxnHandler {
     }
 
     timeout = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT) * 1000;
+    deadlockCnt = 0;
     buildJumpTable();
   }
 
@@ -149,7 +173,7 @@ public class TxnHandler {
     }
   }
 
-  public GetOpenTxnsResponse getOpenTxns() throws MetaException{
+  public GetOpenTxnsResponse getOpenTxns() throws MetaException {
     // We need to figure out the current transaction number and the list of
     // open transactions.  To avoid needing a transaction on the underlying
     // database we'll look at the current transaction number first.  If it
@@ -207,208 +231,261 @@ public class TxnHandler {
 
   public OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException {
     int numTxns = rqst.getNum_txns();
-    Connection dbConn = getDbConn();
     try {
-      // Make sure the user has not requested an insane amount of txns.
-      int maxTxns = HiveConf.getIntVar(conf,
-          HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH);
-      if (numTxns > maxTxns) numTxns = maxTxns;
-
-      Statement stmt = dbConn.createStatement();
-      LOG.debug("Going to execute query <select ntxn_next from NEXT_TXN_ID " +
-          " for update>");
-      ResultSet rs =
-          stmt.executeQuery("select ntxn_next from NEXT_TXN_ID for update");
-      if (!rs.next()) {
-        throw new MetaException("Transaction database not properly " +
-            "configured, can't find next transaction id.");
-      }
-      long first = rs.getLong(1);
-      String s = "update NEXT_TXN_ID set ntxn_next = " + (first + numTxns);
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
-      long now = System.currentTimeMillis();
-      s = "insert into TXNS (txn_id, txn_state, txn_started, " +
-          "txn_last_heartbeat, txn_user, txn_host) values (?, 'o', " + now + ", " +
-          now + ", '" + rqst.getUser() + "', '" + rqst.getHostname() + "')";
-      LOG.debug("Going to prepare statement <" + s + ">");
-      PreparedStatement ps = dbConn.prepareStatement(s);
-      List<Long> txnIds = new ArrayList<Long>(numTxns);
-      for (long i = first; i < first + numTxns; i++) {
-        ps.setLong(1, i);
-        ps.executeUpdate();
-        txnIds.add(i);
-      }
-
-      LOG.debug("Going to commit");
-      dbConn.commit();
-      return new OpenTxnsResponse(txnIds);
-    } catch (SQLException e) {
+      Connection dbConn = getDbConn();
       try {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-      } catch (SQLException e1) {
+        // Make sure the user has not requested an insane amount of txns.
+        int maxTxns = HiveConf.getIntVar(conf,
+            HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH);
+        if (numTxns > maxTxns) numTxns = maxTxns;
+
+        Statement stmt = dbConn.createStatement();
+        LOG.debug("Going to execute query <select ntxn_next from NEXT_TXN_ID " +
+            " for update>");
+        ResultSet rs =
+            stmt.executeQuery("select ntxn_next from NEXT_TXN_ID for update");
+        if (!rs.next()) {
+          throw new MetaException("Transaction database not properly " +
+              "configured, can't find next transaction id.");
+        }
+        long first = rs.getLong(1);
+        String s = "update NEXT_TXN_ID set ntxn_next = " + (first + numTxns);
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+        long now = System.currentTimeMillis();
+        s = "insert into TXNS (txn_id, txn_state, txn_started, " +
+            "txn_last_heartbeat, txn_user, txn_host) values (?, 'o', " + now + ", " +
+            now + ", '" + rqst.getUser() + "', '" + rqst.getHostname() + "')";
+        LOG.debug("Going to prepare statement <" + s + ">");
+        PreparedStatement ps = dbConn.prepareStatement(s);
+        List<Long> txnIds = new ArrayList<Long>(numTxns);
+        for (long i = first; i < first + numTxns; i++) {
+          ps.setLong(1, i);
+          ps.executeUpdate();
+          txnIds.add(i);
+        }
+
+        LOG.debug("Going to commit");
+        dbConn.commit();
+        return new OpenTxnsResponse(txnIds);
+      } catch (SQLException e) {
+        try {
+          LOG.debug("Going to rollback");
+          dbConn.rollback();
+        } catch (SQLException e1) {
+        }
+        detectDeadlock(e, "openTxns");
+        throw new MetaException("Unable to select from transaction database "
+          + StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
       }
-      throw new MetaException("Unable to select from transaction database "
-        + StringUtils.stringifyException(e));
+    } catch (DeadlockException e) {
+      return openTxns(rqst);
     } finally {
-      closeDbConn(dbConn);
+      deadlockCnt = 0;
     }
   }
 
   public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException {
     long txnid = rqst.getTxnid();
-    Connection dbConn = getDbConn();
     try {
-      Statement stmt = dbConn.createStatement();
-      long now = System.currentTimeMillis();
-      String s = "update TXNS set txn_state = '" + TXN_ABORTED + "' where txn_id = " + txnid;
-      LOG.debug("Going to execute update <" + s + ">");
-      int updateCnt = stmt.executeUpdate(s);
-      if (updateCnt != 1) {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        throw new NoSuchTxnException("No such transaction: " + txnid);
-      }
-      s = "delete from HIVE_LOCKS where hl_txnid = " + txnid;
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
-      LOG.debug("Going to commit");
-      dbConn.commit();
-    } catch (SQLException e) {
+      Connection dbConn = getDbConn();
       try {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-      } catch (SQLException e1) {
+        Statement stmt = dbConn.createStatement();
+
+        // delete from HIVE_LOCKS first, we always access HIVE_LOCKS before TXNS
+        String s = "delete from HIVE_LOCKS where hl_txnid = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+
+        s = "update TXNS set txn_state = '" + TXN_ABORTED + "' where txn_id = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        int updateCnt = stmt.executeUpdate(s);
+        if (updateCnt != 1) {
+          LOG.debug("Going to rollback");
+          dbConn.rollback();
+          throw new NoSuchTxnException("No such transaction: " + txnid);
+        }
+
+        LOG.debug("Going to commit");
+        dbConn.commit();
+      } catch (SQLException e) {
+        try {
+          LOG.debug("Going to rollback");
+          dbConn.rollback();
+        } catch (SQLException e1) {
+        }
+        detectDeadlock(e, "abortTxn");
+        throw new MetaException("Unable to update transaction database "
+          + StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
       }
-      throw new MetaException("Unable to update transaction database "
-        + StringUtils.stringifyException(e));
+    } catch (DeadlockException e) {
+      abortTxn(rqst);
     } finally {
-      closeDbConn(dbConn);
+      deadlockCnt = 0;
     }
   }
 
   public void commitTxn(CommitTxnRequest rqst)
       throws NoSuchTxnException, TxnAbortedException,  MetaException {
     long txnid = rqst.getTxnid();
-    Connection dbConn = getDbConn();
     try {
-       Statement stmt = dbConn.createStatement();
-       // Make sure the transaction has not already been aborted.  This costs
-       // us an extra select against the database, but it is necessary to
-       // avoid the situation where the transaction has timed out but the
-       // client isn't aware of it and tries to commit it.  The client needs
-       // to be informed that the commit failed and it should abort on its
-       // side.
-       //
-       // The select has to be done as a select for update to avoid a race
-       // condition where this client is committing it while some other
-       // client is declaring it timed out and aborting it.
-       String s = "select txn_state from TXNS where txn_id = " +
-           txnid + " for update";
-       LOG.debug("Going to execute query <" + s + ">");
-       ResultSet rs = stmt.executeQuery(s);
-       if (!rs.next()) {
-         LOG.debug("Going to rollback");
-         dbConn.rollback();
-        throw new NoSuchTxnException("No such transaction: " + txnid);
-       }
-       if (rs.getString(1).charAt(0) == TXN_ABORTED) {
-         LOG.debug("Going to rollback");
-         dbConn.rollback();
-         throw new TxnAbortedException("Transaction " + txnid +
-             " already aborted");
-       }
-
-       // Move the record from txn_components into completed_txn_components so that the compactor
-       // knows where to look to compact.
-       s = "insert into COMPLETED_TXN_COMPONENTS select tc_txnid, tc_database, tc_table, " +
-           "tc_partition from TXN_COMPONENTS where tc_txnid = " + txnid;
-       LOG.debug("Going to execute insert <" + s + ">");
-       if (stmt.executeUpdate(s) < 1) {
-         LOG.error("Expected to move at least one record from txn_components to " +
-             "completed_txn_components when committing txn!");
-       }
-
-       s = "delete from TXN_COMPONENTS where tc_txnid = " + txnid;
-       LOG.debug("Going to execute update <" + s + ">");
-       stmt.executeUpdate(s);
-       s = "delete from HIVE_LOCKS where hl_txnid = " + txnid;
-       LOG.debug("Going to execute update <" + s + ">");
-       stmt.executeUpdate(s);
-       s = "delete from TXNS where txn_id = " + txnid;
-       LOG.debug("Going to execute update <" + s + ">");
-       stmt.executeUpdate(s);
-       LOG.debug("Going to commit");
-       dbConn.commit();
-    } catch (SQLException e) {
+      Connection dbConn = getDbConn();
       try {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-      } catch (SQLException e1) {
+        Statement stmt = dbConn.createStatement();
+        // Before we do the commit heartbeat the txn.  This is slightly odd in that we're going to
+        // commit it, but it does two things.  One, it makes sure the transaction is still valid.
+        // Two, it avoids the race condition where we time out between now and when we actually
+        // commit the transaction below.  And it does this all in a dead-lock safe way by
+        // committing the heartbeat back to the database.
+        heartbeatTxn(dbConn, txnid);
+
+        // Move the record from txn_components into completed_txn_components so that the compactor
+        // knows where to look to compact.
+        String s = "insert into COMPLETED_TXN_COMPONENTS select tc_txnid, tc_database, tc_table, " +
+            "tc_partition from TXN_COMPONENTS where tc_txnid = " + txnid;
+        LOG.debug("Going to execute insert <" + s + ">");
+        if (stmt.executeUpdate(s) < 1) {
+          LOG.warn("Expected to move at least one record from txn_components to " +
+              "completed_txn_components when committing txn!");
+        }
+
+        // Always access TXN_COMPONENTS before HIVE_LOCKS;
+        s = "delete from TXN_COMPONENTS where tc_txnid = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+        // Always access HIVE_LOCKS before TXNS
+        s = "delete from HIVE_LOCKS where hl_txnid = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+        s = "delete from TXNS where txn_id = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+        LOG.debug("Going to commit");
+        dbConn.commit();
+      } catch (SQLException e) {
+        try {
+          LOG.debug("Going to rollback");
+          dbConn.rollback();
+        } catch (SQLException e1) {
+        }
+        detectDeadlock(e, "commitTxn");
+        throw new MetaException("Unable to update transaction database "
+          + StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
       }
-      throw new MetaException("Unable to update transaction database "
-        + StringUtils.stringifyException(e));
+    } catch (DeadlockException e) {
+      commitTxn(rqst);
     } finally {
-      closeDbConn(dbConn);
+      deadlockCnt = 0;
     }
   }
 
   public LockResponse lock(LockRequest rqst)
       throws NoSuchTxnException, TxnAbortedException, MetaException {
-    Connection dbConn = getDbConn();
     try {
-      return lock(dbConn, rqst, true);
+      Connection dbConn = getDbConn();
+      try {
+        return lock(dbConn, rqst, true);
+      } catch (SQLException e) {
+        try {
+          LOG.debug("Going to rollback");
+          dbConn.rollback();
+        } catch (SQLException e1) {
+        }
+        detectDeadlock(e, "lock");
+        throw new MetaException("Unable to update transaction database " +
+            StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (DeadlockException e) {
+      return lock(rqst);
     } finally {
-      closeDbConn(dbConn);
+      deadlockCnt = 0;
     }
   }
 
   public LockResponse lockNoWait(LockRequest rqst)
       throws NoSuchTxnException,  TxnAbortedException, MetaException {
-    Connection dbConn = getDbConn();
     try {
-      return lock(dbConn, rqst, false);
+      Connection dbConn = getDbConn();
+      try {
+        return lock(dbConn, rqst, false);
+      } catch (SQLException e) {
+        try {
+          LOG.debug("Going to rollback");
+          dbConn.rollback();
+        } catch (SQLException e1) {
+        }
+        detectDeadlock(e, "lockNoWait");
+        throw new MetaException("Unable to update transaction database " +
+            StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (DeadlockException e) {
+      return lockNoWait(rqst);
     } finally {
-      closeDbConn(dbConn);
+      deadlockCnt = 0;
     }
   }
 
   public LockResponse checkLock(CheckLockRequest rqst)
       throws NoSuchTxnException, NoSuchLockException, TxnAbortedException, MetaException {
-    Connection dbConn = getDbConn();
     try {
-      long extLockId = rqst.getLockid();
-      // Clean up timed out locks
-      timeOutLocks(dbConn);
+      Connection dbConn = getDbConn();
+      try {
+        long extLockId = rqst.getLockid();
+        // Clean up timed out locks
+        timeOutLocks(dbConn);
 
-      // Heartbeat on the lockid first, to assure that our lock is still valid.
-      // Then look up the lock info (hopefully in the cache).  If these locks
-      // are associated with a transaction then heartbeat on that as well.
-      heartbeatLock(dbConn, extLockId);
-      long txnid = getTxnIdFromLockId(dbConn, extLockId);
-      if (txnid > 0)  heartbeatTxn(dbConn, txnid);
-      return checkLock(dbConn, extLockId, txnid, true);
+        // Heartbeat on the lockid first, to assure that our lock is still valid.
+        // Then look up the lock info (hopefully in the cache).  If these locks
+        // are associated with a transaction then heartbeat on that as well.
+        heartbeatLock(dbConn, extLockId);
+        long txnid = getTxnIdFromLockId(dbConn, extLockId);
+        if (txnid > 0)  heartbeatTxn(dbConn, txnid);
+        return checkLock(dbConn, extLockId, txnid, true);
+      } catch (SQLException e) {
+        try {
+          LOG.debug("Going to rollback");
+          dbConn.rollback();
+        } catch (SQLException e1) {
+        }
+        detectDeadlock(e, "checkLock");
+        throw new MetaException("Unable to update transaction database " +
+            StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (DeadlockException e) {
+      return checkLock(rqst);
     } finally {
-      closeDbConn(dbConn);
+      deadlockCnt = 0;
     }
+
   }
 
   public void unlock(UnlockRequest rqst)
       throws NoSuchLockException, TxnOpenException, MetaException {
-    Connection dbConn = getDbConn();
     try {
-      // Odd as it seems, we need to heartbeat first because this touches the
-      // lock table and assures that our locks our still valid.  If they are
-      // not, this will throw an exception and the heartbeat will fail.
-      long extLockId = rqst.getLockid();
-      heartbeatLock(dbConn, extLockId);
-      long txnid = getTxnIdFromLockId(dbConn, extLockId);
-      // If there is a valid txnid, throw an exception,
-      // as locks associated with transactions should be unlocked only when the
-      // transaction is committed or aborted.
-      if (txnid > 0) {
-        try {
+      Connection dbConn = getDbConn();
+      try {
+        // Odd as it seems, we need to heartbeat first because this touches the
+        // lock table and assures that our locks our still valid.  If they are
+        // not, this will throw an exception and the heartbeat will fail.
+        long extLockId = rqst.getLockid();
+        heartbeatLock(dbConn, extLockId);
+        long txnid = getTxnIdFromLockId(dbConn, extLockId);
+        // If there is a valid txnid, throw an exception,
+        // as locks associated with transactions should be unlocked only when the
+        // transaction is committed or aborted.
+        if (txnid > 0) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
           String msg = "Unlocking locks associated with transaction" +
@@ -416,11 +493,7 @@ public class TxnHandler {
               "transaction " + txnid;
           LOG.error(msg);
           throw new TxnOpenException(msg);
-        } catch (SQLException e1) {
-          throw new MetaException("Unable to rollback " + StringUtils.stringifyException(e1));
         }
-      }
-      try {
         Statement stmt = dbConn.createStatement();
         String s = "delete from HIVE_LOCKS where hl_lock_ext_id = " + extLockId;
         LOG.debug("Going to execute update <" + s + ">");
@@ -438,11 +511,16 @@ public class TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
+        detectDeadlock(e, "unlock");
         throw new MetaException("Unable to update transaction database " +
             StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
       }
+    } catch (DeadlockException e) {
+      unlock(rqst);
     } finally {
-      closeDbConn(dbConn);
+      deadlockCnt = 0;
     }
   }
 
@@ -498,93 +576,111 @@ public class TxnHandler {
 
   public void heartbeat(HeartbeatRequest ids)
       throws NoSuchTxnException,  NoSuchLockException, TxnAbortedException, MetaException {
-    Connection dbConn = getDbConn();
     try {
-      heartbeatLock(dbConn, ids.getLockid());
-      heartbeatTxn(dbConn, ids.getTxnid());
-      LOG.debug("Going to commit");
-      dbConn.commit();
-    } catch (SQLException e) {
-      LOG.error("Failed to commit: " + e.getMessage());
+      Connection dbConn = getDbConn();
+      try {
+        heartbeatLock(dbConn, ids.getLockid());
+        heartbeatTxn(dbConn, ids.getTxnid());
+      } catch (SQLException e) {
+        try {
+          LOG.debug("Going to rollback");
+          dbConn.rollback();
+        } catch (SQLException e1) {
+        }
+        detectDeadlock(e, "heartbeat");
+        throw new MetaException("Unable to select from transaction database " +
+            StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (DeadlockException e) {
+      heartbeat(ids);
     } finally {
-      closeDbConn(dbConn);
+      deadlockCnt = 0;
     }
   }
 
   public void compact(CompactionRequest rqst) throws MetaException {
     // Put a compaction request in the queue.
-    Connection dbConn = getDbConn();
     try {
-      Statement stmt = dbConn.createStatement();
+      Connection dbConn = getDbConn();
+      try {
+        Statement stmt = dbConn.createStatement();
 
-      // Get the id for the next entry in the queue
-      String s = "select ncq_next from NEXT_COMPACTION_QUEUE_ID for update";
-      LOG.debug("going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        throw new MetaException("Transaction tables not properly initiated, " +
-            "no record found in next_compaction_queue_id");
-      }
-      long id = rs.getLong(1);
-      s = "update NEXT_COMPACTION_QUEUE_ID set ncq_next = " + (id + 1);
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
-
-      StringBuffer buf = new StringBuffer("insert into COMPACTION_QUEUE (cq_id, cq_database, " +
-          "cq_table, ");
-      String partName = rqst.getPartitionname();
-      if (partName != null) buf.append("cq_partition, ");
-      buf.append("cq_state, cq_type");
-      if (rqst.getRunas() != null) buf.append(", cq_run_as");
-      buf.append(") values (");
-      buf.append(id);
-      buf.append(", '");
-      buf.append(rqst.getDbname());
-      buf.append("', '");
-      buf.append(rqst.getTablename());
-      buf.append("', '");
-      if (partName != null) {
-        buf.append(partName);
-        buf.append("', '");
-      }
-      buf.append(INITIATED_STATE);
-      buf.append("', '");
-      switch (rqst.getType()) {
-        case MAJOR:
-          buf.append(MAJOR_TYPE);
-          break;
-
-        case MINOR:
-          buf.append(MINOR_TYPE);
-          break;
-
-        default:
+        // Get the id for the next entry in the queue
+        String s = "select ncq_next from NEXT_COMPACTION_QUEUE_ID for update";
+        LOG.debug("going to execute query <" + s + ">");
+        ResultSet rs = stmt.executeQuery(s);
+        if (!rs.next()) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
-          throw new MetaException("Unexpected compaction type " + rqst.getType().toString());
-      }
-      if (rqst.getRunas() != null) {
+          throw new MetaException("Transaction tables not properly initiated, " +
+              "no record found in next_compaction_queue_id");
+        }
+        long id = rs.getLong(1);
+        s = "update NEXT_COMPACTION_QUEUE_ID set ncq_next = " + (id + 1);
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+
+        StringBuilder buf = new StringBuilder("insert into COMPACTION_QUEUE (cq_id, cq_database, " +
+            "cq_table, ");
+        String partName = rqst.getPartitionname();
+        if (partName != null) buf.append("cq_partition, ");
+        buf.append("cq_state, cq_type");
+        if (rqst.getRunas() != null) buf.append(", cq_run_as");
+        buf.append(") values (");
+        buf.append(id);
+        buf.append(", '");
+        buf.append(rqst.getDbname());
         buf.append("', '");
-        buf.append(rqst.getRunas());
+        buf.append(rqst.getTablename());
+        buf.append("', '");
+        if (partName != null) {
+          buf.append(partName);
+          buf.append("', '");
+        }
+        buf.append(INITIATED_STATE);
+        buf.append("', '");
+        switch (rqst.getType()) {
+          case MAJOR:
+            buf.append(MAJOR_TYPE);
+            break;
+
+          case MINOR:
+            buf.append(MINOR_TYPE);
+            break;
+
+          default:
+            LOG.debug("Going to rollback");
+            dbConn.rollback();
+            throw new MetaException("Unexpected compaction type " + rqst.getType().toString());
+        }
+        if (rqst.getRunas() != null) {
+          buf.append("', '");
+          buf.append(rqst.getRunas());
+        }
+        buf.append("')");
+        s = buf.toString();
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+        LOG.debug("Going to commit");
+        dbConn.commit();
+      } catch (SQLException e) {
+        try {
+          LOG.debug("Going to rollback");
+          dbConn.rollback();
+        } catch (SQLException e1) {
+        }
+        detectDeadlock(e, "compact");
+        throw new MetaException("Unable to select from transaction database " +
+            StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
       }
-      buf.append("')");
-      s = buf.toString();
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
-      LOG.debug("Going to commit");
-      dbConn.commit();
-    } catch (SQLException e) {
-      try {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-      } catch (SQLException e1) {
-      }
-      throw new MetaException("Unable to select from transaction database " +
-          StringUtils.stringifyException(e));
+    } catch (DeadlockException e) {
+      compact(rqst);
     } finally {
-      closeDbConn(dbConn);
+      deadlockCnt = 0;
     }
   }
 
@@ -663,6 +759,10 @@ public class TxnHandler {
     return previous_timeout;
   }
 
+  protected class DeadlockException extends Exception {
+
+  }
+
   protected Connection getDbConn() throws MetaException {
     try {
       Connection dbConn = connPool.getConnection();
@@ -680,6 +780,29 @@ public class TxnHandler {
       if (dbConn != null) dbConn.close();
     } catch (SQLException e) {
       LOG.warn("Failed to close db connection " + e.getMessage());
+    }
+  }
+
+  /**
+   * Determine if an exception was a deadlock.  Unfortunately there is no standard way to do
+   * this, so we have to inspect the error messages and catch the telltale signs for each
+   * different database.
+   * @param e exception that was thrown.
+   * @param caller name of the method calling this
+   * @throws org.apache.hadoop.hive.metastore.txn.TxnHandler.DeadlockException when deadlock
+   * detected and retry count has not been exceeded.
+   */
+  protected void detectDeadlock(SQLException e, String caller) throws DeadlockException {
+    final String mysqlDeadlock =
+        "Deadlock found when trying to get lock; try restarting transaction";
+    if (e.getMessage().contains(mysqlDeadlock) || e instanceof SQLTransactionRollbackException) {
+      if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
+        LOG.warn("Deadlock detected in " + caller + ", trying again.");
+        throw new DeadlockException();
+      } else {
+        LOG.error("Too many repeated deadlocks in " + caller + ", giving up.");
+        deadlockCnt = 0;
+      }
     }
   }
 
@@ -773,7 +896,6 @@ public class TxnHandler {
   private static Map<LockType, Map<LockType, Map<LockState, LockAction>>> jumpTable;
 
   private void checkQFileTestHack() {
-    LOG.debug("In txnHandler conf object is " + conf.toString());
     boolean hackOn = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST);
     if (hackOn) {
       LOG.info("Hacking in canned values for transaction manager");
@@ -808,107 +930,103 @@ public class TxnHandler {
    * @throws TxnAbortedException
    */
   private LockResponse lock(Connection dbConn, LockRequest rqst, boolean wait)
-      throws NoSuchTxnException,  TxnAbortedException, MetaException {
-    // Clean up timed out locks before we attempt to acquire any.
-    timeOutLocks(dbConn);
-    try {
-      Statement stmt = dbConn.createStatement();
-      long txnid = rqst.getTxnid();
-      if (txnid > 0) {
-        // We need to check whether this transaction is valid and open
-        String s = "select txn_state from TXNS where txn_id = " +
-            txnid + " for update";
-        LOG.debug("Going to execute query <" + s + ">");
-        ResultSet rs = stmt.executeQuery(s);
+      throws NoSuchTxnException,  TxnAbortedException, MetaException, SQLException {
+    // We want to minimize the number of concurrent lock requests being issued.  If we do not we
+    // get a large number of deadlocks in the database, since this method has to both clean
+    // timedout locks and insert new locks.  This synchronization barrier will not eliminiate all
+    // deadlocks, and the code is still resilient in the face of a database deadlock.  But it
+    // will reduce the number.  This could have been done via a lock table command in the
+    // underlying database, but was not for two reasons.  One, different databases have different
+    // syntax for lock table, making it harder to use.  Two, that would lock the HIVE_LOCKS table
+    // and prevent other operations (such as committing transactions, showing locks,
+    // etc.) that should not interfere with this one.
+    synchronized (lockLock) {
+      // Clean up timed out locks before we attempt to acquire any.
+      timeOutLocks(dbConn);
+
+      try {
+        Statement stmt = dbConn.createStatement();
+
+        // Get the next lock id.  We have to do this as select for update so no
+        // one else reads it and updates it under us.
+        LOG.debug("Going to execute query <select nl_next from NEXT_LOCK_ID " +
+            "for update>");
+        ResultSet rs = stmt.executeQuery("select nl_next from NEXT_LOCK_ID " +
+            "for update");
         if (!rs.next()) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
-          throw new NoSuchTxnException("No such transaction: " + txnid);
+          throw new MetaException("Transaction tables not properly " +
+              "initialized, no record found in next_lock_id");
         }
-        if (rs.getString(1).charAt(0) == TXN_ABORTED) {
-          LOG.debug("Going to rollback");
-          dbConn.rollback();
-          throw new TxnAbortedException("Transaction " + txnid +
-              " already aborted");
+        long extLockId = rs.getLong(1);
+        String s = "update NEXT_LOCK_ID set nl_next = " + (extLockId + 1);
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+        LOG.debug("Going to commit.");
+        dbConn.commit();
+
+        long txnid = rqst.getTxnid();
+        if (txnid > 0) {
+          // Heartbeat the transaction so we know it is valid and we avoid it timing out while we
+          // are locking.
+          heartbeatTxn(dbConn, txnid);
+
+          // For each component in this lock request,
+          // add an entry to the txn_components table
+          // This must be done before HIVE_LOCKS is accessed
+          for (LockComponent lc : rqst.getComponent()) {
+            String dbName = lc.getDbname();
+            String tblName = lc.getTablename();
+            String partName = lc.getPartitionname();
+            s = "insert into TXN_COMPONENTS " +
+              "(tc_txnid, tc_database, tc_table, tc_partition) " +
+              "values (" + txnid + ", '" + dbName + "', " +
+                (tblName == null ? "null" : "'" + tblName + "'") + ", " +
+                (partName == null ? "null" : "'" +  partName + "'") + ")";
+            LOG.debug("Going to execute update <" + s + ">");
+            stmt.executeUpdate(s);
+          }
         }
 
-        // For each component in this lock request,
-        // add an entry to the txn_components table
+        long intLockId = 0;
         for (LockComponent lc : rqst.getComponent()) {
+          intLockId++;
           String dbName = lc.getDbname();
           String tblName = lc.getTablename();
           String partName = lc.getPartitionname();
-          s = "insert into TXN_COMPONENTS " +
-            "(tc_txnid, tc_database, tc_table, tc_partition) " +
-            "values (" + txnid + ", '" + dbName + "', " +
-              (tblName == null ? "null" : "'" + tblName + "'") + ", " +
-              (partName == null ? "null" : "'" +  partName + "'") + ")";
+          LockType lockType = lc.getType();
+          char lockChar = 'z';
+          switch (lockType) {
+            case EXCLUSIVE: lockChar = LOCK_EXCLUSIVE; break;
+            case SHARED_READ: lockChar = LOCK_SHARED; break;
+            case SHARED_WRITE: lockChar = LOCK_SEMI_SHARED; break;
+          }
+          long now = System.currentTimeMillis();
+          s = "insert into HIVE_LOCKS " +
+            " (hl_lock_ext_id, hl_lock_int_id, hl_txnid, hl_db, hl_table, " +
+              "hl_partition, hl_lock_state, hl_lock_type, hl_last_heartbeat, hl_user, hl_host)" +
+              " values (" + extLockId + ", " +
+              + intLockId + "," + (txnid >= 0 ? txnid : "null") + ", '" +
+              dbName + "', " + (tblName == null ? "null" : "'" + tblName + "'" )
+              + ", " + (partName == null ? "null" : "'" + partName + "'") +
+              ", '" + LOCK_WAITING + "', " +  "'" + lockChar + "', " + now + ", '" +
+              rqst.getUser() + "', '" + rqst.getHostname() + "')";
           LOG.debug("Going to execute update <" + s + ">");
           stmt.executeUpdate(s);
         }
-      }
-
-      // Get the next lock id.  We have to do this as select for update so no
-      // one else reads it and updates it under us.
-      LOG.debug("Going to execute query <select nl_next from NEXT_LOCK_ID " +
-           "for update>");
-      ResultSet rs = stmt.executeQuery("select nl_next from NEXT_LOCK_ID " +
-           "for update");
-      if (!rs.next()) {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        throw new MetaException("Transaction tables not properly " +
-            "initialized, no record found in next_lock_id");
-      }
-      long extLockId = rs.getLong(1);
-      String s = "update NEXT_LOCK_ID set nl_next = " + (extLockId + 1);
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
-      long intLockId = 0;
-      for (LockComponent lc : rqst.getComponent()) {
-        intLockId++;
-        String dbName = lc.getDbname();
-        String tblName = lc.getTablename();
-        String partName = lc.getPartitionname();
-        LockType lockType = lc.getType();
-        char lockChar = 'z';
-        switch (lockType) {
-          case EXCLUSIVE: lockChar = LOCK_EXCLUSIVE; break;
-          case SHARED_READ: lockChar = LOCK_SHARED; break;
-          case SHARED_WRITE: lockChar = LOCK_SEMI_SHARED; break;
+        LockResponse rsp = checkLock(dbConn, extLockId, txnid, wait);
+        if (!wait && rsp.getState() != LockState.ACQUIRED) {
+          LOG.debug("Lock not acquired, going to rollback");
+          dbConn.rollback();
+          rsp = new LockResponse();
+          rsp.setState(LockState.NOT_ACQUIRED);
         }
-        long now = System.currentTimeMillis();
-        s = "insert into HIVE_LOCKS " +
-          " (hl_lock_ext_id, hl_lock_int_id, hl_txnid, hl_db, hl_table, " +
-            "hl_partition, hl_lock_state, hl_lock_type, hl_last_heartbeat, hl_user, hl_host)" +
-            " values (" + extLockId + ", " +
-            + intLockId + "," + (txnid >= 0 ? txnid : "null") + ", '" +
-            dbName + "', " + (tblName == null ? "null" : "'" + tblName + "'" )
-            + ", " + (partName == null ? "null" : "'" + partName + "'") +
-            ", '" + LOCK_WAITING + "', " +  "'" + lockChar + "', " + now + ", '" +
-            rqst.getUser() + "', '" + rqst.getHostname() + "')";
-        LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
+        return rsp;
+      } catch (NoSuchLockException e) {
+        // This should never happen, as we just added the lock id
+        throw new MetaException("Couldn't find a lock we just created!");
       }
-      LockResponse rsp = checkLock(dbConn, extLockId, txnid, wait);
-      if (!wait && rsp.getState() != LockState.ACQUIRED) {
-        LOG.debug("Lock not acquired, going to rollback");
-        dbConn.rollback();
-        rsp = new LockResponse();
-        rsp.setState(LockState.NOT_ACQUIRED);
-      }
-      return rsp;
-    } catch (SQLException e) {
-      try {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-      } catch (SQLException e1) {
-      }
-      throw new MetaException("Unable to connect to transaction database "
-        + StringUtils.stringifyException(e));
-    } catch (NoSuchLockException e) {
-      // This should never happen, as we just added the lock id
-      throw new MetaException("Couldn't find a lock we just created!");
     }
   }
 
@@ -916,25 +1034,48 @@ public class TxnHandler {
                                  long extLockId,
                                  long txnid,
                                  boolean alwaysCommit)
-      throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, MetaException {
+      throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, MetaException, SQLException {
     List<LockInfo> locksBeingChecked = getLockInfoFromLockId(dbConn, extLockId);
     LockResponse response = new LockResponse();
     response.setLockid(extLockId);
 
     long now = System.currentTimeMillis();
-    try {
-      LOG.debug("Setting savepoint");
-      Savepoint save = dbConn.setSavepoint();
-      Statement stmt = dbConn.createStatement();
-      StringBuffer query = new StringBuffer("select hl_lock_ext_id, " +
-          "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
-          "hl_lock_type from HIVE_LOCKS where hl_db in (");
+    LOG.debug("Setting savepoint");
+    Savepoint save = dbConn.setSavepoint();
+    Statement stmt = dbConn.createStatement();
+    StringBuilder query = new StringBuilder("select hl_lock_ext_id, " +
+        "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
+        "hl_lock_type from HIVE_LOCKS where hl_db in (");
 
-      Set<String> strings = new HashSet<String>(locksBeingChecked.size());
-      for (LockInfo info : locksBeingChecked) {
-        strings.add(info.db);
+    Set<String> strings = new HashSet<String>(locksBeingChecked.size());
+    for (LockInfo info : locksBeingChecked) {
+      strings.add(info.db);
+    }
+    boolean first = true;
+    for (String s : strings) {
+      if (first) first = false;
+      else query.append(", ");
+      query.append('\'');
+      query.append(s);
+      query.append('\'');
+    }
+    query.append(")");
+
+    // If any of the table requests are null, then I need to pull all the
+    // table locks for this db.
+    boolean sawNull = false;
+    strings.clear();
+    for (LockInfo info : locksBeingChecked) {
+      if (info.table == null) {
+        sawNull = true;
+        break;
+      } else {
+        strings.add(info.table);
       }
-      boolean first = true;
+    }
+    if (!sawNull) {
+      query.append(" and (hl_table is null or hl_table in(");
+      first = true;
       for (String s : strings) {
         if (first) first = false;
         else query.append(", ");
@@ -942,22 +1083,22 @@ public class TxnHandler {
         query.append(s);
         query.append('\'');
       }
-      query.append(")");
+      query.append("))");
 
-      // If any of the table requests are null, then I need to pull all the
-      // table locks for this db.
-      boolean sawNull = false;
+      // If any of the partition requests are null, then I need to pull all
+      // partition locks for this table.
+      sawNull = false;
       strings.clear();
       for (LockInfo info : locksBeingChecked) {
-        if (info.table == null) {
+        if (info.partition == null) {
           sawNull = true;
           break;
         } else {
-          strings.add(info.table);
+          strings.add(info.partition);
         }
       }
       if (!sawNull) {
-        query.append(" and (hl_table is null or hl_table in(");
+        query.append(" and (hl_partition is null or hl_partition in(");
         first = true;
         for (String s : strings) {
           if (first) first = false;
@@ -967,134 +1108,100 @@ public class TxnHandler {
           query.append('\'');
         }
         query.append("))");
+      }
+    }
+    query.append(" for update");
 
-        // If any of the partition requests are null, then I need to pull all
-        // partition locks for this table.
-        sawNull = false;
-        strings.clear();
-        for (LockInfo info : locksBeingChecked) {
-          if (info.partition == null) {
-            sawNull = true;
-            break;
-          } else {
-            strings.add(info.partition);
-          }
-        }
-        if (!sawNull) {
-          query.append(" and (hl_partition is null or hl_partition in(");
-          first = true;
-          for (String s : strings) {
-            if (first) first = false;
-            else query.append(", ");
-            query.append('\'');
-            query.append(s);
-            query.append('\'');
-          }
-          query.append("))");
+    LOG.debug("Going to execute query <" + query.toString() + ">");
+    ResultSet rs = stmt.executeQuery(query.toString());
+    SortedSet lockSet = new TreeSet(new LockInfoComparator());
+    while (rs.next()) {
+      lockSet.add(new LockInfo(rs));
+    }
+    // Turn the tree set into an array so we can move back and forth easily
+    // in it.
+    LockInfo[] locks = (LockInfo[])lockSet.toArray(new LockInfo[1]);
+
+    for (LockInfo info : locksBeingChecked) {
+      // Find the lock record we're checking
+      int index = -1;
+      for (int i = 0; i < locks.length; i++) {
+        if (locks[i].equals(info)) {
+          index = i;
+          break;
         }
       }
-      query.append(" for update");
 
-      LOG.debug("Going to execute query <" + query.toString() + ">");
-      ResultSet rs = stmt.executeQuery(query.toString());
-      SortedSet lockSet = new TreeSet(new LockInfoComparator());
-      while (rs.next()) {
-        lockSet.add(new LockInfo(rs));
+      // If we didn't find the lock, then it must not be in the table
+      if (index == -1) {
+        LOG.debug("Going to rollback");
+        dbConn.rollback();
+        throw new MetaException("How did we get here, we heartbeated our lock before we started!");
       }
-      // Turn the tree set into an array so we can move back and forth easily
-      // in it.
-      LockInfo[] locks = (LockInfo[])lockSet.toArray(new LockInfo[1]);
-
-      for (LockInfo info : locksBeingChecked) {
-        // Find the lock record we're checking
-        int index = -1;
-        for (int i = 0; i < locks.length; i++) {
-          if (locks[i].equals(info)) {
-            index = i;
-            break;
-          }
-        }
-
-        // If we didn't find the lock, then it must not be in the table
-        if (index == -1) {
-          LOG.debug("Going to rollback");
-          dbConn.rollback();
-          throw new MetaException("How did we get here, " +
-              "we heartbeated our lock before we started!");
-        }
 
 
-        // If we've found it and it's already been marked acquired,
-        // then just look at the other locks.
-        if (locks[index].state == LockState.ACQUIRED) {
+      // If we've found it and it's already been marked acquired,
+      // then just look at the other locks.
+      if (locks[index].state == LockState.ACQUIRED) {
+        continue;
+      }
+
+      // Look at everything in front of this lock to see if it should block
+      // it or not.
+      for (int i = index - 1; i >= 0; i--) {
+        // Check if we're operating on the same database, if not, move on
+        if (!locks[index].db.equals(locks[i].db)) {
           continue;
         }
 
-        // Look at everything in front of this lock to see if it should block
-        // it or not.
-        for (int i = index - 1; i >= 0; i--) {
-          // Check if we're operating on the same database, if not, move on
-          if (!locks[index].db.equals(locks[i].db)) {
-            continue;
-          }
-
-          // If table is null on either of these, then they are claiming to
-          // lock the whole database and we need to check it.  Otherwise,
-          // check if they are operating on the same table, if not, move on.
-          if (locks[index].table != null && locks[i].table != null
-              && !locks[index].table.equals(locks[i].table)) {
-            continue;
-          }
-
-          // If partition is null on either of these, then they are claiming to
-          // lock the whole table and we need to check it.  Otherwise,
-          // check if they are operating on the same partition, if not, move on.
-          if (locks[index].partition != null && locks[i].partition != null
-              && !locks[index].partition.equals(locks[i].partition)) {
-            continue;
-          }
-
-          // We've found something that matches what we're trying to lock,
-          // so figure out if we can lock it too.
-          switch (jumpTable.get(locks[index].type).get(locks[i].type).get
-              (locks[i].state)) {
-            case ACQUIRE:
-              acquire(dbConn, stmt, extLockId, info.intLockId);
-              break;
-            case WAIT:
-              wait(dbConn, save);
-              if (alwaysCommit) {
-                // In the case where lockNoWait has been called we don't want to commit because
-                // it's going to roll everything back.  In every other case we want to commit here.
-                LOG.debug("Going to commit");
-                dbConn.commit();
-              }
-              response.setState(LockState.WAITING);
-              return response;
-            case KEEP_LOOKING:
-              continue;
-          }
+        // If table is null on either of these, then they are claiming to
+        // lock the whole database and we need to check it.  Otherwise,
+        // check if they are operating on the same table, if not, move on.
+        if (locks[index].table != null && locks[i].table != null
+            && !locks[index].table.equals(locks[i].table)) {
+          continue;
         }
 
-        // If we've arrived here it means there's nothing in the way of the
-        // lock, so acquire the lock.
-        acquire(dbConn, stmt, extLockId, info.intLockId);
+        // If partition is null on either of these, then they are claiming to
+        // lock the whole table and we need to check it.  Otherwise,
+        // check if they are operating on the same partition, if not, move on.
+        if (locks[index].partition != null && locks[i].partition != null
+            && !locks[index].partition.equals(locks[i].partition)) {
+          continue;
+        }
+
+        // We've found something that matches what we're trying to lock,
+        // so figure out if we can lock it too.
+        switch (jumpTable.get(locks[index].type).get(locks[i].type).get
+            (locks[i].state)) {
+          case ACQUIRE:
+            acquire(dbConn, stmt, extLockId, info.intLockId);
+            break;
+          case WAIT:
+            wait(dbConn, save);
+            if (alwaysCommit) {
+              // In the case where lockNoWait has been called we don't want to commit because
+              // it's going to roll everything back.  In every other case we want to commit here.
+              LOG.debug("Going to commit");
+              dbConn.commit();
+            }
+            response.setState(LockState.WAITING);
+            return response;
+          case KEEP_LOOKING:
+            continue;
+        }
       }
 
-      // We acquired all of the locks, so commit and return acquired.
-      LOG.debug("Going to commit");
-      dbConn.commit();
-      response.setState(LockState.ACQUIRED);
-      return response;
-    } catch (SQLException e) {
-      try {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-      } catch (SQLException e1) {
-      }
-      throw new MetaException("Unable to connect to transaction database "
-        + StringUtils.stringifyException(e));
+      // If we've arrived here it means there's nothing in the way of the
+      // lock, so acquire the lock.
+      acquire(dbConn, stmt, extLockId, info.intLockId);
     }
+
+    // We acquired all of the locks, so commit and return acquired.
+    LOG.debug("Going to commit");
+    dbConn.commit();
+    response.setState(LockState.ACQUIRED);
+    return response;
   }
 
   private void wait(Connection dbConn, Savepoint save) throws SQLException {
@@ -1127,152 +1234,114 @@ public class TxnHandler {
     // acquire all.
   }
 
-  // Heartbeats on the lock table.  This does not call commit as it assumes
-  // someone downstream will.  However, it does lock rows in the lock table.
+  // Heartbeats on the lock table.  This commits, so do not enter it with any state
   private void heartbeatLock(Connection dbConn, long extLockId)
-      throws NoSuchLockException, MetaException {
+      throws NoSuchLockException, SQLException {
     // If the lock id is 0, then there are no locks in this heartbeat
     if (extLockId == 0) return;
-    try {
-      Statement stmt = dbConn.createStatement();
-      long now = System.currentTimeMillis();
+    Statement stmt = dbConn.createStatement();
+    long now = System.currentTimeMillis();
 
-      String s = "update HIVE_LOCKS set hl_last_heartbeat = " +
-          now + " where hl_lock_ext_id = " + extLockId;
-      LOG.debug("Going to execute update <" + s + ">");
-      int rc = stmt.executeUpdate(s);
-      if (rc < 1) {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        throw new NoSuchLockException("No such lock: " + extLockId);
-      }
-    } catch (SQLException e) {
-      try {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-      } catch (SQLException e1) {
-      }
-      throw new MetaException("Unable to connect to transaction database" +
-        StringUtils.stringifyException(e));
+    String s = "update HIVE_LOCKS set hl_last_heartbeat = " +
+        now + " where hl_lock_ext_id = " + extLockId;
+    LOG.debug("Going to execute update <" + s + ">");
+    int rc = stmt.executeUpdate(s);
+    if (rc < 1) {
+      LOG.debug("Going to rollback");
+      dbConn.rollback();
+      throw new NoSuchLockException("No such lock: " + extLockId);
     }
+    LOG.debug("Going to commit");
+    dbConn.commit();
   }
 
-  // Heartbeats on the txn table.  This does not call commit as it assumes
-  // someone downstream will.  However, it does lock rows in the txn table.
+  // Heartbeats on the txn table.  This commits, so do not enter it with any state
   private void heartbeatTxn(Connection dbConn, long txnid)
-      throws NoSuchTxnException, TxnAbortedException, MetaException {
+      throws NoSuchTxnException, TxnAbortedException, SQLException {
     // If the txnid is 0, then there are no transactions in this heartbeat
     if (txnid == 0) return;
-    try {
-      Statement stmt = dbConn.createStatement();
-      long now = System.currentTimeMillis();
-      // We need to check whether this transaction is valid and open
-      String s = "select txn_state from TXNS where txn_id = " +
-          txnid + " for update";
-      LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        throw new NoSuchTxnException("No such transaction: " + txnid);
-      }
-      if (rs.getString(1).charAt(0) == TXN_ABORTED) {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        throw new TxnAbortedException("Transaction " + txnid +
-            " already aborted");
-      }
-      s = "update TXNS set txn_last_heartbeat = " + now +
-          " where txn_id = " + txnid;
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
-
-    } catch (SQLException e) {
-      try {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-      } catch (SQLException e1) {
-      }
-      throw new MetaException("Unable to connect to transaction database "
-        + StringUtils.stringifyException(e));
+    Statement stmt = dbConn.createStatement();
+    long now = System.currentTimeMillis();
+    // We need to check whether this transaction is valid and open
+    String s = "select txn_state from TXNS where txn_id = " +
+        txnid + " for update";
+    LOG.debug("Going to execute query <" + s + ">");
+    ResultSet rs = stmt.executeQuery(s);
+    if (!rs.next()) {
+      LOG.debug("Going to rollback");
+      dbConn.rollback();
+      throw new NoSuchTxnException("No such transaction: " + txnid);
     }
+    if (rs.getString(1).charAt(0) == TXN_ABORTED) {
+      LOG.debug("Going to rollback");
+      dbConn.rollback();
+      throw new TxnAbortedException("Transaction " + txnid +
+          " already aborted");
+    }
+    s = "update TXNS set txn_last_heartbeat = " + now +
+        " where txn_id = " + txnid;
+    LOG.debug("Going to execute update <" + s + ">");
+    stmt.executeUpdate(s);
+    LOG.debug("Going to commit");
+    dbConn.commit();
   }
 
   // NEVER call this function without first calling heartbeat(long, long)
   private long getTxnIdFromLockId(Connection dbConn, long extLockId)
-      throws NoSuchLockException, MetaException {
-    try {
-      Statement stmt = dbConn.createStatement();
-      String s = "select hl_txnid from HIVE_LOCKS where hl_lock_ext_id = " +
-          extLockId;
-      LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        throw new MetaException("This should never happen!  We already " +
-            "checked the lock existed but now we can't find it!");
-      }
-      long txnid = rs.getLong(1);
-      LOG.debug("Return txnid " + (rs.wasNull() ? -1 : txnid));
-      return (rs.wasNull() ? -1 : txnid);
-    } catch (SQLException e) {
-      throw new MetaException("Unable to connect to transaction database " +
-        StringUtils.stringifyException(e));
+      throws NoSuchLockException, MetaException, SQLException {
+    Statement stmt = dbConn.createStatement();
+    String s = "select hl_txnid from HIVE_LOCKS where hl_lock_ext_id = " +
+        extLockId;
+    LOG.debug("Going to execute query <" + s + ">");
+    ResultSet rs = stmt.executeQuery(s);
+    if (!rs.next()) {
+      throw new MetaException("This should never happen!  We already " +
+          "checked the lock existed but now we can't find it!");
     }
+    long txnid = rs.getLong(1);
+    LOG.debug("Return txnid " + (rs.wasNull() ? -1 : txnid));
+    return (rs.wasNull() ? -1 : txnid);
   }
 
   // NEVER call this function without first calling heartbeat(long, long)
   private List<LockInfo> getLockInfoFromLockId(Connection dbConn, long extLockId)
-      throws NoSuchLockException, MetaException {
-    try {
-      Statement stmt = dbConn.createStatement();
-      String s = "select hl_lock_ext_id, hl_lock_int_id, hl_db, hl_table, " +
-          "hl_partition, hl_lock_state, hl_lock_type from HIVE_LOCKS where " +
-          "hl_lock_ext_id = " + extLockId;
-      LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
-      boolean sawAtLeastOne = false;
-      List<LockInfo> ourLockInfo = new ArrayList<LockInfo>();
-      while (rs.next()) {
-        ourLockInfo.add(new LockInfo(rs));
-        sawAtLeastOne = true;
-      }
-      if (!sawAtLeastOne) {
-        throw new MetaException("This should never happen!  We already " +
-            "checked the lock existed but now we can't find it!");
-      }
-      return ourLockInfo;
-    } catch (SQLException e) {
-      throw new MetaException("Unable to connect to transaction database "
-        + StringUtils.stringifyException(e));
+      throws NoSuchLockException, MetaException, SQLException {
+    Statement stmt = dbConn.createStatement();
+    String s = "select hl_lock_ext_id, hl_lock_int_id, hl_db, hl_table, " +
+        "hl_partition, hl_lock_state, hl_lock_type from HIVE_LOCKS where " +
+        "hl_lock_ext_id = " + extLockId;
+    LOG.debug("Going to execute query <" + s + ">");
+    ResultSet rs = stmt.executeQuery(s);
+    boolean sawAtLeastOne = false;
+    List<LockInfo> ourLockInfo = new ArrayList<LockInfo>();
+    while (rs.next()) {
+      ourLockInfo.add(new LockInfo(rs));
+      sawAtLeastOne = true;
     }
+    if (!sawAtLeastOne) {
+      throw new MetaException("This should never happen!  We already " +
+          "checked the lock existed but now we can't find it!");
+    }
+    return ourLockInfo;
   }
 
   // Clean time out locks from the database.  This does a commit,
   // and thus should be done before any calls to heartbeat that will leave
   // open transactions.
-  private void timeOutLocks(Connection dbConn) throws MetaException {
-    try {
-      long now = System.currentTimeMillis();
-      Statement stmt = dbConn.createStatement();
-      // Remove any timed out locks from the table.
-      String s = "delete from HIVE_LOCKS where hl_last_heartbeat < " +
-          (now - timeout);
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
-      LOG.debug("Going to commit");
-      dbConn.commit();
-    } catch (SQLException e) {
-      try {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-      } catch (SQLException e1) {
-      }
-      throw new MetaException("Unable to connect to transaction database "
-        + StringUtils.stringifyException(e));
-    }
+  private void timeOutLocks(Connection dbConn) throws SQLException {
+    long now = System.currentTimeMillis();
+    Statement stmt = dbConn.createStatement();
+    // Remove any timed out locks from the table.
+    String s = "delete from HIVE_LOCKS where hl_last_heartbeat < " +
+        (now - timeout);
+    LOG.debug("Going to execute update <" + s + ">");
+    stmt.executeUpdate(s);
+    LOG.debug("Going to commit");
+    dbConn.commit();
+    return;
   }
 
-  private synchronized void setupJdbcConnectionPool() throws SQLException {
+ private static synchronized void setupJdbcConnectionPool(HiveConf conf) throws SQLException {
     if (connPool != null) return;
 
     String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
@@ -1288,7 +1357,7 @@ public class TxnHandler {
     connPool = new BoneCP(config);
   }
 
- private synchronized void buildJumpTable() {
+ private static synchronized void buildJumpTable() {
     if (jumpTable != null) return;
 
     jumpTable =
