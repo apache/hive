@@ -171,7 +171,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     if (database != null) {
-      outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_METADATA_ONLY));
+      outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
     }
   }
 }

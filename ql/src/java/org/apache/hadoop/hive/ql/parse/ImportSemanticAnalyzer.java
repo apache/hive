@@ -226,7 +226,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           loadTable(fromURI, table);
         }
         // Set this to read because we can't overwrite any existing partitions
-        outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_METADATA_ONLY));
+        outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
       } catch (InvalidTableException e) {
         LOG.debug("table " + tblDesc.getTableName() + " does not exist");
 

@@ -135,13 +135,13 @@ public class DbTxnManager extends HiveTxnManagerImpl {
       Table t = null;
       LOG.debug("output is null " + (output == null));
       switch (output.getWriteType()) {
-        case DDL:
+        case DDL_EXCLUSIVE:
         case INSERT_OVERWRITE:
           compBuilder.setExclusive();
           break;
 
         case INSERT:
-        case DDL_METADATA_ONLY:
+        case DDL_SHARED:
           compBuilder.setShared();
           break;
 
@@ -149,6 +149,9 @@ public class DbTxnManager extends HiveTxnManagerImpl {
         case DELETE:
           compBuilder.setSemiShared();
           break;
+
+        case DDL_NO_LOCK:
+          continue; // No lock required here
 
         default:
           throw new RuntimeException("Unknown write type " +
