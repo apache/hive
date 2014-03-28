@@ -280,6 +280,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       numFiles = conf.getNumFiles();
       dpCtx = conf.getDynPartCtx();
       lbCtx = conf.getLbCtx();
+      fsp = prevFsp = null;
       valToPaths = new HashMap<String, FSPaths>();
       taskId = Utilities.getTaskId(hconf);
       initializeSpecPath();
@@ -877,6 +878,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fsp.abortWriters(fs, abort, !autoDelete && isNativeTable);
       }
     }
+    fsp = prevFsp = null;
   }
 
   /**
