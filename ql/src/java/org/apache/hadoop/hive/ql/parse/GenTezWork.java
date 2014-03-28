@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
@@ -45,9 +46,10 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
-import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 
 /**
  * GenTezWork separates the operator tree into tez tasks.
@@ -160,30 +162,34 @@ public class GenTezWork implements NodeProcessor {
          * RS following the TS, we have already generated work for the TS-RS.
          * We need to hook the current work to this generated work.
          */
-        List<BaseWork> linkWorkList = context.linkOpWithWorkMap.get(mj);
-        if (linkWorkList != null) {
-          if (context.linkChildOpWithDummyOp.containsKey(mj)) {
-            for (Operator<?> dummy: context.linkChildOpWithDummyOp.get(mj)) {
-              work.addDummyOp((HashTableDummyOperator) dummy);
-            }
-          }
-          for (BaseWork parentWork : linkWorkList) {
-            LOG.debug("connecting "+parentWork.getName()+" with "+work.getName());
-            tezWork.connect(parentWork, work, EdgeType.BROADCAST_EDGE);
-
-            // need to set up output name for reduce sink now that we know the name
-            // of the downstream work
-            for (ReduceSinkOperator r:
-                   context.linkWorkWithReduceSinkMap.get(parentWork)) {
-              if (r.getConf().getOutputName() != null) {
-                LOG.debug("Cloning reduce sink for multi-child broadcast edge");
-                // we've already set this one up. Need to clone for the next work.
-                r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
-                    (ReduceSinkDesc)r.getConf().clone(), r.getParentOperators());
-                context.clonedReduceSinks.add(r);
+        if (context.linkOpWithWorkMap.containsKey(mj)) {
+          Map<BaseWork,TezEdgeProperty> linkWorkMap = context.linkOpWithWorkMap.get(mj);
+          if (linkWorkMap != null) {
+            if (context.linkChildOpWithDummyOp.containsKey(mj)) {
+              for (Operator<?> dummy: context.linkChildOpWithDummyOp.get(mj)) {
+                work.addDummyOp((HashTableDummyOperator) dummy);
               }
-              r.getConf().setOutputName(work.getName());
-              context.connectedReduceSinks.add(r);
+            }
+            for (Entry<BaseWork,TezEdgeProperty> parentWorkMap : linkWorkMap.entrySet()) {
+              BaseWork parentWork = parentWorkMap.getKey();
+              LOG.debug("connecting "+parentWork.getName()+" with "+work.getName());
+              TezEdgeProperty edgeProp = parentWorkMap.getValue();
+              tezWork.connect(parentWork, work, edgeProp);
+              
+              // need to set up output name for reduce sink now that we know the name
+              // of the downstream work
+              for (ReduceSinkOperator r:
+                     context.linkWorkWithReduceSinkMap.get(parentWork)) {
+                if (r.getConf().getOutputName() != null) {
+                  LOG.debug("Cloning reduce sink for multi-child broadcast edge");
+                  // we've already set this one up. Need to clone for the next work.
+                  r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
+                      (ReduceSinkDesc)r.getConf().clone(), r.getParentOperators());
+                  context.clonedReduceSinks.add(r);
+                }
+                r.getConf().setOutputName(work.getName());
+                context.connectedReduceSinks.add(r);
+              }
             }
           }
         }
@@ -221,7 +227,8 @@ public class GenTezWork implements NodeProcessor {
 
       // finally hook everything up
       LOG.debug("Connecting union work ("+unionWork+") with work ("+work+")");
-      tezWork.connect(unionWork, work, EdgeType.CONTAINS);
+      TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.CONTAINS);
+      tezWork.connect(unionWork, work, edgeProp);
       unionWork.addUnionOperators(context.currentUnionOperators);
       context.currentUnionOperators.clear();
       context.workWithUnionOperators.add(work);
@@ -261,7 +268,8 @@ public class GenTezWork implements NodeProcessor {
 
       if (!context.connectedReduceSinks.contains(rs)) {
         // add dependency between the two work items
-        tezWork.connect(work, rWork, EdgeType.SIMPLE_EDGE);
+        TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.SIMPLE_EDGE);
+        tezWork.connect(work, rWork, edgeProp);
         context.connectedReduceSinks.add(rs);
       }
     } else {

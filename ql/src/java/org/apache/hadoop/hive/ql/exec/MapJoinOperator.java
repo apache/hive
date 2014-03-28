@@ -100,8 +100,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     mapJoinTables = (MapJoinTableContainer[]) cache.retrieve(tableKey);
     mapJoinTableSerdes = (MapJoinTableContainerSerDe[]) cache.retrieve(serdeKey);
     hashTblInitedOnce = true;
+    LOG.info("Try to retrieve from cache");
 
     if (mapJoinTables == null || mapJoinTableSerdes == null) {
+      LOG.info("Did not find tables in cache");
       mapJoinTables = new MapJoinTableContainer[tagLen];
       mapJoinTableSerdes = new MapJoinTableContainerSerDe[tagLen];
       hashTblInitedOnce = false;
@@ -148,8 +150,19 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
     loader.init(getExecContext(), hconf, this);
     loader.load(mapJoinTables, mapJoinTableSerdes);
-    cache.cache(tableKey, mapJoinTables);
-    cache.cache(serdeKey, mapJoinTableSerdes);
+    if (conf.isBucketMapJoin() == false) {
+      /*
+       * The issue with caching in case of bucket map join is that different tasks
+       * process different buckets and if the container is reused to join a different bucket,
+       * join results can be incorrect. The cache is keyed on operator id and for bucket map join
+       * the operator does not change but data needed is different. For a proper fix, this
+       * requires changes in the Tez API with regard to finding bucket id and 
+       * also ability to schedule tasks to re-use containers that have cached the specific bucket.
+       */
+      LOG.info("This is not bucket map join, so cache");
+      cache.cache(tableKey, mapJoinTables);
+      cache.cache(serdeKey, mapJoinTableSerdes);
+    }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
   }
 

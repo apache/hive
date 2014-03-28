@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
@@ -45,6 +47,8 @@ import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
 /**
@@ -89,7 +93,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
 
   // a map that keeps track of work that need to be linked while
   // traversing an operator tree
-  public final Map<Operator<?>, List<BaseWork>> linkOpWithWorkMap;
+  public final Map<Operator<?>, Map<BaseWork,TezEdgeProperty>> linkOpWithWorkMap;
 
   // a map to keep track of what reduce sinks have to be hooked up to
   // map join work
@@ -144,7 +148,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.currentTask = (TezTask) TaskFactory.get(
          new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
     this.leafOperatorToFollowingWork = new HashMap<Operator<?>, BaseWork>();
-    this.linkOpWithWorkMap = new HashMap<Operator<?>, List<BaseWork>>();
+    this.linkOpWithWorkMap = new HashMap<Operator<?>, Map<BaseWork, TezEdgeProperty>>();
     this.linkWorkWithReduceSinkMap = new HashMap<BaseWork, List<ReduceSinkOperator>>();
     this.mapJoinWorkMap = new HashMap<MapJoinOperator, List<BaseWork>>();
     this.rootToWorkMap = new HashMap<Operator<?>, BaseWork>();

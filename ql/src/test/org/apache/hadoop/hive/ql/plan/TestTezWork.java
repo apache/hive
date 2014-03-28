@@ -22,7 +22,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -62,7 +62,8 @@ public class TestTezWork {
     BaseWork parent = nodes.get(0);
     BaseWork child = nodes.get(1);
 
-    work.connect(parent, child, EdgeType.SIMPLE_EDGE);
+    TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.SIMPLE_EDGE);
+    work.connect(parent, child, edgeProp);
 
     Assert.assertEquals(work.getParents(child).size(), 1);
     Assert.assertEquals(work.getChildren(parent).size(), 1);
@@ -78,7 +79,7 @@ public class TestTezWork {
       Assert.assertEquals(work.getChildren(w).size(), 0);
     }
 
-    Assert.assertEquals(work.getEdgeProperty(parent, child), EdgeType.SIMPLE_EDGE);
+    Assert.assertEquals(work.getEdgeProperty(parent, child).getEdgeType(), EdgeType.SIMPLE_EDGE);
   }
 
   @Test
@@ -86,7 +87,8 @@ public class TestTezWork {
     BaseWork parent = nodes.get(0);
     BaseWork child = nodes.get(1);
 
-    work.connect(parent, child, EdgeType.BROADCAST_EDGE);
+    TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.BROADCAST_EDGE);
+    work.connect(parent, child, edgeProp);
 
     Assert.assertEquals(work.getParents(child).size(), 1);
     Assert.assertEquals(work.getChildren(parent).size(), 1);
@@ -102,7 +104,7 @@ public class TestTezWork {
       Assert.assertEquals(work.getChildren(w).size(), 0);
     }
 
-    Assert.assertEquals(work.getEdgeProperty(parent, child), EdgeType.BROADCAST_EDGE);
+    Assert.assertEquals(work.getEdgeProperty(parent, child).getEdgeType(), EdgeType.BROADCAST_EDGE);
   }
 
   @Test
@@ -110,8 +112,9 @@ public class TestTezWork {
     BaseWork parent = nodes.get(0);
     BaseWork children[] = {nodes.get(1), nodes.get(2)};
 
-    work.connect(parent, children[0], EdgeType.SIMPLE_EDGE);
-    work.connect(parent, children[1], EdgeType.SIMPLE_EDGE);
+    TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.SIMPLE_EDGE);
+    work.connect(parent, children[0], edgeProp);
+    work.connect(parent, children[1], edgeProp);
 
     work.disconnect(parent, children[0]);
 
@@ -128,8 +131,9 @@ public class TestTezWork {
     BaseWork parent = nodes.get(0);
     BaseWork children[] = {nodes.get(1), nodes.get(2)};
 
-    work.connect(parent, children[0], EdgeType.SIMPLE_EDGE);
-    work.connect(parent, children[1], EdgeType.SIMPLE_EDGE);
+    TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.SIMPLE_EDGE);
+    work.connect(parent, children[0], edgeProp);
+    work.connect(parent, children[1], edgeProp);
 
     work.remove(parent);
 
@@ -142,8 +146,9 @@ public class TestTezWork {
 
   @Test
   public void testGetAllWork() throws Exception {
+    TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.SIMPLE_EDGE);
     for (int i = 4; i > 0; --i) {
-      work.connect(nodes.get(i), nodes.get(i-1), EdgeType.SIMPLE_EDGE);
+      work.connect(nodes.get(i), nodes.get(i-1), edgeProp);
     }
 
     List<BaseWork> sorted = work.getAllWork();

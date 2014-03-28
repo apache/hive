@@ -149,6 +149,7 @@ public class TezProcessor implements LogicalIOProcessor {
       // Start the actual Inputs. After MRInput initialization.
       for (Entry<String, LogicalInput> inputEntry : inputs.entrySet()) {
         if (!cacheAccess.isInputCached(inputEntry.getKey())) {
+          LOG.info("Input: " + inputEntry.getKey() + " is not cached");
           inputEntry.getValue().start();
         } else {
           LOG.info("Input: " + inputEntry.getKey() + " is already cached. Skipping start");
