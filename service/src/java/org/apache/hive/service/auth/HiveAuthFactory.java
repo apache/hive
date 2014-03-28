@@ -182,7 +182,22 @@ public class HiveAuthFactory {
     if (!principal.isEmpty() && !keyTabFile.isEmpty()) {
       ShimLoader.getHadoopShims().loginUserFromKeytab(principal, keyTabFile);
     } else {
-      throw new IOException ("HiveServer2 kerberos principal or keytab is not correctly configured");
+      throw new IOException ("HiveServer2 kerberos principal or keytab " +
+          "is not correctly configured");
+    }
+  }
+
+  // Perform spnego login using the hadoop shim API if the configuration is available
+  public static UserGroupInformation loginFromSpnegoKeytabAndReturnUGI(
+      HiveConf hiveConf) throws IOException {
+    String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_SPNEGO_PRINCIPAL);
+    String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_SPNEGO_KEYTAB);
+    if (!principal.isEmpty() && !keyTabFile.isEmpty()) {
+      return ShimLoader.getHadoopShims().loginUserFromKeytabAndReturnUGI(
+          principal, keyTabFile);
+    } else {
+      throw new IOException ("HiveServer2 SPNego principal or keytab " +
+          "is not correctly configured");
     }
   }
 

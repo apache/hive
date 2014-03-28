@@ -67,6 +67,7 @@ public class CLIService extends CompositeService implements ICLIService {
   private SessionManager sessionManager;
   private IMetaStoreClient metastoreClient;
   private UserGroupInformation serviceUGI;
+  private UserGroupInformation httpUGI;
 
   public CLIService() {
     super("CLIService");
@@ -90,12 +91,31 @@ public class CLIService extends CompositeService implements ICLIService {
       } catch (LoginException e) {
         throw new ServiceException("Unable to login to kerberos with given principal/keytab", e);
       }
+
+      // Also try creating a UGI object for the SPNego principal
+      String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_SPNEGO_PRINCIPAL);
+      String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_SPNEGO_KEYTAB);
+      if (principal.isEmpty() || keyTabFile.isEmpty()) {
+        LOG.info("SPNego httpUGI not created, spNegoPrincipal: " + principal +
+            ", ketabFile: " + keyTabFile);
+      } else {
+        try {
+          this.httpUGI = HiveAuthFactory.loginFromSpnegoKeytabAndReturnUGI(hiveConf);
+          LOG.info("SPNego httpUGI successfully created.");
+        } catch (IOException e) {
+          LOG.warn("SPNego httpUGI creation failed: ", e);
+        }
+      }
     }
     super.init(hiveConf);
   }
 
   public UserGroupInformation getServiceUGI() {
     return this.serviceUGI;
+  }
+
+  public UserGroupInformation getHttpUGI() {
+    return this.httpUGI;
   }
 
   @Override
