@@ -18,8 +18,10 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -57,6 +59,12 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
    * valid when the data is parsed.
    */
   int[] keyEnd;
+
+  /**
+   * The length of value[i].
+   */
+  int[] valueLength;
+
   /**
    * The keys are stored in an array of LazyPrimitives.
    */
@@ -92,6 +100,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
     super.init(bytes, start, length);
     parsed = false;
     cachedMap = null;
+    keyStart = null;
   }
 
   /**
@@ -103,6 +112,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
       int initialSize = 2;
       keyStart = new int[initialSize];
       keyEnd = new int[initialSize];
+      valueLength = new int[initialSize];
       keyObjects = new LazyPrimitive<?, ?>[initialSize];
       valueObjects = new LazyObject[initialSize];
       keyInited = new boolean[initialSize];
@@ -110,6 +120,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
     } else {
       keyStart = Arrays.copyOf(keyStart, keyStart.length * 2);
       keyEnd = Arrays.copyOf(keyEnd, keyEnd.length * 2);
+      valueLength = Arrays.copyOf(valueLength, valueLength.length * 2);
       keyObjects = Arrays.copyOf(keyObjects, keyObjects.length * 2);
       valueObjects = Arrays.copyOf(valueObjects, valueObjects.length * 2);
       keyInited = Arrays.copyOf(keyInited, keyInited.length * 2);
@@ -140,6 +151,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
     int keyValueSeparatorPosition = -1;
     int elementByteEnd = start;
     byte[] bytes = this.bytes.getData();
+    Set<Object> keySet = new HashSet<Object>();
 
     // Go through all bytes in the byte[]
     while (elementByteEnd <= arrayByteEnd) {
@@ -155,9 +167,20 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
         // value will be NULL.
         keyEnd[mapSize] = (keyValueSeparatorPosition == -1 ? elementByteEnd
             : keyValueSeparatorPosition);
+        valueLength[mapSize] = elementByteEnd - (keyEnd[mapSize] + 1);
+        LazyPrimitive<?, ?> lazyKey = uncheckedGetKey(mapSize);
+        if (lazyKey == null) {
+          continue;
+        }
+        Object key = lazyKey.getObject();
+        if(!keySet.contains(key)) {
+          mapSize++;
+          keySet.add(key);
+        } else {
+          keyInited[mapSize] = false;
+        }
         // reset keyValueSeparatorPosition
         keyValueSeparatorPosition = -1;
-        mapSize++;
         elementByteBegin = elementByteEnd + 1;
         elementByteEnd++;
       } else {
@@ -181,7 +204,6 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
     keyStart[mapSize] = arrayByteEnd + 1;
 
     if (mapSize > 0) {
-      Arrays.fill(keyInited, 0, mapSize, false);
       Arrays.fill(valueInited, 0, mapSize, false);
     }
   }
@@ -240,7 +262,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
     valueInited[index] = true;
     Text nullSequence = oi.getNullSequence();
     int valueIBegin = keyEnd[index] + 1;
-    int valueILength = keyStart[index + 1] - 1 - valueIBegin;
+    int valueILength = valueLength[index];
     if (valueILength < 0
         || ((valueILength == nullSequence.getLength()) && 0 == LazyUtils
         .compare(bytes.getData(), valueIBegin, valueILength, nullSequence
