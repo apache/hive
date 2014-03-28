@@ -48,8 +48,8 @@ PREHOOK: query: show role grant user user_sauth
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user_sauth
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	-1			false	-1	
-src_role	-1	user_sauth	USER	false	-1	hive_admin_user
+PUBLIC	false	-1	
+src_role	false	-1	hive_admin_user
 PREHOOK: query: --table grant to role
 
 grant select on table src_autho_test to role src_role

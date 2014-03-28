@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRole;
 import org.apache.thrift.TException;
 
 public class SQLAuthorizationUtils {
@@ -176,7 +175,7 @@ public class SQLAuthorizationUtils {
    * @throws HiveAuthzPluginException
    */
   static RequiredPrivileges getPrivilegesFromMetaStore(IMetaStoreClient metastoreClient,
-      String userName, HivePrivilegeObject hivePrivObject, List<HiveRole> curRoles, boolean isAdmin)
+      String userName, HivePrivilegeObject hivePrivObject, List<String> curRoles, boolean isAdmin)
           throws HiveAuthzPluginException {
 
     // get privileges for this user and its role on this object
@@ -215,7 +214,7 @@ public class SQLAuthorizationUtils {
    * @return
    */
   private static void filterPrivsByCurrentRoles(PrincipalPrivilegeSet thriftPrivs,
-      List<HiveRole> curRoles) {
+      List<String> curRoles) {
     // check if there are privileges to be filtered
     if(thriftPrivs == null || thriftPrivs.getRolePrivileges() == null
         || thriftPrivs.getRolePrivilegesSize() == 0
@@ -226,11 +225,10 @@ public class SQLAuthorizationUtils {
 
     // add the privs for roles in curRoles to new role-to-priv map
     Map<String, List<PrivilegeGrantInfo>> filteredRolePrivs = new HashMap<String, List<PrivilegeGrantInfo>>();
-    for(HiveRole role : curRoles){
-      String roleName = role.getRoleName();
-      List<PrivilegeGrantInfo> privs = thriftPrivs.getRolePrivileges().get(roleName);
+    for(String role : curRoles){
+      List<PrivilegeGrantInfo> privs = thriftPrivs.getRolePrivileges().get(role);
       if(privs != null){
-        filteredRolePrivs.put(roleName, privs);
+        filteredRolePrivs.put(role, privs);
       }
     }
     thriftPrivs.setRolePrivileges(filteredRolePrivs);

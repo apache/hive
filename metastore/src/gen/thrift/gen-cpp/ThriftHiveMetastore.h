@@ -101,6 +101,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual bool revoke_role(const std::string& role_name, const std::string& principal_name, const PrincipalType::type principal_type) = 0;
   virtual void list_roles(std::vector<Role> & _return, const std::string& principal_name, const PrincipalType::type principal_type) = 0;
   virtual void get_principals_in_role(GetPrincipalsInRoleResponse& _return, const GetPrincipalsInRoleRequest& request) = 0;
+  virtual void get_role_grants_for_principal(GetRoleGrantsForPrincipalResponse& _return, const GetRoleGrantsForPrincipalRequest& request) = 0;
   virtual void get_privilege_set(PrincipalPrivilegeSet& _return, const HiveObjectRef& hiveObject, const std::string& user_name, const std::vector<std::string> & group_names) = 0;
   virtual void list_privileges(std::vector<HiveObjectPrivilege> & _return, const std::string& principal_name, const PrincipalType::type principal_type, const HiveObjectRef& hiveObject) = 0;
   virtual bool grant_privileges(const PrivilegeBag& privileges) = 0;
@@ -421,6 +422,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_principals_in_role(GetPrincipalsInRoleResponse& /* _return */, const GetPrincipalsInRoleRequest& /* request */) {
+    return;
+  }
+  void get_role_grants_for_principal(GetRoleGrantsForPrincipalResponse& /* _return */, const GetRoleGrantsForPrincipalRequest& /* request */) {
     return;
   }
   void get_privilege_set(PrincipalPrivilegeSet& /* _return */, const HiveObjectRef& /* hiveObject */, const std::string& /* user_name */, const std::vector<std::string> & /* group_names */) {
@@ -12634,6 +12638,124 @@ class ThriftHiveMetastore_get_principals_in_role_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_role_grants_for_principal_args__isset {
+  _ThriftHiveMetastore_get_role_grants_for_principal_args__isset() : request(false) {}
+  bool request;
+} _ThriftHiveMetastore_get_role_grants_for_principal_args__isset;
+
+class ThriftHiveMetastore_get_role_grants_for_principal_args {
+ public:
+
+  ThriftHiveMetastore_get_role_grants_for_principal_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_role_grants_for_principal_args() throw() {}
+
+  GetRoleGrantsForPrincipalRequest request;
+
+  _ThriftHiveMetastore_get_role_grants_for_principal_args__isset __isset;
+
+  void __set_request(const GetRoleGrantsForPrincipalRequest& val) {
+    request = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_role_grants_for_principal_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_role_grants_for_principal_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_role_grants_for_principal_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_role_grants_for_principal_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_role_grants_for_principal_pargs() throw() {}
+
+  const GetRoleGrantsForPrincipalRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_role_grants_for_principal_result__isset {
+  _ThriftHiveMetastore_get_role_grants_for_principal_result__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_get_role_grants_for_principal_result__isset;
+
+class ThriftHiveMetastore_get_role_grants_for_principal_result {
+ public:
+
+  ThriftHiveMetastore_get_role_grants_for_principal_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_role_grants_for_principal_result() throw() {}
+
+  GetRoleGrantsForPrincipalResponse success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_role_grants_for_principal_result__isset __isset;
+
+  void __set_success(const GetRoleGrantsForPrincipalResponse& val) {
+    success = val;
+  }
+
+  void __set_o1(const MetaException& val) {
+    o1 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_role_grants_for_principal_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_role_grants_for_principal_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_role_grants_for_principal_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_role_grants_for_principal_presult__isset {
+  _ThriftHiveMetastore_get_role_grants_for_principal_presult__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_get_role_grants_for_principal_presult__isset;
+
+class ThriftHiveMetastore_get_role_grants_for_principal_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_role_grants_for_principal_presult() throw() {}
+
+  GetRoleGrantsForPrincipalResponse* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_role_grants_for_principal_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_get_privilege_set_args__isset {
   _ThriftHiveMetastore_get_privilege_set_args__isset() : hiveObject(false), user_name(false), group_names(false) {}
   bool hiveObject;
@@ -15227,6 +15349,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_principals_in_role(GetPrincipalsInRoleResponse& _return, const GetPrincipalsInRoleRequest& request);
   void send_get_principals_in_role(const GetPrincipalsInRoleRequest& request);
   void recv_get_principals_in_role(GetPrincipalsInRoleResponse& _return);
+  void get_role_grants_for_principal(GetRoleGrantsForPrincipalResponse& _return, const GetRoleGrantsForPrincipalRequest& request);
+  void send_get_role_grants_for_principal(const GetRoleGrantsForPrincipalRequest& request);
+  void recv_get_role_grants_for_principal(GetRoleGrantsForPrincipalResponse& _return);
   void get_privilege_set(PrincipalPrivilegeSet& _return, const HiveObjectRef& hiveObject, const std::string& user_name, const std::vector<std::string> & group_names);
   void send_get_privilege_set(const HiveObjectRef& hiveObject, const std::string& user_name, const std::vector<std::string> & group_names);
   void recv_get_privilege_set(PrincipalPrivilegeSet& _return);
@@ -15382,6 +15507,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_revoke_role(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_list_roles(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_principals_in_role(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_role_grants_for_principal(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_privilege_set(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_list_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_grant_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -15491,6 +15617,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["revoke_role"] = &ThriftHiveMetastoreProcessor::process_revoke_role;
     processMap_["list_roles"] = &ThriftHiveMetastoreProcessor::process_list_roles;
     processMap_["get_principals_in_role"] = &ThriftHiveMetastoreProcessor::process_get_principals_in_role;
+    processMap_["get_role_grants_for_principal"] = &ThriftHiveMetastoreProcessor::process_get_role_grants_for_principal;
     processMap_["get_privilege_set"] = &ThriftHiveMetastoreProcessor::process_get_privilege_set;
     processMap_["list_privileges"] = &ThriftHiveMetastoreProcessor::process_list_privileges;
     processMap_["grant_privileges"] = &ThriftHiveMetastoreProcessor::process_grant_privileges;
@@ -16355,6 +16482,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->get_principals_in_role(_return, request);
     }
     ifaces_[i]->get_principals_in_role(_return, request);
+    return;
+  }
+
+  void get_role_grants_for_principal(GetRoleGrantsForPrincipalResponse& _return, const GetRoleGrantsForPrincipalRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_role_grants_for_principal(_return, request);
+    }
+    ifaces_[i]->get_role_grants_for_principal(_return, request);
     return;
   }
 
