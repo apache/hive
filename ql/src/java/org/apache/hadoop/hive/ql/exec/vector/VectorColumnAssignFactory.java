@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -298,6 +300,20 @@ public class VectorColumnAssignFactory {
               TimestampWritable bw = (TimestampWritable) val;
               Timestamp t = bw.getTimestamp();
               assignLong(TimestampUtils.getTimeNanoSec(t), destIndex);
+            }
+          }
+        }.init(outputBatch, (LongColumnVector) destCol);
+        break;
+      case DATE:
+        outVCA = new VectorLongColumnAssign() {
+          @Override
+          public void assignObjectValue(Object val, int destIndex) throws HiveException {
+            if (val == null) {
+              assignNull(destIndex);
+            }
+            else {
+              DateWritable bw = (DateWritable) val;
+              assignLong(bw.getDays(), destIndex);
             }
           }
         }.init(outputBatch, (LongColumnVector) destCol);
