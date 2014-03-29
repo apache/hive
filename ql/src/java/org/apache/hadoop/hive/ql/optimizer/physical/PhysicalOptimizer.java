@@ -78,6 +78,10 @@ public class PhysicalOptimizer {
       resolvers.add(new BucketingSortingInferenceOptimizer());
     }
 
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_CHECK_CROSS_PRODUCT)) {
+      resolvers.add(new CrossProductCheck());
+    }
+
     // Vectorization should be the last optimization, because it doesn't modify the plan
     // or any operators. It makes a very low level transformation to the expressions to
     // run in the vectorized mode.
