@@ -1,3 +1,4 @@
+Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain 
 SELECT  *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 PREHOOK: type: QUERY
@@ -78,6 +79,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT  *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

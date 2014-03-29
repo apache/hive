@@ -2587,4 +2587,12 @@
   </description>
 </property>
 
+<property>
+  <name>hive.exec.check.crossproducts</name>
+  <value>true</value>
+  <description>
+    Check if a plan contains a Cross Product. If there is one, output a warning to the Session's console.
+  </description>
+</property>
+
 </configuration>

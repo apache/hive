@@ -26,6 +26,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_5
 RUN: Stage-0:DDL
+Warning: Shuffle Join JOIN[29][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-4:MAPRED' is a cross product
 PREHOOK: query: explain
 from src b 
 INSERT OVERWRITE TABLE src_4 
@@ -298,6 +299,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
+Warning: Shuffle Join JOIN[29][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-4:MAPRED' is a cross product
 PREHOOK: query: from src b 
 INSERT OVERWRITE TABLE src_4 
   select * 
@@ -497,6 +499,8 @@ POSTHOOK: Lineage: src_5.value EXPRESSION [(src)b.FieldSchema(name:value, type:s
 199	val_199
 199	val_199
 2	val_2
+Warning: Map Join MAPJOIN[103][bigTable=?] in task 'Stage-12:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[29][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-4:MAPRED' is a cross product
 PREHOOK: query: explain
 from src b 
 INSERT OVERWRITE TABLE src_4 
@@ -815,6 +819,8 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
+Warning: Map Join MAPJOIN[103][bigTable=?] in task 'Stage-12:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[29][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-4:MAPRED' is a cross product
 PREHOOK: query: from src b 
 INSERT OVERWRITE TABLE src_4 
   select * 
