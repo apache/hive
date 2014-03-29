@@ -1,3 +1,4 @@
+Warning: Shuffle Join JOIN[4][tables = [src1, src2]] in Stage 'Stage-1:MAPRED' is a cross product
 POSTHOOK: query: EXPLAIN
 SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 POSTHOOK: type: QUERY
@@ -74,6 +75,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[4][tables = [src1, src2]] in Stage 'Stage-1:MAPRED' is a cross product
 POSTHOOK: query: SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

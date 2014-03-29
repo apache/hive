@@ -39,6 +39,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwri
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@part
+Warning: Shuffle Join JOIN[22][tables = [gby_sq1, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- non agg, non corr
 explain
 select key, count(*) 
@@ -230,6 +231,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[32][tables = [gby_sq1, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- non agg, corr
 explain
 select b.p_mfgr, min(p_retailprice) 
@@ -493,6 +495,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[32][tables = [gby_sq1, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr
@@ -517,6 +520,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Manufacturer#1	1173.15
 Manufacturer#2	1690.68
+Warning: Shuffle Join JOIN[30][tables = [gby_sq1, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- agg, non corr
 explain
 select b.p_mfgr, min(p_retailprice) 
@@ -785,6 +789,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[30][tables = [gby_sq1, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr

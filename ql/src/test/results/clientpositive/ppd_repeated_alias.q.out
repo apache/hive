@@ -228,6 +228,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[9][tables = [c, d]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- Q4: here, the filter c.bar should be created under the first join but above the second
 explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes c left outer join pokes b on c.foo=b.foo) c left outer join pokes d where d.foo=1 and c.bar=2
 PREHOOK: type: QUERY

@@ -989,7 +989,11 @@ public class HiveConf extends Configuration {
     //   Maintains division behavior: int / int => double
     // Setting to 0.13:
     HIVE_COMPAT("hive.compat", HiveCompat.DEFAULT_COMPAT_LEVEL),
-    HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ("hive.convert.join.bucket.mapjoin.tez", false)
+    HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ("hive.convert.join.bucket.mapjoin.tez", false),
+
+    // Check if a plan contains a Cross Product.
+    // If there is one, output a warning to the Session's console.
+    HIVE_CHECK_CROSS_PRODUCT("hive.exec.check.crossproducts", true),
     ;
 
     public final String varname;
