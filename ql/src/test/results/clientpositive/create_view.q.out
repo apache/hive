@@ -519,6 +519,7 @@ POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@view4
 POSTHOOK: Output: default@view5
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+Warning: Shuffle Join JOIN[6][tables = [v1, v2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM view5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1

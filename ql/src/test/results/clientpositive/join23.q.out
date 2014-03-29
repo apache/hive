@@ -1,3 +1,4 @@
+Warning: Shuffle Join JOIN[4][tables = [src1, src2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 PREHOOK: type: QUERY
@@ -77,6 +78,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[4][tables = [src1, src2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

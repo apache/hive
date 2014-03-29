@@ -185,6 +185,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[5][tables = [p1, p2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 
 where p2.p_partkey + p1.p_partkey = p1.p_partkey and p3.p_name = p2.p_name
@@ -282,6 +283,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[5][tables = [p1, p2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 
 where p2.p_partkey = 1 and p3.p_name = p2.p_name

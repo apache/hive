@@ -92,6 +92,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRIT
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@lineitem
+Warning: Shuffle Join JOIN[18][tables = [src, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- non agg, non corr
 explain
 select * 
@@ -246,6 +247,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[18][tables = [src, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select * 
 from src 
 where src.key not in  ( select key from src s1 where s1.key > '2')
@@ -379,6 +381,7 @@ POSTHOOK: Input: default@src
 199	val_199
 199	val_199
 2	val_2
+Warning: Shuffle Join JOIN[26][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- non agg, corr
 explain
 select p_mfgr, b.p_name, p_size 
@@ -581,6 +584,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[26][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select p_mfgr, b.p_name, p_size 
 from part b 
 where b.p_name not in 
@@ -619,6 +623,7 @@ Manufacturer#4	almond azure aquamarine papaya violet	12
 Manufacturer#5	almond antique blue firebrick mint	31
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
+Warning: Shuffle Join JOIN[34][tables = [part, sq_1_notin_nullcheck]] in Stage 'Stage-6:MAPRED' is a cross product
 PREHOOK: query: -- agg, non corr
 explain
 select p_name, p_size 
@@ -864,6 +869,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[34][tables = [part, sq_1_notin_nullcheck]] in Stage 'Stage-7:MAPRED' is a cross product
 PREHOOK: query: select p_name, p_size 
 from 
 part where part.p_size not in 
@@ -910,6 +916,7 @@ almond aquamarine sandy cyan gainsboro	18
 almond aquamarine yellow dodger mint	7
 almond azure aquamarine papaya violet	12
 almond azure blanched chiffon midnight	23
+Warning: Shuffle Join JOIN[34][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- agg, corr
 explain
 select p_mfgr, p_name, p_size 
@@ -1183,6 +1190,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[34][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select p_mfgr, p_name, p_size 
 from part b where b.p_size not in 
   (select min(p_size) 
@@ -1223,6 +1231,7 @@ Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#5	almond azure blanched chiffon midnight	23
 Manufacturer#5	almond antique blue firebrick mint	31
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
+Warning: Shuffle Join JOIN[18][tables = [li, sq_1_notin_nullcheck]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- non agg, non corr, Group By in Parent Query
 select li.l_partkey, count(*) 
 from lineitem li 
@@ -1257,6 +1266,7 @@ POSTHOOK: Input: default@lineitem
 139636	1
 175839	1
 182052	1
+Warning: Shuffle Join JOIN[18][tables = [src, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- alternate not in syntax
 select * 
 from src 
@@ -1414,6 +1424,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1_v
 POSTHOOK: Output: default@T2_v
+Warning: Shuffle Join JOIN[24][tables = [t1_v, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain
 select * 
 from T1_v where T1_v.key not in (select T2_v.key from T2_v)
@@ -1572,6 +1583,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[24][tables = [t1_v, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select * 
 from T1_v where T1_v.key not in (select T2_v.key from T2_v)
 PREHOOK: type: QUERY

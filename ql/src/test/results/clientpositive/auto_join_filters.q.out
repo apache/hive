@@ -13,6 +13,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in3.txt' INTO TABLE my
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@myinput1
+Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -22,6 +23,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3078400
+Warning: Map Join MAPJOIN[17][bigTable=a] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -31,6 +33,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 4937935
+Warning: Map Join MAPJOIN[17][bigTable=b] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -40,6 +43,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3080335
+Warning: Shuffle Join JOIN[4][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -293,6 +297,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in2.txt' into table sm
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_input2
+Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -302,6 +307,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3078400
+Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -311,6 +317,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3078400
+Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -320,6 +327,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3078400
+Warning: Shuffle Join JOIN[10][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1

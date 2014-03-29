@@ -59,6 +59,8 @@ where b.key not in
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@cv2
+Warning: Shuffle Join JOIN[42][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-5:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[18][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * 
 from cv2 where cv2.key in (select key from cv2 c where c.key < '11')
 PREHOOK: type: QUERY
