@@ -283,6 +283,14 @@ public class MiniHS2 extends AbstractHiveService {
     return driverName;
   }
 
+  public MiniMrShim getMR() {
+    return mr;
+  }
+
+  public MiniDFSShim getDFS() {
+    return dfs;
+  }
+
   private void waitForStartup() throws Exception {
     int waitTime = 0;
     long startupTimeout = 1000L * 1000L;
