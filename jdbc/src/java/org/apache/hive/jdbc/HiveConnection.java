@@ -52,7 +52,6 @@ import javax.security.sasl.SaslException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -102,6 +101,8 @@ public class HiveConnection implements java.sql.Connection {
   private static final String HIVE_USE_SSL = "ssl";
   private static final String HIVE_SSL_TRUST_STORE = "sslTrustStore";
   private static final String HIVE_SSL_TRUST_STORE_PASSWORD = "trustStorePassword";
+  private static final String HIVE_SERVER2_TRANSPORT_MODE = "hive.server2.transport.mode";
+  private static final String HIVE_SERVER2_THRIFT_HTTP_PATH = "hive.server2.thrift.http.path";
   private static final String HIVE_VAR_PREFIX = "hivevar:";
   private static final String HIVE_CONF_PREFIX = "hiveconf:";
   // Currently supports JKS keystore format
@@ -213,8 +214,7 @@ public class HiveConnection implements java.sql.Connection {
     String schemeName = useSsl ? "https" : "http";
     // http path should begin with "/"
     String httpPath;
-    httpPath = hiveConfMap.get(
-        HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname);
+    httpPath = hiveConfMap.get(HIVE_SERVER2_THRIFT_HTTP_PATH);
     if(httpPath == null) {
       httpPath = "/";
     }
@@ -478,8 +478,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private boolean isHttpTransportMode() {
-    String transportMode =
-        hiveConfMap.get(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname);
+    String transportMode = hiveConfMap.get(HIVE_SERVER2_TRANSPORT_MODE);
     if(transportMode != null && (transportMode.equalsIgnoreCase("http"))) {
       return true;
     }
