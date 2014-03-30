@@ -127,6 +127,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  void unlock(UnlockRequest rqst)'
   print '  ShowLocksResponse show_locks(ShowLocksRequest rqst)'
   print '  void heartbeat(HeartbeatRequest ids)'
+  print '  HeartbeatTxnRangeResponse heartbeat_txn_range(HeartbeatTxnRangeRequest txns)'
   print '  void compact(CompactionRequest rqst)'
   print '  ShowCompactResponse show_compact(ShowCompactRequest rqst)'
   print ''
@@ -803,6 +804,12 @@ elif cmd == 'heartbeat':
     print 'heartbeat requires 1 args'
     sys.exit(1)
   pp.pprint(client.heartbeat(eval(args[0]),))
+
+elif cmd == 'heartbeat_txn_range':
+  if len(args) != 1:
+    print 'heartbeat_txn_range requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.heartbeat_txn_range(eval(args[0]),))
 
 elif cmd == 'compact':
   if len(args) != 1:

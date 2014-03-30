@@ -4083,6 +4083,94 @@ class HeartbeatRequest {
 
 void swap(HeartbeatRequest &a, HeartbeatRequest &b);
 
+
+class HeartbeatTxnRangeRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "F33135321253DAEB67B0E79E416CA831";
+  static const uint8_t binary_fingerprint[16]; // = {0xF3,0x31,0x35,0x32,0x12,0x53,0xDA,0xEB,0x67,0xB0,0xE7,0x9E,0x41,0x6C,0xA8,0x31};
+
+  HeartbeatTxnRangeRequest() : min(0), max(0) {
+  }
+
+  virtual ~HeartbeatTxnRangeRequest() throw() {}
+
+  int64_t min;
+  int64_t max;
+
+  void __set_min(const int64_t val) {
+    min = val;
+  }
+
+  void __set_max(const int64_t val) {
+    max = val;
+  }
+
+  bool operator == (const HeartbeatTxnRangeRequest & rhs) const
+  {
+    if (!(min == rhs.min))
+      return false;
+    if (!(max == rhs.max))
+      return false;
+    return true;
+  }
+  bool operator != (const HeartbeatTxnRangeRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const HeartbeatTxnRangeRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(HeartbeatTxnRangeRequest &a, HeartbeatTxnRangeRequest &b);
+
+
+class HeartbeatTxnRangeResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "33E49A70BD5C04262A0F407E3656E3CF";
+  static const uint8_t binary_fingerprint[16]; // = {0x33,0xE4,0x9A,0x70,0xBD,0x5C,0x04,0x26,0x2A,0x0F,0x40,0x7E,0x36,0x56,0xE3,0xCF};
+
+  HeartbeatTxnRangeResponse() {
+  }
+
+  virtual ~HeartbeatTxnRangeResponse() throw() {}
+
+  std::set<int64_t>  aborted;
+  std::set<int64_t>  nosuch;
+
+  void __set_aborted(const std::set<int64_t> & val) {
+    aborted = val;
+  }
+
+  void __set_nosuch(const std::set<int64_t> & val) {
+    nosuch = val;
+  }
+
+  bool operator == (const HeartbeatTxnRangeResponse & rhs) const
+  {
+    if (!(aborted == rhs.aborted))
+      return false;
+    if (!(nosuch == rhs.nosuch))
+      return false;
+    return true;
+  }
+  bool operator != (const HeartbeatTxnRangeResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const HeartbeatTxnRangeResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b);
+
 typedef struct _CompactionRequest__isset {
   _CompactionRequest__isset() : partitionname(false), runas(false) {}
   bool partitionname;

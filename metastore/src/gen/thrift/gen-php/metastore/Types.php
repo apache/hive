@@ -9604,6 +9604,258 @@ class HeartbeatRequest {
 
 }
 
+class HeartbeatTxnRangeRequest {
+  static $_TSPEC;
+
+  public $min = null;
+  public $max = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'min',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'max',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['min'])) {
+        $this->min = $vals['min'];
+      }
+      if (isset($vals['max'])) {
+        $this->max = $vals['max'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'HeartbeatTxnRangeRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->min);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->max);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('HeartbeatTxnRangeRequest');
+    if ($this->min !== null) {
+      $xfer += $output->writeFieldBegin('min', TType::I64, 1);
+      $xfer += $output->writeI64($this->min);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->max !== null) {
+      $xfer += $output->writeFieldBegin('max', TType::I64, 2);
+      $xfer += $output->writeI64($this->max);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class HeartbeatTxnRangeResponse {
+  static $_TSPEC;
+
+  public $aborted = null;
+  public $nosuch = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'aborted',
+          'type' => TType::SET,
+          'etype' => TType::I64,
+          'elem' => array(
+            'type' => TType::I64,
+            ),
+          ),
+        2 => array(
+          'var' => 'nosuch',
+          'type' => TType::SET,
+          'etype' => TType::I64,
+          'elem' => array(
+            'type' => TType::I64,
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['aborted'])) {
+        $this->aborted = $vals['aborted'];
+      }
+      if (isset($vals['nosuch'])) {
+        $this->nosuch = $vals['nosuch'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'HeartbeatTxnRangeResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::SET) {
+            $this->aborted = array();
+            $_size370 = 0;
+            $_etype373 = 0;
+            $xfer += $input->readSetBegin($_etype373, $_size370);
+            for ($_i374 = 0; $_i374 < $_size370; ++$_i374)
+            {
+              $elem375 = null;
+              $xfer += $input->readI64($elem375);
+              if (is_scalar($elem375)) {
+                $this->aborted[$elem375] = true;
+              } else {
+                $this->aborted []= $elem375;
+              }
+            }
+            $xfer += $input->readSetEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::SET) {
+            $this->nosuch = array();
+            $_size376 = 0;
+            $_etype379 = 0;
+            $xfer += $input->readSetBegin($_etype379, $_size376);
+            for ($_i380 = 0; $_i380 < $_size376; ++$_i380)
+            {
+              $elem381 = null;
+              $xfer += $input->readI64($elem381);
+              if (is_scalar($elem381)) {
+                $this->nosuch[$elem381] = true;
+              } else {
+                $this->nosuch []= $elem381;
+              }
+            }
+            $xfer += $input->readSetEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('HeartbeatTxnRangeResponse');
+    if ($this->aborted !== null) {
+      if (!is_array($this->aborted)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('aborted', TType::SET, 1);
+      {
+        $output->writeSetBegin(TType::I64, count($this->aborted));
+        {
+          foreach ($this->aborted as $iter382 => $iter383)
+          {
+            if (is_scalar($iter383)) {
+            $xfer += $output->writeI64($iter382);
+            } else {
+            $xfer += $output->writeI64($iter383);
+            }
+          }
+        }
+        $output->writeSetEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->nosuch !== null) {
+      if (!is_array($this->nosuch)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('nosuch', TType::SET, 2);
+      {
+        $output->writeSetBegin(TType::I64, count($this->nosuch));
+        {
+          foreach ($this->nosuch as $iter384 => $iter385)
+          {
+            if (is_scalar($iter385)) {
+            $xfer += $output->writeI64($iter384);
+            } else {
+            $xfer += $output->writeI64($iter385);
+            }
+          }
+        }
+        $output->writeSetEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class CompactionRequest {
   static $_TSPEC;
 
@@ -10066,15 +10318,15 @@ class ShowCompactResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->compacts = array();
-            $_size370 = 0;
-            $_etype373 = 0;
-            $xfer += $input->readListBegin($_etype373, $_size370);
-            for ($_i374 = 0; $_i374 < $_size370; ++$_i374)
+            $_size386 = 0;
+            $_etype389 = 0;
+            $xfer += $input->readListBegin($_etype389, $_size386);
+            for ($_i390 = 0; $_i390 < $_size386; ++$_i390)
             {
-              $elem375 = null;
-              $elem375 = new \metastore\ShowCompactResponseElement();
-              $xfer += $elem375->read($input);
-              $this->compacts []= $elem375;
+              $elem391 = null;
+              $elem391 = new \metastore\ShowCompactResponseElement();
+              $xfer += $elem391->read($input);
+              $this->compacts []= $elem391;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -10102,9 +10354,9 @@ class ShowCompactResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->compacts));
         {
-          foreach ($this->compacts as $iter376)
+          foreach ($this->compacts as $iter392)
           {
-            $xfer += $iter376->write($output);
+            $xfer += $iter392->write($output);
           }
         }
         $output->writeListEnd();
