@@ -58,7 +58,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SortedSet;
@@ -75,6 +77,12 @@ import jline.Completor;
 import jline.ConsoleReader;
 import jline.FileNameCompletor;
 import jline.SimpleCompletor;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 
 /**
@@ -114,6 +122,8 @@ public class BeeLine {
   private ConsoleReader consoleReader;
   private List<String> batch = null;
   private final Reflector reflector;
+
+  private static final Options options = new Options();
 
   public static final String BEELINE_DEFAULT_JDBC_DRIVER = "org.apache.hive.jdbc.HiveDriver";
   public static final String BEELINE_DEFAULT_JDBC_URL = "jdbc:hive2://";
@@ -243,6 +253,81 @@ public class BeeLine {
     } catch (Throwable t) {
       throw new ExceptionInInitializerError("jline-missing");
     }
+  }
+
+  static {
+    // -d <driver class>
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("driver class")
+        .withDescription("the driver class to use")
+        .create('d'));
+
+    // -u <database url>
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("database url")
+        .withDescription("the JDBC URL to connect to")
+        .create('u'));
+
+    // -n <username>
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("username")
+        .withDescription("the username to connect as")
+        .create('n'));
+
+    // -p <password>
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("password")
+        .withDescription("the password to connect as")
+        .create('p'));
+
+    // -a <authType>
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("authType")
+        .withDescription("the authentication type")
+        .create('a'));
+
+    // -e <query>
+    options.addOption(OptionBuilder
+        .hasArgs()
+        .withArgName("query")
+        .withDescription("query that should be executed")
+        .create('e'));
+
+    // -f <file>
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("file")
+        .withDescription("script file that should be executed")
+        .create('f'));
+
+    // -help
+    options.addOption(OptionBuilder
+        .withLongOpt("help")
+        .withDescription("display this message")
+        .create('h'));
+
+    // Substitution option --hivevar
+    options.addOption(OptionBuilder
+        .withValueSeparator()
+        .hasArgs(2)
+        .withArgName("key=value")
+        .withLongOpt("hivevar")
+        .withDescription("hive variable name and value")
+        .create());
+
+    //hive conf option --hiveconf
+    options.addOption(OptionBuilder
+        .withValueSeparator()
+        .hasArgs(2)
+        .withArgName("property=value")
+        .withLongOpt("hiveconf")
+        .withDescription("Use value for given property")
+        .create());
   }
 
 
@@ -498,78 +583,71 @@ public class BeeLine {
   }
 
 
+  public class BeelineParser extends GnuParser {
+
+    @Override
+    protected void processOption(final String arg, final ListIterator iter) throws  ParseException {
+      if ((arg.startsWith("--")) && !(arg.equals(HIVE_VAR_PREFIX) || (arg.equals(HIVE_CONF_PREFIX)) || (arg.equals("--help")))) {
+        String stripped = arg.substring(2, arg.length());
+        String[] parts = split(stripped, "=");
+        debug(loc("setting-prop", Arrays.asList(parts)));
+        if (parts.length >= 2) {
+          getOpts().set(parts[0], parts[1], true);
+        } else {
+          getOpts().set(parts[0], "true", true);
+        }
+      } else {
+        super.processOption(arg, iter);
+      }
+    }
+
+  }
+
   boolean initArgs(String[] args) {
     List<String> commands = new LinkedList<String>();
     List<String> files = new LinkedList<String>();
+
+    CommandLine cl;
+    BeelineParser beelineParser;
+
+    try {
+      beelineParser = new BeelineParser();
+      cl = beelineParser.parse(options, args);
+    } catch (ParseException e1) {
+      output(e1.getMessage());
+      return false;
+    }
+
     String driver = null, user = null, pass = null, url = null, cmd = null;
     String auth = null;
 
-    for (int i = 0; i < args.length; i++) {
-      if (args[i].equals("--help") || args[i].equals("-h")) {
-        // Return false here, so usage will be printed.
-        return false;
-      }
 
-      // Parse hive variables
-      if (args[i].equals(HIVE_VAR_PREFIX)) {
-        String[] parts = split(args[++i], "=");
-        if (parts.length != 2) {
-          return false;
-        }
-        getOpts().getHiveVariables().put(parts[0], parts[1]);
-        continue;
-      }
-
-      // Parse hive conf variables
-      if (args[i].equals(HIVE_CONF_PREFIX)) {
-        String[] parts = split(args[++i], "=");
-        if (parts.length != 2) {
-          return false;
-        }
-        getOpts().getHiveConfVariables().put(parts[0], parts[1]);
-        continue;
-      }
-
-      // -- arguments are treated as properties
-      if (args[i].startsWith("--")) {
-        String[] parts = split(args[i].substring(2), "=");
-        debug(loc("setting-prop", Arrays.asList(parts)));
-        if (parts.length > 0) {
-          boolean ret;
-
-          if (parts.length >= 2) {
-            ret = getOpts().set(parts[0], parts[1], true);
-          } else {
-            ret = getOpts().set(parts[0], "true", true);
-          }
-
-          if (!ret) {
-            return false;
-          }
-
-        }
-        continue;
-      }
-
-      if (args[i].equals("-d")) {
-        driver = args[i++ + 1];
-      } else if (args[i].equals("-n")) {
-        user = args[i++ + 1];
-      } else if (args[i].equals("-a")) {
-        auth = args[i++ + 1];
-        getOpts().setAuthType(auth);
-      } else if (args[i].equals("-p")) {
-        pass = args[i++ + 1];
-      } else if (args[i].equals("-u")) {
-        url = args[i++ + 1];
-      } else if (args[i].equals("-e")) {
-        commands.add(args[i++ + 1]);
-      } else if (args[i].equals("-f")) {
-        getOpts().setScriptFile(args[i++ + 1]);
-      } else {
-        return error(loc("unrecognized-argument", args[i]));
-      }
+    if (cl.hasOption("help")) {
+      // Return false here, so usage will be printed.
+      return false;
     }
+
+    Properties hiveVars = cl.getOptionProperties("hivevar");
+    for (String key : hiveVars.stringPropertyNames()) {
+      getOpts().getHiveVariables().put(key, hiveVars.getProperty(key));
+    }
+
+    Properties hiveConfs = cl.getOptionProperties("hiveconf");
+    for (String key : hiveConfs.stringPropertyNames()) {
+      getOpts().getHiveConfVariables().put(key, hiveConfs.getProperty(key));
+    }
+
+    driver = cl.getOptionValue("d");
+    auth = cl.getOptionValue("a");
+    user = cl.getOptionValue("n");
+    getOpts().setAuthType(auth);
+    pass = cl.getOptionValue("p");
+    url = cl.getOptionValue("u");
+    getOpts().setScriptFile(cl.getOptionValue("f"));
+    if (cl.getOptionValues('e') != null) {
+      commands = Arrays.asList(cl.getOptionValues('e'));
+    }
+
 
     // TODO: temporary disable this for easier debugging
     /*
