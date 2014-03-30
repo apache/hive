@@ -6689,6 +6689,174 @@ class HeartbeatRequest:
   def __ne__(self, other):
     return not (self == other)
 
+class HeartbeatTxnRangeRequest:
+  """
+  Attributes:
+   - min
+   - max
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'min', None, None, ), # 1
+    (2, TType.I64, 'max', None, None, ), # 2
+  )
+
+  def __init__(self, min=None, max=None,):
+    self.min = min
+    self.max = max
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.min = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I64:
+          self.max = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('HeartbeatTxnRangeRequest')
+    if self.min is not None:
+      oprot.writeFieldBegin('min', TType.I64, 1)
+      oprot.writeI64(self.min)
+      oprot.writeFieldEnd()
+    if self.max is not None:
+      oprot.writeFieldBegin('max', TType.I64, 2)
+      oprot.writeI64(self.max)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.min is None:
+      raise TProtocol.TProtocolException(message='Required field min is unset!')
+    if self.max is None:
+      raise TProtocol.TProtocolException(message='Required field max is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class HeartbeatTxnRangeResponse:
+  """
+  Attributes:
+   - aborted
+   - nosuch
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.SET, 'aborted', (TType.I64,None), None, ), # 1
+    (2, TType.SET, 'nosuch', (TType.I64,None), None, ), # 2
+  )
+
+  def __init__(self, aborted=None, nosuch=None,):
+    self.aborted = aborted
+    self.nosuch = nosuch
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.SET:
+          self.aborted = set()
+          (_etype372, _size369) = iprot.readSetBegin()
+          for _i373 in xrange(_size369):
+            _elem374 = iprot.readI64();
+            self.aborted.add(_elem374)
+          iprot.readSetEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.SET:
+          self.nosuch = set()
+          (_etype378, _size375) = iprot.readSetBegin()
+          for _i379 in xrange(_size375):
+            _elem380 = iprot.readI64();
+            self.nosuch.add(_elem380)
+          iprot.readSetEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('HeartbeatTxnRangeResponse')
+    if self.aborted is not None:
+      oprot.writeFieldBegin('aborted', TType.SET, 1)
+      oprot.writeSetBegin(TType.I64, len(self.aborted))
+      for iter381 in self.aborted:
+        oprot.writeI64(iter381)
+      oprot.writeSetEnd()
+      oprot.writeFieldEnd()
+    if self.nosuch is not None:
+      oprot.writeFieldBegin('nosuch', TType.SET, 2)
+      oprot.writeSetBegin(TType.I64, len(self.nosuch))
+      for iter382 in self.nosuch:
+        oprot.writeI64(iter382)
+      oprot.writeSetEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.aborted is None:
+      raise TProtocol.TProtocolException(message='Required field aborted is unset!')
+    if self.nosuch is None:
+      raise TProtocol.TProtocolException(message='Required field nosuch is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class CompactionRequest:
   """
   Attributes:
@@ -7031,11 +7199,11 @@ class ShowCompactResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.compacts = []
-          (_etype372, _size369) = iprot.readListBegin()
-          for _i373 in xrange(_size369):
-            _elem374 = ShowCompactResponseElement()
-            _elem374.read(iprot)
-            self.compacts.append(_elem374)
+          (_etype386, _size383) = iprot.readListBegin()
+          for _i387 in xrange(_size383):
+            _elem388 = ShowCompactResponseElement()
+            _elem388.read(iprot)
+            self.compacts.append(_elem388)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -7052,8 +7220,8 @@ class ShowCompactResponse:
     if self.compacts is not None:
       oprot.writeFieldBegin('compacts', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.compacts))
-      for iter375 in self.compacts:
-        iter375.write(oprot)
+      for iter389 in self.compacts:
+        iter389.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
