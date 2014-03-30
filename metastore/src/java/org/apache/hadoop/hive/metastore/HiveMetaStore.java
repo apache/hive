@@ -83,6 +83,8 @@ import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
+import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
+import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -4856,6 +4858,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, TException {
       try {
         getTxnHandler().heartbeat(ids);
+      } catch (MetaException e) {
+        throw new TException(e);
+      }
+    }
+
+    @Override
+    public HeartbeatTxnRangeResponse heartbeat_txn_range(HeartbeatTxnRangeRequest rqst)
+      throws TException {
+      try {
+        return getTxnHandler().heartbeatTxnRange(rqst);
       } catch (MetaException e) {
         throw new TException(e);
       }

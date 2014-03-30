@@ -1631,6 +1631,46 @@ class HeartbeatRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class HeartbeatTxnRangeRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  MIN = 1
+  MAX = 2
+
+  FIELDS = {
+    MIN => {:type => ::Thrift::Types::I64, :name => 'min'},
+    MAX => {:type => ::Thrift::Types::I64, :name => 'max'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field min is unset!') unless @min
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field max is unset!') unless @max
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class HeartbeatTxnRangeResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ABORTED = 1
+  NOSUCH = 2
+
+  FIELDS = {
+    ABORTED => {:type => ::Thrift::Types::SET, :name => 'aborted', :element => {:type => ::Thrift::Types::I64}},
+    NOSUCH => {:type => ::Thrift::Types::SET, :name => 'nosuch', :element => {:type => ::Thrift::Types::I64}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field aborted is unset!') unless @aborted
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field nosuch is unset!') unless @nosuch
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class CompactionRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1

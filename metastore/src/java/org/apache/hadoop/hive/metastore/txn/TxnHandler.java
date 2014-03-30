@@ -600,6 +600,43 @@ public class TxnHandler {
     }
   }
 
+  public HeartbeatTxnRangeResponse heartbeatTxnRange(HeartbeatTxnRangeRequest rqst)
+      throws MetaException {
+    try {
+      Connection dbConn = getDbConn();
+      HeartbeatTxnRangeResponse rsp = new HeartbeatTxnRangeResponse();
+      Set<Long> nosuch = new HashSet<Long>();
+      Set<Long> aborted = new HashSet<Long>();
+      rsp.setNosuch(nosuch);
+      rsp.setAborted(aborted);
+      try {
+        for (long txn = rqst.getMin(); txn <= rqst.getMax(); txn++) {
+          try {
+            heartbeatTxn(dbConn, txn);
+          } catch (NoSuchTxnException e) {
+            nosuch.add(txn);
+          } catch (TxnAbortedException e) {
+            aborted.add(txn);
+          }
+        }
+        return rsp;
+      } catch (SQLException e) {
+        try {
+          LOG.debug("Going to rollback");
+          dbConn.rollback();
+        } catch (SQLException e1) {
+        }
+        detectDeadlock(e, "heartbeatTxnRange");
+        throw new MetaException("Unable to select from transaction database " +
+            StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (DeadlockException e) {
+      return heartbeatTxnRange(rqst);
+    }
+  }
+
   public void compact(CompactionRequest rqst) throws MetaException {
     // Put a compaction request in the queue.
     try {
