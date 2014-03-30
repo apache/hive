@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
+import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
@@ -80,6 +81,10 @@ public class TestHiveMetaStoreTxns {
     Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
         validTxns.isTxnRangeCommitted(1L, 3L));
     List<Long> tids = client.openTxns("me", 5).getTxn_ids();
+
+    HeartbeatTxnRangeResponse rsp = client.heartbeatTxnRange(1, 5);
+    Assert.assertEquals(0, rsp.getNosuch().size());
+    Assert.assertEquals(0, rsp.getAborted().size());
 
     client.rollbackTxn(1L);
     client.commitTxn(2L);
