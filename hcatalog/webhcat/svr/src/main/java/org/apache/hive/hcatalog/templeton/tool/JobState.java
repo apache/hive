@@ -166,9 +166,12 @@ public class JobState {
    */
   public List<JobState> getChildren() throws IOException {
     ArrayList<JobState> children = new ArrayList<JobState>();
-    for (String jobid : getField("children").split(",")) {
-      children.add(new JobState(jobid, config));
-    }
+    String childJobIDs = getField("children");
+    if (childJobIDs != null) {
+      for (String jobid : childJobIDs.split(",")) {
+    	children.add(new JobState(jobid, config));
+      }
+    }    
     return children;
   }
 
