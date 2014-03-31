@@ -8589,10 +8589,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Finally add the partitioning columns
       for (FieldSchema part_col : tab.getPartCols()) {
         LOG.trace("Adding partition col: " + part_col);
-        // TODO: use the right type by calling part_col.getType() instead of
-        // String.class. See HIVE-3059.
         rwsch.put(alias, part_col.getName(), new ColumnInfo(part_col.getName(),
-            TypeInfoFactory.stringTypeInfo, alias, true));
+            TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
       }
 
       // put all virutal columns in RowResolver.

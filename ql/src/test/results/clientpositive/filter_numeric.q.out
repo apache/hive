@@ -74,7 +74,7 @@ STAGE PLANS:
             alias: partint
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string), hr (type: string)
+              expressions: key (type: string), value (type: string), hr (type: int)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
@@ -623,7 +623,7 @@ STAGE PLANS:
             alias: partint
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string), hr (type: string)
+              expressions: key (type: string), value (type: string), hr (type: int)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
@@ -1674,7 +1674,7 @@ STAGE PLANS:
             alias: partint
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string), hr (type: string)
+              expressions: key (type: string), value (type: string), hr (type: int)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
@@ -2223,7 +2223,7 @@ STAGE PLANS:
             alias: partint
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string), hr (type: string)
+              expressions: key (type: string), value (type: string), hr (type: int)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
               File Output Operator

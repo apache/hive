@@ -47,6 +47,10 @@
            <string>key,value</string> 
           </void> 
           <void method="put"> 
+           <string>partition_columns.types</string> 
+           <string>string:string</string> 
+          </void> 
+          <void method="put"> 
            <string>COLUMN_STATS_ACCURATE</string> 
            <string>true</string> 
           </void> 
@@ -137,6 +141,10 @@
             <void method="put"> 
              <string>columns</string> 
              <string>key,value</string> 
+            </void> 
+            <void method="put"> 
+             <string>partition_columns.types</string> 
+             <string>string:string</string> 
             </void> 
             <void method="put"> 
              <string>columns.comments</string> 
@@ -905,6 +913,10 @@
           <void method="put"> 
            <string>columns</string> 
            <string>key,value</string> 
+          </void> 
+          <void method="put"> 
+           <string>partition_columns.types</string> 
+           <string>string:string</string> 
           </void> 
           <void method="put"> 
            <string>COLUMN_STATS_ACCURATE</string> 
