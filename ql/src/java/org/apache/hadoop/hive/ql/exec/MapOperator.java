@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -179,7 +180,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
     PartitionDesc pd = ctx.partDesc;
     TableDesc td = pd.getTableDesc();
-
+    
     MapOpCtx opCtx = new MapOpCtx();
     // Use table properties in case of unpartitioned tables,
     // and the union of table properties and partition properties, with partition
@@ -203,28 +204,43 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
     opCtx.partTblObjectInspectorConverter = ObjectInspectorConverters.getConverter(
         partRawRowObjectInspector, opCtx.tblRawRowObjectInspector);
-
+    
     // Next check if this table has partitions and if so
     // get the list of partition names as well as allocate
     // the serdes for the partition columns
     String pcols = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
-    // Log LOG = LogFactory.getLog(MapOperator.class.getName());
+    
     if (pcols != null && pcols.length() > 0) {
       String[] partKeys = pcols.trim().split("/");
+      String pcolTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);      
+      String[] partKeyTypes = pcolTypes.trim().split(":");
+      
+      if (partKeys.length > partKeyTypes.length) {
+          throw new HiveException("Internal error : partKeys length, " +partKeys.length +
+                  " greater than partKeyTypes length, " + partKeyTypes.length);
+      }
+      
       List<String> partNames = new ArrayList<String>(partKeys.length);
       Object[] partValues = new Object[partKeys.length];
       List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>(partKeys.length);
+      
       for (int i = 0; i < partKeys.length; i++) {
         String key = partKeys[i];
         partNames.add(key);
+        ObjectInspector oi = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector
+            (TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]));
+        
         // Partitions do not exist for this table
         if (partSpec == null) {
           // for partitionless table, initialize partValue to null
           partValues[i] = null;
         } else {
-          partValues[i] = new Text(partSpec.get(key));
+            partValues[i] = 
+                ObjectInspectorConverters.
+                getConverter(PrimitiveObjectInspectorFactory.
+                    javaStringObjectInspector, oi).convert(partSpec.get(key)); 
         }
-        partObjectInspectors.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+        partObjectInspectors.add(oi);
       }
       opCtx.rowWithPart = new Object[] {null, partValues};
       opCtx.partObjectInspector = ObjectInspectorFactory
