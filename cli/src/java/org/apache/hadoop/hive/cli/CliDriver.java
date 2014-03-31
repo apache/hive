@@ -400,7 +400,6 @@ public class CliDriver {
           // First, kill any running MR jobs
           HadoopJobExecHelper.killRunningJobs();
           HiveInterruptUtils.interrupt();
-          this.cliThread.interrupt();
         }
       });
     }
