@@ -2132,14 +2132,14 @@ public final class Utilities {
    * @return the summary of all the input paths.
    * @throws IOException
    */
-  public static ContentSummary getInputSummary(Context ctx, MapWork work, PathFilter filter)
+  public static ContentSummary getInputSummary(final Context ctx, MapWork work, PathFilter filter)
       throws IOException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
 
     long[] summary = {0, 0, 0};
 
-    List<String> pathNeedProcess = new ArrayList<String>();
+    final List<String> pathNeedProcess = new ArrayList<String>();
 
     // Since multiple threads could call this method concurrently, locking
     // this method will avoid number of threads out of control.
@@ -2182,6 +2182,13 @@ public final class Utilities {
       HiveInterruptCallback interrup = HiveInterruptUtils.add(new HiveInterruptCallback() {
         @Override
         public void interrupt() {
+          for (String path : pathNeedProcess) {
+            try {
+              new Path(path).getFileSystem(ctx.getConf()).close();
+            } catch (IOException ignore) {
+                LOG.debug(ignore);
+            }
+          }
           if (executor != null) {
             executor.shutdownNow();
           }
