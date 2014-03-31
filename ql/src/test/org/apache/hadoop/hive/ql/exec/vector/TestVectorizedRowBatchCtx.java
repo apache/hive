@@ -202,7 +202,7 @@ public class TestVectorizedRowBatchCtx {
     Assert.assertEquals("Field size should be 9", colCount, fieldRefs.size());
 
     // Create the context
-    VectorizedRowBatchCtx ctx = new VectorizedRowBatchCtx(oi, oi, serDe, null);
+    VectorizedRowBatchCtx ctx = new VectorizedRowBatchCtx(oi, oi, serDe, null, null);
     VectorizedRowBatch batch = ctx.createVectorizedRowBatch();
     VectorizedBatchUtil.SetNoNullFields(true, batch);
 

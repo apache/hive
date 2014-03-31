@@ -260,7 +260,7 @@ public class VectorGroupByOperator extends GroupByOperator {
             HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_MAXENTRIES);
         this.minReductionHashAggr = HiveConf.getFloatVar(hconf,
             HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
-          this.numRowsCompareHashAggr = HiveConf.getLongVar(hconf,
+          this.numRowsCompareHashAggr = HiveConf.getIntVar(hconf,
             HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL);
       } 
       else {

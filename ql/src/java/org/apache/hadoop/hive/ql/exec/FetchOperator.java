@@ -59,6 +59,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -245,9 +250,12 @@ public class FetchOperator implements Serializable {
     String pcols = partition.getTableDesc().getProperties().getProperty(
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
     String[] partKeys = pcols.trim().split("/");
-    row[1] = createPartValue(partKeys, partition.getPartSpec());
+    String pcolTypes = partition.getTableDesc().getProperties().getProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES); 
+    String[] partKeyTypes = pcolTypes.trim().split(":");
+    row[1] = createPartValue(partKeys, partition.getPartSpec(), partKeyTypes);
 
-    return createRowInspector(getStructOIFrom(partitionOI), partKeys);
+    return createRowInspector(getStructOIFrom(partitionOI), partKeys, partKeyTypes);
   }
 
   private StructObjectInspector getRowInspectorFromPartitionedTable(TableDesc table)
@@ -257,8 +265,11 @@ public class FetchOperator implements Serializable {
     String pcols = table.getProperties().getProperty(
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
     String[] partKeys = pcols.trim().split("/");
+    String pcolTypes = table.getProperties().getProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES); 
+    String[] partKeyTypes = pcolTypes.trim().split(":");    
     row[1] = null;
-    return createRowInspector(getStructOIFrom(serde.getObjectInspector()), partKeys);
+    return createRowInspector(getStructOIFrom(serde.getObjectInspector()), partKeys, partKeyTypes);
   }
 
   private StructObjectInspector getStructOIFrom(ObjectInspector current) throws SerDeException {
@@ -276,13 +287,16 @@ public class FetchOperator implements Serializable {
         Arrays.asList(current, vcsOI)) : current;
   }
 
-  private StructObjectInspector createRowInspector(StructObjectInspector current, String[] partKeys)
+  private StructObjectInspector createRowInspector(StructObjectInspector current, String[] partKeys, String[] partKeyTypes)
       throws SerDeException {
     List<String> partNames = new ArrayList<String>();
     List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
-    for (String key : partKeys) {
-      partNames.add(key);
-      partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+    for (int i = 0; i < partKeys.length; i++) {
+      String key = partKeys[i];
+      partNames.add(key);    
+      ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
+          TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]));
+      partObjectInspectors.add(oi);
     }
     StructObjectInspector partObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(partNames, partObjectInspectors);
@@ -292,10 +306,16 @@ public class FetchOperator implements Serializable {
             Arrays.asList(current, partObjectInspector));
   }
 
-  private List<String> createPartValue(String[] partKeys, Map<String, String> partSpec) {
-    List<String> partValues = new ArrayList<String>();
-    for (String key : partKeys) {
-      partValues.add(partSpec.get(key));
+  private Object[] createPartValue(String[] partKeys, Map<String, String> partSpec, String[] partKeyTypes) {
+    Object[] partValues = new Object[partKeys.length];
+    for (int i = 0; i < partKeys.length; i++) {
+      String key = partKeys[i];
+      ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
+          TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]));
+      partValues[i] = 
+          ObjectInspectorConverters.
+          getConverter(PrimitiveObjectInspectorFactory.
+              javaStringObjectInspector, oi).convert(partSpec.get(key));   
     }
     return partValues;
   }
