@@ -68,23 +68,18 @@ implements SettableHiveVarcharObjectInspector {
 
   @Override
   public Object set(Object o, HiveVarchar value) {
-    HiveVarchar setValue = (HiveVarchar)o;
     if (BaseCharUtils.doesPrimitiveMatchTypeParams(
         value, (VarcharTypeInfo)typeInfo)) {
-      setValue.setValue(value);
+      return o = value;
     } else {
       // Otherwise value may be too long, convert to appropriate value based on params
-      setValue.setValue(value, getMaxLength());
+      return o = new HiveVarchar(value,  getMaxLength());
     }
-
-    return setValue;
   }
 
   @Override
   public Object set(Object o, String value) {
-    HiveVarchar convertedValue = (HiveVarchar)o;
-    convertedValue.setValue(value, getMaxLength());
-    return convertedValue;
+    return o = new HiveVarchar(value, getMaxLength());
   }
 
   @Override
