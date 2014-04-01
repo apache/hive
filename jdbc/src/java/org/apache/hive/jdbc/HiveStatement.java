@@ -124,12 +124,14 @@ public class HiveStatement implements java.sql.Statement {
     try {
       transportLock.lock();
       TCancelOperationResp cancelResp = client.CancelOperation(cancelReq);
-      transportLock.unlock();
       Utils.verifySuccessWithInfo(cancelResp.getStatus());
     } catch (SQLException e) {
       throw e;
     } catch (Exception e) {
       throw new SQLException(e.toString(), "08S01", e);
+    }
+    finally {
+      transportLock.unlock();
     }
   }
 
@@ -162,13 +164,15 @@ public class HiveStatement implements java.sql.Statement {
         closeReq.setOperationHandle(stmtHandle);
         transportLock.lock();
         TCloseOperationResp closeResp = client.CloseOperation(closeReq);
-        transportLock.unlock();
         Utils.verifySuccessWithInfo(closeResp.getStatus());
       }
     } catch (SQLException e) {
       throw e;
     } catch (Exception e) {
       throw new SQLException(e.toString(), "08S01", e);
+    }
+    finally {
+      transportLock.unlock();
     }
     stmtHandle = null;
   }
@@ -226,11 +230,13 @@ public class HiveStatement implements java.sql.Statement {
       TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
       Utils.verifySuccessWithInfo(execResp.getStatus());
       stmtHandle = execResp.getOperationHandle();
-      transportLock.unlock();
     } catch (SQLException eS) {
       throw eS;
     } catch (Exception ex) {
       throw new SQLException(ex.toString(), "08S01", ex);
+    }
+    finally {
+      transportLock.unlock();
     }
 
     TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle);
@@ -245,8 +251,15 @@ public class HiveStatement implements java.sql.Statement {
          * It will essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
          */
         transportLock.lock();
-        statusResp = client.GetOperationStatus(statusReq);
-        transportLock.unlock();
+        try {
+          statusResp = client.GetOperationStatus(statusReq);
+        }
+        catch (Exception e) {
+          throw e;
+        }
+        finally {
+          transportLock.unlock();
+        }
         Utils.verifySuccessWithInfo(statusResp.getStatus());
         if (statusResp.isSetOperationState()) {
           switch (statusResp.getOperationState()) {
