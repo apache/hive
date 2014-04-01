@@ -754,7 +754,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
               // eliminate stripes that doesn't satisfy the predicate condition
               includeStripe = new boolean[stripes.size()];
               for(int i=0; i < stripes.size(); ++i) {
-                includeStripe[i] = (i > stripeStats.size()) ||
+                includeStripe[i] = (i >= stripeStats.size()) ||
                     isStripeSatisfyPredicate(stripeStats.get(i), sarg,
                                              filterColumns);
                 if (LOG.isDebugEnabled() && !includeStripe[i]) {
