@@ -106,7 +106,7 @@ class InternalUtil {
     case PRIMITIVE:
       PrimitiveTypeInfo primitiveType = (PrimitiveTypeInfo) type;
       return PrimitiveObjectInspectorFactory.
-        getPrimitiveJavaObjectInspector(primitiveType.getPrimitiveCategory());
+        getPrimitiveJavaObjectInspector(primitiveType);
 
     case MAP:
       MapTypeInfo mapType = (MapTypeInfo) type;
