@@ -1115,7 +1115,7 @@ public class StatsRulesProcFactory {
         // number of distincts should not change. Update the distinct count only when
         // the output number of rows is less than input number of rows.
         if (ratio <= 1.0) {
-          newDV = Math.round(ratio * oldDV);
+          newDV = (long) Math.ceil(ratio * oldDV);
         }
         cs.setNumNulls(newNumNulls);
         cs.setCountDistint(newDV);
