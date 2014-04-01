@@ -585,13 +585,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void analyzeShowRoles(ASTNode ast) {
-    RoleDDLDesc showRolesDesc = new RoleDDLDesc(null, null,
-        RoleDDLDesc.RoleOperation.SHOW_ROLES, null);
-    showRolesDesc.setResFile(ctx.getResFile().toString());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showRolesDesc), conf));
-    setFetchTask(createFetchTask(RoleDDLDesc.getRoleNameSchema()));
+  private void analyzeShowRoles(ASTNode ast) throws SemanticException {
+    Task<DDLWork> roleDDLTask = (Task<DDLWork>) hiveAuthorizationTaskFactory
+        .createShowRolesTask(ast, ctx.getResFile(), getInputs(), getOutputs());
+
+    if (roleDDLTask != null) {
+      rootTasks.add(roleDDLTask);
+      setFetchTask(createFetchTask(RoleDDLDesc.getRoleNameSchema()));
+    }
   }
 
   private void analyzeAlterDatabaseProperties(ASTNode ast) throws SemanticException {

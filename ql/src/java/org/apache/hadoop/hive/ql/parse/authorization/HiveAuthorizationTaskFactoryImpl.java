@@ -353,4 +353,14 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     roleDDLDesc.setResFile(resFile.toString());
     return TaskFactory.get(new DDLWork(inputs, outputs, roleDDLDesc), conf);
   }
+
+  @Override
+  public Task<? extends Serializable> createShowRolesTask(ASTNode ast, Path resFile,
+      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) throws SemanticException {
+    RoleDDLDesc showRolesDesc = new RoleDDLDesc(null, null, RoleDDLDesc.RoleOperation.SHOW_ROLES,
+        null);
+    showRolesDesc.setResFile(resFile.toString());
+    return TaskFactory.get(new DDLWork(inputs, outputs, showRolesDesc), conf);
+  }
+
 }
