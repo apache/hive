@@ -525,33 +525,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    private boolean areWeAllowedToCreate() {
-
-      Class<?> authCls;
-      Class<?> authIface;
-      try {
-        authCls = hiveConf.getClassByName(hiveConf.getVar(ConfVars.HIVE_AUTHORIZATION_MANAGER));
-        authIface = Class.forName("org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory");
-      } catch (ClassNotFoundException e) {
-        LOG.debug("No auth manager specified", e);
-        return false;
-      }
-      if(!authIface.isAssignableFrom(authCls)){
-        LOG.warn("Configured auth manager "+authCls.getName()+" doesn't implement "+ ConfVars.HIVE_AUTHENTICATOR_MANAGER);
-        return false;
-      }
-
-      return true;
-    }
 
     private void createDefaultRoles() throws MetaException {
 
       if(defaultRolesCreated) {
         LOG.debug("Admin role already created previously.");
-        return;
-      }
-
-      if(!areWeAllowedToCreate()) {
         return;
       }
 
@@ -596,9 +574,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       if(adminUsersAdded) {
         LOG.debug("Admin users already added.");
-        return;
-      }
-      if(!areWeAllowedToCreate()) {
         return;
       }
       // now add pre-configured users to admin role
