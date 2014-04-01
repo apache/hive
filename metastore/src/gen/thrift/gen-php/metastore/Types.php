@@ -11556,6 +11556,8 @@ $GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_SERDE'] = "serde";
 
 $GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_PARTITION_COLUMNS'] = "partition_columns";
 
+$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_PARTITION_COLUMN_TYPES'] = "partition_columns.types";
+
 $GLOBALS['hive_metastore_CONSTANTS']['FILE_INPUT_FORMAT'] = "file.inputformat";
 
 $GLOBALS['hive_metastore_CONSTANTS']['FILE_OUTPUT_FORMAT'] = "file.outputformat";
