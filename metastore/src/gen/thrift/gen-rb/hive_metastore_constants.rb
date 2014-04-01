@@ -41,6 +41,8 @@ META_TABLE_SERDE = %q"serde"
 
 META_TABLE_PARTITION_COLUMNS = %q"partition_columns"
 
+META_TABLE_PARTITION_COLUMN_TYPES = %q"partition_columns.types"
+
 FILE_INPUT_FORMAT = %q"file.inputformat"
 
 FILE_OUTPUT_FORMAT = %q"file.outputformat"
