@@ -387,7 +387,7 @@ public class SessionState {
         authorizerV2 = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(),
             getConf(), authenticator);
         // grant all privileges for table to its owner
-        getConf().setVar(ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS, "insert,select,update,delete");
+        getConf().setVar(ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS, "INSERT,SELECT,UPDATE,DELETE");
         String hooks = getConf().getVar(ConfVars.PREEXECHOOKS).trim();
         if (hooks.isEmpty()) {
           hooks = DisallowTransformHook.class.getName();
