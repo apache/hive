@@ -1,0 +1,32 @@
+PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
+
+CREATE TABLE  tauth_gdup(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
+
+CREATE TABLE  tauth_gdup(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tauth_gdup
+#### A masked pattern was here ####
+revoke SELECT ON tauth_gdup from user user1
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@tauth_gdup
+#### A masked pattern was here ####
+revoke SELECT ON tauth_gdup from user user1
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@tauth_gdup
+PREHOOK: query: show grant user user1 on table tauth_gdup
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user1 on table tauth_gdup
+POSTHOOK: type: SHOW_GRANT
+default	tauth_gdup			user1	USER	DELETE	true	-1	user1
+default	tauth_gdup			user1	USER	INSERT	true	-1	user1
+default	tauth_gdup			user1	USER	UPDATE	true	-1	user1
+#### A masked pattern was here ####
+-- and result in error
+GRANT INSERT ON tauth_gdup TO USER user1
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@tauth_gdup
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Error granting privileges: InvalidObjectException(message:INSERT is already granted on table [default,tauth_gdup] by user1)
