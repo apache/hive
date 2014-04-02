@@ -82,6 +82,7 @@ public class TestJdbcDriver2 {
   private static final String dataTypeTableName = "testdatatypetable";
   private static final String dataTypeTableComment = "Table with many column data types";
   private final HiveConf conf;
+  public static String dataFileDir;
   private final Path dataFilePath;
   private final Path dataTypeDataFilePath;
   private Connection con;
@@ -90,7 +91,7 @@ public class TestJdbcDriver2 {
 
   public TestJdbcDriver2() {
     conf = new HiveConf(TestJdbcDriver2.class);
-    String dataFileDir = conf.get("test.data.files").replace('\\', '/')
+    dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
     dataTypeDataFilePath = new Path(dataFileDir, "datatypes.txt");
@@ -2070,5 +2071,41 @@ public class TestJdbcDriver2 {
       }
       return value;
     }
+  }
+
+  /**
+   * Loads data from a table containing non-ascii value column
+   * Runs a query and compares the return value
+   * @throws Exception
+   */
+  @Test
+  public void testNonAsciiReturnValues() throws Exception {
+    String nonAsciiTableName = "nonAsciiTable";
+    String nonAsciiString = "Garçu Kôkaku kidôtai";
+    Path nonAsciiFilePath = new Path(dataFileDir, "non_ascii_tbl.txt");
+    Statement stmt = con.createStatement();
+    stmt.execute("set hive.support.concurrency = false");
+
+    // Create table
+    stmt.execute("create table " + nonAsciiTableName + " (key int, value string) " +
+        "row format delimited fields terminated by '|'");
+
+    // Load data
+    stmt.execute("load data local inpath '"
+        + nonAsciiFilePath.toString() + "' into table " + nonAsciiTableName);
+
+    ResultSet rs = stmt.executeQuery("select value from " + nonAsciiTableName +  " limit 1");
+    while(rs.next()) {
+      String resultValue = rs.getString(1);
+      assertTrue(resultValue.equalsIgnoreCase(nonAsciiString));
+    }
+
+    // Drop table, ignore error.
+    try {
+      stmt.execute("drop table " + nonAsciiTableName);
+    } catch (Exception ex) {
+      // no-op
+    }
+    stmt.close();
   }
 }

@@ -20,6 +20,7 @@ package org.apache.hive.service.cli.operation;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -291,7 +292,11 @@ public class SQLOperation extends ExecuteStatementOperation {
 
     int protocol = getProtocolVersion().getValue();
     for (Object rowString : rows) {
-      rowObj = serde.deserialize(new BytesWritable(((String)rowString).getBytes()));
+      try {
+        rowObj = serde.deserialize(new BytesWritable(((String)rowString).getBytes("UTF-8")));
+      } catch (UnsupportedEncodingException e) {
+        throw new SerDeException(e);
+      }
       for (int i = 0; i < fieldRefs.size(); i++) {
         StructField fieldRef = fieldRefs.get(i);
         fieldOI = fieldRef.getFieldObjectInspector();
