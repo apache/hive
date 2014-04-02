@@ -112,7 +112,7 @@ insert overwrite table pcr_foo partition (ds=5) select * from src where key < 10
 insert overwrite table pcr_foo partition (ds=7) select * from src where key < 10 order by key;
 
 -- the condition is 'true' for all the 3 partitions (ds=3,5,7):
-select key, value, ds from pcr_foo where (ds % 2.0 == 1);
+select key, value, ds from pcr_foo where (ds % 2 == 1);
 
 -- the condition is 'true' for partitions (ds=3,5) but 'false' of partition ds=7:
 select key, value, ds from pcr_foo where (ds / 3 < 2);
