@@ -41,6 +41,8 @@ public interface JobSubmissionConstants {
    */
   public static final String TOKEN_FILE_ARG_PLACEHOLDER =
     "__MR_JOB_CREDENTIALS_OPTION=WEBHCAT_TOKEN_FILE_LOCATION__";
+  public static final String TOKEN_FILE_ARG_PLACEHOLDER_TEZ =
+    "__TEZ_CREDENTIALS_OPTION=WEBHCAT_TOKEN_FILE_LOCATION_TEZ__";
   /**
    * constants needed for Pig job submission
    */
