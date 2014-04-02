@@ -100,41 +100,47 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     Map<String, String> env = TempletonUtils.hadoopUserEnv(user, overrideClasspath);
     handlePigEnvVars(conf, env);
     List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
+    handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER, "mapreduce.job.credentials.binary");
+    handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ, "tez.credentials.path");
+    boolean overrideLog4jProps = conf.get(OVERRIDE_CONTAINER_LOG4J_PROPS) == null ?
+            false : Boolean.valueOf(conf.get(OVERRIDE_CONTAINER_LOG4J_PROPS));
+    return TrivialExecService.getInstance().run(jarArgsList, removeEnv, env, overrideLog4jProps);
+  }
+
+  /**
+   * Replace placeholder with actual "prop=file".  This is done multiple times (possibly) since
+   * Tez and MR use different property names
+   */
+  private static void handleTokenFile(List<String> jarArgsList, String tokenPlaceHolder, String tokenProperty) throws IOException {
     String tokenFile = System.getenv("HADOOP_TOKEN_FILE_LOCATION");
-
-
     if (tokenFile != null) {
       //Token is available, so replace the placeholder
       tokenFile = tokenFile.replaceAll("\"", "");
-      String tokenArg = "mapreduce.job.credentials.binary=" + tokenFile;
+      String tokenArg = tokenProperty + "=" + tokenFile;
       if (Shell.WINDOWS) {
         try {
           tokenArg = TempletonUtils.quoteForWindows(tokenArg);
         } catch (BadParam e) {
-          String msg = "cannot pass " + tokenFile + " to mapreduce.job.credentials.binary";
+          String msg = "cannot pass " + tokenFile + " to " + tokenProperty;
           LOG.error(msg, e);
           throw new IOException(msg, e);
         }
       }
       for(int i=0; i<jarArgsList.size(); i++){
         String newArg =
-                jarArgsList.get(i).replace(TOKEN_FILE_ARG_PLACEHOLDER, tokenArg);
+          jarArgsList.get(i).replace(tokenPlaceHolder, tokenArg);
         jarArgsList.set(i, newArg);
       }
-
     }else{
       //No token, so remove the placeholder arg
       Iterator<String> it = jarArgsList.iterator();
       while(it.hasNext()){
         String arg = it.next();
-        if(arg.contains(TOKEN_FILE_ARG_PLACEHOLDER)){
+        if(arg.contains(tokenPlaceHolder)){
           it.remove();
         }
       }
     }
-    boolean overrideLog4jProps = conf.get(OVERRIDE_CONTAINER_LOG4J_PROPS) == null ?
-            false : Boolean.valueOf(conf.get(OVERRIDE_CONTAINER_LOG4J_PROPS));
-    return TrivialExecService.getInstance().run(jarArgsList, removeEnv, env, overrideLog4jProps);
   }
 
   private void copyLocal(String var, Configuration conf) throws IOException {
