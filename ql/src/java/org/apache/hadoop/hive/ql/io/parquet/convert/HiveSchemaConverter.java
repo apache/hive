@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+import parquet.schema.ConversionPatterns;
 import parquet.schema.GroupType;
 import parquet.schema.MessageType;
 import parquet.schema.OriginalType;
@@ -118,8 +119,7 @@ public class HiveSchemaConverter {
         typeInfo.getMapKeyTypeInfo(), Repetition.REQUIRED);
     final Type valueType = convertType(ParquetHiveSerDe.MAP_VALUE.toString(),
         typeInfo.getMapValueTypeInfo());
-    return listWrapper(name, OriginalType.MAP_KEY_VALUE,
-        new GroupType(Repetition.REPEATED, ParquetHiveSerDe.MAP.toString(), keyType, valueType));
+    return ConversionPatterns.mapType(Repetition.OPTIONAL, name, keyType, valueType);
   }
 
   private static GroupType listWrapper(final String name, final OriginalType originalType,
