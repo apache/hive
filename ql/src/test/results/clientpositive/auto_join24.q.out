@@ -26,10 +26,30 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: tst1.cnt EXPRESSION [(src)a.null, ]
 POSTHOOK: Lineage: tst1.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {cnt}
+                1 
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
@@ -62,15 +82,6 @@ STAGE PLANS:
                     value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-                Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)

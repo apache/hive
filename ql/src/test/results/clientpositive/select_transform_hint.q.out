@@ -11,10 +11,30 @@ FROM src a join src b
 on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -52,15 +72,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator

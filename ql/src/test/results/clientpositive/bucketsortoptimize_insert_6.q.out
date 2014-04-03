@@ -427,16 +427,36 @@ POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldS
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage , consists of Stage-4, Stage-5, Stage-1
-  Stage-4 has a backup stage: Stage-1
+  Stage-6 is a root stage , consists of Stage-7, Stage-8, Stage-1
+  Stage-7 has a backup stage: Stage-1
+  Stage-4 depends on stages: Stage-7
   Stage-0 depends on stages: Stage-1, Stage-4, Stage-5
   Stage-3 depends on stages: Stage-0
-  Stage-5 has a backup stage: Stage-1
+  Stage-8 has a backup stage: Stage-1
+  Stage-5 depends on stages: Stage-8
   Stage-1
 
 STAGE PLANS:
   Stage: Stage-6
     Conditional Operator
+
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {key2} {value}
+                1 {value}
+              keys:
+                0 key (type: int), key2 (type: int)
+                1 key (type: int), key2 (type: int)
 
   Stage: Stage-4
     Map Reduce
@@ -463,14 +483,6 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            b 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            b 
-              TableScan
-                alias: b
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -495,6 +507,24 @@ STAGE PLANS:
 
   Stage: Stage-3
     Stats-Aggr Operator
+
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {key2} {value}
+                1 {value}
+              keys:
+                0 key (type: int), key2 (type: int)
+                1 key (type: int), key2 (type: int)
 
   Stage: Stage-5
     Map Reduce
@@ -521,14 +551,6 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -608,16 +630,36 @@ POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldS
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage , consists of Stage-4, Stage-5, Stage-1
-  Stage-4 has a backup stage: Stage-1
+  Stage-6 is a root stage , consists of Stage-7, Stage-8, Stage-1
+  Stage-7 has a backup stage: Stage-1
+  Stage-4 depends on stages: Stage-7
   Stage-0 depends on stages: Stage-1, Stage-4, Stage-5
   Stage-2 depends on stages: Stage-0
-  Stage-5 has a backup stage: Stage-1
+  Stage-8 has a backup stage: Stage-1
+  Stage-5 depends on stages: Stage-8
   Stage-1
 
 STAGE PLANS:
   Stage: Stage-6
     Conditional Operator
+
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        subq1:b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        subq1:b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {key2} {value}
+                1 {value}
+              keys:
+                0 key (type: int), key2 (type: int)
+                1 key (type: int), key2 (type: int)
 
   Stage: Stage-4
     Map Reduce
@@ -644,14 +686,6 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            subq1:b 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            subq1:b 
-              TableScan
-                alias: b
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -676,6 +710,24 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
+
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        subq1:a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        subq1:a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {key2} {value}
+                1 {value}
+              keys:
+                0 key (type: int), key2 (type: int)
+                1 key (type: int), key2 (type: int)
 
   Stage: Stage-5
     Map Reduce
@@ -702,14 +754,6 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            subq1:a 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            subq1:a 
-              TableScan
-                alias: a
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1254,16 +1298,36 @@ POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldS
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage , consists of Stage-4, Stage-5, Stage-1
-  Stage-4 has a backup stage: Stage-1
+  Stage-6 is a root stage , consists of Stage-7, Stage-8, Stage-1
+  Stage-7 has a backup stage: Stage-1
+  Stage-4 depends on stages: Stage-7
   Stage-0 depends on stages: Stage-1, Stage-4, Stage-5
   Stage-3 depends on stages: Stage-0
-  Stage-5 has a backup stage: Stage-1
+  Stage-8 has a backup stage: Stage-1
+  Stage-5 depends on stages: Stage-8
   Stage-1
 
 STAGE PLANS:
   Stage: Stage-6
     Conditional Operator
+
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        subq2:subq1:b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        subq2:subq1:b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {key2} {value}
+                1 {value}
+              keys:
+                0 key (type: int), key2 (type: int)
+                1 key (type: int), key2 (type: int)
 
   Stage: Stage-4
     Map Reduce
@@ -1290,14 +1354,6 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            subq2:subq1:b 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            subq2:subq1:b 
-              TableScan
-                alias: b
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1322,6 +1378,24 @@ STAGE PLANS:
 
   Stage: Stage-3
     Stats-Aggr Operator
+
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        subq2:subq1:a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        subq2:subq1:a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {key2} {value}
+                1 {value}
+              keys:
+                0 key (type: int), key2 (type: int)
+                1 key (type: int), key2 (type: int)
 
   Stage: Stage-5
     Map Reduce
@@ -1348,14 +1422,6 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            subq2:subq1:a 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            subq2:subq1:a 
-              TableScan
-                alias: a
       Reduce Operator Tree:
         Extract
           File Output Operator

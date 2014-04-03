@@ -14,11 +14,49 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key 
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-5 is a root stage
+  Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-6
   Stage-0 depends on stages: Stage-5
   Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
+  Stage: Stage-6
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        src1 
+          Fetch Operator
+            limit: -1
+        src2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        src1 
+          TableScan
+            alias: src1
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+                2 {value}
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+                2 key (type: string)
+        src2 
+          TableScan
+            alias: src2
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+                2 {value}
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+                2 key (type: string)
+
   Stage: Stage-5
     Map Reduce
       Map Operator Tree:
@@ -53,22 +91,6 @@ STAGE PLANS:
                       name: default.dest1
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            src1 
-              Fetch Operator
-                limit: -1
-            src2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            src1 
-              TableScan
-                alias: src1
-                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            src2 
-              TableScan
-                alias: src2
-                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Move Operator

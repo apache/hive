@@ -15,11 +15,31 @@ SORT BY k1, v1, k2, v2
 ) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
+  Stage-6 is a root stage
+  Stage-2 depends on stages: Stage-6
   Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-6
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a:src1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a:src1 
+          TableScan
+            alias: src1
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
@@ -48,15 +68,6 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a:src1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a:src1 
-              TableScan
-                alias: src1
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Extract
           Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE

@@ -4,8 +4,9 @@ POSTHOOK: query: explain select src.key from src where src.key in ( select disti
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-2
-  Stage-4 has a backup stage: Stage-2
+  Stage-5 depends on stages: Stage-1 , consists of Stage-6, Stage-2
+  Stage-6 has a backup stage: Stage-2
+  Stage-4 depends on stages: Stage-6
   Stage-2
   Stage-0 is a root stage
 
@@ -55,6 +56,23 @@ STAGE PLANS:
   Stage: Stage-5
     Conditional Operator
 
+  Stage: Stage-6
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              keys:
+                0 key (type: string)
+                1 _col0 (type: string)
+
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
@@ -83,13 +101,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME 
-              TableScan
 
   Stage: Stage-2
     Map Reduce
