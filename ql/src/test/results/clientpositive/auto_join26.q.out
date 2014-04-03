@@ -14,11 +14,31 @@ INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
+  Stage-6 is a root stage
+  Stage-2 depends on stages: Stage-6
   Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
+  Stage: Stage-6
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        x 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        x 
+          TableScan
+            alias: x
+            Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
@@ -54,15 +74,6 @@ STAGE PLANS:
                     value expressions: _col1 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            x 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            x 
-              TableScan
-                alias: x
-                Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

@@ -48,10 +48,48 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
+  Stage-5 is a root stage
+  Stage-4 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key1} {val1}
+                1 {key2} {val2}
+                2 {key3} {val3}
+              keys:
+                0 key1 (type: string)
+                1 key2 (type: string)
+                2 key3 (type: string)
+        c 
+          TableScan
+            alias: c
+            Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key1} {val1}
+                1 {key2} {val2}
+                2 {key3} {val3}
+              keys:
+                0 key1 (type: string)
+                1 key2 (type: string)
+                2 key3 (type: string)
+
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
@@ -85,22 +123,6 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            c 
-              TableScan
-                alias: c
-                Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -124,10 +146,48 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
+  Stage-5 is a root stage
+  Stage-4 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key1} {val1}
+                1 {key2} {val2}
+                2 {key3} {val3}
+              keys:
+                0 key1 (type: string)
+                1 key2 (type: string)
+                2 key3 (type: string)
+        c 
+          TableScan
+            alias: c
+            Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key1} {val1}
+                1 {key2} {val2}
+                2 {key3} {val3}
+              keys:
+                0 key1 (type: string)
+                1 key2 (type: string)
+                2 key3 (type: string)
+
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
@@ -161,22 +221,6 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            c 
-              TableScan
-                alias: c
-                Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -200,10 +244,48 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
+  Stage-5 is a root stage
+  Stage-4 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key1} {val1}
+                1 {key2} {val2}
+                2 {key3} {val3}
+              keys:
+                0 key1 (type: string)
+                1 key2 (type: string)
+                2 key3 (type: string)
+        c 
+          TableScan
+            alias: c
+            Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key1} {val1}
+                1 {key2} {val2}
+                2 {key3} {val3}
+              keys:
+                0 key1 (type: string)
+                1 key2 (type: string)
+                2 key3 (type: string)
+
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
@@ -237,22 +319,6 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            c 
-              TableScan
-                alias: c
-                Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator

@@ -881,7 +881,7 @@
 
 <property>
   <name>hive.auto.convert.join.use.nonstaged</name>
-  <value>true</value>
+  <value>false</value>
   <description>For conditional joins, if input stream from a small alias can be directly applied to join operator without
     filtering or projection, the alias need not to be pre-staged in distributed cache via mapred local task.
     Currently, this is not working with vectorization or tez execution engine.

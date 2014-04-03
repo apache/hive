@@ -75,8 +75,9 @@ INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-0
-  Stage-4
+  Stage-5 depends on stages: Stage-1 , consists of Stage-6, Stage-0
+  Stage-6
+  Stage-4 depends on stages: Stage-6
   Stage-0 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-0
 
@@ -128,6 +129,23 @@ STAGE PLANS:
   Stage: Stage-5
     Conditional Operator
 
+  Stage: Stage-6
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {0_VALUE_0}
+                1 {1_VALUE_0}
+              keys:
+                0 joinkey0 (type: string)
+                1 joinkey0 (type: string)
+
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
@@ -154,13 +172,6 @@ STAGE PLANS:
                       name: default.dest_j1
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            1 
-              TableScan
 
   Stage: Stage-0
     Move Operator
@@ -537,8 +548,9 @@ POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-2
-  Stage-4
+  Stage-5 depends on stages: Stage-1 , consists of Stage-6, Stage-2
+  Stage-6
+  Stage-4 depends on stages: Stage-6
   Stage-2 depends on stages: Stage-4
   Stage-0 is a root stage
 
@@ -600,6 +612,23 @@ STAGE PLANS:
   Stage: Stage-5
     Conditional Operator
 
+  Stage: Stage-6
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {1_VALUE_0} {1_VALUE_1}
+              keys:
+                0 joinkey0 (type: string)
+                1 joinkey0 (type: string)
+
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
@@ -629,13 +658,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            1 
-              TableScan
 
   Stage: Stage-2
     Map Reduce
@@ -706,8 +728,9 @@ POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-2
-  Stage-4
+  Stage-5 depends on stages: Stage-1 , consists of Stage-6, Stage-2
+  Stage-6
+  Stage-4 depends on stages: Stage-6
   Stage-2 depends on stages: Stage-4
   Stage-0 is a root stage
 
@@ -769,6 +792,23 @@ STAGE PLANS:
   Stage: Stage-5
     Conditional Operator
 
+  Stage: Stage-6
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {1_VALUE_0} {1_VALUE_1}
+              keys:
+                0 joinkey0 (type: string), joinkey1 (type: double)
+                1 joinkey0 (type: string), joinkey1 (type: double)
+
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
@@ -798,13 +838,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            1 
-              TableScan
 
   Stage: Stage-2
     Map Reduce
@@ -883,10 +916,12 @@ POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-7 depends on stages: Stage-1 , consists of Stage-5, Stage-6, Stage-2
-  Stage-5
+  Stage-7 depends on stages: Stage-1 , consists of Stage-8, Stage-9, Stage-2
+  Stage-8
+  Stage-5 depends on stages: Stage-8
   Stage-2 depends on stages: Stage-5, Stage-6
-  Stage-6
+  Stage-9
+  Stage-6 depends on stages: Stage-9
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -971,6 +1006,39 @@ STAGE PLANS:
   Stage: Stage-7
     Conditional Operator
 
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        1 
+          Fetch Operator
+            limit: -1
+        2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {0_VALUE_0}
+                1 {1_VALUE_0}
+                2 
+              keys:
+                0 joinkey0 (type: string)
+                1 joinkey0 (type: string)
+                2 joinkey0 (type: string)
+        2 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {0_VALUE_0}
+                1 {1_VALUE_0}
+                2 
+              keys:
+                0 joinkey0 (type: string)
+                1 joinkey0 (type: string)
+                2 joinkey0 (type: string)
+
   Stage: Stage-5
     Map Reduce
       Map Operator Tree:
@@ -1003,18 +1071,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            1 
-              Fetch Operator
-                limit: -1
-            2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            1 
-              TableScan
-            2 
-              TableScan
 
   Stage: Stage-2
     Map Reduce
@@ -1041,6 +1097,39 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        0 
+          Fetch Operator
+            limit: -1
+        2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        0 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {0_VALUE_0}
+                1 {1_VALUE_0}
+                2 
+              keys:
+                0 joinkey0 (type: string)
+                1 joinkey0 (type: string)
+                2 joinkey0 (type: string)
+        2 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {0_VALUE_0}
+                1 {1_VALUE_0}
+                2 
+              keys:
+                0 joinkey0 (type: string)
+                1 joinkey0 (type: string)
+                2 joinkey0 (type: string)
 
   Stage: Stage-6
     Map Reduce
@@ -1074,18 +1163,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            0 
-              Fetch Operator
-                limit: -1
-            2 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            0 
-              TableScan
-            2 
-              TableScan
 
   Stage: Stage-0
     Fetch Operator
@@ -1127,10 +1204,30 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        v 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        v 
+          TableScan
+            alias: v
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 {val}
+              keys:
+                0 (key + 1) (type: double)
+                1 UDFToDouble(key) (type: double)
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -1163,15 +1260,6 @@ STAGE PLANS:
                     value expressions: _col0 (type: bigint), _col1 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            v 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            v 
-              TableScan
-                alias: v
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0), sum(VALUE._col1)
