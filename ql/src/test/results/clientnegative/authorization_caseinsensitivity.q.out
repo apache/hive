@@ -1,0 +1,62 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create role testrole
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role testrole
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: show roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show roles
+POSTHOOK: type: SHOW_ROLES
+admin
+public
+testrole
+
+PREHOOK: query: drop role TESTROLE
+PREHOOK: type: DROPROLE
+POSTHOOK: query: drop role TESTROLE
+POSTHOOK: type: DROPROLE
+PREHOOK: query: show roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show roles
+POSTHOOK: type: SHOW_ROLES
+admin
+public
+
+PREHOOK: query: create role TESTROLE
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role TESTROLE
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: show roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show roles
+POSTHOOK: type: SHOW_ROLES
+admin
+public
+testrole
+
+PREHOOK: query: grant role testROLE to user hive_admin_user
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role testROLE to user hive_admin_user
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: set role testrolE
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role testrolE
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: set role adMin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role adMin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show roles
+POSTHOOK: type: SHOW_ROLES
+admin
+public
+testrole
+
+PREHOOK: query: create role TESTRoLE
+PREHOOK: type: CREATEROLE
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidObjectException(message:Role testrole already exists.)

@@ -63,7 +63,7 @@ PREHOOK: query: show grant on all
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant on all
 POSTHOOK: type: SHOW_GRANT
-				ADMIN	ROLE	All	true	-1	ADMIN
+				admin	ROLE	All	true	-1	admin
 default				hive_test_user	USER	Select	false	-1	hive_test_user
 default				hive_test_user2	USER	Select	false	-1	hive_test_user
 default	dummy			hive_test_user	USER	Select	false	-1	hive_test_user

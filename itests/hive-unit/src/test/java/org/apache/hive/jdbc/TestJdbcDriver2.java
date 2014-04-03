@@ -2003,7 +2003,7 @@ public class TestJdbcDriver2 {
 
     ResultSet res = stmt.getResultSet();
     assertTrue(res.next());
-    assertEquals("PUBLIC", res.getString(1));
+    assertEquals("public", res.getString(1));
     assertTrue(res.next());
     assertEquals("role1", res.getString(1));
     res.close();
