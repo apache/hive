@@ -29,6 +29,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -61,6 +64,7 @@ public class SQLAuthorizationUtils {
   private static final String[] SUPPORTED_PRIVS = { "INSERT", "UPDATE", "DELETE", "SELECT" };
   private static final Set<String> SUPPORTED_PRIVS_SET = new HashSet<String>(
       Arrays.asList(SUPPORTED_PRIVS));
+  public static final Log LOG = LogFactory.getLog(SQLAuthorizationUtils.class);
 
   /**
    * Create thrift privileges bag
@@ -197,7 +201,7 @@ public class SQLAuthorizationUtils {
     RequiredPrivileges privs = getRequiredPrivsFromThrift(thrifPrivs);
 
     // add owner privilege if user is owner of the object
-    if (isOwner(metastoreClient, userName, hivePrivObject)) {
+    if (isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
       privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
     }
     if (isAdmin) {
@@ -239,42 +243,56 @@ public class SQLAuthorizationUtils {
    *
    * @param metastoreClient
    * @param userName
-   *          user
+   *          current user
+   * @param curRoles
+   *          current roles for userName
    * @param hivePrivObject
    *          given object
    * @return true if user is owner
    * @throws HiveAuthzPluginException
    */
   private static boolean isOwner(IMetaStoreClient metastoreClient, String userName,
-      HivePrivilegeObject hivePrivObject) throws HiveAuthzPluginException {
-    //for now, check only table & db
+      List<String> curRoles, HivePrivilegeObject hivePrivObject) throws HiveAuthzPluginException {
+    // for now, check only table & db
     switch (hivePrivObject.getType()) {
-      case TABLE_OR_VIEW : {
+    case TABLE_OR_VIEW: {
       Table thriftTableObj = null;
       try {
-        thriftTableObj = metastoreClient.getTable(hivePrivObject.getDbname(), hivePrivObject.getTableViewURI());
+        thriftTableObj = metastoreClient.getTable(hivePrivObject.getDbname(),
+            hivePrivObject.getTableViewURI());
       } catch (Exception e) {
         throwGetObjErr(e, hivePrivObject);
       }
       return userName.equals(thriftTableObj.getOwner());
     }
-      case DATABASE: {
-        if (MetaStoreUtils.DEFAULT_DATABASE_NAME.equalsIgnoreCase(hivePrivObject.getDbname())){
-          return true;
-        }
-        Database db = null;
-        try {
-          db = metastoreClient.getDatabase(hivePrivObject.getDbname());
-        } catch (Exception e) {
-          throwGetObjErr(e, hivePrivObject);
-        }
-        return userName.equals(db.getOwnerName());
+    case DATABASE: {
+      if (MetaStoreUtils.DEFAULT_DATABASE_NAME.equalsIgnoreCase(hivePrivObject.getDbname())) {
+        return true;
       }
-      case DFS_URI:
-      case LOCAL_URI:
-      case PARTITION:
-      default:
+      Database db = null;
+      try {
+        db = metastoreClient.getDatabase(hivePrivObject.getDbname());
+      } catch (Exception e) {
+        throwGetObjErr(e, hivePrivObject);
+      }
+      // a db owner can be a user or a role
+      if(db.getOwnerType() == PrincipalType.USER){
+        return userName.equals(db.getOwnerName());
+      } else if(db.getOwnerType() == PrincipalType.ROLE){
+        // check if any of the roles of this user is an owner
+        return curRoles.contains(db.getOwnerName());
+      } else {
+        // looks like owner is an unsupported type
+        LOG.warn("Owner of database " + db.getName() + " is of unsupported type "
+            + db.getOwnerType());
         return false;
+      }
+    }
+    case DFS_URI:
+    case LOCAL_URI:
+    case PARTITION:
+    default:
+      return false;
     }
   }
 

@@ -1,0 +1,55 @@
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+#### A masked pattern was here ####
+create role testrole
+PREHOOK: type: CREATEROLE
+#### A masked pattern was here ####
+create role testrole
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant role testrole to user hrt_1
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role testrole to user hrt_1
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: create database testdb
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database testdb
+POSTHOOK: type: CREATEDATABASE
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_OWNER
+PREHOOK: Output: database:testdb
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_OWNER
+POSTHOOK: Output: database:testdb
+PREHOOK: query: desc database testdb
+PREHOOK: type: DESCDATABASE
+POSTHOOK: query: desc database testdb
+POSTHOOK: type: DESCDATABASE
+#### A masked pattern was here ####
+-- create table
+use testdb
+PREHOOK: type: SWITCHDATABASE
+#### A masked pattern was here ####
+-- create table
+use testdb
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: create table foobar (foo string, bar string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:testdb
+POSTHOOK: query: create table foobar (foo string, bar string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@foobar
+PREHOOK: query: -- drop db
+drop database testdb cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:testdb
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@foobar
+POSTHOOK: query: -- drop db
+drop database testdb cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:testdb
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@foobar
