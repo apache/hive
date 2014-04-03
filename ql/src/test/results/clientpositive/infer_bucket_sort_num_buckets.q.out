@@ -125,8 +125,10 @@ POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).key EXPRESSION [(src
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='0')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='0')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -169,8 +171,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='1')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

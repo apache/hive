@@ -133,7 +133,9 @@ POSTHOOK: Input: default@decimal_6_1
 POSTHOOK: Output: default@DECIMAL_6_3
 PREHOOK: query: desc DECIMAL_6_3
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@decimal_6_3
 POSTHOOK: query: desc DECIMAL_6_3
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@decimal_6_3
 k                   	double              	                    
 v                   	int                 	                    

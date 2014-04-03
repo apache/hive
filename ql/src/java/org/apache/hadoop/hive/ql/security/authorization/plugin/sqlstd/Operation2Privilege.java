@@ -81,6 +81,7 @@ public class Operation2Privilege {
 
     op2Priv.put(HiveOperationType.DROPTABLE, new InOutPrivs(OWNER_PRIV_AR, null));
     op2Priv.put(HiveOperationType.DESCTABLE, new InOutPrivs(SEL_NOGRANT_AR, null));
+    op2Priv.put(HiveOperationType.SHOWPARTITIONS, new InOutPrivs(SEL_NOGRANT_AR, null));
     op2Priv.put(HiveOperationType.DESCFUNCTION, new InOutPrivs(null, null));
 
     // meta store check command - require admin priv
@@ -168,7 +169,6 @@ public class Operation2Privilege {
 
     op2Priv.put(HiveOperationType.SHOWFUNCTIONS, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.SHOWINDEXES, new InOutPrivs(null, null));
-    op2Priv.put(HiveOperationType.SHOWPARTITIONS, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.SHOWLOCKS, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.CREATEFUNCTION, new InOutPrivs(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.DROPFUNCTION, new InOutPrivs(null, ADMIN_PRIV_AR));
@@ -176,7 +176,6 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.DROPMACRO, new InOutPrivs(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.SHOW_COMPACTIONS, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.SHOW_TRANSACTIONS, new InOutPrivs(null, null));
-    op2Priv.put(HiveOperationType.DROPFUNCTION, new InOutPrivs(null, null));
 
     op2Priv.put(HiveOperationType.LOCKTABLE, new InOutPrivs(null, null));
     op2Priv.put(HiveOperationType.UNLOCKTABLE, new InOutPrivs(null, null));

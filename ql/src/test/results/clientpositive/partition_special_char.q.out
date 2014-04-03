@@ -37,8 +37,10 @@ POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 PREHOOK: query: show partitions sc_part
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@sc_part
 POSTHOOK: query: show partitions sc_part
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@sc_part
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
@@ -81,8 +83,10 @@ POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 PREHOOK: query: show partitions sc_part
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@sc_part
 POSTHOOK: query: show partitions sc_part
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@sc_part
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]
 POSTHOOK: Lineage: sc_part PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc)sc.FieldSchema(name:_c0, type:string, comment:null), ]

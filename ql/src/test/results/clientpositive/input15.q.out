@@ -26,7 +26,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST15
 PREHOOK: query: DESCRIBE TEST15
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test15
 POSTHOOK: query: DESCRIBE TEST15
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test15
 key                 	int                 	                    
 value               	string              	                    

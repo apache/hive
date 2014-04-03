@@ -7,8 +7,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_select
 PREHOOK: query: DESCRIBE tmp_select
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tmp_select
 POSTHOOK: query: DESCRIBE tmp_select
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tmp_select
 a                   	int                 	                    
 b                   	string              	                    
 PREHOOK: query: INSERT OVERWRITE TABLE tmp_select SELECT key, value FROM src

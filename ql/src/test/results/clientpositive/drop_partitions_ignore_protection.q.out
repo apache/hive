@@ -23,8 +23,10 @@ POSTHOOK: Input: default@tbl_protectmode_no_drop@p=p1
 POSTHOOK: Output: default@tbl_protectmode_no_drop@p=p1
 PREHOOK: query: desc extended tbl_protectmode_no_drop partition (p='p1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_protectmode_no_drop
 POSTHOOK: query: desc extended tbl_protectmode_no_drop partition (p='p1')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_protectmode_no_drop
 c1                  	string              	                    
 c2                  	string              	                    
 p                   	string              	                    

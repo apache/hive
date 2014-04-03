@@ -40,8 +40,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_partitioned
 PREHOOK: query: DESCRIBE FORMATTED parquet_partitioned
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_partitioned
 POSTHOOK: query: DESCRIBE FORMATTED parquet_partitioned
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_partitioned
 # col_name            	data_type           	comment             
 	 	 
 id                  	int                 	                    

@@ -18,8 +18,10 @@ POSTHOOK: Output: default@mytbl
 POSTHOOK: Output: default@mytbl@c2=v1
 PREHOOK: query: describe formatted mytbl partition (c2='v1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mytbl
 POSTHOOK: query: describe formatted mytbl partition (c2='v1')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mytbl
 # col_name            	data_type           	comment             
 	 	 
 c1                  	tinyint             	                    

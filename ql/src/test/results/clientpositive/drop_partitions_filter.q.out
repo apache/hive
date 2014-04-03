@@ -7,8 +7,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ptestfilter
 PREHOOK: query: describe ptestfilter
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: describe ptestfilter
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ptestfilter
 a                   	string              	                    
 b                   	int                 	                    
 c                   	string              	                    
@@ -84,8 +86,10 @@ POSTHOOK: Output: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=France/d=4
 PREHOOK: query: show partitions ptestfilter
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: show partitions ptestfilter
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
 c=Canada/d=3
 c=France/d=4
 c=Germany/d=2
@@ -105,8 +109,10 @@ POSTHOOK: Input: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=US/d=1
 PREHOOK: query: show partitions ptestfilter
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: show partitions ptestfilter
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
 c=Canada/d=3
 c=France/d=4
 c=Germany/d=2
@@ -127,8 +133,10 @@ POSTHOOK: Output: default@ptestfilter@c=US/d=2
 POSTHOOK: Output: default@ptestfilter@c=Uganda/d=2
 PREHOOK: query: show partitions ptestfilter
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: show partitions ptestfilter
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
 c=Canada/d=3
 c=France/d=4
 c=Germany/d=2
@@ -145,8 +153,10 @@ POSTHOOK: Input: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=Russia/d=3
 PREHOOK: query: show partitions ptestfilter
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: show partitions ptestfilter
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
 c=Canada/d=3
 c=France/d=4
 c=Germany/d=2
@@ -166,8 +176,10 @@ POSTHOOK: Output: default@ptestfilter@c=Greece/d=2
 POSTHOOK: Output: default@ptestfilter@c=India/d=3
 PREHOOK: query: show partitions ptestfilter
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: show partitions ptestfilter
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
 c=Canada/d=3
 c=France/d=4
 c=Germany/d=2
@@ -183,8 +195,10 @@ POSTHOOK: Output: default@ptestfilter@c=Canada/d=3
 POSTHOOK: Output: default@ptestfilter@c=Germany/d=2
 PREHOOK: query: show partitions ptestfilter
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: show partitions ptestfilter
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
 c=France/d=4
 PREHOOK: query: alter table ptestfilter drop if exists partition (c='US')
 PREHOOK: type: ALTERTABLE_DROPPARTS
@@ -194,8 +208,10 @@ POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@ptestfilter
 PREHOOK: query: show partitions ptestfilter
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
 POSTHOOK: query: show partitions ptestfilter
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
 c=France/d=4
 PREHOOK: query: drop table ptestfilter
 PREHOOK: type: DROPTABLE

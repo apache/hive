@@ -153,8 +153,10 @@ POSTHOOK: Lineage: columnshortcuttable.key SIMPLE [(src)src.FieldSchema(name:key
 POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe columnShortcutTable
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@columnshortcuttable
 POSTHOOK: query: describe columnShortcutTable
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@columnshortcuttable
 POSTHOOK: Lineage: columnarserde_create_shortcut.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]

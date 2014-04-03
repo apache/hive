@@ -7,8 +7,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_table_not_sorted
 PREHOOK: query: desc formatted alter_table_not_sorted
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_not_sorted
 POSTHOOK: query: desc formatted alter_table_not_sorted
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_not_sorted
 # col_name            	data_type           	comment             
 	 	 
 a                   	int                 	                    
@@ -45,8 +47,10 @@ POSTHOOK: Input: default@alter_table_not_sorted
 POSTHOOK: Output: default@alter_table_not_sorted
 PREHOOK: query: desc formatted alter_table_not_sorted
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_not_sorted
 POSTHOOK: query: desc formatted alter_table_not_sorted
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_not_sorted
 # col_name            	data_type           	comment             
 	 	 
 a                   	int                 	                    

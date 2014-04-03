@@ -7,8 +7,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part5
 PREHOOK: query: describe extended nzhang_part5
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part5
 POSTHOOK: query: describe extended nzhang_part5
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part5
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -700,8 +702,10 @@ POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_98).key SIMPLE [(src)src.Fie
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_9).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: show partitions nzhang_part5
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@nzhang_part5
 POSTHOOK: query: show partitions nzhang_part5
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@nzhang_part5
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_0).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

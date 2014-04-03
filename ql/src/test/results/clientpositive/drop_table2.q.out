@@ -28,8 +28,10 @@ POSTHOOK: Output: default@temp
 POSTHOOK: Output: default@temp@p=p3
 PREHOOK: query: show partitions temp
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temp
 POSTHOOK: query: show partitions temp
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temp
 p=p1
 p=p2
 p=p3
@@ -50,8 +52,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp
 PREHOOK: query: show partitions temp
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temp
 POSTHOOK: query: show partitions temp
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temp
 PREHOOK: query: drop table temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@temp

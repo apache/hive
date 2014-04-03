@@ -45,8 +45,10 @@ POSTHOOK: Output: default@dummy@ds=2008/hr=11
 POSTHOOK: Output: default@dummy@ds=2008/hr=12
 PREHOOK: query: describe formatted dummy partition (ds='2008', hr='11')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (ds='2008', hr='11')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dummy
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -85,8 +87,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted dummy partition (ds='2008', hr='12')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (ds='2008', hr='12')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dummy
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -166,8 +170,10 @@ POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted dummy partition (ds='10', hr='11')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (ds='10', hr='11')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dummy
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -210,8 +216,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted dummy partition (ds='10', hr='12')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (ds='10', hr='12')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dummy
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -323,8 +331,10 @@ POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(nam
 POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: describe formatted dummy partition (hr=1997)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (hr=1997)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dummy
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -369,8 +379,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted dummy partition (hr=1994)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (hr=1994)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dummy
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -415,8 +427,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted dummy partition (hr=1998)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (hr=1998)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dummy
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -461,8 +475,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted dummy partition (hr=1996)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (hr=1996)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dummy
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

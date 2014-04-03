@@ -7,8 +7,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@add_part_test
 PREHOOK: query: SHOW PARTITIONS add_part_test
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@add_part_test
 POSTHOOK: query: SHOW PARTITIONS add_part_test
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@add_part_test
 {"partitions":[]}
 PREHOOK: query: ALTER TABLE add_part_test ADD PARTITION (ds='2010-01-01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -19,8 +21,10 @@ POSTHOOK: Output: default@add_part_test
 POSTHOOK: Output: default@add_part_test@ds=2010-01-01
 PREHOOK: query: SHOW PARTITIONS add_part_test
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@add_part_test
 POSTHOOK: query: SHOW PARTITIONS add_part_test
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@add_part_test
 {"partitions":[{"values":[{"columnName":"ds","columnValue":"2010-01-01"}],"name":"ds='2010-01-01'"}]}
 PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -30,8 +34,10 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@add_part_test
 PREHOOK: query: SHOW PARTITIONS add_part_test
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@add_part_test
 POSTHOOK: query: SHOW PARTITIONS add_part_test
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@add_part_test
 {"partitions":[{"values":[{"columnName":"ds","columnValue":"2010-01-01"}],"name":"ds='2010-01-01'"}]}
 PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-02')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -42,8 +48,10 @@ POSTHOOK: Output: default@add_part_test
 POSTHOOK: Output: default@add_part_test@ds=2010-01-02
 PREHOOK: query: SHOW PARTITIONS add_part_test
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@add_part_test
 POSTHOOK: query: SHOW PARTITIONS add_part_test
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@add_part_test
 {"partitions":[{"values":[{"columnName":"ds","columnValue":"2010-01-01"}],"name":"ds='2010-01-01'"},{"values":[{"columnName":"ds","columnValue":"2010-01-02"}],"name":"ds='2010-01-02'"}]}
 PREHOOK: query: SHOW TABLE EXTENDED LIKE add_part_test PARTITION (ds='2010-01-02')
 PREHOOK: type: SHOW_TABLESTATUS

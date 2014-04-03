@@ -7,8 +7,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: describe t1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: describe t1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 a                   	int                 	                    
 b                   	string              	                    
 c                   	int                 	                    
@@ -21,8 +23,10 @@ c                   	int
 d                   	string              	                    
 PREHOOK: query: describe t1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: describe t1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 a                   	int                 	                    
 b                   	string              	                    
 c                   	int                 	                    

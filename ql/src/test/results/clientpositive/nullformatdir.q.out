@@ -21,8 +21,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@base_tab
 PREHOOK: query: DESCRIBE EXTENDED base_tab
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@base_tab
 POSTHOOK: query: DESCRIBE EXTENDED base_tab
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@base_tab
 a                   	string              	                    
 b                   	string              	                    
 c                   	string              	                    

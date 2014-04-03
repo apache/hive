@@ -59,8 +59,10 @@ minFileSize:216
 
 PREHOOK: query: desc extended load_overwrite
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@load_overwrite
 POSTHOOK: query: desc extended load_overwrite
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@load_overwrite
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -101,8 +103,10 @@ minFileSize:216
 
 PREHOOK: query: desc extended load_overwrite2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@load_overwrite2
 POSTHOOK: query: desc extended load_overwrite2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@load_overwrite2
 key                 	string              	                    
 value               	string              	                    
 	 	 

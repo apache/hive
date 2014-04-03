@@ -29,8 +29,10 @@ POSTHOOK: Output: default@testviewpart@value=val_86
 POSTHOOK: Output: default@testviewpart@value=val_xyz
 PREHOOK: query: DESCRIBE FORMATTED testViewPart
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testviewpart
 POSTHOOK: query: DESCRIBE FORMATTED testViewPart
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testviewpart
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    

@@ -34,8 +34,10 @@ POSTHOOK: Input: default@analyze_src
 POSTHOOK: Output: default@analyze_src
 PREHOOK: query: describe formatted analyze_src
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@analyze_src
 POSTHOOK: query: describe formatted analyze_src
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@analyze_src
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    

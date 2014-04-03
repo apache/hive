@@ -20,9 +20,11 @@ POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).value SIMPLE [(src)src.Fiel
 PREHOOK: query: -- rawDataSize is 5312 after config is turned on
 describe formatted stats_partitioned
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_partitioned
 POSTHOOK: query: -- rawDataSize is 5312 after config is turned on
 describe formatted stats_partitioned
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_partitioned
 POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
@@ -72,9 +74,11 @@ POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).value SIMPLE [(src)src.Fiel
 PREHOOK: query: -- rawDataSize is 0 after config is turned off
 describe formatted stats_partitioned
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_partitioned
 POSTHOOK: query: -- rawDataSize is 0 after config is turned off
 describe formatted stats_partitioned
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_partitioned
 POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

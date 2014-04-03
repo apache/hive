@@ -14,6 +14,8 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exchange_part_test2
 PREHOOK: query: SHOW PARTITIONS exchange_part_test1
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@exchange_part_test1
 POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@exchange_part_test1
 FAILED: SemanticException [Error 10006]: Partition not found {ds=2013-04-05}

@@ -1099,8 +1099,10 @@ POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION
 POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
 PREHOOK: query: desc formatted over1k_part partition(ds="foo",t=27)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@over1k_part
 POSTHOOK: query: desc formatted over1k_part partition(ds="foo",t=27)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@over1k_part
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
@@ -1205,8 +1207,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted over1k_part partition(ds="foo",t="__HIVE_DEFAULT_PARTITION__")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@over1k_part
 POSTHOOK: query: desc formatted over1k_part partition(ds="foo",t="__HIVE_DEFAULT_PARTITION__")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@over1k_part
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
@@ -1311,8 +1315,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted over1k_part_limit partition(ds="foo",t=27)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@over1k_part_limit
 POSTHOOK: query: desc formatted over1k_part_limit partition(ds="foo",t=27)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@over1k_part_limit
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
@@ -1417,8 +1423,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted over1k_part_limit partition(ds="foo",t="__HIVE_DEFAULT_PARTITION__")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@over1k_part_limit
 POSTHOOK: query: desc formatted over1k_part_limit partition(ds="foo",t="__HIVE_DEFAULT_PARTITION__")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@over1k_part_limit
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
@@ -1523,8 +1531,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted over1k_part_buck partition(t=27)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@over1k_part_buck
 POSTHOOK: query: desc formatted over1k_part_buck partition(t=27)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@over1k_part_buck
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
@@ -1628,8 +1638,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted over1k_part_buck partition(t="__HIVE_DEFAULT_PARTITION__")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@over1k_part_buck
 POSTHOOK: query: desc formatted over1k_part_buck partition(t="__HIVE_DEFAULT_PARTITION__")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@over1k_part_buck
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
@@ -1733,8 +1745,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted over1k_part_buck_sort partition(t=27)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@over1k_part_buck_sort
 POSTHOOK: query: desc formatted over1k_part_buck_sort partition(t=27)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@over1k_part_buck_sort
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
@@ -1838,8 +1852,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted over1k_part_buck_sort partition(t="__HIVE_DEFAULT_PARTITION__")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@over1k_part_buck_sort
 POSTHOOK: query: desc formatted over1k_part_buck_sort partition(t="__HIVE_DEFAULT_PARTITION__")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@over1k_part_buck_sort
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]

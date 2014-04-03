@@ -7,8 +7,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@clustergroupby
 PREHOOK: query: describe extended clustergroupby
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@clustergroupby
 POSTHOOK: query: describe extended clustergroupby
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@clustergroupby
 key                 	string              	                    
 value               	string              	                    
 ds                  	string              	                    
@@ -122,8 +124,10 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.Field
 114	1
 PREHOOK: query: describe extended clustergroupby
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@clustergroupby
 POSTHOOK: query: describe extended clustergroupby
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	                    
@@ -1063,8 +1067,10 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe extended clustergroupby
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@clustergroupby
 POSTHOOK: query: describe extended clustergroupby
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1413,8 +1419,10 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe extended clustergroupby
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@clustergroupby
 POSTHOOK: query: describe extended clustergroupby
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

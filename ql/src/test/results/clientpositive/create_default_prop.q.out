@@ -7,8 +7,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_p1
 PREHOOK: query: DESC EXTENDED table_p1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_p1
 POSTHOOK: query: DESC EXTENDED table_p1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_p1
 a                   	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -21,8 +23,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_p2
 PREHOOK: query: DESC EXTENDED table_p2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_p2
 POSTHOOK: query: DESC EXTENDED table_p2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_p2
 a                   	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -35,8 +39,10 @@ POSTHOOK: Input: default@table_p1
 POSTHOOK: Output: default@table_p3
 PREHOOK: query: DESC EXTENDED table_p3
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_p3
 POSTHOOK: query: DESC EXTENDED table_p3
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_p3
 a                   	string              	                    
 	 	 
 #### A masked pattern was here ####

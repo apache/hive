@@ -23,8 +23,10 @@ POSTHOOK: Lineage: table_test_output_format.key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: table_test_output_format.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe table_test_output_format
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_test_output_format
 POSTHOOK: query: describe table_test_output_format
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_test_output_format
 POSTHOOK: Lineage: table_test_output_format.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table_test_output_format.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key                 	int                 	                    
@@ -58,8 +60,10 @@ POSTHOOK: Lineage: table_test_output_format_sequencefile.key EXPRESSION [(src)sr
 POSTHOOK: Lineage: table_test_output_format_sequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe table_test_output_format_sequencefile
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_test_output_format_sequencefile
 POSTHOOK: query: describe table_test_output_format_sequencefile
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_test_output_format_sequencefile
 POSTHOOK: Lineage: table_test_output_format.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table_test_output_format.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table_test_output_format_sequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -99,8 +103,10 @@ POSTHOOK: Lineage: table_test_output_format_sequencefile.key EXPRESSION [(src)sr
 POSTHOOK: Lineage: table_test_output_format_sequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe table_test_output_format_hivesequencefile
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_test_output_format_hivesequencefile
 POSTHOOK: query: describe table_test_output_format_hivesequencefile
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_test_output_format_hivesequencefile
 POSTHOOK: Lineage: table_test_output_format.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table_test_output_format.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table_test_output_format_hivesequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

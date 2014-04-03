@@ -65,8 +65,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@doctors
 PREHOOK: query: DESCRIBE doctors
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@doctors
 POSTHOOK: query: DESCRIBE doctors
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@doctors
 number              	int                 	from deserializer   
 first_name          	string              	from deserializer   
 last_name           	string              	from deserializer   
@@ -87,8 +89,10 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__doctors_doctors_index__
 PREHOOK: query: DESCRIBE EXTENDED default__doctors_doctors_index__
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@default__doctors_doctors_index__
 POSTHOOK: query: DESCRIBE EXTENDED default__doctors_doctors_index__
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@default__doctors_doctors_index__
 number              	int                 	from deserializer   
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    

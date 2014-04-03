@@ -47,8 +47,10 @@ POSTHOOK: Output: default@alter5
 POSTHOOK: Output: default@alter5@dt=a
 PREHOOK: query: describe extended alter5 partition (dt='a')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter5
 POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter5
 col1                	string              	                    
 dt                  	string              	                    
 	 	 
@@ -86,8 +88,10 @@ POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.Fi
 6	a
 PREHOOK: query: describe extended alter5 partition (dt='a')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter5
 POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter5
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 col1                	string              	                    
 dt                  	string              	                    
@@ -188,8 +192,10 @@ POSTHOOK: Output: alter5_db@alter5@dt=a
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: describe extended alter5 partition (dt='a')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter5_db@alter5
 POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter5_db@alter5
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 col1                	string              	                    
 dt                  	string              	                    
@@ -230,8 +236,10 @@ POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.Fi
 6	a
 PREHOOK: query: describe extended alter5 partition (dt='a')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter5_db@alter5
 POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter5_db@alter5
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 col1                	string              	                    

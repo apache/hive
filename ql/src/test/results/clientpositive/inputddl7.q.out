@@ -110,22 +110,28 @@ POSTHOOK: Input: default@t4@ds=2008-04-09
 500
 PREHOOK: query: DESCRIBE EXTENDED T1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: DESCRIBE EXTENDED T1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 name                	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED T2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t2
 POSTHOOK: query: DESCRIBE EXTENDED T2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t2
 name                	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t3
 POSTHOOK: query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t3
 name                	string              	                    
 ds                  	string              	                    
 	 	 
@@ -137,8 +143,10 @@ ds                  	string
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t4
 POSTHOOK: query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t4
 name                	string              	                    
 ds                  	string              	                    
 	 	 

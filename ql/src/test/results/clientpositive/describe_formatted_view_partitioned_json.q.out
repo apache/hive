@@ -34,8 +34,10 @@ POSTHOOK: Output: default@view_partitioned
 POSTHOOK: Output: default@view_partitioned@value=val_86
 PREHOOK: query: DESCRIBE FORMATTED view_partitioned PARTITION (value='val_86')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@view_partitioned
 POSTHOOK: query: DESCRIBE FORMATTED view_partitioned PARTITION (value='val_86')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@view_partitioned
 {"columns":[{"name":"key","type":"string"}]}	 	 
 PREHOOK: query: DROP VIEW view_partitioned
 PREHOOK: type: DROPVIEW
