@@ -155,7 +155,7 @@ PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
-PUBLIC
+public
 
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
@@ -173,14 +173,14 @@ PREHOOK: query: show role grant user user4
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user4
 POSTHOOK: type: SHOW_ROLE_GRANT
-PUBLIC	false	-1	
+public	false	-1	
 role_v	false	-1	hive_admin_user
 PREHOOK: query: show roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show roles
 POSTHOOK: type: SHOW_ROLES
-ADMIN
-PUBLIC
+admin
+public
 role_v
 
 PREHOOK: query: grant all on table vt2 to role role_v
