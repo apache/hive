@@ -63,10 +63,30 @@ POSTHOOK: Lineage: table_asc.value SIMPLE [(src)src.FieldSchema(name:value, type
 POSTHOOK: Lineage: table_desc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table_desc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 key (type: int)
+                1 key (type: int)
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -97,15 +117,6 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-                Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator

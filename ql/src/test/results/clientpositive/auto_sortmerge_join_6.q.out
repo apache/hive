@@ -455,17 +455,55 @@ POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage , consists of Stage-5, Stage-6, Stage-7, Stage-1
-  Stage-5 has a backup stage: Stage-1
+  Stage-8 is a root stage , consists of Stage-9, Stage-10, Stage-11, Stage-1
+  Stage-9 has a backup stage: Stage-1
+  Stage-5 depends on stages: Stage-9
   Stage-2 depends on stages: Stage-1, Stage-5, Stage-6, Stage-7
-  Stage-6 has a backup stage: Stage-1
-  Stage-7 has a backup stage: Stage-1
+  Stage-10 has a backup stage: Stage-1
+  Stage-6 depends on stages: Stage-10
+  Stage-11 has a backup stage: Stage-1
+  Stage-7 depends on stages: Stage-11
   Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-8
     Conditional Operator
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
+        c 
+          TableScan
+            alias: c
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
 
   Stage: Stage-5
     Map Reduce
@@ -497,20 +535,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            b 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            b 
-              TableScan
-                alias: b
-            c 
-              TableScan
-                alias: c
 
   Stage: Stage-2
     Map Reduce
@@ -537,6 +561,41 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
+        c 
+          TableScan
+            alias: c
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
 
   Stage: Stage-6
     Map Reduce
@@ -568,20 +627,41 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            c 
-              TableScan
-                alias: c
+
+  Stage: Stage-11
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
+        b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
 
   Stage: Stage-7
     Map Reduce
@@ -613,20 +693,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            b 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            b 
-              TableScan
-                alias: b
 
   Stage: Stage-1
     Map Reduce
@@ -1032,17 +1098,55 @@ POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage , consists of Stage-5, Stage-6, Stage-7, Stage-1
-  Stage-5 has a backup stage: Stage-1
+  Stage-8 is a root stage , consists of Stage-9, Stage-10, Stage-11, Stage-1
+  Stage-9 has a backup stage: Stage-1
+  Stage-5 depends on stages: Stage-9
   Stage-2 depends on stages: Stage-1, Stage-5, Stage-6, Stage-7
-  Stage-6 has a backup stage: Stage-1
-  Stage-7 has a backup stage: Stage-1
+  Stage-10 has a backup stage: Stage-1
+  Stage-6 depends on stages: Stage-10
+  Stage-11 has a backup stage: Stage-1
+  Stage-7 depends on stages: Stage-11
   Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-8
     Conditional Operator
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
+        c 
+          TableScan
+            alias: c
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
 
   Stage: Stage-5
     Map Reduce
@@ -1074,20 +1178,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            b 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            b 
-              TableScan
-                alias: b
-            c 
-              TableScan
-                alias: c
 
   Stage: Stage-2
     Map Reduce
@@ -1114,6 +1204,41 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
+        c 
+          TableScan
+            alias: c
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
 
   Stage: Stage-6
     Map Reduce
@@ -1145,20 +1270,41 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            c 
-              TableScan
-                alias: c
+
+  Stage: Stage-11
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
+        b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 UDFToDouble(key) (type: double)
+                1 UDFToDouble(key) (type: double)
+                2 UDFToDouble(key) (type: double)
 
   Stage: Stage-7
     Map Reduce
@@ -1190,20 +1336,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            b 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            b 
-              TableScan
-                alias: b
 
   Stage: Stage-1
     Map Reduce
@@ -1296,16 +1428,54 @@ POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage , consists of Stage-4, Stage-5, Stage-6, Stage-1
-  Stage-4 has a backup stage: Stage-1
-  Stage-5 has a backup stage: Stage-1
-  Stage-6 has a backup stage: Stage-1
+  Stage-7 is a root stage , consists of Stage-8, Stage-9, Stage-10, Stage-1
+  Stage-8 has a backup stage: Stage-1
+  Stage-4 depends on stages: Stage-8
+  Stage-9 has a backup stage: Stage-1
+  Stage-5 depends on stages: Stage-9
+  Stage-10 has a backup stage: Stage-1
+  Stage-6 depends on stages: Stage-10
   Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-7
     Conditional Operator
+
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 key (type: int)
+                1 key (type: int)
+                2 key (type: int)
+        c 
+          TableScan
+            alias: c
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 key (type: int)
+                1 key (type: int)
+                2 key (type: int)
 
   Stage: Stage-4
     Map Reduce
@@ -1334,20 +1504,6 @@ STAGE PLANS:
                     value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            b 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            b 
-              TableScan
-                alias: b
-            c 
-              TableScan
-                alias: c
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1362,6 +1518,41 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        c 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 key (type: int)
+                1 key (type: int)
+                2 key (type: int)
+        c 
+          TableScan
+            alias: c
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 key (type: int)
+                1 key (type: int)
+                2 key (type: int)
 
   Stage: Stage-5
     Map Reduce
@@ -1390,20 +1581,6 @@ STAGE PLANS:
                     value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            c 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            c 
-              TableScan
-                alias: c
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1418,6 +1595,41 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+        b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 key (type: int)
+                1 key (type: int)
+                2 key (type: int)
+        b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+                2 
+              keys:
+                0 key (type: int)
+                1 key (type: int)
+                2 key (type: int)
 
   Stage: Stage-6
     Map Reduce
@@ -1446,20 +1658,6 @@ STAGE PLANS:
                     value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-            b 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-            b 
-              TableScan
-                alias: b
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

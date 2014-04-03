@@ -13,10 +13,30 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
+        src1 
+          Fetch Operator
+            limit: -1
         src2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
+        src1 
+          TableScan
+            alias: src1
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+                2 {key} {value}
+              filter predicates:
+                0 {(key < 10)}
+                1 
+                2 {(key < 10)}
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+                2 key (type: string)
         src2 
           TableScan
             alias: src2
@@ -26,13 +46,17 @@ STAGE PLANS:
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 
+                  0 {key} {value}
                   1 {key} {value}
                   2 {key} {value}
                 filter predicates:
-                  0 
+                  0 {(key < 10)}
                   1 
                   2 {(key < 10)}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
 
   Stage: Stage-2
     Map Reduce
@@ -69,17 +93,6 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            src1 
-              Fetch Operator
-                limit: -1
-            src2 
-          Alias -> Map Local Operator Tree:
-            src1 
-              TableScan
-                alias: src1
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            src2 
       Reduce Operator Tree:
         Extract
           Statistics: Num rows: 63 Data size: 12786 Basic stats: COMPLETE Column stats: NONE

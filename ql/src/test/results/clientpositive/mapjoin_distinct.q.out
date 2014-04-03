@@ -11,11 +11,31 @@ ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-4 is a root stage
+  Stage-1 depends on stages: Stage-4
   Stage-3 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        d 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        d 
+          TableScan
+            alias: d
+            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {value}
+                1 
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -49,15 +69,6 @@ STAGE PLANS:
                     Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            d 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            d 
-              TableScan
-                alias: d
-                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
@@ -143,10 +154,30 @@ ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        d 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        d 
+          TableScan
+            alias: d
+            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {value}
+                1 
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -180,15 +211,6 @@ STAGE PLANS:
                     Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            d 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            d 
-              TableScan
-                alias: d
-                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
@@ -252,11 +274,31 @@ ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-4 is a root stage
+  Stage-1 depends on stages: Stage-4
   Stage-3 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        d 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        d 
+          TableScan
+            alias: d
+            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {value}
+                1 
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -285,15 +327,6 @@ STAGE PLANS:
                   Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            d 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            d 
-              TableScan
-                alias: d
-                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
@@ -379,10 +412,30 @@ ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        d 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        d 
+          TableScan
+            alias: d
+            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {value}
+                1 
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -411,15 +464,6 @@ STAGE PLANS:
                   Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            d 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            d 
-              TableScan
-                alias: d
-                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)

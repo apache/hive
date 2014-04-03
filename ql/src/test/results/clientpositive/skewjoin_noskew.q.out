@@ -6,8 +6,9 @@ create table noskew as select a.* from src a join src b on a.key=b.key order by 
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-6 depends on stages: Stage-1 , consists of Stage-5, Stage-2
-  Stage-5
+  Stage-6 depends on stages: Stage-1 , consists of Stage-7, Stage-2
+  Stage-7
+  Stage-5 depends on stages: Stage-7
   Stage-2 depends on stages: Stage-5
   Stage-0 depends on stages: Stage-2
   Stage-8 depends on stages: Stage-0
@@ -58,6 +59,23 @@ STAGE PLANS:
   Stage: Stage-6
     Conditional Operator
 
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {0_VALUE_0} {0_VALUE_1}
+                1 
+              keys:
+                0 joinkey0 (type: string)
+                1 joinkey0 (type: string)
+
   Stage: Stage-5
     Map Reduce
       Map Operator Tree:
@@ -83,13 +101,6 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            1 
-              TableScan
 
   Stage: Stage-2
     Map Reduce

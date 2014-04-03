@@ -169,7 +169,8 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-9 is a root stage
+  Stage-1 depends on stages: Stage-9
   Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
   Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
@@ -179,6 +180,34 @@ STAGE DEPENDENCIES:
   Stage-7 depends on stages: Stage-6
 
 STAGE PLANS:
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b 
+          TableScan
+            alias: b
+            Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {value}
+              keys:
+                0 key (type: int)
+                1 key (type: int)
+              Position of Big Table: 0
+      Bucket Mapjoin Context:
+          Alias Bucket Base File Name Mapping:
+            b {srcbucket20.txt=[srcbucket20.txt], srcbucket21.txt=[srcbucket21.txt]}
+          Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+          Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -231,23 +260,6 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            b 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            b 
-              TableScan
-                alias: b
-                Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
-                GatherStats: false
-          Bucket Mapjoin Context:
-              Alias Bucket Base File Name Mapping:
-                b {srcbucket20.txt=[srcbucket20.txt], srcbucket21.txt=[srcbucket21.txt]}
-              Alias Bucket File Name Mapping:
-#### A masked pattern was here ####
-              Alias Bucket Output File Name Mapping:
-#### A masked pattern was here ####
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -689,7 +701,8 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-9 is a root stage
+  Stage-1 depends on stages: Stage-9
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
@@ -699,6 +712,34 @@ STAGE DEPENDENCIES:
   Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {value}
+              keys:
+                0 key (type: int)
+                1 key (type: int)
+              Position of Big Table: 1
+      Bucket Mapjoin Context:
+          Alias Bucket Base File Name Mapping:
+            a {srcbucket20.txt=[srcbucket20.txt], srcbucket21.txt=[srcbucket21.txt]}
+          Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+          Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -756,23 +797,6 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-                Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
-                GatherStats: false
-          Bucket Mapjoin Context:
-              Alias Bucket Base File Name Mapping:
-                a {srcbucket20.txt=[srcbucket20.txt], srcbucket21.txt=[srcbucket21.txt]}
-              Alias Bucket File Name Mapping:
-#### A masked pattern was here ####
-              Alias Bucket Output File Name Mapping:
-#### A masked pattern was here ####
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

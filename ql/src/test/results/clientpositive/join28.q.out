@@ -26,11 +26,45 @@ FROM
  JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage
+  Stage-8 is a root stage
+  Stage-6 depends on stages: Stage-8
   Stage-0 depends on stages: Stage-6
   Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        subq:x 
+          Fetch Operator
+            limit: -1
+        z 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        subq:x 
+          TableScan
+            alias: x
+            Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+        z 
+          TableScan
+            alias: z
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0}
+                1 {value}
+              keys:
+                0 _col0 (type: string)
+                1 key (type: string)
+
   Stage: Stage-6
     Map Reduce
       Map Operator Tree:
@@ -77,22 +111,6 @@ STAGE PLANS:
                           name: default.dest_j1
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            subq:x 
-              Fetch Operator
-                limit: -1
-            z 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            subq:x 
-              TableScan
-                alias: x
-                Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
-            z 
-              TableScan
-                alias: z
-                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Move Operator

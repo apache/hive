@@ -535,8 +535,9 @@ POSTHOOK: Lineage: src_5.key EXPRESSION [(src)b.FieldSchema(name:key, type:strin
 POSTHOOK: Lineage: src_5.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-10 is a root stage
-  Stage-13 depends on stages: Stage-10, Stage-14 , consists of Stage-12, Stage-4
-  Stage-12 has a backup stage: Stage-4
+  Stage-13 depends on stages: Stage-10, Stage-14 , consists of Stage-16, Stage-4
+  Stage-16 has a backup stage: Stage-4
+  Stage-12 depends on stages: Stage-16
   Stage-15 depends on stages: Stage-4, Stage-12
   Stage-6 depends on stages: Stage-15
   Stage-1 depends on stages: Stage-6
@@ -596,6 +597,23 @@ STAGE PLANS:
   Stage: Stage-13
     Conditional Operator
 
+  Stage: Stage-16
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME1 
+          TableScan
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 
+              keys:
+                0 
+                1 
+
   Stage: Stage-12
     Map Reduce
       Map Operator Tree:
@@ -618,13 +636,6 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            $INTNAME1 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            $INTNAME1 
-              TableScan
 
   Stage: Stage-15
     Map Reduce Local Work
@@ -867,6 +878,7 @@ RUN: Stage-14:MAPRED
 RUN: Stage-0:MOVE
 RUN: Stage-13:CONDITIONAL
 RUN: Stage-3:STATS
+RUN: Stage-16:MAPREDLOCAL
 RUN: Stage-12:MAPRED
 RUN: Stage-15:MAPREDLOCAL
 RUN: Stage-6:MAPRED

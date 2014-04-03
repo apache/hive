@@ -60,7 +60,8 @@ POSTHOOK: Lineage: tmp1.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tmp2.cnt EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-9 is a root stage
+  Stage-1 depends on stages: Stage-9
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
@@ -70,6 +71,25 @@ STAGE DEPENDENCIES:
   Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        x 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        x 
+          TableScan
+            alias: x
+            Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {cnt}
+                1 {cnt}
+              keys:
+                0 key (type: int)
+                1 key (type: int)
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -101,15 +121,6 @@ STAGE PLANS:
                       name: default.dest_j1
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            x 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            x 
-              TableScan
-                alias: x
-                Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-7
     Conditional Operator

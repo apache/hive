@@ -191,10 +191,39 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        r 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        r 
+          TableScan
+            alias: r
+            Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 key (type: string), value (type: string)
+                1 key (type: string), value (type: string)
+              Position of Big Table: 0
+      Bucket Mapjoin Context:
+          Alias Bucket Base File Name Mapping:
+            r {srcbucket20.txt=[srcbucket20.txt], srcbucket21.txt=[srcbucket21.txt], srcbucket22.txt=[srcbucket22.txt]}
+          Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+          Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -242,23 +271,6 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            r 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            r 
-              TableScan
-                alias: r
-                Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-                GatherStats: false
-          Bucket Mapjoin Context:
-              Alias Bucket Base File Name Mapping:
-                r {srcbucket20.txt=[srcbucket20.txt], srcbucket21.txt=[srcbucket21.txt], srcbucket22.txt=[srcbucket22.txt]}
-              Alias Bucket File Name Mapping:
-#### A masked pattern was here ####
-              Alias Bucket Output File Name Mapping:
-#### A masked pattern was here ####
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -368,10 +380,39 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        r 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        r 
+          TableScan
+            alias: r
+            Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 key (type: string), value (type: string)
+                1 key (type: string), value (type: string)
+              Position of Big Table: 0
+      Bucket Mapjoin Context:
+          Alias Bucket Base File Name Mapping:
+            r {srcbucket20.txt=[srcbucket20.txt], srcbucket21.txt=[srcbucket21.txt], srcbucket22.txt=[srcbucket22.txt]}
+          Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+          Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -419,23 +460,6 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            r 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            r 
-              TableScan
-                alias: r
-                Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-                GatherStats: false
-          Bucket Mapjoin Context:
-              Alias Bucket Base File Name Mapping:
-                r {srcbucket20.txt=[srcbucket20.txt], srcbucket21.txt=[srcbucket21.txt], srcbucket22.txt=[srcbucket22.txt]}
-              Alias Bucket File Name Mapping:
-#### A masked pattern was here ####
-              Alias Bucket Output File Name Mapping:
-#### A masked pattern was here ####
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -542,10 +566,32 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        r 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        r 
+          TableScan
+            alias: r
+            Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 (key + key) (type: double)
+                1 UDFToDouble(key) (type: double)
+              Position of Big Table: 0
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -592,16 +638,6 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            r 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            r 
-              TableScan
-                alias: r
-                Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-                GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -711,10 +747,32 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        r 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        r 
+          TableScan
+            alias: r
+            Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 key (type: string), value (type: string)
+                1 key (type: string), value (type: string)
+              Position of Big Table: 0
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -761,16 +819,6 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            r 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            r 
-              TableScan
-                alias: r
-                Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-                GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -880,10 +928,32 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        r 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        r 
+          TableScan
+            alias: r
+            Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 key (type: string), value (type: string)
+                1 key (type: string), value (type: string)
+              Position of Big Table: 0
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -930,16 +1000,6 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            r 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            r 
-              TableScan
-                alias: r
-                Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-                GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1049,10 +1109,32 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        r 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        r 
+          TableScan
+            alias: r
+            Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 key (type: string), value (type: string)
+                1 key (type: string), value (type: string)
+              Position of Big Table: 0
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -1099,16 +1181,6 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            r 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            r 
-              TableScan
-                alias: r
-                Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-                GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1218,10 +1290,32 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        r 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        r 
+          TableScan
+            alias: r
+            Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 key (type: string), value (type: string)
+                1 key (type: string), value (type: string)
+              Position of Big Table: 0
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -1268,16 +1362,6 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            r 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            r 
-              TableScan
-                alias: r
-                Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-                GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1387,10 +1471,32 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        r 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        r 
+          TableScan
+            alias: r
+            Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 key (type: string), value (type: string)
+                1 key (type: string), value (type: string)
+              Position of Big Table: 0
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -1437,16 +1543,6 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            r 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            r 
-              TableScan
-                alias: r
-                Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-                GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1556,10 +1652,32 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        r 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        r 
+          TableScan
+            alias: r
+            Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            HashTable Sink Operator
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 key (type: string), value (type: string)
+                1 key (type: string), value (type: string)
+              Position of Big Table: 0
+
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
@@ -1606,16 +1724,6 @@ STAGE PLANS:
                   MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            r 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            r 
-              TableScan
-                alias: r
-                Statistics: Num rows: 21 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-                GatherStats: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
