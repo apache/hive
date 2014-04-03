@@ -57,8 +57,10 @@ POSTHOOK: Input: default@tbl_protectmode_tbl5
 POSTHOOK: Output: default@tbl_protectmode_tbl5
 PREHOOK: query: desc extended tbl_protectmode_tbl5
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_protectmode_tbl5
 POSTHOOK: query: desc extended tbl_protectmode_tbl5
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_protectmode_tbl5
 col                 	string              	                    
 p                   	string              	                    
 	 	 

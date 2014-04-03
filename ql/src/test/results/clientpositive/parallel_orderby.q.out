@@ -87,8 +87,10 @@ POSTHOOK: Input: default@src5
 POSTHOOK: Output: default@total_ordered
 PREHOOK: query: desc formatted total_ordered
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@total_ordered
 POSTHOOK: query: desc formatted total_ordered
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@total_ordered
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -196,8 +198,10 @@ POSTHOOK: Input: default@src5
 POSTHOOK: Output: default@total_ordered
 PREHOOK: query: desc formatted total_ordered
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@total_ordered
 POSTHOOK: query: desc formatted total_ordered
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@total_ordered
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    

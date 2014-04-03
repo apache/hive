@@ -17,16 +17,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table1
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table1
 a                   	string              	                    
 b                   	array<string>       	                    
 c                   	array<map<string,string>>	                    
 d                   	map<string,array<string>>	                    
 PREHOOK: query: DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table1
 POSTHOOK: query: DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table1
 a                   	string              	                    
 b                   	array<string>       	                    
 c                   	array<map<string,string>>	                    

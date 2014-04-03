@@ -23,8 +23,10 @@ POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESC FORMATTED test_tab
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tab
 POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tab
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
@@ -91,8 +93,10 @@ POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESC FORMATTED test_tab
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tab
 POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tab
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
@@ -175,8 +179,10 @@ POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESC FORMATTED test_tab
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tab
 POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tab
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -251,8 +257,10 @@ POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESC FORMATTED test_tab
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tab
 POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tab
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -341,8 +349,10 @@ POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESC FORMATTED test_tab
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tab
 POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tab
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -422,8 +432,10 @@ POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESC FORMATTED test_tab
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tab
 POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tab
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -505,8 +517,10 @@ POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESC FORMATTED test_tab
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tab
 POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tab
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -603,8 +617,10 @@ POSTHOOK: Lineage: test_tab_part PARTITION(part=1).key SIMPLE [(src)src.FieldSch
 POSTHOOK: Lineage: test_tab_part PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESC FORMATTED test_tab_part PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tab_part
 POSTHOOK: query: DESC FORMATTED test_tab_part PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tab_part
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -694,8 +710,10 @@ POSTHOOK: Lineage: test_tab_part PARTITION(part=1).key SIMPLE [(src)src.FieldSch
 POSTHOOK: Lineage: test_tab_part PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESC FORMATTED test_tab_part PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tab_part
 POSTHOOK: query: DESC FORMATTED test_tab_part PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tab_part
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

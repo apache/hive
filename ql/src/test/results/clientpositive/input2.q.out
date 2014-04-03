@@ -7,14 +7,18 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST2a
 PREHOOK: query: DESCRIBE TEST2a
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test2a
 POSTHOOK: query: DESCRIBE TEST2a
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test2a
 a                   	int                 	                    
 b                   	double              	                    
 PREHOOK: query: DESC TEST2a
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test2a
 POSTHOOK: query: DESC TEST2a
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test2a
 a                   	int                 	                    
 b                   	double              	                    
 PREHOOK: query: CREATE TABLE TEST2b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
@@ -26,8 +30,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST2b
 PREHOOK: query: DESCRIBE TEST2b
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test2b
 POSTHOOK: query: DESCRIBE TEST2b
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test2b
 a                   	array<int>          	                    
 b                   	double              	                    
 c                   	map<double,int>     	                    

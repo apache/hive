@@ -36,8 +36,10 @@ POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show partitions src_p3
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@src_p3
 POSTHOOK: query: show partitions src_p3
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@src_p3
 POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 !@%23$%25%5E&%2A()_q=a
@@ -52,8 +54,10 @@ POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show partitions src_p3
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@src_p3
 POSTHOOK: query: show partitions src_p3
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@src_p3
 POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 !@%23$%25%5E&%2A()_q=a
@@ -72,8 +76,10 @@ POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show partitions src_p3
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@src_p3
 POSTHOOK: query: show partitions src_p3
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@src_p3
 POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 !@%23$%25%5E&%2A()_q=a

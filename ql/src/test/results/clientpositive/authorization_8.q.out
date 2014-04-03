@@ -18,8 +18,10 @@ POSTHOOK: Input: default@tbl_j5jbymsx8e
 POSTHOOK: Output: default@view_j5jbymsx8e_1
 PREHOOK: query: DESCRIBE view_j5jbymsx8e_1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@view_j5jbymsx8e_1
 POSTHOOK: query: DESCRIBE view_j5jbymsx8e_1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@view_j5jbymsx8e_1
 key                 	int                 	                    
 value               	string              	                    
 ds                  	string              	                    

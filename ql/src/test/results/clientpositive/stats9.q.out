@@ -48,8 +48,10 @@ POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchem
 POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe formatted analyze_srcbucket
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@analyze_srcbucket
 POSTHOOK: query: describe formatted analyze_srcbucket
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@analyze_srcbucket
 POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
 # col_name            	data_type           	comment             

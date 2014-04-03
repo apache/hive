@@ -213,8 +213,10 @@ POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).key SIMPLE
 POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show partitions merge_dynamic_part
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@merge_dynamic_part
 POSTHOOK: query: show partitions merge_dynamic_part
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@merge_dynamic_part
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=a1).key SIMPLE [(srcpart_merge_dp_rc)srcpart_merge_dp_rc.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=a1).value SIMPLE [(srcpart_merge_dp_rc)srcpart_merge_dp_rc.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=b1).key SIMPLE [(srcpart_merge_dp_rc)srcpart_merge_dp_rc.FieldSchema(name:key, type:string, comment:default), ]

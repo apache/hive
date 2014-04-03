@@ -419,8 +419,10 @@ POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchem
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted bucket3_1 partition (ds='1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@bucket3_1
 POSTHOOK: query: describe formatted bucket3_1 partition (ds='1')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@bucket3_1
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -464,8 +466,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted bucket3_1 partition (ds='2')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@bucket3_1
 POSTHOOK: query: describe formatted bucket3_1 partition (ds='2')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@bucket3_1
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -509,8 +513,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted bucket3_1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@bucket3_1
 POSTHOOK: query: describe formatted bucket3_1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@bucket3_1
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

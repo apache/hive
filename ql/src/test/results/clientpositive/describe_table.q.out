@@ -1,7 +1,9 @@
 PREHOOK: query: describe srcpart
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe srcpart
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	                    
@@ -14,13 +16,17 @@ ds                  	string
 hr                  	string              	                    
 PREHOOK: query: describe srcpart.key
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe srcpart.key
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
 key                 	string              	from deserializer   
 PREHOOK: query: describe srcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe srcpart PARTITION(ds='2008-04-08', hr='12')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	                    
@@ -33,8 +39,10 @@ ds                  	string
 hr                  	string              	                    
 PREHOOK: query: describe extended srcpart
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe extended srcpart
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	                    
@@ -49,13 +57,17 @@ hr                  	string
 #### A masked pattern was here ####
 PREHOOK: query: describe extended srcpart.key
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe extended srcpart.key
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
 key                 	string              	from deserializer   
 PREHOOK: query: describe extended srcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe extended srcpart PARTITION(ds='2008-04-08', hr='12')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	                    
@@ -70,8 +82,10 @@ hr                  	string
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted srcpart
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted srcpart
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -105,15 +119,19 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted srcpart.key
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted srcpart.key
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	from deserializer   
 PREHOOK: query: describe formatted srcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted srcpart PARTITION(ds='2008-04-08', hr='12')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             
@@ -191,8 +209,10 @@ POSTHOOK: Input: default@srcpart_serdeprops
 POSTHOOK: Output: default@srcpart_serdeprops
 PREHOOK: query: describe formatted srcpart_serdeprops
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart_serdeprops
 POSTHOOK: query: describe formatted srcpart_serdeprops
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart_serdeprops
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	default             

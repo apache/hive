@@ -269,8 +269,10 @@ POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).c SIMPLE [(temps_null)temp
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=2011).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 PREHOOK: query: describe formatted stats_null_part partition (dt='2010')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_null_part
 POSTHOOK: query: describe formatted stats_null_part partition (dt='2010')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
 POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
@@ -322,8 +324,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted stats_null_part partition (dt='2011')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_null_part
 POSTHOOK: query: describe formatted stats_null_part partition (dt='2011')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Lineage: stats_null.a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
 POSTHOOK: Lineage: stats_null.b SIMPLE [(temps_null)temps_null.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: stats_null.c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]

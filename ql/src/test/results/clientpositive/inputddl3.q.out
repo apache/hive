@@ -26,7 +26,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@INPUTDDL3
 PREHOOK: query: DESCRIBE INPUTDDL3
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl3
 POSTHOOK: query: DESCRIBE INPUTDDL3
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@inputddl3
 key                 	int                 	                    
 value               	string              	                    

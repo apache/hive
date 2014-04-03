@@ -114,8 +114,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=12
 PREHOOK: query: show partitions srcpart_merge_dp
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart_merge_dp
 POSTHOOK: query: show partitions srcpart_merge_dp
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart_merge_dp
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 ds=2008-04-09/hr=11

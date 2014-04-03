@@ -99,8 +99,10 @@ POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPL
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).b SIMPLE []
 PREHOOK: query: DESCRIBE EXTENDED part_special PARTITION(ds='2008 04 08', ts = '10:11:12=455')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@part_special
 POSTHOOK: query: DESCRIBE EXTENDED part_special PARTITION(ds='2008 04 08', ts = '10:11:12=455')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@part_special
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).b SIMPLE []
 a                   	string              	                    
