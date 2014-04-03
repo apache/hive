@@ -21,8 +21,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@convert_enum_to_string
 PREHOOK: query: describe convert_enum_to_string
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@convert_enum_to_string
 POSTHOOK: query: describe convert_enum_to_string
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@convert_enum_to_string
 my_bool             	boolean             	from deserializer   
 my_byte             	tinyint             	from deserializer   
 my_16bit_int        	smallint            	from deserializer   

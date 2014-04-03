@@ -63,8 +63,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@doctors
 PREHOOK: query: DESCRIBE doctors
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@doctors
 POSTHOOK: query: DESCRIBE doctors
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@doctors
 number              	int                 	from deserializer   
 first_name          	string              	from deserializer   
 last_name           	string              	from deserializer   

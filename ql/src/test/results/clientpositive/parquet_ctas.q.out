@@ -46,8 +46,10 @@ POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:s
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe parquet_ctas
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_ctas
 POSTHOOK: query: describe parquet_ctas
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_ctas
 POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key                 	int                 	                    
@@ -83,8 +85,10 @@ POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:s
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe parquet_ctas_advanced
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_ctas_advanced
 POSTHOOK: query: describe parquet_ctas_advanced
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_ctas_advanced
 POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 _c0                 	int                 	                    
@@ -120,8 +124,10 @@ POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:s
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe parquet_ctas_alias
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_ctas_alias
 POSTHOOK: query: describe parquet_ctas_alias
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_ctas_alias
 POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 mykey               	int                 	                    
@@ -157,8 +163,10 @@ POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:s
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe parquet_ctas_mixed
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_ctas_mixed
 POSTHOOK: query: describe parquet_ctas_mixed
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_ctas_mixed
 POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key                 	int                 	                    

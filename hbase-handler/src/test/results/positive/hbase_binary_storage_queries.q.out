@@ -33,8 +33,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase
 PREHOOK: query: DESCRIBE FORMATTED t_hbase
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t_hbase
 POSTHOOK: query: DESCRIBE FORMATTED t_hbase
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t_hbase
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	from deserializer   
@@ -206,8 +208,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_1
 PREHOOK: query: DESCRIBE FORMATTED t_hbase_1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t_hbase_1
 POSTHOOK: query: DESCRIBE FORMATTED t_hbase_1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t_hbase_1
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	from deserializer   

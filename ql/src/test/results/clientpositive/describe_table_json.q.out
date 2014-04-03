@@ -30,13 +30,17 @@ POSTHOOK: Input: default@jsontable
 POSTHOOK: Output: default@jsontable
 PREHOOK: query: DESCRIBE jsontable
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@jsontable
 POSTHOOK: query: DESCRIBE jsontable
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@jsontable
 {"columns":[{"name":"key","type":"int"},{"name":"value","type":"string"}]}	 	 
 PREHOOK: query: DESCRIBE extended jsontable
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@jsontable
 POSTHOOK: query: DESCRIBE extended jsontable
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@jsontable
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE jsontable
 PREHOOK: type: DROPTABLE

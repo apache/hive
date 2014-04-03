@@ -52,8 +52,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_create
 PREHOOK: query: DESCRIBE FORMATTED parquet_create
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_create
 POSTHOOK: query: DESCRIBE FORMATTED parquet_create
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_create
 # col_name            	data_type           	comment             
 	 	 
 id                  	int                 	                    

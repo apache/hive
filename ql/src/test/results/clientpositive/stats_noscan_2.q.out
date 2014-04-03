@@ -35,8 +35,10 @@ POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Output: default@anaylyze_external
 PREHOOK: query: describe formatted anaylyze_external
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@anaylyze_external
 POSTHOOK: query: describe formatted anaylyze_external
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@anaylyze_external
 # col_name            	data_type           	comment             
 	 	 
 a                   	int                 	                    
@@ -77,8 +79,10 @@ POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Output: default@anaylyze_external
 PREHOOK: query: describe formatted anaylyze_external
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@anaylyze_external
 POSTHOOK: query: describe formatted anaylyze_external
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@anaylyze_external
 # col_name            	data_type           	comment             
 	 	 
 a                   	int                 	                    
@@ -215,8 +219,10 @@ POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)s
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted anaylyze_external PARTITION (insertdate='2008-01-01')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@anaylyze_external
 POSTHOOK: query: describe formatted anaylyze_external PARTITION (insertdate='2008-01-01')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
@@ -270,8 +276,10 @@ POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)s
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted anaylyze_external PARTITION (insertdate='2008-01-01')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@anaylyze_external
 POSTHOOK: query: describe formatted anaylyze_external PARTITION (insertdate='2008-01-01')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             

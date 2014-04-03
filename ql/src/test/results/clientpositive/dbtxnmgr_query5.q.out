@@ -35,8 +35,10 @@ t1
 v1
 PREHOOK: query: describe T1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: foo@t1
 POSTHOOK: query: describe T1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: foo@t1
 key                 	string              	                    
 val                 	string              	                    
 ds                  	string              	                    

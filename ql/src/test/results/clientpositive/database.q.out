@@ -136,16 +136,20 @@ test_table
 PREHOOK: query: -- DESCRIBE table in non-default DB
 DESCRIBE test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: test_db@test_table
 POSTHOOK: query: -- DESCRIBE table in non-default DB
 DESCRIBE test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test_db@test_table
 col1                	string              	                    
 PREHOOK: query: -- DESCRIBE EXTENDED in non-default DB
 DESCRIBE EXTENDED test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: test_db@test_table
 POSTHOOK: query: -- DESCRIBE EXTENDED in non-default DB
 DESCRIBE EXTENDED test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test_db@test_table
 col1                	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -166,8 +170,10 @@ test_table
 test_table_like
 PREHOOK: query: DESCRIBE EXTENDED test_table_like
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: test_db@test_table_like
 POSTHOOK: query: DESCRIBE EXTENDED test_table_like
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test_db@test_table_like
 col1                	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -1395,8 +1401,10 @@ POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value,
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: DESC EXTENDED src1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: db2@src1
 POSTHOOK: query: DESC EXTENDED src1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db2@src1
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]

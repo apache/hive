@@ -43,8 +43,10 @@ POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key E
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="00")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@combine_3_srcpart_seq_rc
 POSTHOOK: query: desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="00")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -63,8 +65,10 @@ hr                  	string
 #### A masked pattern was here ####
 PREHOOK: query: desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="001")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@combine_3_srcpart_seq_rc
 POSTHOOK: query: desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="001")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -5,8 +5,10 @@ POSTHOOK: type: IMPORT
 POSTHOOK: Output: default@j1_41
 PREHOOK: query: DESCRIBE j1_41
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@j1_41
 POSTHOOK: query: DESCRIBE j1_41
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@j1_41
 a                   	string              	                    
 b                   	int                 	                    
 PREHOOK: query: SELECT * from j1_41

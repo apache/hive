@@ -83,8 +83,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@summary
 PREHOOK: query: describe formatted summary
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@summary
 POSTHOOK: query: describe formatted summary
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@summary
 # col_name            	data_type           	comment             
 	 	 
 _col0               	double              	                    
@@ -197,8 +199,10 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@x4
 PREHOOK: query: describe formatted x4
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@x4
 POSTHOOK: query: describe formatted x4
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@x4
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -357,8 +361,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@x5
 PREHOOK: query: describe formatted x5
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@x5
 POSTHOOK: query: describe formatted x5
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@x5
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -497,8 +503,10 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@x6
 PREHOOK: query: describe formatted x6
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@x6
 POSTHOOK: query: describe formatted x6
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@x6
 # col_name            	data_type           	comment             
 	 	 
 _col0               	string              	                    
@@ -616,8 +624,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@x7
 PREHOOK: query: describe formatted x7
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@x7
 POSTHOOK: query: describe formatted x7
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@x7
 # col_name            	data_type           	comment             
 	 	 
 _col0               	string              	                    
@@ -1045,8 +1055,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@x8
 PREHOOK: query: describe formatted x8
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@x8
 POSTHOOK: query: describe formatted x8
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@x8
 # col_name            	data_type           	comment             
 	 	 
 _col0               	string              	                    
@@ -1176,8 +1188,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@x9
 PREHOOK: query: describe formatted x9
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@x9
 POSTHOOK: query: describe formatted x9
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@x9
 # col_name            	data_type           	comment             
 	 	 
 _c0                 	string              	                    

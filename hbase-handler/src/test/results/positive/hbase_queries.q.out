@@ -17,8 +17,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_1
 PREHOOK: query: DESCRIBE EXTENDED hbase_table_1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@hbase_table_1
 POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@hbase_table_1
 key                 	int                 	from deserializer   
 value               	string              	from deserializer   
 	 	 

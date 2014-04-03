@@ -23,8 +23,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@INPUTDDL4
 PREHOOK: query: DESCRIBE INPUTDDL4
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl4
 POSTHOOK: query: DESCRIBE INPUTDDL4
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@inputddl4
 viewtime            	string              	                    
 userid              	int                 	                    
 page_url            	string              	                    
@@ -42,8 +44,10 @@ ds                  	string
 country             	string              	                    
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL4
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl4
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL4
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@inputddl4
 viewtime            	string              	                    
 userid              	int                 	                    
 page_url            	string              	                    

@@ -9,8 +9,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: describe t1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: describe t1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 x+1                 	string              	                    
 y&y                 	string              	                    
 !@#$%^&*()_q        	string              	                    
@@ -312,8 +314,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t4
 PREHOOK: query: describe t4
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t4
 POSTHOOK: query: describe t4
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t4
 x+1`                	string              	                    
 y&y                 	string              	                    
 PREHOOK: query: insert into table t4 select * from src

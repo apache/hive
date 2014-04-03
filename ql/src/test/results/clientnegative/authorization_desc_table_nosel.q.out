@@ -1,0 +1,29 @@
+PREHOOK: query: -- check if alter table fails as different user
+create table t1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: -- check if alter table fails as different user
+create table t1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: desc t1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: desc t1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+i                   	int                 	                    
+PREHOOK: query: grant all on table t1 to user user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t1
+POSTHOOK: query: grant all on table t1 to user user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t1
+PREHOOK: query: revoke select on table t1 from user user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@t1
+POSTHOOK: query: revoke select on table t1 from user user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@t1
+FAILED: HiveAccessControlException Permission denied. Principal [name=user2, type=USER] does not have following privileges on Object [type=TABLE_OR_VIEW, name=default.t1] : [SELECT]

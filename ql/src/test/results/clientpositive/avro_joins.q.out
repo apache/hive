@@ -77,8 +77,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@doctors4
 PREHOOK: query: DESCRIBE doctors4
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@doctors4
 POSTHOOK: query: DESCRIBE doctors4
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@doctors4
 number              	int                 	from deserializer   
 first_name          	string              	from deserializer   
 last_name           	string              	from deserializer   
@@ -154,8 +156,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@episodes
 PREHOOK: query: DESCRIBE episodes
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@episodes
 POSTHOOK: query: DESCRIBE episodes
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@episodes
 title               	string              	from deserializer   
 air_date            	string              	from deserializer   
 doctor              	int                 	from deserializer   

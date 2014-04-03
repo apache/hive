@@ -14,7 +14,9 @@ POSTHOOK: Output: default@ptestfilter1
 POSTHOOK: Output: default@ptestfilter1@c=US/d=1
 PREHOOK: query: show partitions ptestfilter1
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter1
 POSTHOOK: query: show partitions ptestfilter1
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter1
 c=US/d=1
 FAILED: SemanticException [Error 10006]: Partition not found ((c = 'US') and (d < '1'))

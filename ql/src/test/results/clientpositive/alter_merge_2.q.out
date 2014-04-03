@@ -14,8 +14,10 @@ POSTHOOK: Output: default@src_rc_merge_test_part
 POSTHOOK: Output: default@src_rc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 PREHOOK: query: desc extended src_rc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_part
 POSTHOOK: query: desc extended src_rc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_part
 key                 	int                 	                    
 value               	string              	                    
 ds                  	string              	                    

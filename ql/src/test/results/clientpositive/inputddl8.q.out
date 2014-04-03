@@ -19,8 +19,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@INPUTDDL8
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL8
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl8
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL8
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@inputddl8
 aint                	int                 	from deserializer   
 astring             	string              	from deserializer   
 lint                	array<int>          	from deserializer   

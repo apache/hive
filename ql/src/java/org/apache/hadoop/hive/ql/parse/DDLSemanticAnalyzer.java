@@ -1972,6 +1972,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       descTblDesc.setExt(descOptions == HiveParser.KW_EXTENDED);
       descTblDesc.setPretty(descOptions == HiveParser.KW_PRETTY);
     }
+
+    inputs.add(new ReadEntity(getTable(tableName)));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         descTblDesc), conf));
     setFetchTask(createFetchTask(DescTableDesc.getSchema()));
@@ -2037,6 +2039,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     validateTable(tableName, null);
 
     showPartsDesc = new ShowPartitionsDesc(tableName, ctx.getResFile(), partSpec);
+    inputs.add(new ReadEntity(getTable(tableName)));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showPartsDesc), conf));
     setFetchTask(createFetchTask(showPartsDesc.getSchema()));

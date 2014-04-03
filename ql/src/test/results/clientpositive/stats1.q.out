@@ -171,8 +171,10 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema
 tst1	500
 PREHOOK: query: DESCRIBE FORMATTED tmptable
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tmptable
 POSTHOOK: query: DESCRIBE FORMATTED tmptable
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tmptable
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
@@ -223,8 +225,10 @@ POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED tmptable
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tmptable
 POSTHOOK: query: DESCRIBE FORMATTED tmptable
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tmptable
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             

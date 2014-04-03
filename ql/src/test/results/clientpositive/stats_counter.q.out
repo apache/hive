@@ -17,8 +17,10 @@ POSTHOOK: Input: default@dummy1
 POSTHOOK: Output: default@dummy1
 PREHOOK: query: desc formatted dummy1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dummy1
 POSTHOOK: query: desc formatted dummy1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dummy1
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -60,8 +62,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dummy2
 PREHOOK: query: desc formatted dummy2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dummy2
 POSTHOOK: query: desc formatted dummy2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dummy2
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    

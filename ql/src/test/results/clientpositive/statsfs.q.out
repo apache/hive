@@ -45,8 +45,10 @@ POSTHOOK: Output: default@t1@ds=2010
 POSTHOOK: Output: default@t1@ds=2011
 PREHOOK: query: describe formatted t1 partition (ds='2010')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: describe formatted t1 partition (ds='2010')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -84,8 +86,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted t1 partition (ds='2011')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: describe formatted t1 partition (ds='2011')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -164,8 +168,10 @@ POSTHOOK: Lineage: t1 PARTITION(ds=2011).key SIMPLE [(src)src.FieldSchema(name:k
 POSTHOOK: Lineage: t1 PARTITION(ds=2011).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted t1 partition (ds='2010')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: describe formatted t1 partition (ds='2010')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 POSTHOOK: Lineage: t1 PARTITION(ds=2010).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2011).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -207,8 +213,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted t1 partition (ds='2011')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: describe formatted t1 partition (ds='2011')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 POSTHOOK: Lineage: t1 PARTITION(ds=2010).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2011).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -301,8 +309,10 @@ POSTHOOK: Lineage: t1 PARTITION(ds=2011).key SIMPLE [(src)src.FieldSchema(name:k
 POSTHOOK: Lineage: t1 PARTITION(ds=2011).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted t1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: describe formatted t1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 POSTHOOK: Lineage: t1 PARTITION(ds=2010).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2011).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -380,8 +390,10 @@ POSTHOOK: Lineage: t1 PARTITION(ds=2011).key SIMPLE [(src)src.FieldSchema(name:k
 POSTHOOK: Lineage: t1 PARTITION(ds=2011).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted t1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: describe formatted t1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2010).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -486,8 +498,10 @@ POSTHOOK: Lineage: t1 PARTITION(ds=2011).key SIMPLE [(src)src.FieldSchema(name:k
 POSTHOOK: Lineage: t1 PARTITION(ds=2011).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted t1 partition (ds='2008-04-08',hr='11')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: describe formatted t1 partition (ds='2008-04-08',hr='11')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -540,8 +554,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted t1 partition (ds='2008-04-09',hr='12')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
 POSTHOOK: query: describe formatted t1 partition (ds='2008-04-09',hr='12')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
 POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

@@ -84,8 +84,10 @@ POSTHOOK: Lineage: orc_create_people.start_date SIMPLE [(orc_create_people_stagi
 POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
 PREHOOK: query: desc formatted orc_create_people
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
@@ -199,8 +201,10 @@ POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)or
 POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
 PREHOOK: query: desc formatted orc_create_people
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
@@ -388,8 +392,10 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_cre
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
@@ -457,8 +463,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted orc_create_people partition(state="Or")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
@@ -660,8 +668,10 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_cre
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
@@ -741,8 +751,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted orc_create_people partition(state="Or")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
@@ -1060,8 +1072,10 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_cre
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
@@ -1153,8 +1167,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted orc_create_people partition(state="Or")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
@@ -1458,8 +1474,10 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_cre
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
@@ -1563,8 +1581,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted orc_create_people partition(state="Or")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
@@ -2417,8 +2437,10 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_cre
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
@@ -2534,8 +2556,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: desc formatted orc_create_people partition(state="OH")
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
 POSTHOOK: query: desc formatted orc_create_people partition(state="OH")
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]

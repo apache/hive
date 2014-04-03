@@ -48,8 +48,10 @@ minFileSize:206
 
 PREHOOK: query: desc extended src_rc_merge_test_stat
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_stat
 POSTHOOK: query: desc extended src_rc_merge_test_stat
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_stat
 key                 	int                 	                    
 value               	string              	                    
 	 	 
@@ -64,8 +66,10 @@ POSTHOOK: Input: default@src_rc_merge_test_stat
 POSTHOOK: Output: default@src_rc_merge_test_stat
 PREHOOK: query: desc extended src_rc_merge_test_stat
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_stat
 POSTHOOK: query: desc extended src_rc_merge_test_stat
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_stat
 key                 	int                 	                    
 value               	string              	                    
 	 	 
@@ -97,8 +101,10 @@ minFileSize:239
 
 PREHOOK: query: desc extended src_rc_merge_test_stat
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_stat
 POSTHOOK: query: desc extended src_rc_merge_test_stat
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_stat
 key                 	int                 	                    
 value               	string              	                    
 	 	 
@@ -160,8 +166,10 @@ minFileSize:206
 
 PREHOOK: query: desc extended src_rc_merge_test_part_stat
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_part_stat
 POSTHOOK: query: desc extended src_rc_merge_test_part_stat
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
 key                 	int                 	                    
 value               	string              	                    
 ds                  	string              	                    
@@ -186,8 +194,10 @@ POSTHOOK: Output: default@src_rc_merge_test_part_stat
 POSTHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
 PREHOOK: query: desc extended src_rc_merge_test_part_stat
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_part_stat
 POSTHOOK: query: desc extended src_rc_merge_test_part_stat
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
 key                 	int                 	                    
 value               	string              	                    
 ds                  	string              	                    
@@ -225,8 +235,10 @@ minFileSize:239
 
 PREHOOK: query: desc extended src_rc_merge_test_part_stat
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_part_stat
 POSTHOOK: query: desc extended src_rc_merge_test_part_stat
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
 key                 	int                 	                    
 value               	string              	                    
 ds                  	string              	                    
