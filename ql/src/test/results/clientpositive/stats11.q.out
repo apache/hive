@@ -65,8 +65,10 @@ POSTHOOK: Output: default@srcbucket_mapjoin_part
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
 PREHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcbucket_mapjoin_part
 POSTHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcbucket_mapjoin_part
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -112,8 +114,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
 PREHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcbucket_mapjoin_part
 POSTHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcbucket_mapjoin_part
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -159,8 +163,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
 PREHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcbucket_mapjoin_part
 POSTHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcbucket_mapjoin_part
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -206,8 +212,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
 PREHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcbucket_mapjoin_part
 POSTHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcbucket_mapjoin_part
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    

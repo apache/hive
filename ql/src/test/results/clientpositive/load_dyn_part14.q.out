@@ -15,8 +15,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part14
 PREHOOK: query: describe extended nzhang_part14
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part14
 POSTHOOK: query: describe extended nzhang_part14
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part14
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -245,8 +247,10 @@ POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
 PREHOOK: query: show partitions nzhang_part14
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@nzhang_part14
 POSTHOOK: query: show partitions nzhang_part14
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@nzhang_part14
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
 value= 

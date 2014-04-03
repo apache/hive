@@ -19,8 +19,10 @@ POSTHOOK: Input: default@decimal_1
 POSTHOOK: Output: default@decimal_1
 PREHOOK: query: desc decimal_1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@decimal_1
 POSTHOOK: query: desc decimal_1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@decimal_1
 t                   	decimal(4,2)        	                    
 u                   	decimal(5,0)        	                    
 v                   	decimal(10,0)       	                    

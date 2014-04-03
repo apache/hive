@@ -29,8 +29,10 @@ POSTHOOK: Lineage: test_table_bucketed PARTITION(part=1).key SIMPLE [(src)src.Fi
 POSTHOOK: Lineage: test_table_bucketed PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 PREHOOK: query: DESCRIBE FORMATTED test_table_bucketed PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_bucketed
 POSTHOOK: query: DESCRIBE FORMATTED test_table_bucketed PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_bucketed
 POSTHOOK: Lineage: test_table_bucketed PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table_bucketed PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 # col_name            	data_type           	comment             

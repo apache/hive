@@ -27,8 +27,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: DESCRIBE test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 col1                	int                 	col1 one line comment
 col2                	string              	col2                
                     	                    	two lines comment
@@ -37,8 +39,10 @@ col3                	string              	col3
                     	                    	comment
 PREHOOK: query: DESCRIBE FORMATTED test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE FORMATTED test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
 	 	 
 col1                	int                 	col1 one line comment

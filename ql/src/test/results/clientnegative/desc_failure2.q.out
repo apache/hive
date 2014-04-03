@@ -1,7 +1,9 @@
 PREHOOK: query: DESC srcpart
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: DESC srcpart
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	                    

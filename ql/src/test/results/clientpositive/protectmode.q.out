@@ -43,8 +43,10 @@ POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: default@tbl1
 PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl1
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl1
 col                 	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -58,8 +60,10 @@ POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: default@tbl1
 PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl1
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl1
 col                 	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -144,8 +148,10 @@ POSTHOOK: Input: default@tbl2@p=p1
 POSTHOOK: Output: default@tbl2@p=p1
 PREHOOK: query: desc extended tbl2 partition (p='p1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2
 POSTHOOK: query: desc extended tbl2 partition (p='p1')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2
 col                 	string              	                    
 p                   	string              	                    
 	 	 
@@ -165,8 +171,10 @@ POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
 PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2
 col                 	string              	                    
 p                   	string              	                    
 	 	 
@@ -186,8 +194,10 @@ POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
 PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2
 col                 	string              	                    
 p                   	string              	                    
 	 	 
@@ -215,8 +225,10 @@ POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
 PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2
 col                 	string              	                    
 p                   	string              	                    
 	 	 
@@ -236,8 +248,10 @@ POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
 PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2
 col                 	string              	                    
 p                   	string              	                    
 	 	 
@@ -278,8 +292,10 @@ POSTHOOK: Input: default@tbl2@p=p1
 POSTHOOK: Output: default@tbl2@p=p1
 PREHOOK: query: desc extended tbl2 partition (p='p1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2
 POSTHOOK: query: desc extended tbl2 partition (p='p1')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2
 col                 	string              	                    
 p                   	string              	                    
 	 	 

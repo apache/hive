@@ -70,8 +70,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@hive_test_src
 PREHOOK: query: desc formatted hive_test_src
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@hive_test_src
 POSTHOOK: query: desc formatted hive_test_src
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@hive_test_src
 # col_name            	data_type           	comment             
 	 	 
 col1                	string              	                    
@@ -219,8 +221,10 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: describe formatted hive_test_dst
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@hive_test_dst
 POSTHOOK: query: describe formatted hive_test_dst
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@hive_test_dst
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 # col_name            	data_type           	comment             

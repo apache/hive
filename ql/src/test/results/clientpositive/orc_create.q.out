@@ -43,8 +43,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_staging
 PREHOOK: query: DESCRIBE FORMATTED orc_create_staging
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_staging
 POSTHOOK: query: DESCRIBE FORMATTED orc_create_staging
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_staging
 # col_name            	data_type           	comment             
 	 	 
 str                 	string              	                    
@@ -88,8 +90,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create
 PREHOOK: query: DESCRIBE FORMATTED orc_create
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create
 POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -139,8 +143,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create
 PREHOOK: query: DESCRIBE FORMATTED orc_create
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create
 POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -181,8 +187,10 @@ POSTHOOK: Input: default@orc_create
 POSTHOOK: Output: default@orc_create
 PREHOOK: query: DESCRIBE FORMATTED orc_create
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create
 POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -232,8 +240,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create
 PREHOOK: query: DESCRIBE FORMATTED orc_create
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create
 POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -283,8 +293,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_complex
 PREHOOK: query: DESCRIBE FORMATTED orc_create_complex
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_complex
 POSTHOOK: query: DESCRIBE FORMATTED orc_create_complex
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_complex
 # col_name            	data_type           	comment             
 	 	 
 str                 	string              	                    

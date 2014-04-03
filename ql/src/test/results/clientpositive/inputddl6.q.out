@@ -31,8 +31,10 @@ POSTHOOK: Output: default@inputddl6
 POSTHOOK: Output: default@inputddl6@ds=2008-04-08
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL6
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl6
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL6
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@inputddl6
 key                 	string              	                    
 value               	string              	                    
 ds                  	string              	                    
@@ -45,8 +47,10 @@ ds                  	string
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-08')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl6
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@inputddl6
 key                 	string              	                    
 value               	string              	                    
 ds                  	string              	                    
@@ -59,8 +63,10 @@ ds                  	string
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS INPUTDDL6
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@inputddl6
 POSTHOOK: query: SHOW PARTITIONS INPUTDDL6
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@inputddl6
 ds=2008-04-08
 ds=2008-04-09
 PREHOOK: query: ALTER TABLE INPUTDDL6 DROP PARTITION (ds='2008-04-08')
@@ -73,8 +79,10 @@ POSTHOOK: Input: default@inputddl6
 POSTHOOK: Output: default@inputddl6@ds=2008-04-08
 PREHOOK: query: SHOW PARTITIONS INPUTDDL6
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@inputddl6
 POSTHOOK: query: SHOW PARTITIONS INPUTDDL6
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@inputddl6
 ds=2008-04-09
 PREHOOK: query: EXPLAIN
 DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-09')

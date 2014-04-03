@@ -31,8 +31,10 @@ POSTHOOK: Input: default@tbl_protectmode_4
 POSTHOOK: Output: default@tbl_protectmode_4
 PREHOOK: query: desc extended tbl_protectmode_4
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_protectmode_4
 POSTHOOK: query: desc extended tbl_protectmode_4
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_protectmode_4
 col                 	string              	                    
 	 	 
 #### A masked pattern was here ####

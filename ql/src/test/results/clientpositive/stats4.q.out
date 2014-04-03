@@ -1,7 +1,9 @@
 PREHOOK: query: show partitions srcpart
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: show partitions srcpart
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 ds=2008-04-09/hr=11
@@ -179,8 +181,10 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show partitions nzhang_part1
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@nzhang_part1
 POSTHOOK: query: show partitions nzhang_part1
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@nzhang_part1
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -193,8 +197,10 @@ ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 PREHOOK: query: show partitions nzhang_part2
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@nzhang_part2
 POSTHOOK: query: show partitions nzhang_part2
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@nzhang_part2
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2247,8 +2253,10 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(sr
 97	val_97	2008-12-31	12
 PREHOOK: query: describe formatted nzhang_part1 partition(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part1
 POSTHOOK: query: describe formatted nzhang_part1 partition(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part1
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2295,8 +2303,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted nzhang_part1 partition(ds='2008-04-08',hr=12)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part1
 POSTHOOK: query: describe formatted nzhang_part1 partition(ds='2008-04-08',hr=12)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part1
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2343,8 +2353,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted nzhang_part2 partition(ds='2008-12-31',hr=11)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part2
 POSTHOOK: query: describe formatted nzhang_part2 partition(ds='2008-12-31',hr=11)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part2
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2391,8 +2403,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted nzhang_part2 partition(ds='2008-12-31',hr=12)
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part2
 POSTHOOK: query: describe formatted nzhang_part2 partition(ds='2008-12-31',hr=12)
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part2
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2439,8 +2453,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted nzhang_part1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part1
 POSTHOOK: query: describe formatted nzhang_part1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part1
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2482,8 +2498,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: describe formatted nzhang_part2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part2
 POSTHOOK: query: describe formatted nzhang_part2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part2
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

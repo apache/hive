@@ -15,8 +15,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ba_test
 PREHOOK: query: describe extended ba_test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ba_test
 POSTHOOK: query: describe extended ba_test
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ba_test
 ba_key              	binary              	                    
 ba_val              	binary              	                    
 	 	 

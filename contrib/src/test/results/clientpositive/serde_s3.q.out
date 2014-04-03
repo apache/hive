@@ -15,8 +15,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s3log
 PREHOOK: query: DESCRIBE s3log
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@s3log
 POSTHOOK: query: DESCRIBE s3log
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@s3log
 #### A masked pattern was here ####
 bucketname          	string              	from deserializer   
 rdatetime           	string              	from deserializer   

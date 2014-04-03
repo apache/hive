@@ -7,8 +7,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter1
 PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -23,8 +25,10 @@ POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -39,8 +43,10 @@ POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -55,8 +61,10 @@ POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -71,8 +79,10 @@ POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -87,8 +97,10 @@ POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -103,8 +115,10 @@ POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -119,8 +133,10 @@ POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -135,8 +151,10 @@ POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -151,8 +169,10 @@ POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: describe alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
 POSTHOOK: query: describe alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 c                   	string              	                    
@@ -204,8 +224,10 @@ POSTHOOK: Output: alter1_db@alter1
 POSTHOOK: Output: database:alter1_db
 PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -220,8 +242,10 @@ POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -236,8 +260,10 @@ POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -252,8 +278,10 @@ POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -268,8 +296,10 @@ POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -284,8 +314,10 @@ POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -300,8 +332,10 @@ POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -316,8 +350,10 @@ POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -332,8 +368,10 @@ POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -348,8 +386,10 @@ POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: DESCRIBE alter1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE alter1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
 a                   	int                 	                    
 b                   	int                 	                    
 c                   	string              	                    

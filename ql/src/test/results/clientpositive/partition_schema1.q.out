@@ -17,8 +17,10 @@ POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.Fi
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc partition_schema1 partition(dt='100')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partition_schema1
 POSTHOOK: query: desc partition_schema1 partition(dt='100')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partition_schema1
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	                    
@@ -41,8 +43,10 @@ POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.Fi
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc partition_schema1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partition_schema1
 POSTHOOK: query: desc partition_schema1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partition_schema1
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	                    
@@ -56,8 +60,10 @@ dt                  	string
 dt                  	string              	                    
 PREHOOK: query: desc partition_schema1 partition (dt='100')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partition_schema1
 POSTHOOK: query: desc partition_schema1 partition (dt='100')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partition_schema1
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	                    

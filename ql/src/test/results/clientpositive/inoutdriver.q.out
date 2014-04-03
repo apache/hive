@@ -7,8 +7,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test
 PREHOOK: query: desc extended test
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test
 POSTHOOK: query: desc extended test
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test
 a                   	int                 	                    
 	 	 
 #### A masked pattern was here ####

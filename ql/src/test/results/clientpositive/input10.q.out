@@ -27,8 +27,10 @@ STAGE PLANS:
 
 PREHOOK: query: DESCRIBE TEST10
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test10
 POSTHOOK: query: DESCRIBE TEST10
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test10
 key                 	int                 	                    
 value               	string              	                    
 ds                  	string              	                    

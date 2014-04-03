@@ -125,8 +125,10 @@ POSTHOOK: Input: default@nzhang_ctas1
 104	val_104
 PREHOOK: query: describe formatted nzhang_CTAS1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_ctas1
 POSTHOOK: query: describe formatted nzhang_CTAS1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_ctas1
 # col_name            	data_type           	comment             
 	 	 
 k                   	string              	                    
@@ -265,8 +267,10 @@ POSTHOOK: Input: default@nzhang_ctas2
 104	val_104
 PREHOOK: query: describe formatted nzhang_CTAS2
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_ctas2
 POSTHOOK: query: describe formatted nzhang_CTAS2
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_ctas2
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -406,8 +410,10 @@ POSTHOOK: Input: default@nzhang_ctas3
 4.5	val_9_con
 PREHOOK: query: describe formatted nzhang_CTAS3
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_ctas3
 POSTHOOK: query: describe formatted nzhang_CTAS3
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_ctas3
 # col_name            	data_type           	comment             
 	 	 
 half_key            	double              	                    
@@ -469,8 +475,10 @@ POSTHOOK: Input: default@nzhang_ctas3
 4.5	val_9_con
 PREHOOK: query: describe formatted nzhang_CTAS3
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_ctas3
 POSTHOOK: query: describe formatted nzhang_CTAS3
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_ctas3
 # col_name            	data_type           	comment             
 	 	 
 half_key            	double              	                    
@@ -610,8 +618,10 @@ POSTHOOK: Input: default@nzhang_ctas4
 104	val_104
 PREHOOK: query: describe formatted nzhang_CTAS4
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_ctas4
 POSTHOOK: query: describe formatted nzhang_CTAS4
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_ctas4
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -919,8 +929,10 @@ POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:
 POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc nzhang_ctas8
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_ctas8
 POSTHOOK: query: desc nzhang_ctas8
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_ctas8
 POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 _c0                 	decimal(3,2)        	                    

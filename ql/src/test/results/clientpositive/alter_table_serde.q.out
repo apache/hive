@@ -9,8 +9,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: describe extended test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: describe extended test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 id                  	int                 	                    
 query               	string              	                    
 name                	string              	                    
@@ -26,8 +28,10 @@ POSTHOOK: Input: default@test_table
 POSTHOOK: Output: default@test_table
 PREHOOK: query: describe extended test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: describe extended test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 id                  	int                 	                    
 query               	string              	                    
 name                	string              	                    
@@ -43,8 +47,10 @@ POSTHOOK: Input: default@test_table
 POSTHOOK: Output: default@test_table
 PREHOOK: query: describe extended test_table
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: describe extended test_table
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 id                  	int                 	                    
 query               	string              	                    
 name                	string              	                    
@@ -76,8 +82,10 @@ POSTHOOK: Output: default@test_table
 POSTHOOK: Output: default@test_table@dt=2011
 PREHOOK: query: describe extended test_table partition (dt='2011')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: describe extended test_table partition (dt='2011')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 id                  	int                 	                    
 query               	string              	                    
 name                	string              	                    
@@ -99,8 +107,10 @@ POSTHOOK: Input: default@test_table
 POSTHOOK: Output: default@test_table
 PREHOOK: query: describe extended test_table partition (dt='2011')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: describe extended test_table partition (dt='2011')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 id                  	int                 	                    
 query               	string              	                    
 name                	string              	                    
@@ -122,8 +132,10 @@ POSTHOOK: Input: default@test_table
 POSTHOOK: Output: default@test_table
 PREHOOK: query: describe extended test_table partition (dt='2011')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: describe extended test_table partition (dt='2011')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 id                  	int                 	                    
 query               	string              	                    
 name                	string              	                    
@@ -150,8 +162,10 @@ POSTHOOK: Input: default@test_table@dt=2011
 POSTHOOK: Output: default@test_table@dt=2011
 PREHOOK: query: describe extended test_table partition (dt='2011')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: describe extended test_table partition (dt='2011')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 id                  	int                 	                    
 query               	string              	                    
 name                	string              	                    
@@ -174,8 +188,10 @@ POSTHOOK: Input: default@test_table@dt=2011
 POSTHOOK: Output: default@test_table@dt=2011
 PREHOOK: query: describe extended test_table partition (dt='2011')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
 POSTHOOK: query: describe extended test_table partition (dt='2011')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
 id                  	int                 	                    
 query               	string              	                    
 name                	string              	                    
