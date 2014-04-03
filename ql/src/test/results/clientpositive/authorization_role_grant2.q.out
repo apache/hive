@@ -23,7 +23,7 @@ PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
 role	grant_option	grant_time	grantor
-PUBLIC	false	-1	
+public	false	-1	
 src_role_wadmin	true	-1	hive_admin_user
 PREHOOK: query: show principals src_role_wadmin
 PREHOOK: type: SHOW_ROLE_PRINCIPALS
@@ -44,7 +44,7 @@ PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user3
 POSTHOOK: type: SHOW_ROLE_GRANT
 role	grant_option	grant_time	grantor
-PUBLIC	false	-1	
+public	false	-1	
 src_role_wadmin	false	-1	user2
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
@@ -70,7 +70,7 @@ PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user user3
 POSTHOOK: type: SHOW_ROLE_GRANT
 role	grant_option	grant_time	grantor
-PUBLIC	false	-1	
+public	false	-1	
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN

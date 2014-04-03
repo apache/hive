@@ -24,19 +24,19 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 
 @Explain(displayName="grant or revoke roles")
 public class GrantRevokeRoleDDL {
-  
+
   private boolean grant;
-  
+
   private List<PrincipalDesc> principalDesc;
-  
+
   private List<String> roles;
-  
+
   private String grantor;
-  
+
   private PrincipalType grantorType;
-  
+
   private boolean grantOption;
-  
+
   public GrantRevokeRoleDDL() {
   }
 
@@ -110,6 +110,6 @@ public class GrantRevokeRoleDDL {
 
   public void setGrantOption(boolean grantOption) {
     this.grantOption = grantOption;
-  }  
+  }
 
 }

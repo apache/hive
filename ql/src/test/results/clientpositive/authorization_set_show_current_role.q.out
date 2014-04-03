@@ -6,7 +6,7 @@ PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
-ADMIN
+admin
 
 PREHOOK: query: create role r1
 PREHOOK: type: CREATEROLE
@@ -34,7 +34,7 @@ PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
-PUBLIC
+public
 
 PREHOOK: query: set role ALL
 PREHOOK: type: SHOW_ROLES
@@ -44,7 +44,7 @@ PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
-PUBLIC
+public
 r1
 
 PREHOOK: query: set role ADMIN

@@ -13,7 +13,7 @@ PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
-PUBLIC
+public
 
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
@@ -23,7 +23,7 @@ PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
-ADMIN
+admin
 
 PREHOOK: query: select * from t1
 PREHOOK: type: QUERY
