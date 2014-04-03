@@ -72,14 +72,14 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
   public Task<? extends Serializable> createCreateRoleTask(ASTNode ast, HashSet<ReadEntity> inputs,
       HashSet<WriteEntity> outputs) {
     String roleName = BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText());
-    RoleDDLDesc roleDesc = new RoleDDLDesc(roleName, RoleDDLDesc.RoleOperation.CREATE_ROLE);
+    RoleDDLDesc roleDesc = new RoleDDLDesc(roleName, PrincipalType.ROLE, RoleDDLDesc.RoleOperation.CREATE_ROLE, null);
     return TaskFactory.get(new DDLWork(inputs, outputs, roleDesc), conf);
   }
   @Override
   public Task<? extends Serializable> createDropRoleTask(ASTNode ast, HashSet<ReadEntity> inputs,
       HashSet<WriteEntity> outputs) {
     String roleName = BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText());
-    RoleDDLDesc roleDesc = new RoleDDLDesc(roleName, RoleDDLDesc.RoleOperation.DROP_ROLE);
+    RoleDDLDesc roleDesc = new RoleDDLDesc(roleName, PrincipalType.ROLE, RoleDDLDesc.RoleOperation.DROP_ROLE, null);
     return TaskFactory.get(new DDLWork(inputs, outputs, roleDesc), conf);
   }
   @Override
@@ -219,7 +219,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
 
     List<String> roles = new ArrayList<String>();
     for (int i = rolesStartPos; i < ast.getChildCount(); i++) {
-      roles.add(BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(i).getText()));
+      roles.add(BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(i).getText()).toLowerCase());
     }
 
     String roleOwnerName = SessionState.getUserFromAuthenticator();
@@ -324,8 +324,8 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
   public Task<? extends Serializable> createSetRoleTask(String roleName,
       HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs)
       throws SemanticException {
-    return TaskFactory.get(new DDLWork(inputs, outputs, new RoleDDLDesc(roleName,
-      RoleDDLDesc.RoleOperation.SET_ROLE)), conf);
+    return TaskFactory.get(new DDLWork(inputs, outputs, new RoleDDLDesc(roleName, PrincipalType.ROLE,
+      RoleDDLDesc.RoleOperation.SET_ROLE, null)), conf);
   }
 
   @Override
@@ -349,7 +349,8 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       throw new AssertionError("Unexpected Tokens in SHOW ROLE PRINCIPALS");
     }
 
-    RoleDDLDesc roleDDLDesc = new RoleDDLDesc(roleName, RoleOperation.SHOW_ROLE_PRINCIPALS);
+    RoleDDLDesc roleDDLDesc = new RoleDDLDesc(roleName, PrincipalType.ROLE,
+     RoleOperation.SHOW_ROLE_PRINCIPALS, null);
     roleDDLDesc.setResFile(resFile.toString());
     return TaskFactory.get(new DDLWork(inputs, outputs, roleDDLDesc), conf);
   }

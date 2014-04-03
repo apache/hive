@@ -202,8 +202,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * default port on which to start the Hive server
    */
   private static final int DEFAULT_HIVE_METASTORE_PORT = 9083;
-  public static final String ADMIN = "ADMIN";
-  public static final String PUBLIC = "PUBLIC";
+  public static final String ADMIN = "admin";
+  public static final String PUBLIC = "public";
 
   private static HadoopThriftAuthBridge.Server saslServer;
   private static boolean useSasl;
