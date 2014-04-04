@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -378,11 +379,17 @@ public class DagUtils {
   private String getContainerJavaOpts(Configuration conf) {
     String javaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZJAVAOPTS);
     if (javaOpts != null && !javaOpts.isEmpty()) {
-      return javaOpts;
+      String logLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZLOGLEVEL);
+      List<String> logProps = Lists.newArrayList();
+      MRHelpers.addLog4jSystemProperties(logLevel, logProps);
+      StringBuilder sb = new StringBuilder();
+      for (String str : logProps) {
+        sb.append(str).append(" ");
+      }
+      return javaOpts + " " + sb.toString();
     }
     return MRHelpers.getMapJavaOpts(conf);
   }
-
 
   /*
    * Helper function to create Vertex from MapWork.
