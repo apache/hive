@@ -28,12 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -63,18 +58,8 @@ public final class CommandProcessorFactory {
       conf = new HiveConf();
     }
     Set<String> availableCommands = new HashSet<String>();
-    if (!HiveAuthorizerFactory.class.isAssignableFrom
-      (conf.getClass(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,DefaultHiveAuthorizationProvider.class))) {
-      // we are not on authV2, add processors.
-      for (String availableCommand : conf.getVar(HiveConf.ConfVars.HIVE_SECURITY_COMMAND_WHITELIST).split(",")) {
-        availableCommands.add(availableCommand.toLowerCase().trim());
-      }
-    }
-
-    if (conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
-      // because test case uses these.
-      availableCommands.add("set");
-      availableCommands.add("dfs");
+    for (String availableCommand : conf.getVar(HiveConf.ConfVars.HIVE_SECURITY_COMMAND_WHITELIST).split(",")) {
+      availableCommands.add(availableCommand.toLowerCase().trim());
     }
     if (!availableCommands.contains(cmd[0].trim().toLowerCase())) {
       throw new SQLException("Insufficient privileges to execute " + cmd[0], "42000");
