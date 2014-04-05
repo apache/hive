@@ -539,12 +539,21 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
    */
   private String getProxyUser(String realUser, Map<String, String> sessionConf,
       String ipAddress) throws HiveSQLException {
-    if (sessionConf == null || !sessionConf.containsKey(HiveAuthFactory.HS2_PROXY_USER)) {
+
+    String proxyUser = SessionManager.getProxyUserName();
+    LOG.debug("Proxy user from query string: " + proxyUser);
+
+    if (proxyUser == null && sessionConf != null && sessionConf.containsKey(HiveAuthFactory.HS2_PROXY_USER)) {
+      String proxyUserFromThriftBody = sessionConf.get(HiveAuthFactory.HS2_PROXY_USER);
+      LOG.debug("Proxy user from thrift body: " + proxyUserFromThriftBody);
+      proxyUser = proxyUserFromThriftBody;
+    }
+
+    if (proxyUser == null) {
       return realUser;
     }
 
-    // Extract the proxy user name and check if we are allowed to do the substitution
-    String proxyUser = sessionConf.get(HiveAuthFactory.HS2_PROXY_USER);
+    // check whether substitution is allowed
     if (!hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ALLOW_USER_SUBSTITUTION)) {
       throw new HiveSQLException("Proxy user substitution is not allowed");
     }
@@ -557,7 +566,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
     // Verify proxy user privilege of the realUser for the proxyUser
     HiveAuthFactory.verifyProxyAccess(realUser, proxyUser, ipAddress, hiveConf);
+    LOG.debug("Verified proxy user: " + proxyUser);
     return proxyUser;
   }
+
 }
 
