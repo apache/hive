@@ -133,7 +133,7 @@ public final class SemanticAnalyzerFactory {
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_RENAMEPART,
         new HiveOperation[] {null, HiveOperation.ALTERTABLE_RENAMEPART});
     tablePartitionCommandType.put(HiveParser.TOK_COMPACT,
-        new HiveOperation[] {null, HiveOperation.ALTERTABLE_COMPACT});
+        new HiveOperation[] {HiveOperation.ALTERTABLE_COMPACT, HiveOperation.ALTERTABLE_COMPACT});
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTBLPART_SKEWED_LOCATION,
         new HiveOperation[] {HiveOperation.ALTERTBLPART_SKEWED_LOCATION,
             HiveOperation.ALTERTBLPART_SKEWED_LOCATION });

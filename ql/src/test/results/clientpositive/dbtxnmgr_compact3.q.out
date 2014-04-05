@@ -14,13 +14,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: D1@T1
 POSTHOOK: Output: database:d1
 PREHOOK: query: alter table T1 compact 'major'
-PREHOOK: type: null
+PREHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: query: alter table T1 compact 'major'
-POSTHOOK: type: null
+POSTHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: query: alter table T1 compact 'minor'
-PREHOOK: type: null
+PREHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: query: alter table T1 compact 'minor'
-POSTHOOK: type: null
+POSTHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: query: drop table T1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: d1@t1
