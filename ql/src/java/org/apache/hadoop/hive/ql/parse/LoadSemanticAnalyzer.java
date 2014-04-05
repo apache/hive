@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -95,7 +97,8 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // directory
     if (!path.startsWith("/")) {
       if (isLocal) {
-        path = new Path(System.getProperty("user.dir"), fromPath).toString();
+        path = URIUtil.decode(
+            new Path(System.getProperty("user.dir"), fromPath).toUri().toString());
       } else {
         path = new Path(new Path("/user/" + System.getProperty("user.name")),
           path).toString();
