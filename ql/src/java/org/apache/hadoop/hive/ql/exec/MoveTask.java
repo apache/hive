@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -77,17 +78,15 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       String mesg_detail = " from " + sourcePath.toString();
       console.printInfo(mesg, mesg_detail);
 
-      // delete the output directory if it already exists
-      fs.delete(targetPath, true);
       // if source exists, rename. Otherwise, create a empty directory
       if (fs.exists(sourcePath)) {
         Path deletePath = null;
         // If it multiple level of folder are there fs.rename is failing so first
         // create the targetpath.getParent() if it not exist
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
-        deletePath = createTargetPath(targetPath, fs);
+          deletePath = createTargetPath(targetPath, fs);
         }
-        if (!fs.rename(sourcePath, targetPath)) {
+        if (!Hive.renameFile(conf, sourcePath, targetPath, fs, true, false)) {
           try {
             if (deletePath != null) {
               fs.delete(deletePath, true);
@@ -146,6 +145,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         actualPath = actualPath.getParent();
       }
       fs.mkdirs(mkDirPath);
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS)) {
+        fs.setPermission(mkDirPath, fs.getFileStatus(actualPath).getPermission());
+      }
     }
     return deletePath;
   }
