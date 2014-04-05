@@ -21,6 +21,9 @@ package org.apache.hive.service.cli.thrift;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 
+import java.util.Map;
+import java.util.Set;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -76,6 +79,11 @@ public class ThriftHttpServlet extends TServlet {
       // For a kerberos setup
       if(isKerberosAuthMode(authType)) {
         clientUserName = doKerberosAuth(request);
+        String doAsQueryParam = getDoAsQueryParam(request.getQueryString());
+        if (doAsQueryParam != null) {
+          SessionManager.setProxyUserName(doAsQueryParam);
+        }
+
       }
       else {
         clientUserName = doPasswdAuth(request, authType);
@@ -99,6 +107,7 @@ public class ThriftHttpServlet extends TServlet {
     finally {
       // Clear the thread local username since we set it in each http request
       SessionManager.clearUserName();
+      SessionManager.clearProxyUserName();
     }
   }
 
@@ -295,6 +304,20 @@ public class ThriftHttpServlet extends TServlet {
 
   private boolean isKerberosAuthMode(String authType) {
     return authType.equalsIgnoreCase(HiveAuthFactory.AuthTypes.KERBEROS.toString());
+  }
+
+  private static String getDoAsQueryParam(String queryString) {
+    if (queryString == null) {
+      return null;
+    }
+    Map<String, String[]> params = javax.servlet.http.HttpUtils.parseQueryString( queryString );
+    Set<String> keySet = params.keySet();
+    for (String key: keySet) {
+      if (key.equalsIgnoreCase("doAs")) {
+        return params.get(key)[0];
+      }
+    }
+    return null;
   }
 
 }

@@ -183,6 +183,26 @@ public class SessionManager extends CompositeService {
     return threadLocalUserName.get();
   }
 
+  private static ThreadLocal<String> threadLocalProxyUserName = new ThreadLocal<String>(){
+    @Override
+    protected synchronized String initialValue() {
+      return null;
+    }
+  };
+
+  public static void setProxyUserName(String userName) {
+    LOG.debug("setting proxy user name based on query param to: " + userName);
+    threadLocalProxyUserName.set(userName);
+  }
+
+  public static String getProxyUserName() {
+    return threadLocalProxyUserName.get();
+  }
+
+  public static void clearProxyUserName() {
+    threadLocalProxyUserName.remove();
+  }
+
   // execute session hooks
   private void executeSessionHooks(HiveSession session) throws Exception {
     List<HiveSessionHook> sessionHooks = HookUtils.getHooks(hiveConf,
