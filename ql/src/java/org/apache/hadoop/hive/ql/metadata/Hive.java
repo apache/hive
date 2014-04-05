@@ -2210,7 +2210,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   //method is called. when the replace value is true, this method works a little different
   //from mv command if the destf is a directory, it replaces the destf instead of moving under
   //the destf. in this case, the replaced destf still preserves the original destf's permission
-  static protected boolean renameFile(HiveConf conf, Path srcf, Path destf,
+  public static boolean renameFile(HiveConf conf, Path srcf, Path destf,
       FileSystem fs, boolean replace, boolean isSrcLocal) throws HiveException {
     boolean success = false;
     boolean inheritPerms = HiveConf.getBoolVar(conf,
