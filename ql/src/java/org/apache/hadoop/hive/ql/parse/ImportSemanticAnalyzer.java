@@ -23,6 +23,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -35,6 +36,8 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -437,6 +440,22 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       String importedifc = tableDesc.getInputFormat();
       String existingofc = table.getOutputFormatClass().getName();
       String importedofc = tableDesc.getOutputFormat();
+      /*
+       * substitute OutputFormat name based on HiveFileFormatUtils.outputFormatSubstituteMap
+       */
+      try {
+        Class<?> origin = Class.forName(importedofc, true, JavaUtils.getClassLoader());
+        Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils
+            .getOutputFormatSubstitute(origin,false);
+        if (replaced == null) {
+          throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
+            .getMsg());
+        }
+        importedofc = replaced.getCanonicalName();
+      } catch(Exception e) {
+        throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
+            .getMsg());
+      }
       if ((!existingifc.equals(importedifc))
           || (!existingofc.equals(importedofc))) {
         throw new SemanticException(
@@ -454,6 +473,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           .getSerdeParam(serdeConstants.SERIALIZATION_FORMAT);
       String importedSerdeFormat = tableDesc.getSerdeProps().get(
           serdeConstants.SERIALIZATION_FORMAT);
+      /*
+       * If Imported SerdeFormat is null, then set it to "1" just as 
+       * metadata.Table.getEmptyTable
+       */
+      importedSerdeFormat = importedSerdeFormat == null ? "1" : importedSerdeFormat;
       if (!ObjectUtils.equals(existingSerdeFormat, importedSerdeFormat)) {
         throw new SemanticException(
             ErrorMsg.INCOMPATIBLE_SCHEMA
