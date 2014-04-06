@@ -19,35 +19,56 @@
 package org.apache.hadoop.hive.ql.exec;
 
 /**
+ * <strong>Please see the deprecation notice</strong>
+ * <p/>
  * Base class for all User-defined Aggregation Function (UDAF) classes.
- * 
- * UDAF classes are REQUIRED to inherit from this class.
- * 
- * Required for a UDAF class: 1. Implement the init() method, which reset the
- * status of the aggregation function. 2. Implement a single method called
- * "aggregate" that returns boolean. The method should always return "true" on
- * valid inputs, or the framework will throw an Exception. Following are some
- * examples: public boolean aggregate(double a); public boolean aggregate(int
- * b); public boolean aggregate(double c, double d); 3. Implement a single
- * method called "evaluate" that returns the FINAL aggregation result.
- * "evaluate" should never return "null" or an Exception will be thrown.
- * Following are some examples. public int evaluate(); public long evaluate();
- * public double evaluate(); public Double evaluate(); public String evaluate();
- * 
- * Optional for a UDAF class (by implementing these 2 methods, the user declares
- * that the UDAF support partial aggregations): 1. Implement a single method
- * called "evaluatePartial" that returns the PARTIAL aggregation result.
- * "evaluatePartial" should never return "null" or an Exception will be thrown.
- * 2. Implement a single method called "aggregatePartial" that takes a PARTIAL
- * aggregation result and returns a boolean. The method should always return
- * "true" on valid inputs, or the framework will throw an Exception.
- * 
- * Following are some examples: public int evaluatePartial(); public boolean
- * aggregatePartial(int partial);
- * 
- * public String evaluatePartial(); public boolean aggregatePartial(String
- * partial);
- * 
+ * <p/>
+ * Requirements for a UDAF class:
+ * <ol>
+ *   <li>Implement the {@code init()} method, which resets the status of the aggregation function.</li>
+ *   <li>Implement a single method called {@code aggregate} that returns {@code boolean}.
+ *     The method should always return {@code true} on valid inputs, or the framework will throw an Exception.
+ *     Following are some examples:
+ *     <ul>
+ *       <li>{@code public boolean aggregate(double a);}</li>
+ *       <li>{@code public boolean aggregate(int b);}</li>
+ *       <li>{@code public boolean aggregate(double c, double d);}</li>
+ *     </ul>
+ *   </li>
+ *   <li>Implement a single method called {@code evaluate} that returns the FINAL aggregation result.
+ *     {@code evaluate} should never return {@code null} or an Exception will be thrown.
+ *     Following are some examples:
+ *     <ul>
+ *       <li>{@code public int evaluate();}</li>
+ *       <li>{@code public long evaluate();}</li>
+ *       <li>{@code public double evaluate();}</li>
+ *       <li>{@code public Double evaluate();}</li>
+ *       <li>{@code public String evaluate();}</li>
+ *     </ul>
+ *   </li>
+ * </ol>
+ *
+ * Optional for a UDAF class (by implementing these two methods, the user declares
+ * that the UDAF supports partial aggregations):
+ * <ol>
+ *   <li>Implement a single method called {@code evaluatePartial} that returns the PARTIAL aggregation result.
+ *     {@code evaluatePartial} should never return {@code null} or an Exception will be thrown.</li>
+ *   <li>Implement a single method called {@code aggregatePartial} that takes a PARTIAL
+ *     aggregation result and returns a boolean. The method should always return
+ *     {@code true} on valid inputs, or the framework will throw an Exception.</li>
+ * </ol>
+ * <p/>
+ * Following are some examples:
+ * <ul>
+ *   <li>public int evaluatePartial();</li>
+ *   <li>public boolean aggregatePartial(int partial);</li>
+ *   <li>public String evaluatePartial();</li>
+ *   <li>public boolean aggregatePartial(String partial);</li>
+ * </ul>
+ * <p/>
+ *
+ * @deprecated Either implement {@link org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2} or extend
+ * {@link org.apache.hadoop.hive.ql.udf.generic.AbstractGenericUDAFResolver} instead.
  */
 @Deprecated
 public class UDAF {
@@ -73,7 +94,7 @@ public class UDAF {
 
   /**
    * Sets the resolver.
-   * 
+   *
    * @param rslv
    *          The method resolver to use for method resolution.
    */
