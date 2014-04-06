@@ -116,6 +116,7 @@ import org.apache.tez.runtime.library.input.ShuffledMergedInputLegacy;
 import org.apache.tez.runtime.library.input.ShuffledUnorderedKVInput;
 import org.apache.tez.runtime.library.output.OnFileSortedOutput;
 import org.apache.tez.runtime.library.output.OnFileUnorderedKVOutput;
+import org.apache.tez.runtime.library.output.OnFileUnorderedPartitionedKVOutput;
 
 /**
  * DagUtils. DagUtils is a collection of helper methods to convert
@@ -312,7 +313,7 @@ public class DagUtils {
       case CUSTOM_EDGE:
         
         dataMovementType = DataMovementType.CUSTOM;
-        logicalOutputClass = OnFileSortedOutput.class;
+        logicalOutputClass = OnFileUnorderedPartitionedKVOutput.class;
         logicalInputClass = ShuffledUnorderedKVInput.class;
         EdgeManagerDescriptor edgeDesc = new EdgeManagerDescriptor(
             CustomPartitionEdge.class.getName());
@@ -332,7 +333,7 @@ public class DagUtils {
 
       case CUSTOM_SIMPLE_EDGE:
         dataMovementType = DataMovementType.SCATTER_GATHER;
-        logicalOutputClass = OnFileSortedOutput.class;
+        logicalOutputClass = OnFileUnorderedPartitionedKVOutput.class;
         logicalInputClass = ShuffledUnorderedKVInput.class;
         break;
 
