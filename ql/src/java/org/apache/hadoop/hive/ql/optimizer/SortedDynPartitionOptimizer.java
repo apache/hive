@@ -141,6 +141,12 @@ public class SortedDynPartitionOptimizer implements Transform {
         return null;
       }
 
+      Table destTable = parseCtx.getFsopToTable().get(fsOp);
+      if (destTable == null) {
+        LOG.debug("Bailing out of sort dynamic partition optimization as destination table is null");
+        return null;
+      }
+
       // if RS is inserted by enforce bucketing or sorting, we need to remove it
       // since ReduceSinkDeDuplication will not merge them to single RS.
       // RS inserted by enforce bucketing/sorting will have bucketing column in
@@ -156,11 +162,6 @@ public class SortedDynPartitionOptimizer implements Transform {
       fsParent.getChildOperators().clear();
 
       DynamicPartitionCtx dpCtx = fsOp.getConf().getDynPartCtx();
-      Table destTable = parseCtx.getFsopToTable().get(fsOp);
-      if (destTable == null) {
-        LOG.debug("Bailing out of sort dynamic partition optimization as destination table is null");
-        return null;
-      }
       int numBuckets = destTable.getNumBuckets();
 
       // if enforce bucketing/sorting is disabled numBuckets will not be set.
