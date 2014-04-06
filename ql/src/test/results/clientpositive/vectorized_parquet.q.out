@@ -1,0 +1,358 @@
+PREHOOK: query: create table if not exists alltypes_parquet (
+  cint int, 
+  ctinyint tinyint, 
+  csmallint smallint, 
+  cfloat float, 
+  cdouble double, 
+  cstring1 string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table if not exists alltypes_parquet (
+  cint int, 
+  ctinyint tinyint, 
+  csmallint smallint, 
+  cfloat float, 
+  cdouble double, 
+  cstring1 string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypes_parquet
+PREHOOK: query: insert overwrite table alltypes_parquet 
+  select cint, 
+    ctinyint, 
+    csmallint, 
+    cfloat, 
+    cdouble, 
+    cstring1 
+  from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@alltypes_parquet
+POSTHOOK: query: insert overwrite table alltypes_parquet 
+  select cint, 
+    ctinyint, 
+    csmallint, 
+    cfloat, 
+    cdouble, 
+    cstring1 
+  from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@alltypes_parquet
+POSTHOOK: Lineage: alltypes_parquet.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: explain select * 
+  from alltypes_parquet
+  where cint = 528534767 
+  limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * 
+  from alltypes_parquet
+  where cint = 528534767 
+  limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: alltypes_parquet.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypes_parquet
+            Statistics: Num rows: 12288 Data size: 73728 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (cint = 528534767) (type: boolean)
+              Statistics: Num rows: 6144 Data size: 36864 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: cint (type: int), ctinyint (type: tinyint), csmallint (type: smallint), cfloat (type: float), cdouble (type: double), cstring1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 6144 Data size: 36864 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+PREHOOK: query: select * 
+  from alltypes_parquet
+  where cint = 528534767 
+  limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: select * 
+  from alltypes_parquet
+  where cint = 528534767 
+  limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_parquet
+#### A masked pattern was here ####
+POSTHOOK: Lineage: alltypes_parquet.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+528534767	-50	-13326	-50.0	-13326.0	cvLH6Eat2yFsyy7p
+528534767	NULL	-4213	NULL	-4213.0	cvLH6Eat2yFsyy7p
+528534767	-28	-15813	-28.0	-15813.0	cvLH6Eat2yFsyy7p
+528534767	31	-9566	31.0	-9566.0	cvLH6Eat2yFsyy7p
+528534767	-34	15007	-34.0	15007.0	cvLH6Eat2yFsyy7p
+528534767	29	7021	29.0	7021.0	cvLH6Eat2yFsyy7p
+528534767	31	4963	31.0	4963.0	cvLH6Eat2yFsyy7p
+528534767	27	-7824	27.0	-7824.0	cvLH6Eat2yFsyy7p
+528534767	-11	-15431	-11.0	-15431.0	cvLH6Eat2yFsyy7p
+528534767	61	-15549	61.0	-15549.0	cvLH6Eat2yFsyy7p
+PREHOOK: query: explain select ctinyint, 
+  max(cint), 
+  min(csmallint), 
+  count(cstring1), 
+  avg(cfloat), 
+  stddev_pop(cdouble)
+  from alltypes_parquet
+  group by ctinyint
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select ctinyint, 
+  max(cint), 
+  min(csmallint), 
+  count(cstring1), 
+  avg(cfloat), 
+  stddev_pop(cdouble)
+  from alltypes_parquet
+  group by ctinyint
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: alltypes_parquet.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypes_parquet
+            Statistics: Num rows: 12288 Data size: 73728 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint), cint (type: int), csmallint (type: smallint), cstring1 (type: string), cfloat (type: float), cdouble (type: double)
+              outputColumnNames: ctinyint, cint, csmallint, cstring1, cfloat, cdouble
+              Statistics: Num rows: 12288 Data size: 73728 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: max(cint), min(csmallint), count(cstring1), avg(cfloat), stddev_pop(cdouble)
+                keys: ctinyint (type: tinyint)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 12288 Data size: 73728 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: tinyint)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: tinyint)
+                  Statistics: Num rows: 12288 Data size: 73728 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: struct<count:bigint,sum:double,input:float>), _col5 (type: struct<count:bigint,sum:double,variance:double>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0), min(VALUE._col1), count(VALUE._col2), avg(VALUE._col3), stddev_pop(VALUE._col4)
+          keys: KEY._col0 (type: tinyint)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          Statistics: Num rows: 6144 Data size: 36864 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: tinyint), _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: double), _col5 (type: double)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 6144 Data size: 36864 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 6144 Data size: 36864 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: select ctinyint, 
+  max(cint), 
+  min(csmallint), 
+  count(cstring1), 
+  avg(cfloat), 
+  stddev_pop(cdouble)
+  from alltypes_parquet
+  group by ctinyint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint, 
+  max(cint), 
+  min(csmallint), 
+  count(cstring1), 
+  avg(cfloat), 
+  stddev_pop(cdouble)
+  from alltypes_parquet
+  group by ctinyint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_parquet
+#### A masked pattern was here ####
+POSTHOOK: Lineage: alltypes_parquet.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+NULL	1073418988	-16379	3115	NULL	305051.4870777435
+-64	626923679	-15920	21	-64.0	9254.456539277186
+-63	626923679	-12516	16	-63.0	9263.605837223322
+-62	626923679	-15992	24	-62.0	9004.593091474135
+-61	626923679	-15142	22	-61.0	9357.236187870849
+-60	626923679	-15792	24	-60.0	9892.656196775464
+-59	626923679	-15789	28	-59.0	9829.790704244733
+-58	626923679	-15169	20	-58.0	9549.096672008198
+-57	626923679	-14893	32	-57.0	8572.083461570477
+-56	626923679	-11999	33	-56.0	9490.842152672341
+-55	626923679	-13381	26	-55.0	9157.562103946742
+-54	626923679	-14815	23	-54.0	9614.154026896626
+-53	626923679	-15445	19	-53.0	9387.739325499799
+-52	626923679	-16369	30	-52.0	8625.06871423408
+-51	1073680599	-15734	1028	-51.0	9531.569305177045
+-50	626923679	-14320	27	-50.0	8548.827748002343
+-49	626923679	-14831	23	-49.0	9894.429191738676
+-48	626923679	-15462	26	-48.0	9913.883371354861
+-47	626923679	-16096	19	-47.0	9011.009178780589
+-46	626923679	-12427	21	-46.0	9182.943188188632
+-45	626923679	-15027	21	-45.0	8567.489593562543
+-44	626923679	-15667	21	-44.0	10334.01810499552
+-43	626923679	-15607	27	-43.0	8715.255026265124
+-42	626923679	-16025	14	-42.0	9692.646755759979
+-41	626923679	-12606	21	-41.0	9034.40949481481
+-40	626923679	-14678	23	-40.0	9883.334986561835
+-39	626923679	-15612	19	-39.0	9765.551806305297
+-38	626923679	-14914	28	-38.0	8767.375358291503
+-37	626923679	-14780	17	-37.0	10368.905538788269
+-36	626923679	-16208	23	-36.0	8773.547684436919
+-35	626923679	-16059	23	-35.0	10136.580492864763
+-34	626923679	-15450	29	-34.0	8708.243526705026
+-33	626923679	-12779	21	-33.0	8854.331159704514
+-32	626923679	-15866	25	-32.0	9535.546396775915
+-31	626923679	-15915	22	-31.0	9187.596784112568
+-30	626923679	-14863	23	-30.0	9193.941914019653
+-29	626923679	-14747	26	-29.0	9052.945656011721
+-28	626923679	-15813	20	-28.0	9616.869413270924
+-27	626923679	-14984	20	-27.0	8465.29660255097
+-26	626923679	-15686	15	-26.0	10874.523900405318
+-25	626923679	-15862	24	-25.0	9778.256724727018
+-24	626923679	-16311	26	-24.0	9386.736402961187
+-23	626923679	-16355	36	-23.345263230173213	9401.831290253447
+-22	626923679	-14701	22	-22.0	8809.230165774987
+-21	626923679	-16017	27	-21.0	9480.349236669877
+-20	626923679	-16126	24	-20.0	9868.92268080106
+-19	626923679	-15935	25	-19.0	9967.22240685782
+-18	626923679	-14863	24	-18.0	9638.430684071413
+-17	626923679	-15922	19	-17.0	9944.104273894172
+-16	626923679	-15154	21	-16.0	8884.207393686478
+-15	626923679	-16036	24	-15.0	9450.506254395024
+-14	626923679	-13884	22	-14.0	10125.818731386042
+-13	626923679	-15446	30	-13.0	8907.942987576693
+-12	626923679	-16373	22	-12.0	10173.15707541171
+-11	626923679	-15659	32	-11.0	10453.738567408038
+-10	626923679	-15384	28	-10.0	8850.451610567823
+-9	626923679	-15329	31	-9.0	8999.391457373968
+-8	626923679	-14678	18	-8.0	9976.831992670684
+-7	626923679	-14584	23	-7.0	9946.605446407746
+-6	626923679	-15980	30	-6.0	10262.829252317424
+-5	626923679	-15780	24	-5.0	10599.227726422314
+-4	626923679	-16207	21	-4.0	9682.726604102581
+-3	626923679	-13632	16	-3.0	8836.215573422822
+-2	626923679	-16277	20	-2.0	10800.090249507177
+-1	626923679	-15441	36	-1.0486250072717667	8786.246963933321
+0	626923679	-14254	24	0.0	10057.5018088718
+1	626923679	-14610	30	1.0	10016.486277900643
+2	626923679	-16227	25	2.0	10083.276127543355
+3	626923679	-16339	30	3.0	10483.526375885149
+4	626923679	-15999	29	4.0	9516.189702058042
+5	626923679	-16169	31	5.0	11114.001902469323
+6	626923679	-15948	30	6.0	9644.247255286113
+7	626923679	-15839	25	7.0	10077.151640330823
+8	1070764888	-15778	1034	8.0	9562.355155774725
+9	626923679	-13629	25	9.0	10157.217948808622
+10	626923679	-15887	26	10.0	9104.820520135108
+11	1072654057	-14696	1035	11.0	9531.018991371746
+12	626923679	-14642	18	12.0	9696.038286378725
+13	626923679	-14771	26	13.0	8128.265919972384
+14	626923679	-13367	28	14.0	9074.674998750581
+15	626923679	-16339	28	15.0	9770.473400901916
+16	626923679	-14001	26	16.0	10130.883606275334
+17	626923679	-16109	22	16.73235294865627	1353416.3383574807
+18	626923679	-15779	21	18.0	10820.004053788869
+19	626923679	-16049	21	19.0	9423.560227007669
+20	626923679	-15149	21	20.0	11161.893298093504
+21	626923679	-15931	23	21.0	9683.044864861204
+22	626923679	-16280	26	22.0	9693.155720861765
+23	626923679	-15514	24	23.0	8542.419116415425
+24	626923679	-15086	24	24.0	9661.203790645088
+25	626923679	-11349	23	25.0	8888.959012093468
+26	626923679	-14516	29	26.0	9123.125508880432
+27	626923679	-14965	24	27.0	9802.871860196345
+28	626923679	-14455	20	28.0	9283.289383115296
+29	626923679	-15892	16	29.0	9874.046501817154
+30	626923679	-14111	27	30.0	10066.520234676527
+31	626923679	-15960	24	31.0	10427.970184550613
+32	626923679	-14044	24	32.0	8376.464579403413
+33	626923679	-14642	29	40.61776386607777	1304429.5939037625
+34	626923679	-15059	28	34.0	8756.731536033676
+35	626923679	-16153	27	35.0	10351.008404963042
+36	626923679	-15912	20	36.0	9475.257975138164
+37	626923679	-12081	24	37.0	9017.860034890362
+38	626923679	-15248	29	38.0	9900.256257785535
+39	626923679	-14887	28	39.0	10513.343644635232
+40	626923679	-15861	22	40.0	9283.318678549174
+41	626923679	-13480	21	41.0	9016.291129937847
+42	626923679	-15834	28	42.0	10318.01399719996
+43	626923679	-15703	28	43.0	8757.796089055722
+44	626923679	-11185	16	44.0	9425.076634933797
+45	626923679	-15228	18	45.0	9459.968668643689
+46	626923679	-15187	22	46.0	9685.908173160062
+47	626923679	-16324	22	47.0	9822.220821743611
+48	626923679	-16372	29	48.0	10079.286173063345
+49	626923679	-15923	27	49.0	9850.111848934683
+50	626923679	-16236	21	50.0	9398.176197406601
+51	626923679	-15790	17	51.0	9220.075799194028
+52	626923679	-15450	20	52.0	9261.723648435052
+53	626923679	-16217	30	53.0	9895.247408969733
+54	626923679	-15245	16	54.0	9789.50878424882
+55	626923679	-15887	21	55.0	9826.38569192808
+56	626923679	-12631	21	56.0	8860.917133763547
+57	626923679	-15620	25	57.0	9413.99393840875
+58	626923679	-13627	20	58.0	9083.529665947459
+59	626923679	-16076	17	59.0	10117.44967077967
+60	626923679	-13606	23	60.0	8346.267436552042
+61	626923679	-15894	29	61.0	8785.714950987198
+62	626923679	-14307	17	62.0	9491.752726667326

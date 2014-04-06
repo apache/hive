@@ -582,4 +582,17 @@ public class VectorizedRowBatchCtx {
     }
   }
 
+  public VectorColumnAssign[] buildObjectAssigners(VectorizedRowBatch outputBatch)
+        throws HiveException {
+    List<? extends StructField> fieldRefs = rowOI.getAllStructFieldRefs();
+    assert outputBatch.numCols == fieldRefs.size();
+    VectorColumnAssign[] assigners = new VectorColumnAssign[fieldRefs.size()];
+    for(int i = 0; i < assigners.length; ++i) {
+        StructField fieldRef = fieldRefs.get(i);
+        ObjectInspector fieldOI = fieldRef.getFieldObjectInspector();
+        assigners[i] = VectorColumnAssignFactory.buildObjectAssign(
+                outputBatch, i, fieldOI);
+    }
+    return assigners;
+  }
 }
