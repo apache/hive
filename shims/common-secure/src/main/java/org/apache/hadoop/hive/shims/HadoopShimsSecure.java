@@ -528,6 +528,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   @Override
   public void authorizeProxyAccess(String proxyUser, UserGroupInformation realUserUgi,
       String ipAddress,  Configuration conf) throws IOException {
+    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
     ProxyUsers.authorize(UserGroupInformation.createProxyUser(proxyUser, realUserUgi),
         ipAddress, conf);
   }
