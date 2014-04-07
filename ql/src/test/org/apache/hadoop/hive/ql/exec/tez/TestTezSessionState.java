@@ -38,6 +38,11 @@ public class TestTezSessionState extends TezSessionState {
   private String sessionId;
   private HiveConf hiveConf;
 
+  public TestTezSessionState(String sessionId) {
+    super(sessionId);
+    this.sessionId = sessionId;
+  }
+
   @Override
     public boolean isOpen() {
       return open;
@@ -48,11 +53,9 @@ public class TestTezSessionState extends TezSessionState {
   }
 
   @Override
-    public void open(String sessionId, HiveConf conf) throws IOException,
-           LoginException, URISyntaxException, TezException {
-             this.sessionId = sessionId;
-             this.hiveConf = conf;
-    }
+  public void open(HiveConf conf) {
+    this.hiveConf = conf;
+  }
 
   @Override
     public void close(boolean keepTmpDir) throws TezException, IOException {
