@@ -40,9 +40,9 @@ public class TestTezSessionPool {
     }
 
     @Override
-      public TezSessionState createSession() {
-        return new TestTezSessionState();
-      }
+    public TezSessionState createSession(String sessionId) {
+      return new TestTezSessionState(sessionId);
+    }
   }
 
   @Before
@@ -54,8 +54,8 @@ public class TestTezSessionPool {
     public void testGetNonDefaultSession() {
       poolManager = new TestTezSessionPoolManager();
       try {
-        TezSessionState sessionState = poolManager.getSession(null, conf);
-        TezSessionState sessionState1 = poolManager.getSession(sessionState, conf);
+        TezSessionState sessionState = poolManager.getSession(null, conf, true);
+        TezSessionState sessionState1 = poolManager.getSession(sessionState, conf, true);
         if (sessionState1 != sessionState) {
           fail();
         }
@@ -75,25 +75,25 @@ public class TestTezSessionPool {
         poolManager = new TestTezSessionPoolManager();
         poolManager.setupPool(conf);
         poolManager.startPool();
-        TezSessionState sessionState = poolManager.getSession(null, conf);
+        TezSessionState sessionState = poolManager.getSession(null, conf, true);
         if (sessionState.getQueueName().compareTo("a") != 0) {
           fail();
         }
         poolManager.returnSession(sessionState);
 
-        sessionState = poolManager.getSession(null, conf);
+        sessionState = poolManager.getSession(null, conf, true);
         if (sessionState.getQueueName().compareTo("b") != 0) {
           fail();
         }
         poolManager.returnSession(sessionState);
 
-        sessionState = poolManager.getSession(null, conf);
+        sessionState = poolManager.getSession(null, conf, true);
         if (sessionState.getQueueName().compareTo("c") != 0) {
           fail();
         }
         poolManager.returnSession(sessionState);
 
-        sessionState = poolManager.getSession(null, conf);
+        sessionState = poolManager.getSession(null, conf, true);
         if (sessionState.getQueueName().compareTo("a") != 0) {
           fail();
         }
@@ -118,7 +118,7 @@ public class TestTezSessionPool {
             tmpConf.set("tez.queue.name", "");
           }
 
-          TezSessionState session = poolManager.getSession(null, tmpConf);
+          TezSessionState session = poolManager.getSession(null, tmpConf, true);
           Thread.sleep((random.nextInt(9) % 10) * 1000);
           poolManager.returnSession(session);
         } catch (Exception e) {
