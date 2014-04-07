@@ -29,6 +29,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -63,7 +65,9 @@ import org.apache.hadoop.mapred.FileSplit;
  * with the partition column.
  */
 public class VectorizedRowBatchCtx {
-  
+
+  private static final Log LOG = LogFactory.getLog(VectorizedRowBatchCtx.class.getName());
+
   // OI for raw row data (EG without partition cols)
   private StructObjectInspector rawRowOI;
 
@@ -223,6 +227,9 @@ public class VectorizedRowBatchCtx {
                   convert(partSpec.get(key));              
           partitionTypes.put(key, TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]).getPrimitiveCategory());
         }
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Partition column: name: " + key + ", value: " + objectVal + ", type: " + partitionTypes.get(key));
+        }
         partitionValues.put(key, objectVal);
         partObjectInspectors.add(objectInspector);
       }
@@ -263,7 +270,7 @@ public class VectorizedRowBatchCtx {
       // in the included list.
       if ((colsToInclude == null) || colsToInclude.contains(j)
           || ((partitionValues != null) &&
-              (partitionValues.get(fieldRefs.get(j).getFieldName()) != null))) {
+              partitionValues.containsKey(fieldRefs.get(j).getFieldName()))) {
         ObjectInspector foi = fieldRefs.get(j).getFieldObjectInspector();
         switch (foi.getCategory()) {
         case PRIMITIVE: {
