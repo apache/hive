@@ -845,6 +845,13 @@ public final class GenMapRedUtils {
           setKeyAndValueDesc(work.getReduceWork(), op);
         }
       }
+    } else if (task != null && (task.getWork() instanceof TezWork)) {
+      TezWork work = (TezWork)task.getWork();
+      for (BaseWork w : work.getAllWorkUnsorted()) {
+        if (w instanceof MapWork) {
+          ((MapWork)w).deriveExplainAttributes();
+        }
+      }
     }
 
     if (task.getChildTasks() == null) {

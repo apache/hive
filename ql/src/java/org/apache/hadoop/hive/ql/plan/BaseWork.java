@@ -28,6 +28,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.mapred.JobConf;
 
 /**
  * BaseWork. Base class for any "work" that's being done on the cluster. Items like stats
@@ -106,4 +107,6 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
     return returnSet;
   }
+
+  public abstract void configureJobConf(JobConf job);
 }

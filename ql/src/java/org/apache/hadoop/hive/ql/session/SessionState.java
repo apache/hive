@@ -347,9 +347,9 @@ public class SessionState {
         .equals("tez") && (startSs.isHiveServerQuery == false)) {
       try {
         if (startSs.tezSessionState == null) {
-          startSs.tezSessionState = new TezSessionState();
+          startSs.tezSessionState = new TezSessionState(startSs.getSessionId());
         }
-        startSs.tezSessionState.open(startSs.getSessionId(), startSs.conf);
+        startSs.tezSessionState.open(startSs.conf);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -815,10 +815,10 @@ public class SessionState {
   }
 
   public Set<String> list_resource(ResourceType t, List<String> filter) {
-    if (resource_map.get(t) == null) {
+    Set<String> orig = resource_map.get(t);
+    if (orig == null) {
       return null;
     }
-    Set<String> orig = resource_map.get(t);
     if (filter == null) {
       return orig;
     } else {
