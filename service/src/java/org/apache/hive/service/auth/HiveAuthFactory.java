@@ -173,7 +173,7 @@ public class HiveAuthFactory {
 
   public String getIpAddress() {
     if(saslServer != null && saslServer.getRemoteAddress() != null) {
-      return saslServer.getRemoteAddress().toString();
+      return saslServer.getRemoteAddress().getHostAddress();
     } else {
       return null;
     }
