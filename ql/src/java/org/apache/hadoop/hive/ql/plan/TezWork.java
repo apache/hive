@@ -33,6 +33,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.tez.dag.api.EdgeProperty;
 
 /**
@@ -91,6 +92,10 @@ public class TezWork extends AbstractOperatorDesc {
     }
 
     return result;
+  }
+
+  public Collection<BaseWork> getAllWorkUnsorted() {
+    return workGraph.keySet();
   }
 
   private void visit(BaseWork child, Set<BaseWork> seen, List<BaseWork> result) {
@@ -271,6 +276,37 @@ public class TezWork extends AbstractOperatorDesc {
     }
     return result;
   }
+  
+  private static final String MR_JAR_PROPERTY = "tmpjars";
+  /**
+   * Calls configureJobConf on instances of work that are part of this TezWork.
+   * Uses the passed job configuration to extract "tmpjars" added by these, so that Tez
+   * could add them to the job proper Tez way. This is a very hacky way but currently
+   * there's no good way to get these JARs - both storage handler interface, and HBase
+   * code, would have to change to get the list directly (right now it adds to tmpjars).
+   * This will happen in 0.14 hopefully.
+   * @param jobConf Job configuration.
+   * @return List of files added to tmpjars by storage handlers.
+   */
+  public String[] configureJobConfAndExtractJars(JobConf jobConf) {
+    String[] oldTmpJars = jobConf.getStrings(MR_JAR_PROPERTY);
+    jobConf.setStrings(MR_JAR_PROPERTY, new String[0]);
+    for (BaseWork work : workGraph.keySet()) {
+      work.configureJobConf(jobConf);
+    }
+    String[] newTmpJars = jobConf.getStrings(MR_JAR_PROPERTY);
+    if (oldTmpJars != null && (oldTmpJars.length != 0)) {
+      if (newTmpJars != null && (newTmpJars.length != 0)) {
+        String[] combinedTmpJars = new String[newTmpJars.length + oldTmpJars.length];
+        System.arraycopy(oldTmpJars, 0, combinedTmpJars, 0, oldTmpJars.length);
+        System.arraycopy(newTmpJars, 0, combinedTmpJars, oldTmpJars.length, newTmpJars.length);
+        jobConf.setStrings(MR_JAR_PROPERTY, combinedTmpJars);
+      } else {
+        jobConf.setStrings(MR_JAR_PROPERTY, oldTmpJars);
+      }
+    }
+    return newTmpJars;
+   }
 
   /**
    * connect adds an edge between a and b. Both nodes have

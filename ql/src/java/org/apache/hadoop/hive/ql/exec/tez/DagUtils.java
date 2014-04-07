@@ -604,7 +604,7 @@ public class DagUtils {
     combinedResources.putAll(sessionConfig.getSessionResources());
 
     try {
-      for(LocalResource lr : localizeTempFiles(conf)) {
+      for(LocalResource lr : localizeTempFilesFromConf(getHiveJarDirectory(conf), conf)) {
         combinedResources.put(getBaseName(lr), lr);
       }
     } catch(LoginException le) {
@@ -665,7 +665,8 @@ public class DagUtils {
    * @throws IOException when hdfs operation fails
    * @throws LoginException when getDefaultDestDir fails with the same exception
    */
-  public List<LocalResource> localizeTempFiles(Configuration conf) throws IOException, LoginException {
+  public List<LocalResource> localizeTempFilesFromConf(
+      String hdfsDirPathStr, Configuration conf) throws IOException, LoginException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
@@ -683,15 +684,32 @@ public class DagUtils {
 
     String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
 
-    // need to localize the additional jars and files
-
-    // we need the directory on hdfs to which we shall put all these files
-    // Use HIVE_JAR_DIRECTORY only if it's set explicitly; otherwise use default directory
-    String hdfsDirPathStr = getHiveJarDirectory(conf);
-
     String allFiles = auxJars + "," + addedJars + "," + addedFiles + "," + addedArchives;
-    String[] allFilesArr = allFiles.split(",");
-    for (String file : allFilesArr) {
+    addTempFiles(conf, tmpResources, hdfsDirPathStr, allFiles.split(","));
+    return tmpResources;
+  }
+
+  /**
+   * Localizes files, archives and jars from a provided array of names.
+   * @param hdfsDirPathStr Destination directoty in HDFS.
+   * @param conf Configuration.
+   * @param inputOutputJars The file names to localize.
+   * @return List<LocalResource> local resources to add to execution
+   * @throws IOException when hdfs operation fails.
+   * @throws LoginException when getDefaultDestDir fails with the same exception
+   */
+  public List<LocalResource> localizeTempFiles(String hdfsDirPathStr, Configuration conf,
+      String[] inputOutputJars) throws IOException, LoginException {
+    if (inputOutputJars == null) return null;
+    List<LocalResource> tmpResources = new ArrayList<LocalResource>();
+    addTempFiles(conf, tmpResources, hdfsDirPathStr, inputOutputJars);
+    return tmpResources;
+  }
+
+  private void addTempFiles(Configuration conf,
+      List<LocalResource> tmpResources, String hdfsDirPathStr,
+      String[] files) throws IOException {
+    for (String file : files) {
       if (!StringUtils.isNotBlank(file)) {
         continue;
       }
@@ -700,8 +718,6 @@ public class DagUtils {
           new Path(hdfsFilePathStr), conf);
       tmpResources.add(localResource);
     }
-
-    return tmpResources;
   }
 
   public String getHiveJarDirectory(Configuration conf) throws IOException, LoginException {

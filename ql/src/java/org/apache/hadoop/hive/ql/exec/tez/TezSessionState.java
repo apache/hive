@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,8 @@ public class TezSessionState {
   private String queueName;
   private boolean defaultQueue = false;
 
+  private HashSet<String> additionalAmFiles = null;
+
   private static List<TezSessionState> openSessions
     = Collections.synchronizedList(new LinkedList<TezSessionState>());
 
@@ -83,8 +86,9 @@ public class TezSessionState {
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
    */
-  public TezSessionState() {
+  public TezSessionState(String sessionId) {
     this(DagUtils.getInstance());
+    this.sessionId = sessionId;
   }
 
   /**
@@ -106,6 +110,11 @@ public class TezSessionState {
     return UUID.randomUUID().toString();
   }
 
+  public void open(HiveConf conf)
+      throws IOException, LoginException, URISyntaxException, TezException {
+    open(conf, null);
+  }
+
   /**
    * Creates a tez session. A session is tied to either a cli/hs2 session. You can
    * submit multiple DAGs against a session (as long as they are executed serially).
@@ -114,10 +123,8 @@ public class TezSessionState {
    * @throws LoginException
    * @throws TezException
    */
-  public void open(String sessionId, HiveConf conf)
-    throws IOException, LoginException, URISyntaxException, TezException {
-
-    this.sessionId = sessionId;
+  public void open(HiveConf conf, List<LocalResource> additionalLr)
+    throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
     this.conf = conf;
 
     // create the tez tmp dir
@@ -135,6 +142,14 @@ public class TezSessionState {
     // configuration for the application master
     Map<String, LocalResource> commonLocalResources = new HashMap<String, LocalResource>();
     commonLocalResources.put(utils.getBaseName(appJarLr), appJarLr);
+    if (additionalLr != null) {
+      additionalAmFiles = new HashSet<String>();
+      for (LocalResource lr : additionalLr) {
+        String baseName = utils.getBaseName(lr);
+        additionalAmFiles.add(baseName);
+        commonLocalResources.put(baseName, lr);
+      }
+    }
 
     // Create environment for AM.
     Map<String, String> amEnv = new HashMap<String, String>();
@@ -174,6 +189,15 @@ public class TezSessionState {
     openSessions.add(this);
   }
 
+  public boolean hasResources(List<LocalResource> lrs) {
+    if (lrs == null || lrs.isEmpty()) return true;
+    if (additionalAmFiles == null || additionalAmFiles.isEmpty()) return false;
+    for (LocalResource lr : lrs) {
+      if (!additionalAmFiles.contains(utils.getBaseName(lr))) return false;
+    }
+    return true;
+  }
+
   /**
    * Close a tez session. Will cleanup any tez/am related resources. After closing a session
    * no further DAGs can be executed against it.
@@ -202,6 +226,7 @@ public class TezSessionState {
     tezScratchDir = null;
     conf = null;
     appJarLr = null;
+    additionalAmFiles = null;
   }
 
   public String getSessionId() {

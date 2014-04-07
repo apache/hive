@@ -172,6 +172,8 @@ public class MapWork extends BaseWork {
 
   /**
    * Derive additional attributes to be rendered by EXPLAIN.
+   * TODO: this method is relied upon by custom input formats to set jobconf properties.
+   *       This is madness? - This is Hive Storage Handlers!
    */
   public void deriveExplainAttributes() {
     if (pathToPartitionInfo != null) {
@@ -495,6 +497,7 @@ public class MapWork extends BaseWork {
         samplingType == 2 ? "SAMPLING_ON_START" : null;
   }
 
+  @Override
   public void configureJobConf(JobConf job) {
     for (PartitionDesc partition : aliasToPartnInfo.values()) {
       PlanUtils.configureJobConf(partition.getTableDesc(), job);

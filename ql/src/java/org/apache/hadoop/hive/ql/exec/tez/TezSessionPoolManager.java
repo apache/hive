@@ -64,7 +64,7 @@ public class TezSessionPoolManager {
       HiveConf newConf = new HiveConf(initConf);
       TezSessionState sessionState = defaultQueuePool.take();
       newConf.set("tez.queue.name", sessionState.getQueueName());
-      sessionState.open(TezSessionState.makeSessionId(), newConf);
+      sessionState.open(newConf);
       defaultQueuePool.put(sessionState);
     }
   }
@@ -91,7 +91,7 @@ public class TezSessionPoolManager {
         if (queue.length() == 0) {
           continue;
         }
-        TezSessionState sessionState = createSession();
+        TezSessionState sessionState = createSession(TezSessionState.makeSessionId());
         sessionState.setQueueName(queue);
         sessionState.setDefault();
         LOG.info("Created new tez session for queue: " + queue +
@@ -102,7 +102,7 @@ public class TezSessionPoolManager {
     }
   }
 
-  private TezSessionState getSession(HiveConf conf)
+  private TezSessionState getSession(HiveConf conf, boolean doOpen)
       throws Exception {
 
     String queueName = conf.get("tez.queue.name");
@@ -120,7 +120,7 @@ public class TezSessionPoolManager {
       LOG.info("QueueName: " + queueName + " nonDefaultUser: " + nonDefaultUser +
           " defaultQueuePool: " + defaultQueuePool +
           " blockingQueueLength: " + blockingQueueLength);
-      return getNewSessionState(conf, queueName);
+      return getNewSessionState(conf, queueName, doOpen);
     }
 
     LOG.info("Choosing a session from the defaultQueuePool");
@@ -130,16 +130,21 @@ public class TezSessionPoolManager {
   /**
    * @param conf HiveConf that is used to initialize the session
    * @param queueName could be null. Set in the tez session.
+   * @param doOpen
    * @return
    * @throws Exception
    */
   private TezSessionState getNewSessionState(HiveConf conf,
-      String queueName) throws Exception {
-    TezSessionState retTezSessionState = createSession();
+      String queueName, boolean doOpen) throws Exception {
+    TezSessionState retTezSessionState = createSession(TezSessionState.makeSessionId());
     retTezSessionState.setQueueName(queueName);
-    retTezSessionState.open(TezSessionState.makeSessionId(), conf);
+    String what = "Created";
+    if (doOpen) {
+      retTezSessionState.open(conf);
+      what = "Started";
+    }
 
-    LOG.info("Started a new session for queue: " + queueName +
+    LOG.info(what + " a new session for queue: " + queueName +
         " session id: " + retTezSessionState.getSessionId());
     return retTezSessionState;
   }
@@ -179,11 +184,12 @@ public class TezSessionPoolManager {
     }
   }
 
-  protected TezSessionState createSession() {
-    return new TezSessionState();
+  protected TezSessionState createSession(String sessionId) {
+    return new TezSessionState(sessionId);
   }
 
-  public TezSessionState getSession(TezSessionState session, HiveConf conf) throws Exception {
+  public TezSessionState getSession(
+      TezSessionState session, HiveConf conf, boolean doOpen) throws Exception {
     if (canWorkWithSameSession(session, conf)) {
       return session;
     }
@@ -192,7 +198,7 @@ public class TezSessionPoolManager {
       session.close(false);
     }
 
-    return getSession(conf);
+    return getSession(conf, doOpen);
   }
 
   /*
