@@ -82,6 +82,8 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import javax.security.auth.login.LoginException;
+
 import org.antlr.runtime.CommonToken;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -95,6 +97,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
@@ -175,6 +179,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Shell;
 
@@ -317,7 +322,7 @@ public final class Utilities {
           LOG.debug("Loading plan from string: "+path.toUri().getPath());
           String planString = conf.get(path.toUri().getPath());
           if (planString == null) {
-            LOG.debug("Could not find plan string in conf");
+            LOG.info("Could not find plan string in conf");
             return null;
           }
           byte[] planBytes = Base64.decodeBase64(planString);
@@ -356,7 +361,7 @@ public final class Utilities {
       return gWork;
     } catch (FileNotFoundException fnf) {
       // happens. e.g.: no reduce work.
-      LOG.debug("No plan file found: "+path);
+      LOG.info("No plan file found: "+path);
       return null;
     } catch (Exception e) {
       LOG.error("Failed to load plan: "+path, e);
@@ -3235,6 +3240,7 @@ public final class Utilities {
   private static void createTmpDirs(Configuration conf,
       List<Operator<? extends OperatorDesc>> ops) throws IOException {
 
+    FsPermission fsPermission = new FsPermission((short)00777);
     while (!ops.isEmpty()) {
       Operator<? extends OperatorDesc> op = ops.remove(0);
 
@@ -3244,8 +3250,7 @@ public final class Utilities {
 
         if (tempDir != null) {
           Path tempPath = Utilities.toTempPath(tempDir);
-          FileSystem fs = tempPath.getFileSystem(conf);
-          fs.mkdirs(tempPath);
+          createDirsWithPermission(conf, tempPath, fsPermission);
         }
       }
 
@@ -3366,5 +3371,50 @@ public final class Utilities {
       throw new IOException(nfe);
     }
     return footerCount;
+  }
+
+  /**
+   * @param conf the configuration used to derive the filesystem to create the path
+   * @param mkdir the path to be created
+   * @param fsPermission ignored if it is hive server session and doAs is enabled
+   * @return true if successfully created the directory else false
+   * @throws IOException if hdfs experiences any error conditions
+   */
+  public static boolean createDirsWithPermission(Configuration conf, Path mkdir,
+      FsPermission fsPermission) throws IOException {
+    // this umask is required because by default the hdfs mask is 022 resulting in
+    // all parents getting the fsPermission & !(022) permission instead of fsPermission
+    boolean recursive = false;
+    if (SessionState.get() != null) {
+      recursive = SessionState.get().isHiveServerQuery() &&
+          conf.getBoolean(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname,
+              HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.defaultBoolVal);
+      // we reset the permission in case of hive server and doAs enabled because
+      // currently scratch directory uses /tmp/hive-hive as the scratch directory.
+      // However, with doAs enabled, the first user to create this directory would
+      // own the directory and subsequent users cannot access the scratch directory.
+      // The right fix is to have scratch dir per user.
+      fsPermission = new FsPermission((short)00777);
+    }
+
+    // if we made it so far without exception we are good!
+    return createDirsWithPermission(conf, mkdir, fsPermission, recursive);
+  }
+
+  public static boolean createDirsWithPermission(Configuration conf, Path mkdir,
+      FsPermission fsPermission, boolean recursive) throws IOException {
+    String origUmask = null;
+    if (recursive) {
+      origUmask = conf.get("fs.permissions.umask-mode");
+      conf.set("fs.permissions.umask-mode", "000");
+    }
+    FileSystem fs = mkdir.getFileSystem(conf);
+    boolean retval = fs.mkdirs(mkdir, fsPermission);
+    if (origUmask != null) {
+      conf.set("fs.permissions.umask-mode", origUmask);
+    } else {
+      conf.unset("fs.permissions.umask-mode");
+    }
+    return retval;
   }
 }
