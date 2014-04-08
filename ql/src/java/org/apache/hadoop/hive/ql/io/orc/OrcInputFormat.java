@@ -536,10 +536,12 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         // Generate a split for any buckets that weren't covered.
         // This happens in the case where a bucket just has deltas and no
         // base.
-        for(int b=0; b < context.numBuckets; ++b) {
-          if (!covered[b]) {
-            context.splits.add(new OrcSplit(dir, b, 0, new String[0], null,
-                               false, false, deltas));
+        if (!deltas.isEmpty()) {
+          for (int b = 0; b < context.numBuckets; ++b) {
+            if (!covered[b]) {
+              context.splits.add(new OrcSplit(dir, b, 0, new String[0], null,
+                  false, false, deltas));
+            }
           }
         }
       } catch (Throwable th) {

@@ -175,9 +175,11 @@ public class OrcRecordUpdater implements RecordUpdater {
       FSDataOutputStream strm = fs.create(new Path(path, ACID_FORMAT), false);
       strm.writeInt(ORC_ACID_VERSION);
       strm.close();
-      LOG.info("Created " + path + "/" + ACID_FORMAT);
     } catch (IOException ioe) {
-      // we just need one task to write this file
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Failed to create " + path + "/" + ACID_FORMAT + " with " +
+            ioe);
+      }
     }
     if (options.getMinimumTransactionId() != options.getMaximumTransactionId()
         && !options.isWritingBase()){
