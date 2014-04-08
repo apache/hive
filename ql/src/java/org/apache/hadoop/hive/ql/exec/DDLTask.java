@@ -2788,23 +2788,25 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       os.writeBytes("Start Time");
       os.write(terminator);
 
-      for (ShowCompactResponseElement e : rsp.getCompacts()) {
-        os.writeBytes(e.getDbname());
-        os.write(separator);
-        os.writeBytes(e.getTablename());
-        os.write(separator);
-        String part = e.getPartitionname();
-        os.writeBytes(part == null ? "NULL" : part);
-        os.write(separator);
-        os.writeBytes(e.getType().toString());
-        os.write(separator);
-        os.writeBytes(e.getState());
-        os.write(separator);
-        String wid = e.getWorkerid();
-        os.writeBytes(wid == null ? "NULL" : wid);
-        os.write(separator);
-        os.writeBytes(Long.toString(e.getStart()));
-        os.write(terminator);
+      if (rsp.getCompacts() != null) {
+        for (ShowCompactResponseElement e : rsp.getCompacts()) {
+          os.writeBytes(e.getDbname());
+          os.write(separator);
+          os.writeBytes(e.getTablename());
+          os.write(separator);
+          String part = e.getPartitionname();
+          os.writeBytes(part == null ? "NULL" : part);
+          os.write(separator);
+          os.writeBytes(e.getType().toString());
+          os.write(separator);
+          os.writeBytes(e.getState());
+          os.write(separator);
+          String wid = e.getWorkerid();
+          os.writeBytes(wid == null ? "NULL" : wid);
+          os.write(separator);
+          os.writeBytes(Long.toString(e.getStart()));
+          os.write(terminator);
+        }
       }
       os.close();
     } catch (IOException e) {
