@@ -26,5 +26,6 @@ WHERE    (((cstring2 LIKE '%ss%')
           OR ((cint >= -75)
               AND ((ctinyint = csmallint)
                    AND (cdouble >= -3728))))
-GROUP BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1;
+GROUP BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
+ORDER BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1;
 

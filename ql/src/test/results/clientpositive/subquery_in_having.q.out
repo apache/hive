@@ -184,11 +184,11 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-PREHOOK: query: select s1.key, count(*) from src s1 where s1.key > '9' group by s1.key
+PREHOOK: query: select s1.key, count(*) from src s1 where s1.key > '9' group by s1.key order by s1.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select s1.key, count(*) from src s1 where s1.key > '9' group by s1.key
+POSTHOOK: query: select s1.key, count(*) from src s1 where s1.key > '9' group by s1.key order by s1.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -202,6 +202,7 @@ PREHOOK: query: select key, count(*)
 from src 
 group by key
 having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
+order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -209,40 +210,41 @@ POSTHOOK: query: select key, count(*)
 from src 
 group by key
 having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
+order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-409	3
-187	3
-403	3
-396	3
-384	3
-369	3
-498	3
-5	3
-35	3
-327	3
-167	3
-318	3
-316	3
-311	3
-298	3
-70	3
-90	3
-128	3
-273	3
-208	3
-199	3
-193	3
 0	3
 119	3
-480	3
-466	3
-454	3
-438	3
-431	3
-430	3
+128	3
+167	3
+187	3
+193	3
+199	3
+208	3
+273	3
+298	3
+311	3
+316	3
+318	3
+327	3
+35	3
+369	3
+384	3
+396	3
+403	3
+409	3
 417	3
+430	3
+431	3
+438	3
+454	3
+466	3
+480	3
+498	3
+5	3
+70	3
+90	3
 PREHOOK: query: -- non agg, corr
 explain
  select key, value, count(*) 
@@ -559,6 +561,7 @@ having b.key in ( select a.key
                 from src a
                 where a.value > 'val_9' and a.value = min(b.value)
                 )
+order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -570,6 +573,7 @@ having b.key in ( select a.key
                 from src a
                 where a.value > 'val_9' and a.value = min(b.value)
                 )
+order by b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
