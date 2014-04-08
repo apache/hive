@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 
 /**
@@ -171,9 +172,26 @@ public interface HiveAuthorizer {
   List<HivePrivilegeInfo> showPrivileges(HivePrincipal principal, HivePrivilegeObject privObj)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
+  /**
+   * Set the current role to roleName argument
+   * @param roleName
+   * @throws HiveAccessControlException
+   * @throws HiveAuthzPluginException
+   */
   void setCurrentRole(String roleName) throws HiveAccessControlException, HiveAuthzPluginException;
 
+  /**
+   * @return List having names of current roles
+   * @throws HiveAuthzPluginException
+   */
   List<String> getCurrentRoleNames() throws HiveAuthzPluginException;
+
+  /**
+   * Modify the given HiveConf object to configure authorization related parameters
+   * or other parameters related to hive security
+   * @param hiveConf
+   */
+  public void applyAuthorizationConfigPolicy(HiveConf hiveConf);
 
 }
 

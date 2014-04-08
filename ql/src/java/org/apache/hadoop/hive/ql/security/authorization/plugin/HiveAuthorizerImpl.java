@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * Convenience implementation of HiveAuthorizer.
@@ -119,5 +120,10 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
   public List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal)
       throws HiveAuthzPluginException, HiveAccessControlException {
     return accessController.getRoleGrantInfoForPrincipal(principal);
+  }
+
+  @Override
+  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) {
+    accessController.applyAuthorizationConfigPolicy(hiveConf);
   }
 }

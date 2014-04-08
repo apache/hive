@@ -91,7 +91,7 @@ public class HiveSessionImpl implements HiveSession {
     //set conf properties specified by user from client side
     if (sessionConfMap != null) {
       for (Map.Entry<String, String> entry : sessionConfMap.entrySet()) {
-        hiveConf.set(entry.getKey(), entry.getValue());
+        hiveConf.verifyAndSet(entry.getKey(), entry.getValue());
       }
     }
     // set an explicit session name to control the download directory name
