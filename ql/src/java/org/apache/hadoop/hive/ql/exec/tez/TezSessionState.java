@@ -38,10 +38,15 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.AMConfiguration;
 import org.apache.tez.client.PreWarmContext;
@@ -68,6 +73,7 @@ public class TezSessionState {
   private DagUtils utils;
   private String queueName;
   private boolean defaultQueue = false;
+  private String user;
 
   private HashSet<String> additionalAmFiles = null;
 
@@ -126,6 +132,11 @@ public class TezSessionState {
   public void open(HiveConf conf, List<LocalResource> additionalLr)
     throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
     this.conf = conf;
+
+    UserGroupInformation ugi;
+    ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+    user = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    LOG.info("User of session id " + sessionId + " is " + user);
 
     // create the tez tmp dir
     tezScratchDir = createTezDir(sessionId);
@@ -219,14 +230,19 @@ public class TezSessionState {
     }
 
     if (!keepTmpDir) {
-      FileSystem fs = tezScratchDir.getFileSystem(conf);
-      fs.delete(tezScratchDir, true);
+      cleanupScratchDir();
     }
     session = null;
     tezScratchDir = null;
     conf = null;
     appJarLr = null;
     additionalAmFiles = null;
+  }
+
+  public void cleanupScratchDir () throws IOException {
+    FileSystem fs = tezScratchDir.getFileSystem(conf);
+    fs.delete(tezScratchDir, true);
+    tezScratchDir = null;
   }
 
   public String getSessionId() {
@@ -257,7 +273,8 @@ public class TezSessionState {
         TEZ_DIR);
     tezDir = new Path(tezDir, sessionId);
     FileSystem fs = tezDir.getFileSystem(conf);
-    fs.mkdirs(tezDir);
+    FsPermission fsPermission = new FsPermission((short)00777);
+    Utilities.createDirsWithPermission(conf, tezDir, fsPermission, true);
 
     // don't keep the directory around on non-clean exit
     fs.deleteOnExit(tezDir);
@@ -313,6 +330,7 @@ public class TezSessionState {
 
     Path localFile = new Path(localJarPath);
     String sha = getSha(localFile);
+
     String destFileName = localFile.getName();
 
     // Now, try to find the file based on SHA and name. Currently we require exact name match.
@@ -326,19 +344,6 @@ public class TezSessionState {
 
     // TODO: if this method is ever called on more than one jar, getting the dir and the
     //       list need to be refactored out to be done only once.
-    Path jarPath = null;
-    FileStatus[] listFileStatus = destFs.listStatus(destDirPath);
-    for (FileStatus fstatus : listFileStatus) {
-      String jarName = utils.getResourceBaseName(fstatus.getPath().toString()); // ...
-      if (jarName.equals(destFileName)) {
-        // We have found the jar we need.
-        jarPath = fstatus.getPath();
-        return utils.localizeResource(null, jarPath, conf);
-      }
-    }
-
-    // Jar wasn't in the directory, copy the one in current use.
-    assert jarPath == null;
     Path destFile = new Path(destDirPath.toString() + "/" + destFileName);
     return utils.localizeResource(localFile, destFile, conf);
   }
@@ -385,5 +390,9 @@ public class TezSessionState {
 
   public HiveConf getConf() {
     return conf;
+  }
+
+  public String getUser() {
+    return user;
   }
 }

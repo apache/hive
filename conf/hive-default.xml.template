@@ -2604,4 +2604,20 @@
   </description>
 </property>
 
+<property>
+  <name>hive.localize.resource.wait.interval</name>
+  <value>5000</value>
+  <description>
+    Time in milliseconds to wait for another thread to localize the same resource for hive-tez.
+  </description>
+</property>
+
+<property>
+  <name>hive.localize.resource.num.wait.attempts</name>
+  <value>5</value>
+  <description>
+    The number of attempts waiting for localizing a resource in hive-tez.
+  </description>
+</property>
+
 </configuration>

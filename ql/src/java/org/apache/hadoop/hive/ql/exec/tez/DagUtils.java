@@ -45,6 +45,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -111,7 +112,6 @@ import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.partition.MRPartitioner;
 import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValueInput;
-import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValuesInput;
 import org.apache.tez.runtime.library.input.ShuffledMergedInputLegacy;
 import org.apache.tez.runtime.library.input.ShuffledUnorderedKVInput;
 import org.apache.tez.runtime.library.output.OnFileSortedOutput;
@@ -571,6 +571,7 @@ public class DagUtils {
     URL resourceURL = ConverterUtils.getYarnUrlFromPath(file);
     long resourceSize = fstat.getLen();
     long resourceModificationTime = fstat.getModificationTime();
+    LOG.info("Resource modification time: " + resourceModificationTime);
 
     LocalResource lr = Records.newRecord(LocalResource.class);
     lr.setResource(resourceURL);
@@ -713,9 +714,9 @@ public class DagUtils {
       if (!StringUtils.isNotBlank(file)) {
         continue;
       }
-      String hdfsFilePathStr = hdfsDirPathStr + "/" + getResourceBaseName(file);
+      Path hdfsFilePath = new Path(hdfsDirPathStr, getResourceBaseName(new Path(file)));
       LocalResource localResource = localizeResource(new Path(file),
-          new Path(hdfsFilePathStr), conf);
+          hdfsFilePath, conf);
       tmpResources.add(localResource);
     }
   }
@@ -760,10 +761,8 @@ public class DagUtils {
    * @param pathStr - the string from which we try to determine the resource base name
    * @return the name of the resource from a given path string.
    */
-  public String getResourceBaseName(String pathStr) {
-    // TODO: this should probably use Path::getName
-    String[] splits = pathStr.split("/");
-    return splits[splits.length - 1];
+  public String getResourceBaseName(Path path) {
+    return path.getName();
   }
 
   /**
@@ -776,22 +775,10 @@ public class DagUtils {
   private boolean checkPreExisting(Path src, Path dest, Configuration conf)
     throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
-
-    if (!destFS.exists(dest)) {
-      return false;
+    FileSystem sourceFS = src.getFileSystem(conf);
+    if (destFS.exists(dest)) {
+      return (sourceFS.getFileStatus(src).getLen() == destFS.getFileStatus(dest).getLen());
     }
-    FileStatus destStatus = destFS.getFileStatus(dest);
-    if (destStatus.isDir()) {
-      return false;
-    }
-
-    String srcName = getResourceBaseName(src.toString());
-    String destName = getResourceBaseName(dest.toString());
-
-    if (srcName.equals(destName)) {
-      return true;
-    }
-
     return false;
   }
 
@@ -810,10 +797,39 @@ public class DagUtils {
     }
 
     if (src != null) {
-      if (!checkPreExisting(src, dest, conf)) {
-        // copy the src to the destination and create local resource.
-        // overwrite even if file already exists.
-        destFS.copyFromLocalFile(false, true, src, dest);
+      // copy the src to the destination and create local resource.
+      // do not overwrite.
+      LOG.info("Localizing resource because it does not exist: " + src + " to dest: " + dest);
+      try {
+        destFS.copyFromLocalFile(false, false, src, dest);
+      } catch (IOException e) {
+        LOG.info("Looks like another thread is writing the same file will wait.");
+        int waitAttempts =
+            conf.getInt(HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
+                HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.defaultIntVal);
+        long sleepInterval =
+            conf.getLong(HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL.varname,
+                HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL.defaultLongVal);
+        LOG.info("Number of wait attempts: " + waitAttempts + ". Wait interval: "
+            + sleepInterval);
+        boolean found = false;
+        for (int i = 0; i < waitAttempts; i++) {
+          if (!checkPreExisting(src, dest, conf)) {
+            try {
+              Thread.currentThread().sleep(sleepInterval);
+            } catch (InterruptedException interruptedException) {
+              throw new IOException(interruptedException);
+            }
+          } else {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          LOG.error("Could not find the jar that was being uploaded");
+          throw new IOException("Previous writer likely failed to write " + dest +
+              ". Failing because I am unlikely to write too.");
+        }
       }
     }
 
@@ -948,11 +964,27 @@ public class DagUtils {
    * be used with Tez. Assumes scratchDir exists.
    */
   public Path createTezDir(Path scratchDir, Configuration conf)
-    throws IOException {
+      throws IOException {
+    UserGroupInformation ugi;
+    String userName = System.getProperty("user.name");
+    try {
+      ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+      userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    } catch (LoginException e) {
+      throw new IOException(e);
+    }
+
+    scratchDir = new Path(scratchDir, userName);
+
     Path tezDir = getTezDir(scratchDir);
     FileSystem fs = tezDir.getFileSystem(conf);
+    LOG.debug("TezDir path set " + tezDir + " for user: " + userName);
+    // since we are adding the user name to the scratch dir, we do not
+    // need to give more permissions here
     fs.mkdirs(tezDir);
+
     return tezDir;
+
   }
 
   /**

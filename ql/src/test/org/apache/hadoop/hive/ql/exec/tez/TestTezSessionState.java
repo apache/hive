@@ -24,6 +24,8 @@ import java.net.URISyntaxException;
 import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.tez.dag.api.TezException;
 
 
@@ -37,6 +39,7 @@ public class TestTezSessionState extends TezSessionState {
   private boolean open;
   private String sessionId;
   private HiveConf hiveConf;
+  private String user;
 
   public TestTezSessionState(String sessionId) {
     super(sessionId);
@@ -53,9 +56,13 @@ public class TestTezSessionState extends TezSessionState {
   }
 
   @Override
-  public void open(HiveConf conf) {
-    this.hiveConf = conf;
-  }
+    public void open(HiveConf conf) throws IOException,
+           LoginException, URISyntaxException, TezException {
+             this.hiveConf = conf;
+             UserGroupInformation ugi;
+             ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+             user = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    }
 
   @Override
     public void close(boolean keepTmpDir) throws TezException, IOException {
@@ -70,4 +77,8 @@ public class TestTezSessionState extends TezSessionState {
     public String getSessionId() {
       return sessionId;
     }
+  
+  public String getUser() {
+    return user;
+  }
 }
