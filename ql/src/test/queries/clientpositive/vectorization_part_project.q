@@ -3,5 +3,5 @@ CREATE TABLE alltypesorc_part(ctinyint tinyint, csmallint smallint, cint int, cb
 insert overwrite table alltypesorc_part partition (ds='2011') select * from alltypesorc limit 100;
 insert overwrite table alltypesorc_part partition (ds='2012') select * from alltypesorc limit 100;
 
-explain select (cdouble+2) from alltypesorc_part limit 10;
-select (cdouble+2) from alltypesorc_part limit 10;
+explain select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10;
+select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10;

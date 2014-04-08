@@ -180,12 +180,14 @@ STAGE PLANS:
 PREHOOK: query: select * 
 from src 
 where src.key in (select key from src s1 where s1.key > '9')
+order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select * 
 from src 
 where src.key in (select key from src s1 where s1.key > '9')
+order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -300,6 +302,7 @@ where b.key in
          from src a 
          where b.value = a.value and a.key > '9'
         )
+order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -310,6 +313,7 @@ where b.key in
          from src a 
          where b.value = a.value and a.key > '9'
         )
+order by b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -458,6 +462,7 @@ part where part.p_size in
 	 from (select p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
 	 where r <= 2
 	)
+order by p_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -468,6 +473,7 @@ part where part.p_size in
 	 from (select p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
 	 where r <= 2
 	)
+order by p_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -608,6 +614,7 @@ from part b where b.p_size in
 	 from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
 	 where r <= 2 and b.p_mfgr = a.p_mfgr
 	)
+order by p_mfgr, p_name, p_size
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -617,15 +624,16 @@ from part b where b.p_size in
 	 from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
 	 where r <= 2 and b.p_mfgr = a.p_mfgr
 	)
+order by p_mfgr, p_name, p_size
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#3	almond antique misty red olive	1
 Manufacturer#1	almond antique burnished rose metallic	2
 Manufacturer#1	almond antique burnished rose metallic	2
 Manufacturer#2	almond aquamarine midnight light salmon	2
-Manufacturer#5	almond antique sky peru orange	2
+Manufacturer#3	almond antique misty red olive	1
 Manufacturer#4	almond aquamarine yellow dodger mint	7
+Manufacturer#5	almond antique sky peru orange	2
 PREHOOK: query: -- distinct, corr
 explain 
 select * 
@@ -748,6 +756,7 @@ where b.key in
          from src a 
          where b.value = a.value and a.key > '9'
         )
+order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -758,6 +767,7 @@ where b.key in
          from src a 
          where b.value = a.value and a.key > '9'
         )
+order by b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -777,6 +787,7 @@ select p_mfgr, p_name, p_size
 from part 
 where part.p_size in 
   (select first_value(p_size) over(partition by p_mfgr order by p_size) from part)
+order by p_mfgr, p_name, p_size
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -785,15 +796,16 @@ select p_mfgr, p_name, p_size
 from part 
 where part.p_size in 
   (select first_value(p_size) over(partition by p_mfgr order by p_size) from part)
+order by p_mfgr, p_name, p_size
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#3	almond antique misty red olive	1
 Manufacturer#1	almond antique burnished rose metallic	2
-Manufacturer#5	almond antique sky peru orange	2
+Manufacturer#1	almond antique burnished rose metallic	2
 Manufacturer#2	almond aquamarine midnight light salmon	2
-Manufacturer#1	almond antique burnished rose metallic	2
+Manufacturer#3	almond antique misty red olive	1
 Manufacturer#4	almond aquamarine yellow dodger mint	7
+Manufacturer#5	almond antique sky peru orange	2
 PREHOOK: query: -- non agg, non corr, with join in Parent Query
 explain
 select p.p_partkey, li.l_suppkey 
@@ -939,6 +951,7 @@ PREHOOK: query: select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
+order by p.p_partkey, li.l_suppkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem
 #### A masked pattern was here ####
@@ -946,24 +959,26 @@ POSTHOOK: query: select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
+order by p.p_partkey, li.l_suppkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@lineitem
 #### A masked pattern was here ####
-155190	7706
-4297	1798
-108570	8571
-82704	7721
-61336	8855
 2320	9821
+4297	1798
+40216	217
+61336	8855
+64128	9141
+82704	7721
+108570	8571
 115118	7630
 115209	7721
-64128	9141
-40216	217
+155190	7706
 PREHOOK: query: -- non agg, corr, with join in Parent Query
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
+order by p.p_partkey, li.l_suppkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem
 #### A masked pattern was here ####
@@ -972,6 +987,7 @@ select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
+order by p.p_partkey, li.l_suppkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@lineitem
 #### A masked pattern was here ####

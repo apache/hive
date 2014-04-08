@@ -57,9 +57,9 @@ POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring2 SIMPLE [(alltype
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: explain select (cdouble+2) from alltypesorc_part limit 10
+PREHOOK: query: explain select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select (cdouble+2) from alltypesorc_part limit 10
+POSTHOOK: query: explain select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
@@ -100,29 +100,37 @@ STAGE PLANS:
               expressions: (cdouble + 2) (type: double)
               outputColumnNames: _col0
               Statistics: Num rows: 200 Data size: 41576 Basic stats: COMPLETE Column stats: NONE
-              Limit
-                Number of rows: 10
-                Statistics: Num rows: 10 Data size: 2070 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 10 Data size: 2070 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              Reduce Output Operator
+                key expressions: _col0 (type: double)
+                sort order: +
+                Statistics: Num rows: 200 Data size: 41576 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: double)
       Execution mode: vectorized
+      Reduce Operator Tree:
+        Extract
+          Statistics: Num rows: 200 Data size: 41576 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 10
+            Statistics: Num rows: 10 Data size: 2070 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 10 Data size: 2070 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
       limit: 10
 
-PREHOOK: query: select (cdouble+2) from alltypesorc_part limit 10
+PREHOOK: query: select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc_part
 PREHOOK: Input: default@alltypesorc_part@ds=2011
 PREHOOK: Input: default@alltypesorc_part@ds=2012
 #### A masked pattern was here ####
-POSTHOOK: query: select (cdouble+2) from alltypesorc_part limit 10
+POSTHOOK: query: select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_part
 POSTHOOK: Input: default@alltypesorc_part@ds=2011
@@ -152,13 +160,13 @@ POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring2 SIMPLE [(alltype
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
--13324.0
--4211.0
+-15910.0
+-15910.0
 -15811.0
--9564.0
-15009.0
-7023.0
-4965.0
--7822.0
--15429.0
+-15811.0
+-15788.0
+-15788.0
 -15547.0
+-15547.0
+-15429.0
+-15429.0

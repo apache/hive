@@ -26,6 +26,7 @@ WHERE    (((cstring2 LIKE '%ss%')
               AND ((ctinyint = csmallint)
                    AND (cdouble >= -3728))))
 GROUP BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
+ORDER BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
@@ -57,6 +58,7 @@ WHERE    (((cstring2 LIKE '%ss%')
               AND ((ctinyint = csmallint)
                    AND (cdouble >= -3728))))
 GROUP BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
+ORDER BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
