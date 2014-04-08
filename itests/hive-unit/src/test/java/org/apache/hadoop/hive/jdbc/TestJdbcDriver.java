@@ -40,6 +40,8 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 
@@ -48,6 +50,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
  *
  */
 public class TestJdbcDriver extends TestCase {
+  private static final Log LOG = LogFactory.getLog(TestJdbcDriver.class);
   private static final String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
   private static final String tableName = "testHiveJdbcDriver_Table";
   private static final String tableComment = "Simple table";
@@ -1165,6 +1168,14 @@ public class TestJdbcDriver extends TestCase {
 
   public void testShowRoleGrant() throws SQLException {
     Statement stmt = con.createStatement();
+
+    // drop role. ignore error.
+    try {
+      stmt.execute("drop role role1");
+    } catch (Exception ex) {
+      LOG.warn("Ignoring error during drop role: " + ex);
+    }
+
     stmt.execute("create role role1");
     stmt.execute("grant role role1 to user hive_test_user");
     stmt.execute("show role grant user hive_test_user");
