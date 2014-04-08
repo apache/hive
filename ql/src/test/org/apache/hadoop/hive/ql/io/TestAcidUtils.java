@@ -192,31 +192,18 @@ public class TestAcidUtils {
     Path part = new MockPath(fs, "/tbl/part1");
     AcidUtils.Directory dir =
         AcidUtils.getAcidState(part, conf, new ValidTxnListImpl("150:"));
-    assertEquals("mock:/tbl/part1/base_100", dir.getBaseDirectory().toString());
+    assertEquals("mock:/tbl/part1/base_200", dir.getBaseDirectory().toString());
     List<FileStatus> obsoletes = dir.getObsolete();
-    assertEquals(3, obsoletes.size());
+    assertEquals(4, obsoletes.size());
     assertEquals("mock:/tbl/part1/base_10", obsoletes.get(0).getPath().toString());
-    assertEquals("mock:/tbl/part1/base_25", obsoletes.get(1).getPath().toString());
-    assertEquals("mock:/tbl/part1/base_5", obsoletes.get(2).getPath().toString());
+    assertEquals("mock:/tbl/part1/base_100", obsoletes.get(1).getPath().toString());
+    assertEquals("mock:/tbl/part1/base_25", obsoletes.get(2).getPath().toString());
+    assertEquals("mock:/tbl/part1/base_5", obsoletes.get(3).getPath().toString());
     assertEquals(0, dir.getOriginalFiles().size());
     assertEquals(0, dir.getCurrentDirectories().size());
-    dir = AcidUtils.getAcidState(part, conf, new ValidTxnListImpl("150:99"));
-    assertEquals("mock:/tbl/part1/base_25", dir.getBaseDirectory().toString());
-    obsoletes = dir.getObsolete();
-    assertEquals(2, obsoletes.size());
-    assertEquals("mock:/tbl/part1/base_10", obsoletes.get(0).getPath().toString());
-    assertEquals("mock:/tbl/part1/base_5", obsoletes.get(1).getPath().toString());
-    dir = AcidUtils.getAcidState(part, conf, new ValidTxnListImpl("150:25"));
-    assertEquals("mock:/tbl/part1/base_10", dir.getBaseDirectory().toString());
-    obsoletes = dir.getObsolete();
-    assertEquals(1, obsoletes.size());
-    assertEquals("mock:/tbl/part1/base_5", obsoletes.get(0).getPath().toString());
-    try {
-      AcidUtils.getAcidState(part, conf, new ValidTxnListImpl("150:2"));
-      fail("should not reach here.");
-    } catch (IllegalArgumentException iae) {
-      //expected
-    }
+    // we should always get the latest base
+    dir = AcidUtils.getAcidState(part, conf, new ValidTxnListImpl("10:"));
+    assertEquals("mock:/tbl/part1/base_200", dir.getBaseDirectory().toString());
   }
 
   @Test
