@@ -9,3 +9,4 @@ CREATE TEMPORARY FUNCTION Pyth as 'Pyth';
 
 SELECT Pyth(3,4) FROM src tablesample (1 rows);
 
+DROP TEMPORARY FUNCTION Pyth;

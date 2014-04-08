@@ -20,13 +20,13 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@cv1
 PREHOOK: query: select * 
-from cv1 where cv1.key in (select key from cv1 c where c.key > '95')
+from cv1 where cv1.key in (select key from cv1 c where c.key > '95') order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cv1
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select * 
-from cv1 where cv1.key in (select key from cv1 c where c.key > '95')
+from cv1 where cv1.key in (select key from cv1 c where c.key > '95') order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cv1
 POSTHOOK: Input: default@src
@@ -59,16 +59,16 @@ where b.key not in
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@cv2
-Warning: Shuffle Join JOIN[42][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-5:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[42][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-6:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[18][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * 
-from cv2 where cv2.key in (select key from cv2 c where c.key < '11')
+from cv2 where cv2.key in (select key from cv2 c where c.key < '11') order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cv2
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select * 
-from cv2 where cv2.key in (select key from cv2 c where c.key < '11')
+from cv2 where cv2.key in (select key from cv2 c where c.key < '11') order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cv2
 POSTHOOK: Input: default@src
@@ -103,34 +103,34 @@ having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.k
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@cv3
-PREHOOK: query: select * from cv3
+PREHOOK: query: select * from cv3 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cv3
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from cv3
+POSTHOOK: query: select * from cv3 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cv3
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 80	val_80	1
 82	val_82	1
+83	val_83	2
+84	val_84	2
 85	val_85	1
 86	val_86	1
 87	val_87	1
 9	val_9	1
-92	val_92	1
-96	val_96	1
-83	val_83	2
-84	val_84	2
-97	val_97	2
-95	val_95	2
-98	val_98	2
 90	val_90	3
+92	val_92	1
+95	val_95	2
+96	val_96	1
+97	val_97	2
+98	val_98	2
 PREHOOK: query: -- join of subquery views
 select *
 from cv3
-where cv3.key in (select key from cv1)
+where cv3.key in (select key from cv1) order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cv1
 PREHOOK: Input: default@cv3
@@ -139,7 +139,7 @@ PREHOOK: Input: default@src
 POSTHOOK: query: -- join of subquery views
 select *
 from cv3
-where cv3.key in (select key from cv1)
+where cv3.key in (select key from cv1) order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cv1
 POSTHOOK: Input: default@cv3

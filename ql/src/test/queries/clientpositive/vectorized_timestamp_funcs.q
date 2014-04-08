@@ -18,7 +18,7 @@ INSERT INTO TABLE alltypesorc_wrong SELECT '2000:01:01 00-00-00' FROM alltypesor
 INSERT INTO TABLE alltypesorc_wrong SELECT '0000-00-00 99:99:99' FROM alltypesorc LIMIT 1;
 
 EXPLAIN SELECT
-  to_unix_timestamp(ctimestamp1),
+  to_unix_timestamp(ctimestamp1) AS c1,
   year(ctimestamp1),
   month(ctimestamp1),
   day(ctimestamp1),
@@ -27,10 +27,11 @@ EXPLAIN SELECT
   hour(ctimestamp1),
   minute(ctimestamp1),
   second(ctimestamp1)
-FROM alltypesorc_string;
+FROM alltypesorc_string
+ORDER BY c1;
 
 SELECT
-  to_unix_timestamp(ctimestamp1),
+  to_unix_timestamp(ctimestamp1) AS c1,
   year(ctimestamp1),
   month(ctimestamp1),
   day(ctimestamp1),
@@ -39,10 +40,11 @@ SELECT
   hour(ctimestamp1),
   minute(ctimestamp1),
   second(ctimestamp1)
-FROM alltypesorc_string;
+FROM alltypesorc_string
+ORDER BY c1;
 
 EXPLAIN SELECT
-  to_unix_timestamp(stimestamp1),
+  to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
   day(stimestamp1),
@@ -51,10 +53,11 @@ EXPLAIN SELECT
   hour(stimestamp1),
   minute(stimestamp1),
   second(stimestamp1)
-FROM alltypesorc_string;
+FROM alltypesorc_string
+ORDER BY c1;
 
 SELECT
-  to_unix_timestamp(stimestamp1),
+  to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
   day(stimestamp1),
@@ -63,10 +66,11 @@ SELECT
   hour(stimestamp1),
   minute(stimestamp1),
   second(stimestamp1)
-FROM alltypesorc_string;
+FROM alltypesorc_string
+ORDER BY c1;
 
 EXPLAIN SELECT
-  to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1),
+  to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1) AS c1,
   year(ctimestamp1) = year(stimestamp1),
   month(ctimestamp1) = month(stimestamp1),
   day(ctimestamp1) = day(stimestamp1),
@@ -75,11 +79,12 @@ EXPLAIN SELECT
   hour(ctimestamp1) = hour(stimestamp1),
   minute(ctimestamp1) = minute(stimestamp1),
   second(ctimestamp1) = second(stimestamp1)
-FROM alltypesorc_string;
+FROM alltypesorc_string
+ORDER BY c1;
 
 -- Should all be true or NULL
 SELECT
-  to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1),
+  to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1) AS c1,
   year(ctimestamp1) = year(stimestamp1),
   month(ctimestamp1) = month(stimestamp1),
   day(ctimestamp1) = day(stimestamp1),
@@ -88,11 +93,12 @@ SELECT
   hour(ctimestamp1) = hour(stimestamp1),
   minute(ctimestamp1) = minute(stimestamp1),
   second(ctimestamp1) = second(stimestamp1)
-FROM alltypesorc_string;
+FROM alltypesorc_string
+ORDER BY c1;
 
 -- Wrong format. Should all be NULL.
 EXPLAIN SELECT
-  to_unix_timestamp(stimestamp1),
+  to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
   day(stimestamp1),
@@ -101,10 +107,11 @@ EXPLAIN SELECT
   hour(stimestamp1),
   minute(stimestamp1),
   second(stimestamp1)
-FROM alltypesorc_wrong;
+FROM alltypesorc_wrong
+ORDER BY c1;
 
 SELECT
-  to_unix_timestamp(stimestamp1),
+  to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
   day(stimestamp1),
@@ -113,4 +120,5 @@ SELECT
   hour(stimestamp1),
   minute(stimestamp1),
   second(stimestamp1)
-FROM alltypesorc_wrong;
+FROM alltypesorc_wrong
+ORDER BY c1;
