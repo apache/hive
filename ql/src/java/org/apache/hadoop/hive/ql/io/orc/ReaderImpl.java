@@ -315,8 +315,15 @@ final class ReaderImpl implements Reader {
                                                         ) throws IOException {
     FSDataInputStream file = fs.open(path);
 
+    // figure out the size of the file using the option or filesystem
+    long size;
+    if (maxFileLength == Long.MAX_VALUE) {
+      size = fs.getFileStatus(path).getLen();
+    } else {
+      size = maxFileLength;
+    }
+
     //read last bytes into buffer to get PostScript
-    long size = Math.min(maxFileLength, fs.getFileStatus(path).getLen());
     int readSize = (int) Math.min(size, DIRECTORY_SIZE_GUESS);
     file.seek(size - readSize);
     ByteBuffer buffer = ByteBuffer.allocate(readSize);
