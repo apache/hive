@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +54,6 @@ public class TestCommandProcessorFactory {
       String cmd = command.name().toLowerCase();
       Assert.assertNotNull("Cmd " + cmd + " not return null", CommandProcessorFactory.getForHiveCommand(new String[]{cmd}, conf));
     }
-    conf.setBoolVar(ConfVars.HIVE_IN_TEST, false);
     conf.set(HiveConf.ConfVars.HIVE_SECURITY_COMMAND_WHITELIST.toString(), "");
     for (HiveCommand command : HiveCommand.values()) {
       String cmd = command.name();
@@ -67,6 +65,5 @@ public class TestCommandProcessorFactory {
         Assert.assertEquals("42000", e.getSQLState());
       }
     }
-    conf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
   }
 }

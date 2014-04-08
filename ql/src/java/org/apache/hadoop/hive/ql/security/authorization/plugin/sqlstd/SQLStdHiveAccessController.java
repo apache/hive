@@ -24,8 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
@@ -43,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.DisallowTransformHook;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessController;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
@@ -55,6 +59,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 import org.apache.thrift.TException;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -76,8 +81,9 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       + "have it as current role, for this action.";
   private final String HAS_ADMIN_PRIV_MSG = "grantor need to have ADMIN privileges on role being"
       + " granted and have it as a current role for this action.";
+  public static final Log LOG = LogFactory.getLog(SQLStdHiveAccessController.class);
 
-  SQLStdHiveAccessController(HiveMetastoreClientFactory metastoreClientFactory, HiveConf conf,
+  public SQLStdHiveAccessController(HiveMetastoreClientFactory metastoreClientFactory, HiveConf conf,
       HiveAuthenticationProvider authenticator) throws HiveAuthzPluginException {
     this.metastoreClientFactory = metastoreClientFactory;
     this.authenticator = authenticator;
@@ -521,6 +527,102 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       throw new HiveAuthzPluginException("Error getting role grant information for user "
           + principal.getName() + ": " + e.getMessage(), e);
     }
+  }
+
+
+  /**
+   * Default list of modifiable config parameters for sql standard authorization
+   */
+  static final String [] defaultModWhiteListSqlStdAuth = new String [] {
+      ConfVars.BYTESPERREDUCER.varname,
+      ConfVars.MAXREDUCERS.varname,
+      ConfVars.HIVEMAPSIDEAGGREGATE.varname,
+      ConfVars.HIVEMAPAGGRHASHMEMORY.varname,
+      ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD.varname,
+      ConfVars.HIVEMAPAGGRHASHMINREDUCTION.varname,
+      ConfVars.HIVEGROUPBYSKEW.varname,
+      ConfVars.HIVE_OPTIMIZE_MULTI_GROUPBY_COMMON_DISTINCTS.varname,
+      ConfVars.HIVEOPTGBYUSINGINDEX.varname,
+      ConfVars.HIVEOPTPPD.varname,
+      ConfVars.HIVEOPTPPD_STORAGE.varname,
+      ConfVars.HIVEOPTPPD_STORAGE.varname,
+      ConfVars.HIVEPPDRECOGNIZETRANSITIVITY.varname,
+      ConfVars.HIVEOPTGROUPBY.varname,
+      ConfVars.HIVEOPTSORTDYNAMICPARTITION.varname,
+      ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME.varname,
+      ConfVars.HIVE_OPTIMIZE_UNION_REMOVE.varname,
+      ConfVars.HIVEMULTIGROUPBYSINGLEREDUCER.varname,
+      ConfVars.HIVE_MAP_GROUPBY_SORT.varname,
+      ConfVars.HIVE_MAP_GROUPBY_SORT_TESTMODE.varname,
+      ConfVars.HIVESKEWJOIN.varname,
+      ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME.varname,
+      ConfVars.HIVEMAPREDMODE.varname,
+      ConfVars.HIVEENFORCEBUCKETMAPJOIN.varname,
+      ConfVars.COMPRESSRESULT.varname,
+      ConfVars.COMPRESSINTERMEDIATE.varname,
+      ConfVars.EXECPARALLEL.varname,
+      ConfVars.EXECPARALLETHREADNUMBER.varname,
+      ConfVars.EXECPARALLETHREADNUMBER.varname,
+      ConfVars.HIVEROWOFFSET.varname,
+      ConfVars.HIVEMERGEMAPFILES.varname,
+      ConfVars.HIVEMERGEMAPREDFILES.varname,
+      ConfVars.HIVEMERGETEZFILES.varname,
+      ConfVars.HIVEIGNOREMAPJOINHINT.varname,
+      ConfVars.HIVECONVERTJOIN.varname,
+      ConfVars.HIVECONVERTJOINNOCONDITIONALTASK.varname,
+      ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD.varname,
+      ConfVars.HIVECONVERTJOINUSENONSTAGED.varname,
+      ConfVars.HIVECONVERTJOINNOCONDITIONALTASK.varname,
+      ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD.varname,
+      ConfVars.HIVECONVERTJOINUSENONSTAGED.varname,
+      ConfVars.HIVEENFORCEBUCKETING.varname,
+      ConfVars.HIVEENFORCESORTING.varname,
+      ConfVars.HIVEENFORCESORTMERGEBUCKETMAPJOIN.varname,
+      ConfVars.HIVE_AUTO_SORTMERGE_JOIN.varname,
+      ConfVars.HIVE_EXECUTION_ENGINE.varname,
+      ConfVars.HIVE_VECTORIZATION_ENABLED.varname,
+      ConfVars.HIVEMAPJOINUSEOPTIMIZEDKEYS.varname,
+      ConfVars.HIVEMAPJOINLAZYHASHTABLE.varname,
+      ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
+      ConfVars.HIVE_COMPAT.varname,
+      ConfVars.DYNAMICPARTITIONINGMODE.varname,
+      "mapred.reduce.tasks",
+      "mapred.output.compression.codec",
+      "mapred.map.output.compression.codec",
+      "mapreduce.job.reduce.slowstart.completedmaps",
+      "mapreduce.job.queuename",
+  };
+
+  @Override
+  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) {
+    // grant all privileges for table to its owner
+    hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS, "INSERT,SELECT,UPDATE,DELETE");
+
+    // Configure PREEXECHOOKS with DisallowTransformHook to disallow transform queries
+    String hooks = hiveConf.getVar(ConfVars.PREEXECHOOKS).trim();
+    if (hooks.isEmpty()) {
+      hooks = DisallowTransformHook.class.getName();
+    } else {
+      hooks = hooks + "," +DisallowTransformHook.class.getName();
+    }
+    LOG.debug("Configuring hooks : " + hooks);
+    hiveConf.setVar(ConfVars.PREEXECHOOKS, hooks);
+
+    // set security command list to only allow set command
+    hiveConf.setVar(ConfVars.HIVE_SECURITY_COMMAND_WHITELIST, "set");
+
+    // restrict the variables that can be set using set command to a list in whitelist
+    hiveConf.setIsModWhiteListEnabled(true);
+    String whiteListParamsStr = hiveConf.getVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST);
+    if (whiteListParamsStr == null || whiteListParamsStr.trim().equals("")){
+      // set the default configs in whitelist
+      whiteListParamsStr = Joiner.on(",").join(defaultModWhiteListSqlStdAuth);
+      hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST, whiteListParamsStr);
+    }
+    for(String whiteListParam : whiteListParamsStr.split(",")){
+      hiveConf.addToModifiableWhiteList(whiteListParam);
+    }
+
   }
 
 }
