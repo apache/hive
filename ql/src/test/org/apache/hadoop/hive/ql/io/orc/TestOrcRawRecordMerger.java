@@ -134,7 +134,7 @@ public class TestOrcRawRecordMerger {
   }
 
   // can add .verboseLogging() to cause Mockito to log invocations
-  private final MockSettings settings = Mockito.withSettings().verboseLogging();
+  private final MockSettings settings = Mockito.withSettings();
 
   private Reader createMockReader() throws IOException {
     Reader reader = Mockito.mock(Reader.class, settings);
