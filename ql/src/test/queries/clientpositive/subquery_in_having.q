@@ -23,12 +23,13 @@ having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.k
 ;
 
 
-select s1.key, count(*) from src s1 where s1.key > '9' group by s1.key;
+select s1.key, count(*) from src s1 where s1.key > '9' group by s1.key order by s1.key;
 
 select key, count(*) 
 from src 
 group by key
 having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
+order by key
 ;
 
 -- non agg, corr
@@ -60,6 +61,7 @@ having b.key in ( select a.key
                 from src a
                 where a.value > 'val_9' and a.value = min(b.value)
                 )
+order by b.key
 ;
 
 -- where and having
