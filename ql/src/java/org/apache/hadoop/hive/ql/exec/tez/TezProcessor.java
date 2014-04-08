@@ -118,6 +118,7 @@ public class TezProcessor implements LogicalIOProcessor {
     String taskAttemptIdStr = taskAttemptIdBuilder.toString();
     this.jobConf.set("mapred.task.id", taskAttemptIdStr);
     this.jobConf.set("mapreduce.task.attempt.id", taskAttemptIdStr);
+    this.jobConf.setInt("mapred.task.partition",processorContext.getTaskIndex());
   }
 
   @Override

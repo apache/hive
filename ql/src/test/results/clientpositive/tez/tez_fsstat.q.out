@@ -1,0 +1,104 @@
+PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab_part
+PREHOOK: query: CREATE TABLE t1 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TABLE t1 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE t1 partition(ds='2008-04-08')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE t1 partition(ds='2008-04-08')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE t1 partition(ds='2008-04-08')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE t1 partition(ds='2008-04-08')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE t1 partition(ds='2008-04-08')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE t1 partition(ds='2008-04-08')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE t1 partition(ds='2008-04-08')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE t1 partition(ds='2008-04-08')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1@ds=2008-04-08
+PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
+select key,value from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@ds=2008-04-08
+PREHOOK: Output: default@tab_part@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
+select key,value from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@ds=2008-04-08
+POSTHOOK: Output: default@tab_part@ds=2008-04-08
+POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(t1)t1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe formatted tab_part partition(ds='2008-04-08')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tab_part
+POSTHOOK: query: describe formatted tab_part partition(ds='2008-04-08')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tab_part
+POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(t1)t1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08]        	 
+Database:           	default             	 
+Table:              	tab_part            	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	4                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
