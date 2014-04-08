@@ -13,4 +13,4 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-Failed processing command add Insufficient privileges to execute add
+Failed processing command dfs Insufficient privileges to execute dfs

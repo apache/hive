@@ -18,23 +18,36 @@
 
 package org.apache.hadoop.hive.conf;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.security.auth.login.LoginException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.HiveCompat;
-
-import javax.security.auth.login.LoginException;
-import java.io.*;
-import java.net.URL;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Hive Configuration.
@@ -51,6 +64,9 @@ public class HiveConf extends Configuration {
 
   private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
+
+  private boolean isWhiteListRestrictionEnabled = false;
+  private final List<String> modWhiteList = new ArrayList<String>();
 
   static {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -128,6 +144,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HIVE_TXN_TIMEOUT,
       HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
       };
+
 
   /**
    * dbVars are the parameters can be set per database. If these
@@ -804,6 +821,11 @@ public class HiveConf extends Configuration {
     HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS("hive.security.authorization.createtable.owner.grants",
         ""),
 
+    // if this is not set default value is added by sql standard authorizer.
+    // Default value can't be set in this constructor as it would refer names in other ConfVars
+    // whose constructor would not have been called
+    HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST("hive.security.authorization.sqlstd.confwhitelist", ""),
+
     // Print column names in output
     HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false),
 
@@ -998,6 +1020,7 @@ public class HiveConf extends Configuration {
     // Check if a plan contains a Cross Product.
     // If there is one, output a warning to the Session's console.
     HIVE_CHECK_CROSS_PRODUCT("hive.exec.check.crossproducts", true),
+
     ;
 
     public final String varname;
@@ -1172,8 +1195,15 @@ public class HiveConf extends Configuration {
   }
 
   public void verifyAndSet(String name, String value) throws IllegalArgumentException {
+    if (isWhiteListRestrictionEnabled) {
+      if (!modWhiteList.contains(name)) {
+        throw new IllegalArgumentException("Cannot modify " + name + " at runtime. "
+            + "It is not in list of params that are allowed to be modified at runtime");
+      }
+    }
     if (restrictList.contains(name)) {
-      throw new IllegalArgumentException("Cannot modify " + name + " at runtime");
+      throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
+          + "of parameters that can't be modified at runtime");
     }
     set(name, value);
   }
@@ -1598,6 +1628,29 @@ public class HiveConf extends Configuration {
       this.setVar(ConfVars.HIVE_CONF_RESTRICTED_LIST, oldList + "," + restrictListStr);
     }
     setupRestrictList();
+  }
+
+  /**
+   * Set if whitelist check is enabled for parameter modification
+   *
+   * @param isEnabled
+   */
+  @LimitedPrivate(value = { "Currently only for use by HiveAuthorizer" })
+  public void setIsModWhiteListEnabled(boolean isEnabled) {
+    this.isWhiteListRestrictionEnabled = isEnabled;
+  }
+
+  /**
+   * Add config parameter name to whitelist of parameters that can be modified
+   *
+   * @param paramname
+   */
+  @LimitedPrivate(value = { "Currently only for use by HiveAuthorizer" })
+  public void addToModifiableWhiteList(String paramname) {
+    if (paramname == null) {
+      return;
+    }
+    modWhiteList.add(paramname);
   }
 
   /**

@@ -31,6 +31,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.auth.TSetIpAddressProcessor;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -57,6 +59,12 @@ public class SessionManager extends CompositeService {
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
+    try {
+      applyAuthorizationConfigPolicy(hiveConf);
+    } catch (HiveException e) {
+      throw new RuntimeException("Error applying authorization policy on hive configuration", e);
+    }
+
     this.hiveConf = hiveConf;
     int backgroundPoolSize = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_THREADS);
     LOG.info("HiveServer2: Async execution thread pool size: " + backgroundPoolSize);
@@ -72,6 +80,13 @@ public class SessionManager extends CompositeService {
     backgroundOperationPool.allowCoreThreadTimeOut(true);
     addService(operationManager);
     super.init(hiveConf);
+  }
+
+  private void applyAuthorizationConfigPolicy(HiveConf newHiveConf) throws HiveException {
+    // authorization setup using SessionState should be revisited eventually, as
+    // authorization and authentication are not session specific settings
+    SessionState ss = SessionState.start(newHiveConf);
+    ss.applyAuthorizationPolicy();
   }
 
   @Override
