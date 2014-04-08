@@ -21,11 +21,15 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import javax.security.auth.login.LoginException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.security.UserGroupInformation;
 
 /**
  * This class is for managing multiple tez sessions particularly when
@@ -211,6 +215,18 @@ public class TezSessionPoolManager {
        throws HiveException {
     if (session == null || conf == null) {
       return false;
+    }
+
+    try {
+      UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+      String userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
+      LOG.info("The current user: " + userName + ", session user: " + session.getUser());
+      if (userName.equals(session.getUser()) == false) {
+        LOG.info("Different users incoming: " + userName + " existing: " + session.getUser());
+        return false;
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
     }
 
     HiveConf existingConf = session.getConf();

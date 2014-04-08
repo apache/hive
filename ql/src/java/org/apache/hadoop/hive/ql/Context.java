@@ -30,13 +30,16 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 
 import java.io.DataInput;
@@ -50,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.security.auth.login.LoginException;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -204,12 +209,11 @@ public class Context {
         try {
           FileSystem fs = dirPath.getFileSystem(conf);
           dirPath = new Path(fs.makeQualified(dirPath).toString());
-          if (!fs.mkdirs(dirPath)) {
+          FsPermission fsPermission = new FsPermission(Short.parseShort(scratchDirPermission.trim(), 8));
+
+          if (!Utilities.createDirsWithPermission(conf, dirPath, fsPermission)) {
             throw new RuntimeException("Cannot make directory: "
                                        + dirPath.toString());
-          } else {
-            FsPermission fsPermission = new FsPermission(Short.parseShort(scratchDirPermission.trim(), 8));
-            fs.setPermission(dirPath, fsPermission);
           }
           if (isHDFSCleanup) {
             fs.deleteOnExit(dirPath);
@@ -222,6 +226,7 @@ public class Context {
       fsScratchDirs.put(fileSystem + "-" + TaskRunner.getTaskRunnerID(), dir);
 
     }
+
     return dir;
   }
 
@@ -256,6 +261,7 @@ public class Context {
     try {
       Path dir = FileUtils.makeQualified(nonLocalScratchPath, conf);
       URI uri = dir.toUri();
+
       Path newScratchDir = getScratchDir(uri.getScheme(), uri.getAuthority(),
                            !explain, uri.getPath());
       LOG.info("New scratch dir is " + newScratchDir);
