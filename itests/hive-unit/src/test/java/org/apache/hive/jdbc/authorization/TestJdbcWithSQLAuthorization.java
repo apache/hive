@@ -112,4 +112,30 @@ public class TestJdbcWithSQLAuthorization {
     return DriverManager.getConnection(miniHS2.getJdbcURL(), userName, "bar");
   }
 
+  @Test
+  public void testAllowedCommands() throws Exception {
+
+    // using different code blocks so that jdbc variables are not accidently re-used
+    // between the actions. Different connection/statement object should be used for each action.
+    {
+      // create tables as user1
+      Connection hs2Conn = getConnection("user1");
+      boolean caughtException = false;
+      Statement stmt = hs2Conn.createStatement();
+      // create tables
+      try {
+        stmt.execute("dfs -ls /tmp/");
+      } catch (SQLException e){
+        caughtException = true;
+        assertTrue("Checking error message content",
+            e.getMessage().contains("Insufficient privileges to execute"));
+      }
+      finally {
+        stmt.close();
+        hs2Conn.close();
+      }
+      assertTrue("Exception expected ", caughtException);
+    }
+  }
+
 }
