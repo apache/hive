@@ -48,6 +48,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -1060,6 +1061,54 @@ public class TestInputOutputFormat {
         .setBlocks(new MockBlock("host0", "host1"));
 
     // call getsplits
+    HiveInputFormat<?,?> inputFormat =
+        new HiveInputFormat<WritableComparable, Writable>();
+    InputSplit[] splits = inputFormat.getSplits(conf, 10);
+    assertEquals(1, splits.length);
+
+    org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch>
+        reader = inputFormat.getRecordReader(splits[0], conf, Reporter.NULL);
+    NullWritable key = reader.createKey();
+    VectorizedRowBatch value = reader.createValue();
+    assertEquals(true, reader.next(key, value));
+    assertEquals(10, value.count());
+    LongColumnVector col0 = (LongColumnVector) value.cols[0];
+    for(int i=0; i < 10; i++) {
+      assertEquals("checking " + i, i, col0.vector[i]);
+    }
+    assertEquals(false, reader.next(key, value));
+  }
+
+  /**
+   * Test vectorization, non-acid, non-combine.
+   * @throws Exception
+   */
+  @Test
+  public void testVectorizationWithBuckets() throws Exception {
+    // get the object inspector for MyRow
+    StructObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = (StructObjectInspector)
+          ObjectInspectorFactory.getReflectionObjectInspector(MyRow.class,
+              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
+        inspector, true);
+
+    // write the orc file to the mock file system
+    Writer writer =
+        OrcFile.createWriter(new Path(conf.get("mapred.input.dir") + "/0_0"),
+            OrcFile.writerOptions(conf).blockPadding(false)
+                .bufferSize(1024).inspector(inspector));
+    for(int i=0; i < 10; ++i) {
+      writer.addRow(new MyRow(i, 2*i));
+    }
+    writer.close();
+    ((MockOutputStream) ((WriterImpl) writer).getStream())
+        .setBlocks(new MockBlock("host0", "host1"));
+
+    // call getsplits
+    conf.setInt(hive_metastoreConstants.BUCKET_COUNT, 3);
     HiveInputFormat<?,?> inputFormat =
         new HiveInputFormat<WritableComparable, Writable>();
     InputSplit[] splits = inputFormat.getSplits(conf, 10);
