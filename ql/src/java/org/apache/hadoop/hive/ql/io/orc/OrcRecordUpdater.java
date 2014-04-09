@@ -37,10 +37,12 @@ import org.apache.hadoop.io.LongWritable;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
+import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,7 +55,9 @@ public class OrcRecordUpdater implements RecordUpdater {
 
   public static final String ACID_KEY_INDEX_NAME = "hive.acid.key.index";
   public static final String ACID_FORMAT = "_orc_acid_version";
+  public static final String ACID_STATS = "hive.acid.stats";
   public static final int ORC_ACID_VERSION = 0;
+
 
   final static int INSERT_OPERATION = 0;
   final static int UPDATE_OPERATION = 1;
@@ -70,6 +74,8 @@ public class OrcRecordUpdater implements RecordUpdater {
   final static int DELTA_BUFFER_SIZE = 16 * 1024;
   final static long DELTA_STRIPE_SIZE = 16 * 1024 * 1024;
 
+  private static final Charset UTF8 = Charset.forName("UTF-8");
+
   private final AcidOutputFormat.Options options;
   private final Path path;
   private final FileSystem fs;
@@ -83,6 +89,33 @@ public class OrcRecordUpdater implements RecordUpdater {
   private final LongWritable rowId = new LongWritable();
   private long insertedRows = 0;
   private final KeyIndexBuilder indexBuilder = new KeyIndexBuilder();
+
+  static class AcidStats {
+    long inserts;
+    long updates;
+    long deletes;
+
+    AcidStats() {
+      // nothing
+    }
+
+    AcidStats(String serialized) {
+      String[] parts = serialized.split(",");
+      inserts = Long.parseLong(parts[0]);
+      updates = Long.parseLong(parts[1]);
+      deletes = Long.parseLong(parts[2]);
+    }
+
+    String serialize() {
+      StringBuilder builder = new StringBuilder();
+      builder.append(inserts);
+      builder.append(",");
+      builder.append(updates);
+      builder.append(",");
+      builder.append(deletes);
+      return builder.toString();
+    }
+  }
 
   static Path getSideFile(Path main) {
     return new Path(main + "_flush_length");
@@ -219,7 +252,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     this.originalTransaction.set(originalTransaction);
     this.rowId.set(rowId);
     item.setFieldValue(OrcRecordUpdater.ROW, row);
-    indexBuilder.addKey(originalTransaction, bucket.get(), rowId);
+    indexBuilder.addKey(operation, originalTransaction, bucket.get(), rowId);
     writer.addRow(item);
   }
 
@@ -323,6 +356,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     long lastTransaction;
     int lastBucket;
     long lastRowId;
+    AcidStats acidStats = new AcidStats();
 
     @Override
     public void preStripeWrite(OrcFile.WriterContext context
@@ -338,11 +372,26 @@ public class OrcRecordUpdater implements RecordUpdater {
     @Override
     public void preFooterWrite(OrcFile.WriterContext context
                                ) throws IOException {
-      context.getWriter().addUserMetadata(OrcRecordUpdater.ACID_KEY_INDEX_NAME,
-          ByteBuffer.wrap(lastKey.toString().getBytes(utf8)));
+      context.getWriter().addUserMetadata(ACID_KEY_INDEX_NAME,
+          UTF8.encode(lastKey.toString()));
+      context.getWriter().addUserMetadata(ACID_STATS,
+          UTF8.encode(acidStats.serialize()));
     }
 
-    void addKey(long transaction, int bucket, long rowId) {
+    void addKey(int op, long transaction, int bucket, long rowId) {
+      switch (op) {
+        case INSERT_OPERATION:
+          acidStats.inserts += 1;
+          break;
+        case UPDATE_OPERATION:
+          acidStats.updates += 1;
+          break;
+        case DELETE_OPERATION:
+          acidStats.deletes += 1;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown operation " + op);
+      }
       lastTransaction = transaction;
       lastBucket = bucket;
       lastRowId = rowId;

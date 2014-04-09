@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.io.RCFile.KeyBuffer;
 import org.apache.hadoop.hive.ql.io.RCFile.Reader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
@@ -42,9 +43,6 @@ import org.apache.hadoop.mapred.RecordReader;
 
 /**
  * RCFileRecordReader.
- *
- * @param <K>
- * @param <V>
  */
 public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, VectorizedRowBatch> {
 
@@ -59,6 +57,7 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
   private final LongWritable keyCache = new LongWritable();
   private final BytesRefArrayWritable colsCache = new BytesRefArrayWritable();
   private boolean addPartitionCols = true;
+  private final DataOutputBuffer buffer = new DataOutputBuffer();
 
   private static RCFileSyncCache syncCache = new RCFileSyncCache();
 
@@ -164,7 +163,8 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
   public boolean next(NullWritable key, VectorizedRowBatch value) throws IOException {
 
     // Reset column fields noNull values to true
-    VectorizedBatchUtil.SetNoNullFields(true, value);
+    VectorizedBatchUtil.setNoNullFields(value);
+    buffer.reset();
     value.selectedInUse = false;
     for (int i = 0; i < value.numCols; i++) {
       value.cols[i].isRepeating = false;
@@ -187,7 +187,7 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
           in.getCurrentRow(colsCache);
           // Currently RCFile reader does not support reading vectorized
           // data. Populating the batch by adding one row at a time.
-          rbCtx.addRowToBatch(i, (Writable) colsCache, value);
+          rbCtx.addRowToBatch(i, (Writable) colsCache, value, buffer);
         } else {
           break;
         }

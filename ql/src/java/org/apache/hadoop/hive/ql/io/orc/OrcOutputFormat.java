@@ -305,6 +305,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
       public void write(Writable w) throws IOException {
         OrcStruct orc = (OrcStruct) w;
         watcher.addKey(
+            ((IntWritable) orc.getFieldValue(OrcRecordUpdater.OPERATION)).get(),
             ((LongWritable)
                 orc.getFieldValue(OrcRecordUpdater.ORIGINAL_TRANSACTION)).get(),
             ((IntWritable) orc.getFieldValue(OrcRecordUpdater.BUCKET)).get(),
