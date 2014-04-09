@@ -27,6 +27,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeSet;
 
 import org.apache.hadoop.conf.Configuration;
@@ -47,10 +51,15 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -71,11 +80,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -95,6 +106,225 @@ import org.junit.rules.TestName;
 public class TestInputOutputFormat {
 
   Path workDir = new Path(System.getProperty("test.tmp.dir","target/tmp"));
+  static final int MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
+  private static final SimpleDateFormat DATE_FORMAT =
+      new SimpleDateFormat("yyyy/MM/dd");
+  private static final SimpleDateFormat TIME_FORMAT =
+      new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
+  private static final TimeZone LOCAL_TIMEZONE = TimeZone.getDefault();
+
+  static {
+    TimeZone gmt = TimeZone.getTimeZone("GMT+0");
+    DATE_FORMAT.setTimeZone(gmt);
+    TIME_FORMAT.setTimeZone(gmt);
+    TimeZone local = TimeZone.getDefault();
+  }
+
+  public static class BigRow implements Writable {
+    boolean booleanValue;
+    byte byteValue;
+    short shortValue;
+    int intValue;
+    long longValue;
+    float floatValue;
+    double doubleValue;
+    String stringValue;
+    HiveDecimal decimalValue;
+    Date dateValue;
+    Timestamp timestampValue;
+
+    BigRow(long x) {
+      booleanValue = x % 2 == 0;
+      byteValue = (byte) x;
+      shortValue = (short) x;
+      intValue = (int) x;
+      longValue = x;
+      floatValue = x;
+      doubleValue = x;
+      stringValue = Long.toHexString(x);
+      decimalValue = HiveDecimal.create(x);
+      long millisUtc = x * MILLIS_IN_DAY;
+      millisUtc -= LOCAL_TIMEZONE.getOffset(millisUtc);
+      dateValue = new Date(millisUtc);
+      timestampValue = new Timestamp(millisUtc);
+    }
+
+    @Override
+    public void write(DataOutput dataOutput) throws IOException {
+      throw new UnsupportedOperationException("no write");
+    }
+
+    @Override
+    public void readFields(DataInput dataInput) throws IOException {
+      throw new UnsupportedOperationException("no read");
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append("bigrow{booleanValue: ");
+      builder.append(booleanValue);
+      builder.append(", byteValue: ");
+      builder.append(byteValue);
+      builder.append(", shortValue: ");
+      builder.append(shortValue);
+      builder.append(", intValue: ");
+      builder.append(intValue);
+      builder.append(", longValue: ");
+      builder.append(longValue);
+      builder.append(", floatValue: ");
+      builder.append(floatValue);
+      builder.append(", doubleValue: ");
+      builder.append(doubleValue);
+      builder.append(", stringValue: ");
+      builder.append(stringValue);
+      builder.append(", decimalValue: ");
+      builder.append(decimalValue);
+      builder.append(", dateValue: ");
+      builder.append(DATE_FORMAT.format(dateValue));
+      builder.append(", timestampValue: ");
+      builder.append(TIME_FORMAT.format(timestampValue));
+      builder.append("}");
+      return builder.toString();
+    }
+  }
+
+  public static class BigRowField implements StructField {
+    private final int id;
+    private final String fieldName;
+    private final ObjectInspector inspector;
+
+    BigRowField(int id, String fieldName, ObjectInspector inspector) {
+      this.id = id;
+      this.fieldName = fieldName;
+      this.inspector = inspector;
+    }
+
+    @Override
+    public String getFieldName() {
+      return fieldName;
+    }
+
+    @Override
+    public ObjectInspector getFieldObjectInspector() {
+      return inspector;
+    }
+
+    @Override
+    public String getFieldComment() {
+      return null;
+    }
+
+    @Override
+    public String toString() {
+      return "field " + id + " " + fieldName;
+    }
+  }
+
+  public static class BigRowInspector extends StructObjectInspector {
+    static final List<BigRowField> FIELDS = new ArrayList<BigRowField>();
+    static {
+      FIELDS.add(new BigRowField(0, "booleanValue",
+          PrimitiveObjectInspectorFactory.javaBooleanObjectInspector));
+      FIELDS.add(new BigRowField(1, "byteValue",
+          PrimitiveObjectInspectorFactory.javaByteObjectInspector));
+      FIELDS.add(new BigRowField(2, "shortValue",
+          PrimitiveObjectInspectorFactory.javaShortObjectInspector));
+      FIELDS.add(new BigRowField(3, "intValue",
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector));
+      FIELDS.add(new BigRowField(4, "longValue",
+          PrimitiveObjectInspectorFactory.javaLongObjectInspector));
+      FIELDS.add(new BigRowField(5, "floatValue",
+          PrimitiveObjectInspectorFactory.javaFloatObjectInspector));
+      FIELDS.add(new BigRowField(6, "doubleValue",
+          PrimitiveObjectInspectorFactory.javaDoubleObjectInspector));
+      FIELDS.add(new BigRowField(7, "stringValue",
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector));
+      FIELDS.add(new BigRowField(8, "decimalValue",
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector));
+      FIELDS.add(new BigRowField(9, "dateValue",
+          PrimitiveObjectInspectorFactory.javaDateObjectInspector));
+      FIELDS.add(new BigRowField(10, "timestampValue",
+          PrimitiveObjectInspectorFactory.javaTimestampObjectInspector));
+    }
+
+
+    @Override
+    public List<? extends StructField> getAllStructFieldRefs() {
+      return FIELDS;
+    }
+
+    @Override
+    public StructField getStructFieldRef(String fieldName) {
+      for(StructField field: FIELDS) {
+        if (field.getFieldName().equals(fieldName)) {
+          return field;
+        }
+      }
+      throw new IllegalArgumentException("Can't find field " + fieldName);
+    }
+
+    @Override
+    public Object getStructFieldData(Object data, StructField fieldRef) {
+      BigRow obj = (BigRow) data;
+      switch (((BigRowField) fieldRef).id) {
+        case 0:
+          return obj.booleanValue;
+        case 1:
+          return obj.byteValue;
+        case 2:
+          return obj.shortValue;
+        case 3:
+          return obj.intValue;
+        case 4:
+          return obj.longValue;
+        case 5:
+          return obj.floatValue;
+        case 6:
+          return obj.doubleValue;
+        case 7:
+          return obj.stringValue;
+        case 8:
+          return obj.decimalValue;
+        case 9:
+          return obj.dateValue;
+        case 10:
+          return obj.timestampValue;
+      }
+      throw new IllegalArgumentException("No such field " + fieldRef);
+    }
+
+    @Override
+    public List<Object> getStructFieldsDataAsList(Object data) {
+      BigRow obj = (BigRow) data;
+      List<Object> result = new ArrayList<Object>(11);
+      result.add(obj.booleanValue);
+      result.add(obj.byteValue);
+      result.add(obj.shortValue);
+      result.add(obj.intValue);
+      result.add(obj.longValue);
+      result.add(obj.floatValue);
+      result.add(obj.doubleValue);
+      result.add(obj.stringValue);
+      result.add(obj.decimalValue);
+      result.add(obj.dateValue);
+      result.add(obj.timestampValue);
+      return result;
+    }
+
+    @Override
+    public String getTypeName() {
+      return "struct<booleanValue:boolean,byteValue:tinyint," +
+          "shortValue:smallint,intValue:int,longValue:bigint," +
+          "floatValue:float,doubleValue:double,stringValue:string," +
+          "decimalValue:decimal>";
+    }
+
+    @Override
+    public Category getCategory() {
+      return Category.STRUCT;
+    }
+  }
 
   public static class MyRow implements Writable {
     int x;
@@ -959,6 +1189,7 @@ public class TestInputOutputFormat {
    * explode.
    * @param workDir a local filesystem work directory
    * @param warehouseDir a mock filesystem warehouse directory
+   * @param tableName the table name
    * @param objectInspector object inspector for the row
    * @param isVectorized should run vectorized
    * @return a JobConf that contains the necessary information
@@ -966,16 +1197,19 @@ public class TestInputOutputFormat {
    */
   JobConf createMockExecutionEnvironment(Path workDir,
                                          Path warehouseDir,
+                                         String tableName,
                                          ObjectInspector objectInspector,
                                          boolean isVectorized
                                          ) throws IOException {
+    Utilities.clearWorkMap();
     JobConf conf = new JobConf();
     conf.set("hive.exec.plan", workDir.toString());
     conf.set("mapred.job.tracker", "local");
     conf.set("hive.vectorized.execution.enabled", Boolean.toString(isVectorized));
     conf.set("fs.mock.impl", MockFileSystem.class.getName());
     conf.set("mapred.mapper.class", ExecMapper.class.getName());
-    Path root = new Path(warehouseDir, "table/p=0");
+    Path root = new Path(warehouseDir, tableName + "/p=0");
+    ((MockFileSystem) root.getFileSystem(conf)).clear();
     conf.set("mapred.input.dir", root.toString());
     StringBuilder columnIds = new StringBuilder();
     StringBuilder columnNames = new StringBuilder();
@@ -999,6 +1233,7 @@ public class TestInputOutputFormat {
     fs.clear();
 
     Properties tblProps = new Properties();
+    tblProps.put("name", tableName);
     tblProps.put("serialization.lib", OrcSerde.class.getName());
     tblProps.put("columns", columnNames.toString());
     tblProps.put("columns.types", columnTypes.toString());
@@ -1014,7 +1249,7 @@ public class TestInputOutputFormat {
     LinkedHashMap<String, ArrayList<String>> aliasMap =
         new LinkedHashMap<String, ArrayList<String>>();
     ArrayList<String> aliases = new ArrayList<String>();
-    aliases.add("tbl");
+    aliases.add(tableName);
     aliasMap.put(root.toString(), aliases);
     mapWork.setPathToAliases(aliasMap);
     LinkedHashMap<String, PartitionDesc> partMap =
@@ -1027,8 +1262,9 @@ public class TestInputOutputFormat {
 
     // write the plan out
     FileSystem localFs = FileSystem.getLocal(conf).getRaw();
-    FSDataOutputStream planStream =
-        localFs.create(new Path(workDir, "map.xml"));
+    Path mapXml = new Path(workDir, "map.xml");
+    localFs.delete(mapXml, true);
+    FSDataOutputStream planStream = localFs.create(mapXml);
     Utilities.serializePlan(mapWork, planStream, conf);
     planStream.close();
     return conf;
@@ -1048,7 +1284,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        inspector, true);
+        "vectorization", inspector, true);
 
     // write the orc file to the mock file system
     Writer writer =
@@ -1095,7 +1331,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        inspector, true);
+        "vectorBuckets", inspector, true);
 
     // write the orc file to the mock file system
     Writer writer =
@@ -1132,23 +1368,18 @@ public class TestInputOutputFormat {
   // test acid with vectorization, no combine
   @Test
   public void testVectorizationWithAcid() throws Exception {
-    // get the object inspector for MyRow
-    StructObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = (StructObjectInspector)
-          ObjectInspectorFactory.getReflectionObjectInspector(MyRow.class,
-              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    StructObjectInspector inspector = new BigRowInspector();
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        inspector, true);
+        "vectorizationAcid", inspector, true);
 
     // write the orc file to the mock file system
     Path partDir = new Path(conf.get("mapred.input.dir"));
     OrcRecordUpdater writer = new OrcRecordUpdater(partDir,
         new AcidOutputFormat.Options(conf).maximumTransactionId(10)
             .writingBase(true).bucket(0).inspector(inspector));
-    for(int i=0; i < 10; ++i) {
-      writer.insert(10, new MyRow(i, 2 * i));
+    for(int i=0; i < 100; ++i) {
+      BigRow row = new BigRow(i);
+      writer.insert(10, row);
     }
     WriterImpl baseWriter = (WriterImpl) writer.getWriter();
     writer.close(false);
@@ -1161,14 +1392,44 @@ public class TestInputOutputFormat {
     InputSplit[] splits = inputFormat.getSplits(conf, 10);
     assertEquals(1, splits.length);
 
-    try {
-      org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch>
+    org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch>
           reader = inputFormat.getRecordReader(splits[0], conf, Reporter.NULL);
-      assertTrue("should throw here", false);
-    } catch (IOException ioe) {
-      assertEquals("java.io.IOException: Vectorization and ACID tables are incompatible.",
-          ioe.getMessage());
+    NullWritable key = reader.createKey();
+    VectorizedRowBatch value = reader.createValue();
+    assertEquals(true, reader.next(key, value));
+    assertEquals(100, value.count());
+    LongColumnVector booleanColumn = (LongColumnVector) value.cols[0];
+    LongColumnVector byteColumn = (LongColumnVector) value.cols[1];
+    LongColumnVector shortColumn = (LongColumnVector) value.cols[2];
+    LongColumnVector intColumn = (LongColumnVector) value.cols[3];
+    LongColumnVector longColumn = (LongColumnVector) value.cols[4];
+    DoubleColumnVector floatColumn = (DoubleColumnVector) value.cols[5];
+    DoubleColumnVector doubleCoulmn = (DoubleColumnVector) value.cols[6];
+    BytesColumnVector stringColumn = (BytesColumnVector) value.cols[7];
+    DecimalColumnVector decimalColumn = (DecimalColumnVector) value.cols[8];
+    LongColumnVector dateColumn = (LongColumnVector) value.cols[9];
+    LongColumnVector timestampColumn = (LongColumnVector) value.cols[10];
+    for(int i=0; i < 100; i++) {
+      assertEquals("checking boolean " + i, i % 2 == 0 ? 1 : 0,
+          booleanColumn.vector[i]);
+      assertEquals("checking byte " + i, (byte) i,
+          byteColumn.vector[i]);
+      assertEquals("checking short " + i, (short) i, shortColumn.vector[i]);
+      assertEquals("checking int " + i, i, intColumn.vector[i]);
+      assertEquals("checking long " + i, i, longColumn.vector[i]);
+      assertEquals("checking float " + i, i, floatColumn.vector[i], 0.0001);
+      assertEquals("checking double " + i, i, doubleCoulmn.vector[i], 0.0001);
+      assertEquals("checking string " + i, new Text(Long.toHexString(i)),
+          stringColumn.getWritableObject(i));
+      assertEquals("checking decimal " + i, new Decimal128(i),
+          decimalColumn.vector[i]);
+      assertEquals("checking date " + i, i, dateColumn.vector[i]);
+      long millis = (long) i * MILLIS_IN_DAY;
+      millis -= LOCAL_TIMEZONE.getOffset(millis);
+      assertEquals("checking timestamp " + i, millis * 1000000L,
+          timestampColumn.vector[i]);
     }
+    assertEquals(false, reader.next(key, value));
   }
 
   // test non-vectorized, non-acid, combine
@@ -1182,7 +1443,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        inspector, false);
+        "combination", inspector, false);
 
     // write the orc file to the mock file system
     Path partDir = new Path(conf.get("mapred.input.dir"));
@@ -1251,7 +1512,7 @@ public class TestInputOutputFormat {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
-        inspector, false);
+        "combinationAcid", inspector, false);
 
     // write the orc file to the mock file system
     Path partDir = new Path(conf.get("mapred.input.dir"));

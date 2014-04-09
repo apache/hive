@@ -1000,24 +1000,24 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
 
     OrcSplit split = (OrcSplit) inputSplit;
-    // TODO vectorized reader doesn't work with the new format yet
-    if (vectorMode) {
-      if (!split.getDeltas().isEmpty() || !split.isOriginal()) {
-        throw new IOException("Vectorization and ACID tables are incompatible."
-                              );
-      }
-      return createVectorizedReader(inputSplit, conf, reporter);
-    }
     reporter.setStatus(inputSplit.toString());
 
     // if we are strictly old-school, just use the old code
     if (split.isOriginal() && split.getDeltas().isEmpty()) {
-      return new OrcRecordReader(OrcFile.createReader(split.getPath(),
-          OrcFile.readerOptions(conf)), conf, split);
+      if (vectorMode) {
+        return createVectorizedReader(inputSplit, conf, reporter);
+      } else {
+        return new OrcRecordReader(OrcFile.createReader(split.getPath(),
+            OrcFile.readerOptions(conf)), conf, split);
+      }
     }
 
     Options options = new Options(conf).reporter(reporter);
     final RowReader<OrcStruct> inner = getReader(inputSplit, options);
+    if (vectorMode) {
+      return (org.apache.hadoop.mapred.RecordReader)
+          new VectorizedOrcAcidRowReader(inner, conf, (FileSplit) inputSplit);
+    }
     final RecordIdentifier id = inner.createKey();
 
     // Return a RecordReader that is compatible with the Hive 0.12 reader
