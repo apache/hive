@@ -130,31 +130,22 @@ public class TezTask extends Task<TezWork> {
       // create the tez tmp dir
       scratchDir = utils.createTezDir(scratchDir, conf);
 
-      // we need to get the user specified local resources for this dag
-      String hiveJarDir = utils.getHiveJarDirectory(conf);
-      List<LocalResource> additionalLr = utils.localizeTempFilesFromConf(hiveJarDir, conf);
-      List<LocalResource> handlerLr = utils.localizeTempFiles(hiveJarDir, conf, inputOutputJars);
-      if (handlerLr != null) {
-        additionalLr.addAll(handlerLr);
-      }
-
       // If we have any jars from input format, we need to restart the session because
       // AM will need them; so, AM has to be restarted. What a mess...
-      if (!session.hasResources(handlerLr)) {
-        if (session.isOpen()) {
-          LOG.info("Tez session being reopened to pass custom jars to AM");
-          session.close(false);
-          session = TezSessionPoolManager.getInstance().getSession(null, conf, false);
-          ss.setTezSession(session);
-        }
-        session.open(conf, additionalLr);
+      if (!session.hasResources(inputOutputJars) && session.isOpen()) {
+        LOG.info("Tez session being reopened to pass custom jars to AM");
+        session.close(false);
+        session = TezSessionPoolManager.getInstance().getSession(null, conf, false);
+        ss.setTezSession(session);
       }
+
       if (!session.isOpen()) {
         // can happen if the user sets the tez flag after the session was
         // established
         LOG.info("Tez session hasn't been created yet. Opening session");
-        session.open(conf);
+        session.open(conf, inputOutputJars);
       }
+      List<LocalResource> additionalLr = session.getLocalizedResources();
 
       // unless already installed on all the cluster nodes, we'll have to
       // localize hive-exec.jar as well.
