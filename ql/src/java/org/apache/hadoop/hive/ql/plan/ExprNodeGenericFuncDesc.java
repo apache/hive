@@ -71,7 +71,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   //Is this an expression that should perform a comparison for sorted searches
   private boolean isSortedExpr;
 
-  public ExprNodeGenericFuncDesc() {
+  public ExprNodeGenericFuncDesc() {;
   }
 
   /* If the function has an explicit name like func(args) then call a

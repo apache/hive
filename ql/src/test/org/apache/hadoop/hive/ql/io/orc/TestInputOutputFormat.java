@@ -59,6 +59,8 @@ import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -1286,5 +1288,50 @@ public class TestInputOutputFormat {
           + ".hive.ql.io.HiveInputFormat",
           ioe.getMessage());
     }
+  }
+
+  @Test
+  public void testSetSearchArgument() throws Exception {
+    Reader.Options options = new Reader.Options();
+    List<OrcProto.Type> types = new ArrayList<OrcProto.Type>();
+    OrcProto.Type.Builder builder = OrcProto.Type.newBuilder();
+    builder.setKind(OrcProto.Type.Kind.STRUCT)
+        .addAllFieldNames(Arrays.asList("op", "otid", "bucket", "rowid", "ctid",
+            "row"))
+        .addAllSubtypes(Arrays.asList(1,2,3,4,5,6));
+    types.add(builder.build());
+    builder.clear().setKind(OrcProto.Type.Kind.INT);
+    types.add(builder.build());
+    types.add(builder.build());
+    types.add(builder.build());
+    types.add(builder.build());
+    types.add(builder.build());
+    builder.clear().setKind(OrcProto.Type.Kind.STRUCT)
+        .addAllFieldNames(Arrays.asList("url", "purchase", "cost", "store"))
+        .addAllSubtypes(Arrays.asList(7, 8, 9, 10));
+    types.add(builder.build());
+    builder.clear().setKind(OrcProto.Type.Kind.STRING);
+    types.add(builder.build());
+    builder.clear().setKind(OrcProto.Type.Kind.INT);
+    types.add(builder.build());
+    types.add(builder.build());
+    types.add(builder.build());
+    SearchArgument isNull = SearchArgument.FACTORY.newBuilder()
+        .startAnd().isNull("cost").end().build();
+    conf.set(OrcInputFormat.SARG_PUSHDOWN, isNull.toKryo());
+    conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR,
+        "url,cost");
+    options.include(new boolean[]{true, true, false, true, false});
+    OrcInputFormat.setSearchArgument(options, types, conf, false);
+    String[] colNames = options.getColumnNames();
+    assertEquals(null, colNames[0]);
+    assertEquals("url", colNames[1]);
+    assertEquals(null, colNames[2]);
+    assertEquals("cost", colNames[3]);
+    assertEquals(null, colNames[4]);
+    SearchArgument arg = options.getSearchArgument();
+    List<PredicateLeaf> leaves = arg.getLeaves();
+    assertEquals("cost", leaves.get(0).getColumnName());
+    assertEquals(PredicateLeaf.Operator.IS_NULL, leaves.get(0).getOperator());
   }
 }

@@ -26,6 +26,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -64,6 +68,14 @@ final class SearchArgumentImpl implements SearchArgument {
     private final String columnName;
     private final Object literal;
     private final List<Object> literalList;
+
+    PredicateLeafImpl() {
+      operator = null;
+      type = null;
+      columnName = null;
+      literal = null;
+      literalList = null;
+    }
 
     PredicateLeafImpl(Operator operator,
                       Type type,
@@ -165,6 +177,13 @@ final class SearchArgumentImpl implements SearchArgument {
     private final List<ExpressionTree> children;
     private final int leaf;
     private final TruthValue constant;
+
+    ExpressionTree() {
+      operator = null;
+      children = null;
+      leaf = 0;
+      constant = null;
+    }
 
     ExpressionTree(Operator op, ExpressionTree... kids) {
       operator = op;
@@ -818,6 +837,11 @@ final class SearchArgumentImpl implements SearchArgument {
     }
   }
 
+  SearchArgumentImpl() {
+    leaves = null;
+    expression = null;
+  }
+
   SearchArgumentImpl(ExpressionTree expression, List<PredicateLeaf> leaves) {
     this.expression = expression;
     this.leaves = leaves;
@@ -850,6 +874,18 @@ final class SearchArgumentImpl implements SearchArgument {
     buffer.append("expr = ");
     buffer.append(expression);
     return buffer.toString();
+  }
+
+  public String toKryo() {
+    Output out = new Output(4 * 1024, 10 * 1024 * 1024);
+    new Kryo().writeObject(out, this);
+    out.close();
+    return Base64.encodeBase64String(out.toBytes());
+  }
+
+  static SearchArgument fromKryo(String value) {
+    Input input = new Input(Base64.decodeBase64(value));
+    return new Kryo().readObject(input, SearchArgumentImpl.class);
   }
 
   private static class BuilderImpl implements Builder {
