@@ -38,6 +38,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.Parser;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.LogUtils;
@@ -53,6 +55,8 @@ import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
 
 public class HCatCli {
+  private static Log LOG = null;
+
 
   @SuppressWarnings("static-access")
   public static void main(String[] args) {
@@ -62,6 +66,7 @@ public class HCatCli {
     } catch (LogInitializationException e) {
 
     }
+    LOG = LogFactory.getLog(HCatCli.class);
 
     CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
     ss.in = System.in;
@@ -75,6 +80,12 @@ public class HCatCli {
     HiveConf conf = ss.getConf();
 
     HiveConf.setVar(conf, ConfVars.SEMANTIC_ANALYZER_HOOK, HCatSemanticAnalyzer.class.getName());
+    String engine = HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE);
+    final String MR_ENGINE = "mr";
+    if(!MR_ENGINE.equalsIgnoreCase(engine)) {
+      HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_ENGINE, MR_ENGINE);
+      LOG.info("Forcing " + ConfVars.HIVE_EXECUTION_ENGINE + " to " + MR_ENGINE);
+    }
 
     Options options = new Options();
 

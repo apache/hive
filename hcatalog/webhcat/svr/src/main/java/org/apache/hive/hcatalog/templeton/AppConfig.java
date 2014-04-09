@@ -19,7 +19,6 @@
 package org.apache.hive.hcatalog.templeton;
 
 import java.io.File;
-import java.io.StringBufferInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
