@@ -53,7 +53,8 @@ public class HiveAuthFactory {
     NONE("NONE"),
     LDAP("LDAP"),
     KERBEROS("KERBEROS"),
-    CUSTOM("CUSTOM");
+    CUSTOM("CUSTOM"),
+    PAM("PAM");
 
     private String authType;
 
@@ -126,9 +127,7 @@ public class HiveAuthFactory {
   }
 
   public TTransportFactory getAuthTransFactory() throws LoginException {
-
     TTransportFactory transportFactory;
-
     if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
       try {
         transportFactory = saslServer.createTransportFactory(getSaslProperties());
@@ -138,6 +137,8 @@ public class HiveAuthFactory {
     } else if (authTypeStr.equalsIgnoreCase(AuthTypes.NONE.getAuthName())) {
       transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
     } else if (authTypeStr.equalsIgnoreCase(AuthTypes.LDAP.getAuthName())) {
+      transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
+    } else if (authTypeStr.equalsIgnoreCase(AuthTypes.PAM.getAuthName())) {
       transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
     } else if (authTypeStr.equalsIgnoreCase(AuthTypes.NOSASL.getAuthName())) {
       transportFactory = new TTransportFactory();
