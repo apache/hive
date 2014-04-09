@@ -1079,9 +1079,9 @@ POSTHOOK: Input: default@decimal_udf
 2.0
 2.0000000002
 2.0000000002
-PREHOOK: query: EXPLAIN SELECT key / '2.0' FROM DECIMAL_UDF
+PREHOOK: query: EXPLAIN SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT key / '2.0' FROM DECIMAL_UDF
+POSTHOOK: query: EXPLAIN SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1095,57 +1095,57 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key / '2.0') (type: double)
+            expressions: (1 + (key / '2.0')) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: SELECT key / '2.0' FROM DECIMAL_UDF
+PREHOOK: query: SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key / '2.0' FROM DECIMAL_UDF
+POSTHOOK: query: SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--2200.0
+-2199.0
 NULL
-0.0
-0.0
-50.0
-5.0
-0.5
-0.05
-0.0050
-100.0
-10.0
 1.0
-0.0
-0.1
-0.01
-0.15
-0.165
-0.1665
--0.15
--0.165
--0.1665
-0.5
 1.0
-1.57
--0.56
--0.56
--0.561
-0.56
-0.561
-62.0
-62.6
--627.745
-1.57
-1.57
-1.57
-0.5
--6.172839450617284E8
-6.172839450617284E8
+51.0
+6.0
+1.5
+1.05
+1.005
+101.0
+11.0
+2.0
+1.0
+1.1
+1.01
+1.15
+1.165
+1.1665
+0.85
+0.835
+0.8335
+1.5
+2.0
+2.5700000000000003
+0.43999999999999995
+0.43999999999999995
+0.43899999999999995
+1.56
+1.561
+63.0
+63.6
+-626.745
+2.5700000000000003
+2.5700000000000003
+2.5700000000000003
+1.5
+-6.172839440617284E8
+6.172839460617284E8
 PREHOOK: query: -- abs
 EXPLAIN SELECT abs(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
