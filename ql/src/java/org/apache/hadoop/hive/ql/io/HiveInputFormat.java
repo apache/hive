@@ -389,7 +389,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     if (partDesc == null) {
       throw new IOException("cannot find dir = " + dir.toString()
-          + " in partToPartitionInfo!");
+          + " in " + pathToPartitionInfo);
     }
 
     return partDesc;

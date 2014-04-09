@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -193,6 +194,7 @@ public class TestVectorizedRowBatchCtx {
   private VectorizedRowBatch GetRowBatch() throws SerDeException, HiveException, IOException {
 
     RCFile.Reader reader = new RCFile.Reader(fs, this.testFilePath, conf);
+    DataOutputBuffer buffer = new DataOutputBuffer();
 
     // Get object inspector
     StructObjectInspector oi = (StructObjectInspector) serDe
@@ -204,7 +206,7 @@ public class TestVectorizedRowBatchCtx {
     // Create the context
     VectorizedRowBatchCtx ctx = new VectorizedRowBatchCtx(oi, oi, serDe, null, null);
     VectorizedRowBatch batch = ctx.createVectorizedRowBatch();
-    VectorizedBatchUtil.SetNoNullFields(true, batch);
+    VectorizedBatchUtil.setNoNullFields(batch);
 
     // Iterate thru the rows and populate the batch
     LongWritable rowID = new LongWritable();
@@ -213,7 +215,7 @@ public class TestVectorizedRowBatchCtx {
       BytesRefArrayWritable cols = new BytesRefArrayWritable();
       reader.getCurrentRow(cols);
       cols.resetValid(colCount);
-      ctx.addRowToBatch(i, cols, batch);
+      ctx.addRowToBatch(i, cols, batch, buffer);
     }
     reader.close();
     batch.size = 10;

@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -55,6 +54,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
 
@@ -332,14 +332,17 @@ public class VectorizedRowBatchCtx {
    *          Row blob (serialized version of row)
    * @param batch
    *          Vectorized batch to which the row is added
+   * @param buffer a buffer to copy strings into
    * @throws HiveException
    * @throws SerDeException
    */
-  public void addRowToBatch(int rowIndex, Writable rowBlob, VectorizedRowBatch batch)
-      throws HiveException, SerDeException
+  public void addRowToBatch(int rowIndex, Writable rowBlob,
+                            VectorizedRowBatch batch,
+                            DataOutputBuffer buffer
+                            ) throws HiveException, SerDeException
   {
     Object row = this.deserializer.deserialize(rowBlob);
-    VectorizedBatchUtil.AddRowToBatch(row, this.rawRowOI, rowIndex, batch);
+    VectorizedBatchUtil.addRowToBatch(row, this.rawRowOI, rowIndex, batch, buffer);
   }
 
   /**

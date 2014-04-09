@@ -2069,6 +2069,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     flushStripe();
     // write a footer
     if (stripesAtLastFlush != stripes.size()) {
+      if (callback != null) {
+        callback.preFooterWrite(callbackContext);
+      }
       int metaLength = writeMetadata(rawWriter.getPos());
       int footLength = writeFooter(rawWriter.getPos() - metaLength);
       rawWriter.writeByte(writePostScript(footLength, metaLength));
