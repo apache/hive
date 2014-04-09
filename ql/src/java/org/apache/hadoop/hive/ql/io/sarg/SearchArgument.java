@@ -166,6 +166,12 @@ public interface SearchArgument {
   public TruthValue evaluate(TruthValue[] leaves);
 
   /**
+   * Serialize the SARG as a kyro object and return the base64 strig.
+   * @return the serialized SARG
+   */
+  public String toKryo();
+
+  /**
    * A factory for creating SearchArguments. Java doesn't allow static methods
    * in interfaces. *DOH*
    */
@@ -176,6 +182,10 @@ public interface SearchArgument {
 
     public Builder newBuilder() {
       return SearchArgumentImpl.newBuilder();
+    }
+
+    public SearchArgument create(String kryo) {
+      return SearchArgumentImpl.fromKryo(kryo);
     }
   }
 
