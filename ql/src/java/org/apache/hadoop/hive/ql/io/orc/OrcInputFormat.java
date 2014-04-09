@@ -106,6 +106,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       SHIMS.getHadoopConfNames().get("MAPREDMINSPLITSIZE");
   static final String MAX_SPLIT_SIZE =
       SHIMS.getHadoopConfNames().get("MAPREDMAXSPLITSIZE");
+  static final String SARG_PUSHDOWN = "sarg.pushdown";
 
   private static final long DEFAULT_MIN_SPLIT_SIZE = 16 * 1024 * 1024;
   private static final long DEFAULT_MAX_SPLIT_SIZE = 256 * 1024 * 1024;
@@ -268,21 +269,28 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
                                 boolean isOriginal) {
     int rootColumn = getRootColumn(isOriginal);
     String serializedPushdown = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
+    String sargPushdown = conf.get(SARG_PUSHDOWN);
     String columnNamesString =
         conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
-    if (serializedPushdown == null || columnNamesString == null) {
+    if ((sargPushdown == null && serializedPushdown == null)
+        || columnNamesString == null) {
       LOG.debug("No ORC pushdown predicate");
       options.searchArgument(null, null);
     } else {
-      SearchArgument sarg = SearchArgument.FACTORY.create
-          (Utilities.deserializeExpression(serializedPushdown));
+      SearchArgument sarg;
+      if (serializedPushdown != null) {
+        sarg = SearchArgument.FACTORY.create
+            (Utilities.deserializeExpression(serializedPushdown));
+      } else {
+        sarg = SearchArgument.FACTORY.create(sargPushdown);
+      }
       LOG.info("ORC pushdown predicate: " + sarg);
       String[] neededColumnNames = columnNamesString.split(",");
       String[] columnNames = new String[types.size() - rootColumn];
       boolean[] includedColumns = options.getInclude();
       int i = 0;
       for(int columnId: types.get(rootColumn).getSubtypesList()) {
-        if (includedColumns == null || includedColumns[columnId]) {
+        if (includedColumns == null || includedColumns[columnId - rootColumn]) {
           // this is guaranteed to be positive because types only have children
           // ids greater than their own id.
           columnNames[columnId - rootColumn] = neededColumnNames[i++];
