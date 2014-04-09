@@ -478,6 +478,12 @@ public final class CorrelationUtilities {
     parent.setChildOperators(Utilities.makeList(newOperator));
   }
 
+  public static void removeOperator(Operator<?> target, ParseContext context) {
+    assert target.getNumParent() == 1 && target.getNumChild() == 1;
+    removeOperator(target,
+        target.getChildOperators().get(0), target.getParentOperators().get(0), context);
+  }
+
   protected static void removeOperator(Operator<?> target, Operator<?> child, Operator<?> parent,
       ParseContext context) {
     for (Operator<?> aparent : target.getParentOperators()) {

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -40,17 +41,23 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
  */
 public class ColumnPrunerProcCtx implements NodeProcessorCtx {
 
+  private final ParseContext pctx;
+
   private final Map<Operator<? extends OperatorDesc>, List<String>> prunedColLists;
 
   private final HashMap<Operator<? extends OperatorDesc>, OpParseContext> opToParseCtxMap;
 
   private final Map<CommonJoinOperator, Map<Byte, List<String>>> joinPrunedColLists;
 
-  public ColumnPrunerProcCtx(
-      HashMap<Operator<? extends OperatorDesc>, OpParseContext> opToParseContextMap) {
+  public ColumnPrunerProcCtx(ParseContext pctx) {
+    this.pctx = pctx;
+    this.opToParseCtxMap = pctx.getOpParseCtx();
     prunedColLists = new HashMap<Operator<? extends OperatorDesc>, List<String>>();
-    opToParseCtxMap = opToParseContextMap;
     joinPrunedColLists = new HashMap<CommonJoinOperator, Map<Byte, List<String>>>();
+  }
+
+  public ParseContext getParseContext() {
+    return pctx;
   }
 
   public Map<CommonJoinOperator, Map<Byte, List<String>>> getJoinPrunedColLists() {
@@ -85,17 +92,25 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
    */
   public List<String> genColLists(Operator<? extends OperatorDesc> curOp)
       throws SemanticException {
-    List<String> colList = new ArrayList<String>();
-    if (curOp.getChildOperators() != null) {
-      for (Operator<? extends OperatorDesc> child : curOp.getChildOperators()) {
-        if (child instanceof CommonJoinOperator) {
-          int tag = child.getParentOperators().indexOf(curOp);
-          List<String> prunList = joinPrunedColLists.get(child).get((byte) tag);
-          colList = Utilities.mergeUniqElems(colList, prunList);
-        } else {
-          colList = Utilities
-              .mergeUniqElems(colList, prunedColLists.get(child));
-        }
+    if (curOp.getChildOperators() == null) {
+      return null;
+    }
+    List<String> colList = null;
+    for (Operator<? extends OperatorDesc> child : curOp.getChildOperators()) {
+      List<String> prunList;
+      if (child instanceof CommonJoinOperator) {
+        int tag = child.getParentOperators().indexOf(curOp);
+        prunList = joinPrunedColLists.get(child).get((byte) tag);
+      } else {
+        prunList = prunedColLists.get(child);
+      }
+      if (prunList == null) {
+        continue;
+      }
+      if (colList == null) {
+        colList = new ArrayList<String>(prunList);
+      } else {
+        colList = Utilities.mergeUniqElems(colList, prunList);
       }
     }
     return colList;
@@ -135,7 +150,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     List<String> cols = new ArrayList<String>();
     SelectDesc conf = op.getConf();
 
-    if (conf.isSelStarNoCompute()) {
+    if (colList != null  && conf.isSelStarNoCompute()) {
       cols.addAll(colList);
       return cols;
     }
@@ -148,7 +163,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     // input columns are used.
     List<String> outputColumnNames = conf.getOutputColumnNames();
     for (int i = 0; i < outputColumnNames.size(); i++) {
-      if (colList.contains(outputColumnNames.get(i))) {
+      if (colList == null || colList.contains(outputColumnNames.get(i))) {
         ExprNodeDesc expr = selectExprs.get(i);
         cols = Utilities.mergeUniqElems(cols, expr.getCols());
       }

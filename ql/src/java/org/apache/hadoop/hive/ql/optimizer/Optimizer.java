@@ -63,16 +63,16 @@ public class Optimizer {
         transformations.add(new ListBucketingPruner());
       }
     }
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGROUPBY) ||
+        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT)) {
+      transformations.add(new GroupByOptimizer());
+    }
     transformations.add(new ColumnPruner());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
       transformations.add(new SkewJoinOptimizer());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGBYUSINGINDEX)) {
       transformations.add(new RewriteGBUsingIndex());
-    }
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGROUPBY) ||
-        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT)) {
-      transformations.add(new GroupByOptimizer());
     }
     transformations.add(new SamplePruner());
     transformations.add(new MapJoinProcessor());

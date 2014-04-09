@@ -149,7 +149,6 @@ STAGE PLANS:
                   sort order: 
                   Map-reduce partition columns: rand() (type: double)
                   Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: 1 (type: int)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(1)
@@ -227,7 +226,6 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: 1 (type: int)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(1)
