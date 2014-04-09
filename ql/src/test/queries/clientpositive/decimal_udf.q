@@ -64,8 +64,8 @@ SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0;
 EXPLAIN SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0;
 SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0;
 
-EXPLAIN SELECT key / '2.0' FROM DECIMAL_UDF;
-SELECT key / '2.0' FROM DECIMAL_UDF;
+EXPLAIN SELECT 1 + (key / '2.0') FROM DECIMAL_UDF;
+SELECT 1 + (key / '2.0') FROM DECIMAL_UDF;
 
 -- abs
 EXPLAIN SELECT abs(key) FROM DECIMAL_UDF;
