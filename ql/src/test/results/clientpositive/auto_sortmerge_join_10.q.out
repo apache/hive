@@ -111,8 +111,8 @@ STAGE PLANS:
               predicate: (key < 6) (type: boolean)
               Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
-                outputColumnNames: _col0, _col1
+                expressions: key (type: int)
+                outputColumnNames: _col0
                 Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 6 Data size: 42 Basic stats: COMPLETE Column stats: NONE
@@ -150,8 +150,8 @@ STAGE PLANS:
               predicate: (key < 6) (type: boolean)
               Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: int), value (type: string)
-                outputColumnNames: _col0, _col1
+                expressions: key (type: int)
+                outputColumnNames: _col0
                 Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 6 Data size: 42 Basic stats: COMPLETE Column stats: NONE

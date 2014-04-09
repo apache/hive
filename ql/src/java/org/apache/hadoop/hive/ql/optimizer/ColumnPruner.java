@@ -81,7 +81,7 @@ public class ColumnPruner implements Transform {
     opToParseCtxMap = pGraphContext.getOpParseCtx();
 
     // generate pruned column list for all relevant operators
-    ColumnPrunerProcCtx cppCtx = new ColumnPrunerProcCtx(opToParseCtxMap);
+    ColumnPrunerProcCtx cppCtx = new ColumnPrunerProcCtx(pactx);
 
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher

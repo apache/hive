@@ -774,8 +774,8 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
+            expressions: _col0 (type: string)
+            outputColumnNames: _col0
             Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
@@ -791,8 +791,8 @@ STAGE PLANS:
             alias: t2
             Statistics: Num rows: 6 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), cnt (type: bigint)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 6 Data size: 18 Basic stats: COMPLETE Column stats: NONE
               Union
                 Statistics: Num rows: 11 Data size: 53 Basic stats: COMPLETE Column stats: NONE
@@ -805,7 +805,6 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 11 Data size: 53 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: 1 (type: int)
           TableScan
             Union
               Statistics: Num rows: 11 Data size: 53 Basic stats: COMPLETE Column stats: NONE
@@ -818,7 +817,6 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 11 Data size: 53 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: 1 (type: int)
       Reduce Operator Tree:
         Forward
           Statistics: Num rows: 11 Data size: 53 Basic stats: COMPLETE Column stats: NONE

@@ -236,8 +236,8 @@ STAGE PLANS:
               predicate: (((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null))) (type: boolean)
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: value (type: string), key (type: string)
-                outputColumnNames: value, key
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: key, value
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: value (type: string)
@@ -648,8 +648,8 @@ STAGE PLANS:
               predicate: (((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null))) (type: boolean)
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: value (type: string), key (type: string)
-                outputColumnNames: value, key
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: key, value
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: value (type: string)

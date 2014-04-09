@@ -59,7 +59,6 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col2 (type: bigint)
             Filter Operator
               predicate: (key < 20) (type: boolean)
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
@@ -121,7 +120,6 @@ STAGE PLANS:
               sort order: +++
               Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(DISTINCT KEY._col2:0._col0)
@@ -274,7 +272,6 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col2 (type: bigint)
             Filter Operator
               predicate: (key < 20) (type: boolean)
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
@@ -336,7 +333,6 @@ STAGE PLANS:
               sort order: +++
               Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(DISTINCT KEY._col2:0._col0)
@@ -663,7 +659,6 @@ STAGE PLANS:
                     sort order: +++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                     Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(DISTINCT KEY._col2:0._col0)

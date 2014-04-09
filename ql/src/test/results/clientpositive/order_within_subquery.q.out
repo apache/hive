@@ -1,0 +1,52 @@
+PREHOOK: query: CREATE TABLE part( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TABLE part( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@part
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@part
+PREHOOK: query: select t1.p_name, t2.p_name 
+from (select * from part order by p_size limit 10) t1 join part t2 on t1.p_partkey = t2.p_partkey and t1.p_size = t2.p_size 
+where t1.p_partkey < 100000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.p_name, t2.p_name 
+from (select * from part order by p_size limit 10) t1 join part t2 on t1.p_partkey = t2.p_partkey and t1.p_size = t2.p_size 
+where t1.p_partkey < 100000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+almond aquamarine yellow dodger mint	almond aquamarine yellow dodger mint
+almond azure aquamarine papaya violet	almond azure aquamarine papaya violet
+almond antique misty red olive	almond antique misty red olive
+almond antique medium spring khaki	almond antique medium spring khaki
+almond antique gainsboro frosted violet	almond antique gainsboro frosted violet
