@@ -603,16 +603,7 @@ public class DagUtils {
     Map<String, LocalResource> combinedResources = new HashMap<String, LocalResource>();
 
     combinedResources.putAll(sessionConfig.getSessionResources());
-
-    try {
-      for(LocalResource lr : localizeTempFilesFromConf(getHiveJarDirectory(conf), conf)) {
-        combinedResources.put(getBaseName(lr), lr);
-      }
-    } catch(LoginException le) {
-      throw new IOException(le);
-    }
-
-    if(localResources != null) {
+    if (localResources != null) {
       combinedResources.putAll(localResources);
     }
 
