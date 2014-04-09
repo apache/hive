@@ -20,7 +20,6 @@ package org.apache.hive.service.cli.thrift;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -75,6 +74,7 @@ public class ThriftHttpServlet extends TServlet {
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     String clientUserName;
+    String clientIpAddress;
     try {
       // For a kerberos setup
       if(isKerberosAuthMode(authType)) {
@@ -83,16 +83,19 @@ public class ThriftHttpServlet extends TServlet {
         if (doAsQueryParam != null) {
           SessionManager.setProxyUserName(doAsQueryParam);
         }
-
       }
       else {
         clientUserName = doPasswdAuth(request, authType);
       }
-
-      LOG.info("Client username: " + clientUserName);
-
+      LOG.debug("Client username: " + clientUserName);
       // Set the thread local username to be used for doAs if true
       SessionManager.setUserName(clientUserName);
+
+      clientIpAddress = request.getRemoteAddr();
+      LOG.debug("Client IP Address: " + clientIpAddress);
+      // Set the thread local ip address
+      SessionManager.setIpAddress(clientIpAddress);
+
       super.doPost(request, response);
     }
     catch (HttpAuthenticationException e) {
@@ -105,8 +108,9 @@ public class ThriftHttpServlet extends TServlet {
       response.getWriter().println("Authentication Error: " + e.getMessage());
     }
     finally {
-      // Clear the thread local username since we set it in each http request
+      // Clear the thread locals
       SessionManager.clearUserName();
+      SessionManager.clearIpAddress();
       SessionManager.clearProxyUserName();
     }
   }
