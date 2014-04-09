@@ -129,7 +129,6 @@ STAGE PLANS:
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(DISTINCT KEY._col2:0._col0)
@@ -310,7 +309,6 @@ STAGE PLANS:
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(DISTINCT KEY._col2:0._col0)
