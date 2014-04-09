@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -60,7 +61,7 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
   /**
    * Serialize a vectorized row batch
    *
-   * @param obj
+   * @param vrg
    *          Vectorized row batch to serialize
    * @param objInspector
    *          The ObjectInspector for the row object
@@ -220,7 +221,7 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
 
     // Ideally this should throw  UnsupportedOperationException as the serde is
     // vectorized serde. But since RC file reader does not support vectorized reading this
-    // is left as it is. This function will be called from VectorizedRowBatchCtx::AddRowToBatch
+    // is left as it is. This function will be called from VectorizedRowBatchCtx::addRowToBatch
     // to deserialize the row one by one and populate the batch. Once RC file reader supports vectorized
     // reading this serde and be standalone serde with no dependency on ColumnarSerDe.
     return super.deserialize(blob);
@@ -251,10 +252,13 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
       VectorizedRowBatch reuseBatch) throws SerDeException {
 
     BytesRefArrayWritable[] refArray = (BytesRefArrayWritable[]) rowBlob;
+    DataOutputBuffer buffer = new DataOutputBuffer();
     for (int i = 0; i < rowsInBlob; i++) {
       Object row = deserialize(refArray[i]);
       try {
-        VectorizedBatchUtil.AddRowToBatch(row, (StructObjectInspector) cachedObjectInspector, i, reuseBatch);
+        VectorizedBatchUtil.addRowToBatch(row,
+            (StructObjectInspector) cachedObjectInspector, i,
+            reuseBatch, buffer);
       } catch (HiveException e) {
         throw new SerDeException(e);
       }

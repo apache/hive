@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -92,7 +91,7 @@ public class VectorColumnAssignFactory {
     }
 
     protected void assignNull(int index) {
-      VectorizedBatchUtil.SetNullColIsNullValue(outCol, index);
+      VectorizedBatchUtil.setNullColIsNullValue(outCol, index);
     }
 
     @Override

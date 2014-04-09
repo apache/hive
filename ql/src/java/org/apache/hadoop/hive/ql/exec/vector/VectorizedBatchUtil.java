@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -25,6 +26,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -33,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -45,7 +48,7 @@ public class VectorizedBatchUtil {
    * @param cv
    * @param rowIndex
    */
-  public static void SetNullColIsNullValue(ColumnVector cv, int rowIndex) {
+  public static void setNullColIsNullValue(ColumnVector cv, int rowIndex) {
     cv.isNull[rowIndex] = true;
     if (cv.noNulls) {
       cv.noNulls = false;
@@ -56,12 +59,10 @@ public class VectorizedBatchUtil {
    * Iterates thru all the column vectors and sets noNull to
    * specified value.
    *
-   * @param valueToSet
-   *          noNull value to set
    * @param batch
    *          Batch on which noNull is set
    */
-  public static void SetNoNullFields(boolean valueToSet, VectorizedRowBatch batch) {
+  public static void setNoNullFields(VectorizedRowBatch batch) {
     for (int i = 0; i < batch.numCols; i++) {
       batch.cols[i].noNulls = true;
     }
@@ -75,8 +76,11 @@ public class VectorizedBatchUtil {
    * @param batch Vectorized batch to which the row is added at rowIndex
    * @throws HiveException
    */
-  public static void AddRowToBatch(Object row, StructObjectInspector oi, int rowIndex,
-      VectorizedRowBatch batch) throws HiveException {
+  public static void addRowToBatch(Object row, StructObjectInspector oi,
+                                   int rowIndex,
+                                   VectorizedRowBatch batch,
+                                   DataOutputBuffer buffer
+                                   ) throws HiveException {
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
     // Iterate thru the cols and load the batch
     for (int i = 0; i < fieldRefs.size(); i++) {
@@ -100,7 +104,7 @@ public class VectorizedBatchUtil {
           lcv.isNull[rowIndex] = false;
         } else {
           lcv.vector[rowIndex] = 1;
-          SetNullColIsNullValue(lcv, rowIndex);
+          setNullColIsNullValue(lcv, rowIndex);
         }
       }
         break;
@@ -111,7 +115,7 @@ public class VectorizedBatchUtil {
           lcv.isNull[rowIndex] = false;
         } else {
           lcv.vector[rowIndex] = 1;
-          SetNullColIsNullValue(lcv, rowIndex);
+          setNullColIsNullValue(lcv, rowIndex);
         }
       }
         break;
@@ -122,7 +126,7 @@ public class VectorizedBatchUtil {
           lcv.isNull[rowIndex] = false;
         } else {
           lcv.vector[rowIndex] = 1;
-          SetNullColIsNullValue(lcv, rowIndex);
+          setNullColIsNullValue(lcv, rowIndex);
         }
       }
         break;
@@ -133,7 +137,7 @@ public class VectorizedBatchUtil {
           lcv.isNull[rowIndex] = false;
         } else {
           lcv.vector[rowIndex] = 1;
-          SetNullColIsNullValue(lcv, rowIndex);
+          setNullColIsNullValue(lcv, rowIndex);
         }
       }
         break;
@@ -144,7 +148,7 @@ public class VectorizedBatchUtil {
           lcv.isNull[rowIndex] = false;
         } else {
           lcv.vector[rowIndex] = 1;
-          SetNullColIsNullValue(lcv, rowIndex);
+          setNullColIsNullValue(lcv, rowIndex);
         }
       }
         break;
@@ -155,7 +159,7 @@ public class VectorizedBatchUtil {
           lcv.isNull[rowIndex] = false;
         } else {
           lcv.vector[rowIndex] = 1;
-          SetNullColIsNullValue(lcv, rowIndex);
+          setNullColIsNullValue(lcv, rowIndex);
         }
       }
         break;
@@ -166,7 +170,7 @@ public class VectorizedBatchUtil {
           dcv.isNull[rowIndex] = false;
         } else {
           dcv.vector[rowIndex] = Double.NaN;
-          SetNullColIsNullValue(dcv, rowIndex);
+          setNullColIsNullValue(dcv, rowIndex);
         }
       }
         break;
@@ -177,7 +181,7 @@ public class VectorizedBatchUtil {
           dcv.isNull[rowIndex] = false;
         } else {
           dcv.vector[rowIndex] = Double.NaN;
-          SetNullColIsNullValue(dcv, rowIndex);
+          setNullColIsNullValue(dcv, rowIndex);
         }
       }
         break;
@@ -189,7 +193,7 @@ public class VectorizedBatchUtil {
           lcv.isNull[rowIndex] = false;
         } else {
           lcv.vector[rowIndex] = 1;
-          SetNullColIsNullValue(lcv, rowIndex);
+          setNullColIsNullValue(lcv, rowIndex);
         }
       }
         break;
@@ -198,11 +202,29 @@ public class VectorizedBatchUtil {
         if (writableCol != null) {
           bcv.isNull[rowIndex] = false;
           Text colText = (Text) writableCol;
-          bcv.setRef(rowIndex, colText.getBytes(), 0, colText.getLength());
+          int start = buffer.getLength();
+          int length = colText.getLength();
+          try {
+            buffer.write(colText.getBytes(), 0, length);
+          } catch (IOException ioe) {
+            throw new IllegalStateException("bad write", ioe);
+          }
+          bcv.setRef(rowIndex, buffer.getData(), start, length);
         } else {
-          SetNullColIsNullValue(bcv, rowIndex);
+          setNullColIsNullValue(bcv, rowIndex);
         }
       }
+        break;
+      case DECIMAL:
+        DecimalColumnVector dcv = (DecimalColumnVector) batch.cols[i];
+        if (writableCol != null) {
+          dcv.isNull[rowIndex] = false;
+          HiveDecimalWritable wobj = (HiveDecimalWritable) writableCol;
+          dcv.vector[rowIndex].update(wobj.getHiveDecimal().unscaledValue(),
+              (short) wobj.getScale());
+        } else {
+          setNullColIsNullValue(dcv, rowIndex);
+        }
         break;
       default:
         throw new HiveException("Vectorizaton is not supported for datatype:"
