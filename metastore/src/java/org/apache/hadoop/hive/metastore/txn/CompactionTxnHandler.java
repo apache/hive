@@ -51,13 +51,14 @@ public class CompactionTxnHandler extends TxnHandler {
    * @return list of CompactionInfo structs.  These will not have id, type,
    * or runAs set since these are only potential compactions not actual ones.
    */
-  public List<CompactionInfo> findPotentialCompactions(int maxAborted) throws MetaException {
+  public Set<CompactionInfo> findPotentialCompactions(int maxAborted) throws MetaException {
     Connection dbConn = getDbConn();
-    List<CompactionInfo> response = new ArrayList<CompactionInfo>();
+    Set<CompactionInfo> response = new HashSet<CompactionInfo>();
     try {
       Statement stmt = dbConn.createStatement();
       // Check for completed transactions
-      String s = "select ctc_database, ctc_table, ctc_partition from COMPLETED_TXN_COMPONENTS";
+      String s = "select distinct ctc_database, ctc_table, " +
+          "ctc_partition from COMPLETED_TXN_COMPONENTS";
       LOG.debug("Going to execute query <" + s + ">");
       ResultSet rs = stmt.executeQuery(s);
       while (rs.next()) {

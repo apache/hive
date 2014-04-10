@@ -51,11 +51,14 @@ public class AcidUtils {
   public static final String DELTA_PREFIX = "delta_";
   public static final String BUCKET_PREFIX = "bucket_";
 
-  private static final String BUCKET_DIGITS = "%05d";
-  private static final String DELTA_DIGITS = "%07d";
+  public static final String BUCKET_DIGITS = "%05d";
+  public static final String DELTA_DIGITS = "%07d";
 
   private static final Pattern ORIGINAL_PATTERN =
       Pattern.compile("[0-9]+_[0-9]+");
+
+  public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
+  public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{5}");
 
   public static final PathFilter hiddenFileFilter = new PathFilter(){
     public boolean accept(Path p){
@@ -63,6 +66,14 @@ public class AcidUtils {
       return !name.startsWith("_") && !name.startsWith(".");
     }
   };
+
+  public static final PathFilter bucketFileFilter = new PathFilter() {
+    @Override
+    public boolean accept(Path path) {
+      return path.getName().startsWith(BUCKET_PREFIX);
+    }
+  };
+
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
 
   /**
