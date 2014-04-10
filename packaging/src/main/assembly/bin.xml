@@ -52,6 +52,7 @@
         <include>org.apache.hive.hcatalog:hive-hcatalog-core</include>
         <include>org.apache.hive.hcatalog:hive-hcatalog-pig-adapter</include>
         <include>org.apache.hive.hcatalog:hive-hcatalog-server-extensions</include>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-streaming</include>
       </includes>
     </dependencySet>
     <dependencySet>

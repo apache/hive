@@ -133,6 +133,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
+      <artifactId>hive-hcatalog-streaming</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-hbase-storage-handler</artifactId>
       <version>${project.version}</version>
     </dependency>
