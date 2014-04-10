@@ -78,7 +78,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-Warning: Shuffle Join JOIN[8][tables = [null, a]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join JOIN[8][tables = [d1, d2, a]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
