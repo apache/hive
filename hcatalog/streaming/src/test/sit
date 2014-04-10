@@ -1,0 +1,39 @@
+#!/bin/sh
+
+if [ "${HADOOP_HOME}x" == "x" ] 
+  then
+  echo "Please set HADOOP_HOME";
+  exit 1
+fi
+
+if [ "${HIVE_HOME}x" == "x" ] 
+  then
+  echo "Please set HIVE_HOME";
+  exit 1
+fi
+
+if [ "${JAVA_HOME}x" == "x" ] 
+  then
+  echo "Please set JAVA_HOME";
+  exit 1
+fi
+
+for jar in ${HADOOP_HOME}/client/*.jar
+  do
+  CLASSPATH=${CLASSPATH}:$jar
+done
+
+for jar in ${HIVE_HOME}/lib/*.jar
+  do
+  CLASSPATH=${CLASSPATH}:$jar
+done
+
+for jar in ${HIVE_HOME}/hcatalog/share/hcatalog/*.jar
+  do
+  CLASSPATH=${CLASSPATH}:$jar
+done
+
+CLASSPATH=${CLASSPATH}:${HADOOP_HOME}/conf
+CLASSPATH=${CLASSPATH}:${HIVE_HOME}/conf
+
+$JAVA_HOME/bin/java -cp ${CLASSPATH} org.apache.hive.hcatalog.streaming.StreamingIntegrationTester $@
