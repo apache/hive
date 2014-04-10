@@ -1,3 +1,4 @@
+Warning: Shuffle Join JOIN[4][tables = [src, src2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: -- current
 explain select src.key from src join src src2
 PREHOOK: type: QUERY
@@ -58,6 +59,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Shuffle Join JOIN[4][tables = [src, src2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: -- ansi cross join
 explain select src.key from src cross join src src2
 PREHOOK: type: QUERY

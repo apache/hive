@@ -1,3 +1,4 @@
+Warning: Map Join MAPJOIN[20][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain 
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
@@ -121,6 +122,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+Warning: Map Join MAPJOIN[20][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
 SELECT src1.key as k1, src1.value as v1, 
