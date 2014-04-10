@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -167,11 +169,17 @@ public class SQLOperation extends ExecuteStatementOperation {
     if (!shouldRunAsync()) {
       runInternal(getConfigForOperation());
     } else {
+      final SessionState parentSessionState = SessionState.get();
+      final Hive sessionHive = getCurrentHive();
+      // Runnable impl to call runInternal asynchronously,
+      // from a different thread
       Runnable backgroundOperation = new Runnable() {
-        SessionState ss = SessionState.get();
         @Override
         public void run() {
-          SessionState.setCurrentSessionState(ss);
+          // Storing the current Hive object necessary when doAs is enabled
+          // User information is part of the metastore client member in Hive
+          Hive.set(sessionHive);
+          SessionState.setCurrentSessionState(parentSessionState);
           try {
             runInternal(getConfigForOperation());
           } catch (HiveSQLException e) {
@@ -187,9 +195,17 @@ public class SQLOperation extends ExecuteStatementOperation {
         setBackgroundHandle(backgroundHandle);
       } catch (RejectedExecutionException rejected) {
         setState(OperationState.ERROR);
-        throw new HiveSQLException("All the asynchronous threads are currently busy, " +
-            "please retry the operation", rejected);
+        throw new HiveSQLException("The background threadpool cannot accept" +
+            " new task for execution, please retry the operation", rejected);
       }
+    }
+  }
+
+  private Hive getCurrentHive() throws HiveSQLException {
+    try {
+      return Hive.get();
+    } catch (HiveException e) {
+      throw new HiveSQLException("Failed to get current Hive object", e);
     }
   }
 
