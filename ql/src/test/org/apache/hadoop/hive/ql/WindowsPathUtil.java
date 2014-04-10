@@ -30,9 +30,6 @@ public class WindowsPathUtil {
     String orgTestTempDir = System.getProperty("test.tmp.dir");
     System.setProperty("test.tmp.dir", getHdfsUriString(orgTestTempDir));
 
-    String orgTestDataDir = System.getProperty("test.src.data.dir");
-    System.setProperty("test.src.data.dir", getHdfsUriString(orgTestDataDir));
-
     String orgScratchDir = conf.getVar(HiveConf.ConfVars.SCRATCHDIR);
     conf.setVar(HiveConf.ConfVars.SCRATCHDIR, getHdfsUriString(orgScratchDir));
   }
