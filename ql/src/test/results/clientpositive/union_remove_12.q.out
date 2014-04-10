@@ -74,7 +74,8 @@ STAGE DEPENDENCIES:
   Stage-2
   Stage-4
   Stage-5 depends on stages: Stage-4
-  Stage-9 is a root stage
+  Stage-10 is a root stage
+  Stage-9 depends on stages: Stage-10
 
 STAGE PLANS:
   Stage: Stage-8
@@ -127,6 +128,25 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        null-subquery2:c-subquery2:a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        null-subquery2:c-subquery2:a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 {val}
+              keys:
+                0 key (type: string)
+                1 key (type: string)
+
   Stage: Stage-9
     Map Reduce
       Map Operator Tree:
@@ -158,15 +178,6 @@ STAGE PLANS:
                       name: default.outputtbl1
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            null-subquery2:c-subquery2:a 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            null-subquery2:c-subquery2:a 
-              TableScan
-                alias: a
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
 
 PREHOOK: query: insert overwrite table outputTbl1
 SELECT * FROM
@@ -194,8 +205,10 @@ POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)a.FieldSchema(name:key,
 POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)b.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@outputtbl1
 POSTHOOK: query: desc formatted outputTbl1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)a.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)b.FieldSchema(name:val, type:string, comment:null), ]
 # col_name            	data_type           	comment             

@@ -203,8 +203,10 @@ POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).key EXPRESSION [(inputtbl1)inputt
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@outputtbl1
 POSTHOOK: query: desc formatted outputTbl1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=11).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=11).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=12).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
@@ -249,8 +251,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: show partitions outputTbl1
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@outputtbl1
 POSTHOOK: query: show partitions outputTbl1
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=11).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=11).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=12).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
@@ -317,7 +321,7 @@ POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).key EXPRESSION [(inputtbl1)inputt
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 8	1	18
 8	1	18
-PREHOOK: query: select * from outputTbl1 where ds is not null order by key, values
+PREHOOK: query: select * from outputTbl1 where ds is not null order by key, values, ds
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 PREHOOK: Input: default@outputtbl1@ds=11
@@ -327,7 +331,7 @@ PREHOOK: Input: default@outputtbl1@ds=17
 PREHOOK: Input: default@outputtbl1@ds=18
 PREHOOK: Input: default@outputtbl1@ds=28
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 where ds is not null order by key, values
+POSTHOOK: query: select * from outputTbl1 where ds is not null order by key, values, ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Input: default@outputtbl1@ds=11
@@ -358,6 +362,6 @@ POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).values EXPRESSION [(inputtbl1)inp
 7	1	17
 7	1	17
 8	1	18
-8	1	28
-8	1	28
 8	1	18
+8	1	28
+8	1	28

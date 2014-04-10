@@ -53,8 +53,10 @@ POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSch
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='4')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@fact_daily
 POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='4')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
@@ -221,6 +223,7 @@ STAGE PLANS:
               numFiles 3
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -239,6 +242,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -381,6 +385,7 @@ STAGE PLANS:
               numFiles 3
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -399,6 +404,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -534,6 +540,7 @@ STAGE PLANS:
               numFiles 3
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -552,6 +559,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -688,6 +696,7 @@ STAGE PLANS:
               numFiles 3
               numRows 500
               partition_columns ds/hr
+              partition_columns.types string:string
               rawDataSize 5312
               serialization.ddl struct fact_daily { string key, string value}
               serialization.format 1
@@ -706,6 +715,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.fact_daily
                 partition_columns ds/hr
+                partition_columns.types string:string
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
