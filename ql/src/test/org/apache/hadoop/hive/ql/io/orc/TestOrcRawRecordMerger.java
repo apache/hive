@@ -135,6 +135,8 @@ public class TestOrcRawRecordMerger {
 
   // can add .verboseLogging() to cause Mockito to log invocations
   private final MockSettings settings = Mockito.withSettings();
+  private final Path tmpDir = new Path(System.getProperty("test.tmp.dir",
+      "target" + File.separator + "test" + File.separator + "tmp"));
 
   private Reader createMockReader() throws IOException {
     Reader reader = Mockito.mock(Reader.class, settings);
@@ -467,9 +469,7 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     OrcOutputFormat of = new OrcOutputFormat();
     FileSystem fs = FileSystem.getLocal(conf);
-    Path root = new Path(System.getProperty("test.tmp.dir",
-        "target" + File.separator + "test" + File.separator + "tmp" +
-            File.separator + "testEmpty")).makeQualified(fs);
+    Path root = new Path(tmpDir, "testEmpty").makeQualified(fs);
     fs.delete(root, true);
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -513,9 +513,7 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     OrcOutputFormat of = new OrcOutputFormat();
     FileSystem fs = FileSystem.getLocal(conf);
-    Path root = new Path(System.getProperty("test.tmp.dir",
-        "target" + File.separator + "test" + File.separator + "tmp" +
-            File.separator + "testNewBaseAndDelta")).makeQualified(fs);
+    Path root = new Path(tmpDir, "testNewBaseAndDelta").makeQualified(fs);
     fs.delete(root, true);
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -770,9 +768,7 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     OrcOutputFormat of = new OrcOutputFormat();
     FileSystem fs = FileSystem.getLocal(conf);
-    Path root = new Path(System.getProperty("test.tmp.dir",
-        "target" + File.separator + "test" + File.separator + "tmp" +
-            File.separator + "testOldBaseAndDelta")).makeQualified(fs);
+    Path root = new Path(tmpDir, "testOldBaseAndDelta").makeQualified(fs);
     fs.delete(root, true);
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -869,10 +865,7 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     OrcOutputFormat of = new OrcOutputFormat();
     FileSystem fs = FileSystem.getLocal(conf);
-    Path root = new Path(System.getProperty("test.tmp.dir",
-        "target" + File.separator + "test" + File.separator + "tmp" +
-            File.separator + "testRecordReaderNewBaseAndDelta"))
-        .makeQualified(fs);
+    Path root = new Path(tmpDir, "testRecordReaderNewBaseAndDelta").makeQualified(fs);
     fs.delete(root, true);
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -972,10 +965,7 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     OrcOutputFormat of = new OrcOutputFormat();
     FileSystem fs = FileSystem.getLocal(conf);
-    Path root = new Path(System.getProperty("test.tmp.dir",
-        "target" + File.separator + "test" + File.separator + "tmp" +
-            File.separator + "testRecordReaderDelta"))
-        .makeQualified(fs);
+    Path root = new Path(tmpDir, "testRecordReaderDelta").makeQualified(fs);
     fs.delete(root, true);
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -1034,10 +1024,7 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     OrcOutputFormat of = new OrcOutputFormat();
     FileSystem fs = FileSystem.getLocal(conf).getRaw();
-    Path root = new Path(System.getProperty("test.tmp.dir",
-        "target" + File.separator + "test" + File.separator + "tmp" +
-            File.separator + "testRecordReaderIncompleteDelta"))
-        .makeQualified(fs);
+    Path root = new Path(tmpDir, "testRecordReaderIncompleteDelta").makeQualified(fs);
     fs.delete(root, true);
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
