@@ -217,8 +217,10 @@ POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).key EXPRESSION [(inputtbl1)inputtb
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@outputtbl1
 POSTHOOK: query: desc formatted outputTbl1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
@@ -255,8 +257,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: show partitions outputTbl1
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@outputtbl1
 POSTHOOK: query: show partitions outputTbl1
 POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
