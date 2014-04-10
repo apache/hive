@@ -40,6 +40,7 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -282,7 +283,7 @@ class MetaStoreDirectSql {
       + "  inner join \"DBS\" on \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" "
       + "     and \"DBS\".\"NAME\" = ? "
       + join(joinsForFilter, ' ')
-      + (sqlFilter == null ? "" : (" where " + sqlFilter)) + orderForFilter;
+      + (StringUtils.isBlank(sqlFilter) ? "" : (" where " + sqlFilter)) + orderForFilter;
     Object[] params = new Object[paramsForFilter.size() + 2];
     params[0] = tblName;
     params[1] = dbName;
