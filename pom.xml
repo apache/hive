@@ -60,6 +60,7 @@
     <hive.path.to.root>.</hive.path.to.root>
 
     <!-- Test Properties -->
+    <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
     <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
@@ -726,7 +727,7 @@
             <TZ>US/Pacific</TZ>
             <LANG>en_US.UTF-8</LANG>
             <HADOOP_CLASSPATH>${test.tmp.dir}/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
-            <HIVE_HADOOP_TEST_CLASSPATH>${maven.test.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
+            <HIVE_HADOOP_TEST_CLASSPATH>${test.hive.hadoop.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
           </environmentVariables>
           <systemPropertyVariables>
             <build.dir>${project.build.directory}</build.dir>
@@ -756,6 +757,7 @@
             <test.dfs.mkdir>${test.dfs.mkdir}</test.dfs.mkdir>
             <test.output.overwrite>${test.output.overwrite}</test.output.overwrite>
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
+            <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc</test.src.tables>
             <java.security.krb5.conf>${test.tmp.dir}/conf/krb5.conf</java.security.krb5.conf>
@@ -1001,6 +1003,47 @@
           </dependency>
         </dependencies>
       </dependencyManagement>
+    </profile>
+    <profile>
+      <!-- Windows-specific settings to allow unit tests to work -->
+      <id>windows-test</id>
+      <activation>
+        <os>
+          <family>Windows</family>
+       </os>
+      </activation>
+      <build>
+        <plugins>
+          <!-- maven.test.classpath (used for HIVE_HADOOP_TEST_CLASSPATH) exceeds the 8K Windows -->
+          <!-- command shell limit which causes tests which call hadoop command to fail.         -->
+          <!-- Workaround is to copy all necessary jars to a single location to shorten the      -->
+          <!-- the length of the environment variable.                                           -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>2.8</version>
+            <executions>
+              <execution>
+                <id>copy-dependencies</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/deplibs/</outputDirectory>
+                  <overWriteReleases>false</overWriteReleases>
+                  <overWriteSnapshots>false</overWriteSnapshots>
+                  <overWriteIfNewer>true</overWriteIfNewer>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <properties>
+        <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop.cmd</hadoop.bin.path>
+        <test.hive.hadoop.classpath>${project.build.directory}/deplibs/*</test.hive.hadoop.classpath>
+      </properties>
     </profile>
   </profiles>
 </project>
