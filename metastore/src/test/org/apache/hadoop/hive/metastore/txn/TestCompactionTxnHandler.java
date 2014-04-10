@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static junit.framework.Assert.*;
 
@@ -317,7 +318,7 @@ public class TestCompactionTxnHandler {
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
     assertEquals(0, txnHandler.numLocksInLockTable());
 
-    List<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100);
+    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100);
     assertEquals(2, potentials.size());
     boolean sawMyTable = false, sawYourTable = false;
     for (CompactionInfo ci : potentials) {
