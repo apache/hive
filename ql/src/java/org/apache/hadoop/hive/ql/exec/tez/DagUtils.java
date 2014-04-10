@@ -676,6 +676,8 @@ public class DagUtils {
 
     String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
 
+    // need to localize the additional jars and files
+    // we need the directory on hdfs to which we shall put all these files
     String allFiles = auxJars + "," + addedJars + "," + addedFiles + "," + addedArchives;
     addTempFiles(conf, tmpResources, hdfsDirPathStr, allFiles.split(","));
     return tmpResources;
@@ -712,27 +714,38 @@ public class DagUtils {
     }
   }
 
-  public String getHiveJarDirectory(Configuration conf) throws IOException, LoginException {
+  public FileStatus getHiveJarDirectory(Configuration conf) throws IOException, LoginException {
     FileStatus fstatus = null;
     String hdfsDirPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_JAR_DIRECTORY, null);
     if (hdfsDirPathStr != null) {
-      Path hdfsDirPath = new Path(hdfsDirPathStr);
-      FileSystem fs = hdfsDirPath.getFileSystem(conf);
-      if (!(fs instanceof DistributedFileSystem)) {
-        throw new IOException(ErrorMsg.INVALID_HDFS_URI.format(hdfsDirPathStr));
-      }
-      try {
-        fstatus = fs.getFileStatus(hdfsDirPath);
-      } catch (FileNotFoundException fe) {
-        // do nothing
-      }
+      LOG.info("Hive jar directory is " + hdfsDirPathStr);
+      fstatus = validateTargetDir(new Path(hdfsDirPathStr), conf);
     }
 
-    if ((fstatus == null) || (!fstatus.isDir())) {
+    if (fstatus == null) {
       Path destDir = getDefaultDestDir(conf);
-      hdfsDirPathStr = destDir.toString();
+      LOG.info("Jar dir is null/directory doesn't exist. Choosing HIVE_INSTALL_DIR - " + destDir);
+      fstatus = validateTargetDir(destDir, conf);
     }
-    return hdfsDirPathStr;
+
+    if (fstatus == null) {
+      throw new IOException(ErrorMsg.NO_VALID_LOCATIONS.getMsg());
+    }
+    return fstatus;
+  }
+
+  public static FileStatus validateTargetDir(Path path, Configuration conf) throws IOException {
+    FileSystem fs = path.getFileSystem(conf);
+    if (!(fs instanceof DistributedFileSystem)) {
+      throw new IOException(ErrorMsg.INVALID_HDFS_URI.format(path.toString()));
+    }
+    FileStatus fstatus = null;
+    try {
+      fstatus = fs.getFileStatus(path);
+    } catch (FileNotFoundException fe) {
+      // do nothing
+    }
+    return (fstatus != null && fstatus.isDir()) ? fstatus : null;
   }
 
   // the api that finds the jar being used by this class on disk

@@ -286,13 +286,13 @@ public class TezSessionState {
     throws IOException {
 
     // tez needs its own scratch dir (per session)
-    Path tezDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR),
-        TEZ_DIR);
+    Path tezDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR), TEZ_DIR);
     tezDir = new Path(tezDir, sessionId);
     FileSystem fs = tezDir.getFileSystem(conf);
     FsPermission fsPermission = new FsPermission((short)00777);
     Utilities.createDirsWithPermission(conf, tezDir, fsPermission, true);
-
+    // Make sure the path is normalized (we expect validation to pass since we just created it).
+    tezDir = DagUtils.validateTargetDir(tezDir, conf).getPath();
     // don't keep the directory around on non-clean exit
     fs.deleteOnExit(tezDir);
 
@@ -311,39 +311,9 @@ public class TezSessionState {
   private LocalResource createJarLocalResource(String localJarPath)
       throws IOException, LoginException, IllegalArgumentException,
       FileNotFoundException {
-    Path destDirPath = null;
-    FileSystem destFs = null;
-    FileStatus destDirStatus = null;
-
-    {
-      String hiveJarDir = utils.getHiveJarDirectory(conf);
-      if (hiveJarDir != null) {
-        LOG.info("Hive jar directory is " + hiveJarDir);
-        // check if it is a valid directory in HDFS
-        destDirPath = new Path(hiveJarDir);
-        destFs = destDirPath.getFileSystem(conf);
-        destDirStatus = validateTargetDir(destDirPath, destFs);
-      }
-    }
-
-    /*
-     * Specified location does not exist or is not a directory.
-     * Try to push the jar to the hdfs location pointed by config variable HIVE_INSTALL_DIR.
-     * Path will be HIVE_INSTALL_DIR/{username}/.hiveJars/
-     * This will probably never ever happen.
-     */
-    if (destDirStatus == null || !destDirStatus.isDir()) {
-      destDirPath = utils.getDefaultDestDir(conf);
-      LOG.info("Jar dir is null/directory doesn't exist. Choosing HIVE_INSTALL_DIR - "
-          + destDirPath);
-      destFs = destDirPath.getFileSystem(conf);
-      destDirStatus = validateTargetDir(destDirPath, destFs);
-    }
-
-    // we couldn't find any valid locations. Throw exception
-    if (destDirStatus == null || !destDirStatus.isDir()) {
-      throw new IOException(ErrorMsg.NO_VALID_LOCATIONS.getMsg());
-    }
+    FileStatus destDirStatus = utils.getHiveJarDirectory(conf);
+    assert destDirStatus != null;
+    Path destDirPath = destDirStatus.getPath();
 
     Path localFile = new Path(localJarPath);
     String sha = getSha(localFile);
@@ -365,17 +335,6 @@ public class TezSessionState {
     return utils.localizeResource(localFile, destFile, conf);
   }
 
-  private FileStatus validateTargetDir(Path hiveJarDirPath, FileSystem fs) throws IOException {
-    if (!(fs instanceof DistributedFileSystem)) {
-      throw new IOException(ErrorMsg.INVALID_HDFS_URI.format(hiveJarDirPath.toString()));
-    }
-    try {
-      return fs.getFileStatus(hiveJarDirPath);
-    } catch (FileNotFoundException fe) {
-      // do nothing
-    }
-    return null;
-  }
 
   private String getSha(Path localFile) throws IOException, IllegalArgumentException {
     InputStream is = null;
