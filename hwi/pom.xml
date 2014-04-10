@@ -116,6 +116,20 @@
           <version>${hadoop-23.version}</version>
           <optional>true</optional>
         </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-common</artifactId>
+          <version>${hadoop-23.version}</version>
+          <optional>true</optional>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-core</artifactId>
+          <version>${hadoop-23.version}</version>
+          <optional>true</optional>
+          <scope>test</scope>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>
