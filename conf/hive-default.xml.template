@@ -2186,6 +2186,7 @@
        KERBEROS: Kerberos/GSSAPI authentication
        CUSTOM: Custom authentication provider
                (Use with property hive.server2.custom.authentication.class)
+       PAM: Pluggable authentication module.
   </description>
 </property>
 
@@ -2618,6 +2619,118 @@
   <description>
     The number of attempts waiting for localizing a resource in hive-tez.
   </description>
+</property>
+
+<property>
+  <name>hive.server2.use.SSL</name>
+  <value>false</value>
+  <description>Set this to true for using SSL encryption in HiveServer2</description>
+</property>
+
+<property>
+  <name>hive.server2.keystore.path</name>
+  <value></value>
+  <description>SSL certificate keystore location</description>
+</property>
+
+<property>
+  <name>hive.server2.keystore.password</name>
+  <value></value>
+  <description>SSL certificate keystore password.</description>
+</property>
+
+<property>
+  <name>hive.server2.authentication.pam.services</name>
+  <value></value>
+  <description>List of the underlying pam services that should be used when auth type is PAM.
+  A file with the same name must exist in /etc/pam.d</description>
+</property>
+
+<property>
+ <name>hive.convert.join.bucket.mapjoin.tez</name>
+ <value>false</value>
+ <description>Whether joins can be automatically converted to bucket map 
+ joins in hive when tez is used as the execution engine.
+ </description>
+</property>
+
+<property>
+  <name>hive.serdes.using.metastore.for.schema</name>
+  <value>org.apache.hadoop.hive.ql.io.orc.OrcSerde,org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe,org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe,org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe,org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe,org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</value>
+  <description>This an internal parameter. Check with the hive dev. team</description>
+</property>
+
+<property>
+  <name>hive.limit.query.max.table.partition</name>
+  <value>-1</value>
+  <description>This controls how many partitions can be scanned for each partitioned table. The default value "-1" means no limit.</description>
+</property>
+
+<property>
+  <name>hive.txn.manager</name>
+  <value>org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager</value>
+  <description></description>
+</property>
+
+<property>
+  <name>hive.txn.timeout</name>
+  <value>300</value>
+  <description>time after which transactions are declared aborted if the client has
+  not sent a heartbeat, in seconds.</description>
+</property>
+
+<property>
+  <name>hive.txn.max.open.batch</name>
+  <value>1000</value>
+  <description>Maximum number of transactions that can be fetched in one call to open_txns().
+  Increasing this will decrease the number of delta files created when
+  streaming data into Hive.  But it will also increase the number of
+  open transactions at any given time, possibly impacting read 
+  performance.
+  </description>
+</property>
+
+<property>
+  <name>hive.compactor.initiator.on</name>
+  <value>false</value>
+  <description>Whether to run the compactor's initiator thread in this metastore instance or not.</description>
+</property>
+
+<property>
+  <name>hive.compactor.worker.threads</name>
+  <value>0</value>
+  <description>Number of compactor worker threads to run on this metastore instance.</description>
+</property>
+
+<property>
+  <name>hive.compactor.worker.timeout</name>
+  <value>86400</value>
+  <description>Time, in seconds, before a given compaction in working state is declared a failure and returned to the initiated state.</description>
+</property>
+
+<property>
+  <name>hive.compactor.check.interval</name>
+  <value>300</value>
+  <description>Time in seconds between checks to see if any partitions need compacted.
+  This should be kept high because each check for compaction requires many calls against the NameNode.</description>
+</property>
+
+<property>
+  <name>hive.compactor.delta.num.threshold</name>
+  <value>10</value>
+  <description>Number of delta files that must exist in a directory before the compactor will attempt a minor compaction.</description>
+</property>
+
+<property>
+  <name>hive.compactor.delta.pct.threshold</name>
+  <value>0.1</value>
+  <description>Percentage (by size) of base that deltas can be before major compaction is initiated.</description>
+</property>
+
+<property>
+  <name>hive.compactor.abortedtxn.threshold</name>
+  <value>1000</value>
+  <description>Number of aborted transactions involving a particular table or partition before major compaction is initiated.</description>
 </property>
 
 </configuration>
