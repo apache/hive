@@ -375,6 +375,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           currentTable, result);
     }
 
+    Utilities.clearWorkMap();
     LOG.info("number of splits " + result.size());
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new HiveInputSplit[result.size()]);
