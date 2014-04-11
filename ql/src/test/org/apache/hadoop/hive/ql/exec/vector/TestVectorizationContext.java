@@ -545,6 +545,7 @@ public class TestVectorizationContext {
     ve = vc.getVectorExpression(isNullExpr, VectorExpressionDescriptor.Mode.PROJECTION);
     assertEquals(ve.getClass(), IsNull.class);
     assertEquals(2, ((IsNull) ve).getColNum());
+    assertEquals(3, ve.getOutputColumn());
     assertEquals(ve.getChildExpressions()[0].getClass(), LongColGreaterLongScalar.class);
   }
 
