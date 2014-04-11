@@ -84,7 +84,7 @@ public class IsNull extends VectorExpression {
 
   @Override
   public int getOutputColumn() {
-    return -1;
+    return outputColumn;
   }
 
   @Override
