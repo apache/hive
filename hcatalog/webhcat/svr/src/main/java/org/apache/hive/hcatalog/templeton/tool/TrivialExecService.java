@@ -20,6 +20,7 @@ package org.apache.hive.hcatalog.templeton.tool;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,7 +66,7 @@ final class TrivialExecService {
     //TempletonControllerJob ensures that this file is in DistributedCache
     File log4jProps = new File(JobSubmissionConstants.CONTAINER_LOG4J_PROPS);
     hcopts = hcopts.replace("log4j.configuration=container-log4j.properties",
-            "log4j.configuration=file://" + log4jProps.getAbsolutePath());
+            "log4j.configuration=file://" + new Path(log4jProps.getAbsolutePath()).toUri().toString());
     //helps figure out what log4j is doing, but may confuse 
     //some jobs due to extra output to stdout
     //hcopts = hcopts + " -Dlog4j.debug=true";
