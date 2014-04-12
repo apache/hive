@@ -91,6 +91,8 @@ public class HCatSchema implements Serializable {
   }
 
   /**
+   * Note : The position will be re-numbered when one of the preceding columns are removed.
+   * Hence, the client should not cache this value and expect it to be always valid.
    * @param fieldName
    * @return the index of field named fieldName in Schema. If field is not
    * present, returns null.
@@ -115,13 +117,24 @@ public class HCatSchema implements Serializable {
     return fieldSchemas.size();
   }
 
-  public void remove(final HCatFieldSchema hcatFieldSchema) throws HCatException {
+  private void reAlignPositionMap(int startPosition, int offset) {
+    for (Map.Entry<String, Integer> entry : fieldPositionMap.entrySet()) {
+      // Re-align the columns appearing on or after startPostion(say, column 1) such that
+      // column 2 becomes column (2+offset), column 3 becomes column (3+offset) and so on.
+      Integer entryVal = entry.getValue();
+      if (entryVal >= startPosition) {
+        entry.setValue(entryVal+offset);
+      }
+    }
+  }
 
+  public void remove(final HCatFieldSchema hcatFieldSchema) throws HCatException {
     if (!fieldSchemas.contains(hcatFieldSchema)) {
       throw new HCatException("Attempt to delete a non-existent column from HCat Schema: " + hcatFieldSchema);
-    }
-
+    }     
     fieldSchemas.remove(hcatFieldSchema);
+    // Re-align the positionMap by -1 for the columns appearing after hcatFieldSchema.
+    reAlignPositionMap(fieldPositionMap.get(hcatFieldSchema.getName())+1, -1);
     fieldPositionMap.remove(hcatFieldSchema.getName());
     fieldNames.remove(hcatFieldSchema.getName());
   }
