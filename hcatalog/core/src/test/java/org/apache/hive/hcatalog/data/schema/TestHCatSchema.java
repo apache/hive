@@ -18,12 +18,14 @@
  */
 package org.apache.hive.hcatalog.data.schema;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.TestCase;
+
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.hcatalog.common.HCatException;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class TestHCatSchema extends TestCase {
   public void testCannotAddFieldMoreThanOnce() throws HCatException {
@@ -109,4 +111,27 @@ public class TestHCatSchema extends TestCase {
       assertFalse(ex.getMessage(), true);
     }
   }
+
+  // HIVE-5336. Re-number the position after remove such that:
+  // (1) getPosition on a column always returns a value between 0..schema.size()-1
+  // (2) getPosition() on 2 different columns should never give the same value.
+  public void testRemoveAddField2() throws HCatException {
+    List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
+    HCatFieldSchema memberIDField = new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "id as number");
+    HCatFieldSchema locationField = new HCatFieldSchema("location", HCatFieldSchema.Type.STRING, "loc as string");
+    HCatFieldSchema memberNameField = new HCatFieldSchema("memberName", HCatFieldSchema.Type.STRING, "name as string");
+    HCatFieldSchema memberSalaryField = new HCatFieldSchema("memberSalary", HCatFieldSchema.Type.INT, "sal as number");
+    fieldSchemaList.add(memberIDField);
+    fieldSchemaList.add(locationField);
+    fieldSchemaList.add(memberNameField);
+    fieldSchemaList.add(memberSalaryField);
+    HCatSchema schema = new HCatSchema(fieldSchemaList);
+    schema.remove(locationField);
+    assertTrue("The position of atleast one of the fields is incorrect" ,
+        schema.getPosition(memberIDField.getName()) == 0 &&
+        schema.getPosition(locationField.getName()) == null &&
+        schema.getPosition(memberNameField.getName()) == 1 &&
+        schema.getPosition(memberSalaryField.getName()) == 2);
+  }
+
 }
