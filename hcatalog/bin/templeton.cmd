@@ -22,23 +22,26 @@ setlocal enabledelayedexpansion
   if "%1" == "--service" (
     set service_entry=true
     shift
+    set templeton-service-name=%1
+    if not defined templeton-service-name (
+      goto print_usage
+    )
   )
 
   @rem Init hadoop env variables (CLASSPATH, HADOOP_OPTS, etc)
+  @rem deal with difference in the location of hadoop-config.cmd
   set HADOOP_OPTS=
-  call %HADOOP_HOME%\bin\hadoop-config.cmd
-
-  set templeton-service-name=%1
-
-  if not defined templeton-service-name (
-      goto print_usage
+  if exist %HADOOP_HOME%\libexec\hadoop-config.cmd (
+    call %HADOOP_HOME%\libexec\hadoop-config.cmd
+  ) else (
+    call %HADOOP_HOME%\bin\hadoop-config.cmd
   )
 
   @rem
   @rem Compute the classpath
   @rem
-  set TEMPLETON_CONF_DIR=%HCATALOG_HOME%\conf
-  set TEMPLETON_CLASSPATH=%TEMPLETON_CONF_DIR%;%HCATALOG_HOME%;%HCATALOG_HOME%\share\webhcat\svr
+  set WEBHCAT_CONF_DIR=%HCATALOG_HOME%\etc\webhcat
+  set TEMPLETON_CLASSPATH=%WEBHCAT_CONF_DIR%;%HCATALOG_HOME%;%HCATALOG_HOME%\share\webhcat\svr
 
   set TEMPLETON_CLASSPATH=!TEMPLETON_CLASSPATH!;%HCATALOG_HOME%\share\hcatalog\*
   set TEMPLETON_CLASSPATH=!TEMPLETON_CLASSPATH!;%HCATALOG_HOME%\share\webhcat\svr\*
@@ -55,7 +58,7 @@ setlocal enabledelayedexpansion
 
   if not defined TEMPLETON_LOG4J (
     @rem must be prefixed with file: otherwise config is not picked up
-    set TEMPLETON_LOG4J=file:%HCATALOG_HOME%\conf\webhcat-log4j.properties
+    set TEMPLETON_LOG4J=file:%WEBHCAT_CONF_DIR%\webhcat-log4j.properties
   )
   set TEMPLETON_OPTS=-Dtempleton.log.dir=%TEMPLETON_LOG_DIR% -Dlog4j.configuration=%TEMPLETON_LOG4J% %HADOOP_OPTS%
   set arguments=%JAVA_HEAP_MAX% %TEMPLETON_OPTS% -classpath %CLASSPATH% org.apache.hcatalog.templeton.Main
@@ -63,7 +66,7 @@ setlocal enabledelayedexpansion
   if defined service_entry (
     call :makeServiceXml %arguments%
   ) else (
-    goto print_usage
+    call %JAVA% %arguments%
   )
   
 goto :eof
