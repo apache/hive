@@ -90,4 +90,70 @@ public class TypeDescriptor {
   public void setTypeQualifiers(TypeQualifiers typeQualifiers) {
     this.typeQualifiers = typeQualifiers;
   }
+
+  /**
+   * The column size for this type.
+   * For numeric data this is the maximum precision.
+   * For character data this is the length in characters.
+   * For datetime types this is the length in characters of the String representation
+   * (assuming the maximum allowed precision of the fractional seconds component).
+   * For binary data this is the length in bytes.
+   * Null is returned for for data types where the column size is not applicable.
+   */
+  public Integer getColumnSize() {
+    if (type.isNumericType()) {
+      return getPrecision();
+    }
+    switch (type) {
+    case STRING_TYPE:
+    case BINARY_TYPE:
+      return Integer.MAX_VALUE;
+    case CHAR_TYPE:
+    case VARCHAR_TYPE:
+      return typeQualifiers.getCharacterMaximumLength();
+    case DATE_TYPE:
+      return 10;
+    case TIMESTAMP_TYPE:
+      return 29;
+    default:
+      return null;
+    }
+  }
+
+  /**
+   * Maximum precision for numeric types.
+   * Returns null for non-numeric types.
+   * @return
+   */
+  public Integer getPrecision() {
+    if (this.type == Type.DECIMAL_TYPE) {
+      return typeQualifiers.getPrecision();
+    }
+    return this.type.getMaxPrecision();
+  }
+
+  /**
+   * The number of fractional digits for this type.
+   * Null is returned for data types where this is not applicable.
+   */
+  public Integer getDecimalDigits() {
+    switch (this.type) {
+    case BOOLEAN_TYPE:
+    case TINYINT_TYPE:
+    case SMALLINT_TYPE:
+    case INT_TYPE:
+    case BIGINT_TYPE:
+      return 0;
+    case FLOAT_TYPE:
+      return 7;
+    case DOUBLE_TYPE:
+      return 15;
+    case DECIMAL_TYPE:
+      return typeQualifiers.getScale();
+    case TIMESTAMP_TYPE:
+      return 9;
+    default:
+      return null;
+    }
+  }
 }
