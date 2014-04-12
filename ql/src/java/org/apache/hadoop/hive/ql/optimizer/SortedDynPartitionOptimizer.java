@@ -349,6 +349,15 @@ public class SortedDynPartitionOptimizer implements Transform {
       }
       newSortOrder.addAll(sortOrder);
 
+      String orderStr = "";
+      for (Integer i : newSortOrder) {
+        if(i.intValue() == 1) {
+          orderStr += "+";
+        } else {
+          orderStr += "-";
+        }
+      }
+
       ArrayList<ExprNodeDesc> newPartCols = Lists.newArrayList();
 
       // we will clone here as RS will update bucket column key with its
@@ -366,9 +375,16 @@ public class SortedDynPartitionOptimizer implements Transform {
         newPartCols.add(newValueCols.get(idx).clone());
       }
 
-      String orderStr = "";
-      for (int i = 0; i < newKeyCols.size(); i++) {
-        orderStr += "+";
+      // in the absence of SORTED BY clause, the sorted dynamic partition insert
+      // should honor the ordering of records provided by ORDER BY in SELECT statement
+      ReduceSinkOperator parentRSOp = OperatorUtils.findSingleOperatorUpstream(parent,
+          ReduceSinkOperator.class);
+      if (parentRSOp != null) {
+        String parentRSOpOrder = parentRSOp.getConf().getOrder();
+        if (parentRSOpOrder != null && !parentRSOpOrder.isEmpty() && sortPositions.isEmpty()) {
+          newKeyCols.addAll(parentRSOp.getConf().getKeyCols());
+          orderStr += parentRSOpOrder;
+        }
       }
 
       // Create Key/Value TableDesc. When the operator plan is split into MR tasks,
@@ -389,13 +405,9 @@ public class SortedDynPartitionOptimizer implements Transform {
           outValColNames, 0, "");
       TableDesc valueTable = PlanUtils.getReduceValueTableDesc(valFields);
       List<List<Integer>> distinctColumnIndices = Lists.newArrayList();
-      int numDistributionKeys = newPartCols.size();
-      if (bucketColumns != null && !bucketColumns.isEmpty()) {
-        numDistributionKeys += 1;
-      }
 
       // Number of reducers is set to default (-1)
-      ReduceSinkDesc rsConf = new ReduceSinkDesc(newKeyCols, numDistributionKeys, newValueCols,
+      ReduceSinkDesc rsConf = new ReduceSinkDesc(newKeyCols, newKeyCols.size(), newValueCols,
           outputKeyCols, distinctColumnIndices, outValColNames, -1, newPartCols, -1, keyTable,
           valueTable);
       rsConf.setBucketCols(bucketColumns);
