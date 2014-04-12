@@ -24,7 +24,7 @@ CREATE TABLE orc_create_people (
   state string)
 STORED AS orc;
 
-INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging;
+INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id;
 
 set hive.stats.autogather = true;
 analyze table orc_create_people compute statistics partialscan;
@@ -44,7 +44,7 @@ CREATE TABLE orc_create_people (
   state string)
 STORED AS orc;
 
-INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging;
+INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id;
 
 desc formatted orc_create_people;
 
@@ -64,7 +64,7 @@ PARTITIONED BY (state string)
 STORED AS orc;
 
 INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging;
+  SELECT * FROM orc_create_people_staging ORDER BY id;
 
 set hive.stats.autogather = true;
 analyze table orc_create_people partition(state) compute statistics partialscan;
@@ -86,7 +86,7 @@ PARTITIONED BY (state string)
 STORED AS orc;
 
 INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging;
+  SELECT * FROM orc_create_people_staging ORDER BY id;
 
 desc formatted orc_create_people partition(state="Ca");
 desc formatted orc_create_people partition(state="Or");
@@ -110,7 +110,7 @@ into 4 buckets
 STORED AS orc;
 
 INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging;
+  SELECT * FROM orc_create_people_staging ORDER BY id;
 
 set hive.stats.autogather = true;
 analyze table orc_create_people partition(state) compute statistics partialscan;
@@ -135,7 +135,7 @@ into 4 buckets
 STORED AS orc;
 
 INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging;
+  SELECT * FROM orc_create_people_staging ORDER BY id;
 
 desc formatted orc_create_people partition(state="Ca");
 desc formatted orc_create_people partition(state="Or");
@@ -157,7 +157,7 @@ PARTITIONED BY (state string)
 STORED AS orc;
 
 INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging;
+  SELECT * FROM orc_create_people_staging ORDER BY id;
 
 -- set the table to text format
 ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe';
