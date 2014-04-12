@@ -1557,12 +1557,27 @@ public class TestJdbcDriver2 {
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(14));
     assertEquals(0, meta.getScale(14));
 
+    // Move the result of getColumns() forward to match the columns of the query
+    assertTrue(colRS.next());  // c13
+    assertTrue(colRS.next());  // c14
+    assertTrue(colRS.next());  // c15
+    assertTrue(colRS.next());  // c16
+    assertTrue(colRS.next());  // c17
+
     assertEquals("c17", meta.getColumnName(15));
     assertEquals(Types.TIMESTAMP, meta.getColumnType(15));
     assertEquals("timestamp", meta.getColumnTypeName(15));
     assertEquals(29, meta.getColumnDisplaySize(15));
     assertEquals(29, meta.getPrecision(15));
     assertEquals(9, meta.getScale(15));
+
+    assertEquals("c17", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.TIMESTAMP, colRS.getInt("DATA_TYPE"));
+    assertEquals("timestamp", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(15), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(15), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
 
     assertEquals("c18", meta.getColumnName(16));
     assertEquals(Types.DECIMAL, meta.getColumnType(16));
@@ -1571,12 +1586,29 @@ public class TestJdbcDriver2 {
     assertEquals(16, meta.getPrecision(16));
     assertEquals(7, meta.getScale(16));
 
+    assertEquals("c18", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.DECIMAL, colRS.getInt("DATA_TYPE"));
+    assertEquals("decimal", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(16), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(16), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());  // skip c19, since not selected by query
+    assertTrue(colRS.next());
+
     assertEquals("c20", meta.getColumnName(17));
     assertEquals(Types.DATE, meta.getColumnType(17));
     assertEquals("date", meta.getColumnTypeName(17));
     assertEquals(10, meta.getColumnDisplaySize(17));
     assertEquals(10, meta.getPrecision(17));
     assertEquals(0, meta.getScale(17));
+
+    assertEquals("c20", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.DATE, colRS.getInt("DATA_TYPE"));
+    assertEquals("date", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(17), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(17), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
 
     assertEquals("c21", meta.getColumnName(18));
     assertEquals(Types.VARCHAR, meta.getColumnType(18));
@@ -1585,6 +1617,14 @@ public class TestJdbcDriver2 {
     assertEquals(20, meta.getColumnDisplaySize(18));
     assertEquals(20, meta.getPrecision(18));
     assertEquals(0, meta.getScale(18));
+
+    assertEquals("c21", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("varchar", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(18), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(18), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
 
     assertEquals("c22", meta.getColumnName(19));
     assertEquals(Types.CHAR, meta.getColumnType(19));
@@ -1600,6 +1640,12 @@ public class TestJdbcDriver2 {
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(20));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(20));
     assertEquals(0, meta.getScale(20));
+
+    assertEquals("c22", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.CHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("char", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(19), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(19), colRS.getInt("DECIMAL_DIGITS"));
 
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));
