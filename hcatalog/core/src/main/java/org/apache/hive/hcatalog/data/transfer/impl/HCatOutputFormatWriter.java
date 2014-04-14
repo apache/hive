@@ -64,7 +64,7 @@ public class HCatOutputFormatWriter extends HCatWriter {
     try {
       job = new Job(conf);
       HCatOutputFormat.setOutput(job, jobInfo);
-      HCatOutputFormat.setSchema(job, HCatOutputFormat.getTableSchema(job));
+      HCatOutputFormat.setSchema(job, HCatOutputFormat.getTableSchema(job.getConfiguration()));
       HCatOutputFormat outFormat = new HCatOutputFormat();
       outFormat.checkOutputSpecs(job);
       outFormat.getOutputCommitter(ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(

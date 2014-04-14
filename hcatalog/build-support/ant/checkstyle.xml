@@ -43,17 +43,10 @@
           <exclude name="src/packages/**"/> <!-- TODO: delete packages configs -->
           <exclude name="src/test/e2e/hcatalog/data/**"/>
           <exclude name="src/test/e2e/templeton/inpdir/nums.txt"/>
-          <exclude name="storage-handlers/hbase/src/gen-java/**"/>
-          <exclude name="storage-handlers/hbase/src/test/all-tests"/>
-          <exclude name="storage-handlers/hbase/src/test/excluded-tests"/>
-          <exclude name="storage-handlers/hbase/metastore_db/**"/>
-          <exclude name="storage-handlers/hbase/partitions*"/>
-          <exclude name="storage-handlers/hbase/.partitions*"/>
           <exclude name="hcatalog-pig-adapter/target/**"/>
           <exclude name="server-extensions/target/**"/>
           <exclude name="core/target/**"/>
           <exclude name="webhcat/java-client/target/**"/>
-          <exclude name="storage-handlers/hbase/target/**"/>
           <exclude name="webhcat/svr/target/**"/>
           <exclude name="KEYS"/>
           <exclude name="LICENSE.txt"/>
