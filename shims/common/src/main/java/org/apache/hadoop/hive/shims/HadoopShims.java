@@ -484,7 +484,7 @@ public interface HadoopShims {
   public HCatHadoopShims getHCatShim();
   public interface HCatHadoopShims {
 
-    enum PropertyName {CACHE_ARCHIVES, CACHE_FILES, CACHE_SYMLINK}
+    enum PropertyName {CACHE_ARCHIVES, CACHE_FILES, CACHE_SYMLINK, CLASSPATH_ARCHIVES, CLASSPATH_FILES}
 
     public TaskID createTaskID();
 
