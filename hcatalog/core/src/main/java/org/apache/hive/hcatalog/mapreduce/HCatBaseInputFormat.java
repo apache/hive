@@ -226,17 +226,6 @@ public abstract class HCatBaseInputFormat
   }
 
   /**
-   * @see org.apache.hive.hcatalog.mapreduce.HCatBaseInputFormat#getTableSchema(org.apache.hadoop.conf.Configuration)
-   * @deprecated Use {@link #getTableSchema(org.apache.hadoop.conf.Configuration)}
-   */
-  @Deprecated
-  public static HCatSchema getTableSchema(JobContext context)
-    throws IOException {
-    return getTableSchema(context.getConfiguration());
-  }
-
-
-  /**
    * Gets the HCatTable schema for the table specified in the HCatInputFormat.setInput call
    * on the specified job context. This information is available only after HCatInputFormat.setInput
    * has been called for a JobContext.

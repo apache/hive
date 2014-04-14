@@ -197,7 +197,7 @@ public class HCatStorer extends HCatBaseStorer {
         throw new PigException(he.getMessage(),
           PigHCatUtil.PIG_EXCEPTION_CODE, he);
       }
-      HCatSchema hcatTblSchema = HCatOutputFormat.getTableSchema(job);
+      HCatSchema hcatTblSchema = HCatOutputFormat.getTableSchema(job.getConfiguration());
       try {
         doSchemaValidations(pigSchema, hcatTblSchema);
       } catch (HCatException he) {

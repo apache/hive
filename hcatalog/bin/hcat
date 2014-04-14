@@ -119,11 +119,6 @@ if [ "$(ls -1 $HCAT_PREFIX/share/hcatalog/hive-hcatalog-core-[0-9]*.jar | wc -l)
 fi
 HCAT_JAR=`ls $HCAT_PREFIX/share/hcatalog/hive-hcatalog-core-[0-9]*.jar`
 
-# Find the storage-handler jars.
-for jar in ${HCAT_PREFIX}/share/hcatalog/storage-handlers/*/lib/*.jar ; do
-	HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$jar
-done
-
 # Add all of the other jars to our classpath
 for jar in ${HIVE_LIB_DIR}/*.jar ; do
 	HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$jar

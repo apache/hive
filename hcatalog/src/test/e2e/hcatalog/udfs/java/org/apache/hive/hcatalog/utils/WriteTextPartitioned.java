@@ -47,7 +47,7 @@ import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
  * other columns. This is to simulate a typical operation in a map reduce
  * program to test that hcat hands the right data to the map reduce program
  *
- * Usage: hadoop jar org.apache.hcatalog.utils.HBaseReadWrite -libjars
+ * Usage: hadoop jar org.apache.hive.hcatalog.utils.WriteTextPartitioned -libjars
  * &lt;hcat_jar&gt; * &lt;serveruri&gt; &lt;input_tablename&gt; &lt;output_tablename&gt; [filter]
  * If filter is given it will be provided as the partition to write to.
  */

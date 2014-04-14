@@ -815,49 +815,6 @@ public class Server {
 
   /**
    * Return the status of the jobid.
-   * @deprecated use GET jobs/{jobid} instead.
-   */
-  @Deprecated
-  @GET
-  @Path("queue/{jobid}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public QueueStatusBean showQueueId(@PathParam("jobid") String jobid)
-    throws NotAuthorizedException, BadParam, IOException, InterruptedException {
-    return showJobId(jobid);
-  }
-
-  /**
-   * Kill a job in the queue.
-   * @deprecated use DELETE jobs/{jobid} instead.
-   */
-  @Deprecated
-  @DELETE
-  @Path("queue/{jobid}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public QueueStatusBean deleteQueueId(@PathParam("jobid") String jobid)
-    throws NotAuthorizedException, BadParam, IOException, InterruptedException {
-    return deleteJobId(jobid);
-  }
-
-  /**
-   * Return all the known job ids for this user.
-   * @deprecated use GET jobs instead.
-   */
-  @Deprecated
-  @GET
-  @Path("queue")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<String> showQueueList(@QueryParam("showall") boolean showall)
-    throws NotAuthorizedException, BadParam, IOException, InterruptedException {
-
-    verifyUser();
-
-    ListDelegator d = new ListDelegator(appConf);
-    return d.run(getDoAsUser(), showall);
-  }
-
-  /**
-   * Return the status of the jobid.
    */
   @GET
   @Path("jobs/{jobid}")
