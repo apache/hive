@@ -61,7 +61,7 @@ abstract class AbstractRecordWriter implements RecordWriter {
     this.conf = conf!=null ? conf
                 : HiveEndPoint.createHiveConf(DelimitedInputWriter.class, endPoint.metaStoreUri);
     try {
-      msClient = new HiveMetaStoreClient(conf);
+      msClient = new HiveMetaStoreClient(this.conf);
       this.tbl = msClient.getTable(endPoint.database, endPoint.table);
       this.partitionPath = getPathForEndPoint(msClient, endPoint);
       this.totalBuckets = tbl.getSd().getNumBuckets();
