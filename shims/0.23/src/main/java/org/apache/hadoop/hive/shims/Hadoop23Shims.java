@@ -450,6 +450,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           return MRJobConfig.CACHE_FILES;
         case CACHE_SYMLINK:
           return MRJobConfig.CACHE_SYMLINK;
+        case CLASSPATH_ARCHIVES:
+          return MRJobConfig.CLASSPATH_ARCHIVES;
+        case CLASSPATH_FILES:
+          return MRJobConfig.CLASSPATH_FILES;
       }
 
       return "";

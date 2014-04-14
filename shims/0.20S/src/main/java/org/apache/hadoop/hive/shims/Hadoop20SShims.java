@@ -353,6 +353,10 @@ public class Hadoop20SShims extends HadoopShimsSecure {
           return DistributedCache.CACHE_FILES;
         case CACHE_SYMLINK:
           return DistributedCache.CACHE_SYMLINK;
+        case CLASSPATH_ARCHIVES:
+          return "mapred.job.classpath.archives";
+        case CLASSPATH_FILES:
+          return "mapred.job.classpath.files";
       }
 
       return "";

@@ -163,8 +163,8 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
     } else {
       fileSep = System.getProperty("path.separator");
     }
-    configsToMerge.put("mapred.job.classpath.archives", fileSep);
-    configsToMerge.put("mapred.job.classpath.files", fileSep);
+    configsToMerge.put(ShimLoader.getHadoopShims().getHCatShim().getPropertyName(HadoopShims.HCatHadoopShims.PropertyName.CLASSPATH_ARCHIVES), fileSep);
+    configsToMerge.put(ShimLoader.getHadoopShims().getHCatShim().getPropertyName(HadoopShims.HCatHadoopShims.PropertyName.CLASSPATH_FILES), fileSep);
   }
 
   /**
