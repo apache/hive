@@ -814,6 +814,7 @@ Release Notes - Hive - Version 0.13.0
     * [HIVE-6733] - Driver context logs every query in the "warn" level
     * [HIVE-6734] - DDL locking too course grained in new db txn manager
     * [HIVE-6739] - Hive HBase query fails on Tez due to missing jars and then due to NPE in getSplits
+    * [HIVE-6740] - Typo in src/ql/pom.xml
     * [HIVE-6742] - Tez Outputs need to be started before accessing the writer
     * [HIVE-6744] - Permanent UDF lookup fails when current DB has uppercase letters
     * [HIVE-6748] - FileSinkOperator needs to cleanup held references for container reuse
