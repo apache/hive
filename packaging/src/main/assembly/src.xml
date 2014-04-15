@@ -66,6 +66,9 @@
         <include>contrib/**/*</include>
         <include>metastore/**/*</include>
         <include>odbc/**/*</include>
+        <include>packaging/pom.xml</include>
+        <include>packaging/src/**/*</include>
+        <include>pom.xml</include>
         <include>ql/**/*</include>
         <include>serde/**/*</include>
         <include>service/**/*</include>
