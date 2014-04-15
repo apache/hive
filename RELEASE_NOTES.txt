@@ -301,6 +301,7 @@ Release Notes - Hive - Version 0.13.0
     * [HIVE-2055] - Hive should add HBase classpath dependencies when available
     * [HIVE-2137] - JDBC driver doesn't encode string properly.
     * [HIVE-2752] - Index names are case sensitive
+    * [HIVE-2817] - Drop any table even without privilege
     * [HIVE-2818] - Create table should check privilege of target database, not default database
     * [HIVE-3272] - RetryingRawStore will perform partial transaction on retry
     * [HIVE-3455] - ANSI CORR(X,Y) is incorrect
@@ -592,7 +593,6 @@ Release Notes - Hive - Version 0.13.0
     * [HIVE-6027] - non-vectorized log10 has rounding issue
     * [HIVE-6028] - Partition predicate literals are not interpreted correctly.
     * [HIVE-6034] - vectorized % doesn't handle zeroes the same way as non-vectorized
-    * [HIVE-6035] - Windows: percentComplete returned by job status from WebHCat is null
     * [HIVE-6036] - A test case for embedded beeline  -  with URL jdbc:hive2:///default
     * [HIVE-6039] - Round, AVG and SUM functions reject char/varch input while accepting string input
     * [HIVE-6041] - Incorrect task dependency graph for skewed join optimization
@@ -868,10 +868,10 @@ Release Notes - Hive - Version 0.13.0
     * [HIVE-6879] - Vectorization: IsNull returns incorrect output column.
     * [HIVE-6881] - Postgres Upgrade script for hive 0.13 is broken
     * [HIVE-6882] - Make upgrade script schemaTool friendly
-    * [HIVE-6883] - Dynamic partitioning optimization does not honor sort order or order by
     * [HIVE-6887] - Add missing params to hive-default.xml.template 
-    * [HIVE-6888] - Hive leaks MapWork objects via Utilities::gWorkMap
     * [HIVE-6894] - hcatalog streaming version in 0.13 branch should be "0.13"
+    * [HIVE-6906] - Fix assembly/src.xml so that sr tar ball contains top level pom.xml
+    * [HIVE-6907] - HiveServer2 - wrong user gets used for metastore operation with embedded metastore
 
 
 
@@ -1020,6 +1020,7 @@ Release Notes - Hive - Version 0.13.0
     * [HIVE-6738] - HiveServer2 secure Thrift/HTTP needs to accept doAs parameter from proxying intermediary
     * [HIVE-6743] - Allow specifying the log level for Tez tasks
     * [HIVE-6825] - custom jars for Hive query should be uploaded to scratch dir per query; and/or versioned
+    * [HIVE-6876] - Logging information should include thread id
 
 ** New Feature
     * [HIVE-784] - Support uncorrelated subqueries in the WHERE clause
