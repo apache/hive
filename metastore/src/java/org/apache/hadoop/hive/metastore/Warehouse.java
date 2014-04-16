@@ -44,6 +44,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -71,7 +72,6 @@ public class Warehouse {
 
   private MetaStoreFS fsHandler = null;
   private boolean storageAuthCheck = false;
-  private boolean inheritPerms = false;
 
   public Warehouse(Configuration conf) throws MetaException {
     this.conf = conf;
@@ -83,8 +83,6 @@ public class Warehouse {
     fsHandler = getMetaStoreFsHandler(conf);
     storageAuthCheck = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS);
-    inheritPerms = HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
   }
 
   private MetaStoreFS getMetaStoreFsHandler(Configuration conf)
@@ -185,25 +183,13 @@ public class Warehouse {
     return getDnsPath(new Path(getDatabasePath(db), tableName.toLowerCase()));
   }
 
-  public boolean mkdirs(Path f) throws MetaException {
+  public boolean mkdirs(Path f, boolean inheritPermCandidate) throws MetaException {
+    boolean inheritPerms = HiveConf.getBoolVar(conf,
+      HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS) && inheritPermCandidate;
     FileSystem fs = null;
     try {
       fs = getFs(f);
-      LOG.debug("Creating directory if it doesn't exist: " + f);
-      //Check if the directory already exists. We want to change the permission
-      //to that of the parent directory only for newly created directories.
-      if (this.inheritPerms) {
-        try {
-          return fs.getFileStatus(f).isDir();
-        } catch (FileNotFoundException ignore) {
-        }
-      }
-      boolean success = fs.mkdirs(f);
-      if (this.inheritPerms && success) {
-        // Set the permission of parent directory.
-        fs.setPermission(f, fs.getFileStatus(f.getParent()).getPermission());
-      }
-      return success;
+      return FileUtils.mkdir(fs, f, inheritPerms);
     } catch (IOException e) {
       closeFs(fs);
       MetaStoreUtils.logAndThrowMetaException(e);

@@ -393,7 +393,7 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       // create dir for /mpart5
       Path mp5Path = new Path(mpart5.getSd().getLocation());
-      warehouse.mkdirs(mp5Path);
+      warehouse.mkdirs(mp5Path, true);
       assertTrue(fs.exists(mp5Path));
       assertEquals(dbPermission, fs.getFileStatus(mp5Path).getPermission());
 
