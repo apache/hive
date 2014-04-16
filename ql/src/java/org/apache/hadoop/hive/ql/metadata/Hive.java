@@ -105,6 +105,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
@@ -2385,7 +2386,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
             // use FsShell to move data to .Trash first rather than delete permanently
             FsShell fshell = new FsShell();
             fshell.setConf(conf);
-            fshell.run(new String[]{"-rmr", oldPath.toString()});
+            String[] rmr = isHadoop1() ? new String[]{"-rmr", oldPath.toString()} :
+                new String[]{"-rm", "-r", oldPath.toString()};
+            fshell.run(rmr);
           }
         } catch (Exception e) {
           //swallow the exception
@@ -2436,6 +2439,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (IOException e) {
       throw new HiveException(e.getMessage(), e);
     }
+  }
+
+  public static boolean isHadoop1() {
+    return ShimLoader.getMajorVersion().startsWith("0.20");
   }
 
   public void exchangeTablePartitions(Map<String, String> partitionSpecs,
