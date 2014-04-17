@@ -350,7 +350,7 @@ public class HiveConf extends Configuration {
     METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS("hive.metastore.authorization.storage.checks", false),
     METASTORE_EVENT_CLEAN_FREQ("hive.metastore.event.clean.freq",0L),
     METASTORE_EVENT_EXPIRY_DURATION("hive.metastore.event.expiry.duration",0L),
-    METASTORE_EXECUTE_SET_UGI("hive.metastore.execute.setugi", false),
+    METASTORE_EXECUTE_SET_UGI("hive.metastore.execute.setugi", true),
     METASTORE_PARTITION_NAME_WHITELIST_PATTERN(
         "hive.metastore.partition.name.whitelist.pattern", ""),
     // Whether to enable integral JDO pushdown. For partition columns storing integers
