@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.Socket;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
@@ -59,7 +58,6 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
     functions;
   private final HadoopShims shim;
 
-  @SuppressWarnings("unchecked")
   public TUGIBasedProcessor(I iface) throws SecurityException, NoSuchFieldException,
     IllegalArgumentException, IllegalAccessException, NoSuchMethodException,
     InvocationTargetException {
@@ -69,6 +67,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
     shim = ShimLoader.getHadoopShims();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public boolean process(final TProtocol in, final TProtocol out) throws TException {
     setIpAddress(in);
@@ -90,7 +89,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
     // Store ugi in transport if the rpc is set_ugi
     if (msg.name.equalsIgnoreCase("set_ugi")){
       try {
-        handleSetUGI(ugiTrans, fn, msg, in, out);
+        handleSetUGI(ugiTrans, (set_ugi<Iface>)fn, msg, in, out);
       } catch (TException e) {
         throw e;
       } catch (Exception e) {
@@ -105,6 +104,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
       return true;
     } else { // Found ugi, perform doAs().
       PrivilegedExceptionAction<Void> pvea = new PrivilegedExceptionAction<Void>() {
+        @Override
         public Void run() {
           try {
             fn.process(msg.seqid,in, out, iface);
@@ -133,7 +133,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
   }
 
   private void handleSetUGI(TUGIContainingTransport ugiTrans,
-      ProcessFunction<Iface, ? extends  TBase> fn, TMessage msg, TProtocol iprot, TProtocol oprot)
+      set_ugi<Iface> fn, TMessage msg, TProtocol iprot, TProtocol oprot)
       throws TException, SecurityException, NoSuchMethodException, IllegalArgumentException,
       IllegalAccessException, InvocationTargetException{
 
@@ -143,10 +143,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
       "allowed. Current ugi is: " + clientUgi.getUserName()));
     }
 
-    // TODO get rid of following reflection after THRIFT-1465 is fixed.
-    Method method = fn.getClass().getDeclaredMethod("getEmptyArgsInstance", new Class<?>[0]);
-    method.setAccessible(true);
-    set_ugi_args args = (set_ugi_args)method.invoke(fn, new Object[0]);
+    set_ugi_args args = fn.getEmptyArgsInstance();
     try {
       args.read(iprot);
     } catch (TProtocolException e) {
@@ -160,10 +157,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
       return;
     }
     iprot.readMessageEnd();
-    // TODO get rid of following reflection after THRIFT-1465 is fixed.
-    method = fn.getClass().getDeclaredMethod("getResult", Iface.class, set_ugi_args.class);
-    method.setAccessible(true);
-    set_ugi_result result = (set_ugi_result)method.invoke(fn, iface,args);
+    set_ugi_result result = fn.getResult(iface, args);
     List<String> principals = result.getSuccess();
     // Store the ugi in transport and then continue as usual.
     ugiTrans.setClientUGI(shim.createRemoteUser(principals.remove(principals.size()-1),
