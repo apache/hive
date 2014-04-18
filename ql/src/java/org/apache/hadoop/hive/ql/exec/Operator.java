@@ -546,6 +546,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         if(parent==null){
           continue;
         }
+        LOG.debug("allInitializedParentsAreClosed? parent.state = " + parent.state);
         if (!(parent.state == State.CLOSE || parent.state == State.UNINIT)) {
           return false;
         }
@@ -565,6 +566,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     // check if all parents are finished
     if (!allInitializedParentsAreClosed()) {
+      LOG.debug("Not all parent operators are closed. Not closing.");
       return;
     }
 
@@ -585,6 +587,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
 
       for (Operator<? extends OperatorDesc> op : childOperators) {
+        LOG.debug("Closing child = " + op);
         op.close(abort);
       }
 
