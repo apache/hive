@@ -263,7 +263,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   @Override
   public void closeOp(boolean abort) throws HiveException {
     try {
-      if (mapJoinTables != null) {
+      if (mapJoinTables == null) {
+        LOG.debug("mapJoinTables is null");
+      } else {
         flushToFile();
       }
       super.closeOp(abort);
