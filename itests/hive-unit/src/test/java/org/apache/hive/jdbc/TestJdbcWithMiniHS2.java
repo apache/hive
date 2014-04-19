@@ -246,4 +246,50 @@ import org.junit.Test;
      stmt.execute("DROP TABLE IF EXISTS " + expectedDbName + "." + verifyTab);
      stmt.close();
    }
+
+   /**
+    * This method tests whether while creating a new connection, the config
+    * variables specified in the JDBC URI are properly set for the connection.
+    * This is a test for HiveConnection#configureConnection.
+    *
+    * @throws Exception
+    */
+   @Test
+   public void testNewConnectionConfiguration() throws Exception {
+
+     // Set some conf parameters
+     String hiveConf = "hive.cli.print.header=true;hive.server2.async.exec.shutdown.timeout=20;"
+         + "hive.server2.async.exec.threads=30;hive.server2.thrift.http.max.worker.threads=15";
+     // Set some conf vars
+     String hiveVar = "stab=salesTable;icol=customerID";
+     String jdbcUri = miniHS2.getJdbcURL() + "?" + hiveConf + "#" + hiveVar;
+
+     // Open a new connection with these conf & vars
+     Connection con1 = DriverManager.getConnection(jdbcUri);
+
+     // Execute "set" command and retrieve values for the conf & vars specified
+     // above
+     // Assert values retrieved
+     Statement stmt = con1.createStatement();
+
+     // Verify that the property has been properly set while creating the
+     // connection above
+     verifyConfProperty(stmt, "hive.cli.print.header", "true");
+     verifyConfProperty(stmt, "hive.server2.async.exec.shutdown.timeout", "20");
+     verifyConfProperty(stmt, "hive.server2.async.exec.threads", "30");
+     verifyConfProperty(stmt, "hive.server2.thrift.http.max.worker.threads",
+         "15");
+     verifyConfProperty(stmt, "stab", "salesTable");
+     verifyConfProperty(stmt, "icol", "customerID");
+     con1.close();
+   }
+
+   private void verifyConfProperty(Statement stmt, String property,
+       String expectedValue) throws Exception {
+     ResultSet res = stmt.executeQuery("set " + property);
+     while (res.next()) {
+       String resultValues[] = res.getString(1).split("=");
+       assertEquals(resultValues[1], expectedValue);
+     }
+   }
   }
