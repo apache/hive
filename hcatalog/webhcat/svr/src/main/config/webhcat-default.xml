@@ -137,7 +137,8 @@
   <property>
     <name>templeton.hive.properties</name>
     <value>hive.metastore.uris=thrift://localhost:9933,hive.metastore.sasl.enabled=false</value>
-    <description>Properties to set when running hive.</description>
+    <description>Properties to set when running hive.  This is expected to be a comma-separated prop=value list.
+        If some value is itself a comma-separated list the escape character is '\'</description>
   </property>
 
   <property>
