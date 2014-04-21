@@ -31,6 +31,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
@@ -488,5 +490,33 @@ public final class FileUtils {
         return true;
       }
     }
+  }
+
+  /**
+   * Copies files between filesystems.
+   */
+  public static boolean copy(FileSystem srcFS, Path src,
+    FileSystem dstFS, Path dst,
+    boolean deleteSource,
+    boolean overwrite,
+    HiveConf conf) throws IOException {
+    boolean copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
+    boolean inheritPerms = conf.getBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
+    if (copied && inheritPerms) {
+      FileStatus destFileStatus = dstFS.getFileStatus(dst);
+      FsPermission perm = destFileStatus.getPermission();
+      String permString = Integer.toString(perm.toShort(), 8);
+      String group = destFileStatus.getGroup();
+      //use FsShell to change group and permissions recursively
+      try {
+        FsShell fshell = new FsShell();
+        fshell.setConf(conf);
+        fshell.run(new String[]{"-chgrp", "-R", group, dst.toString()});
+        fshell.run(new String[]{"-chmod", "-R", permString, dst.toString()});
+      } catch (Exception e) {
+        throw new IOException("Unable to set permissions of " + dst, e);
+      }
+    }
+    return copied;
   }
 }
