@@ -96,7 +96,6 @@ public class HCatStorer extends HCatBaseStorer {
       throw e;
     }
     Properties udfProps = UDFContext.getUDFContext().getUDFProperties(this.getClass(), new String[]{sign});
-    //'Throw' is the default for backwards compatibility
     //downstream code expects it to be set to a valid value
     udfProps.put(ON_OORA_VALUE_PROP, configuredOptions.getOptionValue(ON_OOR_VALUE_OPT, getDefaultValue().name()));
     if(LOG.isDebugEnabled()) {
