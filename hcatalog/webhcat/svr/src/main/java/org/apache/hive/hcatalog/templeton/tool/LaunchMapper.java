@@ -29,6 +29,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.util.Shell;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.hcatalog.templeton.BadParam;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 
@@ -79,8 +80,8 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     }
     if(conf.get(PigConstants.PIG_OPTS) != null) {
       StringBuilder pigOpts = new StringBuilder();
-      for(String prop : conf.get(PigConstants.PIG_OPTS).split(",")) {
-        pigOpts.append("-D").append(prop).append(" ");
+      for(String prop : StringUtils.split(conf.get(PigConstants.PIG_OPTS))) {
+        pigOpts.append("-D").append(TempletonUtils.unEscape(prop)).append(" ");
       }
       env.put(PigConstants.PIG_OPTS, pigOpts.toString());
     }
