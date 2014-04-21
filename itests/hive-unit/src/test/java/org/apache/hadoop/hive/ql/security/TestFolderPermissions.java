@@ -223,6 +223,76 @@ public class TestFolderPermissions {
     }
   }
 
+  @Test
+  public void testEximPermissionInheritance() throws Exception {
+
+    //export the table to external file.
+    String myLocation = testDir + "/exim";
+    FileSystem fs = FileSystem.get(new URI(myLocation), conf);
+    fs.mkdirs(new Path(myLocation), FsPermission.createImmutable((short) 0777));
+
+    myLocation = myLocation + "/temp";
+
+    CommandProcessorResponse ret = driver.run("export table mysrc to '" + myLocation + "'");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    //check if exported data has inherited the permissions.
+    assertExistence(myLocation);
+    Assert.assertEquals(getPermissions(myLocation).toString(), "rwxrwxrwx");
+
+    assertExistence(myLocation + "/part1=1/part2=1");
+    Assert.assertEquals(getPermissions(myLocation + "/part1=1/part2=1").toString(), "rwxrwxrwx");
+    Assert.assertTrue(listChildrenPerms(myLocation + "/part1=1/part2=1").size() > 0);
+    for (FsPermission perm : listChildrenPerms(myLocation + "/part1=1/part2=1")) {
+      Assert.assertEquals("rwxrwxrwx", perm.toString());
+    }
+
+    assertExistence(myLocation + "/part1=2/part2=2");
+    Assert.assertEquals(getPermissions(myLocation + "/part1=2/part2=2").toString(), "rwxrwxrwx");
+    Assert.assertTrue(listChildrenPerms(myLocation + "/part1=2/part2=2").size() > 0);
+    for (FsPermission perm : listChildrenPerms(myLocation + "/part1=2/part2=2")) {
+      Assert.assertEquals("rwxrwxrwx", perm.toString());
+    }
+
+    //import the table back into another database
+    String testDb = "eximdb";
+    ret = driver.run("CREATE DATABASE " + testDb);
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    //use another permission for this import location, to verify that it is really set.
+    assertExistence(testDir + "/" + testDb + ".db");
+    setPermissions(testDir + "/" + testDb + ".db", FsPermission.createImmutable((short) 0766));
+
+    ret = driver.run("USE " + testDb);
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    ret = driver.run("import from '" + myLocation + "'");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    //check permissions of imported, from the exported table
+    assertExistence(testDir + "/" + testDb + ".db/mysrc");
+    Assert.assertEquals("rwxrw-rw-", getPermissions(testDir + "/" + testDb + ".db/mysrc").toString());
+
+    myLocation = testDir + "/" + testDb + ".db/mysrc";
+    assertExistence(myLocation);
+    Assert.assertEquals(getPermissions(myLocation).toString(), "rwxrw-rw-");
+
+    assertExistence(myLocation + "/part1=1/part2=1");
+    Assert.assertEquals(getPermissions(myLocation + "/part1=1/part2=1").toString(), "rwxrw-rw-");
+    Assert.assertTrue(listChildrenPerms(myLocation + "/part1=1/part2=1").size() > 0);
+    for (FsPermission perm : listChildrenPerms(myLocation + "/part1=1/part2=1")) {
+      Assert.assertEquals("rwxrw-rw-", perm.toString());
+    }
+
+    assertExistence(myLocation + "/part1=2/part2=2");
+    Assert.assertEquals(getPermissions(myLocation + "/part1=2/part2=2").toString(), "rwxrw-rw-");
+    Assert.assertTrue(listChildrenPerms(myLocation + "/part1=2/part2=2").size() > 0);
+    for (FsPermission perm : listChildrenPerms(myLocation + "/part1=2/part2=2")) {
+      Assert.assertEquals("rwxrw-rw-", perm.toString());
+    }
+  }
+
+
   private void setPermissions(String locn, FsPermission permissions) throws Exception {
     fs.setPermission(new Path(locn), permissions);
   }
