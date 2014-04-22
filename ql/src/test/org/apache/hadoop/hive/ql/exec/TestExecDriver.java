@@ -316,7 +316,7 @@ public class TestExecDriver extends TestCase {
 
     addMapWork(mr, src2, "b", op2);
     ReduceWork rWork = new ReduceWork();
-    rWork.setNumReduceTasks(Integer.valueOf(5));
+    rWork.setNumReduceTasks(Integer.valueOf(1));
     rWork.setNeedsTagging(true);
     rWork.setKeyDesc(op1.getConf().getKeySerializeInfo());
     rWork.getTagToValueDesc().add(op1.getConf().getValueSerializeInfo());
