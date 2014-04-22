@@ -38,11 +38,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -114,6 +116,7 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
@@ -180,7 +183,14 @@ import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
@@ -1255,7 +1265,56 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     assert(tbl.isPartitioned());
 
     List<FieldSchema> newPartitionKeys = new ArrayList<FieldSchema>();
-
+    
+    //Check if the existing partition values can be type casted to the new column type
+    // with a non null value before trying to alter the partition column type.
+    try {
+      Set<Partition> partitions = db.getAllPartitionsOf(tbl);
+      int colIndex = -1;
+      for(FieldSchema col : tbl.getTTable().getPartitionKeys()) {
+        colIndex++;
+        if (col.getName().compareTo(alterPartitionDesc.getPartKeySpec().getName()) == 0) {
+          break;
+        }
+      }
+      
+      if (colIndex == -1 || colIndex == tbl.getTTable().getPartitionKeys().size()) {
+        throw new HiveException("Cannot find partition column " + 
+            alterPartitionDesc.getPartKeySpec().getName());
+      }
+      
+      TypeInfo expectedType =
+          TypeInfoUtils.getTypeInfoFromTypeString(alterPartitionDesc.getPartKeySpec().getType());
+      ObjectInspector outputOI =
+          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(expectedType);
+      Converter converter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector, outputOI); 
+      
+      // For all the existing partitions, check if the value can be type casted to a non-null object
+      for(Partition part : partitions) {
+        if (part.getName().equals(conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME))) {
+          continue;
+        }
+        try {
+          String value = part.getValues().get(colIndex);
+          Object convertedValue =
+              converter.convert(value);        
+          if (convertedValue == null) {
+            throw new HiveException(" Converting from " + TypeInfoFactory.stringTypeInfo + " to " +
+              expectedType + " for value : " + value + " resulted in NULL object");
+          }
+        } catch (Exception e) {
+          throw new HiveException("Exception while converting " + 
+              TypeInfoFactory.stringTypeInfo + " to " +
+              expectedType + " for value : " + part.getValues().get(colIndex));
+        }        
+      }
+    } catch(Exception e) {
+      throw new HiveException(
+          "Exception while checking type conversion of existing partition values to " +
+          alterPartitionDesc.getPartKeySpec() + " : " + e.getMessage());
+    }
+    
     for(FieldSchema col : tbl.getTTable().getPartitionKeys()) {
       if (col.getName().compareTo(alterPartitionDesc.getPartKeySpec().getName()) == 0) {
         newPartitionKeys.add(alterPartitionDesc.getPartKeySpec());
