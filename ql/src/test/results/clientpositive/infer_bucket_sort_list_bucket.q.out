@@ -39,8 +39,10 @@ POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).key SIMPLE [(src)src.F
 POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 PREHOOK: query: DESC FORMATTED list_bucketing_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@list_bucketing_table
 POSTHOOK: query: DESC FORMATTED list_bucketing_table PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@list_bucketing_table
 POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 # col_name            	data_type           	comment             
@@ -118,8 +120,10 @@ POSTHOOK: Lineage: list_bucketing_table2 PARTITION(part=1).key SIMPLE [(src)src.
 POSTHOOK: Lineage: list_bucketing_table2 PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 PREHOOK: query: DESC FORMATTED list_bucketing_table2 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@list_bucketing_table2
 POSTHOOK: query: DESC FORMATTED list_bucketing_table2 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@list_bucketing_table2
 POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: list_bucketing_table2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
