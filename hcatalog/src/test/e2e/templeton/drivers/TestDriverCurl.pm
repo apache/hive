@@ -1117,7 +1117,7 @@ sub getJobResult{
   my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
   $testCmdBasics->{'method'} = 'GET';
   $testCmdBasics->{'num'} = $testCmdBasics->{'num'} . "_jobStatusCheck";
-  $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/queue/' 
+  $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/jobs/'
     . $jobid . '?' . "user.name=:UNAME:" ;
   return $self->execCurlCmd($testCmdBasics, "", $log);
 }
@@ -1127,7 +1127,7 @@ sub killJob{
   my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
   $testCmdBasics->{'method'} = 'DELETE';
   $testCmdBasics->{'num'} = $testCmdBasics->{'num'} . "_killJob";
-  $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/queue/' 
+  $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/jobs/'
     . $jobid . '?' . "user.name=:UNAME:" ;
   return $self->execCurlCmd($testCmdBasics, "", $log);
 }
