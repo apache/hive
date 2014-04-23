@@ -51,8 +51,10 @@ POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(
 POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted stats_list_bucket partition (ds = '2008-04-08',  hr = '11')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_list_bucket
 POSTHOOK: query: desc formatted stats_list_bucket partition (ds = '2008-04-08',  hr = '11')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_list_bucket
 POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
@@ -139,8 +141,10 @@ POSTHOOK: Lineage: stats_list_bucket_1.c1 SIMPLE [(src)src.FieldSchema(name:key,
 POSTHOOK: Lineage: stats_list_bucket_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted stats_list_bucket_1
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_list_bucket_1
 POSTHOOK: query: desc formatted stats_list_bucket_1
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_list_bucket_1
 POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_list_bucket_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
