@@ -447,8 +447,7 @@ public final class GenericUDFUtils {
 
   /**
    * Finds any occurence of <code>subtext</code> from <code>text</code> in the
-   * backing buffer, for avoiding string encoding and decoding. Shamelessly copy
-   * from {@link org.apache.hadoop.io.Text#find(String, int)}.
+   * backing buffer.
    */
   public static int findText(Text text, Text subtext, int start) {
     // src.position(start) can't accept negative numbers.
@@ -463,38 +462,14 @@ public final class GenericUDFUtils {
       return -1;
     }
 
-    ByteBuffer src = ByteBuffer.wrap(text.getBytes(), 0, text.getLength());
-    ByteBuffer tgt = ByteBuffer
-        .wrap(subtext.getBytes(), 0, subtext.getLength());
-    byte b = tgt.get();
-    src.position(start);
-
-    while (src.hasRemaining()) {
-      if (b == src.get()) { // matching first byte
-        src.mark(); // save position in loop
-        tgt.mark(); // save position in target
-        boolean found = true;
-        int pos = src.position() - 1;
-        while (tgt.hasRemaining()) {
-          if (!src.hasRemaining()) { // src expired first
-            tgt.reset();
-            src.reset();
-            found = false;
-            break;
-          }
-          if (!(tgt.get() == src.get())) {
-            tgt.reset();
-            src.reset();
-            found = false;
-            break; // no match
-          }
-        }
-        if (found) {
-          return pos;
-        }
-      }
+    String textString = text.toString();
+    String subtextString = subtext.toString();
+    int index = textString.indexOf(subtextString, start);
+    if (index == -1) {
+      return index;
+    } else {
+      return textString.codePointCount(0, index);
     }
-    return -1; // not found
   }
 
   private GenericUDFUtils() {
