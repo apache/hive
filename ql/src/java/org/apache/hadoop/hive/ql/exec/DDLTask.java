@@ -4244,11 +4244,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
-    int rc = setGenericTableAttributes(tbl);
-    if (rc != 0) {
-      return rc;
-    }
-
     // create the table
     db.createTable(tbl, crtTbl.getIfNotExists());
     work.getOutputs().add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
@@ -4351,12 +4346,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
-    // reset owner and creation time
-    int rc = setGenericTableAttributes(tbl);
-    if (rc != 0) {
-      return rc;
-    }
-
     // create the table
     db.createTable(tbl, crtTbl.getIfNotExists());
     work.getOutputs().add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
@@ -4414,11 +4403,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (crtView.getPartCols() != null) {
         tbl.setPartCols(crtView.getPartCols());
-      }
-
-      int rc = setGenericTableAttributes(tbl);
-      if (rc != 0) {
-        return rc;
       }
 
       db.createTable(tbl, crtView.getIfNotExists());
@@ -4489,13 +4473,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
     return locations;
-  }
-
-  private int setGenericTableAttributes(Table tbl) throws HiveException {
-    tbl.setOwner(SessionState.getUserFromAuthenticator());
-    // set create time
-    tbl.setCreateTime((int) (System.currentTimeMillis() / 1000));
-    return 0;
   }
 
   private String escapeHiveCommand(String str) {
