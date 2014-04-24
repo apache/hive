@@ -2869,18 +2869,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics: Num rows: 58 Data size: 17436 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-            outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 58 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 58 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.nzhang_part
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 58 Data size: 17436 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.nzhang_part
 
   Stage: Stage-8
     Conditional Operator
