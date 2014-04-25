@@ -142,6 +142,12 @@
   </property>
 
   <property>
+    <name>templeton.sqoop.path</name>
+    <value>${env.SQOOP_HOME}/bin/sqoop.cmd</value>
+    <description>The path to the Sqoop executable.</description>
+  </property>
+
+  <property>
     <name>templeton.exec.encoding</name>
     <value>UTF-8</value>
     <description>The encoding of the stdout and stderr data.</description>

@@ -41,6 +41,8 @@ public class VersionDelegator extends TempletonDelegator {
       return getHadoopVersion();
     } else if (module.toLowerCase().equals("hive")) {
       return getHiveVersion();
+    } else if (module.toLowerCase().equals("sqoop")) {
+      return getSqoopVersion();
     } else if (module.toLowerCase().equals("pig")) {
       return getPigVersion();
     } else {
@@ -63,6 +65,11 @@ public class VersionDelegator extends TempletonDelegator {
         .put("module", "hive")
         .put("version", version)
         .build();
+  }
+
+  private Response getSqoopVersion() {
+    return SimpleWebException.buildMessage(HttpStatus.NOT_IMPLEMENTED_501,
+        null, "Sqoop version request not yet implemented");
   }
 
   private Response getPigVersion() {

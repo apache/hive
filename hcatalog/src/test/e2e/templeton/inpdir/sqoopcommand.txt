@@ -1,0 +1,4 @@
+--table
+person
+--target-dir
+/sqoopoutputdir

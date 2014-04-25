@@ -151,6 +151,27 @@ To do this 3 properties in hive-site.xml should be configured:
     org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener
 4) hive.metastore.execute.setugi set to true
 
+Running Sqoop jobsubmission tests (This test is targeted on Sqoop1. The test will fail if using Sqoop2) 
+---------------------------------
+ant clean test -Dinpdir.hdfs=<location of inpdir on hdfs> -Ddb.connection.string=<jdbc connection string>
+    -Ddb.user.name=<DBUserName> -Ddb.password=<DBPassWord> -Dtest.user.name=<user the tests should run as>
+    -Dharness.webhdfs.url=<webhdfs url upto port num> -Dharness.templeton.url=<templeton url upto port num>
+    -Dtests.to.run=-t TestSqoop
+
+In order to run Sqoop jobsubmission tests, a RDBMS like MySQL or SQL server should be installed. Also since
+Sqoop export command require table already exists in the database, a table "PERSON" need to be created under
+the default database of the RDBMS installed.
+
+Here is the schema of the table writen in MySQL:
+    CREATE TABLE `world`.`person` (
+    `id` INT NOT NULL,
+    `name` VARCHAR(45) NULL,
+    `occupation` VARCHAR(45) NULL,
+    PRIMARY KEY (`id`));
+
+To prevent primary key violation and sqoop import directory conflict, make sure the "PERSON" table is empty
+and the folder hdfs://hostname:8020/sqoopoutputdir doesn't exist before running the test.
+
 Notes
 -----
 
