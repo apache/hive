@@ -27,13 +27,12 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 
 import parquet.hadoop.ParquetOutputFormat;
 import parquet.hadoop.util.ContextUtil;
 
 public class ParquetRecordWriterWrapper implements RecordWriter<Void, ArrayWritable>,
-  FSRecordWriter {
+  org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter {
 
   public static final Log LOG = LogFactory.getLog(ParquetRecordWriterWrapper.class);
 
@@ -54,8 +53,7 @@ public class ParquetRecordWriterWrapper implements RecordWriter<Void, ArrayWrita
       taskContext = ContextUtil.newTaskAttemptContext(jobConf, taskAttemptID);
 
       LOG.info("creating real writer to write at " + name);
-      realWriter = (org.apache.hadoop.mapreduce.RecordWriter<Void, ArrayWritable>)
-          ((ParquetOutputFormat) realOutputFormat).getRecordWriter(taskContext, new Path(name));
+      realWriter = ((ParquetOutputFormat) realOutputFormat).getRecordWriter(taskContext, new Path(name));
       LOG.info("real writer: " + realWriter);
     } catch (final InterruptedException e) {
       throw new IOException(e);

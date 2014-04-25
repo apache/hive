@@ -30,8 +30,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -106,7 +106,7 @@ public class RowContainer<ROW extends List<Object>>
   int acutalSplitNum = 0;
   int currentSplitPointer = 0;
   org.apache.hadoop.mapred.RecordReader rr = null; // record reader
-  FSRecordWriter rw = null;
+  RecordWriter rw = null;
   InputFormat<WritableComparable, Writable> inputFormat = null;
   InputSplit[] inputSplits = null;
   private ROW dummyRow = null;
@@ -213,7 +213,7 @@ public class RowContainer<ROW extends List<Object>>
         JobConf localJc = getLocalFSJobConfClone(jc);
         if (inputSplits == null) {
           if (this.inputFormat == null) {
-            inputFormat = (InputFormat<WritableComparable, Writable>) ReflectionUtils.newInstance(
+            inputFormat = ReflectionUtils.newInstance(
                 tblDesc.getInputFileFormatClass(), localJc);
           }
 
@@ -537,7 +537,7 @@ public class RowContainer<ROW extends List<Object>>
 
   }
 
-  protected FSRecordWriter getRecordWriter() {
+  protected RecordWriter getRecordWriter() {
     return rw;
   }
 

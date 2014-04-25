@@ -34,7 +34,7 @@ import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.HFileOutputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
@@ -71,7 +71,7 @@ public class HiveHFileOutputFormat extends
   }
 
   @Override
-  public FSRecordWriter getHiveRecordWriter(
+  public RecordWriter getHiveRecordWriter(
     final JobConf jc,
     final Path finalOutPath,
     Class<? extends Writable> valueClass,
@@ -120,7 +120,7 @@ public class HiveHFileOutputFormat extends
       ++i;
     }
 
-    return new FSRecordWriter() {
+    return new RecordWriter() {
 
       @Override
       public void close(boolean abort) throws IOException {
