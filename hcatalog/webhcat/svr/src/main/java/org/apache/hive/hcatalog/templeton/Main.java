@@ -182,6 +182,8 @@ public class Main {
              FilterMapping.REQUEST);
     root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/hive/*", 
              FilterMapping.REQUEST);
+    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/sqoop/*",
+             FilterMapping.REQUEST);
     root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/queue/*", 
              FilterMapping.REQUEST);
     root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/jobs/*",

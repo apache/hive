@@ -114,6 +114,8 @@ public class AppConfig extends Configuration {
    * be escaped with {@link org.apache.hadoop.util.StringUtils#ESCAPE_CHAR}
    */
   public static final String HIVE_PROPS_NAME     = "templeton.hive.properties";
+  public static final String SQOOP_ARCHIVE_NAME  = "templeton.sqoop.archive";
+  public static final String SQOOP_PATH_NAME     = "templeton.sqoop.path";
   public static final String LIB_JARS_NAME       = "templeton.libjars";
   public static final String PIG_ARCHIVE_NAME    = "templeton.pig.archive";
   public static final String PIG_PATH_NAME       = "templeton.pig.path";
@@ -249,6 +251,8 @@ public class AppConfig extends Configuration {
   public String pigArchive()       { return get(PIG_ARCHIVE_NAME); }
   public String hivePath()         { return get(HIVE_PATH_NAME); }
   public String hiveArchive()      { return get(HIVE_ARCHIVE_NAME); }
+  public String sqoopPath()        { return get(SQOOP_PATH_NAME); }
+  public String sqoopArchive()     { return get(SQOOP_ARCHIVE_NAME); }
   public String streamingJar()     { return get(STREAMING_JAR_NAME); }
   public String kerberosSecret()   { return get(KERBEROS_SECRET); }
   public String kerberosPrincipal(){ return get(KERBEROS_PRINCIPAL); }

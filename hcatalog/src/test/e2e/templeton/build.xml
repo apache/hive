@@ -98,6 +98,9 @@
             <env key="TH_WORKING_DIR" value="${test.location}"/>
             <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
             <env key="TH_INPDIR_HDFS" value="${inpdir.hdfs}"/>
+            <env key="DB_CONNECTION_STRING" value="${db.connection.string}"/>
+            <env key="DB_USER_NAME" value="${db.user.name}"/>
+            <env key="DB_PASSWORD" value="${db.password}"/>
             <env key="TH_OUT" value="."/>
             <env key="TH_ROOT" value="."/>
             <env key="FORK_FACTOR_GROUP" value="${fork.factor.group}"/>
