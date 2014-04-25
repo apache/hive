@@ -24,6 +24,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -44,7 +45,7 @@ public class TestRegexSerDe extends TestCase {
     schema.setProperty("output.format.string", outputFormatString);
 
     RegexSerDe serde = new RegexSerDe();
-    serde.initialize(new Configuration(), schema);
+    SerDeUtils.initializeSerDe(serde, new Configuration(), schema, null);
     return serde;
   }
 

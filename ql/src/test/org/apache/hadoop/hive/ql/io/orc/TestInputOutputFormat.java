@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -937,7 +938,7 @@ public class TestInputOutputFormat {
     serde = new OrcSerde();
     properties.setProperty("columns", "x,y");
     properties.setProperty("columns.types", "int:int");
-    serde.initialize(conf, properties);
+    SerDeUtils.initializeSerDe(serde, conf, properties, null);
     assertEquals(OrcSerde.OrcSerdeRow.class, serde.getSerializedClass());
     inspector = (StructObjectInspector) serde.getObjectInspector();
     assertEquals("struct<x:int,y:int>", inspector.getTypeName());
@@ -1054,7 +1055,7 @@ public class TestInputOutputFormat {
     serde = new OrcSerde();
     properties.setProperty("columns", "z,r");
     properties.setProperty("columns.types", "int:struct<x:int,y:int>");
-    serde.initialize(conf, properties);
+    SerDeUtils.initializeSerDe(serde, conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
@@ -1098,7 +1099,7 @@ public class TestInputOutputFormat {
     properties.setProperty("columns", "x,y");
     properties.setProperty("columns.types", "int:int");
     SerDe serde = new OrcSerde();
-    serde.initialize(conf, properties);
+    SerDeUtils.initializeSerDe(serde, conf, properties, null);
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
     InputSplit[] splits = in.getSplits(conf, 1);
@@ -1148,7 +1149,7 @@ public class TestInputOutputFormat {
     writer.close(true);
     serde = new OrcSerde();
     properties.setProperty("columns", "str,str2");
-    serde.initialize(conf, properties);
+    SerDeUtils.initializeSerDe(serde, conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     assertEquals("struct<str:string,str2:string>", inspector.getTypeName());
     InputFormat<?,?> in = new OrcInputFormat();

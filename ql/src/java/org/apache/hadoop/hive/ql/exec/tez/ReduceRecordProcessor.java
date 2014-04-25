@@ -122,7 +122,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       keyTableDesc = redWork.getKeyDesc();
       inputKeyDeserializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc
           .getDeserializerClass(), null);
-      inputKeyDeserializer.initialize(null, keyTableDesc.getProperties());
+      SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
       keyObjectInspector = inputKeyDeserializer.getObjectInspector();
       reducer.setGroupKeyObjectInspector(keyObjectInspector);
       valueTableDesc = new TableDesc[redWork.getTagToValueDesc().size()];
@@ -131,8 +131,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
         valueTableDesc[tag] = redWork.getTagToValueDesc().get(tag);
         inputValueDeserializer[tag] = (SerDe) ReflectionUtils.newInstance(
             valueTableDesc[tag].getDeserializerClass(), null);
-        inputValueDeserializer[tag].initialize(null, valueTableDesc[tag]
-            .getProperties());
+        SerDeUtils.initializeSerDe(inputValueDeserializer[tag], null,
+                                   valueTableDesc[tag].getProperties(), null);
         valueObjectInspector[tag] = inputValueDeserializer[tag]
             .getObjectInspector();
 

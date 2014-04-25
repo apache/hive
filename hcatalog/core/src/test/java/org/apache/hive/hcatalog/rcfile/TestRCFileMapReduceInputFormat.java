@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -75,7 +76,7 @@ public class TestRCFileMapReduceInputFormat extends TestCase {
       serDe = new ColumnarSerDe();
       // Create the SerDe
       tbl = createProperties();
-      serDe.initialize(conf, tbl);
+      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     } catch (Exception e) {
     }
   }
