@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -106,7 +104,8 @@ public class TezSessionPoolManager {
     }
   }
 
-  private TezSessionState getSession(HiveConf conf, boolean doOpen)
+  private TezSessionState getSession(HiveConf conf, boolean doOpen,
+      boolean forceCreate)
       throws Exception {
 
     String queueName = conf.get("tez.queue.name");
@@ -119,8 +118,9 @@ public class TezSessionPoolManager {
      * their own credentials. We expect that with the new security model, things will
      * run as user hive in most cases.
      */
-    if (!(this.inited) || ((queueName != null) && (!queueName.isEmpty()))
-       || (nonDefaultUser) || (defaultQueuePool == null) || (blockingQueueLength <= 0)) {
+    if (forceCreate || !(this.inited)
+        || ((queueName != null) && (!queueName.isEmpty()))
+        || (nonDefaultUser) || (defaultQueuePool == null) || (blockingQueueLength <= 0)) {
       LOG.info("QueueName: " + queueName + " nonDefaultUser: " + nonDefaultUser +
           " defaultQueuePool: " + defaultQueuePool +
           " blockingQueueLength: " + blockingQueueLength);
@@ -156,7 +156,7 @@ public class TezSessionPoolManager {
   public void returnSession(TezSessionState tezSessionState)
       throws Exception {
     if (tezSessionState.isDefault()) {
-      LOG.info("The session " + tezSessionState.getSessionId() 
+      LOG.info("The session " + tezSessionState.getSessionId()
           + " belongs to the pool. Put it back in");
       SessionState sessionState = SessionState.get();
       if (sessionState != null) {
@@ -194,15 +194,7 @@ public class TezSessionPoolManager {
 
   public TezSessionState getSession(
       TezSessionState session, HiveConf conf, boolean doOpen) throws Exception {
-    if (canWorkWithSameSession(session, conf)) {
-      return session;
-    }
-
-    if (session != null) {
-      session.close(false);
-    }
-
-    return getSession(conf, doOpen);
+    return getSession(session, conf, doOpen, false);
   }
 
   /*
@@ -261,5 +253,18 @@ public class TezSessionPoolManager {
     }
 
     return true;
+  }
+
+  public TezSessionState getSession(TezSessionState session, HiveConf conf,
+      boolean doOpen, boolean forceCreate) throws Exception {
+    if (canWorkWithSameSession(session, conf)) {
+      return session;
+    }
+
+    if (session != null) {
+      session.close(false);
+    }
+
+    return getSession(conf, doOpen, forceCreate);
   }
 }

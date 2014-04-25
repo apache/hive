@@ -23,7 +23,6 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,6 @@ import javax.security.auth.login.LoginException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -52,7 +50,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
-import org.apache.tez.client.TezSession;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
@@ -80,7 +77,7 @@ public class TezTask extends Task<TezWork> {
 
   private TezCounters counters;
 
-  private DagUtils utils;
+  private final DagUtils utils;
 
   public TezTask() {
     this(DagUtils.getInstance());
@@ -129,12 +126,22 @@ public class TezTask extends Task<TezWork> {
 
       // create the tez tmp dir
       scratchDir = utils.createTezDir(scratchDir, conf);
+      boolean hasResources = session.hasResources(inputOutputJars);
+
+      if (ss.hasAddedResource()) {
+        // need to re-launch session because of new added jars.
+        hasResources = false;
+        // reset the added resource flag for this session since we would
+        // relocalize (either by restarting or relocalizing) due to the above
+        // hasResources flag.
+        ss.setAddedResource(false);
+      }
 
       // If we have any jars from input format, we need to restart the session because
       // AM will need them; so, AM has to be restarted. What a mess...
-      if (!session.hasResources(inputOutputJars) && session.isOpen()) {
+      if (!hasResources && session.isOpen()) {
         LOG.info("Tez session being reopened to pass custom jars to AM");
-        session.close(false);
+        TezSessionPoolManager.getInstance().close(session);
         session = TezSessionPoolManager.getInstance().getSession(null, conf, false);
         ss.setTezSession(session);
       }
@@ -246,15 +253,15 @@ public class TezTask extends Task<TezWork> {
           vertexArray[i++] = workToVertex.get(v);
         }
         VertexGroup group = dag.createVertexGroup(w.getName(), vertexArray);
-        
+
         // now hook up the children
         for (BaseWork v: children) {
           // need to pairwise patch up the configuration of the vertices
           for (BaseWork part: unionWorkItems) {
-            utils.updateConfigurationForEdge(workToConf.get(part), workToVertex.get(part), 
+            utils.updateConfigurationForEdge(workToConf.get(part), workToVertex.get(part),
                  workToConf.get(v), workToVertex.get(v));
           }
-          
+
           // finally we can create the grouped edge
           GroupInputEdge e = utils.createEdge(group, workToConf.get(v),
                workToVertex.get(v), work.getEdgeProperty(w, v));
@@ -264,14 +271,14 @@ public class TezTask extends Task<TezWork> {
       } else {
         // Regular vertices
         JobConf wxConf = utils.initializeVertexConf(conf, w);
-        Vertex wx = utils.createVertex(wxConf, w, scratchDir, appJarLr, 
+        Vertex wx = utils.createVertex(wxConf, w, scratchDir, appJarLr,
           additionalLr, fs, ctx, !isFinal, work);
         dag.addVertex(wx);
         utils.addCredentials(w, dag);
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + w.getName());
         workToVertex.put(w, wx);
         workToConf.put(w, wxConf);
-        
+
         // add all dependencies (i.e.: edges) to the graph
         for (BaseWork v: work.getChildren(w)) {
           assert workToVertex.containsKey(v);
