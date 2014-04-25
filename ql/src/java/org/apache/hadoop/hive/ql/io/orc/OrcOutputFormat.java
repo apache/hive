@@ -21,7 +21,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter;
+import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde.OrcSerdeRow;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -53,8 +53,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
 
   private static class OrcRecordWriter
       implements RecordWriter<NullWritable, OrcSerdeRow>,
-                 FSRecordWriter,
-                 FSRecordWriter.StatsProvidingRecordWriter {
+                 StatsProvidingRecordWriter {
     private Writer writer = null;
     private final Path path;
     private final OrcFile.WriterOptions options;
@@ -178,7 +177,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
 
 
   @Override
-  public FSRecordWriter
+  public StatsProvidingRecordWriter
      getHiveRecordWriter(JobConf conf,
                          Path path,
                          Class<? extends Writable> valueClass,
@@ -283,7 +282,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
   }
 
   @Override
-  public FSRecordWriter getRawRecordWriter(Path path,
+  public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getRawRecordWriter(Path path,
                                            Options options) throws IOException {
     final Path filename = AcidUtils.createFilename(path, options);
     final OrcFile.WriterOptions opts =
@@ -300,7 +299,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     opts.inspector(options.getInspector())
         .callback(watcher);
     final Writer writer = OrcFile.createWriter(filename, opts);
-    return new FSRecordWriter() {
+    return new org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter() {
       @Override
       public void write(Writable w) throws IOException {
         OrcStruct orc = (OrcStruct) w;

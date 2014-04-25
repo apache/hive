@@ -64,7 +64,6 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
@@ -440,6 +439,7 @@ public class TestInputOutputFormat {
       this.hosts = hosts;
     }
 
+    @Override
     public String toString() {
       StringBuilder buffer = new StringBuilder();
       buffer.append("block{offset: ");
@@ -480,6 +480,7 @@ public class TestInputOutputFormat {
       }
     }
 
+    @Override
     public String toString() {
       StringBuilder buffer = new StringBuilder();
       buffer.append("mockFile{path: ");
@@ -564,6 +565,7 @@ public class TestInputOutputFormat {
       }
     }
 
+    @Override
     public void close() throws IOException {
       super.close();
       DataOutputBuffer buf = (DataOutputBuffer) getWrappedStream();
@@ -581,6 +583,7 @@ public class TestInputOutputFormat {
       // empty
     }
 
+    @Override
     public void initialize(URI uri, Configuration conf) {
       setConf(conf);
     }
@@ -924,7 +927,7 @@ public class TestInputOutputFormat {
     }
     SerDe serde = new OrcSerde();
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
-    FSRecordWriter writer =
+    org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter writer =
         outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,
             properties, Reporter.NULL);
     writer.write(serde.serialize(new MyRow(1,2), inspector));
@@ -1088,7 +1091,7 @@ public class TestInputOutputFormat {
   public void testEmptyFile() throws Exception {
     Properties properties = new Properties();
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
-    FSRecordWriter writer =
+    org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter writer =
         outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,
             properties, Reporter.NULL);
     writer.close(true);
@@ -1133,7 +1136,7 @@ public class TestInputOutputFormat {
     }
     SerDe serde = new OrcSerde();
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
-    FSRecordWriter writer =
+    org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter writer =
         outFormat.getHiveRecordWriter(conf, testFilePath, StringRow.class,
             true, properties, Reporter.NULL);
     writer.write(serde.serialize(new StringRow("owen"), inspector));

@@ -35,8 +35,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter.StatsProvidingRecordWriter;
+import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -88,7 +87,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient int dpStartCol; // start column # for DP columns
   protected transient List<String> dpVals; // array of values corresponding to DP columns
   protected transient List<Object> dpWritables;
-  protected transient FSRecordWriter[] rowOutWriters; // row specific RecordWriters
+  protected transient RecordWriter[] rowOutWriters; // row specific RecordWriters
   protected transient int maxPartitions;
   protected transient ListBucketingCtx lbCtx;
   protected transient boolean isSkewedStoredAsSubDirectories;
@@ -117,7 +116,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Path taskOutputTempPath;
     Path[] outPaths;
     Path[] finalPaths;
-    FSRecordWriter[] outWriters;
+    RecordWriter[] outWriters;
     Stat stat;
 
     public FSPaths() {
@@ -128,7 +127,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       taskOutputTempPath = Utilities.toTaskTempPath(specPath);
       outPaths = new Path[numFiles];
       finalPaths = new Path[numFiles];
-      outWriters = new FSRecordWriter[numFiles];
+      outWriters = new RecordWriter[numFiles];
       stat = new Stat();
     }
 
@@ -150,11 +149,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
     }
 
-    public void setOutWriters(FSRecordWriter[] out) {
+    public void setOutWriters(RecordWriter[] out) {
       outWriters = out;
     }
 
-    public FSRecordWriter[] getOutWriters() {
+    public RecordWriter[] getOutWriters() {
       return outWriters;
     }
 
@@ -599,7 +598,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
 
-      FSRecordWriter rowOutWriter = null;
+      RecordWriter rowOutWriter = null;
 
       if (row_count != null) {
         row_count.set(row_count.get() + 1);
@@ -757,7 +756,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           // since we are closing the previous fsp's record writers, we need to see if we can get
           // stats from the record writer and store in the previous fsp that is cached
           if (conf.isGatherStats() && isCollectRWStats) {
-            FSRecordWriter outWriter = prevFsp.outWriters[0];
+            RecordWriter outWriter = prevFsp.outWriters[0];
             if (outWriter != null) {
               SerDeStats stats = ((StatsProvidingRecordWriter) outWriter).getStats();
               if (stats != null) {
@@ -851,7 +850,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // accumulated statistics which will be aggregated in case of spray writers
         if (conf.isGatherStats() && isCollectRWStats) {
           for (int idx = 0; idx < fsp.outWriters.length; idx++) {
-            FSRecordWriter outWriter = fsp.outWriters[idx];
+            RecordWriter outWriter = fsp.outWriters[idx];
             if (outWriter != null) {
               SerDeStats stats = ((StatsProvidingRecordWriter) outWriter).getStats();
               if (stats != null) {
