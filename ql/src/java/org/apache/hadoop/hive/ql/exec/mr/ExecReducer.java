@@ -134,7 +134,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       keyTableDesc = gWork.getKeyDesc();
       inputKeyDeserializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc
           .getDeserializerClass(), null);
-      inputKeyDeserializer.initialize(null, keyTableDesc.getProperties());
+      SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
       keyObjectInspector = inputKeyDeserializer.getObjectInspector();
       valueTableDesc = new TableDesc[gWork.getTagToValueDesc().size()];
       for (int tag = 0; tag < gWork.getTagToValueDesc().size(); tag++) {
@@ -142,8 +142,8 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         valueTableDesc[tag] = gWork.getTagToValueDesc().get(tag);
         inputValueDeserializer[tag] = (SerDe) ReflectionUtils.newInstance(
             valueTableDesc[tag].getDeserializerClass(), null);
-        inputValueDeserializer[tag].initialize(null, valueTableDesc[tag]
-            .getProperties());
+        SerDeUtils.initializeSerDe(inputValueDeserializer[tag], null,
+                                   valueTableDesc[tag].getProperties(), null);
         valueObjectInspector[tag] = inputValueDeserializer[tag]
             .getObjectInspector();
 

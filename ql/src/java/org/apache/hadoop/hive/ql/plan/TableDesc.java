@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 
 /**
@@ -79,7 +80,7 @@ public class TableDesc implements Serializable, Cloneable {
    */
   public Deserializer getDeserializer() throws Exception {
     Deserializer de = getDeserializerClass().newInstance();
-    de.initialize(null, properties);
+    SerDeUtils.initializeSerDe(de, null, properties, null);
     return de;
   }
 

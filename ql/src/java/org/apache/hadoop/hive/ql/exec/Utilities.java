@@ -159,6 +159,7 @@ import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -2230,8 +2231,10 @@ public final class Utilities {
                   return;
                 }
                 HiveStorageHandler handler = HiveUtils.getStorageHandler(myConf,
-                    partDesc.getOverlayedProperties().getProperty(
-                    hive_metastoreConstants.META_TABLE_STORAGE));
+                    SerDeUtils.createOverlayedProperties(
+                        partDesc.getTableDesc().getProperties(),
+                        partDesc.getProperties())
+                        .getProperty(hive_metastoreConstants.META_TABLE_STORAGE));
                 if (handler instanceof InputEstimator) {
                   long total = 0;
                   TableDesc tableDesc = partDesc.getTableDesc();

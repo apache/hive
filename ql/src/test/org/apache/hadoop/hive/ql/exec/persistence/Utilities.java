@@ -28,6 +28,7 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.io.BytesWritable;
 
@@ -51,7 +52,7 @@ class Utilities {
     Properties props = new Properties();
     props.put(serdeConstants.LIST_COLUMNS, columns);
     props.put(serdeConstants.LIST_COLUMN_TYPES, types);
-    serde.initialize(null, props);
+    SerDeUtils.initializeSerDe(serde, null, props, null);
     MapJoinObjectSerDeContext context = new MapJoinObjectSerDeContext(serde, false);    
     key.write(context, out);
     out.close();
@@ -84,7 +85,7 @@ class Utilities {
     Properties props = new Properties();
     props.put(serdeConstants.LIST_COLUMNS, columns);
     props.put(serdeConstants.LIST_COLUMN_TYPES, types);
-    serde.initialize(null, props);
+    SerDeUtils.initializeSerDe(serde, null, props, null);
     MapJoinObjectSerDeContext context = new MapJoinObjectSerDeContext(serde, true);    
     container.write(context, out);
     out.close();

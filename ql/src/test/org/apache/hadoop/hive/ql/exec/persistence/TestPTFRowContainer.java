@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -55,7 +56,7 @@ public class TestPTFRowContainer {
     p.setProperty(
         org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
         COL_TYPES);
-    serDe.initialize(cfg, p);
+    SerDeUtils.initializeSerDe(serDe, cfg, p, null);
   }
 
   private PTFRowContainer<List<Object>> rowContainer(int blockSize)

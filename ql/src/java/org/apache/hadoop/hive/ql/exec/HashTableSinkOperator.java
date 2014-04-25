@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -177,7 +178,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
       TableDesc keyTableDesc = conf.getKeyTblDesc();
       SerDe keySerde = (SerDe) ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(),
           null);
-      keySerde.initialize(null, keyTableDesc.getProperties());
+      SerDeUtils.initializeSerDe(keySerde, null, keyTableDesc.getProperties(), null);
       MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerde, false);
       for (Byte pos : order) {
         if (pos == posBigTableAlias) {
@@ -186,7 +187,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         mapJoinTables[pos] = new HashMapWrapper(hashTableThreshold, hashTableLoadFactor);
         TableDesc valueTableDesc = conf.getValueTblFilteredDescs().get(pos);
         SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(), null);
-        valueSerDe.initialize(null, valueTableDesc.getProperties());
+        SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
         mapJoinTableSerdes[pos] = new MapJoinTableContainerSerDe(keyContext, new MapJoinObjectSerDeContext(
             valueSerDe, hasFilter(pos)));
       }

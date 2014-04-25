@@ -585,7 +585,7 @@ public class TestLazyArrayMapStruct extends TestCase {
     Configuration conf = new Configuration();
     tableProp.setProperty("columns", "narray");
     tableProp.setProperty("columns.types", schema.toString());
-    serDe.initialize(conf, tableProp);
+    SerDeUtils.initializeSerDe(serDe, conf, tableProp, null);
 
     //create the serialized string for type
     byte[] separators = serDe.serdeParams.getSeparators();

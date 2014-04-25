@@ -21,9 +21,12 @@ package org.apache.hadoop.hive.serde2;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -482,6 +485,38 @@ public final class SerDeUtils {
     }
     default:
       throw new RuntimeException("Unknown type in ObjectInspector!");
+    }
+  }
+
+  /**
+   * Returns the union of table and partition properties,
+   * with partition properties taking precedence.
+   * @param tblProps
+   * @param partProps
+   * @return the overlayed properties
+   */
+  public static Properties createOverlayedProperties(Properties tblProps, Properties partProps) {
+    Properties props = new Properties(tblProps);
+    if (partProps != null) {
+      props.putAll(partProps);
+    }
+    return props;
+  }
+
+  /**
+   * Initializes a SerDe.
+   * @param serde
+   * @param tblProps
+   * @param partProps
+   * @throws SerDeException
+   */
+  public static void initializeSerDe(Deserializer deserializer, Configuration conf,
+                                            Properties tblProps, Properties partProps)
+                                                throws SerDeException {
+    if (deserializer instanceof AbstractSerDe) {
+      ((AbstractSerDe) deserializer).initialize(conf, tblProps, partProps);
+    } else {
+      deserializer.initialize(conf, createOverlayedProperties(tblProps, partProps));
     }
   }
 
