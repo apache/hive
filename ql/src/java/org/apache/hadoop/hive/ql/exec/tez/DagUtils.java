@@ -17,10 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -32,7 +28,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.security.auth.login.LoginException;
@@ -45,7 +40,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -85,6 +79,8 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.URL;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
+import org.apache.tez.client.PreWarmContext;
+import org.apache.tez.client.TezSessionConfiguration;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.EdgeManagerDescriptor;
@@ -96,13 +92,11 @@ import org.apache.tez.dag.api.GroupInputEdge;
 import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
-import org.apache.tez.dag.api.Vertex;
-import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
-import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.TezException;
-import org.apache.tez.client.PreWarmContext;
-import org.apache.tez.client.TezSessionConfiguration;
+import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
+import org.apache.tez.dag.api.VertexLocationHint;
+import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
 import org.apache.tez.mapreduce.common.MRInputAMSplitGenerator;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
@@ -117,6 +111,10 @@ import org.apache.tez.runtime.library.input.ShuffledUnorderedKVInput;
 import org.apache.tez.runtime.library.output.OnFileSortedOutput;
 import org.apache.tez.runtime.library.output.OnFileUnorderedKVOutput;
 import org.apache.tez.runtime.library.output.OnFileUnorderedPartitionedKVOutput;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 /**
  * DagUtils. DagUtils is a collection of helper methods to convert
@@ -254,7 +252,7 @@ public class DagUtils {
   /**
    * Given two vertices a, b update their configurations to be used in an Edge a-b
    */
-  public void updateConfigurationForEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w) 
+  public void updateConfigurationForEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w)
     throws IOException {
 
     // Tez needs to setup output subsequent input pairs correctly
@@ -311,13 +309,13 @@ public class DagUtils {
         break;
 
       case CUSTOM_EDGE:
-        
+
         dataMovementType = DataMovementType.CUSTOM;
         logicalOutputClass = OnFileUnorderedPartitionedKVOutput.class;
         logicalInputClass = ShuffledUnorderedKVInput.class;
         EdgeManagerDescriptor edgeDesc = new EdgeManagerDescriptor(
             CustomPartitionEdge.class.getName());
-        CustomEdgeConfiguration edgeConf = 
+        CustomEdgeConfiguration edgeConf =
             new CustomEdgeConfiguration(edgeProp.getNumBuckets(), null);
           DataOutputBuffer dob = new DataOutputBuffer();
           edgeConf.write(dob);
@@ -432,7 +430,7 @@ public class DagUtils {
     }
     if (vertexHasCustomInput) {
       useTezGroupedSplits = false;
-      // grouping happens in execution phase. Setting the class to TezGroupedSplitsInputFormat 
+      // grouping happens in execution phase. Setting the class to TezGroupedSplitsInputFormat
       // here would cause pre-mature grouping which would be incorrect.
       inputFormatClass = HiveInputFormat.class;
       conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
@@ -661,6 +659,11 @@ public class DagUtils {
       String hdfsDirPathStr, Configuration conf) throws IOException, LoginException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
+    addTempFiles(conf, tmpResources, hdfsDirPathStr, getTempFilesFromConf(conf));
+    return tmpResources;
+  }
+
+  public static String[] getTempFilesFromConf(Configuration conf) {
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
     if (StringUtils.isNotBlank(addedFiles)) {
       HiveConf.setVar(conf, ConfVars.HIVEADDEDFILES, addedFiles);
@@ -679,8 +682,7 @@ public class DagUtils {
     // need to localize the additional jars and files
     // we need the directory on hdfs to which we shall put all these files
     String allFiles = auxJars + "," + addedJars + "," + addedFiles + "," + addedArchives;
-    addTempFiles(conf, tmpResources, hdfsDirPathStr, allFiles.split(","));
-    return tmpResources;
+    return allFiles.split(",");
   }
 
   /**
@@ -900,7 +902,7 @@ public class DagUtils {
    * @param work The instance of BaseWork representing the actual work to be performed
    * by this vertex.
    * @param scratchDir HDFS scratch dir for this execution unit.
-   * @param list 
+   * @param list
    * @param appJarLr Local resource for hive-exec.
    * @param additionalLr
    * @param fileSystem FS corresponding to scratchDir and LocalResources
@@ -908,7 +910,7 @@ public class DagUtils {
    * @return Vertex
    */
   public Vertex createVertex(JobConf conf, BaseWork work,
-      Path scratchDir, LocalResource appJarLr, 
+      Path scratchDir, LocalResource appJarLr,
       List<LocalResource> additionalLr,
       FileSystem fileSystem, Context ctx, boolean hasChildren, TezWork tezWork) throws Exception {
 
