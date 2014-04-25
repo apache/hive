@@ -309,7 +309,7 @@ class MetaStoreDirectSql {
     StringBuilder partSb = new StringBuilder(sbCapacity);
     // Assume db and table names are the same for all partition, that's what we're selecting for.
     for (Object partitionId : sqlResult) {
-      partSb.append((Long)partitionId).append(",");
+      partSb.append(extractSqlLong(partitionId)).append(",");
     }
     String partIds = trimCommaList(partSb);
     timingTrace(doTrace, queryText, start, queryTime);
@@ -346,10 +346,10 @@ class MetaStoreDirectSql {
     dbName = dbName.toLowerCase();
     for (Object[] fields : sqlResult2) {
       // Here comes the ugly part...
-      long partitionId = (Long)fields[0];
-      Long sdId = (Long)fields[1];
-      Long colId = (Long)fields[2];
-      Long serdeId = (Long)fields[3];
+      long partitionId = extractSqlLong(fields[0]);
+      Long sdId = extractSqlLong(fields[1]);
+      Long colId = extractSqlLong(fields[2]);
+      Long serdeId = extractSqlLong(fields[3]);
       // A partition must have either everything set, or nothing set if it's a view.
       if (sdId == null || colId == null || serdeId == null) {
         if (isView == null) {
@@ -502,7 +502,7 @@ class MetaStoreDirectSql {
       loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
         private Long currentListId;
         private List<String> currentList;
-        public void apply(StorageDescriptor t, Object[] fields) {
+        public void apply(StorageDescriptor t, Object[] fields) throws MetaException {
           if (!t.isSetSkewedInfo()) t.setSkewedInfo(new SkewedInfo());
           // Note that this is not a typical list accumulator - there's no call to finalize
           // the last list. Instead we add list to SD first, as well as locally to add elements.
@@ -511,7 +511,7 @@ class MetaStoreDirectSql {
             currentListId = null;
             t.getSkewedInfo().addToSkewedColValues(new ArrayList<String>());
           } else {
-            long fieldsListId = (Long)fields[1];
+            long fieldsListId = extractSqlLong(fields[1]);
             if (currentListId == null || fieldsListId != currentListId) {
               currentList = new ArrayList<String>();
               currentListId = fieldsListId;
@@ -539,7 +539,7 @@ class MetaStoreDirectSql {
       loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
         private Long currentListId;
         private List<String> currentList;
-        public void apply(StorageDescriptor t, Object[] fields) {
+        public void apply(StorageDescriptor t, Object[] fields) throws MetaException {
           if (!t.isSetSkewedInfo()) {
             SkewedInfo skewedInfo = new SkewedInfo();
             skewedInfo.setSkewedColValueLocationMaps(new HashMap<List<String>, String>());
@@ -552,7 +552,7 @@ class MetaStoreDirectSql {
             currentList = new ArrayList<String>(); // left outer join produced a list with no values
             currentListId = null;
           } else {
-            long fieldsListId = (Long)fields[1];
+            long fieldsListId = extractSqlLong(fields[1]);
             if (currentListId == null || fieldsListId != currentListId) {
               currentList = new ArrayList<String>();
               currentListId = fieldsListId;
@@ -589,6 +589,14 @@ class MetaStoreDirectSql {
     return orderedResult;
   }
 
+  private Long extractSqlLong(Object obj) throws MetaException {
+    if (obj == null) return null;
+    if (!(obj instanceof Number)) {
+      throw new MetaException("Expected numeric type but got " + obj.getClass().getName());
+    }
+    return ((Number)obj).longValue();
+  }
+
   private void timingTrace(boolean doTrace, String queryText, long start, long queryTime) {
     if (!doTrace) return;
     LOG.debug("Direct SQL query in " + (queryTime - start) / 1000000.0 + "ms + " +
@@ -604,9 +612,10 @@ class MetaStoreDirectSql {
     if (value instanceof String && ((String)value).length() == 1) {
       c = ((String)value).charAt(0);
     }
+    if (c == null) return null;
     if (c == 'Y') return true;
     if (c == 'N') return false;
-    throw new MetaException("Cannot extrace boolean from column value " + value);
+    throw new MetaException("Cannot extract boolean from column value " + value);
   }
 
   private int extractSqlInt(Object field) {
@@ -621,7 +630,7 @@ class MetaStoreDirectSql {
   }
 
   private abstract class ApplyFunc<Target> {
-    public abstract void apply(Target t, Object[] fields);
+    public abstract void apply(Target t, Object[] fields) throws MetaException;
   }
 
   /**
@@ -655,7 +664,7 @@ class MetaStoreDirectSql {
         if (fields == null) {
           fields = iter.next();
         }
-        long nestedId = (Long)fields[keyIndex];
+        long nestedId = extractSqlLong(fields[keyIndex]);
         if (nestedId < id) throw new MetaException("Found entries for unknown ID " + nestedId);
         if (nestedId > id) break; // fields belong to one of the next entries
         func.apply(entry.getValue(), fields);
@@ -943,7 +952,7 @@ class MetaStoreDirectSql {
     + "\"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\", \"LAST_ANALYZED\" ";
 
   private ColumnStatistics makeColumnStats(
-      List<Object[]> list, ColumnStatisticsDesc csd, int offset) {
+      List<Object[]> list, ColumnStatisticsDesc csd, int offset) throws MetaException {
     ColumnStatistics result = new ColumnStatistics();
     result.setStatsDesc(csd);
     List<ColumnStatisticsObj> csos = new ArrayList<ColumnStatisticsObj>(list.size());
@@ -951,8 +960,8 @@ class MetaStoreDirectSql {
       // LastAnalyzed is stored per column but thrift has it per several;
       // get the lowest for now as nobody actually uses this field.
       Object laObj = row[offset + 14];
-      if (laObj != null && (!csd.isSetLastAnalyzed() || csd.getLastAnalyzed() > (Long)laObj)) {
-        csd.setLastAnalyzed((Long)laObj);
+      if (laObj != null && (!csd.isSetLastAnalyzed() || csd.getLastAnalyzed() > extractSqlLong(laObj))) {
+        csd.setLastAnalyzed(extractSqlLong(laObj));
       }
       ColumnStatisticsData data = new ColumnStatisticsData();
       // see STATS_COLLIST
