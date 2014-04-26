@@ -104,11 +104,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       LOG.warn("Can't fetch tasklog: TaskLogServlet is not supported in MR2 mode.");
       return null;
     } else {
-      // if the cluster is running in MR1 mode, using HostUtil to construct TaskLogURL
-      URL taskTrackerHttpURL = new URL(taskTrackerHttpAddress);
-      return HostUtil.getTaskLogUrl(taskTrackerHttpURL.getHost(),
-        Integer.toString(taskTrackerHttpURL.getPort()),
-        taskAttemptId);
+      // Was using Hadoop-internal API to get tasklogs, disable until  MAPREDUCE-5857 is fixed.
+      LOG.warn("Can't fetch tasklog: TaskLogServlet is not supported in MR1 mode.");
+      return null;
     }
   }
 
