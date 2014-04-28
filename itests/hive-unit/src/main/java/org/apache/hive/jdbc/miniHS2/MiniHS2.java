@@ -20,12 +20,8 @@ package org.apache.hive.jdbc.miniHS2;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -39,7 +35,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.SessionHandle;
@@ -51,19 +46,19 @@ import org.apache.hive.service.server.HiveServer2;
 import com.google.common.io.Files;
 
 public class MiniHS2 extends AbstractHiveService {
+  public static final String HS2_BINARY_MODE = "binary";
+  public static final String HS2_HTTP_MODE = "http";
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private HiveServer2 hiveServer2 = null;
   private final File baseDir;
   private final Path baseDfsDir;
   private static final AtomicLong hs2Counter = new AtomicLong();
-  private static final String HS2_BINARY_MODE = "binary";
-  private static final String HS2_HTTP_MODE = "http";
   private MiniMrShim mr;
   private MiniDFSShim dfs;
   private boolean useMiniMR = false;
   private boolean useMiniKdc = false;
-  private String serverPrincipal;
-  private String serverKeytab;
+  private final String serverPrincipal;
+  private final String serverKeytab;
 
   public static class Builder {
     private HiveConf hiveConf = new HiveConf();
@@ -71,6 +66,7 @@ public class MiniHS2 extends AbstractHiveService {
     private boolean useMiniKdc = false;
     private String serverPrincipal;
     private String serverKeytab;
+    private boolean isHTTPTransMode = false;
 
     public Builder() {
     }
@@ -92,9 +88,24 @@ public class MiniHS2 extends AbstractHiveService {
       return this;
     }
 
+    /**
+     * Start HS2 with HTTP transport mode, default is binary mode
+     * @return this Builder
+     */
+    public Builder withHTTPTransport(){
+      this.isHTTPTransMode = true;
+      return this;
+    }
+
+
     public MiniHS2 build() throws Exception {
       if (useMiniMR && useMiniKdc) {
         throw new IOException("Can't create secure miniMr ... yet");
+      }
+      if (isHTTPTransMode) {
+        hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_HTTP_MODE);
+      } else {
+        hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
       return new MiniHS2(hiveConf, useMiniMR, useMiniKdc, serverPrincipal, serverKeytab);
     }
@@ -164,7 +175,6 @@ public class MiniHS2 extends AbstractHiveService {
     hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY, metaStoreURL);
     // reassign a new port, just in case if one of the MR services grabbed the last one
     setBinaryPort(MetaStoreUtils.findFreePort());
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, getHost());
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, getBinaryPort());
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT, getHttpPort());
@@ -253,16 +263,35 @@ public class MiniHS2 extends AbstractHiveService {
   /**
    * return connection URL for this server instance
    * @param dbName - DB name to be included in the URL
-   * @param urlExtension - Addional string to be appended to URL
+   * @param sessionConfExt - Addional string to be appended to sessionConf part of url
    * @return
    */
-  public String getJdbcURL(String dbName, String urlExtension) {
-    assert urlExtension != null;
+  public String getJdbcURL(String dbName, String sessionConfExt) {
+    return getJdbcURL(dbName, sessionConfExt, "");
+  }
+
+  /**
+   * return connection URL for this server instance
+   * @param dbName - DB name to be included in the URL
+   * @param sessionConfExt - Addional string to be appended to sessionConf part of url
+   * @param hiveConfExt - Additional string to be appended to HiveConf part of url (excluding the ?)
+   * @return
+   */
+  public String getJdbcURL(String dbName, String sessionConfExt, String hiveConfExt) {
+    sessionConfExt = (sessionConfExt == null ? "" : sessionConfExt);
+    hiveConfExt = (hiveConfExt == null ? "" : hiveConfExt);
     String krbConfig = "";
     if (isUseMiniKdc()) {
       krbConfig = ";principal=" + serverPrincipal;
     }
-    return getBaseJdbcURL() + dbName + krbConfig + urlExtension;
+    if (isHttpTransportMode()) {
+      hiveConfExt = "hive.server2.transport.mode=http;hive.server2.thrift.http.path=cliservice;"
+          + hiveConfExt;
+    }
+    if (!hiveConfExt.trim().equals("")) {
+      hiveConfExt = "?" + hiveConfExt;
+    }
+    return getBaseJdbcURL() + dbName + krbConfig + sessionConfExt + hiveConfExt;
   }
 
   /**
@@ -270,13 +299,17 @@ public class MiniHS2 extends AbstractHiveService {
    * @return
    */
   public String getBaseJdbcURL() {
-    String transportMode = getConfProperty(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname);
-    if(transportMode != null && (transportMode.equalsIgnoreCase(HS2_HTTP_MODE))) {
+    if(isHttpTransportMode()) {
       return "jdbc:hive2://" + getHost() + ":" + getHttpPort() + "/";
     }
     else {
       return "jdbc:hive2://" + getHost() + ":" + getBinaryPort() + "/";
     }
+  }
+
+  private boolean isHttpTransportMode() {
+    String transportMode = getConfProperty(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname);
+    return transportMode != null && (transportMode.equalsIgnoreCase(HS2_HTTP_MODE));
   }
 
   public static String getJdbcDriverName() {
