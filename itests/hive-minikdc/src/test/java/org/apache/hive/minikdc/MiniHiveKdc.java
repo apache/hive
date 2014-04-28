@@ -28,26 +28,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.minikdc.MiniKdc;
 import org.apache.hadoop.security.GroupMappingServiceProvider;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.jdbc.miniHS2.MiniHS2;
 
 import com.google.common.io.Files;
 
+/**
+ * Wrapper around Hadoop's MiniKdc for use in hive tests.
+ * Has functions to manager users and their keytabs. This includes a hive service principal,
+ * a superuser principal for testing proxy user privilegs.
+ * Has a set of default users that it initializes.
+ * See hive-minikdc/src/test/resources/core-site.xml for users granted proxy user privileges.
+ */
 public class MiniHiveKdc {
   public static String HIVE_SERVICE_PRINCIPAL = "hive";
   public static String HIVE_TEST_USER_1 = "user1";
   public static String HIVE_TEST_USER_2 = "user2";
   public static String HIVE_TEST_SUPER_USER = "superuser";
 
-  private MiniKdc miniKdc;
-  private File workDir;
-  private Configuration conf;
-  private Map<String, String> userPrincipals =
+  private final MiniKdc miniKdc;
+  private final File workDir;
+  private final Configuration conf;
+  private final Map<String, String> userPrincipals =
       new HashMap<String, String>();
-  private Properties kdcConf = MiniKdc.createConf();
+  private final Properties kdcConf = MiniKdc.createConf();
   private int keyTabCounter = 1;
 
   // hadoop group mapping that maps user to same group
@@ -112,6 +121,12 @@ public class MiniHiveKdc {
     userPrincipals.put(principal, keytab.getPath());
   }
 
+  /**
+   * Login the given principal, using corresponding keytab file from internal map
+   * @param principal
+   * @return
+   * @throws Exception
+   */
   public UserGroupInformation loginUser(String principal)
       throws Exception {
     ShimLoader.getHadoopShims().loginUserFromKeytab(principal,
@@ -145,6 +160,23 @@ public class MiniHiveKdc {
 
   public String getDefaultUserPrincipal() {
     return HIVE_TEST_USER_1;
+  }
+
+  /**
+   * Create a MiniHS2 with the hive service principal and keytab in MiniHiveKdc
+   * @param miniHiveKdc
+   * @param hiveConf
+   * @return new MiniHS2 instance
+   * @throws Exception
+   */
+  public static MiniHS2 getMiniHS2WithKerb(MiniHiveKdc miniHiveKdc, HiveConf hiveConf) throws Exception {
+    String hivePrincipal =
+        miniHiveKdc.getFullyQualifiedServicePrincipal(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
+    String hiveKeytab = miniHiveKdc.getKeyTabFile(
+        miniHiveKdc.getServicePrincipalForUser(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL));
+
+    return new MiniHS2.Builder().withConf(hiveConf).
+        withMiniKdc(hivePrincipal, hiveKeytab).build();
   }
 
 

@@ -18,7 +18,10 @@
 
 package org.apache.hive.minikdc;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -67,15 +70,10 @@ public class TestJdbcWithMiniKdc {
     Class.forName(MiniHS2.getJdbcDriverName());
     confOverlay.put(ConfVars.HIVE_SERVER2_SESSION_HOOK.varname,
         SessionHookTest.class.getName());
+
     HiveConf hiveConf = new HiveConf();
     miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
-    String hivePrincipal =
-        miniHiveKdc.getFullyQualifiedServicePrincipal(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
-    String hiveKeytab = miniHiveKdc.getKeyTabFile(
-        miniHiveKdc.getServicePrincipalForUser(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL));
-
-    miniHS2 = new MiniHS2.Builder().withConf(new HiveConf()).
-        withMiniKdc(hivePrincipal, hiveKeytab).build();
+    miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(confOverlay);
   }
 
@@ -107,8 +105,7 @@ public class TestJdbcWithMiniKdc {
   public void testConnection() throws Exception {
     miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_USER_1);
     hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
-    verifyProperty(SESSION_USER_NAME, miniHiveKdc.
-        getFullyQualifiedUserPrincipal(MiniHiveKdc.HIVE_TEST_USER_1));
+    verifyProperty(SESSION_USER_NAME, MiniHiveKdc.HIVE_TEST_USER_1);
   }
 
   /***
