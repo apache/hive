@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -326,12 +327,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
      * calculate fast statistics
      */
     FileStatus[] partfileStatus = wh.getFileStatusesForSD(desc);
-    parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(partfileStatus.length));
-    long partSize = 0L;
-    for (int i = 0; i < partfileStatus.length; i++) {
-      partSize += partfileStatus[i].getLen();
-    }
-    parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(partSize));
+    MetaStoreUtils.populateQuickStats(partfileStatus, parameters);
   }
 
   private void clearStats(Map<String, String> parameters) {

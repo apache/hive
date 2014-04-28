@@ -55,7 +55,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_tbl
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Statistics: Num rows: 0 Data size: 8 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((name = 'c') and (id = 'a')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -83,7 +83,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t3
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Statistics: Num rows: 0 Data size: 8 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 'a') (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
