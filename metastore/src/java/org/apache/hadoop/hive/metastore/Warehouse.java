@@ -496,35 +496,11 @@ public class Warehouse {
     try {
       Path path = new Path(desc.getLocation());
       FileSystem fileSys = path.getFileSystem(conf);
-      /* consider sub-directory created from list bucketing. */
-      int listBucketingDepth = calculateListBucketingDMLDepth(desc);
-      return HiveStatsUtils.getFileStatusRecurse(path, (1 + listBucketingDepth), fileSys);
+      return HiveStatsUtils.getFileStatusRecurse(path, -1, fileSys);
     } catch (IOException ioe) {
       MetaStoreUtils.logAndThrowMetaException(ioe);
     }
     return null;
-  }
-
-  /**
-   * List bucketing will introduce sub-directories.
-   * calculate it here in order to go to the leaf directory
-   * so that we can count right number of files.
-   * @param desc
-   * @return
-   */
-  private static int calculateListBucketingDMLDepth(StorageDescriptor desc) {
-    // list bucketing will introduce more files
-    int listBucketingDepth = 0;
-    SkewedInfo skewedInfo = desc.getSkewedInfo();
-    if ((skewedInfo != null) && (skewedInfo.getSkewedColNames() != null)
-        && (skewedInfo.getSkewedColNames().size() > 0)
-        && (skewedInfo.getSkewedColValues() != null)
-        && (skewedInfo.getSkewedColValues().size() > 0)
-        && (skewedInfo.getSkewedColValueLocationMaps() != null)
-        && (skewedInfo.getSkewedColValueLocationMaps().size() > 0)) {
-      listBucketingDepth = skewedInfo.getSkewedColNames().size();
-    }
-    return listBucketingDepth;
   }
 
   /**
@@ -537,7 +513,7 @@ public class Warehouse {
     Path tablePath = getTablePath(db, table.getTableName());
     try {
       FileSystem fileSys = tablePath.getFileSystem(conf);
-      return HiveStatsUtils.getFileStatusRecurse(tablePath, 1, fileSys);
+      return HiveStatsUtils.getFileStatusRecurse(tablePath, -1, fileSys);
     } catch (IOException ioe) {
       MetaStoreUtils.logAndThrowMetaException(ioe);
     }

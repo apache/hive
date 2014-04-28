@@ -86,10 +86,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
-	numFiles            	22                  
+	numFiles            	1                   
 	numRows             	-1                  
 	rawDataSize         	-1                  
-	totalSize           	6954                
+	totalSize           	5297                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -185,10 +185,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	22                  
+	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	4812                
-	totalSize           	6954                
+	totalSize           	5297                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -235,10 +235,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
-	numFiles            	22                  
+	numFiles            	1                   
 	numRows             	-1                  
 	rawDataSize         	-1                  
-	totalSize           	6954                
+	totalSize           	5297                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
