@@ -137,6 +137,7 @@ public class PTFTranslator {
     ptfDesc.setCfg(hCfg);
     ptfDesc.setLlInfo(llInfo);
     translatePTFChain();
+    PTFDeserializer.alterOutputOIForStreaming(ptfDesc);
     return ptfDesc;
   }
 
@@ -221,6 +222,8 @@ public class PTFTranslator {
     wdwTFnDef.setOutputShape(wdwOutShape);
 
     tFn.setupOutputOI();
+
+    PTFDeserializer.alterOutputOIForStreaming(ptfDesc);
 
     return ptfDesc;
   }

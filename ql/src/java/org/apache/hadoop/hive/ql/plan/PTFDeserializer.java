@@ -95,6 +95,8 @@ public class PTFDeserializer {
         initialize((PartitionedTableFunctionDef) currentDef);
       }
     }
+
+    PTFDeserializer.alterOutputOIForStreaming(ptfDesc);
   }
 
   public void initializeWindowing(WindowTableFunctionDef def) throws HiveException {
@@ -329,6 +331,19 @@ public class PTFDeserializer {
     ArrayList<TypeInfo> fields = t.getAllStructFieldTypeInfos();
     return new ArrayList<?>[]
     {fnames, fields};
+  }
+
+  /*
+   * If the final PTF in a PTFChain can stream its output, then set the OI of its OutputShape
+   * to the OI returned by the TableFunctionEvaluator.
+   */
+  public static void alterOutputOIForStreaming(PTFDesc ptfDesc) {
+    PartitionedTableFunctionDef tDef = ptfDesc.getFuncDef();
+    TableFunctionEvaluator tEval = tDef.getTFunction();
+
+    if ( tEval.canIterateOutput() ) {
+      tDef.getOutputShape().setOI(tEval.getOutputOI());
+    }
   }
 
 }
