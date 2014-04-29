@@ -1468,14 +1468,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param holdDDLTime
    * @param isSrcLocal
    *          If the source directory is LOCAL
+   * @param isSkewedStoreAsSubdir
+   *          if list bucketing enabled
    */
   public void loadTable(Path loadPath, String tableName, boolean replace,
-      boolean holdDDLTime, boolean isSrcLocal) throws HiveException {
+      boolean holdDDLTime, boolean isSrcLocal, boolean isSkewedStoreAsSubdir) throws HiveException {
     Table tbl = getTable(tableName);
     if (replace) {
       tbl.replaceFiles(loadPath, isSrcLocal);
     } else {
       tbl.copyFiles(loadPath, isSrcLocal);
+    }
+
+    try {
+      if (isSkewedStoreAsSubdir) {
+        SkewedInfo skewedInfo = tbl.getSkewedInfo();
+        // Construct list bucketing location mappings from sub-directory name.
+        Map<List<String>, String> skewedColValueLocationMaps = constructListBucketingLocationMap(
+            tbl.getPath(), skewedInfo);
+        // Add list bucketing location mappings.
+        skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
+      }
+    } catch (IOException e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
     }
 
     if (!holdDDLTime) {

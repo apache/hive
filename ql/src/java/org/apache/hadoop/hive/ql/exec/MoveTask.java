@@ -273,7 +273,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
           db.loadTable(tbd.getSourcePath(), tbd.getTable()
-              .getTableName(), tbd.getReplace(), tbd.getHoldDDLTime(), work.isSrcLocal());
+              .getTableName(), tbd.getReplace(), tbd.getHoldDDLTime(), work.isSrcLocal(),
+              isSkewedStoredAsDirs(tbd));
           if (work.getOutputs() != null) {
             work.getOutputs().add(new WriteEntity(table,
                 (tbd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
