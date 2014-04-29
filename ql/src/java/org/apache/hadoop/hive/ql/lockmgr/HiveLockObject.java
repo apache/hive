@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -121,6 +122,44 @@ public class HiveLockObject {
 
       return ret;
     }
+ 
+    @Override
+    public int hashCode() {
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean queryId_present = queryId == null;
+      builder.append(queryId_present);
+      if (queryId_present) {
+        builder.append(queryId);
+      }
+
+      boolean lockTime_present = lockTime == null;
+      builder.append(lockTime);
+      if (lockTime_present) {
+        builder.append(lockTime);
+      }
+
+      boolean lockMode_present = lockMode == null;
+      builder.append(lockMode);
+      if (lockMode_present) {
+        builder.append(lockMode);
+      }
+
+      boolean queryStr_present = queryStr == null;
+      builder.append(queryStr);
+      if (queryStr_present) {
+        builder.append(queryStr);
+      }
+
+      boolean clienIp_present = clientIp == null;
+      builder.append(clientIp);
+      if (clienIp_present) {
+        builder.append(clientIp);
+      }
+
+      return builder.toHashCode();
+    }
+
   }
 
   /* user supplied data for that object */
@@ -214,6 +253,18 @@ public class HiveLockObject {
     return Arrays.equals(pathNames, tgt.pathNames) &&
         data == null ? tgt.getData() == null :
         tgt.getData() != null && data.equals(tgt.getData());
+  }
+
+  @Override
+  public int hashCode() {
+    HashCodeBuilder builder = new HashCodeBuilder();
+    builder.append(pathNames);
+    boolean data_present = data == null;
+    builder.append(data_present);
+    if (data_present) {
+      builder.append(data);
+    }
+    return builder.toHashCode();
   }
 
   private static String removeDelimiter(String in) {
