@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
@@ -64,20 +66,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       boolean processWindow = processWindow(wFn);
       pItr.reset();
       if ( !processWindow ) {
-        GenericUDAFEvaluator fEval = wFn.getWFnEval();
-        Object[] args = new Object[wFn.getArgs() == null ? 0 : wFn.getArgs().size()];
-        AggregationBuffer aggBuffer = fEval.getNewAggregationBuffer();
-        while(pItr.hasNext()) {
-          Object row = pItr.next();
-          int i =0;
-          if ( wFn.getArgs() != null ) {
-            for(PTFExpressionDef arg : wFn.getArgs()) {
-              args[i++] = arg.getExprEvaluator().evaluate(row);
-            }
-          }
-          fEval.aggregate(aggBuffer, args);
-        }
-        Object out = fEval.evaluate(aggBuffer);
+        Object out = evaluateWindowFunction(wFn, pItr);
         if ( !wFn.isPivotResult()) {
           out = new SameList(iPart.size(), out);
         }
@@ -109,6 +98,28 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
   }
 
+  Object evaluateWindowFunction(WindowFunctionDef wFn,
+      PTFPartitionIterator<Object> pItr) throws HiveException {
+    GenericUDAFEvaluator fEval = wFn.getWFnEval();
+    Object[] args = new Object[wFn.getArgs() == null ? 0 : wFn.getArgs().size()];
+    AggregationBuffer aggBuffer = fEval.getNewAggregationBuffer();
+    while(pItr.hasNext())
+    {
+      Object row = pItr.next();
+      int i =0;
+      if ( wFn.getArgs() != null ) {
+        for(PTFExpressionDef arg : wFn.getArgs())
+        {
+          args[i++] = arg.getExprEvaluator().evaluate(row);
+        }
+      }
+      fEval.aggregate(aggBuffer, args);
+    }
+    Object out = fEval.evaluate(aggBuffer);
+    out = ObjectInspectorUtils.copyToStandardObject(out, wFn.getOI());
+    return out;
+  }
+
   private boolean processWindow(WindowFunctionDef wFn) {
     WindowFrameDef frame = wFn.getWindowFrame();
     if ( frame == null ) {
@@ -119,6 +130,54 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       return false;
     }
     return true;
+  }
+
+  @Override
+  public boolean canIterateOutput() {
+    return true;
+  }
+
+  @SuppressWarnings("rawtypes")
+  @Override
+  public Iterator<Object> iterator(PTFPartitionIterator<Object> pItr) throws HiveException {
+    WindowTableFunctionDef wTFnDef = (WindowTableFunctionDef) getTableDef();
+    ArrayList<Object> output = new ArrayList<Object>();
+    List<?>[] outputFromPivotFunctions = new List<?>[wTFnDef.getWindowFunctions().size()];
+    ArrayList<Integer> wFnsWithWindows = new ArrayList<Integer>();
+    PTFPartition iPart = pItr.getPartition();
+
+    int i=0;
+    for(WindowFunctionDef wFn : wTFnDef.getWindowFunctions()) {
+      boolean processWindow = processWindow(wFn);
+      pItr.reset();
+      if ( !processWindow && !wFn.isPivotResult() ) {
+        Object out = evaluateWindowFunction(wFn, pItr);
+        output.add(out);
+      } else if (wFn.isPivotResult()) {
+        /*
+         * for functions that currently return the output as a List,
+         * for e.g. the ranking functions, lead/lag, ntile, cume_dist
+         * - for now continue to execute them here. The functions need to provide a way to get
+         *   each output row as we are iterating through the input. This is relative
+         *   easy to do for ranking functions; not possible for lead, ntile, cume_dist.
+         *
+         */
+        outputFromPivotFunctions[i] = (List) evaluateWindowFunction(wFn, pItr);
+        output.add(null);
+      } else {
+        output.add(null);
+        wFnsWithWindows.add(i);
+      }
+      i++;
+    }
+
+    i=0;
+    for(i=0; i < iPart.getOutputOI().getAllStructFieldRefs().size(); i++) {
+      output.add(null);
+    }
+
+    return new WindowingIterator(iPart, output, outputFromPivotFunctions,
+        ArrayUtils.toPrimitive(wFnsWithWindows.toArray(new Integer[wFnsWithWindows.size()])));
   }
 
   public static class WindowingTableFunctionResolver extends TableFunctionResolver
@@ -193,27 +252,11 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       Order order)
     throws HiveException {
     ArrayList<Object> vals = new ArrayList<Object>();
-
-    GenericUDAFEvaluator fEval = wFnDef.getWFnEval();
-
-    Object[] args = new Object[wFnDef.getArgs() == null ? 0 : wFnDef.getArgs().size()];
     for(int i=0; i < iPart.size(); i++) {
-      AggregationBuffer aggBuffer = fEval.getNewAggregationBuffer();
       Range rng = getRange(wFnDef, i, iPart, order);
       PTFPartitionIterator<Object> rItr = rng.iterator();
       PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
-      while(rItr.hasNext()) {
-        Object row = rItr.next();
-        int j = 0;
-        if ( wFnDef.getArgs() != null ) {
-          for(PTFExpressionDef arg : wFnDef.getArgs()) {
-            args[j++] = arg.getExprEvaluator().evaluate(row);
-          }
-        }
-        fEval.aggregate(aggBuffer, args);
-      }
-      Object out = fEval.evaluate(aggBuffer);
-      out = ObjectInspectorUtils.copyToStandardObject(out, wFnDef.getOI());
+      Object out = evaluateWindowFunction(wFnDef, rItr);
       vals.add(out);
     }
     return vals;
@@ -788,6 +831,79 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     @Override
     public int size() {
       return sz;
+    }
+
+  }
+
+  public class WindowingIterator implements Iterator<Object> {
+
+    ArrayList<Object> output;
+    List<?>[] outputFromPivotFunctions;
+    int currIdx;
+    PTFPartition iPart;
+    /*
+     * these are the functions that have a Window.
+     * Fns w/o a Window have already been processed.
+     */
+    int[] wFnsToProcess;
+    WindowTableFunctionDef wTFnDef;
+    Order order;
+    PTFDesc ptfDesc;
+    StructObjectInspector inputOI;
+
+    WindowingIterator(PTFPartition iPart, ArrayList<Object>  output,
+        List<?>[] outputFromPivotFunctions, int[] wFnsToProcess) {
+      this.iPart = iPart;
+      this.output = output;
+      this.outputFromPivotFunctions = outputFromPivotFunctions;
+      this.wFnsToProcess = wFnsToProcess;
+      this.currIdx = 0;
+      wTFnDef = (WindowTableFunctionDef) getTableDef();
+      order = wTFnDef.getOrder().getExpressions().get(0).getOrder();
+      ptfDesc = getQueryDef();
+      inputOI = iPart.getOutputOI();
+    }
+
+    @Override
+    public boolean hasNext() {
+      return currIdx < iPart.size();
+    }
+
+    @Override
+    public Object next() {
+      int i;
+      for(i = 0; i < outputFromPivotFunctions.length; i++ ) {
+        if ( outputFromPivotFunctions[i] != null ) {
+          output.set(i, outputFromPivotFunctions[i].get(currIdx));
+        }
+      }
+
+      try {
+        for (int j : wFnsToProcess) {
+          WindowFunctionDef wFn = wTFnDef.getWindowFunctions().get(j);
+          Range rng = getRange(wFn, currIdx, iPart, order);
+          PTFPartitionIterator<Object> rItr = rng.iterator();
+          PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
+          output.set(j, evaluateWindowFunction(wFn, rItr));
+        }
+
+        Object iRow = iPart.getAt(currIdx);
+        i = wTFnDef.getWindowFunctions().size();
+        for (StructField f : inputOI.getAllStructFieldRefs()) {
+          output.set(i++, inputOI.getStructFieldData(iRow, f));
+        }
+
+      } catch (HiveException he) {
+        throw new RuntimeException(he);
+      }
+
+      currIdx++;
+      return output;
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
     }
 
   }

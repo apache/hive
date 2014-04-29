@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf.ptf;
 
+import java.util.Iterator;
+
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
@@ -136,6 +138,37 @@ public abstract class TableFunctionEvaluator {
 
   protected PTFPartition _transformRawInput(PTFPartition iPart) throws HiveException {
     return null;
+  }
+
+
+  /*
+   * A TableFunction may be able to provide its Output as an Iterator.
+   * In case it can then for Map-side processing and for the last PTF in a Reduce-side chain
+   * we can forward rows one by one. This will save the time/space to populate and read an Output
+   * Partition.
+   */
+  public boolean canIterateOutput() {
+    return false;
+  }
+
+  public Iterator<Object> iterator(PTFPartitionIterator<Object> pItr) throws HiveException {
+    if (!canIterateOutput()) {
+      throw new HiveException(
+          "Internal error: iterator called on a PTF that cannot provide its output as an Iterator");
+    }
+    throw new HiveException(String.format(
+        "Internal error: PTF %s, provides no iterator method",
+        getClass().getName()));
+  }
+  
+  public Iterator<Object> transformRawInputIterator(PTFPartitionIterator<Object> pItr) throws HiveException {
+    if (!canIterateOutput()) {
+      throw new HiveException(
+          "Internal error: iterator called on a PTF that cannot provide its output as an Iterator");
+    }
+    throw new HiveException(String.format(
+        "Internal error: PTF %s, provides no iterator method",
+        getClass().getName()));
   }
 
   public void close() {
