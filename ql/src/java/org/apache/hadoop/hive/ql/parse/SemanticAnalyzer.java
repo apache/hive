@@ -2217,7 +2217,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       /*
        * Clone the Search AST; apply all rewrites on the clone.
        */
-      ASTNode clonedSearchCond = (ASTNode) ParseDriver.adaptor.dupTree(searchCond);
+      ASTNode clonedSearchCond = (ASTNode) SubQueryUtils.adaptor.dupTree(searchCond);
       List<ASTNode> subQueries = SubQueryUtils.findSubQueries(clonedSearchCond);
 
       for(int i=0; i < subQueries.size(); i++) {
@@ -2230,6 +2230,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(),
             sqIdx, subQueryAST, originalSubQueryAST, ctx);
 
+        if ( !forHavingClause ) {
+          qb.setWhereClauseSubQueryPredicate(subQuery);
+        } else {
+          qb.setHavingClauseSubQueryPredicate(subQuery);
+        }
         String havingInputAlias = null;
 
         if ( forHavingClause ) {

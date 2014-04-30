@@ -76,7 +76,16 @@ public class QB {
 	 * clause.
 	 */
 	private int numSubQueryPredicates;
-  
+	
+	/*
+	 * for now a top level QB can have 1 where clause SQ predicate.
+	 */
+	private QBSubQuery whereClauseSubQueryPredicate;
+	
+  /*
+   * for now a top level QB can have 1 where clause SQ predicate.
+   */
+	private QBSubQuery havingClauseSubQueryPredicate;
 
   // results
 
@@ -340,5 +349,21 @@ public class QB {
 	protected int incrNumSubQueryPredicates() {
 		return ++numSubQueryPredicates;
 	}
+	
+	void setWhereClauseSubQueryPredicate(QBSubQuery sq) {
+	  whereClauseSubQueryPredicate = sq;
+  }
+	
+	public QBSubQuery getWhereClauseSubQueryPredicate() {
+	  return whereClauseSubQueryPredicate;
+	}
+	
+	void setHavingClauseSubQueryPredicate(QBSubQuery sq) {
+    havingClauseSubQueryPredicate = sq;
+  }
+	
+	public QBSubQuery getHavingClauseSubQueryPredicate() {
+    return havingClauseSubQueryPredicate;
+  }
 
 }
