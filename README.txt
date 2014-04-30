@@ -12,36 +12,41 @@ of Apache Hadoop (TM), it provides:
 * Access to files stored either directly in Apache HDFS (TM) or in other
   data storage systems such as Apache HBase (TM)
 
-* Query execution via MapReduce
+* Query execution using Apache Hadoop MapReduce or Apache Tez
+  frameworks.
 
-Hive defines a simple SQL-like query language, called QL, that enables
-users familiar with SQL to query the data. At the same time, this
-language also allows programmers who are familiar with the MapReduce
-framework to be able to plug in their custom mappers and reducers to
-perform more sophisticated analysis that may not be supported by the
-built-in capabilities of the language. QL can also be extended with
-custom scalar functions (UDF's), aggregations (UDAF's), and table
+Hive implements a dialect of SQL (Hive QL) that focuses on analytics
+and presents a rich set of SQL semantics including OLAP functions,
+subqueries, common table expressions and more. Hive allows SQL
+developers or users with SQL tools to easily query, analyze and
+process data stored in Hadoop.
+Hive also allows programmers familiar with the MapReduce framework
+to plug in their custom mappers and reducers to perform more
+sophisticated analysis that may not be supported by the built-in
+capabilities of the language. QL can also be extended with custom
+scalar functions (UDF's), aggregations (UDAF's), and table
 functions (UDTF's).
 
-Please note that Hadoop is a batch processing system and Hadoop jobs
-tend to have high latency and incur substantial overheads in job
-submission and scheduling. Consequently the average latency for Hive
-queries is generally very high (minutes) even when data sets involved
-are very small (say a few hundred megabytes). As a result it cannot be
-compared with systems such as Oracle where analyses are conducted on a
-significantly smaller amount of data but the analyses proceed much
-more iteratively with the response times between iterations being less
-than a few minutes. Hive aims to provide acceptable (but not optimal)
-latency for interactive data browsing, queries over small data sets or
-test queries.
+Hive users have a choice of 2 runtimes when executing SQL queries.
+Users can choose to use the Apache Hadoop MapReduce framework,
+which is mature and proven at large scales. MapReduce is a purely
+batch framework, and queries run using the MapReduce framework
+may experience higher latencies (tens of seconds), even
+over small datasets. Alternatively, users can choose to use the
+newer Apache Tez framework to process SQL queries. Tez is
+designed for interactive query and has substantially reduced
+overheads versus MapReduce. Users are free to swtich back and
+forth between these frameworks at any time. In either case,
+Hive is best suited for use cases where the amount of data
+processed is large enough to require a distributed system.
 
-Hive is not designed for online transaction processing and does not
-support real-time queries or row level insert/updates. It is best used
-for batch jobs over large sets of immutable data (like web logs). What
-Hive values most are scalability (scale out with more machines added
-dynamically to the Hadoop cluster), extensibility (with MapReduce
-framework and UDF/UDAF/UDTF), fault-tolerance, and loose-coupling with
-its input formats.
+Hive is not designed for online transaction processing and does
+not support row level insert/updates. It is best used for batch
+jobs over large sets of immutable data (like web logs). What
+Hive values most are scalability (scale out with more machines
+added dynamically to the Hadoop cluster), extensibility (with
+MapReduce framework and UDF/UDAF/UDTF), fault-tolerance, and
+loose-coupling with its input formats.
 
 
 General Info
@@ -68,9 +73,9 @@ Getting Started
 Requirements
 ============
 
-- Java 1.6
+- Java 1.6, 1.7
 
-- Hadoop 0.20.x (x >= 1)
+- Hadoop 1.x, 2.x
 
 
 Upgrading from older versions of Hive
@@ -82,9 +87,10 @@ Upgrading from older versions of Hive
   schema upgrade scripts located in the scripts/metastore/upgrade
   directory.
 
-- We have provided upgrade scripts for MySQL, PostgreSQL, Oracle and Derby
-  databases. If you are using a different database for your MetaStore
-  you will need to provide your own upgrade script.
+- We have provided upgrade scripts for MySQL, PostgreSQL, Oracle,
+  Microsoft SQL Server, and Derby databases. If you are using a
+  different database for your MetaStore you will need to provide
+  your own upgrade script.
 
 Useful mailing lists
 ====================
