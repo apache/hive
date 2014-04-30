@@ -155,6 +155,8 @@ public final class SemanticAnalyzerFactory {
       switch (tree.getToken().getType()) {
       case HiveParser.TOK_EXPLAIN:
         return new ExplainSemanticAnalyzer(conf);
+      case HiveParser.TOK_EXPLAIN_SQ_REWRITE:
+        return new ExplainSQRewriteSemanticAnalyzer(conf);
       case HiveParser.TOK_LOAD:
         return new LoadSemanticAnalyzer(conf);
       case HiveParser.TOK_EXPORT:

@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
+import org.apache.hadoop.hive.ql.plan.ExplainSQRewriteWork;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
@@ -78,6 +79,8 @@ public final class TaskFactory {
         FunctionTask.class));
     taskvec
         .add(new TaskTuple<ExplainWork>(ExplainWork.class, ExplainTask.class));
+    taskvec
+        .add(new TaskTuple<ExplainSQRewriteWork>(ExplainSQRewriteWork.class, ExplainSQRewriteTask.class));
     taskvec.add(new TaskTuple<ConditionalWork>(ConditionalWork.class,
         ConditionalTask.class));
     taskvec.add(new TaskTuple<MapredWork>(MapredWork.class,

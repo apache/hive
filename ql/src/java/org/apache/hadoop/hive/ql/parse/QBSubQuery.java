@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.ql.parse.SubQueryDiagnostic.QBSubQueryRewrite;
 
 public class QBSubQuery implements ISubQueryJoinInfo {
   
@@ -458,6 +459,8 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   private int numOuterCorrExprsForHaving;
   
   private NotInCheck notInCheck;
+  
+  private QBSubQueryRewrite subQueryDiagnostic;
 
   public QBSubQuery(String outerQueryId,
       int sqIdx,
@@ -484,6 +487,8 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     if ( operator.getType() == SubQueryType.NOT_IN ) {
       notInCheck = new NotInCheck();
     }
+    
+    subQueryDiagnostic = SubQueryDiagnostic.getRewrite(this, ctx.getTokenRewriteStream(), ctx);
   }
 
   public ASTNode getSubQueryAST() {
@@ -494,6 +499,13 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   }
   public SubQueryTypeDef getOperator() {
     return operator;
+  }
+  
+  public ASTNode getOriginalSubQueryASTForRewrite() {
+    return (operator.getType() == SubQueryType.NOT_EXISTS
+        || operator.getType() == SubQueryType.NOT_IN ? 
+        (ASTNode) originalSQASTOrigin.getUsageNode().getParent() : 
+        originalSQASTOrigin.getUsageNode());
   }
 
   void validateAndRewriteAST(RowResolver outerQueryRR,
@@ -650,6 +662,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         rewriteCorrConjunctForHaving(parentQueryJoinCond, true, 
             outerQueryAlias, outerQueryRR, outerQueryCol);
       }
+      subQueryDiagnostic.addJoinCondition(parentQueryJoinCond, outerQueryCol != null, true);
     }
     joinConditionAST = SubQueryUtils.andAST(parentQueryJoinCond, joinConditionAST);
     setJoinType();
@@ -669,7 +682,11 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   ASTNode updateOuterQueryFilter(ASTNode outerQryFilter) {
     if (postJoinConditionAST == null ) {
       return outerQryFilter;
-    } else if ( outerQryFilter == null ) {
+    }  
+    
+    subQueryDiagnostic.addPostJoinCondition(postJoinConditionAST);
+    
+    if ( outerQryFilter == null ) {
       return postJoinConditionAST;
     }
     ASTNode node = SubQueryUtils.andAST(outerQryFilter, postJoinConditionAST);
@@ -781,9 +798,13 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         String exprAlias = getNextCorrExprAlias();
         ASTNode sqExprAlias = SubQueryUtils.createAliasAST(exprAlias);
         ASTNode sqExprForCorr = SubQueryUtils.createColRefAST(alias, exprAlias);
+        boolean corrCondLeftIsRewritten = false;
+        boolean corrCondRightIsRewritten = false;
 
         if ( conjunct.getLeftExprType().refersSubQuery() ) {
+          corrCondLeftIsRewritten = true;
           if ( forHavingClause && conjunct.getRightOuterColInfo() != null ) {
+            corrCondRightIsRewritten = true;
             rewriteCorrConjunctForHaving(conjunctAST, false, outerQueryAlias, 
                 parentQueryRR, conjunct.getRightOuterColInfo());
           }
@@ -793,16 +814,21 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           subQueryJoinAliasExprs.add(sqExprForCorr);
           ASTNode selExpr = SubQueryUtils.createSelectItem(conjunct.getLeftExpr(), sqExprAlias);
           selectClause.addChild(selExpr);
+          subQueryDiagnostic.addSelectClauseRewrite(conjunct.getLeftExpr(), exprAlias);
           numOfCorrelationExprsAddedToSQSelect++;
           if ( containsAggregationExprs ) {
             ASTNode gBy = getSubQueryGroupByAST();
             SubQueryUtils.addGroupExpressionToFront(gBy, conjunct.getLeftExpr());
+            subQueryDiagnostic.addGByClauseRewrite(conjunct.getLeftExpr());
           }
           if ( notInCheck != null ) {
             notInCheck.addCorrExpr((ASTNode)conjunctAST.getChild(0));
           }
+          subQueryDiagnostic.addJoinCondition(conjunctAST, corrCondLeftIsRewritten, corrCondRightIsRewritten);
         } else {
+          corrCondRightIsRewritten = true;
           if ( forHavingClause && conjunct.getLeftOuterColInfo() != null ) {
+            corrCondLeftIsRewritten = true;
             rewriteCorrConjunctForHaving(conjunctAST, true, outerQueryAlias, 
                 parentQueryRR, conjunct.getLeftOuterColInfo());
           }
@@ -812,17 +838,21 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           subQueryJoinAliasExprs.add(sqExprForCorr);
           ASTNode selExpr = SubQueryUtils.createSelectItem(conjunct.getRightExpr(), sqExprAlias);
           selectClause.addChild(selExpr);
+          subQueryDiagnostic.addSelectClauseRewrite(conjunct.getRightExpr(), exprAlias);
           numOfCorrelationExprsAddedToSQSelect++;
           if ( containsAggregationExprs ) {
             ASTNode gBy = getSubQueryGroupByAST();
             SubQueryUtils.addGroupExpressionToFront(gBy, conjunct.getRightExpr());
+            subQueryDiagnostic.addGByClauseRewrite(conjunct.getRightExpr());
           }
           if ( notInCheck != null ) {
             notInCheck.addCorrExpr((ASTNode)conjunctAST.getChild(1));
           }
+          subQueryDiagnostic.addJoinCondition(conjunctAST, corrCondLeftIsRewritten, corrCondRightIsRewritten);
         }
       } else {
         sqNewSearchCond = SubQueryUtils.andAST(sqNewSearchCond, conjunctAST);
+        subQueryDiagnostic.addWhereClauseRewrite(conjunctAST);
       }
     }
 
@@ -834,6 +864,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
          * left.
          */
         sqNewSearchCond = SubQueryUtils.constructTrueCond();
+        subQueryDiagnostic.addWhereClauseRewrite("1 = 1");
       }
       whereClause.setChild(0, sqNewSearchCond);
     }
@@ -870,6 +901,8 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     for(ASTNode child : newChildren ) {
       subQueryAST.addChild(child);
     }
+    
+    subQueryDiagnostic.setAddGroupByClause();
 
     return groupBy;
   }
@@ -893,6 +926,11 @@ public class QBSubQuery implements ISubQueryJoinInfo {
 
   public int getNumOfCorrelationExprsAddedToSQSelect() {
     return numOfCorrelationExprsAddedToSQSelect;
+  }
+  
+    
+  public QBSubQueryRewrite getDiagnostic() {
+    return subQueryDiagnostic;
   }
   
   public QBSubQuery getSubQuery() {
