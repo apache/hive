@@ -2321,7 +2321,9 @@
   <name>hive.server2.thrift.sasl.qop</name>
   <value>auth</value>
   <description>Sasl QOP value; Set it to one of following values to enable higher levels of
-     protection for HiveServer2 communication with clients.
+     protection for HiveServer2 communication with clients. hadoop.rpc.protection being set 
+     to a higher level than HiveServer2 does not make sense in most situations. 
+     HiveServer2 ignores hadoop.rpc.protection in favor of hive.server2.thrift.sasl.qop.
       "auth" - authentication only (default)
       "auth-int" - authentication plus integrity protection
       "auth-conf" - authentication plus integrity and confidentiality protection

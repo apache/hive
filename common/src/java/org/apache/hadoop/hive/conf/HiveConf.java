@@ -884,6 +884,9 @@ public class HiveConf extends Configuration {
     // binary transport settings
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000),
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", ""),
+    // hadoop.rpc.protection being set to a higher level than HiveServer2
+    // does not make sense in most situations.
+    // HiveServer2 ignores hadoop.rpc.protection in favor of hive.server2.thrift.sasl.qop.
     HIVE_SERVER2_THRIFT_SASL_QOP("hive.server2.thrift.sasl.qop", "auth",
         new StringsValidator("auth", "auth-int", "auth-conf")),
     HIVE_SERVER2_THRIFT_MIN_WORKER_THREADS("hive.server2.thrift.min.worker.threads", 5),
