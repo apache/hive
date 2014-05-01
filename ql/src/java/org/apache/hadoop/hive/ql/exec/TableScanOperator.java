@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -64,6 +65,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   private transient int rowLimit = -1;
   private transient int currCount = 0;
+
+  private String defaultPartitionName;
 
   public TableDesc getTableDesc() {
     return tableDesc;
@@ -145,8 +148,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
             (StructObjectInspector) inputObjInspectors[0], ObjectInspectorCopyOption.WRITABLE);
 
         for (Object o : writable) {
-          assert (o != null && o.toString().length() > 0);
-          values.add(o.toString());
+          // It's possible that a parition column may have NULL value, in which case the row belongs
+          // to the special partition, __HIVE_DEFAULT_PARTITION__.
+          values.add(o == null ? defaultPartitionName : o.toString());
         }
         partitionSpecs = FileUtils.makePartName(conf.getPartColumns(), values);
         LOG.info("Stats Gathering found a new partition spec = " + partitionSpecs);
@@ -205,6 +209,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       jc = new JobConf(hconf);
     }
 
+    defaultPartitionName = HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     currentStat = null;
     stats = new HashMap<String, Stat>();
     if (conf.getPartColumns() == null || conf.getPartColumns().size() == 0) {

@@ -46,8 +46,8 @@ STAGE PLANS:
                 TableScan
                   alias: s2
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                    expressions: key (type: string)
+                    outputColumnNames: _col0
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -68,8 +68,8 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Select Operator
-                  expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
-                  outputColumnNames: _col0, _col1
+                  expressions: 'tst1' (type: string)
+                  outputColumnNames: _col0
                   Select Operator
                     expressions: _col0 (type: string)
                     outputColumnNames: _col0
