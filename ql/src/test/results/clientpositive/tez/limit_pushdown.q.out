@@ -481,7 +481,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 31436 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.3
-                        value expressions: _col2 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -577,7 +576,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 1849 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.3
-                        value expressions: _col3 (type: bigint), _col4 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -981,8 +979,8 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: value (type: string), key (type: string)
-                    outputColumnNames: value, key
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
                     Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: value (type: string)
