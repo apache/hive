@@ -1,0 +1,48 @@
+PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
+
+CREATE TABLE  t_gpr1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
+
+CREATE TABLE  t_gpr1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_gpr1
+PREHOOK: query: -- all privileges should have been set for user
+
+GRANT ALL ON t_gpr1 TO ROLE public
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_gpr1
+POSTHOOK: query: -- all privileges should have been set for user
+
+GRANT ALL ON t_gpr1 TO ROLE public
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_gpr1
+PREHOOK: query: SHOW GRANT ON TABLE t_gpr1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT ON TABLE t_gpr1
+POSTHOOK: type: SHOW_GRANT
+default	t_gpr1			public	ROLE	DELETE	false	-1	user1
+default	t_gpr1			public	ROLE	INSERT	false	-1	user1
+default	t_gpr1			public	ROLE	SELECT	false	-1	user1
+default	t_gpr1			public	ROLE	UPDATE	false	-1	user1
+default	t_gpr1			user1	USER	DELETE	true	-1	user1
+default	t_gpr1			user1	USER	INSERT	true	-1	user1
+default	t_gpr1			user1	USER	SELECT	true	-1	user1
+default	t_gpr1			user1	USER	UPDATE	true	-1	user1
+PREHOOK: query: SHOW CURRENT ROLES
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: SHOW CURRENT ROLES
+POSTHOOK: type: SHOW_ROLES
+public
+
+PREHOOK: query: -- user2 should be able to do a describe table, as pubic is in the current roles
+DESC t_gpr1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t_gpr1
+POSTHOOK: query: -- user2 should be able to do a describe table, as pubic is in the current roles
+DESC t_gpr1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t_gpr1
+i                   	int                 	                    
