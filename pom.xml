@@ -64,6 +64,7 @@
     <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
     <test.log4j.scheme>file://</test.log4j.scheme>
     <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
+    <test.tmp.dir.uri>file://${test.tmp.dir}</test.tmp.dir.uri>
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
 
@@ -757,6 +758,7 @@
             <test.data.files>${basedir}/${hive.path.to.root}/data/files</test.data.files>
             <test.data.dir>${basedir}/${hive.path.to.root}/data/files</test.data.dir>
             <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
+            <test.tmp.dir.uri>${test.tmp.dir.uri}</test.tmp.dir.uri>
             <test.dfs.mkdir>${test.dfs.mkdir}</test.dfs.mkdir>
             <test.output.overwrite>${test.output.overwrite}</test.output.overwrite>
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
@@ -1047,6 +1049,7 @@
         <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop.cmd</hadoop.bin.path>
         <test.extra.path>;${env.HADOOP_HOME}/bin</test.extra.path>
         <test.hive.hadoop.classpath>${project.build.directory}/deplibs/*</test.hive.hadoop.classpath>
+        <test.tmp.dir.uri>file:///${test.tmp.dir}</test.tmp.dir.uri>
         <test.log4j.scheme>file:/</test.log4j.scheme>
       </properties>
     </profile>
