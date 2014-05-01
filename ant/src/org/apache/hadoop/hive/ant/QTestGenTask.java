@@ -442,7 +442,7 @@ public class QTestGenTask extends Task {
       }
       ctx.put("logDir", relativePath(hiveRootDir, logDir));
       ctx.put("clusterMode", clusterMode);
-      ctx.put("hiveConfDir", hiveConfDir);
+      ctx.put("hiveConfDir", escapePath(hiveConfDir));
       ctx.put("hadoopVersion", hadoopVersion);
 
       File outFile = new File(outDir, className + ".java");

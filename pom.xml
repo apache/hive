@@ -60,7 +60,9 @@
     <hive.path.to.root>.</hive.path.to.root>
 
     <!-- Test Properties -->
+    <test.extra.path></test.extra.path>
     <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
+    <test.log4j.scheme>file://</test.log4j.scheme>
     <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
@@ -728,6 +730,7 @@
             <LANG>en_US.UTF-8</LANG>
             <HADOOP_CLASSPATH>${test.tmp.dir}/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
             <HIVE_HADOOP_TEST_CLASSPATH>${test.hive.hadoop.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
+            <PATH>${env.PATH}${test.extra.path}</PATH>
           </environmentVariables>
           <systemPropertyVariables>
             <build.dir>${project.build.directory}</build.dir>
@@ -744,7 +747,7 @@
             <!-- required for hive-exec jar path and tests which reference a jar -->
             <maven.local.repository>${maven.repo.local}</maven.local.repository>
             <mapred.job.tracker>local</mapred.job.tracker>
-            <log4j.configuration>file://${test.tmp.dir}/conf/hive-log4j.properties</log4j.configuration>
+            <log4j.configuration>${test.log4j.scheme}${test.tmp.dir}/conf/hive-log4j.properties</log4j.configuration>
             <log4j.debug>true</log4j.debug>
             <!-- don't diry up /tmp -->
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
@@ -1042,7 +1045,9 @@
       </build>
       <properties>
         <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop.cmd</hadoop.bin.path>
+        <test.extra.path>;${env.HADOOP_HOME}/bin</test.extra.path>
         <test.hive.hadoop.classpath>${project.build.directory}/deplibs/*</test.hive.hadoop.classpath>
+        <test.log4j.scheme>file:/</test.log4j.scheme>
       </properties>
     </profile>
   </profiles>
