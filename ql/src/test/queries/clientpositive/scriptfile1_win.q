@@ -3,7 +3,7 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
 CREATE TABLE dest1(key INT, value STRING);
 
-ADD FILE src/test/scripts/testgrep_win.bat;
+ADD FILE ../../ql/src/test/scripts/testgrep_win.bat;
 
 FROM (
   FROM src

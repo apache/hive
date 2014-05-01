@@ -71,9 +71,9 @@ public class TestExecDriver extends TestCase {
 
   static HiveConf conf;
 
-  private static final String tmpdir = System.getProperty("test.tmp.dir");
+  private static final String tmpdir;
   private static final Log LOG = LogFactory.getLog(TestExecDriver.class);
-  private static final Path tmppath = new Path(tmpdir);
+  private static final Path tmppath;
   private static Hive db;
   private static FileSystem fs;
 
@@ -86,6 +86,8 @@ public class TestExecDriver extends TestCase {
       if (Shell.WINDOWS) {
         WindowsPathUtil.convertPathsFromWindowsToHdfs(conf);
       }
+      tmpdir = System.getProperty("test.tmp.dir");
+      tmppath = new Path(tmpdir);
 
       fs = FileSystem.get(conf);
       if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDir()) {
