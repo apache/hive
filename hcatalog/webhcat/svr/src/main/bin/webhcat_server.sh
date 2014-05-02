@@ -38,8 +38,9 @@ function real_script_name() {
 }
 
 function usage() {
-        echo "usage: $0 [start|stop|foreground]"
+        echo "usage: $0 [start|startDebug|stop|foreground]"
         echo "  start           Start the Webhcat Server"
+        echo "  startDebug      Start the Webhcat Server listening for debugger on port 5005"
         echo "  stop            Stop the Webhcat Server"
         echo "  foreground      Run the Webhcat Server in the foreground"
         exit 1
@@ -223,6 +224,10 @@ start_cmd="$HADOOP_PREFIX/bin/hadoop jar $JAR org.apache.hive.hcatalog.templeton
 cmd=$1
 case $cmd in
         start)
+                start_webhcat
+                ;;
+        startDebug)
+                export HADOOP_OPTS="${HADOOP_OPTS} -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
                 start_webhcat
                 ;;
         stop)

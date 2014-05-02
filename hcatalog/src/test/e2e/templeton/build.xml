@@ -87,8 +87,8 @@
              if group=3, then 3 .conf files will be processed in parallel
              if conf.file=2 there will be 2 thread per .conf file, each thread 
              executing a single group (identified by 'name' element) -->
-        <property name="fork.factor.group" value="5"/>
-        <property name="fork.factor.conf.file" value="5"/>
+        <property name="fork.factor.group" value="3"/>
+        <property name="fork.factor.conf.file" value="3"/>
         <property name="e2e.debug" value="false"/>
         <property name="tests.to.run" value=""/>
 
