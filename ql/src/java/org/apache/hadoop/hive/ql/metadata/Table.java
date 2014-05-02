@@ -139,7 +139,7 @@ public class Table implements Serializable {
   /**
    * Initialize an emtpy table.
    */
-  static org.apache.hadoop.hive.metastore.api.Table
+  public static org.apache.hadoop.hive.metastore.api.Table
   getEmptyTable(String databaseName, String tableName) {
     StorageDescriptor sd = new StorageDescriptor();
     {
