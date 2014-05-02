@@ -96,11 +96,16 @@ public class HCatCreateTableDesc {
 
   Table toHiveTable(HiveConf conf) throws HCatException {
 
-    Table newTable = new Table();
+    /*
+     * get the same defaults as are set when a Table is created via the Hive Driver.
+     */
+   Table newTable = org.apache.hadoop.hive.ql.metadata.Table.getEmptyTable(dbName, tableName);
     newTable.setDbName(dbName);
     newTable.setTableName(tableName);
     if (tblProps != null) {
-      newTable.setParameters(tblProps);
+      for ( Map.Entry<String,String> e : tblProps.entrySet()){
+        newTable.getParameters().put(e.getKey(), e.getValue());
+      }
     }
 
     if (isExternal) {
@@ -110,8 +115,15 @@ public class HCatCreateTableDesc {
       newTable.setTableType(TableType.MANAGED_TABLE.toString());
     }
 
-    StorageDescriptor sd = new StorageDescriptor();
-    sd.setSerdeInfo(new SerDeInfo());
+    // Initialize an sd if one does not exist
+    if (newTable.getSd() == null) {
+      newTable.setSd(new StorageDescriptor());
+    }
+    StorageDescriptor sd = newTable.getSd();
+
+    if (sd.getSerdeInfo() == null){
+      sd.setSerdeInfo(new SerDeInfo());
+    }
     if (location != null) {
       sd.setLocation(location);
     }
@@ -148,7 +160,6 @@ public class HCatCreateTableDesc {
           e);
       }
     }
-    newTable.setSd(sd);
     if(serdeParams != null) {
       for(Map.Entry<String, String> param : serdeParams.entrySet()) {
         sd.getSerdeInfo().putToParameters(param.getKey(), param.getValue());

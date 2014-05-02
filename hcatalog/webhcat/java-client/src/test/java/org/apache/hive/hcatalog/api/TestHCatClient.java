@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -48,6 +49,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -185,6 +187,59 @@ public class TestHCatClient {
     
     assertEquals((expectedDir + "/" + db + ".db/" + tableTwo).toLowerCase(), table2.getLocation().toLowerCase());
     client.close();
+  }
+
+  /**
+   * This test tests that a plain table instantiation matches what hive says an
+   * empty table create should look like.
+   * @throws Exception
+   */
+  @Test
+  public void testEmptyTableInstantiation() throws Exception {
+    HCatClient client = HCatClient.create(new Configuration(hcatConf));
+
+
+    String dbName = "default";
+    String tblName = "testEmptyCreate";
+    ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
+    cols.add(new HCatFieldSchema("id", Type.INT, "id comment"));
+    cols.add(new HCatFieldSchema("value", Type.STRING, "value comment"));
+
+    // Create a minimalistic table
+    client.createTable(HCatCreateTableDesc
+        .create(dbName, tblName, cols)
+        .build());
+
+    HCatTable tCreated = client.getTable(dbName, tblName);
+
+    org.apache.hadoop.hive.metastore.api.Table emptyTable = Table.getEmptyTable(dbName, tblName);
+
+    Map<String, String> createdProps = tCreated.getTblProps();
+    Map<String, String> emptyProps = emptyTable.getParameters();
+
+    mapEqualsContainedIn(emptyProps, createdProps);
+
+    // Test sd params - we check that all the parameters in an empty table
+    // are retained as-is. We may add beyond it, but not change values for
+    // any parameters that hive defines for an empty table.
+
+    Map<String, String> createdSdParams = tCreated.getSerdeParams();
+    Map<String, String> emptySdParams = emptyTable.getSd().getSerdeInfo().getParameters();
+
+    mapEqualsContainedIn(emptySdParams, createdSdParams);
+  }
+
+  /**
+   * Verifies that an inner map is present inside an outer map, with
+   * all values being equal.
+   */
+  private void mapEqualsContainedIn(Map<String, String> inner, Map<String, String> outer) {
+    assertNotNull(inner);
+    assertNotNull(outer);
+    for ( Map.Entry<String,String> e : inner.entrySet()){
+      assertTrue(outer.containsKey(e.getKey()));
+      assertEquals(outer.get(e.getKey()), e.getValue());
+    }
   }
 
   @Test
