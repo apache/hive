@@ -141,8 +141,7 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
       udf = (UDF) Class.forName(udfClassName, true, JavaUtils.getClassLoader()).newInstance();
     } catch (Exception e) {
       throw new UDFArgumentException(
-          "The UDF implementation class '" + udfClassName
-              + "' is not present in the class path");
+          "Unable to instantiate UDF implementation class " + udfClassName + ": " + e);
     }
 
     // Resolve for the method based on argument types
