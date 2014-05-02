@@ -82,8 +82,6 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import javax.security.auth.login.LoginException;
-
 import org.antlr.runtime.CommonToken;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -179,7 +177,6 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Shell;
 
@@ -3384,8 +3381,7 @@ public final class Utilities {
    */
   public static boolean createDirsWithPermission(Configuration conf, Path mkdir,
       FsPermission fsPermission) throws IOException {
-    // this umask is required because by default the hdfs mask is 022 resulting in
-    // all parents getting the fsPermission & !(022) permission instead of fsPermission
+
     boolean recursive = false;
     if (SessionState.get() != null) {
       recursive = SessionState.get().isHiveServerQuery() &&
@@ -3406,16 +3402,23 @@ public final class Utilities {
   public static boolean createDirsWithPermission(Configuration conf, Path mkdir,
       FsPermission fsPermission, boolean recursive) throws IOException {
     String origUmask = null;
+
     if (recursive) {
       origUmask = conf.get("fs.permissions.umask-mode");
+      // this umask is required because by default the hdfs mask is 022 resulting in
+      // all parents getting the fsPermission & !(022) permission instead of fsPermission
       conf.set("fs.permissions.umask-mode", "000");
     }
+
     FileSystem fs = mkdir.getFileSystem(conf);
     boolean retval = fs.mkdirs(mkdir, fsPermission);
-    if (origUmask != null) {
-      conf.set("fs.permissions.umask-mode", origUmask);
-    } else {
-      conf.unset("fs.permissions.umask-mode");
+
+    if (recursive) {
+      if (origUmask != null) {
+        conf.set("fs.permissions.umask-mode", origUmask);
+      } else {
+        conf.unset("fs.permissions.umask-mode");
+      }
     }
     return retval;
   }
