@@ -35,7 +35,7 @@ may experience higher latencies (tens of seconds), even
 over small datasets. Alternatively, users can choose to use the
 newer Apache Tez framework to process SQL queries. Tez is
 designed for interactive query and has substantially reduced
-overheads versus MapReduce. Users are free to swtich back and
+overheads versus MapReduce. Users are free to switch back and
 forth between these frameworks at any time. In either case,
 Hive is best suited for use cases where the amount of data
 processed is large enough to require a distributed system.
