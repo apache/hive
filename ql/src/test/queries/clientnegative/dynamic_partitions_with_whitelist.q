@@ -14,4 +14,4 @@ load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE source_tabl
 -- If the directory is not empty the hook will throw an error, instead the error should come from the metastore
 -- This shows that no dynamic partitions were created and left behind or had directories created
 
-insert overwrite table dest_table partition (ds, hr) select key, hr, ds, value from source_table where ds='2008-04-08' order by value asc;
+insert overwrite table dest_table partition (ds, hr) select key, hr, ds, value from source_table where ds='2008-04-08' and value='val_129' order by value asc;
