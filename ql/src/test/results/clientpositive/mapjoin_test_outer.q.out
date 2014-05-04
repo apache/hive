@@ -1135,7 +1135,7 @@ STAGE PLANS:
         src1 
           Fetch Operator
             limit: -1
-        src3 
+        src2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
@@ -1152,10 +1152,10 @@ STAGE PLANS:
                 0 key (type: string)
                 1 key (type: string)
                 2 key (type: string)
-        src3 
+        src2 
           TableScan
-            alias: src3
-            Statistics: Num rows: 9 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            alias: src2
+            Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
@@ -1170,8 +1170,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src2
-            Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+            alias: src3
+            Statistics: Num rows: 9 Data size: 40 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
                    Right Outer Join0 to 1
