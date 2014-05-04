@@ -180,6 +180,8 @@ Sort Columns:       	[]
 Stored As SubDirectories:	Yes                 	 
 Skewed Columns:     	[c1, c2]            	 
 Skewed Values:      	[[466, val_466], [287, val_287], [82, val_82]]	 
+#### A masked pattern was here ####
+Skewed Value to Truncated Path:	{[82, val_82]=/stats_list_bucket_1/c1=82/c2=val_82, [466, val_466]=/stats_list_bucket_1/c1=466/c2=val_466, [287, val_287]=/stats_list_bucket_1/c1=287/c2=val_287}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: drop table stats_list_bucket

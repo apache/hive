@@ -13,7 +13,7 @@ set mapred.max.split.size=256;
 CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
 partitioned by (ds string, hr string)
 stored as rcfile;
-insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null;
+insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null order by key;
 describe formatted analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11);
 
 

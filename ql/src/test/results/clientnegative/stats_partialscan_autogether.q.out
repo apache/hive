@@ -15,7 +15,7 @@ stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_srcpart_partial_scan
-PREHOOK: query: insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null
+PREHOOK: query: insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -23,7 +23,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: default@analyze_srcpart_partial_scan
-POSTHOOK: query: insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null
+POSTHOOK: query: insert overwrite table analyze_srcpart_partial_scan partition (ds, hr) select * from srcpart where ds is not null order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -79,7 +79,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	-1                  
 	rawDataSize         	-1                  
-	totalSize           	5301                
+	totalSize           	5077                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
