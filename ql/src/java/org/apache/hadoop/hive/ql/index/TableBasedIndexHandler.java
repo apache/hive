@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -102,6 +104,13 @@ public abstract class TableBasedIndexHandler extends AbstractIndexHandler {
       List<FieldSchema> indexField, boolean partitioned,
       PartitionDesc indexTblPartDesc, String indexTableName,
       PartitionDesc baseTablePartDesc, String baseTableName, String dbName) throws HiveException;
+
+  protected void setStatsDir(HiveConf builderConf) {
+    String statsDir;
+    if ((statsDir = builderConf.get(StatsSetupConst.STATS_TMP_LOC)) != null) {
+      getConf().set(StatsSetupConst.STATS_TMP_LOC, statsDir);
+    }
+   }
 
   protected List<String> getPartKVPairStringArray(
       LinkedHashMap<String, String> partSpec) {
