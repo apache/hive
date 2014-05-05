@@ -59,6 +59,8 @@ if [%1]==[hiveserver2_help] goto :hiveserver2_help
 
 if [%1]==[hiveserver2_catservice] goto :hiveserver2_catservice
 
+if [%1]==[hiveserver2_catcmd] goto :hiveserver2_catcmd
+
 :hiveserver2
   echo "Starting Hive Thrift Server"
 
@@ -76,9 +78,19 @@ goto :EOF
 @echo   ^<id^>HiveServer2^</id^>
 @echo   ^<name^>HiveServer2^</name^>
 @echo   ^<description^>Hadoop HiveServer2 Service^</description^>
-@echo   ^<executable^>%JAVA_HOME%\bin\java^</executable^>
-@echo   ^<arguments^>%JAVA_HEAP_MAX% %HADOOP_OPTS% -classpath %CLASSPATH%;%HIVE_HBASE_PATH% %CLASS% -hiveconf hive.hadoop.classpath=%HIVE_LIB%\* -hiveconf hive.metastore.uris=" " -hiveconf hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory -hiveconf hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator  %HIVE_OPTS%^</arguments^>
+@echo   ^<executable^>%SystemRoot%\system32\cmd.exe^</executable^>
+@echo   ^<arguments^>/c %HIVE_BIN_PATH%\ext\hs2service.cmd ^</arguments^>
 @echo ^</service^>
+goto :EOF
+
+
+:hiveserver2_catcmd
+if not defined HADOOP_CLASSPATH (
+  @echo set HADOOP_CLASSPATH=%HIVE_LIB%\*
+  ) else (
+  @echo set HADOOP_CLASSPATH=%HADOOP_CLASSPATH%;%HIVE_LIB%\*
+  )
+@echo %JAVA_HOME%\bin\java %JAVA_HEAP_MAX% %HADOOP_OPTS% -classpath %CLASSPATH%;%HIVE_HBASE_PATH% %CLASS% -hiveconf hive.hadoop.classpath=%HIVE_LIB%\* -hiveconf hive.metastore.uris=" " -hiveconf hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory -hiveconf hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator  %HIVE_OPTS%
 goto :EOF
 
 :AddToHiveHbasePath
