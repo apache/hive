@@ -272,7 +272,6 @@ STAGE PLANS:
               Statistics: Num rows: 95 Data size: 8675 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_count_of_l_shipdate)
-                bucketGroup: true
                 keys: l_shipdate (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -938,7 +937,6 @@ STAGE PLANS:
               Statistics: Num rows: 95 Data size: 8675 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_count_of_l_shipdate)
-                bucketGroup: true
                 keys: l_shipdate (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -1077,7 +1075,6 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_count_of_key)
-                  bucketGroup: true
                   keys: key (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1
@@ -1140,7 +1137,6 @@ STAGE PLANS:
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Group By Operator
                 aggregations: sum(_count_of_key)
-                bucketGroup: true
                 keys: key (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -3223,7 +3219,6 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 430 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_count_of_key)
-                bucketGroup: true
                 keys: key (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
