@@ -609,6 +609,7 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
             clientUgi = UserGroupInformation.createProxyUser(
                 endUser, UserGroupInformation.getLoginUser());
             remoteUser.set(clientUgi.getShortUserName());
+            LOG.debug("Set remoteUser :" + remoteUser.get());
             return clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
               @Override
               public Boolean run() {
@@ -620,7 +621,10 @@ public class HadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
               }
             });
           } else {
-            remoteUser.set(endUser);
+            // use the short user name for the request
+            UserGroupInformation endUserUgi = UserGroupInformation.createRemoteUser(endUser);
+            remoteUser.set(endUserUgi.getShortUserName());
+            LOG.debug("Set remoteUser :" + remoteUser.get() + ", from endUser :" + endUser);
             return wrapped.process(inProt, outProt);
           }
         } catch (RuntimeException rte) {
