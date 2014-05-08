@@ -1,0 +1,141 @@
+PREHOOK: query: create table test (key int, value string) partitioned by (p int) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table test (key int, value string) partitioned by (p int) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: insert into table test partition (p=1) select * from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test@p=1
+POSTHOOK: query: insert into table test partition (p=1) select * from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test@p=1
+POSTHOOK: Lineage: test PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter table test set fileformat orc
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@test
+PREHOOK: Output: default@test
+POSTHOOK: query: alter table test set fileformat orc
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@test
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into table test partition (p=2) select * from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test@p=2
+POSTHOOK: query: insert into table test partition (p=2) select * from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test@p=2
+POSTHOOK: Lineage: test PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test
+POSTHOOK: query: describe test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test
+POSTHOOK: Lineage: test PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+key                 	int                 	                    
+value               	string              	                    
+p                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	int                 	                    
+PREHOOK: query: select * from test where p=1 and key > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Input: default@test@p=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test where p=1 and key > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test@p=1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+484	val_484	1
+98	val_98	1
+278	val_278	1
+255	val_255	1
+409	val_409	1
+165	val_165	1
+27	val_27	1
+311	val_311	1
+86	val_86	1
+238	val_238	1
+PREHOOK: query: select * from test where p=2 and key > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Input: default@test@p=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test where p=2 and key > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test@p=2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+484	val_484	2
+98	val_98	2
+278	val_278	2
+255	val_255	2
+409	val_409	2
+165	val_165	2
+27	val_27	2
+311	val_311	2
+86	val_86	2
+238	val_238	2
+PREHOOK: query: select * from test where key > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Input: default@test@p=1
+PREHOOK: Input: default@test@p=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test where key > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test@p=1
+POSTHOOK: Input: default@test@p=2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+484	val_484	2
+98	val_98	2
+278	val_278	2
+255	val_255	2
+409	val_409	2
+165	val_165	2
+27	val_27	2
+311	val_311	2
+86	val_86	2
+238	val_238	2
+484	val_484	1
+98	val_98	1
+278	val_278	1
+255	val_255	1
+409	val_409	1
+165	val_165	1
+27	val_27	1
+311	val_311	1
+86	val_86	1
+238	val_238	1
