@@ -247,8 +247,8 @@ public class UDFJson extends UDF {
             return null;
           }
           tmp_jsonList.add(((List<Object>)array).get(indexValue));
-          jsonList = tmp_jsonList;
         }
+        jsonList = tmp_jsonList;
       }
     }
     if (jsonList.isEmpty()) {
