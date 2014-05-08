@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -58,14 +59,15 @@ public class HiveBinaryOutputFormat<K extends WritableComparable, V extends Writ
    * @return the RecordWriter
    */
   @Override
-  public FSRecordWriter getHiveRecordWriter(JobConf jc, Path outPath,
+  public RecordWriter getHiveRecordWriter(JobConf jc, Path outPath,
       Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProperties, Progressable progress) throws IOException {
 
     FileSystem fs = outPath.getFileSystem(jc);
     final OutputStream outStream = fs.create(outPath);
 
-    return new FSRecordWriter() {
+    return new RecordWriter() {
+      @Override
       public void write(Writable r) throws IOException {
         if (r instanceof Text) {
           Text tr = (Text) r;
@@ -77,6 +79,7 @@ public class HiveBinaryOutputFormat<K extends WritableComparable, V extends Writ
         }
       }
 
+      @Override
       public void close(boolean abort) throws IOException {
         outStream.close();
       }

@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -65,8 +64,8 @@ public abstract class CompactorTest {
   protected IMetaStoreClient ms;
   protected long sleepTime = 1000;
 
-  private MetaStoreThread.BooleanPointer stop = new MetaStoreThread.BooleanPointer();
-  private File tmpdir;
+  private final MetaStoreThread.BooleanPointer stop = new MetaStoreThread.BooleanPointer();
+  private final File tmpdir;
 
   protected CompactorTest() throws Exception {
     HiveConf conf = new HiveConf();
@@ -329,10 +328,10 @@ public abstract class CompactorTest {
   }
 
   static class MockRawReader implements AcidInputFormat.RawReader<Text> {
-    private Stack<Path> filesToRead;
-    private Configuration conf;
+    private final Stack<Path> filesToRead;
+    private final Configuration conf;
     private FSDataInputStream is = null;
-    private FileSystem fs;
+    private final FileSystem fs;
 
     MockRawReader(Configuration conf, List<Path> files) throws IOException {
       filesToRead = new Stack<Path>();
@@ -408,12 +407,12 @@ public abstract class CompactorTest {
     }
 
     @Override
-    public FSRecordWriter getRawRecordWriter(Path path, Options options) throws IOException {
+    public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getRawRecordWriter(Path path, Options options) throws IOException {
       return new MockRecordWriter(path, options);
     }
 
     @Override
-    public FSRecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
+    public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
                                               Class<? extends Writable> valueClass,
                                               boolean isCompressed, Properties tableProperties,
                                               Progressable progress) throws IOException {
@@ -437,8 +436,8 @@ public abstract class CompactorTest {
   // This class isn't used and I suspect does totally the wrong thing.  It's only here so that I
   // can provide some output format to the tables and partitions I create.  I actually write to
   // those tables directory.
-  static class MockRecordWriter implements FSRecordWriter {
-    private FSDataOutputStream os;
+  static class MockRecordWriter implements org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter {
+    private final FSDataOutputStream os;
 
     MockRecordWriter(Path basedir, AcidOutputFormat.Options options) throws IOException {
       FileSystem fs = FileSystem.get(options.getConfiguration());

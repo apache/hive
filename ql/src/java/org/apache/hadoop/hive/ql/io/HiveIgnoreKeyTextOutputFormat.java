@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.BytesWritable;
@@ -62,7 +63,7 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
    * @return the RecordWriter
    */
   @Override
-  public FSRecordWriter getHiveRecordWriter(JobConf jc, Path outPath,
+  public RecordWriter getHiveRecordWriter(JobConf jc, Path outPath,
       Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProperties, Progressable progress) throws IOException {
     int rowSeparator = 0;
@@ -78,7 +79,8 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
     FileSystem fs = outPath.getFileSystem(jc);
     final OutputStream outStream = Utilities.createCompressedStream(jc, fs
         .create(outPath), isCompressed);
-    return new FSRecordWriter() {
+    return new RecordWriter() {
+      @Override
       public void write(Writable r) throws IOException {
         if (r instanceof Text) {
           Text tr = (Text) r;
@@ -92,6 +94,7 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
         }
       }
 
+      @Override
       public void close(boolean abort) throws IOException {
         outStream.close();
       }
@@ -107,10 +110,12 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
       this.mWriter = writer;
     }
 
+    @Override
     public synchronized void write(K key, V value) throws IOException {
       this.mWriter.write(null, value);
     }
 
+    @Override
     public void close(Reporter reporter) throws IOException {
       this.mWriter.close(reporter);
     }

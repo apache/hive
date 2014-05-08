@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -57,7 +58,7 @@ public interface HiveOutputFormat<K, V> extends OutputFormat<K, V> {
    *          progress used for status report
    * @return the RecordWriter for the output file
    */
-  FSRecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
+  RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
       final Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProperties, Progressable progress) throws IOException;
 

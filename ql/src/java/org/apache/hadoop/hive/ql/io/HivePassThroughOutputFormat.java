@@ -73,8 +73,7 @@ public class HivePassThroughOutputFormat<K, V> implements Configurable, HiveOutp
       throw new IOException(e);
     }
     OutputFormat<? super WritableComparable<?>, ? super Writable> actualOF =
-         (OutputFormat<? super WritableComparable, ? super Writable>)
-            ReflectionUtils.newInstance(cls, this.getConf());
+         ReflectionUtils.newInstance(cls, this.getConf());
     this.actualOutputFormat = actualOF;
   }
 
@@ -99,7 +98,7 @@ public class HivePassThroughOutputFormat<K, V> implements Configurable, HiveOutp
   }
 
   @Override
-  public FSRecordWriter getHiveRecordWriter(
+  public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getHiveRecordWriter(
       JobConf jc, Path finalOutPath, Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProperties, Progressable progress) throws IOException {
     if (this.initialized == false) {
@@ -117,10 +116,12 @@ public class HivePassThroughOutputFormat<K, V> implements Configurable, HiveOutp
     }
   }
 
+  @Override
   public Configuration getConf() {
     return conf;
   }
 
+  @Override
   public void setConf(Configuration config) {
     if (config.get(HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY) != null) {
       actualOutputFormatClass = config.get(HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY);

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.Reporter;
@@ -239,6 +240,6 @@ public interface AcidOutputFormat<V> extends HiveOutputFormat<NullWritable, V> {
    * @return a record writer
    * @throws IOException
    */
-  public FSRecordWriter getRawRecordWriter(Path path,
+  public RecordWriter getRawRecordWriter(Path path,
                                            Options options) throws IOException;
 }

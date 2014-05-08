@@ -20,12 +20,13 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 
 public class HivePassThroughRecordWriter <K extends WritableComparable<?>, V extends Writable>
-implements FSRecordWriter {
+implements RecordWriter {
 
   private final org.apache.hadoop.mapred.RecordWriter<K, V> mWriter;
 
@@ -33,11 +34,13 @@ implements FSRecordWriter {
     this.mWriter = writer;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public void write(Writable r) throws IOException {
     mWriter.write(null, (V) r);
   }
 
+  @Override
   public void close(boolean abort) throws IOException {
     //close with null reporter
     mWriter.close(null);

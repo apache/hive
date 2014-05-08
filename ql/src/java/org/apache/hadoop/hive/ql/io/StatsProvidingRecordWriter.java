@@ -18,21 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.io.IOException;
-
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.io.Writable;
-
-/**
- * Record writer used by file sink operator.
- *
- * FSRecordWriter.
- *
- */
-public interface FSRecordWriter {
-  void write(Writable w) throws IOException;
-
-  void close(boolean abort) throws IOException;
 
   /**
    * If a file format internally gathers statistics (like ORC) while writing then
@@ -42,12 +29,10 @@ public interface FSRecordWriter {
    * StatsProvidingRecordWriter.
    *
    */
-  public interface StatsProvidingRecordWriter extends FSRecordWriter{
+  public interface StatsProvidingRecordWriter extends RecordWriter{
     /**
      * Returns the statistics information
      * @return SerDeStats
      */
     SerDeStats getStats();
   }
-
-}

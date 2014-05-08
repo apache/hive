@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.SequenceFile;
@@ -55,7 +56,7 @@ public class HiveSequenceFileOutputFormat<K,V> extends SequenceFileOutputFormat<
    * @return the RecordWriter for the output file
    */
   @Override
-  public FSRecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
+  public RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
       Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProperties, Progressable progress) throws IOException {
 
@@ -63,11 +64,13 @@ public class HiveSequenceFileOutputFormat<K,V> extends SequenceFileOutputFormat<
     final SequenceFile.Writer outStream = Utilities.createSequenceWriter(jc,
         fs, finalOutPath, BytesWritable.class, valueClass, isCompressed);
 
-    return new FSRecordWriter() {
+    return new RecordWriter() {
+      @Override
       public void write(Writable r) throws IOException {
         outStream.append(EMPTY_KEY, r);
       }
 
+      @Override
       public void close(boolean abort) throws IOException {
         outStream.close();
       }
