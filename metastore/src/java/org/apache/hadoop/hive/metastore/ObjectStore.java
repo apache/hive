@@ -3235,7 +3235,20 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+
+    if (principalType == PrincipalType.USER) {
+      // All users belong to public role implicitly, add that role
+      if (mRoleMember == null) {
+        mRoleMember = new ArrayList<MRoleMap>();
+      } else {
+        mRoleMember = new ArrayList<MRoleMap>(mRoleMember);
+      }
+      MRole publicRole = new MRole(HiveMetaStore.PUBLIC, 0, HiveMetaStore.PUBLIC);
+      mRoleMember.add(new MRoleMap(principalName, principalType.toString(), publicRole, 0,
+          null, null, false));
+    }
     return mRoleMember;
+
   }
 
   @SuppressWarnings("unchecked")

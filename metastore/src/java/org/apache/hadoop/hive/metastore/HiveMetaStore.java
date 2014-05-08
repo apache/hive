@@ -42,7 +42,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -4002,8 +4001,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             result.add(role);
           }
         }
-        // all users by default belongs to public role
-        result.add(new Role(PUBLIC,0,PUBLIC));
         return result;
       } catch (MetaException e) {
         throw e;
@@ -4912,9 +4909,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       List<RolePrincipalGrant> roleGrantsList = getRolePrincipalGrants(roleMaps);
-      // all users by default belongs to public role
-      roleGrantsList.add(new RolePrincipalGrant(PUBLIC, request.getPrincipal_name(), request
-          .getPrincipal_type(), false, 0, null, null));
       return new GetRoleGrantsForPrincipalResponse(roleGrantsList);
     }
 
@@ -4934,7 +4928,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               roleMap.getGrantOption(),
               roleMap.getAddTime(),
               roleMap.getGrantor(),
-              PrincipalType.valueOf(roleMap.getGrantorType())
+              // no grantor type for public role, hence the null check
+              roleMap.getGrantorType() == null ? null
+                  : PrincipalType.valueOf(roleMap.getGrantorType())
               );
           rolePrinGrantList.add(rolePrinGrant);
         }
