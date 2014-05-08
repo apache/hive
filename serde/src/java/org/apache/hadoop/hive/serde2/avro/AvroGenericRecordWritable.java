@@ -42,6 +42,10 @@ import org.apache.hadoop.io.Writable;
 public class AvroGenericRecordWritable implements Writable{
   GenericRecord record;
   private BinaryDecoder binaryDecoder;
+
+  // Schema that exists in the Avro data file.
+  private Schema fileSchema;
+
   /**
    * Unique Id determine which record reader created this record
    */
@@ -73,6 +77,10 @@ public class AvroGenericRecordWritable implements Writable{
     // Write schema since we need it to pull the data out. (see point #1 above)
     String schemaString = record.getSchema().toString(false);
     out.writeUTF(schemaString);
+
+    schemaString = fileSchema.toString(false);
+    out.writeUTF(schemaString);
+
     recordReaderID.write(out);
 
     // Write record to byte buffer
@@ -86,6 +94,7 @@ public class AvroGenericRecordWritable implements Writable{
   @Override
   public void readFields(DataInput in) throws IOException {
     Schema schema = Schema.parse(in.readUTF());
+    fileSchema = Schema.parse(in.readUTF());
     recordReaderID = UID.read(in);
     record = new GenericData.Record(schema);
     binaryDecoder = DecoderFactory.defaultFactory().createBinaryDecoder((InputStream) in, binaryDecoder);
@@ -100,4 +109,13 @@ public class AvroGenericRecordWritable implements Writable{
   public void setRecordReaderID(UID recordReaderID) {
     this.recordReaderID = recordReaderID;
   }
+
+  public Schema getFileSchema() {
+    return fileSchema;
+  }
+
+  public void setFileSchema(Schema originalSchema) {
+    this.fileSchema = originalSchema;
+  }
+
 }

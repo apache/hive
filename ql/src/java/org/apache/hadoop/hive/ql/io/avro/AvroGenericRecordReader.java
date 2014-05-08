@@ -31,7 +31,6 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.mapred.FsInput;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -94,7 +93,6 @@ public class AvroGenericRecordReader implements
    * @throws AvroSerdeException
    */
   private Schema getSchema(JobConf job, FileSplit split) throws AvroSerdeException, IOException {
-    FileSystem fs = split.getPath().getFileSystem(job);
     // Inside of a MR job, we can pull out the actual properties
     if(AvroSerdeUtils.insideMRJob(job)) {
       MapWork mapWork = Utilities.getMapWork(job);
@@ -155,6 +153,7 @@ public class AvroGenericRecordReader implements
     GenericData.Record r = (GenericData.Record)reader.next();
     record.setRecord(r);
     record.setRecordReaderID(recordReaderID);
+    record.setFileSchema(reader.getSchema());
 
     return true;
   }

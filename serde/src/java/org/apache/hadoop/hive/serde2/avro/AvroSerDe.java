@@ -36,6 +36,12 @@ import org.apache.hadoop.io.Writable;
  */
 public class AvroSerDe extends AbstractSerDe {
   private static final Log LOG = LogFactory.getLog(AvroSerDe.class);
+
+  public static final String DECIMAL_TYPE_NAME = "decimal";
+  public static final String AVRO_PROP_LOGICAL_TYPE = "logicalType";
+  public static final String AVRO_PROP_PRECISION = "precision";
+  public static final String AVRO_PROP_SCALE = "scale";
+
   private ObjectInspector oi;
   private List<String> columnNames;
   private List<TypeInfo> columnTypes;
