@@ -213,6 +213,11 @@
 </property>
 
 <property>
+  <name>tez.am.node-blacklisting.enabled</name>
+  <value>false</value>
+</property>
+
+<property>
   <name>hive.prewarm.enabled</name>
   <value>true</value>
   <description>
