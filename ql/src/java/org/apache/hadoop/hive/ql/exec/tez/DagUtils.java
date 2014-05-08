@@ -670,9 +670,6 @@ public class DagUtils {
     String userPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USER_INSTALL_DIR);
     Path userPath = new Path(userPathStr);
     FileSystem fs = userPath.getFileSystem(conf);
-    if (!(fs instanceof DistributedFileSystem)) {
-      throw new IOException(ErrorMsg.INVALID_HDFS_URI.format(userPathStr));
-    }
 
     String jarPathStr = userPathStr + "/" + userName;
     String hdfsDirPathStr = jarPathStr;
@@ -781,9 +778,6 @@ public class DagUtils {
 
   public static FileStatus validateTargetDir(Path path, Configuration conf) throws IOException {
     FileSystem fs = path.getFileSystem(conf);
-    if (!(fs instanceof DistributedFileSystem)) {
-      throw new IOException(ErrorMsg.INVALID_HDFS_URI.format(path.toString()));
-    }
     FileStatus fstatus = null;
     try {
       fstatus = fs.getFileStatus(path);
@@ -841,9 +835,6 @@ public class DagUtils {
   public LocalResource localizeResource(Path src, Path dest, Configuration conf)
     throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
-    if (!(destFS instanceof DistributedFileSystem)) {
-      throw new IOException(ErrorMsg.INVALID_HDFS_URI.format(dest.toString()));
-    }
 
     if (src != null) {
       // copy the src to the destination and create local resource.
