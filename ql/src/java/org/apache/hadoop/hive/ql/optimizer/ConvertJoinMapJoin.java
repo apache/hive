@@ -80,25 +80,34 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // reducers from the parent operators.
     int numBuckets = -1;
     int estimatedBuckets = -1;
-    for (Operator<? extends OperatorDesc>parentOp : joinOp.getParentOperators()) {
-      if (parentOp.getOpTraits().getNumBuckets() > 0) {
-        numBuckets = (numBuckets < parentOp.getOpTraits().getNumBuckets()) ? 
-            parentOp.getOpTraits().getNumBuckets() : numBuckets; 
-      }
-      ReduceSinkOperator rs = (ReduceSinkOperator)parentOp;
-      estimatedBuckets = (estimatedBuckets < rs.getConf().getNumReducers()) ? 
-          rs.getConf().getNumReducers() : estimatedBuckets;
-    }
+    if (context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ)) {
+      for (Operator<? extends OperatorDesc>parentOp : joinOp.getParentOperators()) {
+        if (parentOp.getOpTraits().getNumBuckets() > 0) {
+          numBuckets = (numBuckets < parentOp.getOpTraits().getNumBuckets()) ? 
+              parentOp.getOpTraits().getNumBuckets() : numBuckets; 
+        }
 
-    if (numBuckets <= 0) {
-      numBuckets = estimatedBuckets;
-      if (numBuckets <= 0) {
-        numBuckets = 1;
+        if (parentOp instanceof ReduceSinkOperator) {
+          ReduceSinkOperator rs = (ReduceSinkOperator)parentOp;
+          estimatedBuckets = (estimatedBuckets < rs.getConf().getNumReducers()) ? 
+              rs.getConf().getNumReducers() : estimatedBuckets;
+        }
       }
+
+      if (numBuckets <= 0) {
+        numBuckets = estimatedBuckets;
+        if (numBuckets <= 0) {
+          numBuckets = 1;
+        }
+      }
+    } else {
+      numBuckets = 1;
     }
     LOG.info("Estimated number of buckets " + numBuckets);
     int mapJoinConversionPos = mapJoinConversionPos(joinOp, context, numBuckets);
     if (mapJoinConversionPos < 0) {
+      // we cannot convert to bucket map join, we cannot convert to 
+      // map join either based on the size
       return null;
     }
 
@@ -109,6 +118,12 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     }
 
     LOG.info("Convert to non-bucketed map join");
+    // check if we can convert to map join no bucket scaling.
+    mapJoinConversionPos = mapJoinConversionPos(joinOp, context, 1);
+    if (mapJoinConversionPos < 0) {
+      return null;
+    }
+
     MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversionPos);
     // map join operator by default has no bucket cols
     mapJoinOp.setOpTraits(new OpTraits(null, -1));
