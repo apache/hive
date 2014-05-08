@@ -25,7 +25,8 @@ TBLPROPERTIES ('avro.schema.literal'='{
     { "name":"enum1", "type":{"type":"enum", "name":"enum1_values", "symbols":["BLUE","RED", "GREEN"]} },
     { "name":"nullableint", "type":["int", "null"] },
     { "name":"bytes1", "type":"bytes" },
-    { "name":"fixed1", "type":{"type":"fixed", "name":"threebytes", "size":3} }
+    { "name":"fixed1", "type":{"type":"fixed", "name":"threebytes", "size":3} },
+    { "name":"dec1", "type":{"type":"bytes", "logicalType":"decimal", "precision":5, "scale":2} }
   ] }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -56,7 +57,8 @@ TBLPROPERTIES ('avro.schema.literal'='{
     { "name":"enum1", "type":{"type":"enum", "name":"enum1_values", "symbols":["BLUE","RED", "GREEN"]} },
     { "name":"nullableint", "type":["int", "null"] },
     { "name":"bytes1", "type":"bytes" },
-    { "name":"fixed1", "type":{"type":"fixed", "name":"threebytes", "size":3} }
+    { "name":"fixed1", "type":{"type":"fixed", "name":"threebytes", "size":3} },
+    { "name":"dec1", "type":{"type":"bytes", "logicalType":"decimal", "precision":5, "scale":2} }
   ] }')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -83,3 +85,4 @@ enum1               	string              	from deserializer
 nullableint         	int                 	from deserializer   
 bytes1              	binary              	from deserializer   
 fixed1              	binary              	from deserializer   
+dec1                	decimal(5,2)        	from deserializer   

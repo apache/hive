@@ -25,13 +25,17 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.JobConf;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Properties;
 
@@ -159,4 +163,32 @@ public class AvroSerdeUtils {
            && (HiveConf.getVar(job, HiveConf.ConfVars.PLAN) != null)
            && (!HiveConf.getVar(job, HiveConf.ConfVars.PLAN).isEmpty());
   }
+
+  public static Buffer getBufferFromBytes(byte[] input) {
+    ByteBuffer bb = ByteBuffer.wrap(input);
+    return bb.rewind();
+  }
+
+  public static Buffer getBufferFromDecimal(HiveDecimal dec, int scale) {
+    if (dec == null) {
+      return null;
+    }
+
+    dec = dec.setScale(scale);
+    return AvroSerdeUtils.getBufferFromBytes(dec.unscaledValue().toByteArray());
+  }
+
+  public static byte[] getBytesFromByteBuffer(ByteBuffer byteBuffer) {
+    byteBuffer.rewind();
+    byte[] result = new byte[byteBuffer.limit()];
+    byteBuffer.get(result);
+    return result;
+  }
+
+  public static HiveDecimal getHiveDecimalFromByteBuffer(ByteBuffer byteBuffer, int scale) {
+    byte[] result = getBytesFromByteBuffer(byteBuffer);
+    HiveDecimal dec = HiveDecimal.create(new BigInteger(result), scale);
+    return dec;
+  }
+
 }

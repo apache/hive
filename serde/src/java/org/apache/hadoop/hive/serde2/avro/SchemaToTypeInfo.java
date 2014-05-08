@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.avro.Schema;
+import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -105,6 +106,28 @@ class SchemaToTypeInfo {
    * @throws AvroSerdeException for any problems during conversion.
    */
   public static TypeInfo generateTypeInfo(Schema schema) throws AvroSerdeException {
+    // For bytes type, it can be mapped to decimal.
+    Schema.Type type = schema.getType();
+    if (type == Schema.Type.BYTES &&
+        AvroSerDe.DECIMAL_TYPE_NAME.equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+      int precision = 0;
+      int scale = 0;
+      try {
+        precision = schema.getJsonProp(AvroSerDe.AVRO_PROP_PRECISION).getValueAsInt();
+        scale = schema.getJsonProp(AvroSerDe.AVRO_PROP_SCALE).getValueAsInt(0);
+      } catch (Exception ex) {
+        throw new AvroSerdeException("Failed to obtain scale value from file schema: " + schema, ex);
+      }
+
+      try {
+        HiveDecimalUtils.validateParameter(precision, scale);
+      } catch (Exception ex) {
+        throw new AvroSerdeException("Invalid precision or scale for decimal type", ex);
+      }
+
+      return TypeInfoFactory.getDecimalTypeInfo(precision, scale);
+    }
+
     return typeInfoCache.retrieve(schema);
   }
 
@@ -116,7 +139,6 @@ class SchemaToTypeInfo {
     }
 
     Schema.Type type = schema.getType();
-
     if(primitiveTypeToTypeInfo.containsKey(type)) {
       return primitiveTypeToTypeInfo.get(type);
     }

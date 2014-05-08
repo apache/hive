@@ -21,6 +21,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericEnumSymbol;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -28,6 +29,7 @@ import org.apache.hadoop.io.Writable;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,34 +86,41 @@ public class TestAvroSerializer {
 
   @Test
   public void canSerializeStrings() throws SerDeException, IOException {
-    singleFieldTest("string1", "hello", "string");
+    singleFieldTest("string1", "hello", "\"string\"");
   }
 
   private void singleFieldTest(String fieldName, Object fieldValue, String fieldType)
           throws SerDeException, IOException {
     GenericRecord r2 = serializeAndDeserialize("{ \"name\":\"" + fieldName +
-            "\", \"type\":\"" + fieldType + "\" }", fieldName, fieldValue);
+            "\", \"type\":" + fieldType + " }", fieldName, fieldValue);
     assertEquals(fieldValue, r2.get(fieldName));
   }
 
   @Test
   public void canSerializeInts() throws SerDeException, IOException {
-    singleFieldTest("int1", 42, "int");
+    singleFieldTest("int1", 42, "\"int\"");
   }
 
   @Test
   public void canSerializeBooleans() throws SerDeException, IOException {
-    singleFieldTest("boolean1", true, "boolean");
+    singleFieldTest("boolean1", true, "\"boolean\"");
   }
 
   @Test
   public void canSerializeFloats() throws SerDeException, IOException {
-    singleFieldTest("float1", 42.24342f, "float");
+    singleFieldTest("float1", 42.24342f, "\"float\"");
   }
 
   @Test
   public void canSerializeDoubles() throws SerDeException, IOException {
-    singleFieldTest("double1", 24.00000001, "double");
+    singleFieldTest("double1", 24.00000001, "\"double\"");
+  }
+
+  @Test
+  public void canSerializeDecimals() throws SerDeException, IOException {
+    ByteBuffer bb = ByteBuffer.wrap(HiveDecimal.create("3.1416").unscaledValue().toByteArray());
+    singleFieldTest("dec1", bb.rewind(),
+        "{\"type\":\"bytes\", \"logicalType\":\"decimal\", \"precision\":5, \"scale\":4}");
   }
 
   @Test
@@ -124,11 +133,36 @@ public class TestAvroSerializer {
   }
 
   @Test
+  public void canSerializeListOfDecimals() throws SerDeException, IOException {
+    List<Buffer> bbList = new ArrayList<Buffer>();
+    String[] decs = new String[] {"3.1416", "4.7779", "0.2312", "9.1000", "5.5555"};
+    for (int i = 0; i < decs.length; i++) {
+      bbList.add(AvroSerdeUtils.getBufferFromDecimal(HiveDecimal.create(decs[i]), 4));
+    }
+    String field = "{ \"name\":\"list1\", \"type\":{\"type\":\"array\"," +
+        " \"items\":{\"type\":\"bytes\", \"logicalType\":\"decimal\", \"precision\":5, \"scale\":4}} }";
+    GenericRecord r = serializeAndDeserialize(field, "list1", bbList);
+    assertEquals(bbList, r.get("list1"));
+  }
+
+  @Test
   public void canSerializeMaps() throws SerDeException, IOException {
     Map<String, Boolean> m = new HashMap<String, Boolean>();
     m.put("yes", true);
     m.put("no", false);
     String field = "{ \"name\":\"map1\", \"type\":{\"type\":\"map\", \"values\":\"boolean\"} }";
+    GenericRecord r = serializeAndDeserialize(field, "map1", m);
+
+    assertEquals(m, r.get("map1"));
+  }
+
+  @Test
+  public void canSerializeMapOfDecimals() throws SerDeException, IOException {
+    Map<String, Buffer> m = new HashMap<String, Buffer>();
+    m.put("yes", AvroSerdeUtils.getBufferFromDecimal(HiveDecimal.create("3.14"), 4));
+    m.put("no", AvroSerdeUtils.getBufferFromDecimal(HiveDecimal.create("6.2832732"), 4));
+    String field = "{ \"name\":\"map1\", \"type\":{\"type\":\"map\"," +
+        " \"values\":{\"type\":\"bytes\", \"logicalType\":\"decimal\", \"precision\":5, \"scale\":4}} }";
     GenericRecord r = serializeAndDeserialize(field, "map1", m);
 
     assertEquals(m, r.get("map1"));
@@ -159,6 +193,7 @@ public class TestAvroSerializer {
     List<String> columnNames = aoig.getColumnNames();
     List<TypeInfo> columnTypes = aoig.getColumnTypes();
     AvroGenericRecordWritable agrw = new AvroGenericRecordWritable(r);
+    agrw.setFileSchema(r.getSchema());
     Object obj = ad.deserialize(columnNames, columnTypes, agrw, s);
 
     Writable result = as.serialize(obj, oi, columnNames, columnTypes, s);
@@ -174,7 +209,8 @@ public class TestAvroSerializer {
 
   @Test
   public void canSerializeUnions() throws SerDeException, IOException {
-    String field = "{ \"name\":\"union1\", \"type\":[\"float\", \"boolean\", \"string\"] }";
+    String field = "{ \"name\":\"union1\", \"type\":[\"float\", \"boolean\", \"string\"," +
+        " {\"type\":\"bytes\", \"logicalType\":\"decimal\", \"precision\":5, \"scale\":4}] }";
     GenericRecord r = serializeAndDeserialize(field, "union1", 424.4f);
     assertEquals(424.4f, r.get("union1"));
 
@@ -183,6 +219,11 @@ public class TestAvroSerializer {
 
     r = serializeAndDeserialize(field, "union1", "hello");
     assertEquals("hello", r.get("union1"));
+
+    HiveDecimal dec = HiveDecimal.create("3.1415926");
+    r = serializeAndDeserialize(field, "union1", AvroSerdeUtils.getBufferFromDecimal(dec, 4));
+    HiveDecimal dec1 = AvroSerdeUtils.getHiveDecimalFromByteBuffer((ByteBuffer) r.get("union1"), 4);
+    assertEquals(dec.setScale(4), dec1);
   }
 
   private enum enum1 {BLUE, RED , GREEN};
@@ -326,6 +367,21 @@ public class TestAvroSerializer {
     String field = "{ \"name\":\"nullableBytes\", \"type\":[\"null\", \"bytes\"] }";
     ByteBuffer bb = ByteBuffer.wrap("easy as one two three".getBytes());
     bb.rewind();
+    GenericRecord r = serializeAndDeserialize(field, "nullableBytes", bb);
+
+    Object result = r.get("nullableBytes");
+    assertNotSame(bb, result);
+    assertEquals(bb, result);
+
+    r = serializeAndDeserialize(field, "nullableBytes", null);
+    assertNull(r.get("nullableBytes"));
+  }
+
+  @Test
+  public void canSerializeNullableDecimals() throws SerDeException, IOException {
+    String field = "{ \"name\":\"nullableBytes\", \"type\":[\"null\", " +
+        "{\"type\":\"bytes\", \"logicalType\":\"decimal\", \"precision\":5, \"scale\":4}] }";
+    Buffer bb = AvroSerdeUtils.getBufferFromDecimal(HiveDecimal.create("3.1416"), 4);
     GenericRecord r = serializeAndDeserialize(field, "nullableBytes", bb);
 
     Object result = r.get("nullableBytes");
