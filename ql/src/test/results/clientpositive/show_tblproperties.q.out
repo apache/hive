@@ -33,11 +33,11 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 numFiles	0
 #### A masked pattern was here ####
 tmp	true
-COLUMN_STATS_ACCURATE	false
 #### A masked pattern was here ####
-bar	bar value
-numRows	-1
+COLUMN_STATS_ACCURATE	false
 totalSize	0
+numRows	-1
+bar	bar value
 rawDataSize	-1
 PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES

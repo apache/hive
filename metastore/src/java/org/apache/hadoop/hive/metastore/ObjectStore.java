@@ -133,6 +133,7 @@ import org.apache.thrift.TException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 
 /**
@@ -946,6 +947,16 @@ public class ObjectStore implements RawStore, Configurable {
     return tables;
   }
 
+  /** Makes shallow copy of a list to avoid DataNucleus mucking with our objects. */
+  private <T> List<T> convertList(List<T> dnList) {
+    return (dnList == null) ? null : Lists.newArrayList(dnList);
+  }
+
+  /** Makes shallow copy of a map to avoid DataNucleus mucking with our objects. */
+  private <K, V> Map<K, V> convertMap(Map<K, V> dnMap) {
+    return (dnMap == null) ? null : Maps.newHashMap(dnMap);
+  }
+
   private Table convertToTable(MTable mtbl) throws MetaException {
     if (mtbl == null) {
       return null;
@@ -964,9 +975,8 @@ public class ObjectStore implements RawStore, Configurable {
     return new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
         .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
-        convertToFieldSchemas(mtbl.getPartitionKeys()), mtbl.getParameters(),
-        mtbl.getViewOriginalText(), mtbl.getViewExpandedText(),
-        tableType);
+        convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
+        mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
   }
 
   private MTable convertToMTable(Table tbl) throws InvalidObjectException,
@@ -1057,8 +1067,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (ms == null) {
       throw new MetaException("Invalid SerDeInfo object");
     }
-    return new SerDeInfo(ms.getName(), ms.getSerializationLib(), ms
-        .getParameters());
+    return new SerDeInfo(ms.getName(), ms.getSerializationLib(), convertMap(ms.getParameters()));
   }
 
   private MSerDeInfo converToMSerDeInfo(SerDeInfo ms) throws MetaException {
@@ -1094,9 +1103,9 @@ public class ObjectStore implements RawStore, Configurable {
     StorageDescriptor sd = new StorageDescriptor(noFS ? null : convertToFieldSchemas(mFieldSchemas),
         msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
         .isCompressed(), msd.getNumBuckets(), converToSerDeInfo(msd
-        .getSerDeInfo()), msd.getBucketCols(), convertToOrders(msd
-        .getSortCols()), msd.getParameters());
-    SkewedInfo skewedInfo = new SkewedInfo(msd.getSkewedColNames(),
+        .getSerDeInfo()), convertList(msd.getBucketCols()), convertToOrders(msd
+        .getSortCols()), convertMap(msd.getParameters()));
+    SkewedInfo skewedInfo = new SkewedInfo(convertList(msd.getSkewedColNames()),
         convertToSkewedValues(msd.getSkewedColValues()),
         covertToSkewedMap(msd.getSkewedColValueLocationMaps()));
     sd.setSkewedInfo(skewedInfo);
@@ -1415,10 +1424,10 @@ public class ObjectStore implements RawStore, Configurable {
     if (mpart == null) {
       return null;
     }
-    return new Partition(mpart.getValues(), mpart.getTable().getDatabase()
+    return new Partition(convertList(mpart.getValues()), mpart.getTable().getDatabase()
         .getName(), mpart.getTable().getTableName(), mpart.getCreateTime(),
         mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd()),
-        mpart.getParameters());
+        convertMap(mpart.getParameters()));
   }
 
   private Partition convertToPart(String dbName, String tblName, MPartition mpart)
@@ -1426,9 +1435,9 @@ public class ObjectStore implements RawStore, Configurable {
     if (mpart == null) {
       return null;
     }
-    return new Partition(mpart.getValues(), dbName, tblName, mpart.getCreateTime(),
-        mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd(), false),
-        mpart.getParameters());
+    return new Partition(convertList(mpart.getValues()), dbName, tblName,
+        mpart.getCreateTime(), mpart.getLastAccessTime(),
+        convertToStorageDescriptor(mpart.getSd(), false), convertMap(mpart.getParameters()));
   }
 
   @Override
