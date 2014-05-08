@@ -168,10 +168,10 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'numFiles'='1', 
-  'COLUMN_STATS_ACCURATE'='true', 
 #### A masked pattern was here ####
-  'numRows'='10', 
+  'COLUMN_STATS_ACCURATE'='true', 
   'totalSize'='80', 
+  'numRows'='10', 
   'rawDataSize'='70')
 1.01
 1.01
