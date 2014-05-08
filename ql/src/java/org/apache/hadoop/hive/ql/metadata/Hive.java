@@ -776,6 +776,15 @@ public class Hive {
             tt.putToParameters(prop.getKey(), prop.getValue());
           }
         }
+        SessionState ss = SessionState.get();
+        CreateTableAutomaticGrant grants;
+        if (ss != null && ((grants = ss.getCreateTableGrants()) != null)) {
+            PrincipalPrivilegeSet principalPrivs = new PrincipalPrivilegeSet();
+            principalPrivs.setUserPrivileges(grants.getUserGrants());
+            principalPrivs.setGroupPrivileges(grants.getGroupGrants());
+            principalPrivs.setRolePrivileges(grants.getRoleGrants());
+            tt.setPrivileges(principalPrivs);
+          }
       }
 
       if(!deferredRebuild) {
