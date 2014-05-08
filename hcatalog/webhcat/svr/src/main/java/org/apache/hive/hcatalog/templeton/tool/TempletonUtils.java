@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -353,5 +354,9 @@ public class TempletonUtils {
       args.add("/c");
       args.add("call");
     }
+  }
+
+  public static String unEscape(String input) {
+    return StringEscapeUtils.unescapeJava(input);
   }
 }

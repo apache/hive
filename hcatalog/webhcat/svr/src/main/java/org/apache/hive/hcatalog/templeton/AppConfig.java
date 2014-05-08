@@ -21,6 +21,8 @@ package org.apache.hive.hcatalog.templeton;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -31,8 +33,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hive.hcatalog.templeton.tool.JobState;
+import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 import org.apache.hive.hcatalog.templeton.tool.ZooKeeperCleanup;
 import org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage;
 
@@ -104,6 +108,11 @@ public class AppConfig extends Configuration {
    * see webhcat-default.xml
    */
   public static final String HCAT_HOME_PATH      = "templeton.hcat.home";
+  /**
+   * is a comma separated list of name=value pairs;
+   * In case some value is itself a comma-separated list, the comma needs to
+   * be escaped with {@link org.apache.hadoop.util.StringUtils#ESCAPE_CHAR}
+   */
   public static final String HIVE_PROPS_NAME     = "templeton.hive.properties";
   public static final String LIB_JARS_NAME       = "templeton.libjars";
   public static final String PIG_ARCHIVE_NAME    = "templeton.pig.archive";
@@ -247,8 +256,18 @@ public class AppConfig extends Configuration {
   public String controllerMRChildOpts() { 
     return get(TEMPLETON_CONTROLLER_MR_CHILD_OPTS); 
   }
-
-
+  /**
+   * @see  #HIVE_PROPS_NAME
+   */
+  public Collection<String> hiveProps() {
+    String[] props= StringUtils.split(get(HIVE_PROPS_NAME));
+    //since raw data was (possibly) escaped to make split work,
+    //now need to remove escape chars so they don't interfere with downstream processing
+    for(int i = 0; i < props.length; i++) {
+      props[i] = TempletonUtils.unEscape(props[i]);
+    }
+    return Arrays.asList(props);
+  }
 
   public String[] overrideJars() {
     if (getBoolean(OVERRIDE_JARS_ENABLED, true))
