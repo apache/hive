@@ -45,6 +45,7 @@ public interface JobSubmissionConstants {
     "__TEZ_CREDENTIALS_OPTION=WEBHCAT_TOKEN_FILE_LOCATION_TEZ__";
   /**
    * constants needed for Pig job submission
+   * The string values here are what Pig expects to see in it's environment
    */
   public static interface PigConstants {
     public static final String HIVE_HOME = "HIVE_HOME";
