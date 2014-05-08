@@ -87,3 +87,69 @@ select count(*) from over1k_part;
 select count(*) from over1k_part_limit;
 select count(*) from over1k_part_buck;
 select count(*) from over1k_part_buck_sort;
+
+-- tests for HIVE-6883
+create table over1k_part2(
+           si smallint,
+           i int,
+           b bigint,
+           f float)
+       partitioned by (ds string, t tinyint);
+
+set hive.optimize.sort.dynamic.partition=false;
+explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i;
+set hive.optimize.sort.dynamic.partition=true;
+explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i;
+
+set hive.optimize.sort.dynamic.partition=false;
+insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i;
+
+desc formatted over1k_part2 partition(ds="foo",t=27);
+desc formatted over1k_part2 partition(ds="foo",t="__HIVE_DEFAULT_PARTITION__");
+
+select * from over1k_part2;
+select count(*) from over1k_part2;
+
+set hive.optimize.sort.dynamic.partition=true;
+insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i;
+
+desc formatted over1k_part2 partition(ds="foo",t=27);
+desc formatted over1k_part2 partition(ds="foo",t="__HIVE_DEFAULT_PARTITION__");
+
+select * from over1k_part2;
+select count(*) from over1k_part2;
+
+-- hadoop-1 does not honor number of reducers in local mode. There is always only 1 reducer irrespective of the number of buckets.
+-- Hence all records go to one bucket and all other buckets will be empty. Similar to HIVE-6867. However, hadoop-2 honors number
+-- of reducers and records are spread across all reducers. To avoid this inconsistency we will make number of buckets to 1 for this test.
+create table over1k_part_buck_sort2(
+           si smallint,
+           i int,
+           b bigint,
+           f float)
+       partitioned by (t tinyint)
+       clustered by (si)
+       sorted by (f) into 1 buckets;
+
+set hive.optimize.sort.dynamic.partition=false;
+explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27;
+set hive.optimize.sort.dynamic.partition=true;
+explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27;
+
+set hive.optimize.sort.dynamic.partition=false;
+insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27;
+
+desc formatted over1k_part_buck_sort2 partition(t=27);
+desc formatted over1k_part_buck_sort2 partition(t="__HIVE_DEFAULT_PARTITION__");
+
+select * from over1k_part_buck_sort2;
+select count(*) from over1k_part_buck_sort2;
+
+set hive.optimize.sort.dynamic.partition=true;
+insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27;
+
+desc formatted over1k_part_buck_sort2 partition(t=27);
+desc formatted over1k_part_buck_sort2 partition(t="__HIVE_DEFAULT_PARTITION__");
+
+select * from over1k_part_buck_sort2;
+select count(*) from over1k_part_buck_sort2;

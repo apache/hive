@@ -54,11 +54,11 @@ STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people_staging
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging
 POSTHOOK: Output: default@orc_create_people
@@ -177,11 +177,11 @@ POSTHOOK: Lineage: orc_create_people.last_name SIMPLE [(orc_create_people_stagin
 POSTHOOK: Lineage: orc_create_people.salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people.start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
-PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people_staging
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging
 POSTHOOK: Output: default@orc_create_people
@@ -318,12 +318,12 @@ POSTHOOK: Lineage: orc_create_people.start_date SIMPLE [(orc_create_people_stagi
 POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
 PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging
+  SELECT * FROM orc_create_people_staging ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people_staging
 PREHOOK: Output: default@orc_create_people
 POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging
+  SELECT * FROM orc_create_people_staging ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging
 POSTHOOK: Output: default@orc_create_people@state=Ca
@@ -519,7 +519,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2068                
+	totalSize           	1969                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -618,12 +618,12 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging
+  SELECT * FROM orc_create_people_staging ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people_staging
 PREHOOK: Output: default@orc_create_people
 POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging
+  SELECT * FROM orc_create_people_staging ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging
 POSTHOOK: Output: default@orc_create_people@state=Ca
@@ -819,7 +819,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2068                
+	totalSize           	1969                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -950,12 +950,12 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging
+  SELECT * FROM orc_create_people_staging ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people_staging
 PREHOOK: Output: default@orc_create_people
 POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging
+  SELECT * FROM orc_create_people_staging ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging
 POSTHOOK: Output: default@orc_create_people@state=Ca
@@ -1152,7 +1152,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	21980               
-	totalSize           	4747                
+	totalSize           	4780                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1247,7 +1247,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22048               
-	totalSize           	4832                
+	totalSize           	4859                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1400,12 +1400,12 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging
+  SELECT * FROM orc_create_people_staging ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people_staging
 PREHOOK: Output: default@orc_create_people
 POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging
+  SELECT * FROM orc_create_people_staging ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging
 POSTHOOK: Output: default@orc_create_people@state=Ca
@@ -1566,7 +1566,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	21980               
-	totalSize           	4747                
+	totalSize           	4780                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1673,7 +1673,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22048               
-	totalSize           	4832                
+	totalSize           	4859                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1848,12 +1848,12 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging
+  SELECT * FROM orc_create_people_staging ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people_staging
 PREHOOK: Output: default@orc_create_people
 POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging
+  SELECT * FROM orc_create_people_staging ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging
 POSTHOOK: Output: default@orc_create_people@state=Ca
