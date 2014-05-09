@@ -52,6 +52,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    */
   private boolean allowStatefulFunctions;
 
+  private boolean allowDistinctFunctions;
+
   /**
    * Constructor.
    *
@@ -62,6 +64,7 @@ public class TypeCheckCtx implements NodeProcessorCtx {
     setInputRR(inputRR);
     error = null;
     allowStatefulFunctions = false;
+    allowDistinctFunctions = true;
   }
 
   /**
@@ -129,4 +132,11 @@ public class TypeCheckCtx implements NodeProcessorCtx {
     return errorSrcNode;
   }
 
+  public void setAllowDistinctFunctions(boolean allowDistinctFunctions) {
+    this.allowDistinctFunctions = allowDistinctFunctions;
+  }
+
+  public boolean isAllowDistinctFunctions() {
+    return allowDistinctFunctions;
+  }
 }
