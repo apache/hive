@@ -3046,7 +3046,7 @@ public final class Utilities {
           throws IOException, InstantiationException, IllegalAccessException {
 
     // create a dummy empty file in a new directory
-    String newDir = hiveScratchDir + File.separator + sequenceNumber;
+    String newDir = hiveScratchDir + Path.SEPARATOR + sequenceNumber;
     Path newPath = new Path(newDir);
     FileSystem fs = newPath.getFileSystem(job);
     fs.mkdirs(newPath);
@@ -3054,7 +3054,7 @@ public final class Utilities {
     //in the file status. This makes sure that all paths which goes into PathToPartitionInfo are always listed status
     //file path.
     newPath = fs.makeQualified(newPath);
-    String newFile = newDir + File.separator + "emptyFile";
+    String newFile = newDir + Path.SEPARATOR + "emptyFile";
     Path newFilePath = new Path(newFile);
 
     RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newFilePath,
