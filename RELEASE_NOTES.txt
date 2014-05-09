@@ -1,3 +1,26 @@
+
+Release Notes - Hive - Version 0.13.1
+
+** Bug
+    * [HIVE-4576] - templeton.hive.properties does not allow values with commas
+    * [HIVE-6783] - Incompatible schema for maps between parquet-hive and parquet-pig
+    * [HIVE-6826] - Hive-tez has issues when different partitions work off of different input types
+    * [HIVE-6828] - Hive tez bucket map join conversion interferes with map join conversion
+    * [HIVE-6862] - add DB schema DDL and upgrade 12to13 scripts for MS SQL Server
+    * [HIVE-6877] - TestOrcRawRecordMerger is deleting test.tmp.dir
+    * [HIVE-6883] - Dynamic partitioning optimization does not honor sort order or order by
+    * [HIVE-6898] - Functions in hive are failing with java.lang.ClassNotFoundException on Tez
+    * [HIVE-6919] - hive sql std auth select query fails on partitioned tables
+    * [HIVE-6921] - index creation fails with sql std auth turned on 
+    * [HIVE-6945] - issues with dropping partitions on Oracle
+    * [HIVE-6952] - Hive 0.13 HiveOutputFormat breaks backwards compatibility
+    * [HIVE-6955] - ExprNodeColDesc isSame doesn't account for tabAlias: this affects trait Propagation in Joins
+    * [HIVE-6957] - SQL authorization does not work with HS2 binary mode and Kerberos auth
+    * [HIVE-6961] - Drop partitions treats partition columns as strings
+    * [HIVE-6985] - sql std auth - privileges grants to public role not being honored
+    * [HIVE-7001] - fs.permissions.umask-mode is getting unset when Session is started
+
+
 Release Notes - Hive - Version 0.13.0
 
 ** Sub-task
