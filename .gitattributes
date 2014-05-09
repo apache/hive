@@ -11,6 +11,7 @@
 *.js     text
 *.sql    text
 *.q      text
+*.q.out  text diff
 
 *.sh     text eol=lf
 

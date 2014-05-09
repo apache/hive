@@ -34,3 +34,7 @@ select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;
 -- The join is converted to a bucketed mapjoin with a mapjoin hint
 explain extended select /*+ mapjoin(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;
 select /*+ mapjoin(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;
+
+-- HIVE-7023
+explain extended select /* + MAPJOIN(a,b) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key JOIN bucket_big c ON a.key = c.key;
+select /* + MAPJOIN(a,b) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key JOIN bucket_big c ON a.key = c.key;
