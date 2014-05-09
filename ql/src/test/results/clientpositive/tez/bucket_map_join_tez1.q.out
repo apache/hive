@@ -298,7 +298,7 @@ STAGE PLANS:
     Tez
       Edges:
         Map 2 <- Map 4 (CUSTOM_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE), Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -535,7 +535,7 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 3 <- Map 2 (CUSTOM_EDGE), Map 1 (CUSTOM_EDGE)
+        Map 3 <- Map 1 (CUSTOM_EDGE), Map 2 (CUSTOM_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1058,7 +1058,7 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 3 <- Map 2 (CUSTOM_EDGE), Map 1 (BROADCAST_EDGE)
+        Map 3 <- Map 1 (BROADCAST_EDGE), Map 2 (CUSTOM_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
