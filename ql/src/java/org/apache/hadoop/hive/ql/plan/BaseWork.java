@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,14 +31,14 @@ import org.apache.hadoop.mapred.JobConf;
 
 /**
  * BaseWork. Base class for any "work" that's being done on the cluster. Items like stats
- * gathering that are commonly used regarless of the type of work live here.
+ * gathering that are commonly used regardless of the type of work live here.
  */
 @SuppressWarnings({"serial", "deprecation"})
 public abstract class BaseWork extends AbstractOperatorDesc {
 
   // dummyOps is a reference to all the HashTableDummy operators in the
   // plan. These have to be separately initialized when we setup a task.
-  // Their funtion is mainly as root ops to give the mapjoin the correct
+  // Their function is mainly as root ops to give the mapjoin the correct
   // schema info.
   List<HashTableDummyOperator> dummyOps;
 

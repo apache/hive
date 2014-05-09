@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -34,7 +35,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.tez.dag.api.EdgeProperty;
 
 /**
  * TezWork. This class encapsulates all the work objects that can be executed
@@ -244,7 +244,7 @@ public class TezWork extends AbstractOperatorDesc {
   /*
    * Dependency is a class used for explain
    */ 
-  public class Dependency implements Serializable {
+  public class Dependency implements Serializable, Comparable<Dependency> {
     public BaseWork w;
     public EdgeType type;
 
@@ -256,6 +256,15 @@ public class TezWork extends AbstractOperatorDesc {
     @Explain(displayName = "Type")
     public String getType() {
       return type.toString();
+    }
+
+    @Override
+    public int compareTo(Dependency o) {
+      int compare = getName().compareTo(o.getName());
+      if (compare == 0) {
+        compare = getType().compareTo(o.getType());
+      }
+      return compare;
     }
   }
 
@@ -271,6 +280,7 @@ public class TezWork extends AbstractOperatorDesc {
         dependencies.add(dependency);
       }
       if (!dependencies.isEmpty()) {
+        Collections.sort(dependencies);
         result.put(entry.getKey().getName(), dependencies);
       }
     }
