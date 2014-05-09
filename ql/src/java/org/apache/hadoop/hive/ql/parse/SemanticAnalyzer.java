@@ -3191,6 +3191,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
         // We allow stateful functions in the SELECT list (but nowhere else)
         tcCtx.setAllowStatefulFunctions(true);
+        tcCtx.setAllowDistinctFunctions(false);
         ExprNodeDesc exp = genExprNodeDesc(expr, inputRR, tcCtx);
         String recommended = recommendName(exp, colAlias);
         if (recommended != null && out_rwsch.get(null, recommended) == null) {

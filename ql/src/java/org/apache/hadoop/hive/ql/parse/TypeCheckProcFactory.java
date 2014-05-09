@@ -1088,6 +1088,11 @@ public final class TypeCheckProcFactory {
           expr.getType() == HiveParser.TOK_FUNCTIONSTAR ||
           expr.getType() == HiveParser.TOK_FUNCTIONDI);
 
+      if (!ctx.isAllowDistinctFunctions() && expr.getType() == HiveParser.TOK_FUNCTIONDI) {
+        throw new SemanticException(
+            SemanticAnalyzer.generateErrorMessage(expr, ErrorMsg.DISTINCT_NOT_SUPPORTED.getMsg()));
+      }
+
       // Create all children
       int childrenBegin = (isFunction ? 1 : 0);
       ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(expr

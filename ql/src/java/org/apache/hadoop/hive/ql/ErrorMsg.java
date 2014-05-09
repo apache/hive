@@ -404,6 +404,7 @@ public enum ErrorMsg {
   NO_COMPACTION_PARTITION(10283, "You must specify a partition to compact for partitioned tables"),
   TOO_MANY_COMPACTION_PARTITIONS(10284, "Compaction can only be requested on one partition at a " +
       "time."),
+  DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),
 
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
