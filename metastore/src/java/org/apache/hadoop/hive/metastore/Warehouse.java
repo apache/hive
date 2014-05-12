@@ -189,7 +189,7 @@ public class Warehouse {
     FileSystem fs = null;
     try {
       fs = getFs(f);
-      return FileUtils.mkdir(fs, f, inheritPerms);
+      return FileUtils.mkdir(fs, f, inheritPerms, conf);
     } catch (IOException e) {
       closeFs(fs);
       MetaStoreUtils.logAndThrowMetaException(e);

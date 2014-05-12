@@ -451,10 +451,11 @@ public final class FileUtils {
    * @param fs FileSystem to use
    * @param f path to create.
    * @param inheritPerms whether directory inherits the permission of the last-existing parent path
+   * @param conf Hive configuration
    * @return true if directory created successfully.  False otherwise, including if it exists.
    * @throws IOException exception in creating the directory
    */
-  public static boolean mkdir(FileSystem fs, Path f, boolean inheritPerms) throws IOException {
+  public static boolean mkdir(FileSystem fs, Path f, boolean inheritPerms, Configuration conf) throws IOException {
     LOG.info("Creating directory if it doesn't exist: " + f);
     if (!inheritPerms) {
       //just create the directory
@@ -479,13 +480,17 @@ public final class FileUtils {
         return false;
       } else {
         FsPermission parentPerm = fs.getFileStatus(path).getPermission();
-        String parentGroup = fs.getFileStatus(path).getGroup();
+        String permString = Integer.toString(parentPerm.toShort(), 8);
         for (Path pathToSet : pathsToSet) {
-          String currOwner = fs.getFileStatus(pathToSet).getOwner();
-          LOG.info("Setting permission and group of parent directory: " + path.toString() +
+          LOG.info("Setting permission of parent directory: " + path.toString() +
             " on new directory: " + pathToSet.toString());
-          fs.setPermission(pathToSet, parentPerm);
-          fs.setOwner(pathToSet, currOwner, parentGroup);
+          try {
+            FsShell fshell = new FsShell();
+            fshell.setConf(conf);
+            fshell.run(new String[]{"-chmod", "-R", permString, pathToSet.toString()});
+          } catch (Exception e) {
+            LOG.warn("Error setting permissions of " + pathToSet, e);
+          }
         }
         return true;
       }
@@ -514,7 +519,7 @@ public final class FileUtils {
         fshell.run(new String[]{"-chgrp", "-R", group, dst.toString()});
         fshell.run(new String[]{"-chmod", "-R", permString, dst.toString()});
       } catch (Exception e) {
-        throw new IOException("Unable to set permissions of " + dst, e);
+        LOG.warn("Error setting permissions or group of " + dst, e);
       }
     }
     return copied;

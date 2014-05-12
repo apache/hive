@@ -2305,7 +2305,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       // create the destination if it does not exist
       if (!fs.exists(destf)) {
-        FileUtils.mkdir(fs, destf, inheritPerms);
+        FileUtils.mkdir(fs, destf, inheritPerms, conf);
       }
     } catch (IOException e) {
       throw new HiveException(
