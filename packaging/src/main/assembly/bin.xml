@@ -272,7 +272,6 @@
       <includes>
         <include>webhcat-default.xml</include>
         <include>webhcat-log4j.properties</include>
-        <include>override-container-log4j.properties</include>
       </includes>
       <outputDirectory>hcatalog/etc/webhcat</outputDirectory>
     </fileSet>

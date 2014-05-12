@@ -37,12 +37,8 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
     try {
     jc = ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
       public JobClient run() throws IOException, InterruptedException  {
-        return ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
-          public JobClient run() throws IOException {
-            //create this in doAs() so that it gets a security context based passed in 'ugi'
-            return new JobClient(conf);
-          }
-        });
+        //create this in doAs() so that it gets a security context based passed in 'ugi'
+        return new JobClient(conf);
       }
     });
     }

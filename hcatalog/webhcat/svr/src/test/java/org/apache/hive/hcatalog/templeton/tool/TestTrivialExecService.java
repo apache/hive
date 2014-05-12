@@ -38,7 +38,7 @@ public class TestTrivialExecService {
       Process process = TrivialExecService.getInstance()
         .run(list,
           new ArrayList<String>(),
-          new HashMap<String, String>(),false);
+          new HashMap<String, String>());
       out = new BufferedReader(new InputStreamReader(
         process.getInputStream()));
       err = new BufferedReader(new InputStreamReader(

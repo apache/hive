@@ -25,9 +25,6 @@ public interface JobSubmissionConstants {
   public static final String JOB_TYPE = "templeton.jobtype";
   public static final String JAR_ARGS_NAME = "templeton.args";
   public static final String OVERRIDE_CLASSPATH = "templeton.override-classpath";
-  public static final String OVERRIDE_CONTAINER_LOG4J_PROPS = "override.containerLog4j";
-  //name of file
-  static final String CONTAINER_LOG4J_PROPS = "override-container-log4j.properties";
   public static final String STDOUT_FNAME = "stdout";
   public static final String STDERR_FNAME = "stderr";
   public static final String EXIT_FNAME = "exit";

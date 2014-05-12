@@ -103,9 +103,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER, "mapreduce.job.credentials.binary");
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ, "tez.credentials.path");
-    boolean overrideLog4jProps = conf.get(OVERRIDE_CONTAINER_LOG4J_PROPS) == null ?
-            false : Boolean.valueOf(conf.get(OVERRIDE_CONTAINER_LOG4J_PROPS));
-    return TrivialExecService.getInstance().run(jarArgsList, removeEnv, env, overrideLog4jProps);
+    return TrivialExecService.getInstance().run(jarArgsList, removeEnv, env);
   }
 
   /**

@@ -74,87 +74,6 @@ import org.apache.thrift.TException;
 @InterfaceAudience.Private
 public class TempletonControllerJob extends Configured implements Tool, JobSubmissionConstants {
   private static final Log LOG = LogFactory.getLog(TempletonControllerJob.class);
-  //file to add to DistributedCache
-  private static URI overrideLog4jURI = null;
-  private static boolean overrideContainerLog4jProps;
-  //Jar cmd submission likely will be affected, Pig likely not
-  private static final String affectedMsg = "Monitoring of Hadoop jobs submitted through WebHCat " +
-          "may be affected.";
-  private static final String TMP_DIR_PROP = "hadoop.tmp.dir";
-
-  /**
-   * Copy the file from local file system to tmp dir
-   */
-  private static URI copyLog4JtoFileSystem(final String localFile) throws IOException,
-          InterruptedException {
-    UserGroupInformation ugi = UserGroupInformation.getLoginUser();
-    return ugi.doAs(new PrivilegedExceptionAction<URI>() {
-      @Override
-      public URI run() throws IOException {
-        AppConfig appConfig = Main.getAppConfigInstance();
-        String fsTmpDir = appConfig.get(TMP_DIR_PROP);
-        if(fsTmpDir == null || fsTmpDir.length() <= 0) {
-          LOG.warn("Could not find 'hadoop.tmp.dir'; " + affectedMsg);
-          return null;
-        }
-        FileSystem fs = FileSystem.get(appConfig);
-        Path dirPath = new Path(fsTmpDir);
-        if(!fs.exists(dirPath)) {
-          LOG.warn(dirPath + " does not exist; " + affectedMsg);
-          return null;
-        }
-        Path dst = fs.makeQualified(new Path(fsTmpDir, CONTAINER_LOG4J_PROPS));
-        fs.copyFromLocalFile(new Path(localFile), dst);
-        //make readable by all users since TempletonControllerJob#run() is run as submitting user
-        fs.setPermission(dst, new FsPermission((short)0644));
-        return dst.toUri();
-      }
-    });
-  }
-  /**
-   * local file system
-   * @return
-   */
-  private static String getLog4JPropsLocal() {
-    return AppConfig.getWebhcatConfDir() + File.separator + CONTAINER_LOG4J_PROPS;
-  }
-  static {
-    //initialize once-per-JVM (i.e. one running WebHCat server) state and log it once since it's 
-    // the same for every job
-    try {
-      //safe (thread) publication 
-      // http://docs.oracle.com/javase/specs/jls/se5.0/html/execution.html#12.4.2
-      LOG.info("Using Hadoop Version: " + ShimLoader.getMajorVersion());
-      overrideContainerLog4jProps = "0.23".equals(ShimLoader.getMajorVersion());
-      if(overrideContainerLog4jProps) {
-        //see detailed note in CONTAINER_LOG4J_PROPS file
-        LOG.info(AppConfig.WEBHCAT_CONF_DIR + "=" + AppConfig.getWebhcatConfDir());
-        File localFile = new File(getLog4JPropsLocal());
-        if(localFile.exists()) {
-          LOG.info("Found " + localFile.getAbsolutePath() + " to use for job submission.");
-          try {
-            overrideLog4jURI = copyLog4JtoFileSystem(getLog4JPropsLocal());
-            LOG.info("Job submission will use log4j.properties=" + overrideLog4jURI);
-          }
-          catch(IOException ex) {
-            LOG.warn("Will not add " + CONTAINER_LOG4J_PROPS + " to Distributed Cache.  " +
-                    "Some fields in job status may be unavailable", ex);
-          }
-        }
-        else {
-          LOG.warn("Could not find " + localFile.getAbsolutePath() + ". " + affectedMsg);
-        }
-      }
-    }
-    catch(Throwable t) {
-      //this intentionally doesn't use TempletonControllerJob.class.getName() to be able to
-      //log errors which may be due to class loading
-      String msg = "org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob is not " +
-              "properly initialized. " + affectedMsg;
-      LOG.error(msg, t);
-    }
-  }
-
   private final boolean secureMetastoreAccess;
 
   /**
@@ -191,10 +110,6 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     conf.set(JAR_ARGS_NAME, TempletonUtils.encodeArray(args));
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
     conf.set("user.name", user);
-    if(overrideContainerLog4jProps && overrideLog4jURI != null) {
-      //must be done before Job object is created
-      conf.set(OVERRIDE_CONTAINER_LOG4J_PROPS, Boolean.TRUE.toString());
-    }
     Job job = new Job(conf);
     job.setJarByClass(LaunchMapper.class);
     job.setJobName(TempletonControllerJob.class.getSimpleName());
@@ -202,20 +117,6 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     job.setMapOutputKeyClass(Text.class);
     job.setMapOutputValueClass(Text.class);
     job.setInputFormatClass(SingleInputFormat.class);
-    if(overrideContainerLog4jProps && overrideLog4jURI != null) {
-      FileSystem fs = FileSystem.get(conf);
-      if(fs.exists(new Path(overrideLog4jURI))) {
-        ShimLoader.getHadoopShims().getWebHCatShim(conf, UgiFactory.getUgi(user)).addCacheFile(
-                overrideLog4jURI, job);
-        LOG.debug("added " + overrideLog4jURI + " to Dist Cache");
-      }
-      else {
-        //in case this file was deleted by someone issue a warning but don't try to add to 
-        // DistributedCache as that will throw and fail job submission
-        LOG.warn("Cannot find " + overrideLog4jURI + " which is created on WebHCat startup/job " +
-                "submission.  " + affectedMsg);
-      }
-    }
 
     NullOutputFormat<NullWritable, NullWritable> of = new NullOutputFormat<NullWritable, NullWritable>();
     job.setOutputFormatClass(of.getClass());
@@ -237,10 +138,6 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
               submittedJobId.toString(), metastoreTokenStrForm);
       LOG.debug("Added metastore delegation token for jobId=" + submittedJobId.toString() +
               " user=" + user);
-    }
-    if(overrideContainerLog4jProps && overrideLog4jURI == null) {
-      //do this here so that log msg has JobID
-      LOG.warn("Could not override container log4j properties for " + submittedJobId);
     }
     return 0;
   }
