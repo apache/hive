@@ -38,12 +38,6 @@
   </property>
 
   <property>
-    <name>templeton.jar</name>
-    <value>${env.TEMPLETON_HOME}/share/webhcat/svr/webhcat-0.6.0-SNAPSHOT.jar</value>
-    <description>The path to the Templeton jar file.</description>
-  </property>
-
-  <property>
     <name>templeton.libjars</name>
     <value>${env.TEMPLETON_HOME}/share/webhcat/svr/lib/zookeeper-3.4.3.jar</value>
     <description>Jars to add to the classpath.</description>
