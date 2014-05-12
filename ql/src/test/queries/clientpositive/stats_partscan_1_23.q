@@ -6,6 +6,7 @@ set mapred.min.split.size=256;
 set mapred.min.split.size.per.node=256;
 set mapred.min.split.size.per.rack=256;
 set mapred.max.split.size=256;
+set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- This test uses mapred.max.split.size/mapred.max.split.size for controlling
