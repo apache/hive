@@ -71,7 +71,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       }
 
       boolean inheritPerms = conf.getBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
-      if (!FileUtils.mkdir(dstFs, toPath, inheritPerms)) {
+      if (!FileUtils.mkdir(dstFs, toPath, inheritPerms, conf)) {
         console.printError("Cannot make target directory: " + toPath.toString());
         return 2;
       }
