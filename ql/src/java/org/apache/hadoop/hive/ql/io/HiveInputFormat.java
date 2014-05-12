@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
@@ -184,14 +185,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   /**
    * A cache of InputFormat instances.
    */
-  protected static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats;
+  protected static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats 
+    = new ConcurrentHashMap<Class, InputFormat<WritableComparable, Writable>>();
 
   public static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
     Class inputFormatClass, JobConf job) throws IOException {
 
-    if (inputFormats == null) {
-      inputFormats = new HashMap<Class, InputFormat<WritableComparable, Writable>>();
-    }
     if (!inputFormats.containsKey(inputFormatClass)) {
       try {
         InputFormat<WritableComparable, Writable> newInstance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
