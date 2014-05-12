@@ -103,7 +103,7 @@ public class ExprNodeFieldDesc extends ExprNodeDesc implements Serializable {
 
   @Override
   public ExprNodeDesc clone() {
-    return new ExprNodeFieldDesc(typeInfo, desc, fieldName, isList);
+    return new ExprNodeFieldDesc(typeInfo, desc.clone(), fieldName, isList);
   }
 
   @Override
