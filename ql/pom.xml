@@ -381,14 +381,6 @@
          <version>${hadoop-23.version}</version>
          <optional>true</optional>
        </dependency>
-       <!-- Test dependencies -->
-       <dependency>
-         <groupId>org.apache.hadoop</groupId>
-         <artifactId>hadoop-mapreduce-client-common</artifactId>
-         <version>${hadoop-23.version}</version>
-         <optional>true</optional>
-         <scope>test</scope>
-       </dependency>
       </dependencies>
     </profile>
     <profile>
