@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.mapred;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -27,6 +29,7 @@ import java.net.URI;
 import java.security.PrivilegedExceptionAction;
 
 public class WebHCatJTShim23 implements WebHCatJTShim {
+  private static final Log LOG = LogFactory.getLog(WebHCatJTShim23.class);
   private JobClient jc;
 
   /**
@@ -54,11 +57,13 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
    */
   public JobProfile getJobProfile(JobID jobid)
           throws IOException {
-    RunningJob rj = jc.getJob(jobid);
+    RunningJob rj = getJob(jobid);
+    if(rj == null) {
+      return null;
+    }
     JobStatus jobStatus = rj.getJobStatus();
-    JobProfile jobProfile = new JobProfile(jobStatus.getUsername(), jobStatus.getJobID(),
+    return new JobProfile(jobStatus.getUsername(), jobStatus.getJobID(),
             jobStatus.getJobFile(), jobStatus.getTrackingUrl(), jobStatus.getJobName());
-    return jobProfile;
   }
 
   /**
@@ -68,9 +73,11 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
    */
   public JobStatus getJobStatus(JobID jobid)
           throws IOException {
-    RunningJob rj = jc.getJob(jobid);
-    JobStatus jobStatus = rj.getJobStatus();
-    return jobStatus;
+    RunningJob rj = getJob(jobid);
+    if(rj == null) {
+      return null;
+    }
+    return rj.getJobStatus();
   }
 
 
@@ -79,7 +86,10 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
    */
   public void killJob(JobID jobid)
           throws IOException {
-    RunningJob rj = jc.getJob(jobid);
+    RunningJob rj = getJob(jobid);
+    if(rj == null) {
+      return;
+    }
     rj.killJob();
   }
 
@@ -103,5 +113,21 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
   @Override
   public void addCacheFile(URI uri, Job job) {
     job.addCacheFile(uri);
+  }
+  /**
+   * @return {@code null} if no such application exists
+   */
+  private RunningJob getJob(JobID jobid) throws IOException {
+    try {
+      return jc.getJob(jobid);
+    }
+    catch(IOException ex) {
+      String msg = ex.getMessage();
+      if(msg != null && msg.contains("ApplicationNotFoundException")) {
+        LOG.info("Job(" + jobid + ") not found: " + msg);
+        return null;
+      }
+      throw ex;
+    }
   }
 }
