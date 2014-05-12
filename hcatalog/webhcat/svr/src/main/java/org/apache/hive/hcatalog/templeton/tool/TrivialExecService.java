@@ -39,10 +39,8 @@ import java.util.Map;
  * not available on every node in the cluster (outside webhcat jar)
  */
 final class TrivialExecService {
-  //with default log4j config, this output ends up in 'syslog' of the LaunchMapper task
   private static final Log LOG = LogFactory.getLog(TrivialExecService.class);
   private static volatile TrivialExecService theSingleton;
-  private static final String HADOOP_CLIENT_OPTS = "HADOOP_CLIENT_OPTS";
   /**
    * Retrieve the singleton.
    */
@@ -51,31 +49,9 @@ final class TrivialExecService {
       theSingleton = new TrivialExecService();
     return theSingleton;
   }
-  /**
-   * See {@link JobSubmissionConstants#CONTAINER_LOG4J_PROPS} file for details.
-   */
-  private static void hadoop2LogRedirect(ProcessBuilder processBuilder) {
-    Map<String, String> env = processBuilder.environment();
-    if(!env.containsKey(HADOOP_CLIENT_OPTS)) {
-      return;
-    }
-    String hcopts = env.get(HADOOP_CLIENT_OPTS);
-    if(!hcopts.contains("log4j.configuration=container-log4j.properties")) {
-      return;
-    }
-    //TempletonControllerJob ensures that this file is in DistributedCache
-    File log4jProps = new File(JobSubmissionConstants.CONTAINER_LOG4J_PROPS);
-    hcopts = hcopts.replace("log4j.configuration=container-log4j.properties",
-            "log4j.configuration=file://" + new Path(log4jProps.getAbsolutePath()).toUri().toString());
-    //helps figure out what log4j is doing, but may confuse 
-    //some jobs due to extra output to stdout
-    //hcopts = hcopts + " -Dlog4j.debug=true";
-    env.put(HADOOP_CLIENT_OPTS, hcopts);
-  }
   public Process run(List<String> cmd, List<String> removeEnv,
-             Map<String, String> environmentVariables, boolean overrideContainerLog4jProps)
-    throws IOException {
-    LOG.info("run(cmd, removeEnv, environmentVariables, " + overrideContainerLog4jProps + ")");
+                     Map<String, String> environmentVariables) throws IOException {
+    LOG.info("run(cmd, removeEnv, environmentVariables)");
     LOG.info("Starting cmd: " + cmd);
     ProcessBuilder pb = new ProcessBuilder(cmd);
     for (String key : removeEnv) {
@@ -85,9 +61,6 @@ final class TrivialExecService {
       pb.environment().remove(key);
     }
     pb.environment().putAll(environmentVariables);
-    if(overrideContainerLog4jProps) {
-      hadoop2LogRedirect(pb);
-    }
     logDebugInfo("Starting process with env:", pb.environment());
     return pb.start();
   }
