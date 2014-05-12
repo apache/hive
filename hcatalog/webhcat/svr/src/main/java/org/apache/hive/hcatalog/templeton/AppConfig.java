@@ -120,7 +120,6 @@ public class AppConfig extends Configuration {
   public static final String PIG_ARCHIVE_NAME    = "templeton.pig.archive";
   public static final String PIG_PATH_NAME       = "templeton.pig.path";
   public static final String STREAMING_JAR_NAME  = "templeton.streaming.jar";
-  public static final String TEMPLETON_JAR_NAME  = "templeton.jar";
   public static final String OVERRIDE_JARS_NAME  = "templeton.override.jars";
   public static final String OVERRIDE_JARS_ENABLED = "templeton.override.enabled";
   public static final String TEMPLETON_CONTROLLER_MR_CHILD_OPTS 
@@ -241,7 +240,6 @@ public class AppConfig extends Configuration {
     return false;
   }
 
-  public String templetonJar()     { return get(TEMPLETON_JAR_NAME); }
   public String libJars()          { return get(LIB_JARS_NAME); }
   public String hadoopQueueName()  { return get(HADOOP_QUEUE_NAME); }
   public String clusterHadoop()    { return get(HADOOP_NAME); }
