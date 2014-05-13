@@ -1,0 +1,17 @@
+PREHOOK: query: ----------------------------------------
+-- granting object privilege to a role that does not exist should fail
+----------------------------------------
+create table t1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: ----------------------------------------
+-- granting object privilege to a role that does not exist should fail
+----------------------------------------
+create table t1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: grant ALL on t1 to role nosuchrole
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Error granting privileges: NoSuchObjectException(message:Role nosuchrole does not exist)

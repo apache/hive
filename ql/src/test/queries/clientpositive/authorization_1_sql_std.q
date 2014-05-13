@@ -24,13 +24,14 @@ show role grant user user_sauth;
 
 --table grant to role
 
-grant select on table src_autho_test to role src_role;
+-- also verify case insesitive behavior of role name
+grant select on table src_autho_test to role Src_ROle;
 
 show grant role src_role on table src_autho_test;
-revoke select on table src_autho_test from role src_role;
+revoke select on table src_autho_test from role src_rolE;
 
 -- drop role
-drop role src_role;
+drop role SRc_role;
 
 set hive.security.authorization.enabled=false;
 drop table src_autho_test;
