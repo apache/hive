@@ -2,13 +2,25 @@ describe srcpart;
 describe srcpart.key;
 describe srcpart PARTITION(ds='2008-04-08', hr='12');
 
+describe `srcpart`;
+describe `srcpart`.`key`;
+describe `srcpart` PARTITION(ds='2008-04-08', hr='12');
+
 describe extended srcpart;
 describe extended srcpart.key;
 describe extended srcpart PARTITION(ds='2008-04-08', hr='12');
 
+describe extended `srcpart`;
+describe extended `srcpart`.`key`;
+describe extended `srcpart` PARTITION(ds='2008-04-08', hr='12');
+
 describe formatted srcpart;
 describe formatted srcpart.key;
 describe formatted srcpart PARTITION(ds='2008-04-08', hr='12');
+
+describe formatted `srcpart`;
+describe formatted `srcpart`.`key`;
+describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12');
 
 create table srcpart_serdeprops like srcpart;
 alter table srcpart_serdeprops set serdeproperties('xyz'='0');
