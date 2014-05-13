@@ -3040,6 +3040,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean success = false;
     boolean commited = false;
     try {
+      openTransaction();
       MRoleMap roleMap = null;
       try {
         roleMap = this.getMSecurityUserRoleMap(userName, principalType, role
@@ -3050,7 +3051,9 @@ public class ObjectStore implements RawStore, Configurable {
         throw new InvalidObjectException("Principal " + userName
             + " already has the role " + role.getRoleName());
       }
-      openTransaction();
+      if (principalType == PrincipalType.ROLE) {
+        validateRole(userName);
+      }
       MRole mRole = getMRole(role.getRoleName());
       long now = System.currentTimeMillis()/1000;
       MRoleMap roleMember = new MRoleMap(userName, principalType.toString(),
@@ -3064,6 +3067,19 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return success;
+  }
+
+  /**
+   * Verify that role with given name exists, if not throw exception
+   * @param roleName
+   * @throws NoSuchObjectException
+   */
+  private void validateRole(String roleName) throws NoSuchObjectException {
+    // if grantee is a role, check if it exists
+    MRole granteeRole = getMRole(roleName);
+    if (granteeRole == null) {
+      throw new NoSuchObjectException("Role " + roleName + " does not exist");
+    }
   }
 
   @Override
@@ -3697,6 +3713,10 @@ public class ObjectStore implements RawStore, Configurable {
           String grantorType = privDef.getGrantInfo().getGrantorType().toString();
           boolean grantOption = privDef.getGrantInfo().isGrantOption();
           privSet.clear();
+
+          if(principalType == PrincipalType.ROLE){
+            validateRole(userName);
+          }
 
           if (hiveObject.getObjectType() == HiveObjectType.GLOBAL) {
             List<MGlobalPrivilege> globalPrivs = this
