@@ -302,4 +302,20 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
     other.confLookupNeeded = this.confLookupNeeded;
     other.ansiSqlArithmetic = this.ansiSqlArithmetic;
   }
+
+  public boolean isConfLookupNeeded() {
+    return confLookupNeeded;
+  }
+
+  public void setConfLookupNeeded(boolean confLookupNeeded) {
+    this.confLookupNeeded = confLookupNeeded;
+  }
+
+  public boolean isAnsiSqlArithmetic() {
+    return ansiSqlArithmetic;
+  }
+
+  public void setAnsiSqlArithmetic(boolean ansiSqlArithmetic) {
+    this.ansiSqlArithmetic = ansiSqlArithmetic;
+  }
 }

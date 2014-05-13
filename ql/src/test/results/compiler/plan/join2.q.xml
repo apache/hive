@@ -384,7 +384,11 @@
                       </object> 
                      </void> 
                      <void property="genericUDF"> 
-                      <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"/> 
+                      <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"> 
+                       <void property="confLookupNeeded"> 
+                        <boolean>false</boolean> 
+                       </void> 
+                      </object> 
                      </void> 
                      <void property="typeInfo"> 
                       <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
