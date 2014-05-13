@@ -987,7 +987,11 @@
                         </object> 
                        </void> 
                        <void property="genericUDF"> 
-                        <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod"/> 
+                        <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod"> 
+                         <void property="confLookupNeeded"> 
+                          <boolean>false</boolean> 
+                         </void> 
+                        </object> 
                        </void> 
                        <void property="typeInfo"> 
                         <object idref="PrimitiveTypeInfo1"/> 

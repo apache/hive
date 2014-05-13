@@ -317,7 +317,11 @@
                 </object> 
                </void> 
                <void property="genericUDF"> 
-                <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"/> 
+                <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"> 
+                 <void property="confLookupNeeded"> 
+                  <boolean>false</boolean> 
+                 </void> 
+                </object> 
                </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo0"/> 
@@ -352,7 +356,11 @@
                 </object> 
                </void> 
                <void property="genericUDF"> 
-                <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus"/> 
+                <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus"> 
+                 <void property="confLookupNeeded"> 
+                  <boolean>false</boolean> 
+                 </void> 
+                </object> 
                </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo0"/> 
@@ -384,7 +392,11 @@
                 </object> 
                </void> 
                <void property="genericUDF"> 
-                <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"/> 
+                <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"> 
+                 <void property="confLookupNeeded"> 
+                  <boolean>false</boolean> 
+                 </void> 
+                </object> 
                </void> 
                <void property="typeInfo"> 
                 <object idref="PrimitiveTypeInfo0"/> 
