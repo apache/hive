@@ -1546,10 +1546,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return out;
   }
 
-  private static org.apache.hadoop.hive.metastore.api.Partition convertAddSpecToMetaPartition(
+  private org.apache.hadoop.hive.metastore.api.Partition convertAddSpecToMetaPartition(
       Table tbl, AddPartitionDesc.OnePartitionDesc addSpec) throws HiveException {
     Path location = addSpec.getLocation() != null
         ? new Path(tbl.getPath(), addSpec.getLocation()) : null;
+    if (location !=null && !Utilities.isDefaultNameNode(conf)) {
+      // Ensure that it is a full qualified path (in most cases it will be since tbl.getPath() is full qualified)
+      location = new Path(Utilities.getQualifiedPath(conf, location));
+    }
     org.apache.hadoop.hive.metastore.api.Partition part =
         Partition.createMetaPartitionObject(tbl, addSpec.getPartSpec(), location);
     if (addSpec.getPartParams() != null) {

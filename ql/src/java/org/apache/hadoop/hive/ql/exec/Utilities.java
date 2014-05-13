@@ -3422,4 +3422,37 @@ public final class Utilities {
     }
     return retval;
   }
+
+  /**
+   * Convert path to qualified path.
+   *
+   * @param conf
+   *          Hive configuration.
+   * @param path
+   *          Path to convert.
+   * @return Qualified path
+   */
+  public static String getQualifiedPath(HiveConf conf, Path path) throws HiveException {
+    FileSystem fs;
+    if (path == null) {
+      return null;
+    }
+
+    try {
+      fs = path.getFileSystem(conf);
+      return fs.makeQualified(path).toString();
+    }
+    catch (IOException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Checks if current hive script was executed with non-default namenode
+   *
+   * @return True/False
+   */
+  public static boolean isDefaultNameNode(HiveConf conf) {
+    return !conf.getChangedProperties().containsKey(HiveConf.ConfVars.HADOOPFS.varname);
+  }
 }
