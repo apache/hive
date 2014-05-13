@@ -225,11 +225,11 @@ public class ExprNodeDescUtils {
   private static ExprNodeDesc backtrack(ExprNodeColumnDesc column, Operator<?> current,
       Operator<?> terminal) throws SemanticException {
     Map<String, ExprNodeDesc> mapping = current.getColumnExprMap();
-    if (mapping == null || !mapping.containsKey(column.getColumn())) {
+    if (mapping == null) {
       return backtrack((ExprNodeDesc)column, current, terminal);
     }
     ExprNodeDesc mapped = mapping.get(column.getColumn());
-    return backtrack(mapped, current, terminal);
+    return mapped == null ? null : backtrack(mapped, current, terminal);
   }
 
   public static Operator<?> getSingleParent(Operator<?> current, Operator<?> terminal)

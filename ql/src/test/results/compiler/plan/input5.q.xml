@@ -540,6 +540,9 @@
                 </object> 
                </void> 
               </void> 
+              <void property="columnExprMap"> 
+               <object class="java.util.Collections" method="emptyMap"/> 
+              </void> 
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.ScriptDesc"> 
                 <void property="errRecordReaderClass"> 
