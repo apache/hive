@@ -256,6 +256,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
 SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (key='484' and value= 'val_484')
@@ -418,6 +420,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
 SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and (key='238' and value= 'val_238')
@@ -573,6 +577,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
 SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (value = "3")
@@ -729,6 +735,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
 SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and key = '369'

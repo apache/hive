@@ -87,6 +87,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- Q2: predicate should not be pushed on the right side of a left outer join
 explain
@@ -157,6 +159,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- Q3: predicate should be pushed
 explain
@@ -227,6 +231,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Shuffle Join JOIN[9][tables = [c, d]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- Q4: here, the filter c.bar should be created under the first join but above the second
@@ -327,6 +333,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: drop table pokes
 PREHOOK: type: DROPTABLE

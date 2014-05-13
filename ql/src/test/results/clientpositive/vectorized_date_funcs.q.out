@@ -256,6 +256,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT
   to_unix_timestamp(fl_time),
@@ -485,6 +487,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT
   to_unix_timestamp(fl_date),
@@ -712,6 +716,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- Should all be true or NULL
 SELECT
@@ -934,6 +940,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT 
   fl_date, 

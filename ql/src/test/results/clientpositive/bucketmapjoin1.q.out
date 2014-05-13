@@ -131,6 +131,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
@@ -252,6 +254,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b

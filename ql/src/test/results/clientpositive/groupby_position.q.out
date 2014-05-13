@@ -548,6 +548,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT t.key, t.value
 FROM (SELECT b.key as key, count(1) as value FROM src b WHERE b.key <= 20 GROUP BY 1) t
@@ -777,6 +779,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT c1, c2, c3, c4
 FROM (

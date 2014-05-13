@@ -36,6 +36,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 5
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
 PREHOOK: type: QUERY

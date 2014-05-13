@@ -50,6 +50,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
@@ -112,6 +114,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
@@ -191,6 +195,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
@@ -247,6 +253,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY

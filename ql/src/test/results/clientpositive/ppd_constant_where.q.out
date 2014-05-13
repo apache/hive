@@ -52,6 +52,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT COUNT(*) FROM srcpart WHERE ds = '2008-04-08' and 'a' = 'a'
 PREHOOK: type: QUERY

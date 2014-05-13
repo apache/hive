@@ -83,6 +83,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: create table src_p2(`x+1` string) partitioned by (`!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE

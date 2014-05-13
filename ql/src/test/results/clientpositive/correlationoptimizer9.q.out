@@ -193,6 +193,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
@@ -387,6 +389,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
@@ -593,6 +597,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
@@ -785,6 +791,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 

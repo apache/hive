@@ -51,6 +51,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 2
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT inline( 
   ARRAY(

@@ -108,6 +108,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, count(1) from T1 group by key
 PREHOOK: type: QUERY

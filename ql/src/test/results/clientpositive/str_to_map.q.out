@@ -162,6 +162,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 3
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select str_to_map(t.ss,',',':')['a']
 from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t

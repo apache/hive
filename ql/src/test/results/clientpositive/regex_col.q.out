@@ -53,6 +53,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT srcpart.`..` FROM srcpart
@@ -86,6 +88,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `..` FROM srcpart a JOIN srcpart b
@@ -145,6 +149,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT b.`..` FROM srcpart a JOIN srcpart b
@@ -231,6 +237,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT b.`..` FROM srcpart a JOIN srcpart b
 ON a.key = b.key AND a.hr = b.hr AND a.ds = b.ds AND a.key = 103
@@ -300,6 +308,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `d.*` FROM srcpart
@@ -333,6 +343,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `(ds)?+.+` FROM srcpart
@@ -366,6 +378,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
@@ -410,6 +424,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
 PREHOOK: type: QUERY

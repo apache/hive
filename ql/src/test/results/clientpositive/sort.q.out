@@ -38,6 +38,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.* FROM SRC x SORT BY key
 PREHOOK: type: QUERY

@@ -95,6 +95,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a, b, count(*) from T1 group by a, b with cube
 PREHOOK: type: QUERY
@@ -199,6 +201,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a, b, sum(c) from T1 group by a, b with cube
 PREHOOK: type: QUERY
@@ -328,6 +332,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a, b, sum(c+d) from T2 group by a, b with cube
 PREHOOK: type: QUERY

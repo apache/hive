@@ -74,6 +74,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Map Join MAPJOIN[12][bigTable=a] in task 'Map 3' is a cross product
 PREHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
@@ -154,6 +156,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Map Join MAPJOIN[19][bigTable=a] in task 'Map 4' is a cross product
 PREHOOK: query: explain select * from A join 
@@ -268,6 +272,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Map Join MAPJOIN[18][bigTable=d1] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[19][bigTable=a] in task 'Map 4' is a cross product
@@ -375,6 +381,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Map Join MAPJOIN[24][bigTable=?] in task 'Reducer 5' is a cross product
 PREHOOK: query: explain select * from 
@@ -512,4 +520,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

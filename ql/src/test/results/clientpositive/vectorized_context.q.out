@@ -201,6 +201,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 100
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select store.s_city, ss_net_profit
 from store_sales

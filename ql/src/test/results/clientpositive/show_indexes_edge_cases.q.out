@@ -132,6 +132,8 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SHOW INDEXES ON show_idx_full
 PREHOOK: type: SHOWINDEXES
@@ -183,6 +185,8 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SHOW INDEXES ON show_idx_empty
 PREHOOK: type: SHOWINDEXES

@@ -47,6 +47,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT IF(TRUE, 1, 2) FROM dest1
 PREHOOK: type: QUERY
@@ -101,6 +103,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
        IF(TRUE, 0.1, 0.2), IF(FALSE, CAST(1 AS BIGINT), CAST(2 AS BIGINT)),

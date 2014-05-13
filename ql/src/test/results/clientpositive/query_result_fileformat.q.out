@@ -67,6 +67,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY
@@ -136,6 +138,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY

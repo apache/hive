@@ -228,6 +228,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
@@ -399,6 +401,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
@@ -583,6 +587,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(1) FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
@@ -754,6 +760,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(1) FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY

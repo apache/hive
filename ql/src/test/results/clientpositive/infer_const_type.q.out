@@ -75,6 +75,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM infertypes WHERE
   ti  = '127' AND
@@ -150,6 +152,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM infertypes WHERE
   ti  = '128' OR
@@ -212,6 +216,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM infertypes WHERE
   ti  = '127.0' OR
@@ -266,6 +272,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM infertypes WHERE
   ti < '127.0' AND

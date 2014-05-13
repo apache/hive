@@ -70,6 +70,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select sum(distinct a), count(distinct a) from dtest
 PREHOOK: type: QUERY
@@ -136,6 +138,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
 PREHOOK: type: QUERY

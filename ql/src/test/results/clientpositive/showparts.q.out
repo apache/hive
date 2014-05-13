@@ -17,6 +17,8 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SHOW PARTITIONS srcpart
 PREHOOK: type: SHOWPARTITIONS

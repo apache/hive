@@ -93,6 +93,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Shuffle Join JOIN[8][tables = [src1, src2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN FORMATTED

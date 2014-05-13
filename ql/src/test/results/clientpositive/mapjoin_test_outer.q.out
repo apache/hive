@@ -351,6 +351,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
@@ -1211,6 +1213,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)

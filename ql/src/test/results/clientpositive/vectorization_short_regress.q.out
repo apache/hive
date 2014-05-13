@@ -180,6 +180,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT AVG(cint),
@@ -384,6 +386,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT MAX(cint),
        (MAX(cint) / -3728),
@@ -579,6 +583,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT VAR_POP(cbigint),
        (-(VAR_POP(cbigint))),
@@ -753,6 +759,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT AVG(ctinyint),
@@ -912,6 +920,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT cint,
        cdouble,
@@ -2316,6 +2326,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT cint,
        cbigint,
@@ -2504,6 +2516,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT   cint,
@@ -3262,6 +3276,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT   ctimestamp1,
@@ -4110,6 +4126,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT   csmallint,
          (csmallint % -75),
@@ -5743,6 +5761,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 WARNING: Comparing a bigint and a double may result in a loss of precision.
@@ -5973,6 +5993,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT   ctimestamp1,
          cstring1,
@@ -6493,6 +6515,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT   cboolean1,

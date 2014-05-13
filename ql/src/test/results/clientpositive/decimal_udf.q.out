@@ -1290,6 +1290,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
@@ -1854,6 +1856,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP BY value
 PREHOOK: type: QUERY
@@ -1935,6 +1939,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value
 PREHOOK: type: QUERY
@@ -2012,6 +2018,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2073,6 +2081,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT MIN(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2134,6 +2144,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT MAX(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2195,6 +2207,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT COUNT(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY

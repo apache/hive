@@ -305,6 +305,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
 FROM test_table1 a JOIN test_table2 b ON a.key = b.key
@@ -454,6 +456,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(*)
 FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
@@ -604,6 +608,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(*)
 FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
@@ -849,4 +855,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

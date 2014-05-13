@@ -41,6 +41,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.* FROM SRC x ORDER BY key limit 10
 PREHOOK: type: QUERY
@@ -103,6 +105,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.* FROM SRC x ORDER BY key desc limit 10
 PREHOOK: type: QUERY

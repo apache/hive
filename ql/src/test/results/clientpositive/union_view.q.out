@@ -90,6 +90,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -147,6 +149,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -204,6 +208,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 86	val_86	1
 86	val_86	2
@@ -278,6 +284,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -347,6 +355,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -416,6 +426,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 500
 1000
@@ -482,6 +494,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -545,6 +559,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -608,6 +624,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -775,6 +793,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 86	val_86	1
 86	val_86	2
@@ -858,6 +878,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -931,6 +953,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -1004,6 +1028,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 500
 1000
@@ -1070,6 +1096,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 86	val_86	4
 STAGE DEPENDENCIES:
@@ -1144,5 +1172,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 500

@@ -670,6 +670,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 5
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT
      `dim_pay_date`.`date`

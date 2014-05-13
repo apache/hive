@@ -46,6 +46,8 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SHOW INDEX ON show_idx_t1
 PREHOOK: type: SHOWINDEXES
@@ -76,6 +78,8 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SHOW INDEXES ON show_idx_t1
 PREHOOK: type: SHOWINDEXES
@@ -106,6 +110,8 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SHOW FORMATTED INDEXES ON show_idx_t1
 PREHOOK: type: SHOWINDEXES

@@ -116,6 +116,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (

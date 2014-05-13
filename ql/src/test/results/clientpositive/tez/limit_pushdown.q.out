@@ -52,6 +52,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key,value from src order by key limit 20
 PREHOOK: type: QUERY
@@ -131,6 +133,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key,value from src order by key desc limit 20
 PREHOOK: type: QUERY
@@ -225,6 +229,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select value, sum(key + 1) as sum from src group by value limit 20
 PREHOOK: type: QUERY
@@ -321,6 +327,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select value,avg(key + 1) from src group by value order by value limit 20
 PREHOOK: type: QUERY
@@ -414,6 +422,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select distinct(cdouble) from alltypesorc limit 20
 PREHOOK: type: QUERY
@@ -507,6 +517,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
 PREHOOK: type: QUERY
@@ -602,6 +614,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20
 PREHOOK: type: QUERY
@@ -682,6 +696,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 0
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key,value from src order by key limit 0
 PREHOOK: type: QUERY
@@ -768,6 +784,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select value, sum(key) as sum from src group by value order by sum limit 20
 PREHOOK: type: QUERY
@@ -953,6 +971,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 4
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- map aggregation disabled
 explain
@@ -1015,6 +1035,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select value, sum(key) as sum from src group by value limit 20
 PREHOOK: type: QUERY
@@ -1096,6 +1118,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 100
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key,value,value,value,value,value,value,value,value from src order by key limit 100
 PREHOOK: type: QUERY
@@ -1266,6 +1290,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 100
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) limit 100
 PREHOOK: type: QUERY

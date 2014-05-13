@@ -103,6 +103,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
 PREHOOK: type: QUERY

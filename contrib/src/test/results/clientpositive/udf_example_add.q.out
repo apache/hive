@@ -53,6 +53,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT example_add(1, 2),
        example_add(1, 2, 3),

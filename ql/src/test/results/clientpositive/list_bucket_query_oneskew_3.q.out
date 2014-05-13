@@ -508,6 +508,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
 SELECT x FROM fact_daily WHERE ds='1' and not (x = 86) ORDER BY x

@@ -132,6 +132,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
 PREHOOK: type: QUERY

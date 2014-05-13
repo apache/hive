@@ -475,6 +475,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b

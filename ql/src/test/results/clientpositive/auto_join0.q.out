@@ -137,6 +137,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Map Join MAPJOIN[24][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select sum(hash(a.k1,a.v1,a.k2, a.v2))

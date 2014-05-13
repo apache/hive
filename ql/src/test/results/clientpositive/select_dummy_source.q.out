@@ -31,6 +31,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select 'a', 100
 PREHOOK: type: QUERY
@@ -76,6 +78,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select 1 + 1
 PREHOOK: type: QUERY
@@ -124,6 +128,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select explode(array('a', 'b'))
 PREHOOK: type: QUERY
@@ -237,6 +243,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select explode(array('a', 'b'))
 PREHOOK: type: QUERY
@@ -283,6 +291,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select 2 + 3,x from (select 1 + 2 x) X
 PREHOOK: type: QUERY

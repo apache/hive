@@ -31,6 +31,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from srcpart where key < 10
 PREHOOK: type: QUERY
@@ -2155,6 +2157,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key from srcpart
 PREHOOK: type: QUERY

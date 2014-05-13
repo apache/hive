@@ -67,6 +67,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 2
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z', array(4)) a AS x, y LIMIT 2
 PREHOOK: type: QUERY
@@ -132,6 +134,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 2
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z') a AS x, y LIMIT 2
 PREHOOK: type: QUERY

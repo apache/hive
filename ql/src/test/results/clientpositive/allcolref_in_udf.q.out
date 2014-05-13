@@ -36,6 +36,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select concat(*),array(*) from src where key < 100 limit 10
 PREHOOK: type: QUERY
@@ -130,6 +132,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select stack(2, *) as (e1,e2,e3) from (
   select concat(*), concat(a.*), concat(b.*), concat(a.*, b.key), concat(a.key, b.*)
@@ -198,6 +202,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select explode(*) as x from allcolref limit 10
 PREHOOK: type: QUERY

@@ -47,6 +47,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT example_format("abc"),
        example_format("%1$s", 1.1),

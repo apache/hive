@@ -329,6 +329,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -503,6 +505,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -688,6 +692,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -1516,6 +1522,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -1870,6 +1878,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -2235,6 +2245,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -3008,6 +3020,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),

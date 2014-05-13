@@ -123,6 +123,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10
 PREHOOK: type: QUERY

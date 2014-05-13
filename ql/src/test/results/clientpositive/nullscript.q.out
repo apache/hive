@@ -60,6 +60,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select transform(key) using 'cat' as key1 from nullscript
 PREHOOK: type: QUERY

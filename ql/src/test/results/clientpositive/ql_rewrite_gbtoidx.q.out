@@ -129,6 +129,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select l_shipdate, count(l_shipdate)
 from lineitem
@@ -304,6 +306,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select l_shipdate, count(l_shipdate)
 from lineitem
@@ -505,6 +509,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select year(l_shipdate) as year,
         month(l_shipdate) as month,
@@ -658,6 +664,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select year(l_shipdate) as year,
         month(l_shipdate) as month,
@@ -902,6 +910,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain  select l_shipdate, cnt
 from (select l_shipdate, count(l_shipdate) as cnt from lineitem group by l_shipdate
@@ -1006,6 +1016,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: CREATE TABLE tbl(key int, value int)
 PREHOOK: type: CREATETABLE
@@ -1107,6 +1119,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key, count(key) from tbl group by key
 PREHOOK: type: QUERY
@@ -1169,6 +1183,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select count(1) from tbl
 PREHOOK: type: QUERY
@@ -1225,6 +1241,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select count(key) from tbl
 PREHOOK: type: QUERY
@@ -1283,6 +1301,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key FROM tbl GROUP BY key
 PREHOOK: type: QUERY
@@ -1342,6 +1362,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key FROM tbl GROUP BY value, key
 PREHOOK: type: QUERY
@@ -1401,6 +1423,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key FROM tbl WHERE key = 3 GROUP BY key
 PREHOOK: type: QUERY
@@ -1463,6 +1487,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key FROM tbl WHERE value = 2 GROUP BY key
 PREHOOK: type: QUERY
@@ -1525,6 +1551,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key FROM tbl GROUP BY key, substr(key,2,3)
 PREHOOK: type: QUERY
@@ -1584,6 +1612,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key, value FROM tbl GROUP BY value, key
 PREHOOK: type: QUERY
@@ -1643,6 +1673,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select key, value FROM tbl WHERE value = 1 GROUP BY key, value
 PREHOOK: type: QUERY
@@ -1705,6 +1737,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key FROM tbl
 PREHOOK: type: QUERY
@@ -1764,6 +1798,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key FROM tbl
 PREHOOK: type: QUERY
@@ -1823,6 +1859,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key FROM tbl
 PREHOOK: type: QUERY
@@ -1882,6 +1920,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl
 PREHOOK: type: QUERY
@@ -1941,6 +1981,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl WHERE value = 2
 PREHOOK: type: QUERY
@@ -2003,6 +2045,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl WHERE value = 2 AND key = 3
 PREHOOK: type: QUERY
@@ -2065,6 +2109,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, value FROM tbl WHERE value = key
 PREHOOK: type: QUERY
@@ -2127,6 +2173,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, substr(value,2,3) FROM tbl WHERE value = key
 PREHOOK: type: QUERY
@@ -2189,6 +2237,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select DISTINCT key, substr(value,2,3) FROM tbl
 PREHOOK: type: QUERY
@@ -2248,6 +2298,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN select * FROM (select DISTINCT key, value FROM tbl) v1 WHERE v1.value = 2
 PREHOOK: type: QUERY
@@ -2310,6 +2362,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: DROP TABLE tbl
 PREHOOK: type: DROPTABLE
@@ -2561,6 +2615,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: ALTER INDEX tbl_part_index ON tblpart PARTITION (ds='2008-04-08', hr=12) REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
@@ -2764,6 +2820,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: DROP INDEX tbl_part_index on tblpart
 PREHOOK: type: DROPINDEX
@@ -3110,6 +3168,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, count(key) from tbl group by key order by key
 PREHOOK: type: QUERY
@@ -3270,6 +3330,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, count(key) from tbl group by key order by key
 PREHOOK: type: QUERY

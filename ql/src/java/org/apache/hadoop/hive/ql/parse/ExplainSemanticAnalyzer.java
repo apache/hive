@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
@@ -66,9 +67,14 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ctx.setResFile(ctx.getLocalTmpPath());
     List<Task<? extends Serializable>> tasks = sem.getRootTasks();
-    Task<? extends Serializable> fetchTask = sem.getFetchTask();
     if (tasks == null) {
       tasks = Collections.emptyList();
+    }
+    
+    FetchTask fetchTask = sem.getFetchTask();
+    if (fetchTask != null) {
+      // Initialize fetch work such that operator tree will be constructed.
+      fetchTask.getWork().initializeForFetch();
     }
 
     ParseContext pCtx = null;
