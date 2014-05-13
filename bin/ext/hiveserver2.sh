@@ -23,6 +23,21 @@ hiveserver2() {
   fi
   JAR=${HIVE_LIB}/hive-service-*.jar
 
+  # Set SENTRY_HOME if possible and add Sentry jars to classpath
+  if [[ -z "$SENTRY_HOME" ]]
+  then
+    if [[ -d ${HIVE_HOME}/../sentry ]]
+    then
+      export SENTRY_HOME=`readlink -m ${HIVE_HOME}/../sentry`
+    fi
+  fi
+  if [[ -n "$SENTRY_HOME" ]]
+  then
+    for f in ${SENTRY_HOME}/lib/*.jar; do
+      export HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${f}
+    done
+  fi
+
   exec $HADOOP jar $JAR $CLASS $HIVE_OPTS "$@"
 }
 
