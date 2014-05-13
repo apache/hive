@@ -269,6 +269,7 @@ public abstract class ThriftCLIServiceTest {
     opStatus = client.getOperationStatus(opHandle);
     assertNotNull(opStatus);
     isQueryRunning = true;
+    pollTimeout = System.currentTimeMillis() + 100000;
     while(isQueryRunning) {
       // Break if polling times out
       if (System.currentTimeMillis() > pollTimeout) {
