@@ -70,7 +70,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
                     "Target is not a directory : " + toURI));
         } else {
           FileStatus[] files = fs.listStatus(toPath);
-          if (files != null) {
+          if (files != null && files.length != 0) {
             throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
                           "Target is not an empty directory : " + toURI));
           }
