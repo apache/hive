@@ -171,10 +171,10 @@ STAGE PLANS:
       limit: -1
 
 PREHOOK: query: -- mGBY-RS-rGBY-RS
-explain select key, sum(key) as value from src group by key order by key, value
+explain select key, sum(key) as value from src group by key order by key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- mGBY-RS-rGBY-RS
-explain select key, sum(key) as value from src group by key order by key, value
+explain select key, sum(key) as value from src group by key order by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -198,8 +198,8 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: double)
-                  sort order: ++
+                  key expressions: _col0 (type: string)
+                  sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: double)
@@ -1467,11 +1467,11 @@ POSTHOOK: Input: default@src
 96	96.0	NULL
 97	194.0	NULL
 98	196.0	NULL
-PREHOOK: query: select key, sum(key) as value from src group by key order by key, value
+PREHOOK: query: select key, sum(key) as value from src group by key order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select key, sum(key) as value from src group by key order by key, value
+POSTHOOK: query: select key, sum(key) as value from src group by key order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -2655,10 +2655,10 @@ STAGE PLANS:
       limit: -1
 
 PREHOOK: query: -- RS-GBY-RS
-explain select key, sum(key) as value from src group by key order by key, value
+explain select key, sum(key) as value from src group by key order by key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- RS-GBY-RS
-explain select key, sum(key) as value from src group by key order by key, value
+explain select key, sum(key) as value from src group by key order by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2676,8 +2676,8 @@ STAGE PLANS:
               outputColumnNames: key
               Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions: key (type: string), _col1 (type: double)
-                sort order: ++
+                key expressions: key (type: string)
+                sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
@@ -3927,11 +3927,11 @@ POSTHOOK: Input: default@src
 96	96.0	NULL
 97	194.0	NULL
 98	196.0	NULL
-PREHOOK: query: select key, sum(key) as value from src group by key order by key, value
+PREHOOK: query: select key, sum(key) as value from src group by key order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select key, sum(key) as value from src group by key order by key, value
+POSTHOOK: query: select key, sum(key) as value from src group by key order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
