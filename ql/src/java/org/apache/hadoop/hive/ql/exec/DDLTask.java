@@ -1106,6 +1106,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       validateSerDe(crtIndex.getSerde());
     }
 
+    String indexTableName =
+      crtIndex.getIndexTableName() != null ? crtIndex.getIndexTableName() :
+        MetaStoreUtils.getIndexTableName(SessionState.get().getCurrentDatabase(),
+             crtIndex.getTableName(), crtIndex.getIndexName());
+
+    if (!Utilities.isDefaultNameNode(conf)) {
+      // If location is specified - ensure that it is a full qualified name
+      makeLocationQualified(crtIndex, indexTableName);
+    }
+
     db
     .createIndex(
         crtIndex.getTableName(), crtIndex.getIndexName(), crtIndex.getIndexTypeHandlerClass(),
@@ -1116,10 +1126,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         crtIndex.getLineDelim(), crtIndex.getMapKeyDelim(), crtIndex.getIndexComment()
         );
     if (HiveUtils.getIndexHandler(conf, crtIndex.getIndexTypeHandlerClass()).usesIndexTable()) {
-      String indexTableName =
-          crtIndex.getIndexTableName() != null ? crtIndex.getIndexTableName() :
-            MetaStoreUtils.getIndexTableName(SessionState.get().getCurrentDatabase(),
-                crtIndex.getTableName(), crtIndex.getIndexName());
           Table indexTable = db.getTable(indexTableName);
           work.getOutputs().add(new WriteEntity(indexTable, WriteEntity.WriteType.DDL_NO_LOCK));
     }
@@ -4029,6 +4035,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     database.setOwnerName(SessionState.getUserFromAuthenticator());
     database.setOwnerType(PrincipalType.USER);
     try {
+      if (!Utilities.isDefaultNameNode(conf)) {
+        makeLocationQualified(database);
+      }
       db.createDatabase(database, crtDb.getIfNotExists());
     }
     catch (AlreadyExistsException ex) {
@@ -4206,6 +4215,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     tbl.getTTable().getSd().setOutputFormat(
         tbl.getOutputFormatClass().getName());
 
+    if (!Utilities.isDefaultNameNode(conf)) {
+      // If location is specified - ensure that it is a full qualified name
+      makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tbl.getTableName());
+    }
+
     if (crtTbl.isExternal()) {
       tbl.setProperty("EXTERNAL", "TRUE");
       tbl.setTableType(TableType.EXTERNAL_TABLE);
@@ -4344,6 +4358,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } else {
         tbl.getParameters().remove("EXTERNAL");
       }
+    }
+
+    if (!Utilities.isDefaultNameNode(conf)) {
+      // If location is specified - ensure that it is a full qualified name
+      makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tbl.getTableName());
     }
 
     // create the table
@@ -4495,5 +4514,92 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   @Override
   public String getName() {
     return "DDL";
+  }
+
+   /**
+   * Make location in specified sd qualified.
+   *
+   * @param conf
+   *          Hive configuration.
+   * @param databaseName
+   *          Database name.
+   * @param sd
+   *          Storage descriptor.
+   * @param name
+   *          Object name.
+   */
+  private void makeLocationQualified(String databaseName, StorageDescriptor sd, String name)
+      throws HiveException {
+    Path path = null;
+    if (!sd.isSetLocation())
+    {
+      // Location is not set, leave it as-is if this is not a default DB
+      if (databaseName.equalsIgnoreCase(MetaStoreUtils.DEFAULT_DATABASE_NAME))
+      {
+        // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
+        // instead
+        path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), name.toLowerCase());
+      }
+    }
+    else
+    {
+      path = new Path(sd.getLocation());
+    }
+
+    if (path != null)
+    {
+      sd.setLocation(Utilities.getQualifiedPath(conf, path));
+    }
+  }
+
+   /**
+   * Make qualified location for an index .
+   *
+   * @param conf
+   *          Hive configuration.
+   * @param crtIndex
+   *          Create index descriptor.
+   * @param name
+   *          Object name.
+   */
+  private void makeLocationQualified(CreateIndexDesc crtIndex, String name) throws HiveException
+  {
+    Path path = null;
+    if (crtIndex.getLocation() == null) {
+      // Location is not set, leave it as-is if index doesn't belong to default DB
+      // Currently all indexes are created in current DB only
+      if (db.getDatabaseCurrent().getName().equalsIgnoreCase(MetaStoreUtils.DEFAULT_DATABASE_NAME)) {
+        // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
+        // instead
+        path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), name.toLowerCase());
+      }
+    }
+    else {
+      path = new Path(crtIndex.getLocation());
+    }
+
+    if (path != null) {
+      crtIndex.setLocation(Utilities.getQualifiedPath(conf, path));
+    }
+  }
+
+   /**
+   * Make qualified location for a database .
+   *
+   * @param conf
+   *          Hive configuration.
+   * @param database
+   *          Database.
+   */
+  private void makeLocationQualified(Database database) throws HiveException {
+    if (database.isSetLocationUri()) {
+      database.setLocationUri(Utilities.getQualifiedPath(conf, new Path(database.getLocationUri())));
+    }
+    else {
+      // Location is not set we utilize METASTOREWAREHOUSE together with database name
+      database.setLocationUri(
+          Utilities.getQualifiedPath(conf, new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE),
+              database.getName().toLowerCase() + ".db")));
+    }
   }
 }
