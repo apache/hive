@@ -662,11 +662,7 @@ public final class Utilities {
    * @return Bytes.
    */
   public static byte[] serializeExpressionToKryo(ExprNodeGenericFuncDesc expr) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    Output output = new Output(baos);
-    runtimeSerializationKryo.get().writeObject(output, expr);
-    output.close();
-    return baos.toByteArray();
+    return serializeObjectToKryo(expr);
   }
 
   /**
@@ -675,11 +671,7 @@ public final class Utilities {
    * @return Expression; null if deserialization succeeded, but the result type is incorrect.
    */
   public static ExprNodeGenericFuncDesc deserializeExpressionFromKryo(byte[] bytes) {
-    Input inp = new Input(new ByteArrayInputStream(bytes));
-    ExprNodeGenericFuncDesc func = runtimeSerializationKryo.get().
-      readObject(inp,ExprNodeGenericFuncDesc.class);
-    inp.close();
-    return func;
+    return deserializeObjectFromKryo(bytes, ExprNodeGenericFuncDesc.class);
   }
 
   public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
@@ -698,6 +690,37 @@ public final class Utilities {
       throw new RuntimeException("UTF-8 support required", ex);
     }
     return deserializeExpressionFromKryo(bytes);
+  }
+
+  private static byte[] serializeObjectToKryo(Serializable object) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    Output output = new Output(baos);
+    runtimeSerializationKryo.get().writeObject(output, object);
+    output.close();
+    return baos.toByteArray();
+  }
+
+  private static <T extends Serializable> T deserializeObjectFromKryo(byte[] bytes, Class<T> clazz) {
+    Input inp = new Input(new ByteArrayInputStream(bytes));
+    T func = runtimeSerializationKryo.get().readObject(inp, clazz);
+    inp.close();
+    return func;
+  }
+
+  public static String serializeObject(Serializable expr) {
+    try {
+      return new String(Base64.encodeBase64(serializeObjectToKryo(expr)), "UTF-8");
+    } catch (UnsupportedEncodingException ex) {
+      throw new RuntimeException("UTF-8 support required", ex);
+    }
+  }
+
+  public static <T extends Serializable> T deserializeObject(String s, Class<T> clazz) {
+    try {
+      return deserializeObjectFromKryo(Base64.decodeBase64(s.getBytes("UTF-8")), clazz);
+    } catch (UnsupportedEncodingException ex) {
+      throw new RuntimeException("UTF-8 support required", ex);
+    }
   }
 
   public static class CollectionPersistenceDelegate extends DefaultPersistenceDelegate {

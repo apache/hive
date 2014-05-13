@@ -60,6 +60,11 @@ public class UnionStructObjectInspector extends StructObjectInspector {
       return structField.getFieldObjectInspector();
     }
 
+    @Override
+    public int getFieldID() {
+      return structID;
+    }
+
     public String getFieldComment() {
       return structField.getFieldComment();
     }

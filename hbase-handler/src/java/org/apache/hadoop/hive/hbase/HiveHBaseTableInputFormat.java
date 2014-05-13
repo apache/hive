@@ -35,7 +35,7 @@ import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
 import org.apache.hadoop.hbase.mapreduce.TableSplit;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hive.hbase.HBaseSerDe.ColumnMapping;
+import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.ql.exec.ExprNodeConstantEvaluator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -93,15 +94,15 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
     boolean doColumnRegexMatching = jobConf.getBoolean(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, true);
     List<Integer> readColIDs = ColumnProjectionUtils.getReadColumnIDs(jobConf);
-    List<ColumnMapping> columnsMapping = null;
+    ColumnMappings columnMappings;
 
     try {
-      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping, doColumnRegexMatching);
+      columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping, doColumnRegexMatching);
     } catch (SerDeException e) {
       throw new IOException(e);
     }
 
-    if (columnsMapping.size() < readColIDs.size()) {
+    if (columnMappings.size() < readColIDs.size()) {
       throw new IOException("Cannot read more columns than the given table contains.");
     }
 
@@ -113,8 +114,9 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     List<String> addedFamilies = new ArrayList<String>();
 
     if (!readAllColumns) {
+      ColumnMapping[] columnsMapping = columnMappings.getColumnsMapping();
       for (int i : readColIDs) {
-        ColumnMapping colMap = columnsMapping.get(i);
+        ColumnMapping colMap = columnsMapping[i];
         if (colMap.hbaseRowKey) {
           continue;
         }
@@ -139,8 +141,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     // to the HBase scan so that we can retrieve all of the row keys and return them as the Hive
     // tables column projection.
     if (empty) {
-      for (int i = 0; i < columnsMapping.size(); i++) {
-        ColumnMapping colMap = columnsMapping.get(i);
+      for (ColumnMapping colMap: columnMappings) {
         if (colMap.hbaseRowKey) {
           continue;
         }
@@ -256,6 +257,18 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     // TODO: assert iKey is HBaseSerDe#HBASE_KEY_COL
 
     Scan scan = new Scan();
+    String filterObjectSerialized = jobConf.get(TableScanDesc.FILTER_OBJECT_CONF_STR);
+    if (filterObjectSerialized != null) {
+      HBaseScanRange range = Utilities.deserializeObject(filterObjectSerialized,
+          HBaseScanRange.class);
+      try {
+        range.setup(scan, jobConf);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
+      return scan;
+    }
+
     String filterExprSerialized = jobConf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
     if (filterExprSerialized == null) {
       return scan;
@@ -324,6 +337,10 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     }
     scan.setStartRow(startRow);
     scan.setStopRow(stopRow);
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(Bytes.toStringBinary(startRow) + " ~ " + Bytes.toStringBinary(stopRow));
+    }
     return scan;
   }
 
@@ -374,6 +391,12 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     System.arraycopy(current, 0, next, 0, current.length);
     return next;
   }
+
+  static IndexPredicateAnalyzer newIndexPredicateAnalyzer(
+      String keyColumnName, TypeInfo keyColType, boolean isKeyBinary) {
+    return newIndexPredicateAnalyzer(keyColumnName, keyColType.getTypeName(), isKeyBinary);
+  }
+
   /**
    * Instantiates a new predicate analyzer suitable for
    * determining how to push a filter down into the HBase scan,
@@ -423,20 +446,15 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
       throw new IOException("hbase.columns.mapping required for HBase Table.");
     }
 
-    List<ColumnMapping> columnsMapping = null;
+    ColumnMappings columnMappings = null;
     try {
-      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping,doColumnRegexMatching);
+      columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping,doColumnRegexMatching);
     } catch (SerDeException e) {
       throw new IOException(e);
     }
 
-    int iKey;
-
-    try {
-      iKey = HBaseSerDe.getRowKeyColumnOffset(columnsMapping);
-    } catch (SerDeException e) {
-      throw new IOException(e);
-    }
+    int iKey = columnMappings.getKeyIndex();
+    ColumnMapping keyMapping = columnMappings.getKeyMapping();
 
     // Take filter pushdown into account while calculating splits; this
     // allows us to prune off regions immediately.  Note that although
@@ -445,7 +463,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     // definition into account and excludes regions which don't satisfy
     // the start/stop row conditions (HBASE-1829).
     Scan scan = createFilterScan(jobConf, iKey,
-        getStorageFormatOfKey(columnsMapping.get(iKey).mappingSpec,
+        getStorageFormatOfKey(keyMapping.mappingSpec,
             jobConf.get(HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE, "string")));
 
 
@@ -454,8 +472,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
     // REVIEW:  are we supposed to be applying the getReadColumnIDs
     // same as in getRecordReader?
-    for (int i = 0; i <columnsMapping.size(); i++) {
-      ColumnMapping colMap = columnsMapping.get(i);
+    for (ColumnMapping colMap : columnMappings) {
       if (colMap.hbaseRowKey) {
         continue;
       }

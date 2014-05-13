@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -409,6 +410,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     ExprNodeGenericFuncDesc filterExpr = (ExprNodeGenericFuncDesc)scanDesc.getFilterExpr();
     if (filterExpr == null) {
       return;
+    }
+
+    Serializable filterObject = scanDesc.getFilterObject();
+    if (filterObject != null) {
+      jobConf.set(
+          TableScanDesc.FILTER_OBJECT_CONF_STR,
+          Utilities.serializeObject(filterObject));
     }
 
     String filterText = filterExpr.getExprString();

@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
+import org.apache.hadoop.hive.serde2.StructObject;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.RecordInfo;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryStructObjectInspector;
@@ -42,8 +43,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  * Following B, there is another section A and B. This pattern repeats until the
  * all struct fields are serialized.
  */
-public class LazyBinaryStruct extends
-    LazyBinaryNonPrimitive<LazyBinaryStructObjectInspector> implements SerDeStatsStruct {
+public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObjectInspector>
+    implements StructObject, SerDeStatsStruct {
 
   private static Log LOG = LogFactory.getLog(LazyBinaryStruct.class.getName());
 

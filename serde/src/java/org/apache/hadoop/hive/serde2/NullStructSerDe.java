@@ -46,6 +46,11 @@ public class NullStructSerDe extends AbstractSerDe {
     }
 
     @Override
+    public int getFieldID() {
+      return -1;
+    }
+
+    @Override
     public String getFieldComment() {
       return "";
     }

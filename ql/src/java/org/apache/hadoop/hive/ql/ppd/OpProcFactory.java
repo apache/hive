@@ -843,6 +843,8 @@ public final class OpProcFactory {
       }
     }
     tableScanDesc.setFilterExpr(decomposed.pushedPredicate);
+    tableScanDesc.setFilterObject(decomposed.pushedPredicateObject);
+
     return (ExprNodeGenericFuncDesc)decomposed.residualPredicate;
   }
 

@@ -18,36 +18,24 @@
 
 package org.apache.hadoop.hive.hbase;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
-import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
-import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.JobConf;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * HBaseSerDe can be used to serialize object into an HBase table and
@@ -62,6 +50,7 @@ public class HBaseSerDe extends AbstractSerDe {
   public static final String HBASE_KEY_COL = ":key";
   public static final String HBASE_PUT_TIMESTAMP = "hbase.put.timestamp";
   public static final String HBASE_COMPOSITE_KEY_CLASS = "hbase.composite.key.class";
+  public static final String HBASE_COMPOSITE_KEY_FACTORY = "hbase.composite.key.factory";
   public static final String HBASE_SCAN_CACHE = "hbase.scan.cache";
   public static final String HBASE_SCAN_CACHEBLOCKS = "hbase.scan.cacheblock";
   public static final String HBASE_SCAN_BATCH = "hbase.scan.batch";
@@ -73,19 +62,13 @@ public class HBaseSerDe extends AbstractSerDe {
 
   private ObjectInspector cachedObjectInspector;
   private LazyHBaseRow cachedHBaseRow;
-  private Object compositeKeyObj;
 
   private HBaseSerDeParameters serdeParams;
+  private HBaseRowSerializer serializer;
 
   @Override
   public String toString() {
-    return getClass().toString()
-        + "["
-        + serdeParams.getColumnMappingString()
-        + ":"
-        + serdeParams.getRowTypeInfo().getAllStructFieldNames()
-        + ":"
-        + serdeParams.getRowTypeInfo().getAllStructFieldTypeInfos() + "]";
+    return getClass() + "[" + serdeParams + "]";
   }
 
   public HBaseSerDe() throws SerDeException {
@@ -98,35 +81,26 @@ public class HBaseSerDe extends AbstractSerDe {
   @Override
   public void initialize(Configuration conf, Properties tbl)
       throws SerDeException {
-    serdeParams = new HBaseSerDeParameters();
-    serdeParams.init(conf, tbl, getClass().getName());
+    serdeParams = new HBaseSerDeParameters(conf, tbl, getClass().getName());
 
-    cachedObjectInspector = LazyFactory.createLazyStructInspector(
-        serdeParams.getColumnNames(),
-        serdeParams.getColumnTypes(),
-        serdeParams.getSeparators(),
-        serdeParams.getNullSequence(),
-        serdeParams.isLastColumnTakesRest(),
-        serdeParams.isEscaped(),
-        serdeParams.getEscapeChar());
+    cachedObjectInspector = HBaseLazyObjectFactory.createLazyHBaseStructInspector(
+        serdeParams.getSerdeParams(), serdeParams.getKeyIndex(), serdeParams.getKeyFactory());
 
-    cachedHBaseRow = new LazyHBaseRow((LazySimpleStructObjectInspector) cachedObjectInspector);
+    cachedHBaseRow = new LazyHBaseRow(
+        (LazySimpleStructObjectInspector) cachedObjectInspector,
+        serdeParams.getKeyIndex(), serdeParams.getKeyFactory());
 
-    if (serdeParams.getCompositeKeyClass() != null) {
-      // initialize the constructor of the composite key class with its object inspector
-      initCompositeKeyClass(conf,tbl);
-    }
+    serializer = new HBaseRowSerializer(serdeParams);
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("HBaseSerDe initialized with : columnNames = "
-        + serdeParams.getColumnNames()
-        + " columnTypes = "
-        + serdeParams.getColumnTypes()
-        + " hbaseColumnMapping = "
-        + serdeParams.getColumnMappingString());
+      LOG.debug("HBaseSerDe initialized with : " + serdeParams);
     }
   }
 
+  public static ColumnMappings parseColumnsMapping(String columnsMappingSpec)
+      throws SerDeException {
+    return parseColumnsMapping(columnsMappingSpec, true);
+  }
   /**
    * Parses the HBase columns mapping specifier to identify the column families, qualifiers
    * and also caches the byte arrays corresponding to them. One of the Hive table
@@ -135,24 +109,23 @@ public class HBaseSerDe extends AbstractSerDe {
    * @param columnsMappingSpec string hbase.columns.mapping specified when creating table
    * @param doColumnRegexMatching whether to do a regex matching on the columns or not
    * @return List<ColumnMapping> which contains the column mapping information by position
-   * @throws SerDeException
+   * @throws org.apache.hadoop.hive.serde2.SerDeException
    */
-  public static List<ColumnMapping> parseColumnsMapping(String columnsMappingSpec, boolean doColumnRegexMatching)
-      throws SerDeException {
+  public static ColumnMappings parseColumnsMapping(
+      String columnsMappingSpec, boolean doColumnRegexMatching) throws SerDeException {
 
     if (columnsMappingSpec == null) {
       throw new SerDeException("Error: hbase.columns.mapping missing for this HBase table.");
     }
 
-    if (columnsMappingSpec.equals("") || columnsMappingSpec.equals(HBASE_KEY_COL)) {
+    if (columnsMappingSpec.isEmpty() || columnsMappingSpec.equals(HBASE_KEY_COL)) {
       throw new SerDeException("Error: hbase.columns.mapping specifies only the HBase table"
           + " row key. A valid Hive-HBase table must specify at least one additional column.");
     }
 
     int rowKeyIndex = -1;
     List<ColumnMapping> columnsMapping = new ArrayList<ColumnMapping>();
-    String [] columnSpecs = columnsMappingSpec.split(",");
-    ColumnMapping columnMapping = null;
+    String[] columnSpecs = columnsMappingSpec.split(",");
 
     for (int i = 0; i < columnSpecs.length; i++) {
       String mappingSpec = columnSpecs[i].trim();
@@ -167,7 +140,7 @@ public class HBaseSerDe extends AbstractSerDe {
             "column family, column qualifier specification.");
       }
 
-      columnMapping = new ColumnMapping();
+      ColumnMapping columnMapping = new ColumnMapping();
 
       if (colInfo.equals(HBASE_KEY_COL)) {
         rowKeyIndex = i;
@@ -197,7 +170,6 @@ public class HBaseSerDe extends AbstractSerDe {
             // set the regular provided qualifier names
             columnMapping.qualifierName = parts[1];
             columnMapping.qualifierNameBytes = Bytes.toBytes(parts[1]);
-            ;
           }
         } else {
           columnMapping.qualifierName = null;
@@ -211,34 +183,26 @@ public class HBaseSerDe extends AbstractSerDe {
     }
 
     if (rowKeyIndex == -1) {
-      columnMapping = new ColumnMapping();
-      columnMapping.familyName = HBASE_KEY_COL;
-      columnMapping.familyNameBytes = Bytes.toBytes(HBASE_KEY_COL);
+      rowKeyIndex = 0;
+      ColumnMapping columnMapping = new ColumnMapping();
+      columnMapping.familyName = HBaseSerDe.HBASE_KEY_COL;
+      columnMapping.familyNameBytes = Bytes.toBytes(HBaseSerDe.HBASE_KEY_COL);
       columnMapping.qualifierName = null;
       columnMapping.qualifierNameBytes = null;
       columnMapping.hbaseRowKey = true;
-      columnMapping.mappingSpec = HBASE_KEY_COL;
+      columnMapping.mappingSpec = HBaseSerDe.HBASE_KEY_COL;
       columnsMapping.add(0, columnMapping);
     }
 
-    return columnsMapping;
+    return new ColumnMappings(columnsMapping, rowKeyIndex);
   }
 
-  static class ColumnMapping {
+  public LazySimpleSerDe.SerDeParameters getSerdeParams() {
+    return serdeParams.getSerdeParams();
+  }
 
-    ColumnMapping() {
-      binaryStorage = new ArrayList<Boolean>(2);
-    }
-
-    String familyName;
-    String qualifierName;
-    byte [] familyNameBytes;
-    byte [] qualifierNameBytes;
-    List<Boolean> binaryStorage;
-    boolean hbaseRowKey;
-    String mappingSpec;
-    String qualifierPrefix;
-    byte[] qualifierPrefixBytes;
+  public HBaseSerDeParameters getHBaseSerdeParam() {
+    return serdeParams;
   }
 
   /**
@@ -253,8 +217,8 @@ public class HBaseSerDe extends AbstractSerDe {
       throw new SerDeException(getClass().getName() + ": expects ResultWritable!");
     }
 
-    cachedHBaseRow.init(((ResultWritable) result).getResult(), serdeParams.getColumnMapping(),
-        compositeKeyObj);
+    cachedHBaseRow.init(((ResultWritable) result).getResult(), serdeParams.getColumnMappings());
+
     return cachedHBaseRow;
   }
 
@@ -269,310 +233,14 @@ public class HBaseSerDe extends AbstractSerDe {
   }
 
   @Override
-  public Writable serialize(Object obj, ObjectInspector objInspector)
-      throws SerDeException {
-    if (objInspector.getCategory() != Category.STRUCT) {
-      throw new SerDeException(getClass().toString()
-          + " can only serialize struct types, but we got: "
-          + objInspector.getTypeName());
-    }
-
-    // Prepare the field ObjectInspectors
-    StructObjectInspector soi = (StructObjectInspector) objInspector;
-    List<? extends StructField> fields = soi.getAllStructFieldRefs();
-    List<Object> list = soi.getStructFieldsDataAsList(obj);
-    List<? extends StructField> declaredFields =
-        ((StructObjectInspector)getObjectInspector()).getAllStructFieldRefs();
-
-    int iKey = serdeParams.getKeyIndex();
-    StructField field = fields.get(iKey);
-    Object value = list.get(iKey);
-    StructField declaredField = declaredFields.get(iKey);
-    byte[] key;
+  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     try {
-      key = serializeKeyField(field, value, declaredField, serdeParams);
-    } catch (IOException ex) {
-      throw new SerDeException(ex);
-    }
-
-    if (key == null) {
-      throw new SerDeException("HBase row key cannot be NULL");
-    }
-
-    Put put = null;
-    long putTimestamp = serdeParams.getPutTimestamp();
-    if(putTimestamp >= 0) {
-      put = new Put(key, putTimestamp);
-    } else {
-      put = new Put(key);
-    }
-
-    try {
-      // Serialize each field
-      for (int i = 0; i < fields.size(); i++) {
-        if (i == iKey) {
-          continue;
-        }
-
-        field = fields.get(i);
-        value = list.get(i);
-        declaredField = declaredFields.get(i);
-        ColumnMapping colMap = serdeParams.getColumnMapping().get(i);
-        serializeField(put, field, value, declaredField, colMap);
-      }
-    } catch (IOException e) {
+      return serializer.serialize(obj, objInspector);
+    } catch (SerDeException e) {
+      throw e;
+    } catch (Exception e) {
       throw new SerDeException(e);
     }
-
-    return new PutWritable(put);
-  }
-
-  private static byte[] serializeKeyField(StructField keyField, Object keyValue,
-      StructField declaredKeyField, HBaseSerDeParameters serdeParams) throws IOException {
-	  if (keyValue == null) {
-		  // a null object, we do not serialize it
-		  return null;
-	  }
-
-    boolean writeBinary = serdeParams.getKeyColumnMapping().binaryStorage.get(0);
-	  ObjectInspector keyFieldOI = keyField.getFieldObjectInspector();
-
-	  if (!keyFieldOI.getCategory().equals(Category.PRIMITIVE) &&
-			  declaredKeyField.getFieldObjectInspector().getCategory().equals(Category.PRIMITIVE)) {
-		  // we always serialize the String type using the escaped algorithm for LazyString
-	    return serialize(SerDeUtils.getJSONString(keyValue, keyFieldOI),
-	        PrimitiveObjectInspectorFactory.javaStringObjectInspector, 1, false, serdeParams);
-	  } else {
-		  // use the serialization option switch to write primitive values as either a variable
-		  // length UTF8 string or a fixed width bytes if serializing in binary format
-	    return serialize(keyValue, keyFieldOI, 1, writeBinary, serdeParams);
-	  }
-
-  }
-
-  private void serializeField(Put put, StructField field, Object value,
-    StructField declaredField, ColumnMapping colMap) throws IOException {
-    if (value == null) {
-      // a null object, we do not serialize it
-      return;
-    }
-
-    // Get the field objectInspector and the field object.
-    ObjectInspector foi = field.getFieldObjectInspector();
-
-    // If the field corresponds to a column family in HBase
-    if (colMap.qualifierName == null) {
-      MapObjectInspector moi = (MapObjectInspector) foi;
-      ObjectInspector koi = moi.getMapKeyObjectInspector();
-      ObjectInspector voi = moi.getMapValueObjectInspector();
-
-      Map<?, ?> map = moi.getMap(value);
-      if (map == null) {
-        return;
-      } else {
-        for (Map.Entry<?, ?> entry: map.entrySet()) {
-          // Get the Key
-          // Map keys are required to be primitive and may be serialized in binary format
-          byte[] columnQualifierBytes = serialize(entry.getKey(), koi, 3, colMap.binaryStorage.get(0), serdeParams);
-          if (columnQualifierBytes == null) {
-            continue;
-          }
-
-          // Map values may be serialized in binary format when they are primitive and binary
-          // serialization is the option selected
-          byte[] bytes = serialize(entry.getValue(), voi, 3, colMap.binaryStorage.get(1), serdeParams);
-          if (bytes == null) {
-            continue;
-          }
-
-          put.add(colMap.familyNameBytes, columnQualifierBytes, bytes);
-        }
-      }
-    } else {
-      byte[] bytes = null;
-      // If the field that is passed in is NOT a primitive, and either the
-      // field is not declared (no schema was given at initialization), or
-      // the field is declared as a primitive in initialization, serialize
-      // the data to JSON string.  Otherwise serialize the data in the
-      // delimited way.
-      if (!foi.getCategory().equals(Category.PRIMITIVE)
-          && declaredField.getFieldObjectInspector().getCategory().equals(Category.PRIMITIVE)) {
-        // we always serialize the String type using the escaped algorithm for LazyString
-        bytes = serialize(SerDeUtils.getJSONString(value, foi),
-            PrimitiveObjectInspectorFactory.javaStringObjectInspector, 1, false, serdeParams);
-      } else {
-        // use the serialization option switch to write primitive values as either a variable
-        // length UTF8 string or a fixed width bytes if serializing in binary format
-        bytes = serialize(value, foi, 1, colMap.binaryStorage.get(0), serdeParams);
-      }
-
-      if (bytes == null) {
-        return;
-      }
-
-      put.add(colMap.familyNameBytes, colMap.qualifierNameBytes, bytes);
-    }
-  }
-
-  private static byte[] getBytesFromStream(ByteStream.Output ss) {
-    byte [] buf = new byte[ss.getCount()];
-    System.arraycopy(ss.getData(), 0, buf, 0, ss.getCount());
-    return buf;
-  }
-
-  /*
-   * Serialize the row into a ByteStream.
-   *
-   * @param obj           The object for the current field.
-   * @param objInspector  The ObjectInspector for the current Object.
-   * @param level         The current level of separator.
-   * @param writeBinary   Whether to write a primitive object as an UTF8 variable length string or
-   *                      as a fixed width byte array onto the byte stream.
-   * @throws IOException  On error in writing to the serialization stream.
-   * @return true         On serializing a non-null object, otherwise false.
-   */
-  private static byte[] serialize(Object obj, ObjectInspector objInspector, int level,
-      boolean writeBinary, HBaseSerDeParameters serdeParams) throws IOException {
-    ByteStream.Output ss = new ByteStream.Output();
-    if (objInspector.getCategory() == Category.PRIMITIVE && writeBinary) {
-      LazyUtils.writePrimitive(ss, obj, (PrimitiveObjectInspector) objInspector);
-    } else {
-      if (false == serialize(obj, objInspector, level, serdeParams, ss)) {
-        return null;
-      }
-    }
-
-    return getBytesFromStream(ss);
-  }
-
-  private static boolean serialize(
-      Object obj,
-      ObjectInspector objInspector,
-      int level, HBaseSerDeParameters serdeParams, ByteStream.Output ss) throws IOException {
-
-    byte[] separators = serdeParams.getSeparators();
-    boolean escaped = serdeParams.isEscaped();
-    byte escapeChar = serdeParams.getEscapeChar();
-    boolean[] needsEscape = serdeParams.getNeedsEscape();
-    switch (objInspector.getCategory()) {
-      case PRIMITIVE:
-        LazyUtils.writePrimitiveUTF8(ss, obj,
-            (PrimitiveObjectInspector) objInspector, escaped, escapeChar, needsEscape);
-        return true;
-      case LIST:
-        char separator = (char) separators[level];
-        ListObjectInspector loi = (ListObjectInspector)objInspector;
-        List<?> list = loi.getList(obj);
-        ObjectInspector eoi = loi.getListElementObjectInspector();
-        if (list == null) {
-          return false;
-        } else {
-          for (int i = 0; i < list.size(); i++) {
-            if (i > 0) {
-              ss.write(separator);
-            }
-            serialize(list.get(i), eoi, level + 1, serdeParams, ss);
-          }
-        }
-        return true;
-      case MAP:
-        char sep = (char) separators[level];
-        char keyValueSeparator = (char) separators[level+1];
-        MapObjectInspector moi = (MapObjectInspector) objInspector;
-        ObjectInspector koi = moi.getMapKeyObjectInspector();
-        ObjectInspector voi = moi.getMapValueObjectInspector();
-
-        Map<?, ?> map = moi.getMap(obj);
-        if (map == null) {
-          return false;
-        } else {
-          boolean first = true;
-          for (Map.Entry<?, ?> entry: map.entrySet()) {
-            if (first) {
-              first = false;
-            } else {
-              ss.write(sep);
-            }
-            serialize(entry.getKey(), koi, level+2, serdeParams, ss);
-            ss.write(keyValueSeparator);
-            serialize(entry.getValue(), voi, level+2, serdeParams, ss);
-          }
-        }
-        return true;
-      case STRUCT:
-        sep = (char)separators[level];
-        StructObjectInspector soi = (StructObjectInspector)objInspector;
-        List<? extends StructField> fields = soi.getAllStructFieldRefs();
-        list = soi.getStructFieldsDataAsList(obj);
-        if (list == null) {
-          return false;
-        } else {
-          for (int i = 0; i < list.size(); i++) {
-            if (i > 0) {
-              ss.write(sep);
-            }
-
-            serialize(list.get(i), fields.get(i).getFieldObjectInspector(),
-                level + 1, serdeParams, ss);
-          }
-        }
-        return true;
-      default:
-        throw new RuntimeException("Unknown category type: " + objInspector.getCategory());
-    }
-  }
-
-  /**
-   * Initialize the composite key class with the objectinspector for the key
-   *
-   * @throws SerDeException
-   * */
-  private void initCompositeKeyClass(Configuration conf,Properties tbl) throws SerDeException {
-
-    int i = 0;
-
-    // find the hbase row key
-    for (ColumnMapping colMap : serdeParams.getColumnMapping()) {
-      if (colMap.hbaseRowKey) {
-        break;
-      }
-      i++;
-    }
-
-    ObjectInspector keyObjectInspector = ((LazySimpleStructObjectInspector) cachedObjectInspector)
-        .getAllStructFieldRefs().get(i).getFieldObjectInspector();
-
-    try {
-      compositeKeyObj = serdeParams.getCompositeKeyClass().getDeclaredConstructor(
-            LazySimpleStructObjectInspector.class, Properties.class, Configuration.class)
-            .newInstance(
-                ((LazySimpleStructObjectInspector) keyObjectInspector), tbl, conf);
-    } catch (IllegalArgumentException e) {
-      throw new SerDeException(e);
-    } catch (SecurityException e) {
-      throw new SerDeException(e);
-    } catch (InstantiationException e) {
-      throw new SerDeException(e);
-    } catch (IllegalAccessException e) {
-      throw new SerDeException(e);
-    } catch (InvocationTargetException e) {
-      throw new SerDeException(e);
-    } catch (NoSuchMethodException e) {
-      // the constructor wasn't defined in the implementation class. Flag error
-      throw new SerDeException("Constructor not defined in composite key class ["
-          + serdeParams.getCompositeKeyClass().getName() + "]", e);
-    }
-  }
-
-  /**
-   * @return 0-based offset of the key column within the table
-   */
-  int getKeyColumnOffset() {
-    return serdeParams.getKeyIndex();
-  }
-
-  List<Boolean> getStorageFormatOfCol(int colPos){
-    return serdeParams.getColumnMapping().get(colPos).binaryStorage;
   }
 
   @Override
@@ -581,18 +249,13 @@ public class HBaseSerDe extends AbstractSerDe {
     return null;
   }
 
-  public static int getRowKeyColumnOffset(List<ColumnMapping> columnsMapping)
-      throws SerDeException {
+  public HBaseKeyFactory getKeyFactory() {
+    return serdeParams.getKeyFactory();
+  }
 
-    for (int i = 0; i < columnsMapping.size(); i++) {
-      ColumnMapping colMap = columnsMapping.get(i);
-
-      if (colMap.hbaseRowKey && colMap.familyName.equals(HBASE_KEY_COL)) {
-        return i;
-      }
-    }
-
-    throw new SerDeException("HBaseSerDe Error: columns mapping list does not contain" +
-      " row key column.");
+  public static void configureJobConf(TableDesc tableDesc, JobConf jobConf) throws Exception {
+    HBaseSerDeParameters serdeParams =
+        new HBaseSerDeParameters(jobConf, tableDesc.getProperties(), HBaseSerDe.class.getName());
+    serdeParams.getKeyFactory().configureJobConf(tableDesc, jobConf);
   }
 }

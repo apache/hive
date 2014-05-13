@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.hbase;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyObject;

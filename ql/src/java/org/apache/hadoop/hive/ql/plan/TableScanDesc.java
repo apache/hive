@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -61,12 +62,16 @@ public class TableScanDesc extends AbstractOperatorDesc {
   private int maxStatsKeyPrefixLength = -1;
 
   private ExprNodeGenericFuncDesc filterExpr;
+  private transient Serializable filterObject;
 
   public static final String FILTER_EXPR_CONF_STR =
     "hive.io.filter.expr.serialized";
 
   public static final String FILTER_TEXT_CONF_STR =
     "hive.io.filter.text";
+
+  public static final String FILTER_OBJECT_CONF_STR =
+    "hive.io.filter.object";
 
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
@@ -110,6 +115,14 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public void setFilterExpr(ExprNodeGenericFuncDesc filterExpr) {
     this.filterExpr = filterExpr;
+  }
+
+  public Serializable getFilterObject() {
+    return filterObject;
+  }
+
+  public void setFilterObject(Serializable filterObject) {
+    this.filterObject = filterObject;
   }
 
   public void setAlias(String alias) {
