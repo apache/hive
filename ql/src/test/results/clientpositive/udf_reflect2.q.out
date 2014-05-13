@@ -404,6 +404,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 5
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT key,
        reflect2(key,   "byteValue"),

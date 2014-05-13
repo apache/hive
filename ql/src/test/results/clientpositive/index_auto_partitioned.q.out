@@ -143,6 +143,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT key, value FROM srcpart WHERE key=86 AND ds='2008-04-09' ORDER BY key
 PREHOOK: type: QUERY

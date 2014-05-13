@@ -99,6 +99,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from partition_test_partitioned where dt >=100 and dt <= 102
 PREHOOK: type: QUERY

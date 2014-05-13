@@ -195,6 +195,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -422,6 +424,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -655,6 +659,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT subq1.key, subq1.cnt, x.key, x.value
 FROM 
@@ -902,6 +908,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT subq1.key, subq1.cnt, x.key, x.value
 FROM 
@@ -1149,6 +1157,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- When the Correlation Optimizer is turned on, because a input of UnionOperator is
 -- not correlated, we cannot handle this case right now. So, this query will not be
@@ -1341,4 +1351,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

@@ -32,6 +32,8 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SHOW TABLES 'shtb_*'
 PREHOOK: type: SHOWTABLES
@@ -59,6 +61,8 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SHOW TABLES LIKE 'shtb_test1|shtb_test2'
 PREHOOK: type: SHOWTABLES

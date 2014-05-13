@@ -90,6 +90,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
 PREHOOK: type: QUERY
@@ -195,6 +197,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
 PREHOOK: type: QUERY
@@ -292,6 +296,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
 PREHOOK: type: QUERY
@@ -416,6 +422,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
 PREHOOK: type: QUERY
@@ -513,6 +521,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
 PREHOOK: type: QUERY
@@ -1366,6 +1376,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL order by a.value ASC, b.key ASC
 PREHOOK: type: QUERY

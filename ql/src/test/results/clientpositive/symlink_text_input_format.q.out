@@ -65,6 +65,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM symlink_text_input_format order by key, value
 PREHOOK: type: QUERY
@@ -128,6 +130,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT value FROM symlink_text_input_format order by value
 PREHOOK: type: QUERY
@@ -200,6 +204,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(1) FROM symlink_text_input_format
 PREHOOK: type: QUERY

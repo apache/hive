@@ -72,6 +72,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
@@ -160,6 +162,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY
@@ -256,6 +260,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
@@ -352,6 +358,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY

@@ -55,6 +55,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key < 21
 PREHOOK: type: QUERY
@@ -107,6 +109,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key <= 17
 PREHOOK: type: QUERY
@@ -156,6 +160,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key <= 17 and value like '%11%'
 PREHOOK: type: QUERY
@@ -199,6 +205,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from hbase_ppd_keyrange where key >=9  and key < 17 and key = 11
 PREHOOK: type: QUERY

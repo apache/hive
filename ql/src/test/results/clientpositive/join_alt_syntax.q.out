@@ -92,6 +92,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
 from part p1 ,part p2 ,part p3 
@@ -165,6 +167,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
 from part p1 , (select p_name from part) p2 ,part p3 
@@ -242,6 +246,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Shuffle Join JOIN[5][tables = [p1, p2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
@@ -340,6 +346,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name, p4.p_name
 from part p1 , part p2 join part p3 on p2.p_name = p1.p_name join part p4 
@@ -476,6 +484,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name, p4.p_name
 from part p1 join part p2 on p2.p_name = p1.p_name , part p3  , part p4 
@@ -612,4 +622,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

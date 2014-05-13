@@ -62,6 +62,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 2
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT 1 + ASSERT_TRUE(x < 2) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
 PREHOOK: type: QUERY

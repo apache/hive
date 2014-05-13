@@ -34,6 +34,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Shuffle Join JOIN[11][tables = [tmp2, tmp3]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- This test query is introduced for HIVE-4968.
@@ -163,6 +165,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Shuffle Join JOIN[11][tables = [tmp2, tmp3]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
@@ -339,6 +343,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count

@@ -36,6 +36,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x.* FROM SRCPART x WHERE x.ds = 2008-04-08 LIMIT 10
 PREHOOK: type: QUERY

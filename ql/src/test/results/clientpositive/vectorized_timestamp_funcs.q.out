@@ -140,6 +140,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT
   to_unix_timestamp(ctimestamp1) AS c1,
@@ -282,6 +284,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT
   to_unix_timestamp(stimestamp1) AS c1,
@@ -424,6 +428,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- Should all be true or NULL
 SELECT
@@ -570,6 +576,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT
   to_unix_timestamp(stimestamp1) AS c1,

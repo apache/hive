@@ -91,6 +91,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, row_sequence() as r
 from (select key from src order by key) x

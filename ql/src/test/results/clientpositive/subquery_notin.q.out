@@ -246,6 +246,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Shuffle Join JOIN[18][tables = [src, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select * 
@@ -583,6 +585,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Shuffle Join JOIN[26][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select p_mfgr, b.p_name, p_size 
@@ -868,6 +872,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Shuffle Join JOIN[34][tables = [part, sq_1_notin_nullcheck]] in Stage 'Stage-7:MAPRED' is a cross product
 PREHOOK: query: select p_name, p_size 
@@ -1189,6 +1195,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Shuffle Join JOIN[34][tables = [b, sq_1_notin_nullcheck]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select p_mfgr, p_name, p_size 
@@ -1582,6 +1590,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 Warning: Shuffle Join JOIN[24][tables = [t1_v, sq_1_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select * 

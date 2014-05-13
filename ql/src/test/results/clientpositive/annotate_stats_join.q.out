@@ -436,6 +436,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- 3 way join
 -- Expected output rows: 4
@@ -680,6 +682,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- Expected output rows: 5
 -- Reason: #rows = (6*4*8)/max(3,6)*max(6,6)
@@ -969,6 +973,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- join keys of different types
 -- Expected output rows: 4
@@ -1260,6 +1266,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- multi-attribute join
 -- Expected output rows: 0
@@ -1487,6 +1495,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- 3 way and multi-attribute join
 -- Expected output rows: 0
@@ -1798,4 +1808,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

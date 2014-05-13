@@ -121,6 +121,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key from src limit 10
 PREHOOK: type: QUERY
@@ -178,6 +180,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from srcpart where key > 100 limit 10
 PREHOOK: type: QUERY
@@ -240,6 +244,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from src TABLESAMPLE (0.25 PERCENT) limit 10
 PREHOOK: type: QUERY
@@ -886,6 +892,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- negative, distinct
 explain select distinct key, value from src
@@ -939,6 +947,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- negative, CTAS
 explain create table srcx as select distinct key, value from src
@@ -1062,6 +1072,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- negative, join
 explain select * from src join src src2 on src.key=src2.key
@@ -1119,4 +1131,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

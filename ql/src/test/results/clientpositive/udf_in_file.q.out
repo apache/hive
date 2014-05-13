@@ -44,6 +44,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT in_file("303", "../../data/files/test2.dat"),
        in_file("304", "../../data/files/test2.dat"),

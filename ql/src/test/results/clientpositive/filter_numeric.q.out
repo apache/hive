@@ -41,6 +41,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, value, hr from partint where hr < 11
 PREHOOK: type: QUERY
@@ -88,6 +90,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, value, hr from partint where hr <= 12 and hr > 11
 PREHOOK: type: QUERY
@@ -637,6 +641,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, value, hr from partint where hr between 11 and 12
 PREHOOK: type: QUERY
@@ -1688,6 +1694,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, value, hr from partint where hr not between 12 and 14
 PREHOOK: type: QUERY
@@ -2237,6 +2245,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, value, hr from partint where hr < 13
 PREHOOK: type: QUERY

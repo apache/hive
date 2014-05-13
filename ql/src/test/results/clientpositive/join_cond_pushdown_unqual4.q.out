@@ -176,6 +176,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select *
 from part p1 join part2 p2 join part3 p3 on p2_name = p1.p_name join part p4 
@@ -312,4 +314,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

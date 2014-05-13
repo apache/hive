@@ -135,6 +135,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from (
   select * from tst x where x.d='2009-01-01' limit 10

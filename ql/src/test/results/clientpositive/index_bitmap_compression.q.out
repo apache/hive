@@ -108,6 +108,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT key, value FROM src WHERE key > 80 AND key < 100 ORDER BY key
 PREHOOK: type: QUERY

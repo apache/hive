@@ -245,6 +245,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 #### A masked pattern was here ####
 SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`

@@ -315,6 +315,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
 SELECT x FROM fact_daily WHERE ds='1' and x=484
@@ -464,6 +466,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
 SELECT x FROM fact_daily WHERE ds='1' and x=495
@@ -609,6 +613,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT x FROM fact_daily WHERE ds='1' and x=1
 PREHOOK: type: QUERY

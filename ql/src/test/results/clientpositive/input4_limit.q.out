@@ -64,6 +64,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from src sort by key limit 10
 PREHOOK: type: QUERY

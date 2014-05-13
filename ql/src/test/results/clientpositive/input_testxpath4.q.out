@@ -41,6 +41,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint
@@ -111,6 +113,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint

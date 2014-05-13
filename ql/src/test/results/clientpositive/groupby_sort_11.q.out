@@ -77,6 +77,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(distinct key) from T1
 PREHOOK: type: QUERY
@@ -147,6 +149,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1
 PREHOOK: type: QUERY
@@ -219,6 +223,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
 PREHOOK: type: QUERY
@@ -296,6 +302,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
 PREHOOK: type: QUERY
@@ -369,6 +377,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(distinct key+key) from T1
 PREHOOK: type: QUERY
@@ -433,6 +443,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(distinct 1) from T1
 PREHOOK: type: QUERY
@@ -495,6 +507,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(distinct key) from T1
 PREHOOK: type: QUERY

@@ -148,6 +148,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM t_hbase where int_col > 0
 PREHOOK: type: QUERY

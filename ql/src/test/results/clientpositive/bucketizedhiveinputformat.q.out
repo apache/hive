@@ -209,6 +209,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT COUNT(1) FROM T2
 PREHOOK: type: QUERY
@@ -294,6 +296,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT COUNT(1) FROM T3
 PREHOOK: type: QUERY

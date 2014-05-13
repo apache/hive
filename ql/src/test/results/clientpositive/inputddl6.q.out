@@ -105,6 +105,8 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: DROP TABLE INPUTDDL6
 PREHOOK: type: DROPTABLE

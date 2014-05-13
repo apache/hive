@@ -347,6 +347,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
 select x from (select * from fact_daily where ds = '1') subq where x = 484
@@ -537,6 +539,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
 select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484 ORDER BY x1, y1
@@ -722,6 +726,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
 select y, count(1) from fact_daily where ds ='1' and x = 484 group by y
@@ -923,6 +929,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- List Bucketing Query
 select x, c from (select x, count(1) as c from fact_daily where ds = '1' group by x) subq where x = 484

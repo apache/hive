@@ -14,6 +14,8 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SHOW TABLE EXTENDED IN default LIKE `src`
 PREHOOK: type: SHOW_TABLESTATUS

@@ -44,6 +44,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
@@ -91,6 +93,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select key, count(*) from src b group by b.key
 PREHOOK: type: QUERY
@@ -163,6 +167,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
@@ -235,6 +241,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select key, count(*) from src b group by b.key
 PREHOOK: type: QUERY
@@ -289,6 +297,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
@@ -343,6 +353,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select key, count(*) from src b group by b.key
 PREHOOK: type: QUERY
@@ -422,6 +434,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
@@ -501,6 +515,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- windowing after group by
 select key, count(*), rank() over(order by count(*))
@@ -707,6 +723,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- order by
 select key 
@@ -782,4 +800,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

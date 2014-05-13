@@ -62,6 +62,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT a.KEY2
 FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2

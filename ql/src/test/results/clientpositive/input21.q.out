@@ -52,6 +52,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 PREHOOK: type: QUERY

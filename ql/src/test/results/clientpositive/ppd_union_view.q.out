@@ -439,6 +439,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from t1 where ds = '2011-10-13'
 PREHOOK: type: QUERY
@@ -723,6 +725,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select * from t1 where ds = '2011-10-15'
 PREHOOK: type: QUERY

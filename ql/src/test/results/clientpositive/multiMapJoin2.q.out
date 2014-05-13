@@ -130,6 +130,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
@@ -389,6 +391,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
@@ -631,6 +635,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src1 x1 GROUP BY x1.key
@@ -1090,6 +1096,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
@@ -1385,6 +1393,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
@@ -1783,6 +1793,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
@@ -2052,6 +2064,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
@@ -2228,6 +2242,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(*)
 FROM part_table x JOIN src1 y ON (x.key = y.key)
@@ -2530,6 +2546,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM (
   SELECT c.key FROM

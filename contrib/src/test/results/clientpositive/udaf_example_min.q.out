@@ -64,6 +64,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT example_min(substr(value,5)),
        example_min(IF(substr(value,5) > 250, NULL, substr(value,5)))

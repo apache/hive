@@ -79,6 +79,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 PREHOOK: type: QUERY
@@ -113,4 +115,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 

@@ -80,6 +80,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM (
   FROM src select src.key, src.value WHERE src.key < '100'
@@ -348,6 +350,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: FROM (
   FROM src select src.key, src.value WHERE src.key < '100'

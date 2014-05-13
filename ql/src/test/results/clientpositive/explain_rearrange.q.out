@@ -301,6 +301,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- changes id only
 
@@ -587,6 +589,8 @@ STAGE PLANS:
   Stage: Stage-10
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- assign ids in traverse order
 
@@ -873,6 +877,8 @@ STAGE PLANS:
   Stage: Stage-10
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- assign ids in execution order
 
@@ -1159,4 +1165,6 @@ STAGE PLANS:
   Stage: Stage-10
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

@@ -78,6 +78,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: create table ut as
 select s1.key as key, s1.value as value from src s1 join src s3 on s1.key=s3.key
@@ -244,6 +246,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: create table ut as
 with u as (select * from src union all select * from src)
@@ -370,6 +374,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: create table ut as
 select s1.key as skey, u1.key as ukey from
@@ -654,6 +660,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: create table ut as
 select s1.key as skey, u1.key as ukey, s8.key as lkey from 
@@ -890,6 +898,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: create table ut as
 select s2.key as key from src s2 join src s3 on s2.key = s3.key
@@ -1045,6 +1055,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain
 select u.key as ukey, s.key as skey from
@@ -1126,6 +1138,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: create table ut as
 select u.key as ukey, s.key as skey from

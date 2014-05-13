@@ -138,6 +138,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select key, value from combine2 where value is not null order by key
 PREHOOK: type: QUERY
@@ -652,6 +654,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(1) from combine2 where value is not null
 PREHOOK: type: QUERY
@@ -749,6 +753,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select ds, count(1) from srcpart where ds is not null group by ds
 PREHOOK: type: QUERY

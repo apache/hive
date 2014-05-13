@@ -68,6 +68,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
 ORDER BY key, val
@@ -145,6 +147,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
 ORDER BY key
@@ -242,6 +246,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
 ORDER BY key, val
@@ -319,6 +325,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
 ORDER BY key

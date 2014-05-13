@@ -39,6 +39,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*) from part
 PREHOOK: type: QUERY
@@ -98,5 +100,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 FAILED: SemanticException Number of partitions scanned (=2) on table part exceeds limit (=1). This is controlled by hive.limit.query.max.table.partition.

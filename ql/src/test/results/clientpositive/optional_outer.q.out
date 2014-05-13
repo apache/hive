@@ -52,6 +52,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN SELECT * FROM src a LEFT JOIN src b on (a.key=b.key)
 PREHOOK: type: QUERY
@@ -107,6 +109,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN SELECT * FROM src a RIGHT OUTER JOIN src b on (a.key=b.key)
 PREHOOK: type: QUERY
@@ -162,6 +166,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN SELECT * FROM src a RIGHT JOIN src b on (a.key=b.key)
 PREHOOK: type: QUERY
@@ -217,6 +223,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN SELECT * FROM src a FULL OUTER JOIN src b on (a.key=b.key)
 PREHOOK: type: QUERY
@@ -272,6 +280,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN SELECT * FROM src a FULL JOIN src b on (a.key=b.key)
 PREHOOK: type: QUERY
@@ -327,4 +337,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

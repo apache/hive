@@ -42,6 +42,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT cdecimal1 + cdecimal2, cdecimal1 - (2*cdecimal2), ((cdecimal1+2.34)/cdecimal2), (cdecimal1 * (cdecimal2/3.4)), cdecimal1 % 10, CAST(cdecimal1 AS INT), CAST(cdecimal2 AS SMALLINT), CAST(cdecimal2 AS TINYINT), CAST(cdecimal1 AS BIGINT), CAST (cdecimal1 AS BOOLEAN), CAST(cdecimal2 AS DOUBLE), CAST(cdecimal1 AS FLOAT), CAST(cdecimal2 AS STRING), CAST(cdecimal1 AS TIMESTAMP) FROM decimal_test WHERE cdecimal1 > 0 AND cdecimal1 < 12345.5678 AND cdecimal2 != 0 AND cdecimal2 > 1000 AND cdouble IS NOT NULL LIMIT 10
 PREHOOK: type: QUERY

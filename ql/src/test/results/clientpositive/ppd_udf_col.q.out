@@ -44,6 +44,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN 
 SELECT * FROM
@@ -105,6 +107,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT key,randum123, h4
@@ -152,6 +156,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT key,randum123, v10
@@ -199,6 +205,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT key, randum123
@@ -246,6 +254,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN 
 SELECT * FROM
@@ -300,6 +310,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT key,randum123, h4
@@ -347,6 +359,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT key,randum123, v10
@@ -394,4 +408,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

@@ -61,6 +61,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(key) FROM src
 PREHOOK: type: QUERY
@@ -121,6 +123,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(DISTINCT key) FROM src
 PREHOOK: type: QUERY
@@ -181,6 +185,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(DISTINCT key, value) FROM src
 PREHOOK: type: QUERY
@@ -238,6 +244,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(*) FROM src
 PREHOOK: type: QUERY
@@ -295,6 +303,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT count(1) FROM src
 PREHOOK: type: QUERY

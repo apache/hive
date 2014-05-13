@@ -138,6 +138,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain 
 select count(*), count(a), count(b), count(c), count(d) from stats_null_part
@@ -202,6 +204,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: analyze table stats_null compute statistics for columns a,b,c,d
 PREHOOK: type: QUERY
@@ -402,6 +406,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain 
 select count(*), count(a), count(b), count(c), count(d) from stats_null_part
@@ -428,6 +434,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select count(*), count(a), count(b), count(c), count(d) from stats_null
 PREHOOK: type: QUERY

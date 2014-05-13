@@ -357,6 +357,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- column level complete statistics
 analyze table emp_orc compute statistics for columns lastname,deptid
@@ -529,6 +531,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain extended select deptid from emp_orc
@@ -647,6 +651,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain extended select lastname,deptid from emp_orc
@@ -768,4 +774,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 

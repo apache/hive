@@ -76,6 +76,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT /*+MAPJOIN(a)*/ 
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
@@ -1187,6 +1189,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT /*+STREAMTABLE(a)*/ 
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)

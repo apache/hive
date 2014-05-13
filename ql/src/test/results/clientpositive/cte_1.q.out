@@ -37,6 +37,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: with q1 as ( select key from src where key = '5')
 select *
@@ -92,6 +94,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
@@ -147,6 +151,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')

@@ -130,6 +130,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- Sort by will not be optimized because sort by does not introduce partitioning columns
 EXPLAIN
@@ -247,6 +249,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- Distribute by and sort by on the same key(s) should be optimized
 EXPLAIN
@@ -366,6 +370,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM
@@ -527,6 +533,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM
@@ -705,6 +713,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- Even if hive.optimize.reducededuplication.min.reducer=1, order by will not be optimized
 -- because order by does not introduce partitioning columns
@@ -824,6 +834,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: -- Cluster by will be optimized
 EXPLAIN
@@ -943,6 +955,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM
@@ -1104,6 +1118,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM
@@ -1296,6 +1312,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM
@@ -1471,6 +1489,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM

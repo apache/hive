@@ -142,6 +142,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: explain
 select /*+mapjoin(b)*/ a.key, a.value, b.value 
@@ -212,5 +214,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 FAILED: SemanticException [Error 10136]: Bucketed mapjoin cannot be performed. This can be due to multiple reasons:  . Join columns dont match bucketed columns.  . Number of buckets are not a multiple of each other. If you really want to perform the operation, either remove the mapjoin hint from your query or set hive.enforce.bucketmapjoin to false.

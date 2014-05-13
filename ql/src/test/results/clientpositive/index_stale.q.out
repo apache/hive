@@ -101,6 +101,8 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: SELECT * FROM temp WHERE key  = 86
 PREHOOK: type: QUERY
