@@ -166,6 +166,11 @@ final public class OrcStruct implements Writable {
     }
 
     @Override
+    public int getFieldID() {
+      return offset;
+    }
+
+    @Override
     public String getFieldComment() {
       return null;
     }

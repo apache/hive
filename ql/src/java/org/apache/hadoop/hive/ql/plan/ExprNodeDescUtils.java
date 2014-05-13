@@ -26,8 +26,8 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -260,9 +260,56 @@ public class ExprNodeDescUtils {
       return new ExprNodeDesc[] {expr1, expr2};
     }
     if (expr1 instanceof ExprNodeConstantDesc && expr2 instanceof ExprNodeColumnDesc) {
-      return new ExprNodeDesc[] {expr2, expr1, null}; // add null as a marker (inverted order)
+      return new ExprNodeDesc[] {expr1, expr2};
+    }
+    // handles cases where the query has a predicate "column-name=constant"
+    if (expr1 instanceof ExprNodeFieldDesc && expr2 instanceof ExprNodeConstantDesc) {
+      ExprNodeColumnDesc columnDesc = extractColumn(expr1);
+      return columnDesc != null ? new ExprNodeDesc[] {columnDesc, expr2, expr1} : null;
+    }
+    // handles cases where the query has a predicate "constant=column-name"
+    if (expr1 instanceof ExprNodeConstantDesc && expr2 instanceof ExprNodeFieldDesc) {
+      ExprNodeColumnDesc columnDesc = extractColumn(expr2);
+      return columnDesc != null ? new ExprNodeDesc[] {expr1, columnDesc, expr2} : null;
     }
     // todo: constant op constant
+    return null;
+  }
+
+  /**
+   * Extract fields from the given {@link ExprNodeFieldDesc node descriptor}
+   * */
+  public static String[] extractFields(ExprNodeFieldDesc expr) {
+    return extractFields(expr, new ArrayList<String>()).toArray(new String[0]);
+  }
+
+  /*
+   * Recursively extract fields from ExprNodeDesc. Deeply nested structs can have multiple levels of
+   * fields in them
+   */
+  private static List<String> extractFields(ExprNodeDesc expr, List<String> fields) {
+    if (expr instanceof ExprNodeFieldDesc) {
+      ExprNodeFieldDesc field = (ExprNodeFieldDesc)expr;
+      fields.add(field.getFieldName());
+      return extractFields(field.getDesc(), fields);
+    }
+    if (expr instanceof ExprNodeColumnDesc) {
+      return fields;
+    }
+    throw new IllegalStateException(
+        "Unexpected exception while extracting fields from ExprNodeDesc");
+  }
+
+  /*
+   * Extract column from the given ExprNodeDesc
+   */
+  private static ExprNodeColumnDesc extractColumn(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeColumnDesc) {
+      return (ExprNodeColumnDesc)expr;
+    }
+    if (expr instanceof ExprNodeFieldDesc) {
+      return extractColumn(((ExprNodeFieldDesc)expr).getDesc());
+    }
     return null;
   }
 

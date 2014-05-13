@@ -23,10 +23,11 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
+import org.apache.hadoop.hive.serde2.StructObject;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -36,8 +37,8 @@ import org.apache.hadoop.io.Text;
  * LazyStruct does not deal with the case of a NULL struct. That is handled by
  * the parent LazyObject.
  */
-public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector> implements
-    SerDeStatsStruct {
+public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector>
+    implements StructObject, SerDeStatsStruct {
 
   private static Log LOG = LogFactory.getLog(LazyStruct.class.getName());
 
@@ -62,7 +63,7 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
   /**
    * The fields of the struct.
    */
-  LazyObject[] fields;
+  LazyObjectBase[] fields;
   /**
    * Whether init() has been called on the field or not.
    */
@@ -101,17 +102,7 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     byte escapeChar = oi.getEscapeChar();
 
     if (fields == null) {
-      List<? extends StructField> fieldRefs = ((StructObjectInspector) oi)
-          .getAllStructFieldRefs();
-      fields = new LazyObject[fieldRefs.size()];
-      for (int i = 0; i < fields.length; i++) {
-        fields[i] = LazyFactory.createLazyObject(fieldRefs.get(i)
-            .getFieldObjectInspector());
-      }
-      fieldInited = new boolean[fields.length];
-      // Extra element to make sure we have the same formula to compute the
-      // length of each element of the array.
-      startPosition = new int[fields.length + 1];
+      initLazyFields(oi.getAllStructFieldRefs());
     }
 
     int structByteEnd = start + length;
@@ -172,6 +163,25 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     parsed = true;
   }
 
+  protected final void initLazyFields(List<? extends StructField> fieldRefs) {
+    fields = new LazyObjectBase[fieldRefs.size()];
+    for (int i = 0; i < fields.length; i++) {
+      try {
+        fields[i] = createLazyField(i, fieldRefs.get(i));
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    fieldInited = new boolean[fields.length];
+    // Extra element to make sure we have the same formula to compute the
+    // length of each element of the array.
+    startPosition = new int[fields.length + 1];
+  }
+
+  protected LazyObjectBase createLazyField(int fieldID, StructField fieldRef) throws SerDeException {
+    return LazyFactory.createLazyObject(fieldRef.getFieldObjectInspector());
+  }
+
   /**
    * Get one field out of the struct.
    *
@@ -221,14 +231,14 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     return fields[fieldID].getObject();
   }
 
-  ArrayList<Object> cachedList;
+  List<Object> cachedList;
 
   /**
    * Get the values of the fields as an ArrayList.
    *
    * @return The values of the fields as an ArrayList.
    */
-  public ArrayList<Object> getFieldsAsList() {
+  public List<Object> getFieldsAsList() {
     if (!parsed) {
       parse();
     }
@@ -256,7 +266,7 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     this.parsed = parsed;
   }
 
-  protected LazyObject[] getFields() {
+  protected LazyObjectBase[] getFields() {
     return fields;
   }
 

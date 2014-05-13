@@ -28,7 +28,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hive.hbase.HBaseSerDe.ColumnMapping;
+import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -463,17 +463,15 @@ public class TestLazyHBaseObject extends TestCase {
     Text nullSequence = new Text("\\N");
 
     String hbaseColsMapping = ":key,cfa:a,cfa:b,cfb:c,cfb:d";
-    List<ColumnMapping> columnsMapping = null;
+    ColumnMappings columnMappings = null;
 
     try {
-      columnsMapping = parseColumnsMapping(hbaseColsMapping);
+      columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColsMapping);
     } catch (SerDeException e) {
       fail(e.toString());
     }
 
-    for (int i = 0; i < columnsMapping.size(); i++) {
-      ColumnMapping colMap = columnsMapping.get(i);
-
+    for (ColumnMapping colMap : columnMappings) {
       if (!colMap.hbaseRowKey && colMap.qualifierName == null) {
         colMap.binaryStorage.add(false);
         colMap.binaryStorage.add(false);
@@ -499,7 +497,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("d"), Bytes.toBytes("hi")));
 
     Result r = new Result(kvs);
-    o.init(r, columnsMapping);
+    o.init(r, columnMappings);
 
     assertEquals(
       ("{'key':'test-row','a':123,'b':['a','b','c'],"
@@ -513,7 +511,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("c"), Bytes.toBytes("d=e:f=g")));
 
     r = new Result(kvs);
-    o.init(r, columnsMapping);
+    o.init(r, columnMappings);
 
     assertEquals(
         ("{'key':'test-row','a':123,'b':null,"
@@ -529,7 +527,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("d"), Bytes.toBytes("no")));
 
     r = new Result(kvs);
-    o.init(r, columnsMapping);
+    o.init(r, columnMappings);
 
     assertEquals(
         ("{'key':'test-row','a':null,'b':['a'],"
@@ -543,7 +541,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("d"), Bytes.toBytes("no")));
 
     r = new Result(kvs);
-    o.init(r, columnsMapping);
+    o.init(r, columnMappings);
 
     assertEquals(
       ("{'key':'test-row','a':null,'b':['','a','',''],"
@@ -567,7 +565,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("d"), Bytes.toBytes("")));
 
     r = new Result(kvs);
-    o.init(r, columnsMapping);
+    o.init(r, columnMappings);
 
     assertEquals(
       "{'key':'test-row','a':123,'b':[],'c':{},'d':''}".replace("'", "\""),
@@ -587,18 +585,17 @@ public class TestLazyHBaseObject extends TestCase {
     List<String> fieldNames = Arrays.asList(
       new String[]{"key", "a", "b", "c", "d"});
     Text nullSequence = new Text("\\N");
-    List<ColumnMapping> columnsMapping = null;
     String hbaseColsMapping = ":key,cfa:a,cfa:b,cfb:,cfc:d";
 
+    ColumnMappings columnMappings = null;
+
     try {
-      columnsMapping = parseColumnsMapping(hbaseColsMapping);
+      columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColsMapping);
     } catch (SerDeException e) {
       fail(e.toString());
     }
 
-    for (int i = 0; i < columnsMapping.size(); i++) {
-      ColumnMapping colMap = columnsMapping.get(i);
-
+    for (ColumnMapping colMap : columnMappings) {
       if (!colMap.hbaseRowKey && colMap.qualifierName == null) {
         colMap.binaryStorage.add(false);
         colMap.binaryStorage.add(false);
@@ -627,7 +624,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfc"), Bytes.toBytes("d"), Bytes.toBytes("hi")));
 
     Result r = new Result(kvs);
-    o.init(r, columnsMapping);
+    o.init(r, columnMappings);
 
     assertEquals(
       ("{'key':'test-row','a':123,'b':['a','b','c'],"
@@ -643,7 +640,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("f"), Bytes.toBytes("g")));
 
     r = new Result(kvs);
-    o.init(r, columnsMapping);
+    o.init(r, columnMappings);
 
     assertEquals(
       ("{'key':'test-row','a':123,'b':null,"
@@ -659,7 +656,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfc"), Bytes.toBytes("d"), Bytes.toBytes("no")));
 
     r = new Result(kvs);
-    o.init(r, columnsMapping);
+    o.init(r, columnMappings);
 
     assertEquals(
       ("{'key':'test-row','a':null,'b':['a'],"
@@ -673,7 +670,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfc"), Bytes.toBytes("d"), Bytes.toBytes("no")));
 
     r = new Result(kvs);
-    o.init(r, columnsMapping);
+    o.init(r, columnMappings);
 
     assertEquals(
       ("{'key':'test-row','a':null,'b':['','a','',''],"
@@ -689,7 +686,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfc"), Bytes.toBytes("d"), Bytes.toBytes("")));
 
     r = new Result(kvs);
-    o.init(r, columnsMapping);
+    o.init(r, columnMappings);
 
     assertEquals(
       "{'key':'test-row','a':123,'b':[],'c':{},'d':''}".replace("'", "\""),
@@ -713,16 +710,17 @@ public class TestLazyHBaseObject extends TestCase {
     String hbaseColumnsMapping = ":key#str,cf-int:cq-int#bin,cf-byte:cq-byte#bin,"
       + "cf-short:cq-short#bin,cf-long:cq-long#bin,cf-float:cq-float#bin,cf-double:cq-double#bin,"
       + "cf-string:cq-string#str,cf-bool:cq-bool#bin";
-    List<ColumnMapping> columnsMapping = null;
+    ColumnMappings columnMappings = null;
 
     try {
-      columnsMapping = parseColumnsMapping(hbaseColumnsMapping);
-    } catch (SerDeException sde) {
-      fail(sde.toString());
+      columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping);
+    } catch (SerDeException e) {
+      fail(e.toString());
     }
 
-    for (int i = 0; i < columnsMapping.size(); i++) {
-      ColumnMapping colMap = columnsMapping.get(i);
+    ColumnMapping[] columnsMapping = columnMappings.getColumnsMapping();
+    for (int i = 0; i < columnsMapping.length; i++) {
+      ColumnMapping colMap = columnsMapping[i];
 
       if (i == 0 || i == 7) {
         colMap.binaryStorage.add(false);
@@ -741,7 +739,7 @@ public class TestLazyHBaseObject extends TestCase {
     List<KeyValue> kvs = new ArrayList<KeyValue>();
     byte [] value;
 
-    for (int i = 1; i < columnsMapping.size(); i++) {
+    for (int i = 1; i < columnsMapping.length; i++) {
 
       switch (i) {
 
@@ -781,13 +779,13 @@ public class TestLazyHBaseObject extends TestCase {
         throw new RuntimeException("Not expected: " + i);
       }
 
-      ColumnMapping colMap = columnsMapping.get(i);
+      ColumnMapping colMap = columnsMapping[i];
       kvs.add(new KeyValue(rowKey, colMap.familyNameBytes, colMap.qualifierNameBytes, value));
     }
 
     Collections.sort(kvs, KeyValue.COMPARATOR);
     Result result = new Result(kvs);
-    o.init(result, columnsMapping);
+    o.init(result, columnMappings);
     List<? extends StructField> fieldRefs = ((StructObjectInspector) oi).getAllStructFieldRefs();
 
 
@@ -850,19 +848,4 @@ public class TestLazyHBaseObject extends TestCase {
       }
     }
   }
-
-  /**
-   * Parses the HBase columns mapping specifier to identify the column families, qualifiers
-   * and also caches the byte arrays corresponding to them. One of the Hive table
-   * columns maps to the HBase row key, by default the first column.
-   *
-   * @param columnsMappingSpec string hbase.columns.mapping specified when creating table
-   * @return List<ColumnMapping> which contains the column mapping information by position
-   * @throws SerDeException
-   */
-  public static List<ColumnMapping> parseColumnsMapping(String columnsMappingSpec)
-      throws SerDeException {
-    return HBaseSerDe.parseColumnsMapping(columnsMappingSpec, true);
-  }
-
 }

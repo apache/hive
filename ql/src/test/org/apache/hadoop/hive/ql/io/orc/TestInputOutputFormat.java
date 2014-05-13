@@ -216,6 +216,11 @@ public class TestInputOutputFormat {
     }
 
     @Override
+    public int getFieldID() {
+      return id;
+    }
+
+    @Override
     public String toString() {
       return "field " + id + " " + fieldName;
     }
