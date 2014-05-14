@@ -430,8 +430,8 @@ public class LazySimpleSerDe extends AbstractSerDe {
     // TODO: The copy of data is unnecessary, but there is no work-around
     // since we cannot directly set the private byte[] field inside Text.
     serializeCache
-        .set(serializeStream.getData(), 0, serializeStream.getCount());
-    serializedSize = serializeStream.getCount();
+        .set(serializeStream.getData(), 0, serializeStream.getLength());
+    serializedSize = serializeStream.getLength();
     lastOperationSerialize = true;
     lastOperationDeserialize = false;
     return serializeCache;

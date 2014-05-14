@@ -70,7 +70,7 @@ public class TestHBaseKeyFactory2 extends AbstractHBaseKeyFactory {
     for (Object element : ((StructObjectInspector)inspector).getStructFieldsDataAsList(object)) {
       output.write(toBinary(String.valueOf(element).getBytes(), FIXED_LENGTH, false, false));
     }
-    return output.getCount() > 0 ? output.toByteArray() : null;
+    return output.getLength() > 0 ? output.toByteArray() : null;
   }
 
   private byte[] toBinary(String value, int max, boolean end, boolean nextBA) {

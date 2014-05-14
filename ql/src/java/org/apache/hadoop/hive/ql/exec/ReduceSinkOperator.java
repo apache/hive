@@ -94,6 +94,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   transient protected int numDistributionKeys;
   transient protected int numDistinctExprs;
   transient String[] inputAliases;  // input aliases of this RS for join (used for PPD)
+  private boolean skipTag = false;
 
   public void setInputAliases(String[] inputAliases) {
     this.inputAliases = inputAliases;
@@ -151,6 +152,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
       tag = conf.getTag();
       tagByte[0] = (byte) tag;
+      skipTag = conf.getSkipTag();
       LOG.info("Using tag = " + tag);
 
       TableDesc keyTableDesc = conf.getKeySerializeInfo();
@@ -400,7 +402,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   protected HiveKey toHiveKey(Object obj, int tag, Integer distLength) throws SerDeException {
     BinaryComparable key = (BinaryComparable)keySerializer.serialize(obj, keyObjectInspector);
     int keyLength = key.getLength();
-    if (tag == -1) {
+    if (tag == -1 || skipTag) {
       keyWritable.set(key.getBytes(), 0, keyLength);
     } else {
       keyWritable.setSize(keyLength + 1);
@@ -463,5 +465,9 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   @Override
   public boolean opAllowedBeforeMapJoin() {
     return false;
+  }
+
+  public void setSkipTag(boolean value) {
+    this.skipTag = value;
   }
 }

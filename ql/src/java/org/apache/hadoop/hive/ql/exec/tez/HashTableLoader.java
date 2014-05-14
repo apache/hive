@@ -18,26 +18,44 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.debug.Utils;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKeyObject;
 import org.apache.hadoop.hive.ql.exec.persistence.LazyFlatRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryFactory;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryStruct;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.tez.runtime.api.LogicalInput;
@@ -70,18 +88,11 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
     TezContext tezContext = (TezContext) MapredContext.get();
     Map<Integer, String> parentToInput = desc.getParentToInput();
-    int hashTableThreshold = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD);
-    float hashTableLoadFactor = HiveConf.getFloatVar(hconf,
-        HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR);
-    boolean useLazyRows = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEMAPJOINLAZYHASHTABLE);
 
+    boolean useOptimizedTables = HiveConf.getBoolVar(
+        hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
+    boolean isFirstKey = true;
     TezCacheAccess tezCacheAccess = TezCacheAccess.createInstance(hconf);
-    // We only check if we can use optimized keys here; that is ok because we don't
-    // create optimized keys in MapJoin if hash map doesn't have optimized keys.
-    if (!HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDKEYS)) {
-      lastKey = new MapJoinKeyObject();
-    }
-    Output output = new Output(); // Reusable output for serialization.
     for (int pos = 0; pos < mapJoinTables.length; pos++) {
       if (pos == desc.getPosBigTable()) {
         continue;
@@ -92,27 +103,29 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
       try {
         KeyValueReader kvReader = (KeyValueReader) input.getReader();
-
-        MapJoinTableContainer tableContainer = new HashMapWrapper(hashTableThreshold,
-            hashTableLoadFactor);
-
-        // simply read all the kv pairs into the hashtable.
+        MapJoinObjectSerDeContext keyCtx = mapJoinTableSerdes[pos].getKeyContext(),
+          valCtx = mapJoinTableSerdes[pos].getValueContext();
+        if (useOptimizedTables) {
+          ObjectInspector keyOi = keyCtx.getSerDe().getObjectInspector();
+          if (!MapJoinBytesTableContainer.isSupportedKey(keyOi)) {
+            if (isFirstKey) {
+              useOptimizedTables = false;
+            } else {
+              throw new HiveException(describeOi(
+                  "Only a subset of mapjoin keys is supported. Unsupported key: ", keyOi));
+            }
+          }
+        }
+        isFirstKey = false;
+        MapJoinTableContainer tableContainer = useOptimizedTables
+            ? new MapJoinBytesTableContainer(hconf, valCtx) : new HashMapWrapper(hconf);
 
         while (kvReader.next()) {
-          // We pass key in as reference, to find out quickly if optimized keys can be used.
-          // However, we do not reuse the object since we are putting them into the hashmap.
-          lastKey = MapJoinKey.read(output, lastKey, mapJoinTableSerdes[pos].getKeyContext(),
-              (Writable)kvReader.getCurrentKey(), false);
-
-          LazyFlatRowContainer values = (LazyFlatRowContainer)tableContainer.get(lastKey);
-          if (values == null) {
-            values = new LazyFlatRowContainer();
-            tableContainer.put(lastKey, values);
-          }
-          values.add(mapJoinTableSerdes[pos].getValueContext(),
-              (BytesWritable)kvReader.getCurrentValue(), useLazyRows);
+          lastKey = tableContainer.putRow(keyCtx, (Writable)kvReader.getCurrentKey(),
+              valCtx, (Writable)kvReader.getCurrentValue());
         }
 
+        tableContainer.seal();
         mapJoinTables[pos] = tableContainer;
       } catch (IOException e) {
         throw new HiveException(e);
@@ -130,8 +143,17 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         LOG.info("Setting Input: " + inputName + " as cached");
       }
     }
-    if (lastKey == null) {
-      lastKey = new MapJoinKeyObject(); // No rows in tables, the key type doesn't matter.
+  }
+
+  private String describeOi(String desc, ObjectInspector keyOi) {
+    for (StructField field : ((StructObjectInspector)keyOi).getAllStructFieldRefs()) {
+      ObjectInspector oi = field.getFieldObjectInspector();
+      String cat = oi.getCategory().toString();
+      if (oi.getCategory() == Category.PRIMITIVE) {
+        cat = ((PrimitiveObjectInspector)oi).getPrimitiveCategory().toString();
+      }
+      desc += field.getFieldName() + ":" + cat + ", ";
     }
+    return desc;
   }
 }

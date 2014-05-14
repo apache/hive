@@ -25,10 +25,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -60,7 +62,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   protected transient MapJoinTableContainer[] mapJoinTables;
   private transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;
   private transient boolean hashTblInitedOnce;
-  private transient MapJoinKey key;
+  private transient ReusableGetAdaptor[] hashMapRowGetters;
 
   public MapJoinOperator() {
   }
@@ -182,15 +184,12 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     }
   }
 
-  protected transient final Output outputForMapJoinKey = new Output();
-  protected MapJoinKey computeMapJoinKey(Object row, byte alias) throws HiveException {
-    MapJoinKey refKey = getRefKey(key, alias);
-    return MapJoinKey.readFromRow(outputForMapJoinKey,
-        refKey, row, joinKeys[alias], joinKeysObjectInspectors[alias], key == refKey);
+  protected void setMapJoinKey(
+      ReusableGetAdaptor dest, Object row, byte alias) throws HiveException {
+    dest.setFromRow(row, joinKeys[alias], joinKeysObjectInspectors[alias]);
   }
 
-  protected MapJoinKey getRefKey(MapJoinKey prevKey, byte alias) {
-    if (prevKey != null) return prevKey;
+  protected MapJoinKey getRefKey(byte alias) {
     // We assume that since we are joining on the same key, all tables would have either
     // optimized or non-optimized key; hence, we can pass any key in any table as reference.
     // We do it so that MJKB could determine whether it can use optimized keys.
@@ -202,7 +201,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     return null; // All join tables have 0 keys, doesn't matter what we generate.
   }
 
-
   @Override
   public void processOp(Object row, int tag) throws HiveException {
     try {
@@ -211,17 +209,36 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         loadHashTable();
         firstRow = false;
       }
+
       alias = (byte)tag;
+      if (hashMapRowGetters == null) {
+        hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
+        MapJoinKey refKey = getRefKey(alias);
+        for (byte pos = 0; pos < order.length; pos++) {
+          if (pos != alias) {
+            hashMapRowGetters[pos] = mapJoinTables[pos].createGetter(refKey);
+          }
+        }
+      }
 
       // compute keys and values as StandardObjects
-      key = computeMapJoinKey(row, alias);
+      ReusableGetAdaptor firstSetKey = null;
       int fieldCount = joinKeys[alias].size();
       boolean joinNeeded = false;
       for (byte pos = 0; pos < order.length; pos++) {
         if (pos != alias) {
-          MapJoinRowContainer rowContainer = mapJoinTables[pos].get(key);
+          ReusableGetAdaptor adaptor;
+          if (firstSetKey == null) {
+            adaptor = firstSetKey = hashMapRowGetters[pos];
+            setMapJoinKey(firstSetKey, row, alias);
+          } else {
+            // Keys for all tables are the same, so only the first has to deserialize them.
+            adaptor = hashMapRowGetters[pos];
+            adaptor.setFromOther(firstSetKey);
+          }
+          MapJoinRowContainer rowContainer = adaptor.getCurrentRows();
           // there is no join-value or join-key has all null elements
-          if (rowContainer == null || key.hasAnyNulls(fieldCount, nullsafes)) {
+          if (rowContainer == null || adaptor.hasAnyNulls(fieldCount, nullsafes)) {
             if (!noOuterJoin) {
               joinNeeded = true;
               storage[pos] = dummyObjVectors[pos];
@@ -230,7 +247,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             }
           } else {
             joinNeeded = true;
-            storage[pos] = rowContainer.copy(); // TODO: why copy?
+            storage[pos] = rowContainer.copy();
             aliasFilterTags[pos] = rowContainer.getAliasFilter();
           }
         }
@@ -258,6 +275,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
+    for (MapJoinTableContainer tableContainer : mapJoinTables) {
+      if (tableContainer != null) {
+        tableContainer.dumpMetrics();
+      }
+    }
     if ((this.getExecContext().getLocalWork() != null
         && this.getExecContext().getLocalWork().getInputFileChangeSensitive())
         && mapJoinTables != null) {

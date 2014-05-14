@@ -39,7 +39,7 @@ public class TestMapJoinTableContainer {
   private ByteArrayOutputStream baos;
   private ObjectOutputStream out;
   private ObjectInputStream in;
-  private MapJoinTableContainer container;
+  private MapJoinPersistableTableContainer container;
   private MapJoinTableContainerSerDe containerSerde;
   private MapJoinKeyObject key;
   private MapJoinRowContainer rowContainer;

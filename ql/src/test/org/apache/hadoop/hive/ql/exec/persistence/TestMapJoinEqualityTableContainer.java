@@ -34,7 +34,7 @@ public class TestMapJoinEqualityTableContainer {
   private static final MapJoinKeyObject KEY3 = new MapJoinKeyObject(new Object[] {new Text("key3")});
   private static final MapJoinKeyObject KEY4 = new MapJoinKeyObject(new Object[] {new Text("key4")});
   private static final Object[] VALUE = new Object[] {new Text("value")};
-  private MapJoinTableContainer container;
+  private HashMapWrapper container;
   private MapJoinRowContainer rowContainer;
   @Before
   public void setup() throws Exception {

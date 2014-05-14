@@ -2743,4 +2743,16 @@
   <description>Number of aborted transactions involving a particular table or partition before major compaction is initiated.</description>
 </property>
 
+<property>
+  <name>hive.mapjoin.optimized.hashtable</name>
+  <value>true</value>
+  <description>Whether Hive should use memory-optimized hash table for MapJoin. Only works on Tez, because memory-optimized hashtable cannot be serialized.</description>
+</property>
+
+<property>
+  <name>hive.mapjoin.optimized.hashtable.wbsize</name>
+  <value>10485760</value>
+  <description>Optimized hashtable (see hive.mapjoin.optimized.hashtable) uses a chain of buffers to store data. This is one buffer size. HT may be slightly faster if this is larger, but for small joins unnecessary memory will be allocated and then trimmed.</description>
+</property>
+
 </configuration>

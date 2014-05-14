@@ -1543,8 +1543,8 @@ public class Driver implements CommandProcessor {
       Utilities.StreamStatus ss;
       try {
         ss = Utilities.readColumn(resStream, bos);
-        if (bos.getCount() > 0) {
-          row = new String(bos.getData(), 0, bos.getCount(), "UTF-8");
+        if (bos.getLength() > 0) {
+          row = new String(bos.getData(), 0, bos.getLength(), "UTF-8");
         } else if (ss == Utilities.StreamStatus.TERMINATED) {
           row = new String();
         }

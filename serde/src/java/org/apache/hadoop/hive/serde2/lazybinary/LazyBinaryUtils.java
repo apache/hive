@@ -24,6 +24,8 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
+import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -334,7 +336,7 @@ public final class LazyBinaryUtils {
    * @param i
    *          the int
    */
-  public static void writeVInt(Output byteStream, int i) {
+  public static void writeVInt(RandomAccessOutput byteStream, int i) {
     writeVLong(byteStream, i);
   }
 
@@ -409,13 +411,13 @@ public final class LazyBinaryUtils {
     }
   };
 
-  public static void writeVLong(Output byteStream, long l) {
+  public static void writeVLong(RandomAccessOutput byteStream, long l) {
     byte[] vLongBytes = vLongBytesThreadLocal.get();
     int len = LazyBinaryUtils.writeVLongToByteArray(vLongBytes, l);
     byteStream.write(vLongBytes, 0, len);
   }
   
-  public static void writeDouble(Output byteStream, double d) {
+  public static void writeDouble(RandomAccessOutput byteStream, double d) {
     long v = Double.doubleToLongBits(d);
     byteStream.write((byte) (v >> 56));
     byteStream.write((byte) (v >> 48));

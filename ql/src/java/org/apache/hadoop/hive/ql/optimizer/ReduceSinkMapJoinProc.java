@@ -77,7 +77,9 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     context.currentRootOperator = null;
 
     ReduceSinkOperator parentRS = (ReduceSinkOperator)stack.get(stack.size() - 2);
-
+    // remove the tag for in-memory side of mapjoin
+    parentRS.getConf().setSkipTag(true);
+    parentRS.setSkipTag(true);
     // remember the original parent list before we start modifying it.
     if (!context.mapJoinParentMap.containsKey(mapJoinOp)) {
       List<Operator<?>> parents = new ArrayList(mapJoinOp.getParentOperators());
@@ -166,8 +168,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     context.linkWorkWithReduceSinkMap.put(parentWork, reduceSinks);
 
     // create the dummy operators
-    List<Operator<? extends OperatorDesc>> dummyOperators =
-        new ArrayList<Operator<? extends OperatorDesc>>();
+    List<Operator<?>> dummyOperators = new ArrayList<Operator<?>>();
 
     // create an new operator: HashTableDummyOperator, which share the table desc
     HashTableDummyDesc desc = new HashTableDummyDesc();
