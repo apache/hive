@@ -362,7 +362,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     Operator<? extends OperatorDesc> parentBigTableOp
       = mapJoinOp.getParentOperators().get(bigTablePosition);
-
     if (parentBigTableOp instanceof ReduceSinkOperator) {
       mapJoinOp.getParentOperators().remove(bigTablePosition);
       if (!(mapJoinOp.getParentOperators().contains(

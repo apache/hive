@@ -18,21 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.persistence;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDeException;
-
-public interface MapJoinRowContainer extends AbstractRowContainer<List<Object>> {
-
-  byte getAliasFilter() throws HiveException;
-
-  MapJoinRowContainer copy() throws HiveException;
-
-  void addRow(Object[] value) throws HiveException;
-
-  void write(MapJoinObjectSerDeContext valueContext, ObjectOutputStream out)
-      throws IOException, SerDeException;
+public interface MapJoinPersistableTableContainer extends MapJoinTableContainer {
+  void put(MapJoinKey key, MapJoinRowContainer value);
+  Set<Map.Entry<MapJoinKey, MapJoinRowContainer>> entrySet();
+  int size();
+  MapJoinRowContainer get(MapJoinKey key);
+  Map<String, String> getMetaData();
 }

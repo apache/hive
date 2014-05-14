@@ -60,12 +60,12 @@ public class TestHBaseKeyFactory extends DefaultHBaseKeyFactory {
     }
     output.reset();
     for (Object element : ((StructObjectInspector)inspector).getStructFieldsDataAsList(object)) {
-      if (output.getCount() > 0) {
+      if (output.getLength() > 0) {
         output.write(DELIMITER_BINARY);
       }
       output.write(String.valueOf(element).getBytes());
     }
-    return output.getCount() > 0 ? output.toByteArray() : null;
+    return output.getLength() > 0 ? output.toByteArray() : null;
   }
 
   private static class DoubleDollarSeparated implements LazyObjectBase {

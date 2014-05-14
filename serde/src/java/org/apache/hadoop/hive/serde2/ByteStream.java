@@ -18,12 +18,13 @@
 
 package org.apache.hadoop.hive.serde2;
 
+import java.io.IOException;
+
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayOutputStream;
 
 /**
  * Extensions to bytearrayinput/output streams.
- * 
  */
 public class ByteStream {
   /**
@@ -62,14 +63,11 @@ public class ByteStream {
    * Output.
    *
    */
-  public static class Output extends NonSyncByteArrayOutputStream {
+  public static final class Output
+    extends NonSyncByteArrayOutputStream implements RandomAccessOutput {
     @Override
     public byte[] getData() {
       return buf;
-    }
-
-    public int getCount() {
-      return count;
     }
 
     public Output() {
@@ -79,5 +77,30 @@ public class ByteStream {
     public Output(int size) {
       super(size);
     }
+
+    @Override
+    public void writeInt(long offset, int value) {
+      int offset2 = (int)offset;
+      getData()[offset2++] = (byte) (value >> 24);
+      getData()[offset2++] = (byte) (value >> 16);
+      getData()[offset2++] = (byte) (value >> 8);
+      getData()[offset2] = (byte) (value);
+    }
+
+    @Override
+    public void reserve(int byteCount) {
+      for (int i = 0; i < byteCount; ++i) {
+        write(0);
+      }
+    }
+  }
+
+  public static interface RandomAccessOutput {
+    public void writeInt(long offset, int value);
+    public void reserve(int byteCount);
+    public void write(int b);
+    public void write(byte b[]) throws IOException;
+    public void write(byte b[], int off, int len);
+    public int getLength();
   }
 }

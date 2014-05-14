@@ -18,23 +18,79 @@
 
 package org.apache.hadoop.hive.ql.exec.persistence;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
+
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
+import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.io.Writable;
 
 public interface MapJoinTableContainer {
+  /**
+   * Retrieve rows from hashtable key by key, one key at a time, w/o copying the structures
+   * for each key. "Old" HashMapWrapper will still create/retrieve new objects for java HashMap;
+   * but the optimized one doesn't have to.
+   */
+  public interface ReusableGetAdaptor {
+    /**
+     * Changes current rows to which adaptor is referring to the rows corresponding to
+     * the key represented by a VHKW object, and writers and batch used to interpret it.
+     */
+    void setFromVector(VectorHashKeyWrapper kw, VectorExpressionWriter[] keyOutputWriters,
+        VectorHashKeyWrapperBatch keyWrapperBatch) throws HiveException;
 
-  public int size();
+    /**
+     * Changes current rows to which adaptor is referring to the rows corresponding to
+     * the key represented by a row object, and fields and ois used to interpret it.
+     */
+    void setFromRow(Object row, List<ExprNodeEvaluator> fields, List<ObjectInspector> ois)
+        throws HiveException;
 
-  public MapJoinRowContainer get(MapJoinKey key);
+    /**
+     * Changes current rows to which adaptor is referring to the rows corresponding to
+     * the key that another adaptor has already deserialized via setFromVector/setFromRow.
+     */
+    void setFromOther(ReusableGetAdaptor other);
 
-  public void put(MapJoinKey key, MapJoinRowContainer value);
+    /**
+     * Checks whether the current key has any nulls.
+     */
+    boolean hasAnyNulls(int fieldCount, boolean[] nullsafes);
 
-  public Set<Map.Entry<MapJoinKey, MapJoinRowContainer>> entrySet();
+    /**
+     * @return The container w/the rows corresponding to a key set via a previous set... call.
+     */
+    MapJoinRowContainer getCurrentRows();
+  }
 
-  public Map<String, String> getMetaData();
+  /**
+   * Adds row from input to the table.
+   */
+  MapJoinKey putRow(MapJoinObjectSerDeContext keyContext, Writable currentKey,
+      MapJoinObjectSerDeContext valueContext, Writable currentValue)
+          throws SerDeException, HiveException;
 
-  public void clear();
+  /**
+   * Indicates to the container that the puts have ended; table is now r/o.
+   */
+  void seal();
 
-  public MapJoinKey getAnyKey();
+  /**
+   * Creates reusable get adaptor that can be used to retrieve rows from the table
+   * based on either vectorized or non-vectorized input rows to MapJoinOperator.
+   * @param keyTypeFromLoader Last key from hash table loader, to determine key type used
+   *                          when loading hashtable (if it can vary).
+   */
+  ReusableGetAdaptor createGetter(MapJoinKey keyTypeFromLoader);
 
+  /** Clears the contents of the table. */
+  void clear();
+
+  MapJoinKey getAnyKey();
+
+  void dumpMetrics();
 }

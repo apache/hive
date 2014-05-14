@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
@@ -128,7 +129,7 @@ public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritab
     byteStream.write(bytes, 0, bytes.length);
   }
 
-  public void writeToByteStream(Output byteStream) {
+  public void writeToByteStream(RandomAccessOutput byteStream) {
     LazyBinaryUtils.writeVInt(byteStream, scale);
     LazyBinaryUtils.writeVInt(byteStream, internalStorage.length);
     byteStream.write(internalStorage, 0, internalStorage.length);

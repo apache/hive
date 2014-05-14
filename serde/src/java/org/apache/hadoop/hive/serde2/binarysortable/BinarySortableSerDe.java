@@ -34,6 +34,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -109,8 +112,7 @@ import org.apache.hadoop.io.Writable;
  */
 public class BinarySortableSerDe extends AbstractSerDe {
 
-  public static final Log LOG = LogFactory.getLog(BinarySortableSerDe.class
-      .getName());
+  public static final Log LOG = LogFactory.getLog(BinarySortableSerDe.class.getName());
 
   List<String> columnNames;
   List<TypeInfo> columnTypes;
@@ -588,33 +590,39 @@ public class BinarySortableSerDe extends AbstractSerDe {
   }
 
   BytesWritable serializeBytesWritable = new BytesWritable();
-  OutputByteBuffer outputByteBuffer = new OutputByteBuffer();
+  ByteStream.Output output = new ByteStream.Output();
 
   @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
-    outputByteBuffer.reset();
+    output.reset();
     StructObjectInspector soi = (StructObjectInspector) objInspector;
     List<? extends StructField> fields = soi.getAllStructFieldRefs();
 
     for (int i = 0; i < columnNames.size(); i++) {
-      serialize(outputByteBuffer, soi.getStructFieldData(obj, fields.get(i)),
+      serialize(output, soi.getStructFieldData(obj, fields.get(i)),
           fields.get(i).getFieldObjectInspector(), columnSortOrderIsDesc[i]);
     }
 
-    serializeBytesWritable.set(outputByteBuffer.getData(), 0, outputByteBuffer
-        .getLength());
+    serializeBytesWritable.set(output.getData(), 0, output.getLength());
     return serializeBytesWritable;
   }
 
-  static void serialize(OutputByteBuffer buffer, Object o, ObjectInspector oi,
+  private static void writeByte(RandomAccessOutput buffer, byte b, boolean invert) {
+    if (invert) {
+      b = (byte) (0xff ^ b);
+    }
+    buffer.write(b);
+  }
+
+  static void serialize(ByteStream.Output buffer, Object o, ObjectInspector oi,
       boolean invert) throws SerDeException {
     // Is this field a null?
     if (o == null) {
-      buffer.write((byte) 0, invert);
+      writeByte(buffer, (byte) 0, invert);
       return;
     }
     // This field is not a null.
-    buffer.write((byte) 1, invert);
+    writeByte(buffer, (byte) 1, invert);
 
     switch (oi.getCategory()) {
     case PRIMITIVE: {
@@ -625,20 +633,20 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
       case BOOLEAN: {
         boolean v = ((BooleanObjectInspector) poi).get(o);
-        buffer.write((byte) (v ? 2 : 1), invert);
+        writeByte(buffer, (byte) (v ? 2 : 1), invert);
         return;
       }
       case BYTE: {
         ByteObjectInspector boi = (ByteObjectInspector) poi;
         byte v = boi.get(o);
-        buffer.write((byte) (v ^ 0x80), invert);
+        writeByte(buffer, (byte) (v ^ 0x80), invert);
         return;
       }
       case SHORT: {
         ShortObjectInspector spoi = (ShortObjectInspector) poi;
         short v = spoi.get(o);
-        buffer.write((byte) ((v >> 8) ^ 0x80), invert);
-        buffer.write((byte) v, invert);
+        writeByte(buffer, (byte) ((v >> 8) ^ 0x80), invert);
+        writeByte(buffer, (byte) v, invert);
         return;
       }
       case INT: {
@@ -650,14 +658,14 @@ public class BinarySortableSerDe extends AbstractSerDe {
       case LONG: {
         LongObjectInspector loi = (LongObjectInspector) poi;
         long v = loi.get(o);
-        buffer.write((byte) ((v >> 56) ^ 0x80), invert);
-        buffer.write((byte) (v >> 48), invert);
-        buffer.write((byte) (v >> 40), invert);
-        buffer.write((byte) (v >> 32), invert);
-        buffer.write((byte) (v >> 24), invert);
-        buffer.write((byte) (v >> 16), invert);
-        buffer.write((byte) (v >> 8), invert);
-        buffer.write((byte) v, invert);
+        writeByte(buffer, (byte) ((v >> 56) ^ 0x80), invert);
+        writeByte(buffer, (byte) (v >> 48), invert);
+        writeByte(buffer, (byte) (v >> 40), invert);
+        writeByte(buffer, (byte) (v >> 32), invert);
+        writeByte(buffer, (byte) (v >> 24), invert);
+        writeByte(buffer, (byte) (v >> 16), invert);
+        writeByte(buffer, (byte) (v >> 8), invert);
+        writeByte(buffer, (byte) v, invert);
         return;
       }
       case FLOAT: {
@@ -670,10 +678,10 @@ public class BinarySortableSerDe extends AbstractSerDe {
           // positive number, flip the first bit
           v = v ^ (1 << 31);
         }
-        buffer.write((byte) (v >> 24), invert);
-        buffer.write((byte) (v >> 16), invert);
-        buffer.write((byte) (v >> 8), invert);
-        buffer.write((byte) v, invert);
+        writeByte(buffer, (byte) (v >> 24), invert);
+        writeByte(buffer, (byte) (v >> 16), invert);
+        writeByte(buffer, (byte) (v >> 8), invert);
+        writeByte(buffer, (byte) v, invert);
         return;
       }
       case DOUBLE: {
@@ -686,14 +694,14 @@ public class BinarySortableSerDe extends AbstractSerDe {
           // positive number, flip the first bit
           v = v ^ (1L << 63);
         }
-        buffer.write((byte) (v >> 56), invert);
-        buffer.write((byte) (v >> 48), invert);
-        buffer.write((byte) (v >> 40), invert);
-        buffer.write((byte) (v >> 32), invert);
-        buffer.write((byte) (v >> 24), invert);
-        buffer.write((byte) (v >> 16), invert);
-        buffer.write((byte) (v >> 8), invert);
-        buffer.write((byte) v, invert);
+        writeByte(buffer, (byte) (v >> 56), invert);
+        writeByte(buffer, (byte) (v >> 48), invert);
+        writeByte(buffer, (byte) (v >> 40), invert);
+        writeByte(buffer, (byte) (v >> 32), invert);
+        writeByte(buffer, (byte) (v >> 24), invert);
+        writeByte(buffer, (byte) (v >> 16), invert);
+        writeByte(buffer, (byte) (v >> 8), invert);
+        writeByte(buffer, (byte) v, invert);
         return;
       }
       case STRING: {
@@ -740,7 +748,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
         TimestampWritable t = toi.getPrimitiveWritableObject(o);
         byte[] data = t.getBinarySortable();
         for (int i = 0; i < data.length; i++) {
-          buffer.write(data[i], invert);
+          writeByte(buffer, data[i], invert);
         }
         return;
       }
@@ -763,23 +771,23 @@ public class BinarySortableSerDe extends AbstractSerDe {
         // get the sign of the big decimal
         int sign = dec.compareTo(HiveDecimal.ZERO);
 
-    // we'll encode the absolute value (sign is separate)
-    dec = dec.abs();
+        // we'll encode the absolute value (sign is separate)
+        dec = dec.abs();
 
-    // get the scale factor to turn big decimal into a decimal < 1
-    int factor = dec.precision() - dec.scale();
-    factor = sign == 1 ? factor : -factor;
+        // get the scale factor to turn big decimal into a decimal < 1
+        int factor = dec.precision() - dec.scale();
+        factor = sign == 1 ? factor : -factor;
 
         // convert the absolute big decimal to string
         dec.scaleByPowerOfTen(Math.abs(dec.scale()));
         String digits = dec.unscaledValue().toString();
 
         // finally write out the pieces (sign, scale, digits)
-        buffer.write((byte) ( sign + 1), invert);
-        buffer.write((byte) ((factor >> 24) ^ 0x80), invert);
-        buffer.write((byte) ( factor >> 16), invert);
-        buffer.write((byte) ( factor >> 8), invert);
-        buffer.write((byte)   factor, invert);
+        writeByte(buffer, (byte) ( sign + 1), invert);
+        writeByte(buffer, (byte) ((factor >> 24) ^ 0x80), invert);
+        writeByte(buffer, (byte) ( factor >> 16), invert);
+        writeByte(buffer, (byte) ( factor >> 8), invert);
+        writeByte(buffer, (byte)   factor, invert);
         serializeBytes(buffer, digits.getBytes(decimalCharSet),
             digits.length(), sign == -1 ? !invert : invert);
         return;
@@ -798,11 +806,11 @@ public class BinarySortableSerDe extends AbstractSerDe {
       // \1 followed by each element
       int size = loi.getListLength(o);
       for (int eid = 0; eid < size; eid++) {
-        buffer.write((byte) 1, invert);
+        writeByte(buffer, (byte) 1, invert);
         serialize(buffer, loi.getListElement(o, eid), eoi, invert);
       }
       // and \0 to terminate
-      buffer.write((byte) 0, invert);
+      writeByte(buffer, (byte) 0, invert);
       return;
     }
     case MAP: {
@@ -813,12 +821,12 @@ public class BinarySortableSerDe extends AbstractSerDe {
       // \1 followed by each key and then each value
       Map<?, ?> map = moi.getMap(o);
       for (Map.Entry<?, ?> entry : map.entrySet()) {
-        buffer.write((byte) 1, invert);
+        writeByte(buffer, (byte) 1, invert);
         serialize(buffer, entry.getKey(), koi, invert);
         serialize(buffer, entry.getValue(), voi, invert);
       }
       // and \0 to terminate
-      buffer.write((byte) 0, invert);
+      writeByte(buffer, (byte) 0, invert);
       return;
     }
     case STRUCT: {
@@ -834,7 +842,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
     case UNION: {
       UnionObjectInspector uoi = (UnionObjectInspector) oi;
       byte tag = uoi.getTag(o);
-      buffer.write(tag, invert);
+      writeByte(buffer, tag, invert);
       serialize(buffer, uoi.getField(o), uoi.getObjectInspectors().get(tag),
           invert);
       return;
@@ -846,28 +854,40 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
   }
 
-  private static void serializeBytes(OutputByteBuffer buffer, byte[] data, int length, boolean invert){
+  private static void serializeBytes(
+      ByteStream.Output buffer, byte[] data, int length, boolean invert) {
     for (int i = 0; i < length; i++) {
       if (data[i] == 0 || data[i] == 1) {
-        buffer.write((byte) 1, invert);
-        buffer.write((byte) (data[i] + 1), invert);
+        writeByte(buffer, (byte) 1, invert);
+        writeByte(buffer, (byte) (data[i] + 1), invert);
       } else {
-        buffer.write(data[i], invert);
+        writeByte(buffer, data[i], invert);
       }
     }
-    buffer.write((byte) 0, invert);
+    writeByte(buffer, (byte) 0, invert);
   }
 
-  private static void serializeInt(OutputByteBuffer buffer, int v, boolean invert) {
-    buffer.write((byte) ((v >> 24) ^ 0x80), invert);
-    buffer.write((byte) (v >> 16), invert);
-    buffer.write((byte) (v >> 8), invert);
-    buffer.write((byte) v, invert);
+  private static void serializeInt(ByteStream.Output buffer, int v, boolean invert) {
+    writeByte(buffer, (byte) ((v >> 24) ^ 0x80), invert);
+    writeByte(buffer, (byte) (v >> 16), invert);
+    writeByte(buffer, (byte) (v >> 8), invert);
+    writeByte(buffer, (byte) v, invert);
   }
 
   @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;
+  }
+
+  public static void serializeStruct(Output byteStream, Object[] fieldData,
+      List<ObjectInspector> fieldOis, boolean[] sortableSortOrders) throws SerDeException {
+    for (int i = 0; i < fieldData.length; i++) {
+      serialize(byteStream, fieldData[i], fieldOis.get(i), sortableSortOrders[i]);
+    }
+  }
+
+  public boolean[] getSortOrders() {
+    return columnSortOrderIsDesc;
   }
 }

@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 /**
  * ReduceSinkDesc.
@@ -83,7 +86,9 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   private int topN = -1;
   private float topNMemoryUsage = -1;
   private boolean mapGroupBy;  // for group-by, values with same key on top-K should be forwarded
+  private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
 
+  private static transient Log LOG = LogFactory.getLog(ReduceSinkDesc.class);
   public ReduceSinkDesc() {
   }
 
@@ -133,6 +138,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.setNumBuckets(numBuckets);
     desc.setBucketCols(bucketCols);
     desc.setStatistics(this.getStatistics());
+    desc.setSkipTag(skipTag);
     return desc;
   }
 
@@ -325,5 +331,13 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   public void setBucketCols(List<ExprNodeDesc> bucketCols) {
     this.bucketCols = bucketCols;
+  }
+
+  public void setSkipTag(boolean value) {
+    this.skipTag = value;
+  }
+
+  public boolean getSkipTag() {
+    return skipTag;
   }
 }

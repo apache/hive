@@ -443,8 +443,10 @@ public class HiveConf extends Configuration {
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
     HIVEMAPJOINBUCKETCACHESIZE("hive.mapjoin.bucket.cache.size", 100),
+    HIVEMAPJOINUSEOPTIMIZEDTABLE("hive.mapjoin.optimized.hashtable", true),
     HIVEMAPJOINUSEOPTIMIZEDKEYS("hive.mapjoin.optimized.keys", true),
     HIVEMAPJOINLAZYHASHTABLE("hive.mapjoin.lazy.hashtable", true),
+    HIVEHASHTABLEWBSIZE("hive.mapjoin.optimized.hashtable.wbsize", 10 * 1024 * 1024),
 
     HIVESMBJOINCACHEROWS("hive.smbjoin.cache.rows", 10000),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000),

@@ -371,3 +371,121 @@ POSTHOOK: Lineage: t2.dec EXPRESSION [(over1k)over1k.FieldSchema(name:dec, type:
 14	14
 14	14
 14	14
+PREHOOK: query: select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: t1.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: t2.dec EXPRESSION [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+45	45
+45	45
+45	45
+45	45
+45	45
+79	79
+79	79
+79	79
+79	79
+79	79
+79	79
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+6	6
+6	6
+6	6
+6	6
+6	6
+6	6
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+70	70
+70	70
+70	70
+70	70
+70	70
+70	70
+70	70
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14

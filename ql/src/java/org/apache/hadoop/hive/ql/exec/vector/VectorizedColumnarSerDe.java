@@ -194,8 +194,8 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
           }
 
           byteRow.get(k).set(serializeVectorStream.getData(), count, serializeVectorStream
-              .getCount() - count);
-          count = serializeVectorStream.getCount();
+              .getLength() - count);
+          count = serializeVectorStream.getLength();
         }
 
       }

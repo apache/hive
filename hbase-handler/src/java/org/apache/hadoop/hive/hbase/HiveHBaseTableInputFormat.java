@@ -353,8 +353,8 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
           byte[] startRow;
           ByteStream.Output serializeStream = new ByteStream.Output();
           LazyUtils.writePrimitiveUTF8(serializeStream, writable, poi, false, (byte) 0, null);
-          startRow = new byte[serializeStream.getCount()];
-          System.arraycopy(serializeStream.getData(), 0, startRow, 0, serializeStream.getCount());
+          startRow = new byte[serializeStream.getLength()];
+          System.arraycopy(serializeStream.getData(), 0, startRow, 0, serializeStream.getLength());
           return startRow;
         }
 

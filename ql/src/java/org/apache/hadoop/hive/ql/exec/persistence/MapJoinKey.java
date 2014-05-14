@@ -25,7 +25,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.ql.debug.Utils;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
@@ -34,6 +37,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
@@ -48,20 +52,26 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
 
 /**
- * The base class for MapJoinKey; also acts as a factory for creating and reading
- * the keys, choosing whether size-optimized byte-array based MJKBytes can be used.
+ * The base class for MapJoinKey.
+ * Ideally, this should now be removed, some table wrappers have no key object.
  */
 public abstract class MapJoinKey {
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
+  public abstract void write(MapJoinObjectSerDeContext context, ObjectOutputStream out)
+      throws IOException, SerDeException;
+
+  public abstract boolean hasAnyNulls(int fieldCount, boolean[] nullsafes);
+
   @SuppressWarnings("deprecation")
-  public static MapJoinKey read(Output output, MapJoinKey key, MapJoinObjectSerDeContext context,
-      Writable writable, boolean mayReuseKey) throws SerDeException {
+  public static MapJoinKey read(Output output, MapJoinKey key,
+      MapJoinObjectSerDeContext context, Writable writable, boolean mayReuseKey)
+          throws SerDeException {
     SerDe serde = context.getSerDe();
     Object obj = serde.deserialize(writable);
     boolean useOptimized = useOptimizedKeyBasedOnPrev(key);
     if (useOptimized || key == null) {
-      byte[] structBytes = serializeKey(output, obj, serde.getObjectInspector(), !useOptimized);
+      byte[] structBytes = serialize(output, obj, serde.getObjectInspector(), !useOptimized);
       if (structBytes != null) {
         return MapJoinKeyBytes.fromBytes(key, mayReuseKey, structBytes);
       } else if (useOptimized) {
@@ -95,7 +105,7 @@ public abstract class MapJoinKey {
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.CHAR);
   }
 
-  private static byte[] serializeKey(Output byteStream,
+  private static byte[] serialize(Output byteStream,
       Object obj, ObjectInspector oi, boolean checkTypes) throws SerDeException {
     if (null == obj || !(oi instanceof StructObjectInspector)) {
       return null; // not supported
@@ -113,16 +123,22 @@ public abstract class MapJoinKey {
     for (int i = 0; i < size; ++i) {
       StructField field = fields.get(i);
       ObjectInspector foi = field.getFieldObjectInspector();
-      if (checkTypes) {
-        if (foi.getCategory() != Category.PRIMITIVE) return null; // not supported
-        PrimitiveCategory pc = ((PrimitiveObjectInspector)foi).getPrimitiveCategory();
-        if (!SUPPORTED_PRIMITIVES.contains(pc)) return null; // not supported
+      if (checkTypes && !isSupportedField(foi)) {
+        return null;
       }
       fieldData[i] = soi.getStructFieldData(obj, field);
       fieldOis.add(foi);
     }
 
-    return serializeRowCommon(byteStream, fieldData, fieldOis);
+    byteStream = serializeRow(byteStream, fieldData, fieldOis, null);
+    return Arrays.copyOf(byteStream.getData(), byteStream.getLength());
+  }
+
+  public static boolean isSupportedField(ObjectInspector foi) {
+    if (foi.getCategory() != Category.PRIMITIVE) return false; // not supported
+    PrimitiveCategory pc = ((PrimitiveObjectInspector)foi).getPrimitiveCategory();
+    if (!SUPPORTED_PRIMITIVES.contains(pc)) return false; // not supported
+    return true;
   }
 
   public static MapJoinKey readFromVector(Output output, MapJoinKey key, VectorHashKeyWrapper kw,
@@ -132,7 +148,10 @@ public abstract class MapJoinKey {
     if (useOptimized || key == null) {
       byte[] structBytes = null;
       try {
-        structBytes = serializeVector(output, kw, keyOutputWriters, keyWrapperBatch);
+        if (keyOutputWriters.length <= 8) {
+          output = serializeVector(output, kw, keyOutputWriters, keyWrapperBatch, null, null);
+          structBytes = Arrays.copyOf(output.getData(), output.getLength());
+        }
       } catch (SerDeException e) {
         throw new HiveException(e);
       }
@@ -148,19 +167,26 @@ public abstract class MapJoinKey {
     return result;
   }
 
-  private static byte[] serializeVector(Output byteStream, VectorHashKeyWrapper kw,
-      VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch)
-          throws HiveException, SerDeException {
+  /**
+   * Serializes row to output for vectorized path.
+   * @param byteStream Output to reuse. Can be null, in that case a new one would be created.
+   */
+  public static Output serializeVector(Output byteStream, VectorHashKeyWrapper kw,
+      VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch,
+      boolean[] nulls, boolean[] sortableSortOrders) throws HiveException, SerDeException {
     Object[] fieldData = new Object[keyOutputWriters.length];
     List<ObjectInspector> fieldOis = new ArrayList<ObjectInspector>();
     for (int i = 0; i < keyOutputWriters.length; ++i) {
       VectorExpressionWriter writer = keyOutputWriters[i];
       fieldOis.add(writer.getObjectInspector());
-      // This is rather convoluted... to simplify for per, we could call getRawKeyValue
+      // This is rather convoluted... to simplify for perf, we could call getRawKeyValue
       // instead of writable, and serialize based on Java type as opposed to OI.
       fieldData[i] = keyWrapperBatch.getWritableKeyValue(kw, i, writer);
+      if (nulls != null) {
+        nulls[i] = (fieldData[i] == null);
+      }
     }
-    return serializeRowCommon(byteStream, fieldData, fieldOis);
+    return serializeRow(byteStream, fieldData, fieldOis, sortableSortOrders);
   }
 
   public static MapJoinKey readFromRow(Output output, MapJoinKey key, Object row,
@@ -173,7 +199,15 @@ public abstract class MapJoinKey {
     boolean useOptimized = useOptimizedKeyBasedOnPrev(key);
     if (useOptimized || key == null) {
       try {
-        byte[] structBytes = serializeRow(output, fieldObjs, keyFieldsOI);
+        byte[] structBytes = null;
+        if (fieldObjs.length <= 8) {
+          if (fieldObjs.length == 0) {
+            structBytes = EMPTY_BYTE_ARRAY; // shortcut for null keys
+          } else {
+            output = serializeRow(output, fieldObjs, keyFieldsOI, null);
+            structBytes = Arrays.copyOf(output.getData(), output.getLength());
+          }
+        }
         if (structBytes != null) {
           return MapJoinKeyBytes.fromBytes(key, mayReuseKey, structBytes);
         } else if (useOptimized) {
@@ -189,34 +223,31 @@ public abstract class MapJoinKey {
     return result;
   }
 
-  private static byte[] serializeRow(Output byteStream,
-      Object[] fieldData, List<ObjectInspector> fieldOis) throws SerDeException {
-    if (fieldData.length > 8) {
-      return null; // not supported
-    } else if (fieldData.length == 0) {
-      return EMPTY_BYTE_ARRAY; // shortcut for null keys
-    }
-    assert fieldData.length == fieldOis.size();
-    return serializeRowCommon(byteStream, fieldData, fieldOis);
-  }
+  private static final Log LOG = LogFactory.getLog(MapJoinKey.class);
 
-  private static byte[] serializeRowCommon(Output byteStream,
-      Object[] fieldData, List<ObjectInspector> fieldOis) throws SerDeException {
+
+  /**
+   * Serializes row to output.
+   * @param byteStream Output to reuse. Can be null, in that case a new one would be created.
+   */
+  public static Output serializeRow(Output byteStream, Object[] fieldData,
+      List<ObjectInspector> fieldOis, boolean[] sortableSortOrders) throws SerDeException {
     if (byteStream == null) {
       byteStream = new Output();
     } else {
       byteStream.reset();
     }
-    LazyBinarySerDe.serializeStruct(byteStream, fieldData, fieldOis);
-    return Arrays.copyOf(byteStream.getData(), byteStream.getCount());
+    if (fieldData.length == 0) {
+      byteStream.reset();
+    } else if (sortableSortOrders == null) {
+      LazyBinarySerDe.serializeStruct(byteStream, fieldData, fieldOis);
+    } else {
+      BinarySortableSerDe.serializeStruct(byteStream, fieldData, fieldOis, sortableSortOrders);
+    }
+    return byteStream;
   }
 
   private static boolean useOptimizedKeyBasedOnPrev(MapJoinKey key) {
     return (key != null) && (key instanceof MapJoinKeyBytes);
   }
-
-  public abstract void write(MapJoinObjectSerDeContext context, ObjectOutputStream out)
-      throws IOException, SerDeException;
-
-  public abstract boolean hasAnyNulls(int fieldCount, boolean[] nullsafes);
 }

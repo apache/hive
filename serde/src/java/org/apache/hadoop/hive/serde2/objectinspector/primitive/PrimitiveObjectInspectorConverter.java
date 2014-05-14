@@ -363,22 +363,22 @@ public class PrimitiveObjectInspectorConverter {
       case BYTE:
         out.reset();
         LazyInteger.writeUTF8NoException(out, ((ByteObjectInspector) inputOI).get(input));
-        t.set(out.getData(), 0, out.getCount());
+        t.set(out.getData(), 0, out.getLength());
         return t;
       case SHORT:
         out.reset();
         LazyInteger.writeUTF8NoException(out, ((ShortObjectInspector) inputOI).get(input));
-        t.set(out.getData(), 0, out.getCount());
+        t.set(out.getData(), 0, out.getLength());
         return t;
       case INT:
         out.reset();
         LazyInteger.writeUTF8NoException(out, ((IntObjectInspector) inputOI).get(input));
-        t.set(out.getData(), 0, out.getCount());
+        t.set(out.getData(), 0, out.getLength());
         return t;
       case LONG:
         out.reset();
         LazyLong.writeUTF8NoException(out, ((LongObjectInspector) inputOI).get(input));
-        t.set(out.getData(), 0, out.getCount());
+        t.set(out.getData(), 0, out.getLength());
         return t;
       case FLOAT:
         t.set(String.valueOf(((FloatObjectInspector) inputOI).get(input)));

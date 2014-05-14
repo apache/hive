@@ -180,11 +180,11 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
         }
 
         field[i].set(serializeStream.getData(), count, serializeStream
-            .getCount()
+            .getLength()
             - count);
-        count = serializeStream.getCount();
+        count = serializeStream.getLength();
       }
-      serializedSize = serializeStream.getCount();
+      serializedSize = serializeStream.getLength();
       lastOperationSerialize = true;
       lastOperationDeserialize = false;
     } catch (IOException e) {
