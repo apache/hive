@@ -127,9 +127,11 @@ POSTHOOK: Output: importer@exim_employee
 POSTHOOK: Output: importer@exim_employee@emp_country=in/emp_state=ka
 PREHOOK: query: import table exim_employee partition (emp_country="us", emp_state="tn") from 'ql/test/data/exports/exim_employee'
 PREHOOK: type: IMPORT
+#### A masked pattern was here ####
 PREHOOK: Output: importer@exim_employee
 POSTHOOK: query: import table exim_employee partition (emp_country="us", emp_state="tn") from 'ql/test/data/exports/exim_employee'
 POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
 POSTHOOK: Output: importer@exim_employee
 POSTHOOK: Output: importer@exim_employee@emp_country=us/emp_state=tn
 PREHOOK: query: describe extended exim_employee
