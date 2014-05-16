@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.persistence.PTFRowContainer;
@@ -46,7 +47,7 @@ public class PTFPartition {
   StructObjectInspector outputOI;
   private final PTFRowContainer<List<Object>> elems;
 
-  protected PTFPartition(HiveConf cfg,
+  protected PTFPartition(Configuration cfg,
       SerDe serDe, StructObjectInspector inputOI,
       StructObjectInspector outputOI)
       throws HiveException {
@@ -130,11 +131,13 @@ public class PTFPartition {
       createTimeSz = PTFPartition.this.size();
     }
 
+    @Override
     public boolean hasNext() {
       checkForComodification();
       return idx < end;
     }
 
+    @Override
     public Object next() {
       checkForComodification();
       try {
@@ -144,6 +147,7 @@ public class PTFPartition {
       }
     }
 
+    @Override
     public void remove() {
       throw new UnsupportedOperationException();
     }
@@ -222,7 +226,7 @@ public class PTFPartition {
     void reset() throws HiveException;
   }
 
-  public static PTFPartition create(HiveConf cfg,
+  public static PTFPartition create(Configuration cfg,
       SerDe serDe,
       StructObjectInspector inputOI,
       StructObjectInspector outputOI)

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
@@ -64,10 +65,10 @@ public class PTFDeserializer {
 
   PTFDesc ptfDesc;
   StructObjectInspector inputOI;
-  HiveConf hConf;
+  Configuration hConf;
   LeadLagInfo llInfo;
 
-  public PTFDeserializer(PTFDesc ptfDesc, StructObjectInspector inputOI, HiveConf hConf) {
+  public PTFDeserializer(PTFDesc ptfDesc, StructObjectInspector inputOI, Configuration hConf) {
     super();
     this.ptfDesc = ptfDesc;
     ptfDesc.setCfg(hConf);
@@ -288,7 +289,7 @@ public class PTFDeserializer {
       @SuppressWarnings("unchecked")
       Class<? extends TableFunctionResolver> rCls = (Class<? extends TableFunctionResolver>)
           Class.forName(className);
-      return (TableFunctionResolver) ReflectionUtils.newInstance(rCls, null);
+      return ReflectionUtils.newInstance(rCls, null);
     } catch (Exception e) {
       throw new HiveException(e);
     }
