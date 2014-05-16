@@ -18,7 +18,14 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.File;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Random;
+
 import junit.framework.Assert;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -26,6 +33,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
@@ -33,12 +41,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Random;
 
 /**
 *
@@ -76,8 +78,8 @@ public class TestVectorizedORCReader {
     private final Date dt;
     private final HiveDecimal hd;
 
-    MyRecord(Boolean bo, Byte by, Integer i, Long l, Short s, Double d, String k, Timestamp t,
-             Date dt, HiveDecimal hd) {
+    MyRecord(Boolean bo, Byte by, Integer i, Long l, Short s, Double d, String k,
+        Timestamp t, Date dt, HiveDecimal hd) {
       this.bo = bo;
       this.by = by;
       this.i = i;
@@ -155,27 +157,28 @@ public class TestVectorizedORCReader {
             continue;
           }
           // Timestamps are stored as long, so convert and compare
-          if (a instanceof Timestamp) {
-            Timestamp t = ((Timestamp) a);
+          if (a instanceof TimestampWritable) {
+            TimestampWritable t = ((TimestampWritable) a);
             // Timestamp.getTime() is overriden and is 
             // long time = super.getTime();
             // return (time + (nanos / 1000000));
-            Long timeInNanoSec = (t.getTime() * 1000000) + (t.getNanos() % 1000000);
+            Long timeInNanoSec = (t.getTimestamp().getTime() * 1000000)
+                + (t.getTimestamp().getNanos() % 1000000);
             Assert.assertEquals(true, timeInNanoSec.toString().equals(b.toString()));
             continue;
           }
 
           // Dates are stored as long, so convert and compare
-          if (a instanceof Date) {
-            Date adt = (Date) a;
-            Assert.assertEquals(adt.getTime(), DateWritable.daysToMillis((int) ((LongWritable) b).get()));
+          if (a instanceof DateWritable) {
+            DateWritable adt = (DateWritable) a;
+            Assert.assertEquals(adt.get().getTime(), DateWritable.daysToMillis((int) ((LongWritable) b).get()));
             continue;
           }
 
           // Decimals are stored as BigInteger, so convert and compare
-          if (a instanceof HiveDecimal) {
-            HiveDecimalWritable dec = (HiveDecimalWritable) b;
-            Assert.assertEquals(a, dec.getHiveDecimal());
+          if (a instanceof HiveDecimalWritable) {
+            HiveDecimalWritable dec = (HiveDecimalWritable) a;
+            Assert.assertEquals(dec, b);
           }
 
           if (null == a) {

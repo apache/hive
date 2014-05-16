@@ -738,6 +738,9 @@
             <exclude>**/TestHiveServer2Concurrency.java</exclude>
             <exclude>**/TestHiveMetaStore.java</exclude>
           </excludes>
+	  <includes>
+		  <include>**/${testPackage}/*.java</include>
+	  </includes>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
           <failIfNoTests>false</failIfNoTests>

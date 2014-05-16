@@ -127,7 +127,7 @@ public class TestNewInputOutputFormat {
         ", , bye, {[{1, bye}, {2, sigh}]}, [{100000000, cat}," +
         " {-100000, in}, {1234, hat}]," +
         " {chani={5, chani}, mauddib={1, mauddib}}," +
-        " 2000-03-12 15:00:01.0, 12345678.6547457}");
+        " 2000-03-12 15:00:01, 12345678.6547457}");
     localFs.delete(outputPath, true);
   }
   
