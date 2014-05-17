@@ -76,6 +76,7 @@ public class PTestClient {
   private static final String HELP_LONG = "help";
   private static final String HELP_SHORT = "h";
   private static final String ENDPOINT = "endpoint";
+  private static final String LOGS_ENDPOINT = "logsEndpoint";
   private static final String COMMAND = "command";
   private static final String PASSWORD = "password";
   private static final String PROFILE = "profile";
@@ -90,14 +91,17 @@ public class PTestClient {
   private final ObjectMapper mMapper;
   private final DefaultHttpClient mHttpClient;
 
-  public PTestClient(String endPoint, String password)
+  public PTestClient(String logsEndpoint, String apiEndPoint, String password)
       throws MalformedURLException {
-    if(endPoint.endsWith("/")) {
-      mApiEndPoint = endPoint + "api/v1";
-      mLogsEndpoint = endPoint + "logs/";
+    if (logsEndpoint.endsWith("/")) {
+      this.mLogsEndpoint = logsEndpoint;
     } else {
-      mApiEndPoint = endPoint + "/api/v1";
-      mLogsEndpoint = endPoint + "/logs/";
+      this.mLogsEndpoint = logsEndpoint + "/";
+    }
+    if(apiEndPoint.endsWith("/")) {
+      this.mApiEndPoint = apiEndPoint + "api/v1";
+    } else {
+      this.mApiEndPoint = apiEndPoint + "/api/v1";
     }
     URL apiURL = new URL(mApiEndPoint);
     mMapper = new ObjectMapper();
@@ -283,6 +287,7 @@ public class PTestClient {
     options.addOption(null, TEST_HANDLE, true, "Server supplied test handle. (Required for testStop and testTailLog)");
     options.addOption(null, OUTPUT_DIR, true, "Directory to download and save test-results.tar.gz to. (Optional for testStart)");
     options.addOption(null, CLEAR_LIBRARY_CACHE, false, "Before starting the test, delete the ivy and maven directories (Optional for testStart)");
+    options.addOption(null, LOGS_ENDPOINT, true, "URL to get the logs");
 
     CommandLine commandLine = parser.parse(options, args);
 
@@ -295,7 +300,7 @@ public class PTestClient {
         PASSWORD,
         ENDPOINT
     });
-    PTestClient client = new PTestClient(commandLine.getOptionValue(ENDPOINT),
+    PTestClient client = new PTestClient(commandLine.getOptionValue(LOGS_ENDPOINT), commandLine.getOptionValue(ENDPOINT),
         commandLine.getOptionValue(PASSWORD));
     String command = commandLine.getOptionValue(COMMAND);
     boolean result;
