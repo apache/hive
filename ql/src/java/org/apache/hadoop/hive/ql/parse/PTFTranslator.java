@@ -630,9 +630,7 @@ public class PTFTranslator {
   private ShapeDetails setupTableFnShape(String fnName, ShapeDetails inpShape,
       StructObjectInspector OI, List<String> columnNames, RowResolver rr)
       throws SemanticException {
-    if (fnName.equals(FunctionRegistry.NOOP_TABLE_FUNCTION)
-        || fnName.equals(
-            FunctionRegistry.NOOP_MAP_TABLE_FUNCTION)) {
+    if (FunctionRegistry.isNoopFunction(fnName)) {
       return setupShapeForNoop(inpShape, OI, columnNames, rr);
     }
     return setupShape(OI, columnNames, rr);
@@ -882,8 +880,7 @@ public class PTFTranslator {
       StructObjectInspector rowObjectInspector,
       List<String> outputColNames, RowResolver inputRR) throws SemanticException {
 
-    if (tbFnName.equals(FunctionRegistry.NOOP_TABLE_FUNCTION) ||
-        tbFnName.equals(FunctionRegistry.NOOP_MAP_TABLE_FUNCTION)) {
+    if (FunctionRegistry.isNoopFunction(tbFnName)) {
       return buildRowResolverForNoop(tabAlias, rowObjectInspector, inputRR);
     }
 

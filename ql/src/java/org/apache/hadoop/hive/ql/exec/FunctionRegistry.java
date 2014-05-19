@@ -116,7 +116,9 @@ import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.ql.udf.ptf.MatchPath.MatchPathResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.Noop.NoopResolver;
+import org.apache.hadoop.hive.ql.udf.ptf.NoopStreaming.NoopStreamingResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.NoopWithMap.NoopWithMapResolver;
+import org.apache.hadoop.hive.ql.udf.ptf.NoopWithMapStreaming.NoopWithMapStreamingResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction.WindowingTableFunctionResolver;
 import org.apache.hadoop.hive.ql.udf.xml.GenericUDFXPath;
@@ -170,8 +172,10 @@ public final class FunctionRegistry {
 
 
   public static final String WINDOWING_TABLE_FUNCTION = "windowingtablefunction";
-  public static final String NOOP_TABLE_FUNCTION = "noop";
-  public static final String NOOP_MAP_TABLE_FUNCTION = "noopwithmap";
+  private static final String NOOP_TABLE_FUNCTION = "noop";
+  private static final String NOOP_MAP_TABLE_FUNCTION = "noopwithmap";
+  private static final String NOOP_STREAMING_TABLE_FUNCTION = "noopstreaming";
+  private static final String NOOP_STREAMING_MAP_TABLE_FUNCTION = "noopwithmapstreaming";
 
   static Map<String, WindowFunctionInfo> windowFunctions = Collections.synchronizedMap(new LinkedHashMap<String, WindowFunctionInfo>());
 
@@ -442,6 +446,8 @@ public final class FunctionRegistry {
 
     registerTableFunction(NOOP_TABLE_FUNCTION, NoopResolver.class);
     registerTableFunction(NOOP_MAP_TABLE_FUNCTION, NoopWithMapResolver.class);
+    registerTableFunction(NOOP_STREAMING_TABLE_FUNCTION, NoopStreamingResolver.class);
+    registerTableFunction(NOOP_STREAMING_MAP_TABLE_FUNCTION, NoopWithMapStreamingResolver.class);
     registerTableFunction(WINDOWING_TABLE_FUNCTION,  WindowingTableFunctionResolver.class);
     registerTableFunction("matchpath", MatchPathResolver.class);
   }
@@ -1927,10 +1933,13 @@ public final class FunctionRegistry {
   {
     return getTableFunctionResolver(WINDOWING_TABLE_FUNCTION);
   }
-
-  public static TableFunctionResolver getNoopTableFunction()
-  {
-    return getTableFunctionResolver(NOOP_TABLE_FUNCTION);
+  
+  public static boolean isNoopFunction(String fnName) {
+    fnName = fnName.toLowerCase();
+    return fnName.equals(NOOP_MAP_TABLE_FUNCTION) ||
+        fnName.equals(NOOP_STREAMING_MAP_TABLE_FUNCTION) ||
+        fnName.equals(NOOP_TABLE_FUNCTION) ||
+        fnName.equals(NOOP_STREAMING_TABLE_FUNCTION);
   }
 
   public static void registerTableFunction(String name, Class<? extends TableFunctionResolver> tFnCls)

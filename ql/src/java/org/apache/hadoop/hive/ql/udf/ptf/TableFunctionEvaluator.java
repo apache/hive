@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf.ptf;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
@@ -29,6 +30,32 @@ import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+
+/*
+ * Interface Design:
+ * A TableFunction provides 2 interfaces of execution 'Batch' and 'Streaming'.
+ * - In Batch mode the contract is Partition in - Partition Out
+ * - In Streaming mode the contract is a stream of processRow calls - each of which may return 0 or more rows.
+ * 
+ * A Partition is not just a batch of rows, it enables more than a single iteration of
+ * the i/p data: multiple passes, arbitrary access of input rows, relative navigation between
+ * rows(for e.g. lead/lag fns). Most PTFs will work in batch mode.
+ * 
+ * The Streaming mode gives up on the capabilities of Partitions for the benefit of smaller footprint,
+ * and faster processing. Window Function processing is an e.g. of this: when there are only Ranking
+ * functions each row needs to be accessed once in the order it is provided; hence there is no need 
+ * to hold all input rows in a Partition. The 'pattern' is: any time you want to only enhance/enrich 
+ * an Input Row Streaming mode is the right choice. This is the fundamental difference between Ranking
+ * fns and UDAFs: Ranking functions keep the original data intact whereas UDAF only return aggregate
+ * information.
+ * 
+ * Finally we have provided a 'mixed' mode where a non Streaming TableFunction can provide its output
+ * as an Iterator. As far as we can tell, this is a special case for Windowing handling. If Windowing
+ * is the only or last TableFunction in a chain, it makes no sense to collect the output rows into a 
+ * output Partition. We justify the pollution of the api by the observation that Windowing is a very 
+ * common use case.
+ * 
+ */
 
 /**
  * Based on Hive {@link GenericUDAFEvaluator}. Break up the responsibility of the old AsbtractTableFunction
@@ -66,7 +93,6 @@ public abstract class TableFunctionEvaluator {
   transient protected PTFPartition outputPartition;
 
   static {
-    //TODO is this a bug? The field is not named outputOI it is named OI
     PTFUtils.makeTransient(TableFunctionEvaluator.class, "outputOI", "rawInputOI");
   }
 
@@ -112,6 +138,9 @@ public abstract class TableFunctionEvaluator {
 
   public PTFPartition execute(PTFPartition iPart)
       throws HiveException {
+    if ( ptfDesc.isMapSide() ) {
+      return transformRawInput(iPart);
+    }
     PTFPartitionIterator<Object> pItr = iPart.iterator();
     PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
 
@@ -129,7 +158,7 @@ public abstract class TableFunctionEvaluator {
 
   protected abstract void execute(PTFPartitionIterator<Object> pItr, PTFPartition oPart) throws HiveException;
 
-  public PTFPartition transformRawInput(PTFPartition iPart) throws HiveException {
+  protected PTFPartition transformRawInput(PTFPartition iPart) throws HiveException {
     if (!isTransformsRawInput()) {
       throw new HiveException(String.format("Internal Error: mapExecute called on function (%s)that has no Map Phase", tableDef.getName()));
     }
@@ -152,6 +181,11 @@ public abstract class TableFunctionEvaluator {
   }
 
   public Iterator<Object> iterator(PTFPartitionIterator<Object> pItr) throws HiveException {
+    
+    if ( ptfDesc.isMapSide() ) {
+      return transformRawInputIterator(pItr);
+    }
+    
     if (!canIterateOutput()) {
       throw new HiveException(
           "Internal error: iterator called on a PTF that cannot provide its output as an Iterator");
@@ -161,7 +195,7 @@ public abstract class TableFunctionEvaluator {
         getClass().getName()));
   }
   
-  public Iterator<Object> transformRawInputIterator(PTFPartitionIterator<Object> pItr) throws HiveException {
+  protected Iterator<Object> transformRawInputIterator(PTFPartitionIterator<Object> pItr) throws HiveException {
     if (!canIterateOutput()) {
       throw new HiveException(
           "Internal error: iterator called on a PTF that cannot provide its output as an Iterator");
@@ -169,6 +203,46 @@ public abstract class TableFunctionEvaluator {
     throw new HiveException(String.format(
         "Internal error: PTF %s, provides no iterator method",
         getClass().getName()));
+  }
+  
+  /*
+   * A TableFunction may be able to accept its input as a stream.
+   * In this case the contract is:
+   * - startPartition must be invoked to give the PTF a chance to initialize stream processing.
+   * - each input row is passed in via a processRow(or processRows) invocation. processRow 
+   *   can return 0 or more o/p rows.
+   * - finishPartition is invoked to give the PTF a chance to finish processing and return any 
+   *   remaining o/p rows.
+   */
+  public boolean canAcceptInputAsStream() {
+    return false;
+  }
+  
+  public void startPartition() throws HiveException {
+    if (!canAcceptInputAsStream() ) {
+      throw new HiveException(String.format(
+          "Internal error: PTF %s, doesn't support Streaming",
+          getClass().getName()));
+    }
+  }
+  
+  public List<Object> processRow(Object row) throws HiveException {
+    if (!canAcceptInputAsStream() ) {
+      throw new HiveException(String.format(
+          "Internal error: PTF %s, doesn't support Streaming",
+          getClass().getName()));
+    }
+    
+    return null;
+  }
+  
+  public List<Object> finishPartition() throws HiveException {
+    if (!canAcceptInputAsStream() ) {
+      throw new HiveException(String.format(
+          "Internal error: PTF %s, doesn't support Streaming",
+          getClass().getName()));
+    }
+    return null;
   }
 
   public void close() {

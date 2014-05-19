@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
@@ -30,7 +28,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDeserializer;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -49,14 +46,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 public class PTFOperator extends Operator<PTFDesc> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	PTFPartition inputPart;
 	boolean isMapOperator;
 
 	transient KeyWrapperFactory keyWrapperFactory;
 	protected transient KeyWrapper currentKeys;
 	protected transient KeyWrapper newKeys;
+	/*
+	 * for map-side invocation of PTFs, we cannot utilize the currentkeys null check
+	 * to decide on invoking startPartition in streaming mode. Hence this extra flag. 
+	 */
+	transient boolean firstMapRow;
 	transient Configuration hiveConf;
-
+	transient PTFInvocation ptfInvocation;
 
 	/*
 	 * 1. Find out if the operator is invoked at Map-Side or Reduce-side
@@ -67,12 +68,10 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
 	@Override
 	protected void initializeOp(Configuration jobConf) throws HiveException {
 		hiveConf = jobConf;
-    // if the parent is ExtractOperator, this invocation is from reduce-side
-		Operator<? extends OperatorDesc> parentOp = getParentOperators().get(0);
+		// if the parent is ExtractOperator, this invocation is from reduce-side
 		isMapOperator = conf.isMapSide();
 
 		reconstructQueryDef(hiveConf);
-    inputPart = createFirstPartitionForChain(inputObjInspectors[0], isMapOperator);
 
 		if (isMapOperator) {
 			PartitionedTableFunctionDef tDef = conf.getStartOfChain();
@@ -82,6 +81,9 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
 		}
 
 		setupKeysWrapper(inputObjInspectors[0]);
+		
+		ptfInvocation = setupChain();
+		firstMapRow = true;
 
 		super.initializeOp(jobConf);
 	}
@@ -89,21 +91,8 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
 	@Override
 	protected void closeOp(boolean abort) throws HiveException {
 		super.closeOp(abort);
-    if(inputPart.size() != 0){
-      if (isMapOperator) {
-        processMapFunction();
-      } else {
-        processInputPartition();
-      }
-    }
-    inputPart.close();
-    inputPart = null;
-
-    for (PTFInputDef iDef = conf.getFuncDef(); iDef != null; iDef = iDef.getInput()) {
-      if (iDef instanceof PartitionedTableFunctionDef) {
-        ((PartitionedTableFunctionDef)iDef).getTFunction().close();
-      }
-    }
+    ptfInvocation.finishPartition();
+    ptfInvocation.close();
   }
 
 	@Override
@@ -117,26 +106,28 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
        *  - reset input Partition
        * - set currentKey to the newKey if it is null or has changed.
        */
-      newKeys.getNewKey(row, inputPart.getInputOI());
+      newKeys.getNewKey(row, inputObjInspectors[0]);
       boolean keysAreEqual = (currentKeys != null && newKeys != null)?
               newKeys.equals(currentKeys) : false;
 
       if (currentKeys != null && !keysAreEqual) {
-        processInputPartition();
-        inputPart.reset();
+        ptfInvocation.finishPartition();
       }
 
       if (currentKeys == null || !keysAreEqual) {
+        ptfInvocation.startPartition();
         if (currentKeys == null) {
           currentKeys = newKeys.copyKey();
         } else {
           currentKeys.copyKey(newKeys);
         }
       }
+    } else if ( firstMapRow ) {
+      ptfInvocation.startPartition();
+      firstMapRow = false;
     }
 
-    // add row to current Partition.
-    inputPart.append(row);
+    ptfInvocation.processRow(row);
 	}
 
 	/**
@@ -179,28 +170,6 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
 	  newKeys = keyWrapperFactory.getKeyWrapper();
 	}
 
-	protected void processInputPartition() throws HiveException {
-    Iterator<Object> pItr = executeChain(inputPart);
-
-    while (pItr.hasNext()) {
-      Object oRow = pItr.next();
-      forward(oRow, outputObjInspector);
-    }
-	}
-
-	protected void processMapFunction() throws HiveException {
-	  PartitionedTableFunctionDef tDef = conf.getStartOfChain();
-
-    Iterator<Object> pItr = tDef.getTFunction().canIterateOutput() ?
-        tDef.getTFunction().transformRawInputIterator(inputPart.iterator()) :
-          tDef.getTFunction().transformRawInput(inputPart).iterator();
-
-    while (pItr.hasNext()) {
-      Object oRow = pItr.next();
-      forward(oRow, outputObjInspector);
-    }
-	}
-
 	/**
 	 * @return the name of the operator
 	 */
@@ -218,19 +187,8 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
 	public OperatorType getType() {
 		return OperatorType.PTF;
 	}
-
-	 /**
-   * For all the table functions to be applied to the input
-   * hive table or query, push them on a stack.
-   * For each table function popped out of the stack,
-   * execute the function on the input partition
-   * and return an output partition.
-   * @param part
-   * @return
-   * @throws HiveException
-   */
-  private Iterator<Object> executeChain(PTFPartition part)
-      throws HiveException {
+  
+  private PTFInvocation setupChain() {
     Stack<PartitionedTableFunctionDef> fnDefs = new Stack<PartitionedTableFunctionDef>();
     PTFInputDef iDef = conf.getFuncDef();
 
@@ -238,62 +196,17 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
       fnDefs.push((PartitionedTableFunctionDef) iDef);
       iDef = ((PartitionedTableFunctionDef) iDef).getInput();
     }
-
-    PartitionedTableFunctionDef currFnDef;
-    int i = fnDefs.size();
-    while (i > 1) {
-      currFnDef = fnDefs.pop();
-      part = currFnDef.getTFunction().execute(part);
-      i--;
+    
+    PTFInvocation curr = null, first = null;
+    
+    while(!fnDefs.isEmpty()) {
+      PartitionedTableFunctionDef currFn = fnDefs.pop();
+      curr = new PTFInvocation(curr, currFn.getTFunction());
+      if ( first == null ) {
+        first = curr;
+      }
     }
-
-    currFnDef = fnDefs.pop();
-    if (!currFnDef.getTFunction().canIterateOutput()) {
-      part = currFnDef.getTFunction().execute(part);
-      return part.iterator();
-    } else {
-      return currFnDef.getTFunction().iterator(part.iterator());
-    }
-
-  }
-
-
-  /**
-   * Create a new Partition.
-   * A partition has 2 OIs: the OI for the rows being put in and the OI for the rows
-   * coming out. You specify the output OI by giving the Serde to use to Serialize.
-   * Typically these 2 OIs are the same; but not always. For the
-   * first PTF in a chain the OI of the incoming rows is dictated by the Parent Op
-   * to this PTFOp. The output OI from the Partition is typically LazyBinaryStruct, but
-   * not always. In the case of Noop/NoopMap we keep the Strcuture the same as
-   * what is given to us.
-   * <p>
-   * The Partition we want to create here is for feeding the First table function in the chain.
-   * So for map-side processing use the Serde from the output Shape its InputDef.
-   * For reduce-side processing use the Serde from its RawInputShape(the shape
-   * after map-side processing).
-   * @param oi
-   * @param hiveConf
-   * @param isMapSide
-   * @return
-   * @throws HiveException
-   */
-  public PTFPartition createFirstPartitionForChain(ObjectInspector oi,
-    boolean isMapSide) throws HiveException {
-    PartitionedTableFunctionDef tabDef = conf.getStartOfChain();
-
-    PTFPartition part = null;
-    SerDe serde = isMapSide ? tabDef.getInput().getOutputShape().getSerde() :
-      tabDef.getRawInputShape().getSerde();
-    StructObjectInspector outputOI = isMapSide ? tabDef.getInput().getOutputShape().getOI() :
-      tabDef.getRawInputShape().getOI();
-    part = PTFPartition.create(conf.getCfg(),
-        serde,
-        (StructObjectInspector) oi,
-        outputOI);
-
-    return part;
-
+    return first;
   }
 
   public static void connectLeadLagFunctionsToPartition(PTFDesc ptfDesc,
@@ -308,5 +221,190 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
       llFn.setpItr(pItr);
     }
   }
+  
+  /*
+   * Responsible for the flow of rows through the PTF Chain.
+   * An Invocation wraps a TableFunction. 
+   * The PTFOp hands the chain each row through the processRow call. 
+   * It also notifies the chain of when a Partition starts/finishes.
+   * 
+   * There are several combinations depending
+   * whether the TableFunction and its successor support Streaming or Batch mode.
+   * 
+   * Combination 1: Streaming + Streaming
+   * - Start Partition: invoke startPartition on tabFn.
+   * - Process Row: invoke process Row on tabFn. 
+   *   Any output rows hand to next tabFn in chain or forward to next Operator.
+   * - Finish Partition: invoke finishPartition on tabFn.
+   *   Any output rows hand to next tabFn in chain or forward to next Operator.
+   *   
+   * Combination 2: Streaming + Batch
+   * same as Combination 1
+   * 
+   * Combination 3: Batch + Batch
+   * - Start Partition: create or reset the Input Partition for the tabFn
+   *   caveat is: if prev is also batch and it is not providing an Output Iterator
+   *   then we can just use its Output Partition.
+   * - Process Row: collect row in Input Partition
+   * - Finish Partition : invoke evaluate on tabFn on Input Partition
+   *   If function gives an Output Partition: set it on next Invocation's Input Partition
+   *   If function gives an Output Iterator: iterate and call processRow on next Invocation.
+   *   For last Invocation in chain: forward rows to next Operator.
+   *   
+   * Combination 3: Batch + Stream
+   * Similar to Combination 3, except Finish Partition behavior slightly different
+   * - Finish Partition : invoke evaluate on tabFn on Input Partition
+   *   iterate output rows: hand to next tabFn in chain or forward to next Operator.
+   * 
+   */
+  class PTFInvocation {
+    
+    PTFInvocation prev;
+    PTFInvocation next;
+    TableFunctionEvaluator tabFn;
+    PTFPartition inputPart;
+    PTFPartition outputPart;
+    Iterator<Object> outputPartRowsItr;
+    
+    public PTFInvocation(PTFInvocation prev, TableFunctionEvaluator tabFn) {
+      this.prev = prev;
+      this.tabFn = tabFn;
+      if ( prev != null ) {
+        prev.next = this;
+      }
+    }
+    
+    boolean isOutputIterator() {
+      return tabFn.canAcceptInputAsStream() || tabFn.canIterateOutput();
+    }
+    
+    boolean isStreaming() {
+      return tabFn.canAcceptInputAsStream();
+    }
+    
+    void startPartition() throws HiveException {
+      if ( isStreaming() ) {
+        tabFn.startPartition();
+      } else {
+        if ( prev == null || prev.isOutputIterator() ) {
+          if ( inputPart == null ) {
+            createInputPartition();
+          } else {
+            inputPart.reset();
+          }
+        }
+      }
+      if ( next != null ) {
+        next.startPartition();
+      }
+    }
+    
+    void processRow(Object row) throws HiveException {
+      if ( isStreaming() ) {
+        if ( prev == null ) {
+          /*
+           * this is needed because during Translation we are still assuming that rows
+           * are collected into a PTFPartition.
+           * @Todo make translation handle the case when the first PTF is Streaming.
+           */
+          row = ObjectInspectorUtils.copyToStandardObject(row, inputObjInspectors[0], 
+              ObjectInspectorCopyOption.WRITABLE);
+        }
+        handleOutputRows(tabFn.processRow(row));
+      } else {
+        inputPart.append(row);
+      }
+    }
+    
+    void handleOutputRows(List<Object> outRows) throws HiveException {
+      if ( outRows != null ) {
+        for (Object orow : outRows ) {
+          if ( next != null ) {
+            next.processRow(orow);
+          } else {
+            forward(orow, outputObjInspector);
+          }
+        }
+      }
+    }
+    
+    void finishPartition() throws HiveException {
+      if ( isStreaming() ) {
+        handleOutputRows(tabFn.finishPartition());
+      } else {
+        if ( tabFn.canIterateOutput() ) {
+          outputPartRowsItr = tabFn.iterator(inputPart.iterator());
+        } else {
+          outputPart = tabFn.execute(inputPart);
+          outputPartRowsItr = outputPart.iterator();
+        }
+        if ( next != null ) {
+          if (!next.isStreaming() && !isOutputIterator() ) {
+            next.inputPart = outputPart;
+          } else {
+            while(outputPartRowsItr.hasNext() ) {
+              next.processRow(outputPartRowsItr.next());
+            }
+          }
+        }
+      }
+      
+      if ( next != null ) {
+        next.finishPartition();
+      } else {
+        if (!isStreaming() ) {
+          while(outputPartRowsItr.hasNext() ) {
+            forward(outputPartRowsItr.next(), outputObjInspector);
+          }
+        }
+      }
+    }
+    
+    /**
+     * Create a new Partition.
+     * A partition has 2 OIs: the OI for the rows being put in and the OI for the rows
+     * coming out. You specify the output OI by giving the Serde to use to Serialize.
+     * Typically these 2 OIs are the same; but not always. For the
+     * first PTF in a chain the OI of the incoming rows is dictated by the Parent Op
+     * to this PTFOp. The output OI from the Partition is typically LazyBinaryStruct, but
+     * not always. In the case of Noop/NoopMap we keep the Strcuture the same as
+     * what is given to us.
+     * <p>
+     * The Partition we want to create here is for feeding the First table function in the chain.
+     * So for map-side processing use the Serde from the output Shape its InputDef.
+     * For reduce-side processing use the Serde from its RawInputShape(the shape
+     * after map-side processing).
+     * @param oi
+     * @param hiveConf
+     * @param isMapSide
+     * @return
+     * @throws HiveException
+     */
+    private void createInputPartition() throws HiveException {
+      PartitionedTableFunctionDef tabDef = tabFn.getTableDef();
+      PTFInputDef inputDef = tabDef.getInput();
+      ObjectInspector inputOI = conf.getStartOfChain() == tabDef ? 
+          inputObjInspectors[0] : inputDef.getOutputShape().getOI();
 
+      SerDe serde = conf.isMapSide() ? tabDef.getInput().getOutputShape().getSerde() :
+        tabDef.getRawInputShape().getSerde();
+      StructObjectInspector outputOI = conf.isMapSide() ? tabDef.getInput().getOutputShape().getOI() :
+        tabDef.getRawInputShape().getOI();
+      inputPart = PTFPartition.create(conf.getCfg(),
+          serde,
+          (StructObjectInspector) inputOI,
+          outputOI);
+    }
+    
+    void close() {
+      if ( inputPart != null ) {
+        inputPart.close();
+      }
+      tabFn.close();
+      if ( next != null ) {
+        next.close();
+      }
+    }
+  }
+  
 }
