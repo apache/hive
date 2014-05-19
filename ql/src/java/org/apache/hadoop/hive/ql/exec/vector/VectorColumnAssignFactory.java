@@ -473,7 +473,7 @@ public class VectorColumnAssignFactory {
   public static VectorColumnAssign[] buildAssigners(VectorizedRowBatch outputBatch,
       Writable[] writables) throws HiveException {
     VectorColumnAssign[] vcas = new VectorColumnAssign[outputBatch.numCols];
-    for (int i = 0; i < outputBatch.numCols; ++i) {
+    for (int i = 0; i < writables.length; ++i) {
       if (writables[i] == null) {
         assert(outputBatch.cols[i] == null);
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.VOID);
