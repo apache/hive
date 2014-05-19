@@ -55,9 +55,10 @@ public class TestConfiguration {
   private static final String JIRA_USER = "jiraUser";
   private static final String JIRA_PASSWORD = "jiraPassword";
   private static final String JENKINS_URL = "jenkinsURL";
+  private static final String LOGS_URL = "logsURL";
   private static final String TEST_CASE_PROPERTY_NAME = "testCasePropertyName";
   private static final String BUILD_TOOL = "buildTool";
-  
+
   private final Context context;
   private String antArgs;
   private String antTestArgs;
@@ -75,6 +76,7 @@ public class TestConfiguration {
   private String javaHomeForTests;
   private String branch;
   private final String jenkinsURL;
+  private final String logsURL;
   private final String jiraUrl;
   private final String jiraUser;
   private final String jiraPassword;
@@ -118,6 +120,7 @@ public class TestConfiguration {
     jiraUser = context.getString(JIRA_USER, "").trim();
     jiraPassword = context.getString(JIRA_PASSWORD, "").trim();
     jenkinsURL = context.getString(JENKINS_URL, "https://builds.apache.org/job").trim();
+    logsURL = context.getString(LOGS_URL, "").trim();
     testCasePropertyName = context.getString(TEST_CASE_PROPERTY_NAME, "testcase").trim();
   }
   public Context getContext() {
@@ -125,6 +128,9 @@ public class TestConfiguration {
   }
   public String getJenkinsURL() {
     return jenkinsURL;
+  }
+  public String getLogsURL() {
+    return logsURL;
   }
   public String getJiraName() {
     return jiraName;
