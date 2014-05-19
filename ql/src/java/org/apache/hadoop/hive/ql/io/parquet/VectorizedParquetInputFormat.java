@@ -127,7 +127,7 @@ public class VectorizedParquetInputFormat extends FileInputFormat<NullWritable, 
             assigners = VectorColumnAssignFactory.buildAssigners(outputBatch, writables);
           }
 
-          for(int i = 0; i < outputBatch.numCols; ++i) {
+          for(int i = 0; i < writables.length; ++i) {
             assigners[i].assignObjectValue(writables[i], outputBatch.size);
           }
           ++outputBatch.size;
