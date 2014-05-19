@@ -10,7 +10,7 @@ select
   ,Round(cdecimal1)
   ,Floor(cdecimal1)
   ,Ceil(cdecimal1)
-  ,Exp(cdecimal1)
+  ,round(Exp(cdecimal1), 58)
   ,Ln(cdecimal1)  
   ,Log10(cdecimal1)
   -- Use log2 as a representative function to test all input types.
@@ -46,7 +46,7 @@ select
   ,Round(cdecimal1)
   ,Floor(cdecimal1)
   ,Ceil(cdecimal1)
-  ,Exp(cdecimal1)
+  ,round(Exp(cdecimal1), 58)
   ,Ln(cdecimal1)  
   ,Log10(cdecimal1)
   -- Use log2 as a representative function to test all input types.
