@@ -69,6 +69,7 @@ class JIRAService {
   private final String mUser;
   private final String mPassword;
   private final String mJenkinsURL;
+  private final String mLogsURL;
 
   public JIRAService(Logger logger, TestConfiguration configuration, String buildTag) {
     mLogger = logger;
@@ -79,6 +80,7 @@ class JIRAService {
     mUser = configuration.getJiraUser();
     mPassword = configuration.getJiraPassword();
     mJenkinsURL = configuration.getJenkinsURL();
+    mLogsURL = configuration.getLogsURL();
   }
 
   void postComment(boolean error, int numTestsExecuted, SortedSet<String> failedTests,
@@ -86,6 +88,7 @@ class JIRAService {
     DefaultHttpClient httpClient = new DefaultHttpClient();
     try {
       String buildTag = formatBuildTag(mBuildTag);
+      String buildTagForLogs = formatBuildTagForLogs(mBuildTag);
       List<String> comments = Lists.newArrayList();
       comments.add("");
       comments.add("");
@@ -119,6 +122,7 @@ class JIRAService {
       }
       comments.add("Test results: " + mJenkinsURL + "/" + buildTag + "/testReport");
       comments.add("Console output: " + mJenkinsURL + "/" + buildTag + "/console");
+      comments.add("Test logs: " + mLogsURL + buildTagForLogs);
       comments.add("");
       if(!messages.isEmpty()) {
         comments.add("Messages:");
@@ -202,6 +206,13 @@ class JIRAService {
     }
     throw new IllegalArgumentException("Build tag '" + buildTag + "' must contain a -");
   }
+  static String formatBuildTagForLogs(String buildTag) {
+    if (buildTag.endsWith("/")) {
+      return buildTag;
+    } else {
+      return buildTag + "/";
+    }
+  }
   private static String formatError(String msg) {
     return String.format("{color:red}ERROR:{color} %s", msg);
   }
@@ -255,6 +266,7 @@ class JIRAService {
     context.put("repository", "repo");
     context.put("repositoryName", "repoName");
     context.put("antArgs", "-Dsome=thing");
+    context.put("logsURL", "http://ec2-174-129-184-35.compute-1.amazonaws.com/logs");
     TestConfiguration configuration = new TestConfiguration(new Context(context), logger);
     configuration.setJiraName("HIVE-4892");
     JIRAService service = new JIRAService(logger, configuration, "test-123");
