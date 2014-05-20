@@ -1431,10 +1431,6 @@ public final class Utilities {
     }
 
     String file = path.makeQualified(fs).toString();
-    // For compatibility with hadoop 0.17, change file:/a/b/c to file:///a/b/c
-    if (StringUtils.startsWith(file, "file:/") && !StringUtils.startsWith(file, "file:///")) {
-      file = "file:///" + file.substring("file:/".length());
-    }
     return file;
   }
 
@@ -1936,6 +1932,26 @@ public final class Utilities {
   }
 
   /**
+   * Create a URL from a string representing a path to a local file.
+   * The path string can be just a path, or can start with file:/, file:///
+   * @param onestr  path string
+   * @return
+   */
+  private static URL urlFromPathString(String onestr) {
+    URL oneurl = null;
+    try {
+      if (StringUtils.indexOf(onestr, "file:/") == 0) {
+        oneurl = new URL(onestr);
+      } else {
+        oneurl = new File(onestr).toURL();
+      }
+    } catch (Exception err) {
+      LOG.error("Bad URL " + onestr + ", ignoring path");
+    }
+    return oneurl;
+  }
+
+  /**
    * Add new elements to the classpath.
    *
    * @param newPaths
@@ -1953,13 +1969,8 @@ public final class Utilities {
     curPath = newPath;
 
     for (String onestr : newPaths) {
-      // special processing for hadoop-17. file:// needs to be removed
-      if (StringUtils.indexOf(onestr, "file://") == 0) {
-        onestr = StringUtils.substring(onestr, 7);
-      }
-
-      URL oneurl = (new File(onestr)).toURL();
-      if (!curPath.contains(oneurl)) {
+      URL oneurl = urlFromPathString(onestr);
+      if (oneurl != null && !curPath.contains(oneurl)) {
         curPath.add(oneurl);
       }
     }
@@ -1979,13 +1990,10 @@ public final class Utilities {
     Set<URL> newPath = new HashSet<URL>(Arrays.asList(loader.getURLs()));
 
     for (String onestr : pathsToRemove) {
-      // special processing for hadoop-17. file:// needs to be removed
-      if (StringUtils.indexOf(onestr, "file://") == 0) {
-        onestr = StringUtils.substring(onestr, 7);
+      URL oneurl = urlFromPathString(onestr);
+      if (oneurl != null) {
+        newPath.remove(oneurl);
       }
-
-      URL oneurl = (new File(onestr)).toURL();
-      newPath.remove(oneurl);
     }
 
     loader = new URLClassLoader(newPath.toArray(new URL[0]));
