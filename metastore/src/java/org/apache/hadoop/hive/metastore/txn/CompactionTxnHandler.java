@@ -168,7 +168,7 @@ public class CompactionTxnHandler extends TxnHandler {
         }
 
         // Now, update this record as being worked on by this worker.
-        long now = System.currentTimeMillis();
+        long now = getDbTime(dbConn);
         s = "update COMPACTION_QUEUE set cq_worker_id = '" + workerId + "', " +
             "cq_start = " + now + ", cq_state = '" + WORKING_STATE + "' where cq_id = " + info.id;
         LOG.debug("Going to execute update <" + s + ">");
@@ -485,7 +485,7 @@ public class CompactionTxnHandler extends TxnHandler {
   public void revokeTimedoutWorkers(long timeout) throws MetaException {
     try {
       Connection dbConn = getDbConn();
-      long latestValidStart = System.currentTimeMillis() - timeout;
+      long latestValidStart = getDbTime(dbConn) - timeout;
       try {
         Statement stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set cq_worker_id = null, cq_start = null, cq_state = '"
