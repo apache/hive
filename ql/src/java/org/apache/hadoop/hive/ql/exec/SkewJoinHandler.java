@@ -317,8 +317,6 @@ public class SkewJoinHandler {
     Path outPath = getOperatorOutputPath(specPath);
     Path finalPath = getOperatorFinalPath(specPath);
     FileSystem fs = outPath.getFileSystem(hconf);
-    // for local file system in Hadoop-0.17.2.1, it will throw IOException when
-    // file not existing.
     try {
       if (!fs.rename(outPath, finalPath)) {
         throw new IOException("Unable to rename output to: " + finalPath);
@@ -327,11 +325,6 @@ public class SkewJoinHandler {
       if (!ignoreNonExisting) {
         throw e;
       }
-    } catch (IOException e) {
-      if (!fs.exists(outPath) && ignoreNonExisting) {
-        return;
-      }
-      throw e;
     }
   }
 

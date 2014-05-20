@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -334,19 +334,9 @@ public class LazySimpleSerDe extends AbstractSerDe {
     if (byteArrayRef == null) {
       byteArrayRef = new ByteArrayRef();
     }
-    if (field instanceof BytesWritable) {
-      BytesWritable b = (BytesWritable) field;
-      // For backward-compatibility with hadoop 0.17
-      byteArrayRef.setData(b.getBytes());
-      cachedLazyStruct.init(byteArrayRef, 0, b.getLength());
-    } else if (field instanceof Text) {
-      Text t = (Text) field;
-      byteArrayRef.setData(t.getBytes());
-      cachedLazyStruct.init(byteArrayRef, 0, t.getLength());
-    } else {
-      throw new SerDeException(getClass().toString()
-          + ": expects either BytesWritable or Text object!");
-    }
+    BinaryComparable b = (BinaryComparable) field;
+    byteArrayRef.setData(b.getBytes());
+    cachedLazyStruct.init(byteArrayRef, 0, b.getLength());
     lastOperationSerialize = false;
     lastOperationDeserialize = true;
     return cachedLazyStruct;

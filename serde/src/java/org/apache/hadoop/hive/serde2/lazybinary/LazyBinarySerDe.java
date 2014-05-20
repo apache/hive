@@ -162,25 +162,12 @@ public class LazyBinarySerDe extends AbstractSerDe {
     if (byteArrayRef == null) {
       byteArrayRef = new ByteArrayRef();
     }
-    if (field instanceof BinaryComparable) {
-      BinaryComparable b = (BinaryComparable) field;
-      if (b.getLength() == 0) {
-        return null;
-      }
-      // For backward-compatibility with hadoop 0.17
-      byteArrayRef.setData(b.getBytes());
-      cachedLazyBinaryStruct.init(byteArrayRef, 0, b.getLength());
-    } else if (field instanceof Text) {
-      Text t = (Text) field;
-      if (t.getLength() == 0) {
-        return null;
-      }
-      byteArrayRef.setData(t.getBytes());
-      cachedLazyBinaryStruct.init(byteArrayRef, 0, t.getLength());
-    } else {
-      throw new SerDeException(getClass().toString()
-          + ": expects either BinaryComparable or Text object!");
+    BinaryComparable b = (BinaryComparable) field;
+    if (b.getLength() == 0) {
+      return null;
     }
+    byteArrayRef.setData(b.getBytes());
+    cachedLazyBinaryStruct.init(byteArrayRef, 0, b.getLength());
     lastOperationSerialize = false;
     lastOperationDeserialize = true;
     return cachedLazyBinaryStruct;
