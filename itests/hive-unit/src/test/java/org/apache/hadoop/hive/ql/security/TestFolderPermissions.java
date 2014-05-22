@@ -224,6 +224,48 @@ public class TestFolderPermissions {
   }
 
   @Test
+  public void testInsertOverwrite() throws Exception {
+    //case 1 is non-partitioned table.
+    String tableName = "insertoverwrite";
+
+    CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key string, value string)");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    String tableLoc = testDir + "/" + tableName;
+    assertExistence(testDir + "/" + tableName);
+    setPermissions(testDir + "/" + tableName, FsPermission.createImmutable((short) 0777));
+
+    ret = driver.run("insert overwrite table " + tableName + " select key,value from mysrc");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    Assert.assertTrue(listChildrenPerms(tableLoc).size() > 0);
+    for (FsPermission perm : listChildrenPerms(tableLoc)) {
+      Assert.assertEquals("rwxrwxrwx", perm.toString());
+    }
+
+    //case 2 is partitioned table.
+    tableName = "insertoverwritepartition";
+
+    ret = driver.run("CREATE TABLE " + tableName + " (key string, value string) partitioned by (part1 int, part2 int)");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    ret = driver.run("insert overwrite table " + tableName + " partition(part1='1',part2='1') select key,value from mysrc");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    String partLoc = testDir + "/" + tableName + "/part1=1/part2=1";
+    assertExistence(partLoc);
+    setPermissions(partLoc, FsPermission.createImmutable((short) 0777));
+
+    ret = driver.run("insert overwrite table " + tableName + " partition(part1='1',part2='1') select key,value from mysrc");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    Assert.assertTrue(listChildrenPerms(tableLoc).size() > 0);
+    for (FsPermission perm : listChildrenPerms(tableLoc)) {
+      Assert.assertEquals("rwxrwxrwx", perm.toString());
+    }
+  }
+
+  @Test
   public void testEximPermissionInheritance() throws Exception {
 
     //export the table to external file.
