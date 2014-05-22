@@ -191,6 +191,19 @@ public class TestBeeLineWithArgs {
     }
     scriptFile.delete();
   }
+  
+  /**
+   * Test that BeeLine will read comment lines that start with whitespace
+   * @throws Throwable
+   */
+  @Test
+  public void testWhitespaceBeforeCommentScriptFile() throws Throwable {
+	  final String TEST_NAME = "testWhitespaceBeforeCommentScriptFile";
+	  final String SCRIPT_TEXT = " 	 	-- comment has spaces and tabs before it\n 	 	# comment has spaces and tabs before it\n";
+	  final String EXPECTED_PATTERN = "cannot recognize input near '<EOF>'";
+	  List<String> argList = getBaseArgs(JDBC_URL);
+	  testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, false, argList);
+  }
 
   /**
    * Attempt to execute a simple script file with the -f option to BeeLine
