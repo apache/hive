@@ -39,6 +39,8 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 
@@ -48,6 +50,19 @@ import org.apache.hadoop.util.Shell;
  */
 public final class FileUtils {
   private static final Log LOG = LogFactory.getLog(FileUtils.class.getName());
+
+  /**
+   * Accept all paths.
+   */
+  private static class AcceptAllPathFilter implements PathFilter {
+    @Override
+    public boolean accept(Path path) {
+      return true;
+    }
+  }
+
+  private static final PathFilter allPathFilter = new AcceptAllPathFilter();
+
   /**
    * Variant of Path.makeQualified that qualifies the input path against the default file system
    * indicated by the configuration
@@ -524,4 +539,53 @@ public final class FileUtils {
     }
     return copied;
   }
+
+  /**
+   * Deletes all files under a directory, sending them to the trash.  Leaves the directory as is.
+   * @param fs FileSystem to use
+   * @param f path of directory
+   * @param conf hive configuration
+   * @return true if deletion successful
+   * @throws FileNotFoundException
+   * @throws IOException
+   */
+  public static boolean trashFilesUnderDir(FileSystem fs, Path f, Configuration conf) throws FileNotFoundException, IOException {
+    FileStatus[] statuses = fs.listStatus(f, allPathFilter);
+    boolean result = true;
+    for (FileStatus status : statuses) {
+      result = result & moveToTrash(fs, status.getPath(), conf);
+    }
+    return result;
+  }
+
+  /**
+   * Move a particular file or directory to the trash.
+   * @param fs FileSystem to use
+   * @param f path of file or directory to move to trash.
+   * @param conf
+   * @return true if move successful
+   * @throws IOException
+   */
+  public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf) throws IOException {
+    LOG.info("deleting  " + f);
+    HadoopShims hadoopShim = ShimLoader.getHadoopShims();
+
+    boolean skipTrash = HiveConf.getBoolVar(conf,
+        HiveConf.ConfVars.HIVE_WAREHOUSE_DATA_SKIPTRASH);
+
+    if (skipTrash) {
+      LOG.info("Not moving "+ f +" to trash due to configuration " +
+        HiveConf.ConfVars.HIVE_WAREHOUSE_DATA_SKIPTRASH + " is set to true.");
+    } else if (hadoopShim.moveToAppropriateTrash(fs, f, conf)) {
+      LOG.info("Moved to trash: " + f);
+      return true;
+    }
+
+    boolean result = fs.delete(f, true);
+    if (!result) {
+      LOG.error("Failed to delete " + f);
+    }
+    return result;
+  }
+
 }

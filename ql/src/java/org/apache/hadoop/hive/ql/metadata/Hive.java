@@ -2392,16 +2392,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
         try {
           FileSystem fs2 = oldPath.getFileSystem(conf);
           if (fs2.exists(oldPath)) {
-            // use FsShell to move data to .Trash first rather than delete permanently
-            FsShell fshell = new FsShell();
-            fshell.setConf(conf);
-            String[] rmr = isHadoop1() ? new String[]{"-rmr", oldPath.toString()} :
-                new String[]{"-rm", "-r", oldPath.toString()};
-            fshell.run(rmr);
+            FileUtils.trashFilesUnderDir(fs2, oldPath, conf);
           }
         } catch (Exception e) {
           //swallow the exception
-          LOG.warn("Directory " + oldPath.toString() + " canot be removed.");
+          LOG.warn("Directory " + oldPath.toString() + " canot be removed:" + StringUtils.stringifyException(e));
         }
       }
 
