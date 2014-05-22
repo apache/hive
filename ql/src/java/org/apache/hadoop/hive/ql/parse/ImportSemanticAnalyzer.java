@@ -18,11 +18,24 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -35,20 +48,21 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
+import org.apache.hadoop.hive.ql.plan.CopyWork;
+import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
+import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
 
 /**
  * ImportSemanticAnalyzer.
@@ -82,6 +96,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       List<AddPartitionDesc> partitionDescs = new ArrayList<AddPartitionDesc>();
       Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(),
           fromURI.getPath());
+      boolean isLocal = FileUtils.isLocalFile(conf, fromURI);
+      inputs.add(new ReadEntity(fromPath, isLocal));
       try {
         Path metadataPath = new Path(fromPath, METADATA_NAME);
         Map.Entry<org.apache.hadoop.hive.metastore.api.Table,
@@ -474,7 +490,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       String importedSerdeFormat = tableDesc.getSerdeProps().get(
           serdeConstants.SERIALIZATION_FORMAT);
       /*
-       * If Imported SerdeFormat is null, then set it to "1" just as 
+       * If Imported SerdeFormat is null, then set it to "1" just as
        * metadata.Table.getEmptyTable
        */
       importedSerdeFormat = importedSerdeFormat == null ? "1" : importedSerdeFormat;

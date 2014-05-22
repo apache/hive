@@ -44,8 +44,10 @@ POSTHOOK: query: use importer
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: import external table exim_department from 'ql/test/data/exports/exim_department'
 PREHOOK: type: IMPORT
+#### A masked pattern was here ####
 POSTHOOK: query: import external table exim_department from 'ql/test/data/exports/exim_department'
 POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
 POSTHOOK: Output: importer@exim_department
 PREHOOK: query: describe extended exim_department
 PREHOOK: type: DESCTABLE

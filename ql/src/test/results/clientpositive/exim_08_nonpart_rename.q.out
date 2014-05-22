@@ -66,8 +66,10 @@ POSTHOOK: Output: importer@exim_department
 POSTHOOK: Output: importer@exim_department@emp_org=hr
 PREHOOK: query: import table exim_imported_dept from 'ql/test/data/exports/exim_department'
 PREHOOK: type: IMPORT
+#### A masked pattern was here ####
 POSTHOOK: query: import table exim_imported_dept from 'ql/test/data/exports/exim_department'
 POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
 POSTHOOK: Output: importer@exim_imported_dept
 PREHOOK: query: describe extended exim_imported_dept
 PREHOOK: type: DESCTABLE
