@@ -1,0 +1,183 @@
+PREHOOK: query: DROP TABLE part
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE part
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- data setup
+CREATE TABLE part( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: -- data setup
+CREATE TABLE part( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@part
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@part
+PREHOOK: query: create table part_dec(
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice decimal(10,3),
+    p_comment STRING
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table part_dec(
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice decimal(10,3),
+    p_comment STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_dec
+PREHOOK: query: insert overwrite table part_dec select * from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Output: default@part_dec
+POSTHOOK: query: insert overwrite table part_dec select * from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Output: default@part_dec
+POSTHOOK: Lineage: part_dec.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_comment SIMPLE [(part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_container SIMPLE [(part)part.FieldSchema(name:p_container, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_partkey SIMPLE [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_retailprice EXPRESSION [(part)part.FieldSchema(name:p_retailprice, type:double, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_type SIMPLE [(part)part.FieldSchema(name:p_type, type:string, comment:null), ]
+PREHOOK: query: select p_mfgr, p_retailprice, 
+first_value(p_retailprice) over(partition by p_mfgr order by p_retailprice) ,
+sum(p_retailprice) over(partition by p_mfgr order by p_retailprice)
+from part_dec
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_dec
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice, 
+first_value(p_retailprice) over(partition by p_mfgr order by p_retailprice) ,
+sum(p_retailprice) over(partition by p_mfgr order by p_retailprice)
+from part_dec
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_dec
+#### A masked pattern was here ####
+POSTHOOK: Lineage: part_dec.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_comment SIMPLE [(part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_container SIMPLE [(part)part.FieldSchema(name:p_container, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_partkey SIMPLE [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_retailprice EXPRESSION [(part)part.FieldSchema(name:p_retailprice, type:double, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_type SIMPLE [(part)part.FieldSchema(name:p_type, type:string, comment:null), ]
+Manufacturer#1	1173.15	1173.15	2346.3
+Manufacturer#1	1173.15	1173.15	2346.3
+Manufacturer#1	1414.42	1173.15	3760.72
+Manufacturer#1	1602.59	1173.15	5363.31
+Manufacturer#1	1632.66	1173.15	6995.97
+Manufacturer#1	1753.76	1173.15	8749.73
+Manufacturer#2	1690.68	1690.68	1690.68
+Manufacturer#2	1698.66	1690.68	3389.34
+Manufacturer#2	1701.6	1690.68	5090.94
+Manufacturer#2	1800.7	1690.68	6891.64
+Manufacturer#2	2031.98	1690.68	8923.62
+Manufacturer#3	1190.27	1190.27	1190.27
+Manufacturer#3	1337.29	1190.27	2527.56
+Manufacturer#3	1410.39	1190.27	3937.95
+Manufacturer#3	1671.68	1190.27	5609.63
+Manufacturer#3	1922.98	1190.27	7532.61
+Manufacturer#4	1206.26	1206.26	1206.26
+Manufacturer#4	1290.35	1206.26	2496.61
+Manufacturer#4	1375.42	1206.26	3872.03
+Manufacturer#4	1620.67	1206.26	5492.7
+Manufacturer#4	1844.92	1206.26	7337.62
+Manufacturer#5	1018.1	1018.1	1018.1
+Manufacturer#5	1464.48	1018.1	2482.58
+Manufacturer#5	1611.66	1018.1	4094.24
+Manufacturer#5	1788.73	1018.1	5882.97
+Manufacturer#5	1789.69	1018.1	7672.66
+PREHOOK: query: select p_mfgr, p_retailprice, 
+first_value(p_retailprice) over(partition by p_mfgr order by p_retailprice range between 5 preceding and current row) ,
+sum(p_retailprice) over(partition by p_mfgr order by p_retailprice range between 5 preceding and current row)
+from part_dec
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_dec
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice, 
+first_value(p_retailprice) over(partition by p_mfgr order by p_retailprice range between 5 preceding and current row) ,
+sum(p_retailprice) over(partition by p_mfgr order by p_retailprice range between 5 preceding and current row)
+from part_dec
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_dec
+#### A masked pattern was here ####
+POSTHOOK: Lineage: part_dec.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_comment SIMPLE [(part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_container SIMPLE [(part)part.FieldSchema(name:p_container, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_partkey SIMPLE [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_retailprice EXPRESSION [(part)part.FieldSchema(name:p_retailprice, type:double, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_type SIMPLE [(part)part.FieldSchema(name:p_type, type:string, comment:null), ]
+Manufacturer#1	1173.15	1173.15	2346.3
+Manufacturer#1	1173.15	1173.15	2346.3
+Manufacturer#1	1414.42	1414.42	1414.42
+Manufacturer#1	1602.59	1602.59	1602.59
+Manufacturer#1	1632.66	1632.66	1632.66
+Manufacturer#1	1753.76	1753.76	1753.76
+Manufacturer#2	1690.68	1690.68	1690.68
+Manufacturer#2	1698.66	1698.66	1698.66
+Manufacturer#2	1701.6	1698.66	3400.26
+Manufacturer#2	1800.7	1800.7	1800.7
+Manufacturer#2	2031.98	2031.98	2031.98
+Manufacturer#3	1190.27	1190.27	1190.27
+Manufacturer#3	1337.29	1337.29	1337.29
+Manufacturer#3	1410.39	1410.39	1410.39
+Manufacturer#3	1671.68	1671.68	1671.68
+Manufacturer#3	1922.98	1922.98	1922.98
+Manufacturer#4	1206.26	1206.26	1206.26
+Manufacturer#4	1290.35	1290.35	1290.35
+Manufacturer#4	1375.42	1375.42	1375.42
+Manufacturer#4	1620.67	1620.67	1620.67
+Manufacturer#4	1844.92	1844.92	1844.92
+Manufacturer#5	1018.1	1018.1	1018.1
+Manufacturer#5	1464.48	1464.48	1464.48
+Manufacturer#5	1611.66	1611.66	1611.66
+Manufacturer#5	1788.73	1788.73	1788.73
+Manufacturer#5	1789.69	1788.73	3578.42
