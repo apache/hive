@@ -143,8 +143,8 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.ALTERTABLE_ADDPARTS, new InOutPrivs(OWNER_INS_SEL_DEL_NOGRANT_AR, INS_NOGRANT_AR));
 
     // select with grant for exporting contents
-    op2Priv.put(HiveOperationType.EXPORT, new InOutPrivs(SEL_GRANT_AR, null));
-    op2Priv.put(HiveOperationType.IMPORT, new InOutPrivs(INS_NOGRANT_AR, null));
+    op2Priv.put(HiveOperationType.EXPORT, new InOutPrivs(SEL_GRANT_AR, OWNER_INS_SEL_DEL_NOGRANT_AR));
+    op2Priv.put(HiveOperationType.IMPORT, new InOutPrivs(OWNER_INS_SEL_DEL_NOGRANT_AR, INS_NOGRANT_AR));
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, new InOutPrivs(SEL_NOGRANT_AR, null));
