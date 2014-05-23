@@ -1247,7 +1247,7 @@ public class Driver implements CommandProcessor {
 
       this.driverCxt = driverCxt; // for canceling the query (should be bound to session?)
 
-      SessionState.get().setLastMapRedStatsList(new ArrayList<MapRedStats>());
+      SessionState.get().setMapRedStats(new LinkedHashMap<String, MapRedStats>());
       SessionState.get().setStackTraces(new HashMap<String, List<List<String>>>());
       SessionState.get().setLocalMapRedErrors(new HashMap<String, List<String>>());
 
@@ -1420,13 +1420,13 @@ public class Driver implements CommandProcessor {
       }
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
-      if (SessionState.get().getLastMapRedStatsList() != null
-          && SessionState.get().getLastMapRedStatsList().size() > 0) {
+      Map<String, MapRedStats> stats = SessionState.get().getMapRedStats();
+      if (stats != null && !stats.isEmpty()) {
         long totalCpu = 0;
         console.printInfo("MapReduce Jobs Launched: ");
-        for (int i = 0; i < SessionState.get().getLastMapRedStatsList().size(); i++) {
-          console.printInfo("Job " + i + ": " + SessionState.get().getLastMapRedStatsList().get(i));
-          totalCpu += SessionState.get().getLastMapRedStatsList().get(i).getCpuMSec();
+        for (Map.Entry<String, MapRedStats> entry : stats.entrySet()) {
+          console.printInfo("Stage-" + entry.getKey() + ": " + entry.getValue());
+          totalCpu += entry.getValue().getCpuMSec();
         }
         console.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
       }

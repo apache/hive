@@ -543,6 +543,19 @@ public class QTestUtil {
         db.dropDatabase(dbName, true, true, true);
       }
     }
+
+    // delete remaining directories for external tables (can affect stats for following tests)
+    try {
+      Path p = new Path(testWarehouse);
+      FileSystem fileSystem = p.getFileSystem(conf);
+      for (FileStatus status : fileSystem.listStatus(p)) {
+        if (status.isDir() && !srcTables.contains(status.getPath().getName())) {
+          fileSystem.delete(status.getPath(), true);
+        }
+      }
+    } catch (IllegalArgumentException e) {
+      // ignore.. provides invalid url sometimes intentionally
+    }
     SessionState.get().setCurrentDatabase(DEFAULT_DATABASE_NAME);
 
     List<String> roleNames = db.getAllRoleNames();
