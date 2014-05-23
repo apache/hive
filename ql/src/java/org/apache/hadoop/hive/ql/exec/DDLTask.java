@@ -42,6 +42,7 @@ import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -2370,7 +2371,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       // Table properties
       String tbl_properties = "";
-      Map<String, String> properties = tbl.getParameters();
+      Map<String, String> properties = new TreeMap<String, String>(tbl.getParameters());
       if (properties.size() > 0) {
         List<String> realProps = new ArrayList<String>();
         for (String key : properties.keySet()) {
@@ -3310,7 +3311,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
       else {
-        Map<String, String> properties = tbl.getParameters();
+        Map<String, String> properties = new TreeMap<String, String>(tbl.getParameters());
         for (Entry<String, String> entry : properties.entrySet()) {
           appendNonNull(builder, entry.getKey(), true);
           appendNonNull(builder, entry.getValue());

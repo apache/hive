@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.exec.TaskHandle;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -550,7 +549,7 @@ public class HadoopJobExecHelper {
     // Not always there is a SessionState. Sometimes ExeDriver is directly invoked
     // for special modes. In that case, SessionState.get() is empty.
     if (SessionState.get() != null) {
-      SessionState.get().getLastMapRedStatsList().add(mapRedStats);
+      SessionState.get().getMapRedStats().put(getId(), mapRedStats);
 
       // Computes the skew for all the MapReduce irrespective
       // of Success or Failure

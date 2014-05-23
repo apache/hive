@@ -94,6 +94,17 @@ public class MapRedStats {
     this.jobId = jobId;
   }
 
+  public String getTaskNumbers() {
+    StringBuilder sb = new StringBuilder();
+    if (numMap > 0) {
+      sb.append("Map: " + numMap + "  ");
+    }
+    if (numReduce > 0) {
+      sb.append("Reduce: " + numReduce + "  ");
+    }
+    return sb.toString();
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
