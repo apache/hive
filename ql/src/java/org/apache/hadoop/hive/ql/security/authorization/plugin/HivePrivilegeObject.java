@@ -48,15 +48,28 @@ public class HivePrivilegeObject {
 
   }
 
-  public enum HivePrivilegeObjectType { DATABASE, TABLE_OR_VIEW, PARTITION, LOCAL_URI, DFS_URI};
+  public enum HivePrivilegeObjectType {
+    DATABASE, TABLE_OR_VIEW, PARTITION, LOCAL_URI, DFS_URI
+  };
+
+  public enum HivePrivObjectActionType {
+    OTHER, INSERT, INSERT_OVERWRITE
+  };
   private final HivePrivilegeObjectType type;
   private final String dbname;
   private final String tableviewname;
+  private final HivePrivObjectActionType actionType;
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String tableViewURI){
+    this(type, dbname, tableViewURI, HivePrivObjectActionType.OTHER);
+  }
+
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String tableViewURI,
+      HivePrivObjectActionType actionType) {
     this.type = type;
     this.dbname = dbname;
     this.tableviewname = tableViewURI;
+    this.actionType = actionType;
   }
 
   public HivePrivilegeObjectType getType() {
@@ -69,5 +82,9 @@ public class HivePrivilegeObject {
 
   public String getTableViewURI() {
     return tableviewname;
+  }
+
+  public HivePrivObjectActionType getActionType() {
+    return actionType;
   }
 }

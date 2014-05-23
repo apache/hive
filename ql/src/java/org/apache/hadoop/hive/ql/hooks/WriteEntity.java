@@ -18,14 +18,14 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import java.io.Serializable;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-
-import java.io.Serializable;
 
 /**
  * This class encapsulates an object that is being written to by the query. This
@@ -43,7 +43,9 @@ public class WriteEntity extends Entity implements Serializable {
     INSERT,
     INSERT_OVERWRITE,
     UPDATE,
-    DELETE};
+    DELETE,
+    PATH_WRITE, // Write to a URI, no locking done for this
+  };
 
   private WriteType writeType;
 
@@ -116,6 +118,7 @@ public class WriteEntity extends Entity implements Serializable {
   public WriteEntity(Path d, boolean islocal, boolean isTemp) {
     super(d.toString(), islocal, true);
     this.isTempURI = isTemp;
+    this.writeType = WriteType.PATH_WRITE;
   }
 
   /**
