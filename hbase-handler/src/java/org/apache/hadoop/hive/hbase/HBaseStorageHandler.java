@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -411,11 +410,6 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       JobConf jobConf,
       HBaseSerDe hBaseSerDe,
       ExprNodeDesc predicate) {
-    String columnNameProperty = jobConf.get(
-        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS);
-    List<String> columnNames =
-        Arrays.asList(columnNameProperty.split(","));
-
     ColumnMapping keyMapping = hBaseSerDe.getHBaseSerdeParam().getKeyColumnMapping();
     IndexPredicateAnalyzer analyzer = HiveHBaseTableInputFormat.newIndexPredicateAnalyzer(
         keyMapping.columnName, keyMapping.columnType, keyMapping.binaryStorage.get(0));
