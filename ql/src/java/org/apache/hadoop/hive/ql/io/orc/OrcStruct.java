@@ -515,11 +515,11 @@ final public class OrcStruct implements Writable {
             return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
                 (PrimitiveTypeInfo) info);
           case TIMESTAMP:
-            return PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
+            return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
           case DATE:
-            return PrimitiveObjectInspectorFactory.javaDateObjectInspector;
+            return PrimitiveObjectInspectorFactory.writableDateObjectInspector;
           case DECIMAL:
-            return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+            return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
                 (PrimitiveTypeInfo)info);
           default:
             throw new IllegalArgumentException("Unknown primitive type " +
@@ -576,13 +576,13 @@ final public class OrcStruct implements Writable {
         return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
             TypeInfoFactory.getVarcharTypeInfo(type.getMaximumLength()));
       case TIMESTAMP:
-        return PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
+        return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
       case DATE:
-        return PrimitiveObjectInspectorFactory.javaDateObjectInspector;
+        return PrimitiveObjectInspectorFactory.writableDateObjectInspector;
       case DECIMAL:
         int precision = type.hasPrecision() ? type.getPrecision() : HiveDecimal.SYSTEM_DEFAULT_PRECISION;
         int scale =  type.hasScale()? type.getScale() : HiveDecimal.SYSTEM_DEFAULT_SCALE;
-        return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+        return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
             TypeInfoFactory.getDecimalTypeInfo(precision, scale));
       case STRUCT:
         return new OrcStructInspector(columnId, types);
