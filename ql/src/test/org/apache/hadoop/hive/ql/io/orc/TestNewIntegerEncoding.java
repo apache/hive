@@ -27,6 +27,7 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
@@ -1100,7 +1101,7 @@ public class TestNewIntegerEncoding {
     while (rows.hasNext()) {
       Object row = rows.next(null);
       assertEquals(tslist.get(idx++).getNanos(),
-          ((Timestamp) ((OrcStruct) row).getFieldValue(0)).getNanos());
+          ((TimestampWritable) ((OrcStruct) row).getFieldValue(0)).getNanos());
     }
   }
 
