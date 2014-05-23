@@ -23,12 +23,16 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 
 /**
@@ -160,5 +164,22 @@ public class AuthorizationUtils {
     return new HiveObjectRef(objType, privObj.getDbname(), privObj.getTableViewURI(), null, null);
   }
 
+  public static HivePrivObjectActionType getActionType(Entity privObject) {
+    HivePrivObjectActionType actionType = HivePrivObjectActionType.OTHER;
+    if (privObject instanceof WriteEntity) {
+      WriteType writeType = ((WriteEntity) privObject).getWriteType();
+      switch (writeType) {
+      case INSERT:
+        return HivePrivObjectActionType.INSERT;
+      case INSERT_OVERWRITE:
+        return HivePrivObjectActionType.INSERT_OVERWRITE;
+      default:
+        // Ignore other types for purposes of authorization, we are interested only
+        // in INSERT vs INSERT_OVERWRITE as of now
+        break;
+      }
+    }
+    return actionType;
+  }
 
 }

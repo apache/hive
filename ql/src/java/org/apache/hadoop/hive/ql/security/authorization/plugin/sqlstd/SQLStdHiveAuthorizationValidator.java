@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.Operation2Privilege.IOType;
 
 public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValidator {
 
@@ -56,57 +57,58 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
 
   @Override
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs) throws HiveAuthzPluginException, HiveAccessControlException {
+      List<HivePrivilegeObject> outputHObjs) throws HiveAuthzPluginException,
+      HiveAccessControlException {
 
-    if(LOG.isDebugEnabled()){
+    if (LOG.isDebugEnabled()) {
       String msg = "Checking privileges for operation " + hiveOpType + " by user "
-        +  authenticator.getUserName() + " on " + " input objects " + inputHObjs
-        + " and output objects " + outputHObjs;
+          + authenticator.getUserName() + " on " + " input objects " + inputHObjs
+          + " and output objects " + outputHObjs;
       LOG.debug(msg);
     }
 
     String userName = authenticator.getUserName();
     IMetaStoreClient metastoreClient = metastoreClientFactory.getHiveMetastoreClient();
 
-    // get privileges required on input and check
-    SQLPrivTypeGrant[] inputPrivs = Operation2Privilege.getInputPrivs(hiveOpType);
-    checkPrivileges(inputPrivs, inputHObjs, metastoreClient, userName);
-
-    // get privileges required on input and check
-    SQLPrivTypeGrant[] outputPrivs = Operation2Privilege.getOutputPrivs(hiveOpType);
-    checkPrivileges(outputPrivs, outputHObjs, metastoreClient, userName);
+    // check privileges on input and output objects
+    checkPrivileges(hiveOpType, inputHObjs, metastoreClient, userName, IOType.INPUT);
+    checkPrivileges(hiveOpType, outputHObjs, metastoreClient, userName, IOType.OUTPUT);
 
   }
 
-  private void checkPrivileges(SQLPrivTypeGrant[] reqPrivs, List<HivePrivilegeObject> hObjs,
-      IMetaStoreClient metastoreClient, String userName) throws HiveAuthzPluginException,
-      HiveAccessControlException {
-    RequiredPrivileges requiredInpPrivs = new RequiredPrivileges();
-    requiredInpPrivs.addAll(reqPrivs);
+  private void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> hiveObjects,
+      IMetaStoreClient metastoreClient, String userName, IOType ioType)
+      throws HiveAuthzPluginException, HiveAccessControlException {
 
-    // check if this user has these privileges on the objects
-    for (HivePrivilegeObject hObj : hObjs) {
-      RequiredPrivileges availPrivs = null;
-      if (hObj.getType() == HivePrivilegeObjectType.LOCAL_URI
-          || hObj.getType() == HivePrivilegeObjectType.DFS_URI) {
-        availPrivs = SQLAuthorizationUtils.getPrivilegesFromFS(new Path(hObj.getTableViewURI()),
+    // Compare required privileges and available privileges for each hive object
+    for (HivePrivilegeObject hiveObj : hiveObjects) {
+
+      RequiredPrivileges requiredPrivs = Operation2Privilege.getRequiredPrivs(hiveOpType, hiveObj,
+          ioType);
+
+      // find available privileges
+      RequiredPrivileges availPrivs;
+      if (hiveObj.getType() == HivePrivilegeObjectType.LOCAL_URI
+          || hiveObj.getType() == HivePrivilegeObjectType.DFS_URI) {
+        availPrivs = SQLAuthorizationUtils.getPrivilegesFromFS(new Path(hiveObj.getTableViewURI()),
             conf, userName);
-
-      } else if (hObj.getType() == HivePrivilegeObjectType.PARTITION) {
+      } else if (hiveObj.getType() == HivePrivilegeObjectType.PARTITION) {
         // sql std authorization is managing privileges at the table/view levels
         // only
         // ignore partitions
+        continue;
       } else {
         // get the privileges that this user has on the object
         availPrivs = SQLAuthorizationUtils.getPrivilegesFromMetaStore(metastoreClient, userName,
-            hObj, privController.getCurrentRoleNames(), privController.isUserAdmin());
+            hiveObj, privController.getCurrentRoleNames(), privController.isUserAdmin());
       }
-      Collection<SQLPrivTypeGrant> missingPriv = requiredInpPrivs.findMissingPrivs(availPrivs);
+
+      // Verify that there are no missing privileges
+      Collection<SQLPrivTypeGrant> missingPriv = requiredPrivs.findMissingPrivs(availPrivs);
       SQLAuthorizationUtils.assertNoMissingPrivilege(missingPriv, new HivePrincipal(userName,
-          HivePrincipalType.USER), hObj);
+          HivePrincipalType.USER), hiveObj);
 
     }
   }
-
 
 }

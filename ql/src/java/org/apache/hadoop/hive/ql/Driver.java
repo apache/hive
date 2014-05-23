@@ -103,6 +103,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -739,12 +740,15 @@ public class Driver implements CommandProcessor {
         default:
           throw new AssertionError("Unexpected object type");
       }
-
-      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, tableURI);
+      HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
+      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, tableURI,
+          actionType);
       hivePrivobjs.add(hPrivObject);
     }
     return hivePrivobjs;
   }
+
+
 
   private HiveOperationType getHiveOperationType(HiveOperation op) {
     return HiveOperationType.valueOf(op.name());
