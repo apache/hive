@@ -15,18 +15,24 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 
 import java.math.BigDecimal;
 
+import java.util.ArrayList;
+
 import org.apache.hadoop.hive.ql.io.parquet.writable.BinaryWritable;
-import org.apache.hadoop.hive.ql.io.parquet.writable.BinaryWritable.DicBinaryWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import parquet.column.Dictionary;
 import parquet.io.api.Binary;
 import parquet.io.api.Converter;
 import parquet.io.api.PrimitiveConverter;
+import parquet.schema.OriginalType;
+import parquet.schema.PrimitiveType;
 
 /**
  *
@@ -37,7 +43,7 @@ public enum ETypeConverter {
 
   EDOUBLE_CONVERTER(Double.TYPE) {
     @Override
-    Converter getConverter(final Class<?> type, final int index, final HiveGroupConverter parent) {
+    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
       return new PrimitiveConverter() {
         @Override
         public void addDouble(final double value) {
@@ -48,7 +54,7 @@ public enum ETypeConverter {
   },
   EBOOLEAN_CONVERTER(Boolean.TYPE) {
     @Override
-    Converter getConverter(final Class<?> type, final int index, final HiveGroupConverter parent) {
+    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
       return new PrimitiveConverter() {
         @Override
         public void addBoolean(final boolean value) {
@@ -59,7 +65,7 @@ public enum ETypeConverter {
   },
   EFLOAT_CONVERTER(Float.TYPE) {
     @Override
-    Converter getConverter(final Class<?> type, final int index, final HiveGroupConverter parent) {
+    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
       return new PrimitiveConverter() {
         @Override
         public void addFloat(final float value) {
@@ -70,7 +76,7 @@ public enum ETypeConverter {
   },
   EINT32_CONVERTER(Integer.TYPE) {
     @Override
-    Converter getConverter(final Class<?> type, final int index, final HiveGroupConverter parent) {
+    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
       return new PrimitiveConverter() {
         @Override
         public void addInt(final int value) {
@@ -81,7 +87,7 @@ public enum ETypeConverter {
   },
   EINT64_CONVERTER(Long.TYPE) {
     @Override
-    Converter getConverter(final Class<?> type, final int index, final HiveGroupConverter parent) {
+    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
       return new PrimitiveConverter() {
         @Override
         public void addLong(final long value) {
@@ -90,53 +96,40 @@ public enum ETypeConverter {
       };
     }
   },
-  EINT96_CONVERTER(BigDecimal.class) {
+  EBINARY_CONVERTER(Binary.class) {
     @Override
-    Converter getConverter(final Class<?> type, final int index, final HiveGroupConverter parent) {
-      return new PrimitiveConverter() {
-        // TODO in HIVE-6367 decimal should not be treated as a double
+    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+      return new BinaryConverter<BinaryWritable>(type, parent, index) {
         @Override
-        public void addDouble(final double value) {
-          parent.set(index, new DoubleWritable(value));
+        protected BinaryWritable convert(Binary binary) {
+          return new BinaryWritable(binary);
         }
       };
     }
   },
-  EBINARY_CONVERTER(Binary.class) {
+  ESTRING_CONVERTER(String.class) {
     @Override
-    Converter getConverter(final Class<?> type, final int index, final HiveGroupConverter parent) {
-      return new PrimitiveConverter() {
-        private Binary[] dictBinary;
-        private String[] dict;
-
+    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+      return new BinaryConverter<Text>(type, parent, index) {
         @Override
-        public boolean hasDictionarySupport() {
-          return true;
+        protected Text convert(Binary binary) {
+          return new Text(binary.getBytes());
         }
-
+      };
+    }
+  },
+  EDECIMAL_CONVERTER(BigDecimal.class) {
+    @Override
+    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+      return new BinaryConverter<HiveDecimalWritable>(type, parent, index) {
         @Override
-        public void setDictionary(Dictionary dictionary) {
-          dictBinary = new Binary[dictionary.getMaxId() + 1];
-          dict = new String[dictionary.getMaxId() + 1];
-          for (int i = 0; i <= dictionary.getMaxId(); i++) {
-            Binary binary = dictionary.decodeToBinary(i);
-            dictBinary[i] = binary;
-            dict[i] = binary.toStringUsingUTF8();
-          }
-        }
-
-        @Override
-        public void addValueFromDictionary(int dictionaryId) {
-          parent.set(index, new DicBinaryWritable(dictBinary[dictionaryId],  dict[dictionaryId]));
-        }
-
-        @Override
-        public void addBinary(Binary value) {
-          parent.set(index, new BinaryWritable(value));
+        protected HiveDecimalWritable convert(Binary binary) {
+          return new HiveDecimalWritable(binary.getBytes(), type.getDecimalMetadata().getScale());
         }
       };
     }
   };
+
   final Class<?> _type;
 
   private ETypeConverter(final Class<?> type) {
@@ -147,14 +140,62 @@ public enum ETypeConverter {
     return _type;
   }
 
-  abstract Converter getConverter(final Class<?> type, final int index, final HiveGroupConverter parent);
+  abstract Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent);
 
-  public static Converter getNewConverter(final Class<?> type, final int index, final HiveGroupConverter parent) {
+  public static Converter getNewConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+    if (OriginalType.DECIMAL == type.getOriginalType()) {
+      return EDECIMAL_CONVERTER.getConverter(type, index, parent);
+    } else if (OriginalType.UTF8 == type.getOriginalType()) {
+      return ESTRING_CONVERTER.getConverter(type, index, parent);
+    }
+
+    Class<?> javaType = type.getPrimitiveTypeName().javaType;
     for (final ETypeConverter eConverter : values()) {
-      if (eConverter.getType() == type) {
+      if (eConverter.getType() == javaType) {
         return eConverter.getConverter(type, index, parent);
       }
     }
+
     throw new IllegalArgumentException("Converter not found ... for type : " + type);
   }
+
+  public abstract static class BinaryConverter<T extends Writable> extends PrimitiveConverter {
+    protected final PrimitiveType type;
+    private final HiveGroupConverter parent;
+    private final int index;
+    private ArrayList<T> lookupTable;
+
+    public BinaryConverter(PrimitiveType type, HiveGroupConverter parent, int index) {
+      this.type = type;
+      this.parent = parent;
+      this.index = index;
+    }
+
+    protected abstract T convert(Binary binary);
+
+    @Override
+    public boolean hasDictionarySupport() {
+      return true;
+    }
+
+    @Override
+    public void setDictionary(Dictionary dictionary) {
+      int length = dictionary.getMaxId() + 1;
+      lookupTable = new ArrayList<T>();
+      for (int i = 0; i < length; i++) {
+        lookupTable.add(convert(dictionary.decodeToBinary(i)));
+      }
+    }
+
+    @Override
+    public void addValueFromDictionary(int dictionaryId) {
+      parent.set(index, lookupTable.get(dictionaryId));
+    }
+
+    @Override
+    public void addBinary(Binary value) {
+      parent.set(index, convert(value));
+    }
+  }
+
 }

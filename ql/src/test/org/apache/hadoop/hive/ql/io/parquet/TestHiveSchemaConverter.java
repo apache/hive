@@ -75,6 +75,16 @@ public class TestHiveSchemaConverter {
   }
 
   @Test
+  public void testDecimalType() throws Exception {
+    testConversion(
+            "a",
+            "decimal(5,2)",
+            "message hive_schema {\n"
+            + "  optional binary a (DECIMAL(5,2));\n"
+            + "}\n");
+  }
+
+  @Test
   public void testArray() throws Exception {
     testConversion("arrayCol",
             "array<int>",
@@ -88,14 +98,28 @@ public class TestHiveSchemaConverter {
   }
 
   @Test
+  public void testArrayDecimal() throws Exception {
+    testConversion("arrayCol",
+            "array<decimal(5,2)>",
+            "message hive_schema {\n"
+            + "  optional group arrayCol (LIST) {\n"
+            + "    repeated group bag {\n"
+            + "      optional binary array_element (DECIMAL(5,2));\n"
+            + "    }\n"
+            + "  }\n"
+            + "}\n");
+  }
+
+  @Test
   public void testStruct() throws Exception {
     testConversion("structCol",
-            "struct<a:int,b:double,c:boolean>",
+            "struct<a:int,b:double,c:boolean,d:decimal(5,2)>",
             "message hive_schema {\n"
             + "  optional group structCol {\n"
             + "    optional int32 a;\n"
             + "    optional double b;\n"
             + "    optional boolean c;\n"
+            + "    optional binary d (DECIMAL(5,2));\n"
             + "  }\n"
             + "}\n");
   }
@@ -109,6 +133,20 @@ public class TestHiveSchemaConverter {
             + "    repeated group map (MAP_KEY_VALUE) {\n"
             + "      required binary key;\n"
             + "      optional binary value;\n"
+            + "    }\n"
+            + "  }\n"
+            + "}\n");
+  }
+
+  @Test
+  public void testMapDecimal() throws Exception {
+    testConversion("mapCol",
+            "map<string,decimal(5,2)>",
+            "message hive_schema {\n"
+            + "  optional group mapCol (MAP) {\n"
+            + "    repeated group map (MAP_KEY_VALUE) {\n"
+            + "      required binary key;\n"
+            + "      optional binary value (DECIMAL(5,2));\n"
             + "    }\n"
             + "  }\n"
             + "}\n");

@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -76,6 +77,8 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.stringTypeInfo)) {
       return ParquetPrimitiveInspectorFactory.parquetStringInspector;
+    }  else if (typeInfo instanceof DecimalTypeInfo) {
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo) typeInfo);
     } else if (typeInfo.getCategory().equals(Category.STRUCT)) {
       return new ArrayWritableObjectInspector((StructTypeInfo) typeInfo);
     } else if (typeInfo.getCategory().equals(Category.LIST)) {
