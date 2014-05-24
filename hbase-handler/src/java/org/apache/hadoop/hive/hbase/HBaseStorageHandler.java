@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -149,6 +150,8 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       throw new MetaException("LOCATION may not be specified for HBase.");
     }
 
+    HTable htable = null;
+
     try {
       String tableName = getHBaseTableName(tbl);
       Map<String, String> serdeParam = tbl.getSd().getSerdeInfo().getParameters();
@@ -205,9 +208,13 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       }
 
       // ensure the table is online
-      new HTable(hbaseConf, tableDesc.getName());
+      htable = new HTable(hbaseConf, tableDesc.getName());
     } catch (Exception se) {
       throw new MetaException(StringUtils.stringifyException(se));
+    } finally {
+      if (htable != null) {
+        IOUtils.closeQuietly(htable);
+      }
     }
   }
 
