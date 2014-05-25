@@ -2193,6 +2193,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     final String ROW_FORMAT = "row_format";
     final String TBL_LOCATION = "tbl_location";
     final String TBL_PROPERTIES = "tbl_properties";
+    boolean isHbaseTable = false;
+    StringBuilder createTab_str = new StringBuilder();
 
     String tableName = showCreateTbl.getTableName();
     Table tbl = db.getTable(tableName, false);
@@ -2203,6 +2205,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       FileSystem fs = resFile.getFileSystem(conf);
       outStream = fs.create(resFile);
 
+      if (tbl.getStorageHandler() != null) {
+        isHbaseTable = tbl.getStorageHandler().toString().equals("org.apache.hadoop.hive.hbase.HBaseStorageHandler");
+      }
+
       if (tbl.isView()) {
         String createTab_stmt = "CREATE VIEW `" + tableName + "` AS " + tbl.getViewExpandedText();
         outStream.writeBytes(createTab_stmt.toString());
@@ -2211,17 +2217,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return 0;
       }
 
-      ST createTab_stmt = new ST("CREATE <" + EXTERNAL + "> TABLE `" +
-          tableName + "`(\n" +
-          "<" + LIST_COLUMNS + ">)\n" +
-          "<" + TBL_COMMENT + ">\n" +
-          "<" + LIST_PARTITIONS + ">\n" +
-          "<" + SORT_BUCKET + ">\n" +
-          "<" + ROW_FORMAT + ">\n" +
-          "LOCATION\n" +
-          "<" + TBL_LOCATION + ">\n" +
-          "TBLPROPERTIES (\n" +
-          "<" + TBL_PROPERTIES + ">)\n");
+      createTab_str.append("CREATE <" + EXTERNAL + "> TABLE `");
+      createTab_str.append(tableName + "`(\n");
+      createTab_str.append("<" + LIST_COLUMNS + ">)\n");
+      createTab_str.append("<" + TBL_COMMENT + ">\n");
+      createTab_str.append("<" + LIST_PARTITIONS + ">\n");
+      createTab_str.append("<" + SORT_BUCKET + ">\n");
+      createTab_str.append("<" + ROW_FORMAT + ">\n");
+      if (!isHbaseTable) {
+        createTab_str.append("LOCATION\n");
+        createTab_str.append("<" + TBL_LOCATION + ">\n");
+      }
+      createTab_str.append("TBLPROPERTIES (\n");
+      createTab_str.append("<" + TBL_PROPERTIES + ">)\n");
+      ST createTab_stmt = new ST(createTab_str.toString());
 
       // For cases where the table is external
       String tbl_external = "";
@@ -2389,7 +2398,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       createTab_stmt.add(LIST_PARTITIONS, tbl_partitions);
       createTab_stmt.add(SORT_BUCKET, tbl_sort_bucket);
       createTab_stmt.add(ROW_FORMAT, tbl_row_format);
-      createTab_stmt.add(TBL_LOCATION, tbl_location);
+      // Table location should not be printed with hbase backed tables
+      if (!isHbaseTable) {
+        createTab_stmt.add(TBL_LOCATION, tbl_location);
+      }
       createTab_stmt.add(TBL_PROPERTIES, tbl_properties);
 
       outStream.writeBytes(createTab_stmt.render());
