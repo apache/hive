@@ -101,4 +101,8 @@ public class DefaultStorageHandler implements HiveStorageHandler {
   public void setConf(Configuration conf) {
     this.conf = conf;
   }
+  @Override
+  public String toString() {
+    return this.getClass().getName();
+  }
 }
