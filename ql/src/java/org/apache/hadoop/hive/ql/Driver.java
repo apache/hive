@@ -101,6 +101,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
+import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
@@ -456,8 +457,9 @@ public class Driver implements CommandProcessor {
       schema = getSchema(sem, conf);
 
       //do the authorization check
-      if (HiveConf.getBoolVar(conf,
-          HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      if (!sem.skipAuthorization() &&
+          HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+
         try {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
           doAuthorization(sem);
@@ -471,8 +473,6 @@ public class Driver implements CommandProcessor {
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
         }
       }
-
-      //restore state after we're done executing a specific query
 
       return 0;
     } catch (Exception e) {
@@ -500,34 +500,34 @@ public class Driver implements CommandProcessor {
     }
   }
 
-  private void doAuthorization(BaseSemanticAnalyzer sem)
-    throws HiveException, AuthorizationException {
+  public static void doAuthorization(BaseSemanticAnalyzer sem)
+      throws HiveException, AuthorizationException {
     HashSet<ReadEntity> inputs = sem.getInputs();
     HashSet<WriteEntity> outputs = sem.getOutputs();
     SessionState ss = SessionState.get();
-    HiveOperation op = ss.getHiveOperation();
+    HiveOperation op = sem.getHiveOperation();
     Hive db = sem.getDb();
     if (ss.isAuthorizationModeV2()) {
       doAuthorizationV2(ss, op, inputs, outputs);
       return;
     }
-
     if (op == null) {
       throw new HiveException("Operation should not be null");
     }
+    HiveAuthorizationProvider authorizer = ss.getAuthorizer();
     if (op.equals(HiveOperation.CREATEDATABASE)) {
-      ss.getAuthorizer().authorize(
+      authorizer.authorize(
           op.getInputRequiredPrivileges(), op.getOutputRequiredPrivileges());
     } else if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
         || op.equals(HiveOperation.CREATETABLE)) {
-      ss.getAuthorizer().authorize(
+      authorizer.authorize(
           db.getDatabase(SessionState.get().getCurrentDatabase()), null,
           HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
     } else {
       if (op.equals(HiveOperation.IMPORT)) {
         ImportSemanticAnalyzer isa = (ImportSemanticAnalyzer) sem;
         if (!isa.existsTable()) {
-          ss.getAuthorizer().authorize(
+          authorizer.authorize(
               db.getDatabase(SessionState.get().getCurrentDatabase()), null,
               HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
         }
@@ -539,7 +539,7 @@ public class Driver implements CommandProcessor {
           continue;
         }
         if (write.getType() == Entity.Type.DATABASE) {
-          ss.getAuthorizer().authorize(write.getDatabase(),
+          authorizer.authorize(write.getDatabase(),
               null, op.getOutputRequiredPrivileges());
           continue;
         }
@@ -548,14 +548,14 @@ public class Driver implements CommandProcessor {
           Partition part = db.getPartition(write.getTable(), write
               .getPartition().getSpec(), false);
           if (part != null) {
-            ss.getAuthorizer().authorize(write.getPartition(), null,
+            authorizer.authorize(write.getPartition(), null,
                     op.getOutputRequiredPrivileges());
             continue;
           }
         }
 
         if (write.getTable() != null) {
-          ss.getAuthorizer().authorize(write.getTable(), null,
+          authorizer.authorize(write.getTable(), null,
                   op.getOutputRequiredPrivileges());
         }
       }
@@ -646,7 +646,7 @@ public class Driver implements CommandProcessor {
           continue;
         }
         if (read.getType() == Entity.Type.DATABASE) {
-          ss.getAuthorizer().authorize(read.getDatabase(), op.getInputRequiredPrivileges(), null);
+          authorizer.authorize(read.getDatabase(), op.getInputRequiredPrivileges(), null);
           continue;
         }
         Table tbl = read.getTable();
@@ -657,11 +657,11 @@ public class Driver implements CommandProcessor {
           if (tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE) {
             List<String> cols = part2Cols.get(partition);
             if (cols != null && cols.size() > 0) {
-              ss.getAuthorizer().authorize(partition.getTable(),
+              authorizer.authorize(partition.getTable(),
                   partition, cols, op.getInputRequiredPrivileges(),
                   null);
             } else {
-              ss.getAuthorizer().authorize(partition,
+              authorizer.authorize(partition,
                   op.getInputRequiredPrivileges(), null);
             }
             continue;
@@ -675,10 +675,10 @@ public class Driver implements CommandProcessor {
             !(tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE)) {
           List<String> cols = tab2Cols.get(tbl);
           if (cols != null && cols.size() > 0) {
-            ss.getAuthorizer().authorize(tbl, null, cols,
+            authorizer.authorize(tbl, null, cols,
                 op.getInputRequiredPrivileges(), null);
           } else {
-            ss.getAuthorizer().authorize(tbl, op.getInputRequiredPrivileges(),
+            authorizer.authorize(tbl, op.getInputRequiredPrivileges(),
                 null);
           }
           tableAuthChecked.add(tbl.getTableName());
@@ -688,7 +688,7 @@ public class Driver implements CommandProcessor {
     }
   }
 
-  private void doAuthorizationV2(SessionState ss, HiveOperation op, HashSet<ReadEntity> inputs,
+  private static void doAuthorizationV2(SessionState ss, HiveOperation op, HashSet<ReadEntity> inputs,
       HashSet<WriteEntity> outputs) throws HiveException {
     HiveOperationType hiveOpType = getHiveOperationType(op);
     List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputs);
@@ -697,7 +697,7 @@ public class Driver implements CommandProcessor {
     return;
   }
 
-  private List<HivePrivilegeObject> getHivePrivObjects(HashSet<? extends Entity> privObjects) {
+  private static List<HivePrivilegeObject> getHivePrivObjects(HashSet<? extends Entity> privObjects) {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
     if(privObjects == null){
       return hivePrivobjs;
@@ -748,9 +748,7 @@ public class Driver implements CommandProcessor {
     return hivePrivobjs;
   }
 
-
-
-  private HiveOperationType getHiveOperationType(HiveOperation op) {
+  private static HiveOperationType getHiveOperationType(HiveOperation op) {
     return HiveOperationType.valueOf(op.name());
   }
 
