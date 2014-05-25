@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
@@ -48,12 +49,20 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean formatted = false;
     boolean dependency = false;
     boolean logical = false;
-    if (ast.getChildCount() == 2) {
-      int explainOptions = ast.getChild(1).getType();
-      formatted = (explainOptions == HiveParser.KW_FORMATTED);
-      extended = (explainOptions == HiveParser.KW_EXTENDED);
-      dependency = (explainOptions == HiveParser.KW_DEPENDENCY);
-      logical = (explainOptions == HiveParser.KW_LOGICAL);
+    boolean authorize = false;
+    for (int i = 1; i < ast.getChildCount(); i++) {
+      int explainOptions = ast.getChild(i).getType();
+      if (explainOptions == HiveParser.KW_FORMATTED) {
+        formatted = true;
+      } else if (explainOptions == HiveParser.KW_EXTENDED) {
+        extended = true;
+      } else if (explainOptions == HiveParser.KW_DEPENDENCY) {
+        dependency = true;
+      } else if (explainOptions == HiveParser.KW_LOGICAL) {
+        logical = true;
+      } else if (explainOptions == HiveParser.KW_AUTHORIZATION) {
+        authorize = true;
+      }
     }
 
     ctx.setExplain(true);
@@ -87,11 +96,12 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         tasks,
         fetchTask,
         input.dump(),
-        sem.getInputs(),
+        sem,
         extended,
         formatted,
         dependency,
-        logical);
+        logical,
+        authorize);
 
     work.setAppendTaskType(
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES));
@@ -105,5 +115,13 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public List<FieldSchema> getResultSchema() {
     return fieldList;
+  }
+
+  @Override
+  public boolean skipAuthorization() {
+    List<Task<? extends Serializable>> rootTasks = getRootTasks();
+    assert rootTasks != null && rootTasks.size() == 1;
+    Task task = rootTasks.get(0);
+    return task instanceof ExplainTask && ((ExplainTask)task).getWork().isAuthorize();
   }
 }
