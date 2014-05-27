@@ -262,9 +262,19 @@ public class TezSessionPoolManager {
     }
 
     if (session != null) {
-      session.close(false);
+      close(session);
     }
 
     return getSession(conf, doOpen, forceCreate);
+  }
+
+  public void closeAndOpen(TezSessionState sessionState, HiveConf conf)
+      throws Exception {
+    HiveConf sessionConf = sessionState.getConf();
+    if (sessionConf.get("tez.queue.name") != null) {
+      conf.set("tez.queue.name", sessionConf.get("tez.queue.name"));
+    }
+    close(sessionState);
+    sessionState.open(conf);
   }
 }

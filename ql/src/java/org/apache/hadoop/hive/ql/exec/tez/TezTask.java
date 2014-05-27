@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -27,8 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -39,7 +35,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
@@ -57,7 +52,6 @@ import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.GroupInputEdge;
 import org.apache.tez.dag.api.SessionNotRunning;
-import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.client.DAGClient;
@@ -297,8 +291,7 @@ public class TezTask extends Task<TezWork> {
 
   DAGClient submit(JobConf conf, DAG dag, Path scratchDir,
       LocalResource appJarLr, TezSessionState sessionState)
-      throws IOException, TezException, InterruptedException,
-      LoginException, URISyntaxException, HiveException {
+      throws Exception {
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     DAGClient dagClient = null;
@@ -310,11 +303,7 @@ public class TezTask extends Task<TezWork> {
       console.printInfo("Tez session was closed. Reopening...");
 
       // close the old one, but keep the tmp files around
-      sessionState.close(true);
-
-      // (re)open the session
-      sessionState.open(this.conf);
-
+      TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf);
       console.printInfo("Session re-established.");
 
       dagClient = sessionState.getSession().submitDAG(dag);
