@@ -312,6 +312,7 @@ public final class ColumnPrunerProcFactory {
           cols);
       List<Integer> neededColumnIds = new ArrayList<Integer>();
       List<String> neededColumnNames = new ArrayList<String>();
+      List<String> referencedColumnNames = new ArrayList<String>();
       RowResolver inputRR = cppCtx.getOpToParseCtxMap().get(scanOp).getRowResolver();
       TableScanDesc desc = scanOp.getConf();
       List<VirtualColumn> virtualCols = desc.getVirtualCols();
@@ -322,11 +323,12 @@ public final class ColumnPrunerProcFactory {
         cols.add(VirtualColumn.RAWDATASIZE.getName());
       }
 
-      for (int i = 0; i < cols.size(); i++) {
-        String[] tabCol = inputRR.reverseLookup(cols.get(i));
-        if(tabCol == null) {
+      for (String column : cols) {
+        String[] tabCol = inputRR.reverseLookup(column);
+        if (tabCol == null) {
           continue;
         }
+        referencedColumnNames.add(column);
         ColumnInfo colInfo = inputRR.get(tabCol[0], tabCol[1]);
         if (colInfo.getIsVirtualCol()) {
           // part is also a virtual column, but part col should not in this
@@ -340,17 +342,18 @@ public final class ColumnPrunerProcFactory {
           //no need to pass virtual columns to reader.
           continue;
         }
-        int position = inputRR.getPosition(cols.get(i));
+        int position = inputRR.getPosition(column);
         if (position >= 0) {
           // get the needed columns by id and name
           neededColumnIds.add(position);
-          neededColumnNames.add(cols.get(i));
+          neededColumnNames.add(column);
         }
       }
 
       desc.setVirtualCols(newVirtualCols);
       scanOp.setNeededColumnIDs(neededColumnIds);
       scanOp.setNeededColumns(neededColumnNames);
+      scanOp.setReferencedColumns(referencedColumnNames);
       return null;
     }
   }

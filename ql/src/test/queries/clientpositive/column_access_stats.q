@@ -160,3 +160,8 @@ FROM
 JOIN T3
 ON T3.key = T4.key
 ORDER BY T3.key, T4.key;
+
+-- for partitioned table
+SELECT * FROM srcpart TABLESAMPLE (10 ROWS);
+SELECT key,ds FROM srcpart TABLESAMPLE (10 ROWS) WHERE hr='11';
+SELECT value FROM srcpart TABLESAMPLE (10 ROWS) WHERE ds='2008-04-08';

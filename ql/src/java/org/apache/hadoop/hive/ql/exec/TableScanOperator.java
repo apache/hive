@@ -243,31 +243,28 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     return "TS";
   }
 
-  // This 'neededColumnIDs' field is included in this operator class instead of
-  // its desc class.The reason is that 1)tableScanDesc can not be instantiated,
-  // and 2) it will fail some join and union queries if this is added forcibly
-  // into tableScanDesc.
-  // Both neededColumnIDs and neededColumns should never be null.
-  // When neededColumnIDs is an empty list,
-  // it means no needed column (e.g. we do not need any column to evaluate
-  // SELECT count(*) FROM t).
-  List<Integer> neededColumnIDs;
-  List<String> neededColumns;
-
   public void setNeededColumnIDs(List<Integer> orign_columns) {
-    neededColumnIDs = orign_columns;
+    conf.setNeededColumnIDs(orign_columns);
   }
 
   public List<Integer> getNeededColumnIDs() {
-    return neededColumnIDs;
+    return conf.getNeededColumnIDs();
   }
 
   public void setNeededColumns(List<String> columnNames) {
-    neededColumns = columnNames;
+    conf.setNeededColumns(columnNames);
   }
 
   public List<String> getNeededColumns() {
-    return neededColumns;
+    return conf.getNeededColumns();
+  }
+
+  public void setReferencedColumns(List<String> referencedColumns) {
+    conf.setReferencedColumns(referencedColumns);
+  }
+
+  public List<String> getReferencedColumns() {
+    return conf.getReferencedColumns();
   }
 
   @Override
@@ -335,6 +332,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     TableScanOperator ts = (TableScanOperator) super.clone();
     ts.setNeededColumnIDs(new ArrayList<Integer>(getNeededColumnIDs()));
     ts.setNeededColumns(new ArrayList<String>(getNeededColumns()));
+    ts.setReferencedColumns(new ArrayList<String>(getReferencedColumns()));
     return ts;
   }
 

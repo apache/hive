@@ -683,22 +683,35 @@
           <void property="alias"> 
            <string>srcpart</string> 
           </void> 
+          <void property="neededColumnIDs"> 
+           <object class="java.util.ArrayList"> 
+            <void method="add"> 
+             <int>0</int> 
+            </void> 
+            <void method="add"> 
+             <int>1</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void property="neededColumns"> 
+           <object class="java.util.ArrayList"> 
+            <void method="add"> 
+             <string>key</string> 
+            </void> 
+            <void method="add"> 
+             <string>value</string> 
+            </void> 
+           </object> 
+          </void> 
           <void property="virtualCols"> 
            <object class="java.util.ArrayList"/> 
           </void> 
          </object> 
         </void> 
-        <void property="neededColumnIDs"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <int>0</int> 
-          </void> 
-          <void method="add"> 
-           <int>1</int> 
-          </void> 
-         </object> 
+        <void property="operatorId"> 
+         <string>TS_0</string> 
         </void> 
-        <void property="neededColumns"> 
+        <void property="referencedColumns"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
            <string>key</string> 
@@ -706,10 +719,13 @@
           <void method="add"> 
            <string>value</string> 
           </void> 
+          <void method="add"> 
+           <string>ds</string> 
+          </void> 
+          <void method="add"> 
+           <string>hr</string> 
+          </void> 
          </object> 
-        </void> 
-        <void property="operatorId"> 
-         <string>TS_0</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 

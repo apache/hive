@@ -531,7 +531,7 @@ public class QBParseInfo {
   }
 
   /**
-   * This method is used only for the anlayze command to get the partition specs
+   * This method is used only for the analyze command to get the partition specs
    */
   public tableSpec getTableSpec() {
 

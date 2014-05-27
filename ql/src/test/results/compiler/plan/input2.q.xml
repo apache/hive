@@ -219,30 +219,34 @@
                          </void> 
                         </void> 
                         <void property="conf"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"/> 
-                        </void> 
-                        <void property="neededColumnIDs"> 
-                         <object class="java.util.ArrayList"> 
-                          <void method="add"> 
-                           <int>0</int> 
+                         <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"> 
+                          <void property="neededColumnIDs"> 
+                           <object class="java.util.ArrayList"> 
+                            <void method="add"> 
+                             <int>0</int> 
+                            </void> 
+                            <void method="add"> 
+                             <int>1</int> 
+                            </void> 
+                           </object> 
                           </void> 
-                          <void method="add"> 
-                           <int>1</int> 
-                          </void> 
-                         </object> 
-                        </void> 
-                        <void property="neededColumns"> 
-                         <object class="java.util.ArrayList"> 
-                          <void method="add"> 
-                           <string>key</string> 
-                          </void> 
-                          <void method="add"> 
-                           <string>value</string> 
+                          <void property="neededColumns"> 
+                           <object id="ArrayList1" class="java.util.ArrayList"> 
+                            <void method="add"> 
+                             <string>key</string> 
+                            </void> 
+                            <void method="add"> 
+                             <string>value</string> 
+                            </void> 
+                           </object> 
                           </void> 
                          </object> 
                         </void> 
                         <void property="operatorId"> 
                          <string>TS_10</string> 
+                        </void> 
+                        <void property="referencedColumns"> 
+                         <object idref="ArrayList1"/> 
                         </void> 
                         <void property="schema"> 
                          <object idref="RowSchema0"/> 
@@ -560,7 +564,7 @@
        <string>Stage-15</string> 
       </void> 
       <void property="listTasks"> 
-       <object id="ArrayList1" class="java.util.ArrayList"> 
+       <object id="ArrayList2" class="java.util.ArrayList"> 
         <void method="add"> 
          <object id="MoveTask3" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
           <void property="childTasks"> 
@@ -764,30 +768,34 @@
                          </void> 
                         </void> 
                         <void property="conf"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"/> 
-                        </void> 
-                        <void property="neededColumnIDs"> 
-                         <object class="java.util.ArrayList"> 
-                          <void method="add"> 
-                           <int>0</int> 
+                         <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"> 
+                          <void property="neededColumnIDs"> 
+                           <object class="java.util.ArrayList"> 
+                            <void method="add"> 
+                             <int>0</int> 
+                            </void> 
+                            <void method="add"> 
+                             <int>1</int> 
+                            </void> 
+                           </object> 
                           </void> 
-                          <void method="add"> 
-                           <int>1</int> 
-                          </void> 
-                         </object> 
-                        </void> 
-                        <void property="neededColumns"> 
-                         <object class="java.util.ArrayList"> 
-                          <void method="add"> 
-                           <string>key</string> 
-                          </void> 
-                          <void method="add"> 
-                           <string>value</string> 
+                          <void property="neededColumns"> 
+                           <object id="ArrayList3" class="java.util.ArrayList"> 
+                            <void method="add"> 
+                             <string>key</string> 
+                            </void> 
+                            <void method="add"> 
+                             <string>value</string> 
+                            </void> 
+                           </object> 
                           </void> 
                          </object> 
                         </void> 
                         <void property="operatorId"> 
                          <string>TS_12</string> 
+                        </void> 
+                        <void property="referencedColumns"> 
+                         <object idref="ArrayList3"/> 
                         </void> 
                         <void property="schema"> 
                          <object idref="RowSchema1"/> 
@@ -1020,7 +1028,7 @@
          <object idref="ListBucketingCtx1"/> 
         </void> 
         <void property="listTasks"> 
-         <object idref="ArrayList1"/> 
+         <object idref="ArrayList2"/> 
         </void> 
        </object> 
       </void> 
@@ -1046,7 +1054,7 @@
        <string>Stage-21</string> 
       </void> 
       <void property="listTasks"> 
-       <object id="ArrayList2" class="java.util.ArrayList"> 
+       <object id="ArrayList4" class="java.util.ArrayList"> 
         <void method="add"> 
          <object id="MoveTask6" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
           <void property="childTasks"> 
@@ -1258,30 +1266,34 @@
                          </void> 
                         </void> 
                         <void property="conf"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"/> 
-                        </void> 
-                        <void property="neededColumnIDs"> 
-                         <object class="java.util.ArrayList"> 
-                          <void method="add"> 
-                           <int>0</int> 
+                         <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"> 
+                          <void property="neededColumnIDs"> 
+                           <object class="java.util.ArrayList"> 
+                            <void method="add"> 
+                             <int>0</int> 
+                            </void> 
+                            <void method="add"> 
+                             <int>1</int> 
+                            </void> 
+                           </object> 
                           </void> 
-                          <void method="add"> 
-                           <int>1</int> 
-                          </void> 
-                         </object> 
-                        </void> 
-                        <void property="neededColumns"> 
-                         <object class="java.util.ArrayList"> 
-                          <void method="add"> 
-                           <string>key</string> 
-                          </void> 
-                          <void method="add"> 
-                           <string>value</string> 
+                          <void property="neededColumns"> 
+                           <object id="ArrayList5" class="java.util.ArrayList"> 
+                            <void method="add"> 
+                             <string>key</string> 
+                            </void> 
+                            <void method="add"> 
+                             <string>value</string> 
+                            </void> 
+                           </object> 
                           </void> 
                          </object> 
                         </void> 
                         <void property="operatorId"> 
                          <string>TS_14</string> 
+                        </void> 
+                        <void property="referencedColumns"> 
+                         <object idref="ArrayList5"/> 
                         </void> 
                         <void property="schema"> 
                          <object idref="RowSchema2"/> 
@@ -1527,7 +1539,7 @@
          <object idref="ListBucketingCtx2"/> 
         </void> 
         <void property="listTasks"> 
-         <object idref="ArrayList2"/> 
+         <object idref="ArrayList4"/> 
         </void> 
        </object> 
       </void> 
@@ -2496,22 +2508,35 @@
           <void property="alias"> 
            <string>src</string> 
           </void> 
+          <void property="neededColumnIDs"> 
+           <object class="java.util.ArrayList"> 
+            <void method="add"> 
+             <int>0</int> 
+            </void> 
+            <void method="add"> 
+             <int>1</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void property="neededColumns"> 
+           <object class="java.util.ArrayList"> 
+            <void method="add"> 
+             <string>key</string> 
+            </void> 
+            <void method="add"> 
+             <string>value</string> 
+            </void> 
+           </object> 
+          </void> 
           <void property="virtualCols"> 
            <object class="java.util.ArrayList"/> 
           </void> 
          </object> 
         </void> 
-        <void property="neededColumnIDs"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <int>0</int> 
-          </void> 
-          <void method="add"> 
-           <int>1</int> 
-          </void> 
-         </object> 
+        <void property="operatorId"> 
+         <string>TS_0</string> 
         </void> 
-        <void property="neededColumns"> 
+        <void property="referencedColumns"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
            <string>key</string> 
@@ -2520,9 +2545,6 @@
            <string>value</string> 
           </void> 
          </object> 
-        </void> 
-        <void property="operatorId"> 
-         <string>TS_0</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 

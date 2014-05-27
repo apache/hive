@@ -532,30 +532,34 @@
              </void> 
             </void> 
             <void property="conf"> 
-             <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"/> 
-            </void> 
-            <void property="neededColumnIDs"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <int>0</int> 
+             <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"> 
+              <void property="neededColumnIDs"> 
+               <object class="java.util.ArrayList"> 
+                <void method="add"> 
+                 <int>0</int> 
+                </void> 
+                <void method="add"> 
+                 <int>1</int> 
+                </void> 
+               </object> 
               </void> 
-              <void method="add"> 
-               <int>1</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void property="neededColumns"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <string>_col0</string> 
-              </void> 
-              <void method="add"> 
-               <string>_col4</string> 
+              <void property="neededColumns"> 
+               <object id="ArrayList1" class="java.util.ArrayList"> 
+                <void method="add"> 
+                 <string>_col0</string> 
+                </void> 
+                <void method="add"> 
+                 <string>_col4</string> 
+                </void> 
+               </object> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
              <string>TS_12</string> 
+            </void> 
+            <void property="referencedColumns"> 
+             <object idref="ArrayList1"/> 
             </void> 
             <void property="schema"> 
              <object id="RowSchema0" class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -629,7 +633,7 @@
                   <object class="java.util.ArrayList"/> 
                  </void> 
                  <void property="keyCols"> 
-                  <object id="ArrayList1" class="java.util.ArrayList"> 
+                  <object id="ArrayList2" class="java.util.ArrayList"> 
                    <void method="add"> 
                     <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                      <void property="children"> 
@@ -720,7 +724,7 @@
                   </object> 
                  </void> 
                  <void property="partitionCols"> 
-                  <object idref="ArrayList1"/> 
+                  <object idref="ArrayList2"/> 
                  </void> 
                  <void property="tag"> 
                   <int>1</int> 
@@ -804,22 +808,35 @@
               <void property="alias"> 
                <string>src3</string> 
               </void> 
+              <void property="neededColumnIDs"> 
+               <object class="java.util.ArrayList"> 
+                <void method="add"> 
+                 <int>0</int> 
+                </void> 
+                <void method="add"> 
+                 <int>1</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void property="neededColumns"> 
+               <object class="java.util.ArrayList"> 
+                <void method="add"> 
+                 <string>key</string> 
+                </void> 
+                <void method="add"> 
+                 <string>value</string> 
+                </void> 
+               </object> 
+              </void> 
               <void property="virtualCols"> 
                <object class="java.util.ArrayList"/> 
               </void> 
              </object> 
             </void> 
-            <void property="neededColumnIDs"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <int>0</int> 
-              </void> 
-              <void method="add"> 
-               <int>1</int> 
-              </void> 
-             </object> 
+            <void property="operatorId"> 
+             <string>TS_1</string> 
             </void> 
-            <void property="neededColumns"> 
+            <void property="referencedColumns"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
                <string>key</string> 
@@ -828,9 +845,6 @@
                <string>value</string> 
               </void> 
              </object> 
-            </void> 
-            <void property="operatorId"> 
-             <string>TS_1</string> 
             </void> 
             <void property="schema"> 
              <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -1722,7 +1736,7 @@
               <object class="java.util.ArrayList"/> 
              </void> 
              <void property="keyCols"> 
-              <object id="ArrayList2" class="java.util.ArrayList"> 
+              <object id="ArrayList3" class="java.util.ArrayList"> 
                <void method="add"> 
                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                  <void property="column"> 
@@ -1792,7 +1806,7 @@
               </object> 
              </void> 
              <void property="partitionCols"> 
-              <object idref="ArrayList2"/> 
+              <object idref="ArrayList3"/> 
              </void> 
              <void property="tag"> 
               <int>1</int> 
@@ -1876,27 +1890,34 @@
           <void property="alias"> 
            <string>src2</string> 
           </void> 
+          <void property="neededColumnIDs"> 
+           <object class="java.util.ArrayList"> 
+            <void method="add"> 
+             <int>0</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void property="neededColumns"> 
+           <object class="java.util.ArrayList"> 
+            <void method="add"> 
+             <string>key</string> 
+            </void> 
+           </object> 
+          </void> 
           <void property="virtualCols"> 
            <object class="java.util.ArrayList"/> 
           </void> 
          </object> 
         </void> 
-        <void property="neededColumnIDs"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <int>0</int> 
-          </void> 
-         </object> 
+        <void property="operatorId"> 
+         <string>TS_0</string> 
         </void> 
-        <void property="neededColumns"> 
+        <void property="referencedColumns"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
            <string>key</string> 
           </void> 
          </object> 
-        </void> 
-        <void property="operatorId"> 
-         <string>TS_0</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -2008,7 +2029,7 @@
               <object class="java.util.ArrayList"/> 
              </void> 
              <void property="keyCols"> 
-              <object id="ArrayList3" class="java.util.ArrayList"> 
+              <object id="ArrayList4" class="java.util.ArrayList"> 
                <void method="add"> 
                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                  <void property="column"> 
@@ -2078,7 +2099,7 @@
               </object> 
              </void> 
              <void property="partitionCols"> 
-              <object idref="ArrayList3"/> 
+              <object idref="ArrayList4"/> 
              </void> 
              <void property="valueCols"> 
               <object class="java.util.ArrayList"> 
@@ -2159,27 +2180,34 @@
           <void property="alias"> 
            <string>src1</string> 
           </void> 
+          <void property="neededColumnIDs"> 
+           <object class="java.util.ArrayList"> 
+            <void method="add"> 
+             <int>0</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void property="neededColumns"> 
+           <object class="java.util.ArrayList"> 
+            <void method="add"> 
+             <string>key</string> 
+            </void> 
+           </object> 
+          </void> 
           <void property="virtualCols"> 
            <object class="java.util.ArrayList"/> 
           </void> 
          </object> 
         </void> 
-        <void property="neededColumnIDs"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <int>0</int> 
-          </void> 
-         </object> 
+        <void property="operatorId"> 
+         <string>TS_2</string> 
         </void> 
-        <void property="neededColumns"> 
+        <void property="referencedColumns"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
            <string>key</string> 
           </void> 
          </object> 
-        </void> 
-        <void property="operatorId"> 
-         <string>TS_2</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 

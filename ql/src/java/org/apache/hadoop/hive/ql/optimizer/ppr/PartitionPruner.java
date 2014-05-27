@@ -212,9 +212,9 @@ public class PartitionPruner implements Transform {
           return isAnd ? children.get(0) : null;
         }
       }
-      return (ExprNodeGenericFuncDesc)expr;
+      return expr;
     } else {
-        throw new IllegalStateException("Unexpected type of ExprNodeDesc: " + expr.getExprString());
+      throw new IllegalStateException("Unexpected type of ExprNodeDesc: " + expr.getExprString());
     }
   }
 
@@ -225,18 +225,23 @@ public class PartitionPruner implements Transform {
    * The expression is only used to prune by partition name, so we have no business with VCs.
    * @param expr original partition pruning expression.
    * @param partCols list of partition columns for the table.
+   * @param referred partition columns referred by expr
    * @return partition pruning expression that only contains partition columns from the list.
    */
-  static private ExprNodeDesc removeNonPartCols(ExprNodeDesc expr, List<String> partCols) {
-    if (expr instanceof ExprNodeColumnDesc
-        && !partCols.contains(((ExprNodeColumnDesc) expr).getColumn())) {
-      // Column doesn't appear to be a partition column for the table.
-      return new ExprNodeConstantDesc(expr.getTypeInfo(), null);
+  static private ExprNodeDesc removeNonPartCols(ExprNodeDesc expr, List<String> partCols,
+      Set<String> referred) {
+    if (expr instanceof ExprNodeColumnDesc) {
+      String column = ((ExprNodeColumnDesc) expr).getColumn();
+      if (!partCols.contains(column)) {
+        // Column doesn't appear to be a partition column for the table.
+        return new ExprNodeConstantDesc(expr.getTypeInfo(), null);
+      }
+      referred.add(column);
     }
     if (expr instanceof ExprNodeGenericFuncDesc) {
       List<ExprNodeDesc> children = expr.getChildren();
       for (int i = 0; i < children.size(); ++i) {
-        children.set(i, removeNonPartCols(children.get(i), partCols));
+        children.set(i, removeNonPartCols(children.get(i), partCols, referred));
       }
     }
     return expr;
@@ -266,7 +271,7 @@ public class PartitionPruner implements Transform {
     try {
       if (!tab.isPartitioned()) {
         // If the table is not partitioned, return everything.
-        return new PrunedPartitionList(tab, getAllPartitions(tab), false);
+        return new PrunedPartitionList(tab, getAllPartitions(tab), null, false);
       }
       LOG.debug("tabname = " + tab.getTableName() + " is partitioned");
 
@@ -279,18 +284,19 @@ public class PartitionPruner implements Transform {
 
       if (prunerExpr == null) {
         // Non-strict mode, and there is no predicates at all - get everything.
-        return new PrunedPartitionList(tab, getAllPartitions(tab), false);
+        return new PrunedPartitionList(tab, getAllPartitions(tab), null, false);
       }
 
+      Set<String> referred = new LinkedHashSet<String>();
       // Replace virtual columns with nulls. See javadoc for details.
-      prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab));
+      prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab), referred);
       // Remove all parts that are not partition columns. See javadoc for details.
       ExprNodeGenericFuncDesc compactExpr = (ExprNodeGenericFuncDesc)compactExpr(prunerExpr.clone());
       String oldFilter = prunerExpr.getExprString();
       if (compactExpr == null) {
         // Non-strict mode, and all the predicates are on non-partition columns - get everything.
         LOG.debug("Filter " + oldFilter + " was null after compacting");
-        return new PrunedPartitionList(tab, getAllPartitions(tab), true);
+        return new PrunedPartitionList(tab, getAllPartitions(tab), null, true);
       }
 
       LOG.debug("Filter w/ compacting: " + compactExpr.getExprString()
@@ -326,6 +332,7 @@ public class PartitionPruner implements Transform {
       // metastore and so some partitions may have no data based on other filters.
       boolean isPruningByExactFilter = oldFilter.equals(compactExpr.getExprString());
       return new PrunedPartitionList(tab, new LinkedHashSet<Partition>(partitions),
+          new ArrayList<String>(referred),
           hasUnknownPartitions || !isPruningByExactFilter);
     } catch (HiveException e) {
       throw e;

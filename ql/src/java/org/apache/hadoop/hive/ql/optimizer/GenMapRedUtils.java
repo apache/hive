@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -927,6 +928,7 @@ public final class GenMapRedUtils {
     }
     tableScanOp.setNeededColumnIDs(neededColumnIds);
     tableScanOp.setNeededColumns(neededColumnNames);
+    tableScanOp.setReferencedColumns(neededColumnNames);
     return tableScanOp;
   }
 
@@ -1745,6 +1747,14 @@ public final class GenMapRedUtils {
       confirmedPartns.addAll(tblSpec.partitions);
     }
     return confirmedPartns;
+  }
+
+  public static List<String> getPartitionColumns(QBParseInfo parseInfo) {
+    tableSpec tblSpec = parseInfo.getTableSpec();
+    if (tblSpec.tableHandle.isPartitioned()) {
+      return new ArrayList<String>(tblSpec.getPartSpec().keySet());
+    }
+    return Collections.emptyList();
   }
 
   public static List<Path> getInputPathsForPartialScan(QBParseInfo parseInfo, StringBuffer aggregationKey) 

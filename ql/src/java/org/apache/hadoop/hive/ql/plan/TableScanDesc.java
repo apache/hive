@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 
 /**
@@ -33,6 +34,10 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 @Explain(displayName = "TableScan")
 public class TableScanDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
+
+  static {
+    PTFUtils.makeTransient(TableScanDesc.class, "filterObject", "referencedColumns");
+  }
 
   private String alias;
 
@@ -63,6 +68,16 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   private ExprNodeGenericFuncDesc filterExpr;
   private transient Serializable filterObject;
+
+  // Both neededColumnIDs and neededColumns should never be null.
+  // When neededColumnIDs is an empty list,
+  // it means no needed column (e.g. we do not need any column to evaluate
+  // SELECT count(*) FROM t).
+  private List<Integer> neededColumnIDs;
+  private List<String> neededColumns;
+
+  // all column names referenced including virtual columns. used in ColumnAccessAnalyzer
+  private transient List<String> referencedColumns;
 
   public static final String FILTER_EXPR_CONF_STR =
     "hive.io.filter.expr.serialized";
@@ -123,6 +138,30 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public void setFilterObject(Serializable filterObject) {
     this.filterObject = filterObject;
+  }
+
+  public void setNeededColumnIDs(List<Integer> neededColumnIDs) {
+    this.neededColumnIDs = neededColumnIDs;
+  }
+
+  public List<Integer> getNeededColumnIDs() {
+    return neededColumnIDs;
+  }
+
+  public void setNeededColumns(List<String> neededColumns) {
+    this.neededColumns = neededColumns;
+  }
+
+  public List<String> getNeededColumns() {
+    return neededColumns;
+  }
+
+  public void setReferencedColumns(List<String> referencedColumns) {
+    this.referencedColumns = referencedColumns;
+  }
+
+  public List<String> getReferencedColumns() {
+    return referencedColumns;
   }
 
   public void setAlias(String alias) {
