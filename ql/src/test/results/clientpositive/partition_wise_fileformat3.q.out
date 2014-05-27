@@ -80,9 +80,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:1
-totalFileSize:888
-maxFileSize:888
-minFileSize:888
+totalFileSize:603
+maxFileSize:603
+minFileSize:603
 #### A masked pattern was here ####
 
 PREHOOK: query: select key from partition_test_partitioned where dt=102
@@ -156,9 +156,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:1
-totalFileSize:888
-maxFileSize:888
-minFileSize:888
+totalFileSize:603
+maxFileSize:603
+minFileSize:603
 #### A masked pattern was here ####
 
 PREHOOK: query: select key from partition_test_partitioned where dt=101
