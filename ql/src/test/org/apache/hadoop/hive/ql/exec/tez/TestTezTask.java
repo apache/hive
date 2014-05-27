@@ -29,13 +29,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -61,7 +58,6 @@ import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.EdgeProperty;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.SessionNotRunning;
-import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.junit.After;
@@ -202,8 +198,7 @@ public class TestTezTask {
   }
 
   @Test
-  public void testSubmit() throws LoginException, IllegalArgumentException,
-  IOException, TezException, InterruptedException, URISyntaxException, HiveException {
+  public void testSubmit() throws Exception {
     DAG dag = new DAG("test");
     task.submit(conf, dag, path, appLr, sessionState);
     // validate close/reopen
