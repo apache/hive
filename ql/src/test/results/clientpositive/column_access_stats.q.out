@@ -58,21 +58,21 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t4
 #### A masked pattern was here ####
 Table:default@t4
-Columns:key,val
+Columns:key,p,val
 
 PREHOOK: query: SELECT val FROM T4 where p=1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t4
 #### A masked pattern was here ####
 Table:default@t4
-Columns:val
+Columns:p,val
 
 PREHOOK: query: SELECT p, val FROM T4 where p=1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t4
 #### A masked pattern was here ####
 Table:default@t4
-Columns:val
+Columns:p,val
 
 PREHOOK: query: -- More complicated select queries
 EXPLAIN SELECT key FROM (SELECT key, val FROM T1) subq1 ORDER BY key
@@ -950,3 +950,63 @@ Columns:key,val
 7	7	17.0
 8	8	46.0
 8	8	46.0
+PREHOOK: query: -- for partitioned table
+SELECT * FROM srcpart TABLESAMPLE (10 ROWS)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+Table:default@srcpart
+Columns:ds,hr,key,value
+
+238	val_238	2008-04-08	11
+86	val_86	2008-04-08	11
+311	val_311	2008-04-08	11
+27	val_27	2008-04-08	11
+165	val_165	2008-04-08	11
+409	val_409	2008-04-08	11
+255	val_255	2008-04-08	11
+278	val_278	2008-04-08	11
+98	val_98	2008-04-08	11
+484	val_484	2008-04-08	11
+PREHOOK: query: SELECT key,ds FROM srcpart TABLESAMPLE (10 ROWS) WHERE hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
+Table:default@srcpart
+Columns:ds,hr,key
+
+238	2008-04-08
+86	2008-04-08
+311	2008-04-08
+27	2008-04-08
+165	2008-04-08
+409	2008-04-08
+255	2008-04-08
+278	2008-04-08
+98	2008-04-08
+484	2008-04-08
+PREHOOK: query: SELECT value FROM srcpart TABLESAMPLE (10 ROWS) WHERE ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+Table:default@srcpart
+Columns:ds,value
+
+val_238
+val_86
+val_311
+val_27
+val_165
+val_409
+val_255
+val_278
+val_98
+val_484

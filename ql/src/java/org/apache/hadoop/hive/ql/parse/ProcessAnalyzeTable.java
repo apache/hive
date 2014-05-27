@@ -28,7 +28,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -40,12 +39,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
-import org.apache.hadoop.hive.ql.parse.GenTezWork;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.QBParseInfo;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.StatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -150,7 +143,8 @@ public class ProcessAnalyzeTable implements NodeProcessor {
       PrunedPartitionList partitions = null;
       if (confirmedPartns.size() > 0) {
         Table source = queryBlock.getMetaData().getTableForAlias(alias);
-        partitions = new PrunedPartitionList(source, confirmedPartns, false);
+        List<String> partCols = GenMapRedUtils.getPartitionColumns(parseInfo);
+        partitions = new PrunedPartitionList(source, confirmedPartns, partCols, false);
       }
 
       MapWork w = utils.createMapWork(context, tableScan, tezWork, partitions);

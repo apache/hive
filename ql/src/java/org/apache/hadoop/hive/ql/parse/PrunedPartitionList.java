@@ -36,11 +36,16 @@ public class PrunedPartitionList {
   /** Partitions that either satisfy the partition criteria, or may satisfy it. */
   private Set<Partition> partitions;
 
+  /** partition columns referred by pruner expr */
+  private List<String> referred;
+
   /** Whether there are partitions in the list that may or may not satisfy the criteria. */
   private boolean hasUnknowns;
 
-  public PrunedPartitionList(Table source, Set<Partition> partitions, boolean hasUnknowns) {
+  public PrunedPartitionList(Table source, Set<Partition> partitions, List<String> referred,
+      boolean hasUnknowns) {
     this.source = source;
+    this.referred = referred;
     this.partitions = partitions;
     this.hasUnknowns = hasUnknowns;
   }
@@ -69,5 +74,9 @@ public class PrunedPartitionList {
    */
   public boolean hasUnknownPartitions() {
     return hasUnknowns;
+  }
+
+  public List<String> getReferredPartCols() {
+    return referred;
   }
 }
