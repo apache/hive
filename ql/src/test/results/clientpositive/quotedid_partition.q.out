@@ -36,7 +36,7 @@ POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSch
 POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1

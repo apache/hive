@@ -60,7 +60,7 @@ POSTHOOK: Lineage: t1 PARTITION(ds=2).key SIMPLE [(t1)t1.FieldSchema(name:key, t
 POSTHOOK: Lineage: t1 PARTITION(ds=2).val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1

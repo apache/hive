@@ -122,7 +122,7 @@ POSTHOOK: Lineage: default__show_idx_full_idx_compound__.key SIMPLE [(show_idx_f
 POSTHOOK: Lineage: default__show_idx_full_idx_compound__.value1 SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:value1, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-1 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
@@ -175,7 +175,7 @@ POSTHOOK: Lineage: default__show_idx_full_idx_compound__.key SIMPLE [(show_idx_f
 POSTHOOK: Lineage: default__show_idx_full_idx_compound__.value1 SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:value1, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-1 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0

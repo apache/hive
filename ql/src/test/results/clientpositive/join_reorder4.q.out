@@ -50,7 +50,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-5
@@ -150,7 +150,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-5
@@ -250,7 +250,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-5

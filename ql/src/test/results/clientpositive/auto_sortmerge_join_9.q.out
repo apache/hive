@@ -56,7 +56,7 @@ POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -149,7 +149,7 @@ POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -279,7 +279,7 @@ POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-3 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -440,7 +440,7 @@ STAGE DEPENDENCIES:
   Stage-8 depends on stages: Stage-11
   Stage-3
   Stage-5 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
@@ -752,7 +752,7 @@ POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -863,7 +863,7 @@ POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -998,7 +998,7 @@ POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1123,7 +1123,7 @@ POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1225,7 +1225,7 @@ POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-5
@@ -1351,7 +1351,7 @@ POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1446,7 +1446,7 @@ POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1544,7 +1544,7 @@ POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1666,7 +1666,7 @@ POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1778,7 +1778,7 @@ STAGE DEPENDENCIES:
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-4, Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -1993,7 +1993,7 @@ STAGE DEPENDENCIES:
   Stage-8 has a backup stage: Stage-1
   Stage-5 depends on stages: Stage-8
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-6
@@ -2259,7 +2259,7 @@ STAGE DEPENDENCIES:
   Stage-8 has a backup stage: Stage-1
   Stage-5 depends on stages: Stage-8
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-6
@@ -2565,7 +2565,7 @@ STAGE DEPENDENCIES:
   Stage-21 has a backup stage: Stage-5
   Stage-14 depends on stages: Stage-21
   Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-12
@@ -3144,7 +3144,7 @@ STAGE DEPENDENCIES:
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-4, Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -3397,7 +3397,7 @@ STAGE DEPENDENCIES:
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-4, Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -3664,7 +3664,7 @@ STAGE DEPENDENCIES:
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-4, Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -3931,7 +3931,7 @@ STAGE DEPENDENCIES:
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-4, Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -4170,7 +4170,7 @@ STAGE DEPENDENCIES:
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-4, Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -4397,7 +4397,7 @@ STAGE DEPENDENCIES:
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-4, Stage-1
 
 STAGE PLANS:
   Stage: Stage-5
@@ -4629,7 +4629,7 @@ STAGE DEPENDENCIES:
   Stage-10 has a backup stage: Stage-1
   Stage-6 depends on stages: Stage-10
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4, Stage-5, Stage-6, Stage-1
 
 STAGE PLANS:
   Stage: Stage-7
@@ -5035,7 +5035,7 @@ STAGE DEPENDENCIES:
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-4, Stage-1
 
 STAGE PLANS:
   Stage: Stage-5

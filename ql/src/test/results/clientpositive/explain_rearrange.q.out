@@ -66,7 +66,7 @@ STAGE DEPENDENCIES:
   Stage-8 depends on stages: Stage-11 [MAPRED]
   Stage-3 [MAPRED]
   Stage-5 is a root stage [MAPRED]
-  Stage-0 is a root stage [FETCH]
+  Stage-0 depends on stages: Stage-4 [FETCH]
 
 STAGE PLANS:
   Stage: Stage-1
@@ -354,7 +354,7 @@ STAGE DEPENDENCIES:
   Stage-7 depends on stages: Stage-6 [MAPRED]
   Stage-8 [MAPRED]
   Stage-9 is a root stage [MAPRED]
-  Stage-10 is a root stage [FETCH]
+  Stage-10 depends on stages: Stage-5 [FETCH]
 
 STAGE PLANS:
   Stage: Stage-1
@@ -642,7 +642,7 @@ STAGE DEPENDENCIES:
   Stage-7 depends on stages: Stage-6 [MAPRED]
   Stage-8 [MAPRED]
   Stage-9 depends on stages: Stage-8, Stage-5, Stage-7 [MAPRED]
-  Stage-10 is a root stage [FETCH]
+  Stage-10 depends on stages: Stage-9 [FETCH]
 
 STAGE PLANS:
   Stage: Stage-1
@@ -930,7 +930,7 @@ STAGE DEPENDENCIES:
   Stage-7 depends on stages: Stage-4 [MAPRED]
   Stage-8 depends on stages: Stage-5 [MAPRED]
   Stage-9 depends on stages: Stage-6, Stage-7, Stage-8 [MAPRED]
-  Stage-10 is a root stage [FETCH]
+  Stage-10 depends on stages: Stage-9 [FETCH]
 
 STAGE PLANS:
   Stage: Stage-1

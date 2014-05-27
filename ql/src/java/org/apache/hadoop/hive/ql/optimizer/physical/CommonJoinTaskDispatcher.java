@@ -463,6 +463,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         MapRedTask newTask = convertTaskToMapJoinTask(currTask.getWork(), bigTablePosition);
 
         newTask.setTaskTag(Task.MAPJOIN_ONLY_NOBACKUP);
+        newTask.setFetchSource(currTask.isFetchSource());
         replaceTask(currTask, newTask, physicalContext);
 
         // Can this task be merged with the child task. This can happen if a big table is being
@@ -500,6 +501,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         listWorks.add(newTask.getWork());
         listTasks.add(newTask);
         newTask.setTaskTag(Task.CONVERTED_MAPJOIN);
+        newTask.setFetchSource(currTask.isFetchSource());
 
         // set up backup task
         newTask.setBackupTask(currTask);

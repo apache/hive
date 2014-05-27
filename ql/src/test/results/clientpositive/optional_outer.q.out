@@ -4,7 +4,7 @@ POSTHOOK: query: EXPLAIN SELECT * FROM src a LEFT OUTER JOIN src b on (a.key=b.k
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -61,7 +61,7 @@ POSTHOOK: query: EXPLAIN SELECT * FROM src a LEFT JOIN src b on (a.key=b.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -118,7 +118,7 @@ POSTHOOK: query: EXPLAIN SELECT * FROM src a RIGHT OUTER JOIN src b on (a.key=b.
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -175,7 +175,7 @@ POSTHOOK: query: EXPLAIN SELECT * FROM src a RIGHT JOIN src b on (a.key=b.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -232,7 +232,7 @@ POSTHOOK: query: EXPLAIN SELECT * FROM src a FULL OUTER JOIN src b on (a.key=b.k
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -289,7 +289,7 @@ POSTHOOK: query: EXPLAIN SELECT * FROM src a FULL JOIN src b on (a.key=b.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1

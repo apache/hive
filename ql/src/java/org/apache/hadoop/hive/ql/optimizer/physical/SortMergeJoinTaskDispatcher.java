@@ -313,6 +313,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
         listWorks.add(newTask.getWork());
         listTasks.add(newTask);
         newTask.setTaskTag(Task.CONVERTED_MAPJOIN);
+        newTask.setFetchSource(currTask.isFetchSource());
 
         // set up backup task
         newTask.setBackupTask(currTask);

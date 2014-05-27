@@ -51,7 +51,7 @@ STAGE DEPENDENCIES:
   Stage-5 has a backup stage: Stage-1
   Stage-3 depends on stages: Stage-5
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-1
 
 STAGE PLANS:
   Stage: Stage-4
@@ -206,7 +206,7 @@ STAGE DEPENDENCIES:
   Stage-5 has a backup stage: Stage-1
   Stage-3 depends on stages: Stage-5
   Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3, Stage-1
 
 STAGE PLANS:
   Stage: Stage-4

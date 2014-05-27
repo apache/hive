@@ -27,7 +27,7 @@ STAGE DEPENDENCIES:
   Stage-4 depends on stages: Stage-3
   Stage-6 is a root stage
   Stage-7 depends on stages: Stage-6
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
@@ -295,7 +295,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -510,7 +510,7 @@ STAGE DEPENDENCIES:
   Stage-9 is a root stage
   Stage-2 depends on stages: Stage-9
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-9
@@ -760,7 +760,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -918,7 +918,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1090,7 +1090,7 @@ STAGE DEPENDENCIES:
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
   Stage-4 depends on stages: Stage-3
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1282,7 +1282,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1466,7 +1466,7 @@ STAGE DEPENDENCIES:
   Stage-4 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-3
@@ -1680,7 +1680,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1890,7 +1890,7 @@ STAGE DEPENDENCIES:
   Stage-4 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-3
@@ -2128,7 +2128,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2352,7 +2352,7 @@ STAGE DEPENDENCIES:
   Stage-4 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-3
@@ -2580,7 +2580,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2808,7 +2808,7 @@ STAGE DEPENDENCIES:
   Stage-4 depends on stages: Stage-3
   Stage-5 depends on stages: Stage-4
   Stage-7 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3111,7 +3111,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3418,7 +3418,7 @@ STAGE DEPENDENCIES:
   Stage-4 depends on stages: Stage-3
   Stage-6 is a root stage
   Stage-7 depends on stages: Stage-6
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3688,7 +3688,7 @@ STAGE DEPENDENCIES:
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
   Stage-4 depends on stages: Stage-3
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3943,7 +3943,7 @@ STAGE DEPENDENCIES:
   Stage-10 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-10
   Stage-4 depends on stages: Stage-3
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-11

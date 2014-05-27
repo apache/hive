@@ -58,7 +58,7 @@ POSTHOOK: Lineage: npe_test PARTITION(ds=2012-12-12).key SIMPLE [(src)src.FieldS
 POSTHOOK: Lineage: npe_test PARTITION(ds=2012-12-12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1

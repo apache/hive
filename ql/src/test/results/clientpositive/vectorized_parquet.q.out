@@ -63,7 +63,7 @@ POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.Fi
 POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -153,7 +153,7 @@ POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.Fi
 POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1

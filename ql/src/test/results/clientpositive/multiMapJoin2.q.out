@@ -17,7 +17,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
   Stage-2 depends on stages: Stage-8
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-8
@@ -260,7 +260,7 @@ STAGE DEPENDENCIES:
   Stage-7 depends on stages: Stage-9
   Stage-8 depends on stages: Stage-7
   Stage-2 depends on stages: Stage-8
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-9
@@ -516,7 +516,7 @@ STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-6 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-6
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-4
@@ -763,7 +763,7 @@ STAGE DEPENDENCIES:
   Stage-3
   Stage-18 is a root stage
   Stage-8 depends on stages: Stage-18
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-17
@@ -1187,7 +1187,7 @@ STAGE DEPENDENCIES:
   Stage-9 is a root stage
   Stage-2 depends on stages: Stage-9
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-9
@@ -1492,7 +1492,7 @@ STAGE DEPENDENCIES:
   Stage-3
   Stage-14 is a root stage
   Stage-2 depends on stages: Stage-14
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-7
@@ -1883,7 +1883,7 @@ STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-2 depends on stages: Stage-7
   Stage-3 depends on stages: Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-7
@@ -2170,7 +2170,7 @@ POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-5
@@ -2305,7 +2305,7 @@ STAGE DEPENDENCIES:
   Stage-4 depends on stages: Stage-16
   Stage-18 is a root stage
   Stage-7 depends on stages: Stage-18
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-17
