@@ -32,7 +32,7 @@ STAGE DEPENDENCIES:
   Stage-4
   Stage-6
   Stage-7 depends on stages: Stage-6
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-3
@@ -162,7 +162,7 @@ STAGE DEPENDENCIES:
   Stage-4
   Stage-6
   Stage-7 depends on stages: Stage-6
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-3

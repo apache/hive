@@ -19,7 +19,7 @@ STAGE DEPENDENCIES:
   Stage-4 depends on stages: Stage-9
   Stage-8 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-8
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-9
@@ -211,7 +211,7 @@ STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-1 depends on stages: Stage-6
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-6
@@ -425,7 +425,7 @@ STAGE DEPENDENCIES:
   Stage-4 depends on stages: Stage-9
   Stage-8 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-8
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-9
@@ -617,7 +617,7 @@ STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-1 depends on stages: Stage-6
   Stage-2 depends on stages: Stage-1
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-6

@@ -228,7 +228,7 @@ POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-2 depends on stages: Stage-7
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-7
@@ -404,7 +404,7 @@ POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-2 depends on stages: Stage-7
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-7
@@ -584,7 +584,7 @@ POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-2 depends on stages: Stage-7
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-7
@@ -953,7 +953,7 @@ STAGE DEPENDENCIES:
   Stage-28 has a backup stage: Stage-5
   Stage-19 depends on stages: Stage-28
   Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-20
@@ -1716,7 +1716,7 @@ POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type
 STAGE DEPENDENCIES:
   Stage-13 is a root stage
   Stage-4 depends on stages: Stage-13
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-13
@@ -2065,7 +2065,7 @@ STAGE DEPENDENCIES:
   Stage-11 depends on stages: Stage-14
   Stage-13 depends on stages: Stage-11
   Stage-4 depends on stages: Stage-13
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-14
@@ -2451,7 +2451,7 @@ STAGE DEPENDENCIES:
   Stage-28 has a backup stage: Stage-5
   Stage-19 depends on stages: Stage-28
   Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-20

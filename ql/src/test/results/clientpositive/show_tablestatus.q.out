@@ -6,7 +6,7 @@ SHOW TABLE EXTENDED IN default LIKE `src`
 POSTHOOK: type: SHOW_TABLESTATUS
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-1 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0

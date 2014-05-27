@@ -192,7 +192,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     List<Task> ordered = StageIDsRearranger.getExplainOrder(conf, tasks);
 
     if (fetchTask != null) {
-      fetchTask.setRootTask(true);  // todo HIVE-3925
+      fetchTask.setParentTasks((List)StageIDsRearranger.getFetchSources(tasks));
+      if (fetchTask.getNumParent() == 0) {
+        fetchTask.setRootTask(true);
+      }
       ordered.add(fetchTask);
     }
 
@@ -212,6 +215,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (jsonOutput) {
       outJSONObject.put("STAGE PLANS", jsonPlan);
+    }
+
+    if (fetchTask != null) {
+      fetchTask.setParentTasks(null);
     }
 
     return jsonOutput ? outJSONObject : null;

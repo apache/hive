@@ -297,6 +297,8 @@ public class MapReduceCompiler extends TaskCompiler {
 
     // generate map reduce plans
     ParseContext tempParseContext = getParseContext(pCtx, rootTasks);
+    tempParseContext.setFetchTask(pCtx.getFetchTask());
+
     GenMRProcContext procCtx = new GenMRProcContext(
         conf,
         new HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>>(),

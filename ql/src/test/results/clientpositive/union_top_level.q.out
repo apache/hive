@@ -23,7 +23,7 @@ STAGE DEPENDENCIES:
   Stage-2 depends on stages: Stage-1, Stage-3, Stage-4
   Stage-3 is a root stage
   Stage-4 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -230,7 +230,7 @@ STAGE DEPENDENCIES:
   Stage-3 depends on stages: Stage-2, Stage-6
   Stage-5 is a root stage
   Stage-6 depends on stages: Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1

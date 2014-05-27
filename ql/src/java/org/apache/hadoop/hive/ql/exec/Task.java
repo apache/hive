@@ -47,6 +47,10 @@ import org.apache.hadoop.util.StringUtils;
 
 public abstract class Task<T extends Serializable> implements Serializable, Node {
 
+  static {
+    PTFUtils.makeTransient(Task.class, "fetchSource");
+  }
+
   private static final long serialVersionUID = 1L;
   public transient HashMap<String, Long> taskCounters;
   public transient TaskHandle taskHandle;
@@ -86,6 +90,8 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   protected String id;
   protected T work;
+
+  private transient boolean fetchSource;
 
   public static enum FeedType {
     DYNAMIC_PARTITIONS, // list of dynamic partitions
@@ -188,6 +194,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return childTasks;
   }
 
+  public int getNumChild() {
+    return childTasks == null ? 0 : childTasks.size();
+  }
+
   public void setParentTasks(List<Task<? extends Serializable>> parentTasks) {
     this.parentTasks = parentTasks;
   }
@@ -196,10 +206,13 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return parentTasks;
   }
 
+  public int getNumParent() {
+    return parentTasks == null ? 0 : parentTasks.size();
+  }
+
   public Task<? extends Serializable> getBackupTask() {
     return backupTask;
   }
-
 
   public void setBackupTask(Task<? extends Serializable> backupTask) {
     this.backupTask = backupTask;
@@ -512,6 +525,14 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public void setConsole(LogHelper console) {
     this.console = console;
+  }
+
+  public boolean isFetchSource() {
+    return fetchSource;
+  }
+
+  public void setFetchSource(boolean fetchSource) {
+    this.fetchSource = fetchSource;
   }
 
   @Override

@@ -33,7 +33,7 @@ POSTHOOK: query: EXPLAIN SELECT * FROM symlink_text_input_format order by key, v
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -98,7 +98,7 @@ POSTHOOK: query: EXPLAIN SELECT value FROM symlink_text_input_format order by va
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -163,7 +163,7 @@ POSTHOOK: query: EXPLAIN SELECT count(1) FROM symlink_text_input_format
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1

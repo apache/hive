@@ -36,7 +36,7 @@ POSTHOOK: Lineage: default__show_idx_t1_idx_t1__._offsets EXPRESSION [(show_idx_
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__.key SIMPLE [(show_idx_t1)show_idx_t1.FieldSchema(name:key, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-1 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
@@ -68,7 +68,7 @@ POSTHOOK: Lineage: default__show_idx_t1_idx_t1__._offsets EXPRESSION [(show_idx_
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__.key SIMPLE [(show_idx_t1)show_idx_t1.FieldSchema(name:key, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-1 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
@@ -100,7 +100,7 @@ POSTHOOK: Lineage: default__show_idx_t1_idx_t1__._offsets EXPRESSION [(show_idx_
 POSTHOOK: Lineage: default__show_idx_t1_idx_t1__.key SIMPLE [(show_idx_t1)show_idx_t1.FieldSchema(name:key, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-1 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0

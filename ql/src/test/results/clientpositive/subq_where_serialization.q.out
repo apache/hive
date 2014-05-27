@@ -8,7 +8,7 @@ STAGE DEPENDENCIES:
   Stage-6 has a backup stage: Stage-2
   Stage-4 depends on stages: Stage-6
   Stage-2
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4, Stage-2
 
 STAGE PLANS:
   Stage: Stage-1

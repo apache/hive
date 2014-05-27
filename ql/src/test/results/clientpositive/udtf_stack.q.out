@@ -9,7 +9,7 @@ POSTHOOK: query: EXPLAIN SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -76,7 +76,7 @@ POSTHOOK: query: EXPLAIN SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1

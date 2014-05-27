@@ -28,7 +28,7 @@ POSTHOOK: Lineage: src0.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-5

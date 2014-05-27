@@ -116,7 +116,7 @@ POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(alltypesorc)alltypesorc.Fiel
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-4 depends on stages: Stage-6
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-6

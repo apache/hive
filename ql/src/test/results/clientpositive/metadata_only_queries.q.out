@@ -291,7 +291,7 @@ POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).t SIMPLE [(over10k)over10k.
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -389,7 +389,7 @@ POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).t SIMPLE [(over10k)over10k.
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -921,7 +921,7 @@ POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).t SIMPLE [(over10k)over10k.
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1

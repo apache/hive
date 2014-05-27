@@ -42,7 +42,7 @@ STAGE DEPENDENCIES:
   Stage-5 depends on stages: Stage-4
   Stage-6 is a root stage
   Stage-7 depends on stages: Stage-6
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1

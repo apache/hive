@@ -59,7 +59,7 @@ POSTHOOK: Lineage: part PARTITION(d=2008-04-08).c EXPRESSION [(srcpart)srcpart.F
 POSTHOOK: Lineage: part PARTITION(d=2008-04-09).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1

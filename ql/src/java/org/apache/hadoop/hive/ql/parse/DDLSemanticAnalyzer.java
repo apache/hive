@@ -496,6 +496,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     default:
       throw new SemanticException("Unsupported command.");
     }
+    if (fetchTask != null && !rootTasks.isEmpty()) {
+      rootTasks.get(rootTasks.size() - 1).setFetchSource(true);
+    }
   }
 
   private void analyzeSetShowRole(ASTNode ast) throws SemanticException {

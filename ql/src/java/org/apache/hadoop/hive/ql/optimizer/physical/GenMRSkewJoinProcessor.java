@@ -337,6 +337,8 @@ public final class GenMRSkewJoinProcessor {
       w.setMapWork(newPlan);
 
       Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(w, jc);
+      skewJoinMapJoinTask.setFetchSource(currTask.isFetchSource());
+
       bigKeysDirToTaskMap.put(bigKeyDirPath, skewJoinMapJoinTask);
       listWorks.add(skewJoinMapJoinTask.getWork());
       listTasks.add(skewJoinMapJoinTask);
