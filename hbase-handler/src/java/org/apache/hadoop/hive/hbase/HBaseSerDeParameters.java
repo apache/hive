@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -27,9 +30,6 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import java.util.List;
-import java.util.Properties;
-
 /**
  * HBaseSerDeParameters encapsulates SerDeParameters and additional configurations that are specific for
  * HBaseSerDe.
@@ -37,8 +37,10 @@ import java.util.Properties;
  */
 public class HBaseSerDeParameters {
 
-  private final String serdeName;
   private final SerDeParameters serdeParams;
+
+  private final Configuration job;
+  private final Properties tbl;
 
   private final String columnMappingString;
   private final ColumnMappings columnMappings;
@@ -48,7 +50,8 @@ public class HBaseSerDeParameters {
   private final HBaseKeyFactory keyFactory;
 
   HBaseSerDeParameters(Configuration job, Properties tbl, String serdeName) throws SerDeException {
-    this.serdeName = serdeName;
+    this.job = job;
+    this.tbl = tbl;
     this.serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, serdeName);
     this.putTimestamp = Long.valueOf(tbl.getProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP, "-1"));
 
@@ -128,6 +131,10 @@ public class HBaseSerDeParameters {
 
   public HBaseKeyFactory getKeyFactory() {
     return keyFactory;
+  }
+
+  public Configuration getBaseConfiguration() {
+    return job;
   }
 
   public TypeInfo getTypeForName(String columnName) {
