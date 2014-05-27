@@ -1,0 +1,531 @@
+PREHOOK: query: create table alter_file_format_test (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table alter_file_format_test (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_file_format_test
+PREHOOK: query: desc FORMATTED alter_file_format_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_file_format_test
+POSTHOOK: query: desc FORMATTED alter_file_format_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_file_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_file_format_test set fileformat rcfile
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@alter_file_format_test
+PREHOOK: Output: default@alter_file_format_test
+POSTHOOK: query: alter table alter_file_format_test set fileformat rcfile
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@alter_file_format_test
+POSTHOOK: Output: default@alter_file_format_test
+PREHOOK: query: desc FORMATTED alter_file_format_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_file_format_test
+POSTHOOK: query: desc FORMATTED alter_file_format_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_file_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_file_format_test set fileformat textfile
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@alter_file_format_test
+PREHOOK: Output: default@alter_file_format_test
+POSTHOOK: query: alter table alter_file_format_test set fileformat textfile
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@alter_file_format_test
+POSTHOOK: Output: default@alter_file_format_test
+PREHOOK: query: desc FORMATTED alter_file_format_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_file_format_test
+POSTHOOK: query: desc FORMATTED alter_file_format_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_file_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_file_format_test set fileformat rcfile
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@alter_file_format_test
+PREHOOK: Output: default@alter_file_format_test
+POSTHOOK: query: alter table alter_file_format_test set fileformat rcfile
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@alter_file_format_test
+POSTHOOK: Output: default@alter_file_format_test
+PREHOOK: query: desc FORMATTED alter_file_format_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_file_format_test
+POSTHOOK: query: desc FORMATTED alter_file_format_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_file_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_file_format_test set fileformat sequencefile
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@alter_file_format_test
+PREHOOK: Output: default@alter_file_format_test
+POSTHOOK: query: alter table alter_file_format_test set fileformat sequencefile
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@alter_file_format_test
+POSTHOOK: Output: default@alter_file_format_test
+PREHOOK: query: desc FORMATTED alter_file_format_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_file_format_test
+POSTHOOK: query: desc FORMATTED alter_file_format_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_file_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.mapred.SequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: ALTER TABLE alter_file_format_test SET FILEFORMAT INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat' SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@alter_file_format_test
+PREHOOK: Output: default@alter_file_format_test
+POSTHOOK: query: ALTER TABLE alter_file_format_test SET FILEFORMAT INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat' SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@alter_file_format_test
+POSTHOOK: Output: default@alter_file_format_test
+PREHOOK: query: desc FORMATTED alter_file_format_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_file_format_test
+POSTHOOK: query: desc FORMATTED alter_file_format_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_file_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table alter_partition_format_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table alter_partition_format_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: --partitioned table
+create table alter_partition_format_test (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: --partitioned table
+create table alter_partition_format_test (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_partition_format_test
+PREHOOK: query: alter table alter_partition_format_test add partition(ds='2010')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@alter_partition_format_test
+POSTHOOK: query: alter table alter_partition_format_test add partition(ds='2010')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@alter_partition_format_test
+POSTHOOK: Output: default@alter_partition_format_test@ds=2010
+PREHOOK: query: desc FORMATTED alter_partition_format_test partition(ds='2010')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_format_test
+POSTHOOK: query: desc FORMATTED alter_partition_format_test partition(ds='2010')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2010]              	 
+Database:           	default             	 
+Table:              	alter_partition_format_test	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_partition_format_test partition(ds='2010') set fileformat rcfile
+PREHOOK: type: ALTERPARTITION_FILEFORMAT
+PREHOOK: Input: default@alter_partition_format_test
+PREHOOK: Output: default@alter_partition_format_test@ds=2010
+POSTHOOK: query: alter table alter_partition_format_test partition(ds='2010') set fileformat rcfile
+POSTHOOK: type: ALTERPARTITION_FILEFORMAT
+POSTHOOK: Input: default@alter_partition_format_test
+POSTHOOK: Input: default@alter_partition_format_test@ds=2010
+POSTHOOK: Output: default@alter_partition_format_test@ds=2010
+PREHOOK: query: desc FORMATTED alter_partition_format_test partition(ds='2010')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_format_test
+POSTHOOK: query: desc FORMATTED alter_partition_format_test partition(ds='2010')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2010]              	 
+Database:           	default             	 
+Table:              	alter_partition_format_test	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_partition_format_test partition(ds='2010') set fileformat textfile
+PREHOOK: type: ALTERPARTITION_FILEFORMAT
+PREHOOK: Input: default@alter_partition_format_test
+PREHOOK: Output: default@alter_partition_format_test@ds=2010
+POSTHOOK: query: alter table alter_partition_format_test partition(ds='2010') set fileformat textfile
+POSTHOOK: type: ALTERPARTITION_FILEFORMAT
+POSTHOOK: Input: default@alter_partition_format_test
+POSTHOOK: Input: default@alter_partition_format_test@ds=2010
+POSTHOOK: Output: default@alter_partition_format_test@ds=2010
+PREHOOK: query: desc FORMATTED alter_partition_format_test partition(ds='2010')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_format_test
+POSTHOOK: query: desc FORMATTED alter_partition_format_test partition(ds='2010')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2010]              	 
+Database:           	default             	 
+Table:              	alter_partition_format_test	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_partition_format_test partition(ds='2010') set fileformat rcfile
+PREHOOK: type: ALTERPARTITION_FILEFORMAT
+PREHOOK: Input: default@alter_partition_format_test
+PREHOOK: Output: default@alter_partition_format_test@ds=2010
+POSTHOOK: query: alter table alter_partition_format_test partition(ds='2010') set fileformat rcfile
+POSTHOOK: type: ALTERPARTITION_FILEFORMAT
+POSTHOOK: Input: default@alter_partition_format_test
+POSTHOOK: Input: default@alter_partition_format_test@ds=2010
+POSTHOOK: Output: default@alter_partition_format_test@ds=2010
+PREHOOK: query: desc FORMATTED alter_partition_format_test partition(ds='2010')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_format_test
+POSTHOOK: query: desc FORMATTED alter_partition_format_test partition(ds='2010')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2010]              	 
+Database:           	default             	 
+Table:              	alter_partition_format_test	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_partition_format_test partition(ds='2010') set fileformat sequencefile
+PREHOOK: type: ALTERPARTITION_FILEFORMAT
+PREHOOK: Input: default@alter_partition_format_test
+PREHOOK: Output: default@alter_partition_format_test@ds=2010
+POSTHOOK: query: alter table alter_partition_format_test partition(ds='2010') set fileformat sequencefile
+POSTHOOK: type: ALTERPARTITION_FILEFORMAT
+POSTHOOK: Input: default@alter_partition_format_test
+POSTHOOK: Input: default@alter_partition_format_test@ds=2010
+POSTHOOK: Output: default@alter_partition_format_test@ds=2010
+PREHOOK: query: desc FORMATTED alter_partition_format_test partition(ds='2010')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_format_test
+POSTHOOK: query: desc FORMATTED alter_partition_format_test partition(ds='2010')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2010]              	 
+Database:           	default             	 
+Table:              	alter_partition_format_test	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.mapred.SequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table alter_partition_format_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter_partition_format_test
+PREHOOK: Output: default@alter_partition_format_test
+POSTHOOK: query: drop table alter_partition_format_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter_partition_format_test
+POSTHOOK: Output: default@alter_partition_format_test
