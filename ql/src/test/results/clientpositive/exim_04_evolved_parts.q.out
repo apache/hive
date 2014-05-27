@@ -38,24 +38,26 @@ POSTHOOK: query: alter table exim_employee add partition (emp_country='in', emp_
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=tn
+PREHOOK: query: alter table exim_employee set fileformat 
+	inputformat  "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
+	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
+        serde        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@exim_employee
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: alter table exim_employee set fileformat 
+	inputformat  "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
+	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
+        serde        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@exim_employee
+POSTHOOK: Output: default@exim_employee
 PREHOOK: query: alter table exim_employee set serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe" with serdeproperties ('serialization.format'='2')
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@exim_employee
 PREHOOK: Output: default@exim_employee
 POSTHOOK: query: alter table exim_employee set serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe" with serdeproperties ('serialization.format'='2')
 POSTHOOK: type: ALTERTABLE_SERIALIZER
-POSTHOOK: Input: default@exim_employee
-POSTHOOK: Output: default@exim_employee
-PREHOOK: query: alter table exim_employee set fileformat 
-	inputformat "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
-	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
-PREHOOK: type: ALTERTABLE_FILEFORMAT
-PREHOOK: Input: default@exim_employee
-PREHOOK: Output: default@exim_employee
-POSTHOOK: query: alter table exim_employee set fileformat 
-	inputformat "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
-	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
-POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@exim_employee
 POSTHOOK: Output: default@exim_employee
 PREHOOK: query: alter table exim_employee add partition (emp_country='in', emp_state='ka')

@@ -105,14 +105,14 @@ POSTHOOK: Output: default@parquet_mixed_fileformat
 PREHOOK: query: ALTER TABLE parquet_mixed_fileformat
      SET FILEFORMAT
      INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
-     OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+     OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat' SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 PREHOOK: type: ALTERTABLE_FILEFORMAT
 PREHOOK: Input: default@parquet_mixed_fileformat
 PREHOOK: Output: default@parquet_mixed_fileformat
 POSTHOOK: query: ALTER TABLE parquet_mixed_fileformat
      SET FILEFORMAT
      INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
-     OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+     OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat' SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@parquet_mixed_fileformat
 POSTHOOK: Output: default@parquet_mixed_fileformat

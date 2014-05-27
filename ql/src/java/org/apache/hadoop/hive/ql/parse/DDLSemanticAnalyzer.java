@@ -1328,9 +1328,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           .getText());
       outputFormat = unescapeSQLString(((ASTNode) child.getChild(1)).getToken()
           .getText());
+      serde = unescapeSQLString(((ASTNode) child.getChild(2)).getToken()
+          .getText());
       try {
         Class.forName(inputFormat);
         Class.forName(outputFormat);
+        Class.forName(serde);
       } catch (ClassNotFoundException e) {
         throw new SemanticException(e);
       }
@@ -1347,10 +1350,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_TBLSEQUENCEFILE:
       inputFormat = SEQUENCEFILE_INPUT;
       outputFormat = SEQUENCEFILE_OUTPUT;
+      serde = org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName();
       break;
     case HiveParser.TOK_TBLTEXTFILE:
       inputFormat = TEXTFILE_INPUT;
       outputFormat = TEXTFILE_OUTPUT;
+      serde = org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName();
       break;
     case HiveParser.TOK_TBLRCFILE:
       inputFormat = RCFILE_INPUT;

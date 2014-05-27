@@ -13,10 +13,13 @@ alter table exim_employee add columns (emp_dept int);
 alter table exim_employee clustered by (emp_sex, emp_dept) sorted by (emp_id desc) into 5 buckets;
 alter table exim_employee add partition (emp_country='in', emp_state='tn');
 
-alter table exim_employee set serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe" with serdeproperties ('serialization.format'='2');
 alter table exim_employee set fileformat 
-	inputformat "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
-	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat";
+	inputformat  "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
+	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
+        serde        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe";
+    
+;
+alter table exim_employee set serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe" with serdeproperties ('serialization.format'='2');
 
 alter table exim_employee add partition (emp_country='in', emp_state='ka');
 dfs ${system:test.dfs.mkdir} target/tmp/ql/test/data/exports/exim_employee/temp;

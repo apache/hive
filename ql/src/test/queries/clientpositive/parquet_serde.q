@@ -22,7 +22,7 @@ ALTER TABLE parquet_mixed_fileformat set SERDE 'org.apache.hadoop.hive.ql.io.par
 ALTER TABLE parquet_mixed_fileformat
      SET FILEFORMAT
      INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
-     OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat';
+     OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat' SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe';
 
 DESCRIBE FORMATTED parquet_mixed_fileformat;
 DESCRIBE FORMATTED parquet_mixed_fileformat PARTITION (dateint=20140330);
