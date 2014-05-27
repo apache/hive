@@ -2452,9 +2452,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (SessionState.canDownloadResource(progName)) {
       String filePath = ss.add_resource(ResourceType.FILE, progName, true);
-      if (filePath == null) {
-        throw new RuntimeException("Could not download the resource: " + progName);
-      }
       Path p = new Path(filePath);
       String fileName = p.getName();
       String scriptArgs = getScriptArgs(cmd);
