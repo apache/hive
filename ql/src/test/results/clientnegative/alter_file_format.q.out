@@ -1,0 +1,39 @@
+PREHOOK: query: create table alter_file_format_test (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create table alter_file_format_test (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_file_format_test
+PREHOOK: query: desc FORMATTED alter_file_format_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_file_format_test
+POSTHOOK: query: desc FORMATTED alter_file_format_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_file_format_test
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+FAILED: ParseException line 3:174 mismatched input '<EOF>' expecting SERDE near ''org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'' in file format specification
