@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
+import java.util.Arrays;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,11 +54,9 @@ public class DeleteResourceProcessor implements CommandProcessor {
     }
 
     if (tokens.length >= 2) {
-      for (int i = 1; i < tokens.length; i++) {
-        ss.delete_resource(t, tokens[i]);
-      }
+      ss.delete_resources(t, Arrays.asList(Arrays.copyOfRange(tokens, 1, tokens.length)));
     } else {
-      ss.delete_resource(t);
+      ss.delete_resources(t);
     }
 
     return new CommandProcessorResponse(0);

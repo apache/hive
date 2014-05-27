@@ -26,6 +26,7 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -560,26 +561,6 @@ public class SessionState {
     return _console;
   }
 
-  public static String validateFile(Set<String> curFiles, String newFile) {
-    SessionState ss = SessionState.get();
-    LogHelper console = getConsole();
-    Configuration conf = (ss == null) ? new Configuration() : ss.getConf();
-
-    try {
-      if (Utilities.realFile(newFile, conf) != null) {
-        return newFile;
-      } else {
-        console.printError(newFile + " does not exist");
-        return null;
-      }
-    } catch (IOException e) {
-      console.printError("Unable to validate " + newFile + "\nException: "
-          + e.getMessage(), "\n"
-              + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return null;
-    }
-  }
-
   /**
    *
    * @return username from current SessionState authenticator. username will be
@@ -593,27 +574,42 @@ public class SessionState {
     return null;
   }
 
-  public static boolean registerJar(String newJar) {
+  static void validateFiles(List<String> newFiles) throws IllegalArgumentException {
+    SessionState ss = SessionState.get();
+    Configuration conf = (ss == null) ? new Configuration() : ss.getConf();
+
     LogHelper console = getConsole();
-    try {
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      ClassLoader newLoader = Utilities.addToClassPath(loader, StringUtils.split(newJar, ","));
-      Thread.currentThread().setContextClassLoader(newLoader);
-      SessionState.get().getConf().setClassLoader(newLoader);
-      console.printInfo("Added " + newJar + " to class path");
-      return true;
-    } catch (Exception e) {
-      console.printError("Unable to register " + newJar + "\nException: "
-          + e.getMessage(), "\n"
-              + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return false;
+    for (String newFile : newFiles) {
+      try {
+        if (Utilities.realFile(newFile, conf) == null) {
+          String message = newFile + " does not exist";
+          throw new IllegalArgumentException(message);
+        }
+      } catch (IOException e) {
+        String message = "Unable to validate " + newFile;
+        throw new IllegalArgumentException(message, e);
+      }
     }
   }
 
-  public static boolean unregisterJar(String jarsToUnregister) {
+  static void registerJars(List<String> newJars) throws IllegalArgumentException {
     LogHelper console = getConsole();
     try {
-      Utilities.removeFromClassPath(StringUtils.split(jarsToUnregister, ","));
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      ClassLoader newLoader = Utilities.addToClassPath(loader, newJars.toArray(new String[0]));
+      Thread.currentThread().setContextClassLoader(newLoader);
+      SessionState.get().getConf().setClassLoader(newLoader);
+      console.printInfo("Added " + newJars + " to class path");
+    } catch (Exception e) {
+      String message = "Unable to register " + newJars;
+      throw new IllegalArgumentException(message, e);
+    }
+  }
+
+  static boolean unregisterJar(List<String> jarsToUnregister) {
+    LogHelper console = getConsole();
+    try {
+      Utilities.removeFromClassPath(jarsToUnregister.toArray(new String[0]));
       console.printInfo("Deleted " + jarsToUnregister + " from class path");
       return true;
     } catch (Exception e) {
@@ -625,65 +621,29 @@ public class SessionState {
   }
 
   /**
-   * ResourceHook.
-   *
-   */
-  public static interface ResourceHook {
-    String preHook(Set<String> cur, String s);
-
-    boolean postHook(Set<String> cur, String s);
-  }
-
-  /**
    * ResourceType.
    *
    */
   public static enum ResourceType {
-    FILE(new ResourceHook() {
+    FILE,
+
+    JAR {
       @Override
-      public String preHook(Set<String> cur, String s) {
-        return validateFile(cur, s);
+      public void preHook(Set<String> cur, List<String> s) throws IllegalArgumentException {
+        super.preHook(cur, s);
+        registerJars(s);
       }
-
       @Override
-      public boolean postHook(Set<String> cur, String s) {
-        return true;
+      public void postHook(Set<String> cur, List<String> s) {
+        unregisterJar(s);
       }
-    }),
+    },
+    ARCHIVE;
 
-    JAR(new ResourceHook() {
-      @Override
-      public String preHook(Set<String> cur, String s) {
-        String newJar = validateFile(cur, s);
-        if (newJar != null) {
-          return (registerJar(newJar) ? newJar : null);
-        } else {
-          return null;
-        }
-      }
-
-      @Override
-      public boolean postHook(Set<String> cur, String s) {
-        return unregisterJar(s);
-      }
-    }),
-
-    ARCHIVE(new ResourceHook() {
-      @Override
-      public String preHook(Set<String> cur, String s) {
-        return validateFile(cur, s);
-      }
-
-      @Override
-      public boolean postHook(Set<String> cur, String s) {
-        return true;
-      }
-    });
-
-    public ResourceHook hook;
-
-    ResourceType(ResourceHook hook) {
-      this.hook = hook;
+    public void preHook(Set<String> cur, List<String> s) throws IllegalArgumentException {
+      validateFiles(s);
+    }
+    public void postHook(Set<String> cur, List<String> s) {
     }
   };
 
@@ -713,33 +673,47 @@ public class SessionState {
   private final HashMap<ResourceType, Set<String>> resource_map =
       new HashMap<ResourceType, Set<String>>();
 
-  public String add_resource(ResourceType t, String value) {
-    // By default don't convert to unix
+  public String add_resource(ResourceType t, String value) throws RuntimeException {
     return add_resource(t, value, false);
   }
 
-  public String add_resource(ResourceType t, String value, boolean convertToUnix) {
-    try {
-      value = downloadResource(value, convertToUnix);
-    } catch (Exception e) {
-      getConsole().printError(e.getMessage());
+  public String add_resource(ResourceType t, String value, boolean convertToUnix)
+      throws RuntimeException {
+    List<String> added = add_resources(t, Arrays.asList(value), convertToUnix);
+    if (added == null || added.isEmpty()) {
       return null;
     }
+    return added.get(0);
+  }
 
+  public List<String> add_resources(ResourceType t, List<String> values)
+      throws RuntimeException {
+    // By default don't convert to unix
+    return add_resources(t, values, false);
+  }
+
+  public List<String> add_resources(ResourceType t, List<String> values, boolean convertToUnix)
+      throws RuntimeException {
     Set<String> resourceMap = getResourceMap(t);
 
-    String fnlVal = value;
-    if (t.hook != null) {
-      fnlVal = t.hook.preHook(resourceMap, value);
-      if (fnlVal == null) {
-        return fnlVal;
+    List<String> localized = new ArrayList<String>();
+    try {
+      for (String value : values) {
+        localized.add(downloadResource(value, convertToUnix));
       }
-    }
-    getConsole().printInfo("Added resource: " + fnlVal);
-    resourceMap.add(fnlVal);
 
-    addedResource = true;
-    return fnlVal;
+      t.preHook(resourceMap, localized);
+
+    } catch (RuntimeException e) {
+      getConsole().printError(e.getMessage(), "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      throw e;
+    }
+
+    getConsole().printInfo("Added resources: " + values);
+    resourceMap.addAll(localized);
+
+    return localized;
   }
 
   public void add_builtin_resource(ResourceType t, String value) {
@@ -799,16 +773,12 @@ public class SessionState {
     return value;
   }
 
-  public boolean delete_resource(ResourceType t, String value) {
-    if (resource_map.get(t) == null) {
-      return false;
+  public void delete_resources(ResourceType t, List<String> value) {
+    Set<String> resources = resource_map.get(t);
+    if (resources != null && !resources.isEmpty()) {
+      t.postHook(resources, value);
+      resources.removeAll(value);
     }
-    if (t.hook != null) {
-      if (!t.hook.postHook(resource_map.get(t), value)) {
-        return false;
-      }
-    }
-    return (resource_map.get(t).remove(value));
   }
 
   public Set<String> list_resource(ResourceType t, List<String> filter) {
@@ -829,11 +799,10 @@ public class SessionState {
     }
   }
 
-  public void delete_resource(ResourceType t) {
-    if (resource_map.get(t) != null) {
-      for (String value : resource_map.get(t)) {
-        delete_resource(t, value);
-      }
+  public void delete_resources(ResourceType t) {
+    Set<String> resources = resource_map.get(t);
+    if (resources != null && !resources.isEmpty()) {
+      delete_resources(t, new ArrayList<String>(resources));
       resource_map.remove(t);
     }
   }

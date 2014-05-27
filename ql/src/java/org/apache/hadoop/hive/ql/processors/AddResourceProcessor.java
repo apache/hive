@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
+import java.util.Arrays;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,14 +52,12 @@ public class AddResourceProcessor implements CommandProcessor {
           + "] <value> [<value>]*");
       return new CommandProcessorResponse(1);
     }
-    for (int i = 1; i < tokens.length; i++) {
-      String resourceFile = ss.add_resource(t, tokens[i]);
-      if(resourceFile == null){
-        String errMsg = tokens[i]+" does not exist.";
-        return new CommandProcessorResponse(1,errMsg,null);
-      }
+    try {
+      ss.add_resources(t,
+          Arrays.asList(Arrays.copyOfRange(tokens, 1, tokens.length)));
+    } catch (Exception e) {
+      return new CommandProcessorResponse(1, e.getMessage(), null);
     }
-
     return new CommandProcessorResponse(0);
   }
 

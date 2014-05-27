@@ -101,7 +101,7 @@ public class TestSessionState {
 
     public void run() {
       SessionState.start(ss);
-      SessionState.registerJar(jar);
+      SessionState.registerJars(Arrays.asList(jar));
       loader = Thread.currentThread().getContextClassLoader();
     }
   }
