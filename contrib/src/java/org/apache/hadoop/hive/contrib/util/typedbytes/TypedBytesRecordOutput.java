@@ -23,14 +23,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-import org.apache.hadoop.record.Buffer;
-import org.apache.hadoop.record.Record;
-import org.apache.hadoop.record.RecordOutput;
-
 /**
  * Deserialized for records that reads typed bytes.
  */
-public class TypedBytesRecordOutput implements RecordOutput {
+public class TypedBytesRecordOutput {
 
   private TypedBytesOutput out;
 
@@ -51,7 +47,7 @@ public class TypedBytesRecordOutput implements RecordOutput {
   /**
    * Get a thread-local typed bytes record input for the supplied
    * {@link TypedBytesOutput}.
-   * 
+   *
    * @param out
    *          typed bytes output object
    * @return typed bytes record output corresponding to the supplied
@@ -66,7 +62,7 @@ public class TypedBytesRecordOutput implements RecordOutput {
   /**
    * Get a thread-local typed bytes record output for the supplied
    * {@link DataOutput}.
-   * 
+   *
    * @param out
    *          data output object
    * @return typed bytes record output corresponding to the supplied
@@ -88,10 +84,6 @@ public class TypedBytesRecordOutput implements RecordOutput {
 
   public void writeBool(boolean b, String tag) throws IOException {
     out.writeBool(b);
-  }
-
-  public void writeBuffer(Buffer buf, String tag) throws IOException {
-    out.writeBytes(buf.get());
   }
 
   public void writeByte(byte b, String tag) throws IOException {
@@ -118,20 +110,12 @@ public class TypedBytesRecordOutput implements RecordOutput {
     out.writeString(s);
   }
 
-  public void startRecord(Record r, String tag) throws IOException {
-    out.writeListHeader();
-  }
-
   public void startVector(ArrayList v, String tag) throws IOException {
     out.writeVectorHeader(v.size());
   }
 
   public void startMap(TreeMap m, String tag) throws IOException {
     out.writeMapHeader(m.size());
-  }
-
-  public void endRecord(Record r, String tag) throws IOException {
-    out.writeListFooter();
   }
 
   public void endVector(ArrayList v, String tag) throws IOException {
