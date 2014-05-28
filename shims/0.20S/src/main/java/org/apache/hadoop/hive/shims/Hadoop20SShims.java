@@ -23,7 +23,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -41,9 +40,8 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.hive.shims.HadoopShims.DirectDecompressorShim;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.mapred.JobInProgress;
 import org.apache.hadoop.mapred.JobTracker;
 import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -204,7 +202,18 @@ public class Hadoop20SShims extends HadoopShimsSecure {
 
     @Override
     public void shutdown() throws IOException {
-      mr.shutdown();
+      MiniMRCluster.JobTrackerRunner runner = mr.getJobTrackerRunner();
+      JobTracker tracker = runner.getJobTracker();
+      if (tracker != null) {
+        for (JobInProgress running : tracker.getRunningJobs()) {
+          try {
+            running.kill();
+          } catch (Exception e) {
+            // ignore
+          }
+        }
+      }
+      runner.shutdown();
     }
 
     @Override
