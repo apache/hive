@@ -73,12 +73,6 @@ POSTHOOK: Input: default@t2@val=17
 POSTHOOK: Input: default@t2@val=18
 POSTHOOK: Input: default@t2@val=28
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t2 PARTITION(val=11).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=12).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=13).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=17).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=18).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=28).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 1	11
 2	12
 3	13
@@ -93,12 +87,6 @@ POSTHOOK: query: drop table T1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t2 PARTITION(val=11).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=12).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=13).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=17).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=18).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=28).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: drop table T2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2
@@ -107,9 +95,3 @@ POSTHOOK: query: drop table T2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2 PARTITION(val=11).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=12).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=13).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=17).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=18).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(val=28).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]

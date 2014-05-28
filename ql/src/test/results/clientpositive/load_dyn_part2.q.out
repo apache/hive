@@ -109,10 +109,6 @@ PREHOOK: Input: default@nzhang_part_bucket
 POSTHOOK: query: show partitions nzhang_part_bucket
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@nzhang_part_bucket
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 ds=2010-03-23/hr=11
 ds=2010-03-23/hr=12
 PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key
@@ -125,10 +121,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part_bucket
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	2010-03-23	11
 0	val_0	2010-03-23	11
 0	val_0	2010-03-23	11
@@ -1139,10 +1131,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part_bucket
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=12
 #### A masked pattern was here ####
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	2010-03-23	12
 0	val_0	2010-03-23	12
 0	val_0	2010-03-23	12

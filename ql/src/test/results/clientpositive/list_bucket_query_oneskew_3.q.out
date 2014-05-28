@@ -73,9 +73,6 @@ SELECT key, value, value FROM src WHERE key=278 or key=86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@fact_tz@ds=1/hr=2
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -91,12 +88,6 @@ SELECT key, value, value FROM src WHERE key=238
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@fact_tz@ds=1/hr=3
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -111,15 +102,6 @@ alter table fact_daily skewed by (x) on (484,238)
 POSTHOOK: type: ALTERTABLE_SKEWED
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Output: default@fact_daily
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER TABLE fact_daily SET TBLPROPERTIES('EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@fact_daily
@@ -128,15 +110,6 @@ POSTHOOK: query: ALTER TABLE fact_daily SET TBLPROPERTIES('EXTERNAL'='TRUE')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Output: default@fact_daily
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER TABLE fact_daily ADD PARTITION (ds='1')	
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -148,15 +121,6 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
 POSTHOOK: Output: default@fact_daily
 POSTHOOK: Output: default@fact_daily@ds=1
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- set List Bucketing location map
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTBLPART_SKEWED_LOCATION
@@ -170,30 +134,12 @@ POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 POSTHOOK: Output: default@fact_daily@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted fact_daily PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@fact_daily
 POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@fact_daily
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 x                   	int                 	                    
@@ -244,15 +190,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 86	val_86	val_86	1
 238	val_238	val_238	1
 238	val_238	val_238	1
@@ -267,15 +204,6 @@ POSTHOOK: query: -- pruner  pick up right directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
 explain extended SELECT x FROM fact_daily WHERE ds='1' and not (x = 86) ORDER BY x
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -523,15 +451,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238
 238
 278

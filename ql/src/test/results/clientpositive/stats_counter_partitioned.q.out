@@ -164,8 +164,6 @@ POSTHOOK: query: insert overwrite table dummy partition (ds='10',hr='12') select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dummy@ds=10/hr=12
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted dummy partition (ds='10', hr='11')
@@ -174,10 +172,6 @@ PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (ds='10', hr='11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dummy
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -220,10 +214,6 @@ PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (ds='10', hr='12')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dummy
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -268,10 +258,6 @@ POSTHOOK: query: drop table dummy
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dummy
 POSTHOOK: Output: default@dummy
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- dynamic partitioned table on insert
 
 create table dummy (key int) partitioned by (hr int)
@@ -283,10 +269,6 @@ create table dummy (key int) partitioned by (hr int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dummy
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -294,10 +276,6 @@ POSTHOOK: query: CREATE TABLE tbl(key int, value int) ROW FORMAT DELIMITED FIELD
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tbl.txt' OVERWRITE INTO TABLE tbl
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -306,10 +284,6 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tbl.txt' OVERWRITE INT
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table dummy partition (hr) select * from tbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl
@@ -321,10 +295,6 @@ POSTHOOK: Output: default@dummy@hr=1994
 POSTHOOK: Output: default@dummy@hr=1996
 POSTHOOK: Output: default@dummy@hr=1997
 POSTHOOK: Output: default@dummy@hr=1998
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
@@ -335,14 +305,6 @@ PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (hr=1997)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dummy
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -383,14 +345,6 @@ PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (hr=1994)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dummy
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -431,14 +385,6 @@ PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (hr=1998)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dummy
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -479,14 +425,6 @@ PREHOOK: Input: default@dummy
 POSTHOOK: query: describe formatted dummy partition (hr=1996)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dummy
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -529,14 +467,6 @@ POSTHOOK: query: drop table tbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl
 POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: drop table dummy
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dummy
@@ -545,11 +475,3 @@ POSTHOOK: query: drop table dummy
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dummy
 POSTHOOK: Output: default@dummy
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(ds=10,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1994).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1996).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1997).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dummy PARTITION(hr=1998).key SIMPLE [(tbl)tbl.FieldSchema(name:key, type:int, comment:null), ]

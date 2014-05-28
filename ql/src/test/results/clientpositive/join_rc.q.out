@@ -30,8 +30,6 @@ POSTHOOK: query: insert overwrite table join_rc2 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@join_rc2
-POSTHOOK: Lineage: join_rc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: join_rc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: join_rc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: join_rc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
@@ -42,10 +40,6 @@ POSTHOOK: query: explain
 select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: join_rc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: join_rc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: join_rc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: join_rc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -111,10 +105,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_rc1
 POSTHOOK: Input: default@join_rc2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: join_rc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: join_rc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: join_rc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: join_rc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0
 0	val_0
 0	val_0

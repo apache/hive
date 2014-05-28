@@ -142,8 +142,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 POSTHOOK: Input: default@dest1@table=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1 PARTITION(table=2008-04-08).location EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(table=2008-04-08).type SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238	2008-04-08
 255	val_255	2008-04-08
 278	val_278	2008-04-08

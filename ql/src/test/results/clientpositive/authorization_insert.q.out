@@ -65,4 +65,3 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_select
 POSTHOOK: Output: default@t_auth_ins
 POSTHOOK: Lineage: t_auth_ins.i SIMPLE [(t_select)t_select.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: t_auth_ins.i SIMPLE [(t_select)t_select.FieldSchema(name:i, type:int, comment:null), ]

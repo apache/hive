@@ -1437,6 +1437,7 @@ public class Driver implements CommandProcessor {
 
     if (SessionState.get() != null) {
       try {
+        SessionState.get().getLineageState().clear();
         SessionState.get().getHiveHistory().logPlanProgress(plan);
       } catch (Exception e) {
         // ignore

@@ -93,21 +93,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- basicStatState: COMPLETE colStatState: NONE numRows: 2 rawDataSize: 1514
 explain extended select * from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -152,42 +137,12 @@ analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 PREHOOK: query: -- numRows: 2 rawDataSize: 1514
 explain extended select * from alltypes_orc
 PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 1514
 explain extended select * from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -228,21 +183,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 8
 explain extended select bo1 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -367,21 +307,6 @@ POSTHOOK: query: -- col alias renaming
 -- numRows: 2 rawDataSize: 8
 explain extended select i1 as int1 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -505,21 +430,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 174
 explain extended select s1 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -644,21 +554,6 @@ POSTHOOK: query: -- column statistics for complex types unsupported and so stati
 -- numRows: 2 rawDataSize: 1514
 explain extended select m1 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -781,21 +676,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 246
 explain extended select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -939,21 +819,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 0
 explain extended select null from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1075,21 +940,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 8
 explain extended select 11 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1211,21 +1061,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select 11L from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1347,21 +1182,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select 11.0 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1483,21 +1303,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 178
 explain extended select "hello" from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1617,21 +1422,6 @@ PREHOOK: query: explain extended select cast("hello" as char(5)) from alltypes_o
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select cast("hello" as char(5)) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1754,21 +1544,6 @@ PREHOOK: query: explain extended select cast("hello" as varchar(5)) from alltype
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select cast("hello" as varchar(5)) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1893,21 +1668,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 96
 explain extended select unbase64("0xe23") from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2031,21 +1791,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2173,21 +1918,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 80
 explain extended select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2311,21 +2041,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2449,21 +2164,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 224
 explain extended select cast("58.174" as DECIMAL) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2587,21 +2287,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select array(1,2,3) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2727,21 +2412,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 1508
 explain extended select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -2867,21 +2537,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3008,21 +2663,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 2 rawDataSize: 250
 explain extended select CREATE_UNION(0, "hello") from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3149,21 +2789,6 @@ POSTHOOK: query: -- COUNT(*) is projected as new column. It is not projected as 
 -- numRows: 1 rawDataSize: 8
 explain extended select count(*) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3307,21 +2932,6 @@ POSTHOOK: query: -- COUNT(1) is projected as new column. It is not projected as 
 -- numRows: 1 rawDataSize: 8
 explain extended select count(1) from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3466,21 +3076,6 @@ POSTHOOK: query: -- column statistics for complex column types will be missing. 
 -- numRows: 2 rawDataSize: 254
 explain extended select *,11 from alltypes_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3608,21 +3203,6 @@ POSTHOOK: query: -- subquery selects
 -- outer select - numRows: 2 rawDataSize: 8
 explain extended select i1 from (select i1 from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3780,21 +3360,6 @@ POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
 -- outer select - numRows: 2 rawDataSize: 8
 explain extended select i1 from (select i1,11 from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -3954,21 +3519,6 @@ POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
 -- outer select - numRows: 2 rawDataSize: 186
 explain extended select i1,"hello" from (select i1,11 from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -4130,21 +3680,6 @@ POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 24
 -- outer select - numRows: 2 rawDataSize: 16
 explain extended select x from (select i1,11.0 as x from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -4305,21 +3840,6 @@ POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 104
 -- outer select - numRows: 2 rawDataSize: 186
 explain extended select x,"hello" from (select i1 as x, unbase64("0xe23") as ub from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -4487,21 +4007,6 @@ POSTHOOK: query: -- inner select -  numRows: 2 rawDataSize: 186
 -- outer select -  numRows: 2 rawDataSize: 194
 explain extended select h, 11.0 from (select hell as h from (select i1, "hello" as hell from alltypes_orc limit 10) in1 limit 10) in2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -4747,21 +4252,6 @@ POSTHOOK: query: -- This test is for FILTER operator where filter expression is 
 -- numRows: 2 rawDataSize: 8
 explain extended select bo1 from alltypes_orc where bo1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -4891,21 +4381,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 0 rawDataSize: 0
 explain extended select bo1 from alltypes_orc where !bo1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_orc.bi1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bi1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo1 SIMPLE [(alltypes)alltypes.FieldSchema(name:bo1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d1 SIMPLE [(alltypes)alltypes.FieldSchema(name:d1, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da1 SIMPLE [(alltypes)alltypes.FieldSchema(name:da1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de1 SIMPLE [(alltypes)alltypes.FieldSchema(name:de1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f1 SIMPLE [(alltypes)alltypes.FieldSchema(name:f1, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i1 SIMPLE [(alltypes)alltypes.FieldSchema(name:i1, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l1 SIMPLE [(alltypes)alltypes.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m1 SIMPLE [(alltypes)alltypes.FieldSchema(name:m1, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s1 SIMPLE [(alltypes)alltypes.FieldSchema(name:s1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:si1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY

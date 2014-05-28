@@ -23,8 +23,6 @@ POSTHOOK: query: alter table partition_vs_table add columns (newcol string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partition_vs_table
 POSTHOOK: Output: default@partition_vs_table
-POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table partition_vs_table partition(ds='101') select key, value, key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -33,8 +31,6 @@ POSTHOOK: query: insert overwrite table partition_vs_table partition(ds='101') s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_vs_table@ds=101
-POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).newcol SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -52,11 +48,6 @@ POSTHOOK: Input: default@partition_vs_table
 POSTHOOK: Input: default@partition_vs_table@ds=100
 POSTHOOK: Input: default@partition_vs_table@ds=101
 #### A masked pattern was here ####
-POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).newcol SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	NULL
 0	val_0	NULL
 0	val_0	NULL

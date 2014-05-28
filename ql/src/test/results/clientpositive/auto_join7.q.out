@@ -195,10 +195,4 @@ POSTHOOK: query: SELECT sum(hash(dest1.c1,dest1.c2,dest1.c3,dest1.c4,dest1.c5,de
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c4 SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src3.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c6 SIMPLE [(src)src3.FieldSchema(name:value, type:string, comment:default), ]
 -2315698213

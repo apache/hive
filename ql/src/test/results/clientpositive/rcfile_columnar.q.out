@@ -33,8 +33,6 @@ PREHOOK: Input: default@columntable
 POSTHOOK: query: describe columnTable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@columntable
-POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	                    
 value               	string              	                    
 PREHOOK: query: SELECT columnTable.* FROM columnTable ORDER BY key ASC, value ASC
@@ -45,8 +43,6 @@ POSTHOOK: query: SELECT columnTable.* FROM columnTable ORDER BY key ASC, value A
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columntable
 #### A masked pattern was here ####
-POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 165	val_165
 238	val_238
 255	val_255

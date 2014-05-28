@@ -97,15 +97,6 @@ from part_dec
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_dec
 #### A masked pattern was here ####
-POSTHOOK: Lineage: part_dec.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_comment SIMPLE [(part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_container SIMPLE [(part)part.FieldSchema(name:p_container, type:string, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_partkey SIMPLE [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_retailprice EXPRESSION [(part)part.FieldSchema(name:p_retailprice, type:double, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_type SIMPLE [(part)part.FieldSchema(name:p_type, type:string, comment:null), ]
 Manufacturer#1	1173.15	1173.15	2346.3
 Manufacturer#1	1173.15	1173.15	2346.3
 Manufacturer#1	1414.42	1173.15	3760.72
@@ -146,15 +137,6 @@ from part_dec
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_dec
 #### A masked pattern was here ####
-POSTHOOK: Lineage: part_dec.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_comment SIMPLE [(part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_container SIMPLE [(part)part.FieldSchema(name:p_container, type:string, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_partkey SIMPLE [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_retailprice EXPRESSION [(part)part.FieldSchema(name:p_retailprice, type:double, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
-POSTHOOK: Lineage: part_dec.p_type SIMPLE [(part)part.FieldSchema(name:p_type, type:string, comment:null), ]
 Manufacturer#1	1173.15	1173.15	2346.3
 Manufacturer#1	1173.15	1173.15	2346.3
 Manufacturer#1	1414.42	1414.42	1414.42

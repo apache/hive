@@ -166,8 +166,6 @@ POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e2.percentile EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 500
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
@@ -177,6 +175,4 @@ POSTHOOK: query: select * from e2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e2.percentile EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 255.5

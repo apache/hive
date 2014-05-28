@@ -19,8 +19,6 @@ PREHOOK: query: explain select sum(distinct a), count(distinct a) from dtest
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select sum(distinct a), count(distinct a) from dtest
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dtest.a SIMPLE []
-POSTHOOK: Lineage: dtest.b EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -81,15 +79,11 @@ POSTHOOK: query: select sum(distinct a), count(distinct a) from dtest
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dtest
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dtest.a SIMPLE []
-POSTHOOK: Lineage: dtest.b EXPRESSION []
 300	1
 PREHOOK: query: explain select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dtest.a SIMPLE []
-POSTHOOK: Lineage: dtest.b EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -149,6 +143,4 @@ POSTHOOK: query: select sum(distinct cint), count(distinct cint), avg(distinct c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dtest.a SIMPLE []
-POSTHOOK: Lineage: dtest.b EXPRESSION []
 -3482841611	6082	-572647.4204209142	6.153814687328991E8

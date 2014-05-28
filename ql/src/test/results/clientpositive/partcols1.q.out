@@ -50,7 +50,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@partitionid=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test1 PARTITION(partitionid=1).col1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1	111	222	333
 1	111	222	333
 1	111	222	333

@@ -41,6 +41,4 @@ POSTHOOK: query: SELECT count(*) FROM test_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_orc.cnt EXPRESSION []
-POSTHOOK: Lineage: test_orc.key EXPRESSION []
 1

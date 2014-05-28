@@ -47,8 +47,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -122,8 +120,6 @@ POSTHOOK: query: select a.key, b.* from json_t a lateral view json_tuple(a.jstri
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
 #### A masked pattern was here ####
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 1	value1	value2	3	NULL	5.23
 2	value12	2	value3	4.01	NULL
 3	value13	2	value33	value44	5.01
@@ -136,8 +132,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -186,8 +180,6 @@ POSTHOOK: query: select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
 #### A masked pattern was here ####
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL
 	NULL	NULL	NULL	NULL
@@ -200,8 +192,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -275,8 +265,6 @@ POSTHOOK: query: select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
 #### A masked pattern was here ####
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 1	value2	5.23
 2	2	NULL
 3	2	5.01
@@ -289,8 +277,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -407,8 +393,6 @@ POSTHOOK: query: select f2, count(*) from json_t a lateral view json_tuple(a.jst
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
 #### A masked pattern was here ####
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 NULL	1
 2	2
 value2	1
@@ -423,8 +407,6 @@ CREATE TABLE dest1(c1 STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -434,8 +416,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 PREHOOK: query: SELECT * FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -444,9 +424,6 @@ POSTHOOK: query: SELECT * FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 {"a":"b
 c"}
 PREHOOK: query: SELECT json FROM dest1 a LATERAL VIEW json_tuple(c1, 'a') b AS json
@@ -457,8 +434,5 @@ POSTHOOK: query: SELECT json FROM dest1 a LATERAL VIEW json_tuple(c1, 'a') b AS 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: json_t.jstring EXPRESSION []
-POSTHOOK: Lineage: json_t.key EXPRESSION []
 b
 c

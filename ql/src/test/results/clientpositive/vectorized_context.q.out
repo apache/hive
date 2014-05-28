@@ -34,8 +34,6 @@ stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_sales
-POSTHOOK: Lineage: store.s_city SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: insert overwrite table store_sales
 select cint, cint, cdouble
 from alltypesorc
@@ -52,8 +50,6 @@ where cint not in (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@store_sales
-POSTHOOK: Lineage: store.s_city SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
@@ -66,11 +62,6 @@ stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@household_demographics
-POSTHOOK: Lineage: store.s_city SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: insert overwrite table household_demographics
 select cint
 from alltypesorc
@@ -88,11 +79,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@household_demographics
 POSTHOOK: Lineage: household_demographics.hd_demo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_city SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: explain 
 select store.s_city, ss_net_profit
 from store_sales
@@ -107,12 +93,6 @@ JOIN store ON store_sales.ss_store_sk = store.s_store_sk
 JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: household_demographics.hd_demo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_city SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-4 depends on stages: Stage-6
@@ -224,12 +204,6 @@ POSTHOOK: Input: default@household_demographics
 POSTHOOK: Input: default@store
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
-POSTHOOK: Lineage: household_demographics.hd_demo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_city SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 LFgU5WT87C2yJ4W4YU0r8Pp	NULL
 v3p153e2bSkGS70v04G	NULL
 0pOH7A4O8aQ37NuBqn	NULL
@@ -338,12 +312,6 @@ POSTHOOK: query: drop table store
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store
 POSTHOOK: Output: default@store
-POSTHOOK: Lineage: household_demographics.hd_demo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_city SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: drop table store_sales
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_sales
@@ -352,12 +320,6 @@ POSTHOOK: query: drop table store_sales
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: default@store_sales
-POSTHOOK: Lineage: household_demographics.hd_demo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_city SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: drop table household_demographics
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@household_demographics
@@ -366,9 +328,3 @@ POSTHOOK: query: drop table household_demographics
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@household_demographics
 POSTHOOK: Output: default@household_demographics
-POSTHOOK: Lineage: household_demographics.hd_demo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_city SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]

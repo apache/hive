@@ -288,8 +288,6 @@ JOIN
 (SELECT m.key, n.val FROM T3 m JOIN T4 n ON (m.key = n.key)) d
 ON b.key = d.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest_co1.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co1.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -445,8 +443,6 @@ POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
 POSTHOOK: Output: default@dest_co2
-POSTHOOK: Lineage: dest_co1.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co1.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: dest_co2.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_co2.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- Enable hive.auto.convert.join.
@@ -469,10 +465,6 @@ JOIN
 (SELECT m.key, n.val FROM T3 m JOIN T4 n ON (m.key = n.key)) d
 ON b.key = d.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest_co1.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co1.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest_co2.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co2.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-14 is a root stage
   Stage-10 depends on stages: Stage-14
@@ -755,10 +747,6 @@ POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
 POSTHOOK: Output: default@dest_co3
-POSTHOOK: Lineage: dest_co1.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co1.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest_co2.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co2.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: dest_co3.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_co3.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- dest_co1, dest_co2 and dest_co3 should be same
@@ -775,12 +763,6 @@ SELECT SUM(HASH(key)), SUM(HASH(val)) FROM dest_co1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_co1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest_co1.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co1.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest_co2.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co2.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest_co3.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co3.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 8409	7619696771
 PREHOOK: query: SELECT SUM(HASH(key)), SUM(HASH(val)) FROM dest_co2
 PREHOOK: type: QUERY
@@ -790,12 +772,6 @@ POSTHOOK: query: SELECT SUM(HASH(key)), SUM(HASH(val)) FROM dest_co2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_co2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest_co1.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co1.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest_co2.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co2.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest_co3.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co3.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 8409	7619696771
 PREHOOK: query: SELECT SUM(HASH(key)), SUM(HASH(val)) FROM dest_co3
 PREHOOK: type: QUERY
@@ -805,10 +781,4 @@ POSTHOOK: query: SELECT SUM(HASH(key)), SUM(HASH(val)) FROM dest_co3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_co3
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest_co1.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co1.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest_co2.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co2.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest_co3.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_co3.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 8409	7619696771

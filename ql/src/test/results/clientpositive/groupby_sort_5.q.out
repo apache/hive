@@ -34,8 +34,6 @@ POSTHOOK: query: CREATE TABLE outputTbl1(key STRING, val STRING, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- The plan should be converted to a map-side group by, since the
 -- sorting columns and grouping columns match, and all the bucketing columns
 -- are part of sorting columns
@@ -50,8 +48,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, val, count(1) FROM T1 GROUP BY key, val
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -157,8 +153,6 @@ POSTHOOK: Output: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM outputTbl1 ORDER BY key, val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
@@ -167,11 +161,6 @@ POSTHOOK: query: SELECT * FROM outputTbl1 ORDER BY key, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 1	11	1
 2	12	1
 3	13	1
@@ -186,11 +175,6 @@ POSTHOOK: query: DROP TABLE T1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
 CLUSTERED BY (val, key) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -200,11 +184,6 @@ CLUSTERED BY (val, key) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -213,11 +192,6 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- perform an insert to make sure there are 2 files
 INSERT OVERWRITE TABLE T1 select key, val from T1
 PREHOOK: type: QUERY
@@ -228,12 +202,7 @@ INSERT OVERWRITE TABLE T1 select key, val from T1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- The plan should be converted to a map-side group by, since the
 -- sorting columns and grouping columns match, and all the bucketing columns
@@ -249,13 +218,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, val, count(1) FROM T1 GROUP BY key, val
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -359,15 +321,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM outputTbl1 ORDER BY key, val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
@@ -376,16 +331,6 @@ POSTHOOK: query: SELECT * FROM outputTbl1 ORDER BY key, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 1	11	1
 2	12	1
 3	13	1
@@ -400,16 +345,6 @@ POSTHOOK: query: DROP TABLE T1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
 CLUSTERED BY (val) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -419,16 +354,6 @@ CLUSTERED BY (val) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -437,16 +362,6 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- perform an insert to make sure there are 2 files
 INSERT OVERWRITE TABLE T1 select key, val from T1
 PREHOOK: type: QUERY
@@ -457,17 +372,7 @@ INSERT OVERWRITE TABLE T1 select key, val from T1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE outputTbl2(key STRING, cnt INT)
 PREHOOK: type: CREATETABLE
@@ -476,18 +381,6 @@ POSTHOOK: query: CREATE TABLE outputTbl2(key STRING, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl2
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- The plan should not be converted to a map-side group by, since although the
 -- sorting columns and grouping columns match, all the bucketing columns
 -- are not part of sorting columns. However, no hash map aggregation is required
@@ -504,18 +397,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE outputTbl2
 SELECT key, count(1) FROM T1 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -588,20 +469,8 @@ SELECT key, count(1) FROM T1 GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@outputtbl2
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl2.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM outputTbl2 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl2
@@ -610,20 +479,6 @@ POSTHOOK: query: SELECT * FROM outputTbl2 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl2.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 1	1
 2	1
 3	1
@@ -637,17 +492,3 @@ POSTHOOK: query: DROP TABLE T1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl2.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]

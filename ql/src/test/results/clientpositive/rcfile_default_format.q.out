@@ -100,7 +100,6 @@ PREHOOK: Input: default@rcfile_default_format_txtfile
 POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_txtfile
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_default_format_txtfile
-POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -137,14 +136,12 @@ POSTHOOK: query: CREATE TABLE textfile_default_format_ctas AS SELECT key,value F
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@rcfile_default_format_ctas
 POSTHOOK: Output: default@textfile_default_format_ctas
-POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED textfile_default_format_ctas
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@textfile_default_format_ctas
 POSTHOOK: query: DESCRIBE FORMATTED textfile_default_format_ctas
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@textfile_default_format_ctas
-POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -182,14 +179,12 @@ POSTHOOK: query: CREATE TABLE rcfile_default_format_ctas_default_serde AS SELECT
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@rcfile_default_format_ctas
 POSTHOOK: Output: default@rcfile_default_format_ctas_default_serde
-POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED rcfile_default_format_ctas_default_serde
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@rcfile_default_format_ctas_default_serde
 POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_ctas_default_serde
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_default_format_ctas_default_serde
-POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -227,14 +222,12 @@ POSTHOOK: query: CREATE TABLE rcfile_default_format_default_serde (key STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_default_format_default_serde
-POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED rcfile_default_format_default_serde
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@rcfile_default_format_default_serde
 POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_default_serde
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_default_format_default_serde
-POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -266,14 +259,12 @@ POSTHOOK: query: CREATE TABLE rcfile_ctas_default_serde STORED AS rcfile AS SELE
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@rcfile_default_format_ctas
 POSTHOOK: Output: default@rcfile_ctas_default_serde
-POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED rcfile_ctas_default_serde
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@rcfile_ctas_default_serde
 POSTHOOK: query: DESCRIBE FORMATTED rcfile_ctas_default_serde
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_ctas_default_serde
-POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -311,14 +302,12 @@ POSTHOOK: query: CREATE TABLE rcfile_default_serde (key STRING) STORED AS rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_default_serde
-POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED rcfile_default_serde
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@rcfile_default_serde
 POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_serde
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_default_serde
-POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    

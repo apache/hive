@@ -58,16 +58,12 @@ POSTHOOK: query: analyze table stats16 compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats16
 POSTHOOK: Output: default@stats16
-POSTHOOK: Lineage: stats16.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats16.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted stats16
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats16
 POSTHOOK: query: desc formatted stats16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats16
-POSTHOOK: Lineage: stats16.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats16.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	int                 	                    
@@ -106,5 +102,3 @@ POSTHOOK: query: drop table stats16
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats16
 POSTHOOK: Output: default@stats16
-POSTHOOK: Lineage: stats16.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats16.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

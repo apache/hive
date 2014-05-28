@@ -42,8 +42,6 @@ POSTHOOK: query: INSERT OVERWRITE TABLE test_table2 SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE test_table_out (key STRING, value STRING) PARTITIONED BY (part STRING)
@@ -53,10 +51,6 @@ POSTHOOK: query: CREATE TABLE test_table_out (key STRING, value STRING) PARTITIO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_out
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- Test map group by doesn't affect inference, should not be bucketed or sorted
 EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, count(*) FROM test_table1 GROUP BY key
@@ -65,10 +59,6 @@ POSTHOOK: query: -- Test map group by doesn't affect inference, should not be bu
 EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, count(*) FROM test_table1 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -173,10 +163,6 @@ SELECT key, count(*) FROM test_table1 GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Output: default@test_table_out@part=1
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 PREHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
@@ -185,12 +171,6 @@ PREHOOK: Input: default@test_table_out
 POSTHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_out
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -244,12 +224,6 @@ SELECT a.key, a.value FROM (
 ) b
 ON (a.value = b.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -353,12 +327,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Output: default@test_table_out@part=1
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 PREHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
@@ -367,14 +335,6 @@ PREHOOK: Input: default@test_table_out
 POSTHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_out
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -418,14 +378,6 @@ POSTHOOK: query: -- Test SMB join doesn't affect inference, should not be bucket
 EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -530,32 +482,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Output: default@test_table_out@part=1
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 PREHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_table_out
 POSTHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_out
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -601,16 +535,6 @@ EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
 GROUP BY b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -692,36 +616,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Output: default@test_table_out@part=1
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)a.null, (test_table2)b.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 PREHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_table_out
 POSTHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_out
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)a.null, (test_table2)b.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    

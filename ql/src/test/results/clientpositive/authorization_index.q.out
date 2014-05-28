@@ -61,6 +61,3 @@ POSTHOOK: query: drop table t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: default__t1_t1_index__._bucketname SIMPLE [(t1)t1.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__t1_t1_index__._offsets EXPRESSION [(t1)t1.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__t1_t1_index__.a SIMPLE [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]

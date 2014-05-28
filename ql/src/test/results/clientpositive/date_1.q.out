@@ -28,7 +28,6 @@ POSTHOOK: query: select * from date_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_1.d EXPRESSION []
 2011-01-01
 PREHOOK: query: select d, count(d) from date_1 group by d
 PREHOOK: type: QUERY
@@ -38,7 +37,6 @@ POSTHOOK: query: select d, count(d) from date_1 group by d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_1.d EXPRESSION []
 2011-01-01	1
 PREHOOK: query: insert overwrite table date_1 
   select date '2011-01-01' from src tablesample (1 rows)
@@ -50,7 +48,6 @@ POSTHOOK: query: insert overwrite table date_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@date_1
-POSTHOOK: Lineage: date_1.d EXPRESSION []
 POSTHOOK: Lineage: date_1.d SIMPLE []
 PREHOOK: query: select * from date_1 limit 1
 PREHOOK: type: QUERY
@@ -60,8 +57,6 @@ POSTHOOK: query: select * from date_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_1.d EXPRESSION []
-POSTHOOK: Lineage: date_1.d SIMPLE []
 2011-01-01
 PREHOOK: query: select d, count(d) from date_1 group by d
 PREHOOK: type: QUERY
@@ -71,8 +66,6 @@ POSTHOOK: query: select d, count(d) from date_1 group by d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_1.d EXPRESSION []
-POSTHOOK: Lineage: date_1.d SIMPLE []
 2011-01-01	1
 PREHOOK: query: insert overwrite table date_1 
   select cast(cast('2011-01-01 00:00:00' as timestamp) as date) from src tablesample (1 rows)
@@ -85,8 +78,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@date_1
 POSTHOOK: Lineage: date_1.d EXPRESSION []
-POSTHOOK: Lineage: date_1.d SIMPLE []
-POSTHOOK: Lineage: date_1.d EXPRESSION []
 PREHOOK: query: select * from date_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_1
@@ -95,9 +86,6 @@ POSTHOOK: query: select * from date_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_1.d EXPRESSION []
-POSTHOOK: Lineage: date_1.d SIMPLE []
-POSTHOOK: Lineage: date_1.d EXPRESSION []
 2011-01-01
 PREHOOK: query: select d, count(d) from date_1 group by d
 PREHOOK: type: QUERY
@@ -107,9 +95,6 @@ POSTHOOK: query: select d, count(d) from date_1 group by d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_1.d EXPRESSION []
-POSTHOOK: Lineage: date_1.d SIMPLE []
-POSTHOOK: Lineage: date_1.d EXPRESSION []
 2011-01-01	1
 PREHOOK: query: -- Valid casts
 select 
@@ -133,9 +118,6 @@ from date_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_1.d EXPRESSION []
-POSTHOOK: Lineage: date_1.d SIMPLE []
-POSTHOOK: Lineage: date_1.d EXPRESSION []
 2012-01-01	2011-01-01	2011-01-01 00:00:00	2011-01-01	2011-01-01
 PREHOOK: query: -- Invalid casts. 
 select 
@@ -163,9 +145,6 @@ from date_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_1.d EXPRESSION []
-POSTHOOK: Lineage: date_1.d SIMPLE []
-POSTHOOK: Lineage: date_1.d EXPRESSION []
 NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: -- These comparisons should all be true
 select 
@@ -199,9 +178,6 @@ from date_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_1.d EXPRESSION []
-POSTHOOK: Lineage: date_1.d SIMPLE []
-POSTHOOK: Lineage: date_1.d EXPRESSION []
 true	true	true	true	true	true	true	true	true	true
 PREHOOK: query: select 
   date('2001-01-28'),
@@ -237,9 +213,6 @@ from date_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_1.d EXPRESSION []
-POSTHOOK: Lineage: date_1.d SIMPLE []
-POSTHOOK: Lineage: date_1.d EXPRESSION []
 2001-01-28	2001-02-28	2001-03-28	2001-04-28	2001-05-28	2001-06-28	2001-07-28	2001-08-28	2001-09-28	2001-10-28	2001-11-28	2001-12-28
 PREHOOK: query: select 
   unix_timestamp(date('2001-01-28')) = unix_timestamp(cast('2001-01-28 0:0:0' as timestamp)),
@@ -275,9 +248,6 @@ from date_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: date_1.d EXPRESSION []
-POSTHOOK: Lineage: date_1.d SIMPLE []
-POSTHOOK: Lineage: date_1.d EXPRESSION []
 true	true	true	true	true	true	true	true	true	true	true	true
 PREHOOK: query: drop table date_1
 PREHOOK: type: DROPTABLE
@@ -287,6 +257,3 @@ POSTHOOK: query: drop table date_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_1
 POSTHOOK: Output: default@date_1
-POSTHOOK: Lineage: date_1.d EXPRESSION []
-POSTHOOK: Lineage: date_1.d SIMPLE []
-POSTHOOK: Lineage: date_1.d EXPRESSION []

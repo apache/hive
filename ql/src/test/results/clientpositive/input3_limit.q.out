@@ -128,8 +128,6 @@ POSTHOOK: query: SELECT * FROM T2 SORT BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 0	val_0
 0	val_0
 0	val_0

@@ -31,8 +31,6 @@ POSTHOOK: query: select ba_test.ba_key, count(ba_test.ba_val) from ba_test group
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ba_test
 #### A masked pattern was here ####
-POSTHOOK: Lineage: ba_test.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ba_test.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	3
 10	1
 100	2
@@ -46,5 +44,3 @@ POSTHOOK: query: drop table ba_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ba_test
 POSTHOOK: Output: default@ba_test
-POSTHOOK: Lineage: ba_test.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ba_test.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]

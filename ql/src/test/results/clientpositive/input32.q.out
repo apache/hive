@@ -94,5 +94,4 @@ POSTHOOK: query: select * from tst_dest32
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest32
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tst_dest32.a EXPRESSION [(srcbucket)srcbucket.null, ]
 1000

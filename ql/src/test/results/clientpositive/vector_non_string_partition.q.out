@@ -25,19 +25,11 @@ PREHOOK: Input: default@non_string_part
 POSTHOOK: query: SHOW PARTITIONS non_string_part
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@non_string_part
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 ctinyint=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: EXPLAIN SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -92,10 +84,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@non_string_part
 POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 762	NULL
 762	NULL
 6981	NULL
@@ -110,10 +98,6 @@ PREHOOK: query: EXPLAIN SELECT cint, cstring1 FROM non_string_part WHERE cint > 
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER BY cint, cstring1 LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -168,10 +152,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@non_string_part
 POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: non_string_part PARTITION(ctinyint=__HIVE_DEFAULT_PARTITION__).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 762	3WsVeqb28VWEEOLI8ail
 762	40ks5556SV
 6981	1FNNhmiFLGw425NA13g

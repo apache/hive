@@ -980,8 +980,6 @@ POSTHOOK: query: select * from union_top order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_top
 #### A masked pattern was here ####
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.value EXPRESSION []
 165	0
 238	1
 255	0
@@ -1007,8 +1005,6 @@ select key, 1 as value from src where key % 3 == 1 limit 3
 union all
 select key, 2 as value from src where key % 3 == 2 limit 3
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.value EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-9, Stage-10
@@ -1242,8 +1238,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@union_top
 POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.value EXPRESSION []
 POSTHOOK: Lineage: union_top.value EXPRESSION []
 PREHOOK: query: select * from union_top order by key
 PREHOOK: type: QUERY
@@ -1253,10 +1247,6 @@ POSTHOOK: query: select * from union_top order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_top
 #### A masked pattern was here ####
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.value EXPRESSION []
-POSTHOOK: Lineage: union_top.value EXPRESSION []
 165	0
 238	1
 255	0
@@ -1284,10 +1274,6 @@ select key, 1 as value from src where key % 3 == 1 limit 3
 union all
 select key, 2 as value from src where key % 3 == 2 limit 3
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.value EXPRESSION []
-POSTHOOK: Lineage: union_top.value EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1326,10 +1312,6 @@ select key, 2 as value from src where key % 3 == 2 limit 3
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@union_top_view
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.value EXPRESSION []
-POSTHOOK: Lineage: union_top.value EXPRESSION []
 PREHOOK: query: select * from union_top_view order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -1340,10 +1322,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@union_top_view
 #### A masked pattern was here ####
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.value EXPRESSION []
-POSTHOOK: Lineage: union_top.value EXPRESSION []
 165	0
 238	1
 255	0
@@ -1361,10 +1339,6 @@ POSTHOOK: query: drop table union_top
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@union_top
 POSTHOOK: Output: default@union_top
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.value EXPRESSION []
-POSTHOOK: Lineage: union_top.value EXPRESSION []
 PREHOOK: query: drop view union_top_view
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@union_top_view
@@ -1373,7 +1347,3 @@ POSTHOOK: query: drop view union_top_view
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@union_top_view
 POSTHOOK: Output: default@union_top_view
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_top.value EXPRESSION []
-POSTHOOK: Lineage: union_top.value EXPRESSION []

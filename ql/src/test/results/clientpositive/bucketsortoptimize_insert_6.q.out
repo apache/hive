@@ -50,9 +50,6 @@ INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT key, key+1, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table2@ds=1
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -72,12 +69,6 @@ SELECT a.key, a.key2, concat(a.value, b.value)
 FROM test_table1 a JOIN test_table2 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -146,12 +137,6 @@ POSTHOOK: Input: default@test_table1@ds=1
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
@@ -165,15 +150,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -184,15 +160,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 0	1	val_0val_0	1
 0	1	val_0val_0	1
 0	1	val_0val_0	1
@@ -237,15 +204,6 @@ FROM test_table1 a JOIN test_table2 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -320,15 +278,6 @@ POSTHOOK: Input: default@test_table1@ds=1
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
@@ -342,18 +291,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -364,18 +301,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 0	1	val_0val_0	1
 0	1	val_0val_0	1
 0	1	val_0val_0	1
@@ -414,18 +339,6 @@ SELECT a.key2, a.key, concat(a.value, b.value)
 FROM test_table1 a JOIN test_table2 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-6 is a root stage , consists of Stage-7, Stage-8, Stage-1
   Stage-7 has a backup stage: Stage-1
@@ -617,18 +530,6 @@ FROM test_table1 a JOIN test_table2 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-6 is a root stage , consists of Stage-7, Stage-8, Stage-1
   Stage-7 has a backup stage: Stage-1
@@ -826,18 +727,6 @@ ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -918,18 +807,6 @@ POSTHOOK: Input: default@test_table1@ds=1
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
@@ -943,21 +820,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -968,21 +830,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 0	1	val_0val_0	1
 0	1	val_0val_0	1
 0	1	val_0val_0	1
@@ -1033,21 +880,6 @@ ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1128,21 +960,6 @@ POSTHOOK: Input: default@test_table1@ds=1
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
@@ -1156,24 +973,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -1184,24 +983,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 0	1	val_0val_0	1
 0	1	val_0val_0	1
 0	1	val_0val_0	1
@@ -1233,24 +1014,6 @@ CLUSTERED BY (key, key2) SORTED BY (key DESC, key2 DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table4
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-reduce operation
 EXPLAIN
@@ -1279,24 +1042,6 @@ ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-6 is a root stage , consists of Stage-7, Stage-8, Stage-1
   Stage-7 has a backup stage: Stage-1

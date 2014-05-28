@@ -129,6 +129,4 @@ POSTHOOK: query: SELECT sum(hash(dest_j2.key,dest_j2.value)) FROM dest_j2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest_j2.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j2.value SIMPLE [(src)src3.FieldSchema(name:value, type:string, comment:default), ]
 33815990627

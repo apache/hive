@@ -200,12 +200,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 POSTHOOK: Input: default@dest1@ds=111
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1 PARTITION(ds=111).key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(ds=111).key EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 val_0	3	1	111
 val_10	1	1	111
 val_100	2	1	111
@@ -525,12 +519,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 POSTHOOK: Input: default@dest2@ds=111
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1 PARTITION(ds=111).key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(ds=111).key EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	3	1	111
 10	1	1	111
 100	2	1	111

@@ -113,9 +113,6 @@ PREHOOK: query: EXPLAIN SELECT * FROM doctors WHERE number > 6 ORDER BY number
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT * FROM doctors WHERE number > 6 ORDER BY number
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__doctors_doctors_index__._bucketname SIMPLE [(doctors)doctors.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__doctors_doctors_index__._offsets EXPRESSION [(doctors)doctors.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__doctors_doctors_index__.number SIMPLE [(doctors)doctors.FieldSchema(name:number, type:int, comment:from deserializer), ]
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-8 depends on stages: Stage-3 , consists of Stage-5, Stage-4, Stage-6
@@ -235,9 +232,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__doctors_doctors_index__
 POSTHOOK: Input: default@doctors
 #### A masked pattern was here ####
-POSTHOOK: Lineage: default__doctors_doctors_index__._bucketname SIMPLE [(doctors)doctors.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__doctors_doctors_index__._offsets EXPRESSION [(doctors)doctors.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__doctors_doctors_index__.number SIMPLE [(doctors)doctors.FieldSchema(name:number, type:int, comment:from deserializer), ]
 7	Sylvester	McCoy
 8	Paul	McGann
 9	Christopher	Eccleston
@@ -247,9 +241,6 @@ PREHOOK: query: DROP INDEX doctors_index ON doctors
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: DROP INDEX doctors_index ON doctors
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default__doctors_doctors_index__._bucketname SIMPLE [(doctors)doctors.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__doctors_doctors_index__._offsets EXPRESSION [(doctors)doctors.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__doctors_doctors_index__.number SIMPLE [(doctors)doctors.FieldSchema(name:number, type:int, comment:from deserializer), ]
 PREHOOK: query: DROP TABLE doctors
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@doctors
@@ -258,6 +249,3 @@ POSTHOOK: query: DROP TABLE doctors
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@doctors
 POSTHOOK: Output: default@doctors
-POSTHOOK: Lineage: default__doctors_doctors_index__._bucketname SIMPLE [(doctors)doctors.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: default__doctors_doctors_index__._offsets EXPRESSION [(doctors)doctors.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__doctors_doctors_index__.number SIMPLE [(doctors)doctors.FieldSchema(name:number, type:int, comment:from deserializer), ]

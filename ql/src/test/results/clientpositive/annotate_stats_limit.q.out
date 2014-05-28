@@ -58,20 +58,12 @@ POSTHOOK: query: analyze table loc_orc compute statistics for columns state, loc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 PREHOOK: query: -- numRows: 8 rawDataSize: 796
 explain extended select * from loc_orc
 PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 8 rawDataSize: 796
 explain extended select * from loc_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -112,10 +104,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 4 rawDataSize: 396
 explain extended select * from loc_orc limit 4
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -163,10 +151,6 @@ POSTHOOK: query: -- greater than the available number of rows
 -- numRows: 8 rawDataSize: 796
 explain extended select * from loc_orc limit 16
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -212,10 +196,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- numRows: 0 rawDataSize: 0
 explain extended select * from loc_orc limit 0
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY

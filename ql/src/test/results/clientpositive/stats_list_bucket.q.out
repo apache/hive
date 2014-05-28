@@ -55,8 +55,6 @@ PREHOOK: Input: default@stats_list_bucket
 POSTHOOK: query: desc formatted stats_list_bucket partition (ds = '2008-04-08',  hr = '11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_list_bucket
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 c1                  	string              	                    
@@ -123,8 +121,6 @@ stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_list_bucket_1
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table stats_list_bucket_1
   select key, value from src
 PREHOOK: type: QUERY
@@ -135,8 +131,6 @@ POSTHOOK: query: insert overwrite table stats_list_bucket_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@stats_list_bucket_1
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_list_bucket_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_list_bucket_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted stats_list_bucket_1
@@ -145,10 +139,6 @@ PREHOOK: Input: default@stats_list_bucket_1
 POSTHOOK: query: desc formatted stats_list_bucket_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_list_bucket_1
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 c1                  	string              	                    
@@ -192,10 +182,6 @@ POSTHOOK: query: drop table stats_list_bucket
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_list_bucket
 POSTHOOK: Output: default@stats_list_bucket
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table stats_list_bucket_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_list_bucket_1
@@ -204,7 +190,3 @@ POSTHOOK: query: drop table stats_list_bucket_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_list_bucket_1
 POSTHOOK: Output: default@stats_list_bucket_1
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket PARTITION(ds=2008-04-08,hr=11).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: stats_list_bucket_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

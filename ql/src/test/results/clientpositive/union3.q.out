@@ -331,7 +331,6 @@ POSTHOOK: query: select * from union_out cluster by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_out
 #### A masked pattern was here ####
-POSTHOOK: Lineage: union_out.id EXPRESSION []
 1
 2
 3

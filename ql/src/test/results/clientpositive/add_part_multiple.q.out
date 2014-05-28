@@ -102,14 +102,6 @@ POSTHOOK: Input: default@add_part_test@ds=2010-02-01
 POSTHOOK: Input: default@add_part_test@ds=2010-03-01
 POSTHOOK: Input: default@add_part_test@ds=2010-04-01
 #### A masked pattern was here ####
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-01-01).key SIMPLE []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-01-01).value SIMPLE []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-02-01).key SIMPLE []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-02-01).value SIMPLE []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-03-01).key SIMPLE []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-03-01).value SIMPLE []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-04-01).key SIMPLE []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-04-01).value SIMPLE []
 100	100	2010-01-01
 200	200	2010-02-01
 400	300	2010-03-01

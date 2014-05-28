@@ -30,8 +30,6 @@ POSTHOOK: query: insert overwrite table tbl2 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE dest1(k1 int, k2 int)
@@ -41,10 +39,6 @@ POSTHOOK: query: CREATE TABLE dest1(k1 int, k2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE dest2(k1 string, k2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -52,10 +46,6 @@ POSTHOOK: query: CREATE TABLE dest2(k1 string, k2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- A SMB join followed by a mutli-insert
 explain 
 from (
@@ -74,10 +64,6 @@ from (
 INSERT OVERWRITE TABLE dest1 select key1, key2
 INSERT OVERWRITE TABLE dest2 select value1, value2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -178,10 +164,6 @@ POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comm
 POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from dest1 order by k1, k2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -190,14 +172,6 @@ POSTHOOK: query: select * from dest1 order by k1, k2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	0
 0	0
 0	0
@@ -228,14 +202,6 @@ POSTHOOK: query: select * from dest2 order by k1, k2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 val_0	val_0
 val_0	val_0
 val_0	val_0
@@ -276,14 +242,6 @@ from (
 INSERT OVERWRITE TABLE dest1 select key1, key2
 INSERT OVERWRITE TABLE dest2 select value1, value2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -381,17 +339,9 @@ POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
 POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from dest1 order by k1, k2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -400,18 +350,6 @@ POSTHOOK: query: select * from dest1 order by k1, k2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	0
 0	0
 0	0
@@ -442,18 +380,6 @@ POSTHOOK: query: select * from dest2 order by k1, k2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 val_0	val_0
 val_0	val_0
 val_0	val_0
@@ -494,18 +420,6 @@ from (
 INSERT OVERWRITE TABLE dest1 select key1, key2
 INSERT OVERWRITE TABLE dest2 select value1, value2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -603,21 +517,9 @@ POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
 POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from dest1 order by k1, k2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -626,22 +528,6 @@ POSTHOOK: query: select * from dest1 order by k1, k2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	0
 0	0
 0	0
@@ -672,22 +558,6 @@ POSTHOOK: query: select * from dest2 order by k1, k2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 val_0	val_0
 val_0	val_0
 val_0	val_0

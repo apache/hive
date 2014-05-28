@@ -916,5 +916,3 @@ POSTHOOK: query: create table nzhang_ctas7 as select key, `to` from nzhang_ctas6
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@nzhang_ctas6
 POSTHOOK: Output: default@nzhang_ctas7
-POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

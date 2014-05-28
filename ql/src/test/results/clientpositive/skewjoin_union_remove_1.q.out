@@ -477,10 +477,6 @@ ORDER BY key1, key2, val1, val2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key1 SIMPLE [(t1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.key2 SIMPLE [(t2)b.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 SIMPLE [(t1)a.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 SIMPLE [(t2)b.FieldSchema(name:val, type:string, comment:null), ]
 2	12	2	22
 3	13	3	13
 8	18	8	18
@@ -495,10 +491,6 @@ POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE DEST1
 SELECT * FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.key1 SIMPLE [(t1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.key2 SIMPLE [(t2)b.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 SIMPLE [(t1)a.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 SIMPLE [(t2)b.FieldSchema(name:val, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1, Stage-3
@@ -626,12 +618,8 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key1 SIMPLE [(t1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.key1 SIMPLE [(t1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.key2 SIMPLE [(t2)b.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.key2 SIMPLE [(t2)b.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.val1 SIMPLE [(t1)a.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 SIMPLE [(t1)a.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 SIMPLE [(t2)b.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.val2 SIMPLE [(t2)b.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM DEST1
 ORDER BY key1, key2, val1, val2
@@ -643,14 +631,6 @@ ORDER BY key1, key2, val1, val2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key1 SIMPLE [(t1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.key1 SIMPLE [(t1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.key2 SIMPLE [(t2)b.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.key2 SIMPLE [(t2)b.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 SIMPLE [(t1)a.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 SIMPLE [(t1)a.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 SIMPLE [(t2)b.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 SIMPLE [(t2)b.FieldSchema(name:val, type:string, comment:null), ]
 NULL	NULL	4	14
 NULL	NULL	5	15
 2	12	2	22

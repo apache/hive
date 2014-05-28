@@ -67,10 +67,6 @@ POSTHOOK: Output: default@test2@age=15
 POSTHOOK: Output: default@test2@age=30
 POSTHOOK: Output: default@test2@age=40
 POSTHOOK: Output: default@test2@age=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: test2 PARTITION(age=15).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=30).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=40).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=__HIVE_DEFAULT_PARTITION__).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: -- To show stats. It doesn't show due to a bug.
 DESC EXTENDED test2
 PREHOOK: type: DESCTABLE
@@ -79,10 +75,6 @@ POSTHOOK: query: -- To show stats. It doesn't show due to a bug.
 DESC EXTENDED test2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test2
-POSTHOOK: Lineage: test2 PARTITION(age=15).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=30).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=40).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=__HIVE_DEFAULT_PARTITION__).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
 name                	string              	                    
 age                 	int                 	                    
 	 	 
@@ -98,10 +90,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- Another way to show stats.
 EXPLAIN EXTENDED select * from test2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test2 PARTITION(age=15).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=30).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=40).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=__HIVE_DEFAULT_PARTITION__).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -317,10 +305,6 @@ POSTHOOK: query: DROP TABLE test1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test1
 POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test2 PARTITION(age=15).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=30).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=40).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=__HIVE_DEFAULT_PARTITION__).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: DROP TABLE test2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test2
@@ -329,7 +313,3 @@ POSTHOOK: query: DROP TABLE test2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test2
 POSTHOOK: Output: default@test2
-POSTHOOK: Lineage: test2 PARTITION(age=15).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=30).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=40).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: test2 PARTITION(age=__HIVE_DEFAULT_PARTITION__).name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]

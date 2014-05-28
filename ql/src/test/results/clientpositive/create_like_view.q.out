@@ -186,8 +186,6 @@ POSTHOOK: query: INSERT OVERWRITE TABLE table2 SELECT key, value FROM src WHERE 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@table2
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM table1 order by a, b
@@ -198,10 +196,6 @@ POSTHOOK: query: SELECT * FROM table1 order by a, b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 86	val_86
 PREHOOK: query: SELECT * FROM table2 order by a, b
 PREHOOK: type: QUERY
@@ -211,10 +205,6 @@ POSTHOOK: query: SELECT * FROM table2 order by a, b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 100	val_100
 100	val_100
 PREHOOK: query: DROP TABLE table1
@@ -225,10 +215,6 @@ POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DROP TABLE table2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2
@@ -237,10 +223,6 @@ POSTHOOK: query: DROP TABLE table2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table2
 POSTHOOK: Output: default@table2
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DROP VIEW view1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@view1
@@ -249,10 +231,6 @@ POSTHOOK: query: DROP VIEW view1
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@view1
 POSTHOOK: Output: default@view1
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- check partitions
 create view view1 partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
@@ -262,10 +240,6 @@ create view view1 partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@view1
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table table1 like view1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -273,20 +247,12 @@ POSTHOOK: query: create table table1 like view1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted table1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table1
 POSTHOOK: query: describe formatted table1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table1
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -326,10 +292,6 @@ POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DROP VIEW view1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@view1
@@ -338,7 +300,3 @@ POSTHOOK: query: DROP VIEW view1
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@view1
 POSTHOOK: Output: default@view1
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

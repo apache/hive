@@ -209,18 +209,6 @@ POSTHOOK: query: select * from t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 255.5
 PREHOOK: query: select * from t2
 PREHOOK: type: QUERY
@@ -230,18 +218,6 @@ POSTHOOK: query: select * from t2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 254.08333333333334
 PREHOOK: query: select * from t3
 PREHOOK: type: QUERY
@@ -251,18 +227,6 @@ POSTHOOK: query: select * from t3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 255.5
 PREHOOK: query: select * from t4
 PREHOOK: type: QUERY
@@ -272,18 +236,6 @@ POSTHOOK: query: select * from t4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 255.5
 PREHOOK: query: select * from t5
 PREHOOK: type: QUERY
@@ -293,18 +245,6 @@ POSTHOOK: query: select * from t5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t5
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 254.08333333333334
 PREHOOK: query: select * from t6
 PREHOOK: type: QUERY
@@ -314,18 +254,6 @@ POSTHOOK: query: select * from t6
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t6
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 255.5
 PREHOOK: query: select * from t7
 PREHOOK: type: QUERY
@@ -335,18 +263,6 @@ POSTHOOK: query: select * from t7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t7
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [26.0,255.5,479.0,491.0]
 PREHOOK: query: select * from t8
 PREHOOK: type: QUERY
@@ -356,18 +272,6 @@ POSTHOOK: query: select * from t8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t8
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [23.355555555555558,254.08333333333334,477.0625,488.38271604938274]
 PREHOOK: query: select * from t9
 PREHOOK: type: QUERY
@@ -377,18 +281,6 @@ POSTHOOK: query: select * from t9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t9
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [26.0,255.5,479.0,491.0]
 PREHOOK: query: select * from t10
 PREHOOK: type: QUERY
@@ -398,18 +290,6 @@ POSTHOOK: query: select * from t10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t10
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [26.0,255.5,479.0,491.0]
 PREHOOK: query: select * from t11
 PREHOOK: type: QUERY
@@ -419,18 +299,6 @@ POSTHOOK: query: select * from t11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [23.355555555555558,254.08333333333334,477.0625,488.38271604938274]
 PREHOOK: query: select * from t12
 PREHOOK: type: QUERY
@@ -440,18 +308,6 @@ POSTHOOK: query: select * from t12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t12
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [26.0,255.5,479.0,491.0]
 PREHOOK: query: -- enable map-side aggregation
 FROM bucket
@@ -516,28 +372,16 @@ POSTHOOK: Output: default@t7
 POSTHOOK: Output: default@t8
 POSTHOOK: Output: default@t9
 POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 PREHOOK: query: select * from t1
 PREHOOK: type: QUERY
@@ -547,30 +391,6 @@ POSTHOOK: query: select * from t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 255.5
 PREHOOK: query: select * from t2
 PREHOOK: type: QUERY
@@ -580,30 +400,6 @@ POSTHOOK: query: select * from t2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 254.08333333333334
 PREHOOK: query: select * from t3
 PREHOOK: type: QUERY
@@ -613,30 +409,6 @@ POSTHOOK: query: select * from t3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 255.5
 PREHOOK: query: select * from t4
 PREHOOK: type: QUERY
@@ -646,30 +418,6 @@ POSTHOOK: query: select * from t4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 255.5
 PREHOOK: query: select * from t5
 PREHOOK: type: QUERY
@@ -679,30 +427,6 @@ POSTHOOK: query: select * from t5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t5
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 254.08333333333334
 PREHOOK: query: select * from t6
 PREHOOK: type: QUERY
@@ -712,30 +436,6 @@ POSTHOOK: query: select * from t6
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t6
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 255.5
 PREHOOK: query: select * from t7
 PREHOOK: type: QUERY
@@ -745,30 +445,6 @@ POSTHOOK: query: select * from t7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t7
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [26.0,255.5,479.0,491.0]
 PREHOOK: query: select * from t8
 PREHOOK: type: QUERY
@@ -778,30 +454,6 @@ POSTHOOK: query: select * from t8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t8
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [23.355555555555558,254.08333333333334,477.0625,488.38271604938274]
 PREHOOK: query: select * from t9
 PREHOOK: type: QUERY
@@ -811,30 +463,6 @@ POSTHOOK: query: select * from t9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t9
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [26.0,255.5,479.0,491.0]
 PREHOOK: query: select * from t10
 PREHOOK: type: QUERY
@@ -844,30 +472,6 @@ POSTHOOK: query: select * from t10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t10
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [26.0,255.5,479.0,491.0]
 PREHOOK: query: select * from t11
 PREHOOK: type: QUERY
@@ -877,30 +481,6 @@ POSTHOOK: query: select * from t11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [23.355555555555558,254.08333333333334,477.0625,488.38271604938274]
 PREHOOK: query: select * from t12
 PREHOOK: type: QUERY
@@ -910,28 +490,4 @@ POSTHOOK: query: select * from t12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t12
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t1.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t10.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t11.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t12.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t2.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t3.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t4.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t5.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t6.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t7.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t8.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
-POSTHOOK: Lineage: t9.result EXPRESSION [(bucket)bucket.FieldSchema(name:key, type:double, comment:null), ]
 [26.0,255.5,479.0,491.0]

@@ -34,6 +34,5 @@ POSTHOOK: query: select * from dest_sp x order by x.cnt limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_sp
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest_sp.cnt EXPRESSION [(src)src.null, (srcpart)srcpart.null, ]
 0
 500

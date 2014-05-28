@@ -160,8 +160,6 @@ POSTHOOK: query: select * from src_x1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_x1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: src_x1.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_x1.value SIMPLE []
 10	
 11	
 12	
@@ -208,8 +206,6 @@ POSTHOOK: query: select * from src_x2 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_x2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: src_x1.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_x1.value SIMPLE []
 val_51	
 val_53	
 val_54	

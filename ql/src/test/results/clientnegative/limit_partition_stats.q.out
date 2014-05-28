@@ -30,8 +30,6 @@ PREHOOK: query: explain select count(*) from part
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(*) from part
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: part PARTITION(d=2008-04-08).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: part PARTITION(d=2008-04-09).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -48,15 +46,11 @@ PREHOOK: type: QUERY
 POSTHOOK: query: select count(*) from part
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####
-POSTHOOK: Lineage: part PARTITION(d=2008-04-08).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: part PARTITION(d=2008-04-09).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 2000
 PREHOOK: query: explain select count(*) from part
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(*) from part
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: part PARTITION(d=2008-04-08).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: part PARTITION(d=2008-04-09).c EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

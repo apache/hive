@@ -27,8 +27,6 @@ PREHOOK: Input: default@tmptable
 POSTHOOK: query: describe formatted tmptable partition (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Lineage: tmptable PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    

@@ -45,16 +45,12 @@ PREHOOK: query: describe function parse_url_tuple
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: describe function parse_url_tuple
 POSTHOOK: type: DESCFUNCTION
-POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
-POSTHOOK: Lineage: url_t.key EXPRESSION []
 parse_url_tuple(url, partname1, partname2, ..., partnameN) - extracts N (N>=1) parts from a URL.
 It takes a URL and one or multiple partnames, and returns a tuple. All the input parameters and output column types are string.
 PREHOOK: query: describe function extended parse_url_tuple
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: describe function extended parse_url_tuple
 POSTHOOK: type: DESCFUNCTION
-POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
-POSTHOOK: Lineage: url_t.key EXPRESSION []
 parse_url_tuple(url, partname1, partname2, ..., partnameN) - extracts N (N>=1) parts from a URL.
 It takes a URL and one or multiple partnames, and returns a tuple. All the input parameters and output column types are string.
 Partname: HOST, PATH, QUERY, REF, PROTOCOL, AUTHORITY, FILE, USERINFO, QUERY:<KEY_NAME>
@@ -68,8 +64,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
-POSTHOOK: Lineage: url_t.key EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -143,8 +137,6 @@ POSTHOOK: query: select a.key, b.* from url_t a lateral view parse_url_tuple(a.f
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@url_t
 #### A masked pattern was here ####
-POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
-POSTHOOK: Lineage: url_t.key EXPRESSION []
 1	facebook.com	/path1/p.php	k1=v1&k2=v2	Ref1	http	/path1/p.php?k1=v1&k2=v2	facebook.com	NULL	v1
 2	www.socs.uts.edu.au	/MosaicDocs-old/url-primer.html	k1=tps	chapter1	https	/MosaicDocs-old/url-primer.html?k1=tps	www.socs.uts.edu.au:80	NULL	tps
 3	sites.google.com	/a/example.com/site/page	NULL	NULL	ftp	/a/example.com/site/page	sites.google.com	NULL	NULL
@@ -157,8 +149,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') as (ho, pa, qu, re, pr, fi, au, us, qk1) from url_t a order by ho, pa, qu
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
-POSTHOOK: Lineage: url_t.key EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -207,8 +197,6 @@ POSTHOOK: query: select parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@url_t
 #### A masked pattern was here ####
-POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
-POSTHOOK: Lineage: url_t.key EXPRESSION []
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
@@ -223,8 +211,6 @@ POSTHOOK: query: -- should return null for 'host', 'query', 'QUERY:nonExistCol'
 explain
 select a.key, b.ho, b.qu, b.qk1, b.err1, b.err2, b.err3 from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1', 'host', 'query', 'QUERY:nonExistCol') b as ho, pa, qu, re, pr, fi, au, us, qk1, err1, err2, err3 order by a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
-POSTHOOK: Lineage: url_t.key EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -298,8 +284,6 @@ POSTHOOK: query: select a.key, b.ho, b.qu, b.qk1, b.err1, b.err2, b.err3 from ur
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@url_t
 #### A masked pattern was here ####
-POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
-POSTHOOK: Lineage: url_t.key EXPRESSION []
 1	facebook.com	k1=v1&k2=v2	v1	NULL	NULL	NULL
 2	www.socs.uts.edu.au	k1=tps	tps	NULL	NULL	NULL
 3	sites.google.com	NULL	NULL	NULL	NULL	NULL
@@ -312,8 +296,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select ho, count(*) from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 where qk1 is not null group by ho
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
-POSTHOOK: Lineage: url_t.key EXPRESSION []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -410,7 +392,5 @@ POSTHOOK: query: select ho, count(*) from url_t a lateral view parse_url_tuple(a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@url_t
 #### A masked pattern was here ####
-POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
-POSTHOOK: Lineage: url_t.key EXPRESSION []
 facebook.com	1
 www.socs.uts.edu.au	1

@@ -70,8 +70,6 @@ POSTHOOK: query: SELECT * FROM src1_rot13_iof ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1_rot13_iof
 #### A masked pattern was here ####
-POSTHOOK: Lineage: src1_rot13_iof.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src1_rot13_iof.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 	
 	
 	

@@ -115,8 +115,6 @@ POSTHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest4_sequencefile
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest4_sequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest4_sequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
 86	val_86
 311	val_311

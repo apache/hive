@@ -92,11 +92,6 @@ POSTHOOK: query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input_columnarserde
 #### A masked pattern was here ####
-POSTHOOK: Lineage: input_columnarserde.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.d SIMPLE [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -116,11 +111,6 @@ POSTHOOK: query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], inpu
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input_columnarserde
 #### A masked pattern was here ####
-POSTHOOK: Lineage: input_columnarserde.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.d SIMPLE [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2
