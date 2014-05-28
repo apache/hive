@@ -36,8 +36,6 @@ POSTHOOK: query: CREATE TABLE alltypesorc_wrong(stimestamp1 string) STORED AS OR
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypesorc_wrong
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 PREHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT 'abcd' FROM alltypesorc LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -46,8 +44,6 @@ POSTHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT 'abcd' FROM alltypes
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@alltypesorc_wrong
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 PREHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '2000:01:01 00-00-00' FROM alltypesorc LIMIT 1
 PREHOOK: type: QUERY
@@ -57,9 +53,6 @@ POSTHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '2000:01:01 00-00-00
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@alltypesorc_wrong
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 PREHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '0000-00-00 99:99:99' FROM alltypesorc LIMIT 1
 PREHOOK: type: QUERY
@@ -69,10 +62,6 @@ POSTHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '0000-00-00 99:99:99
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@alltypesorc_wrong
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 PREHOOK: query: EXPLAIN SELECT
   to_unix_timestamp(ctimestamp1) AS c1,
@@ -100,11 +89,6 @@ POSTHOOK: query: EXPLAIN SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -173,11 +157,6 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 28784	1969	12	31	31	1	23	59	44
 28784	1969	12	31	31	1	23	59	44
@@ -244,11 +223,6 @@ POSTHOOK: query: EXPLAIN SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -317,11 +291,6 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 28784	1969	12	31	31	1	23	59	44
 28784	1969	12	31	31	1	23	59	44
@@ -388,11 +357,6 @@ POSTHOOK: query: EXPLAIN SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -463,11 +427,6 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 true	true	true	true	true	true	true	true	true
 true	true	true	true	true	true	true	true	true
@@ -536,11 +495,6 @@ EXPLAIN SELECT
 FROM alltypesorc_wrong
 ORDER BY c1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -609,11 +563,6 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_wrong
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL

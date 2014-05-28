@@ -20,7 +20,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT IF(TRUE, 1, 2) FROM dest1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -58,7 +57,6 @@ POSTHOOK: query: SELECT IF(TRUE, 1, 2) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 1
 PREHOOK: query: EXPLAIN
 SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
@@ -76,7 +74,6 @@ SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
        CAST(128 AS INT), CAST(1.0 AS DOUBLE),
        CAST('128' AS STRING) FROM dest1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -124,5 +121,4 @@ POSTHOOK: query: SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
 1	2	2	a	0.1	2	126	128	128	1.0	128

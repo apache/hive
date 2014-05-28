@@ -33,5 +33,3 @@ POSTHOOK: query: drop table ambiguous
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ambiguous
 POSTHOOK: Output: default@ambiguous
-POSTHOOK: Lineage: ambiguous.key SIMPLE [(src)key.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ambiguous.value SIMPLE [(src)key.FieldSchema(name:value, type:string, comment:default), ]

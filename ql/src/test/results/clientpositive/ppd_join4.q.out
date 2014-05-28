@@ -42,8 +42,6 @@ from
 join test_tbl t3 on (t2.id=t3.id )
 where t2.name='c' and t3.id='a'
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_tbl.id SIMPLE []
-POSTHOOK: Lineage: test_tbl.name SIMPLE []
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -142,5 +140,3 @@ where t2.name='c' and t3.id='a'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tbl
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_tbl.id SIMPLE []
-POSTHOOK: Lineage: test_tbl.name SIMPLE []

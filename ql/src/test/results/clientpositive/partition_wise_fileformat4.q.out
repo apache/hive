@@ -32,8 +32,6 @@ POSTHOOK: type: ALTERPARTITION_FILEFORMAT
 POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=1
 POSTHOOK: Output: default@partition_test_partitioned@dt=1
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: alter table partition_test_partitioned add partition (dt='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@partition_test_partitioned
@@ -41,8 +39,6 @@ POSTHOOK: query: alter table partition_test_partitioned add partition (dt='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@partition_test_partitioned
 POSTHOOK: Output: default@partition_test_partitioned@dt=2
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: alter table partition_test_partitioned drop partition (dt='2')
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@partition_test_partitioned
@@ -51,5 +47,3 @@ POSTHOOK: query: alter table partition_test_partitioned drop partition (dt='2')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Output: default@partition_test_partitioned@dt=2
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]

@@ -26,7 +26,6 @@ POSTHOOK: query: select * from tstTbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tsttbl1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tsttbl1.n EXPRESSION []
 NaN
 PREHOOK: query: select round(n, 1) from tstTbl1
 PREHOOK: type: QUERY
@@ -36,7 +35,6 @@ POSTHOOK: query: select round(n, 1) from tstTbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tsttbl1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tsttbl1.n EXPRESSION []
 NaN
 PREHOOK: query: select round(n) from tstTbl1
 PREHOOK: type: QUERY
@@ -46,7 +44,6 @@ POSTHOOK: query: select round(n) from tstTbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tsttbl1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tsttbl1.n EXPRESSION []
 NaN
 PREHOOK: query: -- test for Infinity
 select round(1/0), round(1/0, 2), round(1.0/0.0), round(1.0/0.0, 2) from src tablesample (1 rows)
@@ -58,5 +55,4 @@ select round(1/0), round(1/0, 2), round(1.0/0.0), round(1.0/0.0, 2) from src tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tsttbl1.n EXPRESSION []
 NULL	NULL	NULL	NULL

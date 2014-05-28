@@ -27,8 +27,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- replace sel(*) to sel(exprs) for reflecting CP result properly
 explain select count(val) from (select a.key as key, b.value as array_val from src a join array_valued_src b on a.key=b.key) i lateral view explode (array_val) c as val
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: array_valued_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: array_valued_src.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -158,6 +156,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@array_valued_src
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: array_valued_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: array_valued_src.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 1028

@@ -64,13 +64,6 @@ POSTHOOK: query: SELECT dest1.* FROM dest1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 EXPRESSION []
-POSTHOOK: Lineage: dest1.c2 EXPRESSION []
-POSTHOOK: Lineage: dest1.c3 EXPRESSION []
-POSTHOOK: Lineage: dest1.c4 EXPRESSION []
-POSTHOOK: Lineage: dest1.c5 EXPRESSION []
-POSTHOOK: Lineage: dest1.c6 EXPRESSION []
-POSTHOOK: Lineage: dest1.c7 EXPRESSION []
 bbc	bcc	NULL	NULL	NULL	bc	abc
 PREHOOK: query: DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
@@ -78,10 +71,3 @@ PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_translate
 POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:default
-POSTHOOK: Lineage: dest1.c1 EXPRESSION []
-POSTHOOK: Lineage: dest1.c2 EXPRESSION []
-POSTHOOK: Lineage: dest1.c3 EXPRESSION []
-POSTHOOK: Lineage: dest1.c4 EXPRESSION []
-POSTHOOK: Lineage: dest1.c5 EXPRESSION []
-POSTHOOK: Lineage: dest1.c6 EXPRESSION []
-POSTHOOK: Lineage: dest1.c7 EXPRESSION []

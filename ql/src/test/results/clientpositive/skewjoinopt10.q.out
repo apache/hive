@@ -46,8 +46,6 @@ POSTHOOK: query: -- This test is to verify the skew join compile optimization wh
 explain 
 select * from (select a.key as key, b.value as array_val from T1 a join array_valued_T1 b on a.key=b.key) i lateral view explode (array_val) c as val
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: array_valued_t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: array_valued_t1.value EXPRESSION [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -263,8 +261,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@array_valued_t1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: array_valued_t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: array_valued_t1.value EXPRESSION [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 1	["11"]	11
 2	["12"]	12
 3	["13"]	13

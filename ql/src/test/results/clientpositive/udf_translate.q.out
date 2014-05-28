@@ -53,7 +53,6 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE table_translate SELECT 'abcd', 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@table_translate
-POSTHOOK: Lineage: table_input.input SIMPLE []
 POSTHOOK: Lineage: table_translate.from_string SIMPLE []
 POSTHOOK: Lineage: table_translate.input_string SIMPLE []
 POSTHOOK: Lineage: table_translate.to_string SIMPLE []
@@ -69,10 +68,6 @@ SELECT  translate('abcd', 'ab', '12'),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: table_input.input SIMPLE []
-POSTHOOK: Lineage: table_translate.from_string SIMPLE []
-POSTHOOK: Lineage: table_translate.input_string SIMPLE []
-POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 12cd	12d
 PREHOOK: query: -- Run some queries where first parameter being a table column while the other two being constants
 SELECT translate(table_input.input, 'ab', '12'),
@@ -86,10 +81,6 @@ SELECT translate(table_input.input, 'ab', '12'),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_input
 #### A masked pattern was here ####
-POSTHOOK: Lineage: table_input.input SIMPLE []
-POSTHOOK: Lineage: table_translate.from_string SIMPLE []
-POSTHOOK: Lineage: table_translate.input_string SIMPLE []
-POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 12cd	12d
 PREHOOK: query: -- Run some queries where all parameters are coming from table columns
 SELECT translate(input_string, from_string, to_string) FROM table_translate tablesample (1 rows)
@@ -101,10 +92,6 @@ SELECT translate(input_string, from_string, to_string) FROM table_translate tabl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_translate
 #### A masked pattern was here ####
-POSTHOOK: Lineage: table_input.input SIMPLE []
-POSTHOOK: Lineage: table_translate.from_string SIMPLE []
-POSTHOOK: Lineage: table_translate.input_string SIMPLE []
-POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 1bc
 PREHOOK: query: -- Run some queries where some parameters are NULL
 SELECT translate(NULL, 'ab', '12'),
@@ -122,10 +109,6 @@ SELECT translate(NULL, 'ab', '12'),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: table_input.input SIMPLE []
-POSTHOOK: Lineage: table_translate.from_string SIMPLE []
-POSTHOOK: Lineage: table_translate.input_string SIMPLE []
-POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 NULL	NULL	NULL	NULL
 PREHOOK: query: -- Run some queries where the same character appears several times in the from string (2nd argument) of the UDF
 SELECT translate('abcd', 'aba', '123'),
@@ -139,10 +122,6 @@ SELECT translate('abcd', 'aba', '123'),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: table_input.input SIMPLE []
-POSTHOOK: Lineage: table_translate.from_string SIMPLE []
-POSTHOOK: Lineage: table_translate.input_string SIMPLE []
-POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 12cd	12cd
 PREHOOK: query: -- Run some queries for the ignorant case when the 3rd parameter has more characters than the second one
 SELECT translate('abcd', 'abc', '1234') FROM src tablesample (1 rows)
@@ -154,10 +133,6 @@ SELECT translate('abcd', 'abc', '1234') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: table_input.input SIMPLE []
-POSTHOOK: Lineage: table_translate.from_string SIMPLE []
-POSTHOOK: Lineage: table_translate.input_string SIMPLE []
-POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 123d
 PREHOOK: query: -- Test proper function over UTF-8 characters
 SELECT translate('Àbcd', 'À', 'Ã') FROM src tablesample (1 rows)
@@ -169,8 +144,4 @@ SELECT translate('Àbcd', 'À', 'Ã') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: table_input.input SIMPLE []
-POSTHOOK: Lineage: table_translate.from_string SIMPLE []
-POSTHOOK: Lineage: table_translate.input_string SIMPLE []
-POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 Ãbcd

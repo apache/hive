@@ -34,8 +34,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Input: default@test_table123@ds=foo1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).a SIMPLE []
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).b EXPRESSION []
 1	{"a1":"b1"}	foo1
 PREHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b MAP<STRING, STRING>)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -45,8 +43,6 @@ POSTHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b MAP<STRING,
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Output: default@test_table123
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).a SIMPLE []
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).b EXPRESSION []
 PREHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a BIGINT, b MAP<STRING, STRING>)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_table123
@@ -55,8 +51,6 @@ POSTHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a BIGINT, b MAP<STRI
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Output: default@test_table123
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).a SIMPLE []
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).b EXPRESSION []
 PREHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b MAP<STRING, STRING>)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_table123
@@ -65,8 +59,6 @@ POSTHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b MAP<STRING,
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Output: default@test_table123
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).a SIMPLE []
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).b EXPRESSION []
 PREHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a DOUBLE, b MAP<STRING, STRING>)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_table123
@@ -75,8 +67,6 @@ POSTHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a DOUBLE, b MAP<STRI
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Output: default@test_table123
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).a SIMPLE []
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).b EXPRESSION []
 PREHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a TINYINT, b MAP<STRING, STRING>)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_table123
@@ -85,8 +75,6 @@ POSTHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a TINYINT, b MAP<STR
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Output: default@test_table123
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).a SIMPLE []
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).b EXPRESSION []
 PREHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a BOOLEAN, b MAP<STRING, STRING>)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_table123
@@ -95,8 +83,6 @@ POSTHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a BOOLEAN, b MAP<STR
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Output: default@test_table123
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).a SIMPLE []
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).b EXPRESSION []
 PREHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a TINYINT, b MAP<STRING, STRING>)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_table123
@@ -105,8 +91,6 @@ POSTHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a TINYINT, b MAP<STR
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Output: default@test_table123
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).a SIMPLE []
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).b EXPRESSION []
 PREHOOK: query: ALTER TABLE test_table123 CHANGE COLUMN a a_new BOOLEAN
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@test_table123
@@ -115,8 +99,6 @@ POSTHOOK: query: ALTER TABLE test_table123 CHANGE COLUMN a a_new BOOLEAN
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Output: default@test_table123
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).a SIMPLE []
-POSTHOOK: Lineage: test_table123 PARTITION(ds=foo1).b EXPRESSION []
 PREHOOK: query: -- All the above ALTERs will succeed since they are between compatible types.
 -- The following ALTER will fail as MAP<STRING, STRING> and STRING are not
 -- compatible.

@@ -27,8 +27,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- The plan is optimized to perform partial aggregation on the mapper
 EXPLAIN select count(distinct key) from T1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -90,8 +88,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 6
 PREHOOK: query: -- The plan is optimized to perform partial aggregation on the mapper
 EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1
@@ -99,8 +95,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- The plan is optimized to perform partial aggregation on the mapper
 EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -162,8 +156,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 6	10	10	28.0
 PREHOOK: query: -- The plan is not changed in the presence of a grouping key
 EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
@@ -171,8 +163,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- The plan is not changed in the presence of a grouping key
 EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -236,8 +226,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 1	3	3	0.0
 1	1	1	2.0
 1	1	1	4.0
@@ -250,8 +238,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- The plan is not changed in the presence of a grouping key
 EXPLAIN select key, count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -315,8 +301,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	1	3	3	0.0
 2	1	1	1	2.0
 4	1	1	1	4.0
@@ -329,8 +313,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- The plan is not changed in the presence of a grouping key expression
 EXPLAIN select count(distinct key+key) from T1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -390,15 +372,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 6
 PREHOOK: query: EXPLAIN select count(distinct 1) from T1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select count(distinct 1) from T1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -456,8 +434,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 1
 PREHOOK: query: -- no plan change if map aggr is turned off
 EXPLAIN select count(distinct key) from T1
@@ -465,8 +441,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- no plan change if map aggr is turned off
 EXPLAIN select count(distinct key) from T1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -520,6 +494,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@ds=1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 6

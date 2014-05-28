@@ -105,17 +105,6 @@ SELECT SUM(HASH(t)) FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 62430
 PREHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
 PREHOOK: type: QUERY
@@ -125,33 +114,11 @@ POSTHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 62430
 PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -204,17 +171,6 @@ PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -279,17 +235,6 @@ SELECT * FROM orc_pred WHERE t<2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 -3	467	65575	4294967437	81.64	23.53	true	tom hernandez	2013-03-01 09:11:58.703188	32.85	study skills
 PREHOOK: query: SELECT * FROM orc_pred WHERE t<2 limit 1
 PREHOOK: type: QUERY
@@ -299,17 +244,6 @@ POSTHOOK: query: SELECT * FROM orc_pred WHERE t<2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 -3	467	65575	4294967437	81.64	23.53	true	tom hernandez	2013-03-01 09:11:58.703188	32.85	study skills
 PREHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
 PREHOOK: type: QUERY
@@ -319,17 +253,6 @@ POSTHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.4	yard duty
 PREHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
 PREHOOK: type: QUERY
@@ -339,17 +262,6 @@ POSTHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.4	yard duty
 PREHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
@@ -365,17 +277,6 @@ POSTHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 -8
 PREHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
@@ -391,17 +292,6 @@ POSTHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 -8
 PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
@@ -413,17 +303,6 @@ POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   AND t < 0
   AND t > -2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -485,17 +364,6 @@ POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   AND t < 0
   AND t > -2
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -564,17 +432,6 @@ POSTHOOK: query: SELECT t, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 -1	bob laertes
 -1	bob young
 PREHOOK: query: SELECT t, s FROM orc_pred
@@ -593,17 +450,6 @@ POSTHOOK: query: SELECT t, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 -1	bob laertes
 -1	bob young
 PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
@@ -618,17 +464,6 @@ POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND s LIKE 'bob%'
   ORDER BY s
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -681,17 +516,6 @@ POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND s LIKE 'bob%'
   ORDER BY s
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -751,17 +575,6 @@ POSTHOOK: query: SELECT t, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 26	bob ovid
 26	bob quirinius
 27	bob ovid
@@ -783,17 +596,6 @@ POSTHOOK: query: SELECT t, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 26	bob ovid
 26	bob quirinius
 27	bob ovid
@@ -811,17 +613,6 @@ POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND t BETWEEN 25 AND 30
   SORT BY t,s
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -876,17 +667,6 @@ POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND t BETWEEN 25 AND 30
   SORT BY t,s
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -954,17 +734,6 @@ POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 15	334	11.12	jessica robinson
 101	327	11.48	gabriella ellison
 7	320	11.54	bob ellison
@@ -994,17 +763,6 @@ POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 15	334	11.12	jessica robinson
 101	327	11.48	gabriella ellison
 7	320	11.54	bob ellison
@@ -1030,17 +788,6 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   ORDER BY s DESC
   LIMIT 3
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1106,17 +853,6 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   ORDER BY s DESC
   LIMIT 3
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1191,17 +927,6 @@ POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 15	334	11.12	jessica robinson
 PREHOOK: query: SELECT t, si, d, s FROM orc_pred
   WHERE t > 10
@@ -1233,17 +958,6 @@ POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 15	334	11.12	jessica robinson
 PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE t > 10
@@ -1271,17 +985,6 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   SORT BY s DESC
   LIMIT 3
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1374,17 +1077,6 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   SORT BY s DESC
   LIMIT 3
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

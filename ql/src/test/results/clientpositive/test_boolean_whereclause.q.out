@@ -32,5 +32,4 @@ WHERE flag
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_boolean
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_boolean.dummy EXPRESSION []
 1

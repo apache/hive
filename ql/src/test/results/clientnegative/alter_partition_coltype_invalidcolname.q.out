@@ -25,8 +25,6 @@ PREHOOK: Input: default@alter_coltype
 POSTHOOK: query: desc alter_coltype
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_coltype
-POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	                    
 value               	string              	                    
 dt                  	string              	                    

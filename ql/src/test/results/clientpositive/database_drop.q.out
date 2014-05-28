@@ -76,9 +76,6 @@ POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:db5
 POSTHOOK: Output: db5@temp_tbl2
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' into table temp_tbl2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -87,9 +84,6 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' into table te
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db5@temp_tbl2
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db5@temp_tbl2
@@ -97,18 +91,12 @@ POSTHOOK: query: CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db5@temp_tbl2
 POSTHOOK: Output: db5@temp_tbl2_view
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 #### A masked pattern was here ####
 PREHOOK: type: CREATEINDEX
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: db5@db5__temp_tbl2_idx2__
 #### A masked pattern was here ####
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx2 ON temp_tbl2 REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: db5@temp_tbl2
@@ -120,9 +108,6 @@ POSTHOOK: Output: db5@db5__temp_tbl2_idx2__
 POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: -- add a partitioned table, index and view
 CREATE TABLE part_tab (id INT, name STRING)  PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
@@ -132,12 +117,6 @@ CREATE TABLE part_tab (id INT, name STRING)  PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db5
 POSTHOOK: Output: db5@part_tab
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE part_tab PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -147,12 +126,6 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db5@part_tab
 POSTHOOK: Output: db5@part_tab@ds=2008-04-09
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE part_tab PARTITION (ds='2009-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -162,23 +135,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db5@part_tab
 POSTHOOK: Output: db5@part_tab@ds=2009-04-09
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: CREATE INDEX idx3 ON TABLE part_tab(id) AS 'COMPACT' with DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX idx3 ON TABLE part_tab(id) AS 'COMPACT' with DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: db5@db5__part_tab_idx3__
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx3 ON part_tab PARTITION (ds='2008-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: db5@part_tab
@@ -192,12 +153,6 @@ POSTHOOK: Output: db5@db5__part_tab_idx3__@ds=2008-04-09
 POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx3 ON part_tab PARTITION (ds='2009-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: db5@part_tab
@@ -208,18 +163,9 @@ POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: db5@part_tab
 POSTHOOK: Input: db5@part_tab@ds=2009-04-09
 POSTHOOK: Output: db5@db5__part_tab_idx3__@ds=2009-04-09
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: -- add a partitioned table, index and view with a different storage location
 CREATE TABLE part_tab2 (id INT, name STRING)  PARTITIONED BY (ds string)
 #### A masked pattern was here ####
@@ -233,18 +179,6 @@ POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:db5
 POSTHOOK: Output: db5@part_tab2
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE part_tab2 PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -254,18 +188,6 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db5@part_tab2
 POSTHOOK: Output: db5@part_tab2@ds=2008-04-09
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE part_tab2 PARTITION (ds='2009-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -275,18 +197,6 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db5@part_tab2
 POSTHOOK: Output: db5@part_tab2@ds=2009-04-09
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: CREATE INDEX idx4 ON TABLE part_tab2(id) AS 'COMPACT' with DEFERRED REBUILD
 #### A masked pattern was here ####
 PREHOOK: type: CREATEINDEX
@@ -296,18 +206,6 @@ POSTHOOK: query: CREATE INDEX idx4 ON TABLE part_tab2(id) AS 'COMPACT' with DEFE
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: db5@db5__part_tab2_idx4__
 #### A masked pattern was here ####
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx4 ON part_tab2 PARTITION (ds='2008-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: db5@part_tab2
@@ -321,18 +219,6 @@ POSTHOOK: Output: db5@db5__part_tab2_idx4__@ds=2008-04-09
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx4 ON part_tab2 PARTITION (ds='2009-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: db5@part_tab2
@@ -343,24 +229,9 @@ POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: db5@part_tab2
 POSTHOOK: Input: db5@part_tab2@ds=2009-04-09
 POSTHOOK: Output: db5@db5__part_tab2_idx4__@ds=2009-04-09
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: -- add a partitioned table, index and view with a different storage location
 CREATE TABLE part_tab3 (id INT, name STRING)  PARTITIONED BY (ds string)
 #### A masked pattern was here ####
@@ -374,24 +245,6 @@ POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:db5
 POSTHOOK: Output: db5@part_tab3
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
@@ -401,24 +254,6 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
 POSTHOOK: Output: db5@part_tab3
 POSTHOOK: Output: db5@part_tab3@ds=2007-04-09
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE part_tab3 PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -428,24 +263,6 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db5@part_tab3
 POSTHOOK: Output: db5@part_tab3@ds=2008-04-09
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE part_tab3 PARTITION (ds='2009-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -455,24 +272,6 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db5@part_tab3
 POSTHOOK: Output: db5@part_tab3@ds=2009-04-09
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: CREATE INDEX idx5 ON TABLE part_tab3(id) AS 'COMPACT' with DEFERRED REBUILD
 #### A masked pattern was here ####
 PREHOOK: type: CREATEINDEX
@@ -482,24 +281,6 @@ POSTHOOK: query: CREATE INDEX idx5 ON TABLE part_tab3(id) AS 'COMPACT' with DEFE
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: db5@db5__part_tab3_idx5__
 #### A masked pattern was here ####
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx5 ON part_tab3 PARTITION (ds='2008-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: db5@part_tab3
@@ -510,27 +291,9 @@ POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: db5@part_tab3
 POSTHOOK: Input: db5@part_tab3@ds=2008-04-09
 POSTHOOK: Output: db5@db5__part_tab3_idx5__@ds=2008-04-09
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab3)part_tab3.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab3)part_tab3.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab3)part_tab3.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx5 ON part_tab3 PARTITION (ds='2009-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: db5@part_tab3
@@ -541,30 +304,9 @@ POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: db5@part_tab3
 POSTHOOK: Input: db5@part_tab3@ds=2009-04-09
 POSTHOOK: Output: db5@db5__part_tab3_idx5__@ds=2009-04-09
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab3)part_tab3.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab3)part_tab3.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab3)part_tab3.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab3)part_tab3.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab3)part_tab3.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab3)part_tab3.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: -- add an external table
 CREATE EXTERNAL TABLE extab1(id INT, name STRING) ROW FORMAT
               DELIMITED FIELDS TERMINATED BY ''
@@ -584,30 +326,6 @@ POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:db5
 POSTHOOK: Output: db5@extab1
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab3)part_tab3.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab3)part_tab3.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab3)part_tab3.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab3)part_tab3.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab3)part_tab3.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab3)part_tab3.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: -- drop the database with cascade
 DROP DATABASE db5 CASCADE
 PREHOOK: type: DROPDATABASE
@@ -644,28 +362,4 @@ POSTHOOK: Output: db5@temp_tbl
 POSTHOOK: Output: db5@temp_tbl2
 POSTHOOK: Output: db5@temp_tbl2_view
 POSTHOOK: Output: db5@temp_tbl_view
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab3)part_tab3.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab3)part_tab3.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab3)part_tab3.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab3)part_tab3.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab3)part_tab3.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab3_idx5__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab3)part_tab3.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09)._offsets EXPRESSION [(part_tab)part_tab.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2009-04-09).id SIMPLE [(part_tab)part_tab.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._bucketname SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__._offsets EXPRESSION [(temp_tbl2)temp_tbl2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl2_idx2__.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._bucketname SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 #### A masked pattern was here ####

@@ -27,10 +27,6 @@ select sum(hash(*)) from newtypesorc where d=0.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d=0.22
 PREHOOK: type: QUERY
@@ -40,10 +36,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d=0.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d='0.22'
 PREHOOK: type: QUERY
@@ -53,10 +45,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d='0.22'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d='0.22'
 PREHOOK: type: QUERY
@@ -66,10 +54,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d='0.22'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d=cast('0.22' as float)
 PREHOOK: type: QUERY
@@ -79,10 +63,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d=cast('0.22' as flo
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d=cast('0.22' as float)
 PREHOOK: type: QUERY
@@ -92,10 +72,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d=cast('0.22' as flo
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d!=0.22
 PREHOOK: type: QUERY
@@ -105,10 +81,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d!=0.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 334427804500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d!=0.22
 PREHOOK: type: QUERY
@@ -118,10 +90,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d!=0.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 334427804500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d!='0.22'
 PREHOOK: type: QUERY
@@ -131,10 +99,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d!='0.22'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 334427804500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d!='0.22'
 PREHOOK: type: QUERY
@@ -144,10 +108,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d!='0.22'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 334427804500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d!=cast('0.22' as float)
 PREHOOK: type: QUERY
@@ -157,10 +117,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d!=cast('0.22' as fl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 334427804500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d!=cast('0.22' as float)
 PREHOOK: type: QUERY
@@ -170,10 +126,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d!=cast('0.22' as fl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 334427804500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<11.22
 PREHOOK: type: QUERY
@@ -183,10 +135,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<11.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<11.22
 PREHOOK: type: QUERY
@@ -196,10 +144,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<11.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<'11.22'
 PREHOOK: type: QUERY
@@ -209,10 +153,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<'11.22'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<'11.22'
 PREHOOK: type: QUERY
@@ -222,10 +162,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<'11.22'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<cast('11.22' as float)
 PREHOOK: type: QUERY
@@ -235,10 +171,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<cast('11.22' as fl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<cast('11.22' as float)
 PREHOOK: type: QUERY
@@ -248,10 +180,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<cast('11.22' as fl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<1
 PREHOOK: type: QUERY
@@ -261,10 +189,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<1
 PREHOOK: type: QUERY
@@ -274,10 +198,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<=11.22
 PREHOOK: type: QUERY
@@ -287,10 +207,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<=11.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<=11.22
 PREHOOK: type: QUERY
@@ -300,10 +216,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<=11.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<='11.22'
 PREHOOK: type: QUERY
@@ -313,10 +225,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<='11.22'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<='11.22'
 PREHOOK: type: QUERY
@@ -326,10 +234,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<='11.22'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<=cast('11.22' as float)
 PREHOOK: type: QUERY
@@ -339,10 +243,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<=cast('11.22' as f
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<=cast('11.22' as float)
 PREHOOK: type: QUERY
@@ -352,10 +252,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<=cast('11.22' as f
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<=12
 PREHOOK: type: QUERY
@@ -365,10 +261,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<=12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d<=12
 PREHOOK: type: QUERY
@@ -378,10 +270,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d<=12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.22', '1.0')
 PREHOOK: type: QUERY
@@ -391,10 +279,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.22', '1.0')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.22', '1.0')
 PREHOOK: type: QUERY
@@ -404,10 +288,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.22', '1.0')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.22', '11.22')
 PREHOOK: type: QUERY
@@ -417,10 +297,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.22', '11.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.22', '11.22')
 PREHOOK: type: QUERY
@@ -430,10 +306,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.22', '11.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', '1.0')
 PREHOOK: type: QUERY
@@ -443,10 +315,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', '1.0')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 NULL
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', '1.0')
 PREHOOK: type: QUERY
@@ -456,10 +324,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', '1.0')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 NULL
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', 0.22)
 PREHOOK: type: QUERY
@@ -469,10 +333,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', 0.22)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', 0.22)
 PREHOOK: type: QUERY
@@ -482,10 +342,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', 0.22)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', 0.22, cast('11.22' as float))
 PREHOOK: type: QUERY
@@ -495,10 +351,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', 0.22, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', 0.22, cast('11.22' as float))
 PREHOOK: type: QUERY
@@ -508,10 +360,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', 0.22, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and 1
 PREHOOK: type: QUERY
@@ -521,10 +369,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and 1
 PREHOOK: type: QUERY
@@ -534,10 +378,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and 1000
 PREHOOK: type: QUERY
@@ -547,10 +387,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and 1000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and 1000
 PREHOOK: type: QUERY
@@ -560,10 +396,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and 1000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and '2.0'
 PREHOOK: type: QUERY
@@ -573,10 +405,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and '2.0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and '2.0'
 PREHOOK: type: QUERY
@@ -586,10 +414,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and '2.0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and cast(3 as float)
 PREHOOK: type: QUERY
@@ -599,10 +423,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and cast
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and cast(3 as float)
 PREHOOK: type: QUERY
@@ -612,10 +432,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and cast
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 -252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d between 1 and cast(30 as char(10))
 PREHOOK: type: QUERY
@@ -625,10 +441,6 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d between 1 and cast
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 334427804500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d between 1 and cast(30 as char(10))
 PREHOOK: type: QUERY
@@ -638,8 +450,4 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d between 1 and cast
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
-POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
 334427804500

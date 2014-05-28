@@ -101,8 +101,6 @@ POSTHOOK: query: INSERT INTO TABLE insert_into6a PARTITION (ds='2') SELECT * FRO
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@insert_into6a@ds=2
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
@@ -121,10 +119,6 @@ POSTHOOK: Input: default@insert_into6a
 POSTHOOK: Input: default@insert_into6a@ds=1
 POSTHOOK: Input: default@insert_into6a@ds=2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 -35226404960
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into6b PARTITION (ds) 
     SELECT * FROM insert_into6a
@@ -132,10 +126,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into6b PARTITION (ds) 
     SELECT * FROM insert_into6a
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -198,10 +188,6 @@ POSTHOOK: Input: default@insert_into6a@ds=1
 POSTHOOK: Input: default@insert_into6a@ds=2
 POSTHOOK: Output: default@insert_into6b@ds=1
 POSTHOOK: Output: default@insert_into6b@ds=2
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into6b PARTITION(ds=1).key SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: insert_into6b PARTITION(ds=1).value SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: insert_into6b PARTITION(ds=2).key SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:key, type:int, comment:null), ]
@@ -222,14 +208,6 @@ POSTHOOK: Input: default@insert_into6b
 POSTHOOK: Input: default@insert_into6b@ds=1
 POSTHOOK: Input: default@insert_into6b@ds=2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=1).key SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=1).value SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=2).key SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=2).value SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:value, type:string, comment:null), ]
 -35226404960
 PREHOOK: query: SHOW PARTITIONS insert_into6b
 PREHOOK: type: SHOWPARTITIONS
@@ -237,14 +215,6 @@ PREHOOK: Input: default@insert_into6b
 POSTHOOK: query: SHOW PARTITIONS insert_into6b
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@insert_into6b
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=1).key SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=1).value SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=2).key SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=2).value SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:value, type:string, comment:null), ]
 ds=1
 ds=2
 PREHOOK: query: DROP TABLE insert_into6a
@@ -255,14 +225,6 @@ POSTHOOK: query: DROP TABLE insert_into6a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert_into6a
 POSTHOOK: Output: default@insert_into6a
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=1).key SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=1).value SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=2).key SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=2).value SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DROP TABLE insert_into6b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_into6b
@@ -271,11 +233,3 @@ POSTHOOK: query: DROP TABLE insert_into6b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert_into6b
 POSTHOOK: Output: default@insert_into6b
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=1).key SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=1).value SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=2).key SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: insert_into6b PARTITION(ds=2).value SIMPLE [(insert_into6a)insert_into6a.FieldSchema(name:value, type:string, comment:null), ]

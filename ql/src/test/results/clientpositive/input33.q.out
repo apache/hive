@@ -138,8 +138,6 @@ POSTHOOK: query: SELECT * FROM dest1 SORT BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1	105_105
 1	10_10
 1	111_111

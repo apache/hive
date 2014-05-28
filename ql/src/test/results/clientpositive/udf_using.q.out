@@ -28,7 +28,6 @@ POSTHOOK: query: select c1, lookup(c1) from udf_using
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@udf_using
 #### A masked pattern was here ####
-POSTHOOK: Lineage: udf_using.c1 SIMPLE []
 Joe	2
 Joe	2
 PREHOOK: query: drop table udf_using
@@ -39,12 +38,10 @@ POSTHOOK: query: drop table udf_using
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@udf_using
 POSTHOOK: Output: default@udf_using
-POSTHOOK: Lineage: udf_using.c1 SIMPLE []
 PREHOOK: query: drop function lookup
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: database:default
 POSTHOOK: query: drop function lookup
 POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:default
-POSTHOOK: Lineage: udf_using.c1 SIMPLE []
 #### A masked pattern was here ####

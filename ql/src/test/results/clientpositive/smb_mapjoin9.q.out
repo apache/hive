@@ -270,8 +270,6 @@ POSTHOOK: query: insert overwrite table hive_test_smb_bucket2 partition (ds='201
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hive_test_smb_bucket2@ds=2010-10-15
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
@@ -288,10 +286,6 @@ FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
@@ -411,10 +405,6 @@ POSTHOOK: Input: default@hive_test_smb_bucket1@ds=2010-10-15
 POSTHOOK: Input: default@hive_test_smb_bucket2
 POSTHOOK: Input: default@hive_test_smb_bucket2@ds=2010-10-15
 POSTHOOK: Output: default@smb_mapjoin9_results
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table smb_mapjoin9_results
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@smb_mapjoin9_results
@@ -423,10 +413,6 @@ POSTHOOK: query: drop table smb_mapjoin9_results
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@smb_mapjoin9_results
 POSTHOOK: Output: default@smb_mapjoin9_results
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table hive_test_smb_bucket1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive_test_smb_bucket1
@@ -435,10 +421,6 @@ POSTHOOK: query: drop table hive_test_smb_bucket1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive_test_smb_bucket1
 POSTHOOK: Output: default@hive_test_smb_bucket1
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table hive_test_smb_bucket2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive_test_smb_bucket2
@@ -447,7 +429,3 @@ POSTHOOK: query: drop table hive_test_smb_bucket2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive_test_smb_bucket2
 POSTHOOK: Output: default@hive_test_smb_bucket2
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

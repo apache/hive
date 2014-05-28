@@ -45,10 +45,6 @@ JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c3, x1.c1) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2) ORDER BY xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tmp.c1 EXPRESSION [(src)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp.c2 EXPRESSION [(src)y.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp.c3 SIMPLE [(src)x.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp.c4 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4

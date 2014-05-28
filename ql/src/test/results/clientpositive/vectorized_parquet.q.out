@@ -55,12 +55,6 @@ POSTHOOK: query: explain select *
   where cint = 528534767 
   limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_parquet.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -111,12 +105,6 @@ POSTHOOK: query: select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_parquet
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypes_parquet.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 528534767	-50	-13326	-50.0	-13326.0	cvLH6Eat2yFsyy7p
 528534767	NULL	-4213	NULL	-4213.0	cvLH6Eat2yFsyy7p
 528534767	-28	-15813	-28.0	-15813.0	cvLH6Eat2yFsyy7p
@@ -145,12 +133,6 @@ POSTHOOK: query: explain select ctinyint,
   from alltypes_parquet
   group by ctinyint
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: alltypes_parquet.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -226,12 +208,6 @@ POSTHOOK: query: select ctinyint,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_parquet
 #### A masked pattern was here ####
-POSTHOOK: Lineage: alltypes_parquet.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 NULL	1073418988	-16379	3115	NULL	305051.4870777435
 -64	626923679	-15920	21	-64.0	9254.456539277186
 -63	626923679	-12516	16	-63.0	9263.605837223322

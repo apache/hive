@@ -34,8 +34,6 @@ POSTHOOK: query: CREATE TABLE outputTbl1(val string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- The plan should not be converted to a map-side group by even though the group by key
 -- matches the sorted key. Adding a order by at the end to make the test results deterministic
 EXPLAIN
@@ -48,8 +46,6 @@ EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1
 SELECT val, count(1) FROM T1 GROUP BY val
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -124,8 +120,6 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM outputTbl1 ORDER BY val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
@@ -134,10 +128,6 @@ POSTHOOK: query: SELECT * FROM outputTbl1 ORDER BY val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 11	1
 12	1
 13	1

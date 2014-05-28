@@ -247,9 +247,6 @@ POSTHOOK: query: select key, arr_ele, value from test_union_lateral_view order b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_union_lateral_view
 #### A masked pattern was here ####
-POSTHOOK: Lineage: test_union_lateral_view.arr_ele EXPRESSION []
-POSTHOOK: Lineage: test_union_lateral_view.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_union_lateral_view.value EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	1	val_0
 0	1	val_0
 0	1	val_0

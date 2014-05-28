@@ -49,14 +49,6 @@ PREHOOK: query: DROP TABLE t_hbase_maps
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE t_hbase_maps
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.float_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.int_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.smallint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.string_col SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.tinyint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE t_hbase_maps(key STRING,
                           string_map_col MAP<STRING, STRING>,
                           simple_string_col STRING)
@@ -74,14 +66,6 @@ TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_maps
-POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.float_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.int_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.smallint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.string_col SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.tinyint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE t_hbase_maps
   SELECT key,
          map("string_col", string_col),
@@ -100,14 +84,6 @@ POSTHOOK: query: INSERT OVERWRITE TABLE t_hbase_maps
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_src
 POSTHOOK: Output: default@t_hbase_maps
-POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.float_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.int_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.smallint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.string_col SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.tinyint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE t_hbase_maps
   SELECT key,
          map("string_col", string_col),
@@ -126,14 +102,6 @@ POSTHOOK: query: INSERT OVERWRITE TABLE t_hbase_maps
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_src
 POSTHOOK: Output: default@t_hbase_maps
-POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.float_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.int_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.smallint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.string_col SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.tinyint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM t_hbase_maps ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_hbase_maps
@@ -142,28 +110,12 @@ POSTHOOK: query: SELECT * FROM t_hbase_maps ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_hbase_maps
 #### A masked pattern was here ####
-POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.float_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.int_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.smallint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.string_col SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.tinyint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 125	{"simple_string_col":"val_125","string_col":"val_125"}	val_125
 126	{"simple_string_col":"val_126","string_col":"val_126"}	val_126
 PREHOOK: query: DROP TABLE t_ext_hbase_maps
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE t_ext_hbase_maps
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.float_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.int_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.smallint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.string_col SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.tinyint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps(key STRING,
                                        string_map_cols MAP<STRING, STRING>, simple_string_col STRING)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
@@ -179,14 +131,6 @@ TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps
-POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.float_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.int_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.smallint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.string_col SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.tinyint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM t_ext_hbase_maps ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_ext_hbase_maps
@@ -195,14 +139,6 @@ POSTHOOK: query: SELECT * FROM t_ext_hbase_maps ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_ext_hbase_maps
 #### A masked pattern was here ####
-POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.float_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.int_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.smallint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.string_col SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.tinyint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 125	{"string_col":"val_125"}	val_125
 126	{"string_col":"val_126"}	val_126
 PREHOOK: query: DROP TABLE t_ext_hbase_maps
@@ -213,11 +149,3 @@ POSTHOOK: query: DROP TABLE t_ext_hbase_maps
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_ext_hbase_maps
 POSTHOOK: Output: default@t_ext_hbase_maps
-POSTHOOK: Lineage: hbase_src.bigint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.double_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.float_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.int_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.smallint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.string_col SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: hbase_src.tinyint_col EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -44,8 +44,6 @@ POSTHOOK: query: INSERT OVERWRITE TABLE rcfile_merge3a PARTITION (ds='2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@rcfile_merge3a@ds=2
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE rcfile_merge3b
@@ -54,10 +52,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE rcfile_merge3b
     SELECT key, value FROM rcfile_merge3a
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -136,10 +130,6 @@ POSTHOOK: Input: default@rcfile_merge3a
 POSTHOOK: Input: default@rcfile_merge3a@ds=1
 POSTHOOK: Input: default@rcfile_merge3a@ds=2
 POSTHOOK: Output: default@rcfile_merge3b
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge3b.key SIMPLE [(rcfile_merge3a)rcfile_merge3a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: rcfile_merge3b.value SIMPLE [(rcfile_merge3a)rcfile_merge3a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
@@ -160,12 +150,6 @@ POSTHOOK: Input: default@rcfile_merge3a
 POSTHOOK: Input: default@rcfile_merge3a@ds=1
 POSTHOOK: Input: default@rcfile_merge3a@ds=2
 #### A masked pattern was here ####
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3b.key SIMPLE [(rcfile_merge3a)rcfile_merge3a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: rcfile_merge3b.value SIMPLE [(rcfile_merge3a)rcfile_merge3a.FieldSchema(name:value, type:string, comment:null), ]
 14412220296
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
@@ -181,12 +165,6 @@ POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfile_merge3b
 #### A masked pattern was here ####
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3b.key SIMPLE [(rcfile_merge3a)rcfile_merge3a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: rcfile_merge3b.value SIMPLE [(rcfile_merge3a)rcfile_merge3a.FieldSchema(name:value, type:string, comment:null), ]
 14412220296
 PREHOOK: query: DROP TABLE rcfile_merge3a
 PREHOOK: type: DROPTABLE
@@ -196,12 +174,6 @@ POSTHOOK: query: DROP TABLE rcfile_merge3a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@rcfile_merge3a
 POSTHOOK: Output: default@rcfile_merge3a
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3b.key SIMPLE [(rcfile_merge3a)rcfile_merge3a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: rcfile_merge3b.value SIMPLE [(rcfile_merge3a)rcfile_merge3a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DROP TABLE rcfile_merge3b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@rcfile_merge3b
@@ -210,9 +182,3 @@ POSTHOOK: query: DROP TABLE rcfile_merge3b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@rcfile_merge3b
 POSTHOOK: Output: default@rcfile_merge3b
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfile_merge3b.key SIMPLE [(rcfile_merge3a)rcfile_merge3a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: rcfile_merge3b.value SIMPLE [(rcfile_merge3a)rcfile_merge3a.FieldSchema(name:value, type:string, comment:null), ]

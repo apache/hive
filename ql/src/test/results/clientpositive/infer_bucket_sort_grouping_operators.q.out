@@ -110,9 +110,6 @@ PREHOOK: Input: default@test_table_out
 POSTHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_out
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -163,9 +160,6 @@ SELECT key, value, GROUPING__ID, count(1) FROM src GROUP BY key, value WITH ROLL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table_out_2@part=1
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -176,13 +170,6 @@ PREHOOK: Input: default@test_table_out_2
 POSTHOOK: query: DESCRIBE FORMATTED test_table_out_2 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_out_2
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -228,13 +215,6 @@ POSTHOOK: query: -- Test cube, should not be bucketed or sorted because its miss
 EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH CUBE
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -311,29 +291,12 @@ POSTHOOK: Output: default@test_table_out@part=1
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_table_out
 POSTHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_out
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -384,16 +347,6 @@ SELECT key, value, GROUPING__ID, count(1) FROM src GROUP BY key, value WITH CUBE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table_out_2@part=1
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -404,20 +357,6 @@ PREHOOK: Input: default@test_table_out_2
 POSTHOOK: query: DESCRIBE FORMATTED test_table_out_2 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_out_2
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -463,20 +402,6 @@ POSTHOOK: query: -- Test grouping sets, should not be bucketed or sorted because
 EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value GROUPING SETS (key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -553,43 +478,12 @@ POSTHOOK: Output: default@test_table_out@part=1
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_table_out
 POSTHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_out
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    
@@ -640,23 +534,6 @@ SELECT key, value, GROUPING__ID, count(1) FROM src GROUP BY key, value GROUPING 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table_out_2@part=1
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -667,27 +544,6 @@ PREHOOK: Input: default@test_table_out_2
 POSTHOOK: query: DESCRIBE FORMATTED test_table_out_2 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_out_2
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	                    

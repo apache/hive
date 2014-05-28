@@ -132,8 +132,6 @@ POSTHOOK: query: select * from varchar_serde_lb limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_lb
 #### A masked pattern was here ####
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
 474	val_475
 62	val_63
 468	val_469
@@ -147,8 +145,6 @@ POSTHOOK: query: select value, count(*) from varchar_serde_lb group by value lim
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_lb
 #### A masked pattern was here ####
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
 val_0	3
 val_1	2
 val_10	1
@@ -173,8 +169,6 @@ create table  varchar_serde_ls (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_serde_ls
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
 PREHOOK: query: alter table varchar_serde_ls set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@varchar_serde_ls
@@ -183,8 +177,6 @@ POSTHOOK: query: alter table varchar_serde_ls set serde 'org.apache.hadoop.hive.
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@varchar_serde_ls
 POSTHOOK: Output: default@varchar_serde_ls
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
 PREHOOK: query: insert overwrite table varchar_serde_ls
   select key, value from varchar_serde_lb
 PREHOOK: type: QUERY
@@ -195,8 +187,6 @@ POSTHOOK: query: insert overwrite table varchar_serde_ls
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_lb
 POSTHOOK: Output: default@varchar_serde_ls
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
 POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
 POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: select * from varchar_serde_ls limit 5
@@ -207,10 +197,6 @@ POSTHOOK: query: select * from varchar_serde_ls limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_ls
 #### A masked pattern was here ####
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 474	val_475
 62	val_63
 468	val_469
@@ -224,10 +210,6 @@ POSTHOOK: query: select value, count(*) from varchar_serde_ls group by value lim
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_ls
 #### A masked pattern was here ####
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 val_0	3
 val_1	2
 val_10	1
@@ -252,10 +234,6 @@ create table  varchar_serde_c (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_serde_c
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: alter table varchar_serde_c set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@varchar_serde_c
@@ -264,10 +242,6 @@ POSTHOOK: query: alter table varchar_serde_c set serde 'org.apache.hadoop.hive.s
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@varchar_serde_c
 POSTHOOK: Output: default@varchar_serde_c
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: insert overwrite table varchar_serde_c
   select key, value from varchar_serde_ls
 PREHOOK: type: QUERY
@@ -280,10 +254,6 @@ POSTHOOK: Input: default@varchar_serde_ls
 POSTHOOK: Output: default@varchar_serde_c
 POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
 POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: select * from varchar_serde_c limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar_serde_c
@@ -292,12 +262,6 @@ POSTHOOK: query: select * from varchar_serde_c limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_c
 #### A masked pattern was here ####
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 474	val_475
 62	val_63
 468	val_469
@@ -311,12 +275,6 @@ POSTHOOK: query: select value, count(*) from varchar_serde_c group by value limi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_c
 #### A masked pattern was here ####
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 val_0	3
 val_1	2
 val_10	1
@@ -341,12 +299,6 @@ create table varchar_serde_lbc (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_serde_lbc
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: alter table varchar_serde_lbc set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@varchar_serde_lbc
@@ -355,12 +307,6 @@ POSTHOOK: query: alter table varchar_serde_lbc set serde 'org.apache.hadoop.hive
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@varchar_serde_lbc
 POSTHOOK: Output: default@varchar_serde_lbc
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: insert overwrite table varchar_serde_lbc
   select key, value from varchar_serde_c
 PREHOOK: type: QUERY
@@ -371,14 +317,8 @@ POSTHOOK: query: insert overwrite table varchar_serde_lbc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_c
 POSTHOOK: Output: default@varchar_serde_lbc
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
 POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
 POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: select * from varchar_serde_lbc limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar_serde_lbc
@@ -387,14 +327,6 @@ POSTHOOK: query: select * from varchar_serde_lbc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_lbc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 474	val_475
 62	val_63
 468	val_469
@@ -408,14 +340,6 @@ POSTHOOK: query: select value, count(*) from varchar_serde_lbc group by value li
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_lbc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 val_0	3
 val_1	2
 val_10	1
@@ -440,14 +364,6 @@ create table varchar_serde_orc (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_serde_orc
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: alter table varchar_serde_orc set serde 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@varchar_serde_orc
@@ -456,14 +372,6 @@ POSTHOOK: query: alter table varchar_serde_orc set serde 'org.apache.hadoop.hive
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@varchar_serde_orc
 POSTHOOK: Output: default@varchar_serde_orc
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: insert overwrite table varchar_serde_orc
   select key, value from varchar_serde_lbc
 PREHOOK: type: QUERY
@@ -474,14 +382,6 @@ POSTHOOK: query: insert overwrite table varchar_serde_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_lbc
 POSTHOOK: Output: default@varchar_serde_orc
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
 POSTHOOK: Lineage: varchar_serde_orc.key SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:key, type:varchar(10), comment:null), ]
 POSTHOOK: Lineage: varchar_serde_orc.value SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: select * from varchar_serde_orc limit 5
@@ -492,16 +392,6 @@ POSTHOOK: query: select * from varchar_serde_orc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.key SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.value SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:value, type:varchar(20), comment:null), ]
 474	val_475
 62	val_63
 468	val_469
@@ -515,16 +405,6 @@ POSTHOOK: query: select value, count(*) from varchar_serde_orc group by value li
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_serde_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.key SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.value SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:value, type:varchar(20), comment:null), ]
 val_0	3
 val_1	2
 val_10	1
@@ -538,16 +418,6 @@ POSTHOOK: query: drop table if exists varchar_serde_regex
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_serde_regex
 POSTHOOK: Output: default@varchar_serde_regex
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.key SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.value SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: drop table if exists varchar_serde_lb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_serde_lb
@@ -556,16 +426,6 @@ POSTHOOK: query: drop table if exists varchar_serde_lb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_serde_lb
 POSTHOOK: Output: default@varchar_serde_lb
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.key SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.value SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: drop table if exists varchar_serde_ls
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_serde_ls
@@ -574,16 +434,6 @@ POSTHOOK: query: drop table if exists varchar_serde_ls
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_serde_ls
 POSTHOOK: Output: default@varchar_serde_ls
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.key SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.value SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: drop table if exists varchar_serde_c
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_serde_c
@@ -592,16 +442,6 @@ POSTHOOK: query: drop table if exists varchar_serde_c
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_serde_c
 POSTHOOK: Output: default@varchar_serde_c
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.key SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.value SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: drop table if exists varchar_serde_lbc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_serde_lbc
@@ -610,16 +450,6 @@ POSTHOOK: query: drop table if exists varchar_serde_lbc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_serde_lbc
 POSTHOOK: Output: default@varchar_serde_lbc
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.key SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.value SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: drop table if exists varchar_serde_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_serde_orc
@@ -628,13 +458,3 @@ POSTHOOK: query: drop table if exists varchar_serde_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_serde_orc
 POSTHOOK: Output: default@varchar_serde_orc
-POSTHOOK: Lineage: varchar_serde_c.key SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_c.value SIMPLE [(varchar_serde_ls)varchar_serde_ls.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lb.key SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:key, type:varchar(10), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lb.value SIMPLE [(varchar_serde_regex)varchar_serde_regex.FieldSchema(name:value, type:varchar(20), comment:), ]
-POSTHOOK: Lineage: varchar_serde_lbc.key SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_lbc.value SIMPLE [(varchar_serde_c)varchar_serde_c.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.key SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_ls.value SIMPLE [(varchar_serde_lb)varchar_serde_lb.FieldSchema(name:value, type:varchar(20), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.key SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar_serde_orc.value SIMPLE [(varchar_serde_lbc)varchar_serde_lbc.FieldSchema(name:value, type:varchar(20), comment:null), ]

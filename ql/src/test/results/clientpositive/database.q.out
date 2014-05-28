@@ -412,7 +412,6 @@ PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: DROP DATABASE to_drop_db2 CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:to_drop_db2
@@ -425,12 +424,10 @@ POSTHOOK: Input: database:to_drop_db2
 POSTHOOK: Output: database:to_drop_db2
 POSTHOOK: Output: to_drop_db2@temp_tbl
 POSTHOOK: Output: to_drop_db2@temp_tbl2
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 default
 PREHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE IF EXISTS
 CREATE DATABASE to_drop_db3
@@ -438,19 +435,16 @@ PREHOOK: type: CREATEDATABASE
 POSTHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE IF EXISTS
 CREATE DATABASE to_drop_db3
 POSTHOOK: type: CREATEDATABASE
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 default
 to_drop_db3
 PREHOOK: query: USE to_drop_db3
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE to_drop_db3
 POSTHOOK: type: SWITCHDATABASE
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: CREATE TABLE temp_tbl (c STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:to_drop_db3
@@ -458,12 +452,10 @@ POSTHOOK: query: CREATE TABLE temp_tbl (c STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:to_drop_db3
 POSTHOOK: Output: to_drop_db3@temp_tbl
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: DROP DATABASE IF EXISTS to_drop_db3 CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:to_drop_db3
@@ -474,12 +466,10 @@ POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:to_drop_db3
 POSTHOOK: Output: database:to_drop_db3
 POSTHOOK: Output: to_drop_db3@temp_tbl
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 default
 PREHOOK: query: -- DROP NON-EXISTING DATABASE CASCADE IF EXISTS
 DROP DATABASE IF EXISTS non_exists_db3 CASCADE
@@ -487,12 +477,10 @@ PREHOOK: type: DROPDATABASE
 POSTHOOK: query: -- DROP NON-EXISTING DATABASE CASCADE IF EXISTS
 DROP DATABASE IF EXISTS non_exists_db3 CASCADE
 POSTHOOK: type: DROPDATABASE
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 default
 PREHOOK: query: -- DROP NON-EXISTING DATABASE RESTRICT IF EXISTS
 DROP DATABASE IF EXISTS non_exists_db3 RESTRICT
@@ -500,19 +488,16 @@ PREHOOK: type: DROPDATABASE
 POSTHOOK: query: -- DROP NON-EXISTING DATABASE RESTRICT IF EXISTS
 DROP DATABASE IF EXISTS non_exists_db3 RESTRICT
 POSTHOOK: type: DROPDATABASE
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- DROP EMPTY DATABASE RESTRICT
 CREATE DATABASE to_drop_db4
 PREHOOK: type: CREATEDATABASE
 POSTHOOK: query: -- DROP EMPTY DATABASE RESTRICT
 CREATE DATABASE to_drop_db4
 POSTHOOK: type: CREATEDATABASE
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 default
 to_drop_db4
 PREHOOK: query: DROP DATABASE to_drop_db4 RESTRICT
@@ -523,12 +508,10 @@ POSTHOOK: query: DROP DATABASE to_drop_db4 RESTRICT
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:to_drop_db4
 POSTHOOK: Output: database:to_drop_db4
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 default
 PREHOOK: query: --
 -- Canonical Name Tests
@@ -542,12 +525,10 @@ POSTHOOK: query: --
 
 CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: CREATE DATABASE db2
 PREHOOK: type: CREATEDATABASE
 POSTHOOK: query: CREATE DATABASE db2
 POSTHOOK: type: CREATEDATABASE
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- CREATE foreign table
 CREATE TABLE db1.src(key STRING, value STRING)
 STORED AS TEXTFILE
@@ -559,7 +540,6 @@ STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@src
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- LOAD into foreign table
 LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.src
@@ -572,7 +552,6 @@ OVERWRITE INTO TABLE db1.src
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db1@src
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- SELECT from foreign table
 SELECT * FROM db1.src
 PREHOOK: type: QUERY
@@ -583,7 +562,6 @@ SELECT * FROM db1.src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 238	val_238
 86	val_86
 311	val_311
@@ -1097,7 +1075,6 @@ STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@srcpart
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- LOAD data into Partitioned foreign table
 LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.srcpart
@@ -1113,7 +1090,6 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db1@srcpart
 POSTHOOK: Output: db1@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- SELECT from Partitioned foreign table
 SELECT key, value FROM db1.srcpart
 WHERE key < 100 AND ds='2008-04-08' AND hr='11'
@@ -1128,7 +1104,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@srcpart
 POSTHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 86	val_86
 27	val_27
 98	val_98
@@ -1219,7 +1194,6 @@ PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: -- SELECT JOINed product of two foreign tables
 USE db2
 POSTHOOK: type: SWITCHDATABASE
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SELECT a.* FROM db1.src a JOIN default.src1 b
 ON (a.key = b.key)
 PREHOOK: type: QUERY
@@ -1232,7 +1206,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 128	val_128
 128	val_128
 128	val_128
@@ -1281,7 +1254,6 @@ SELECT value FROM default.src WHERE key = 66
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: db2@conflict_name
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- CREATE foreign table
 CREATE TABLE db1.conflict_name AS
 SELECT value FROM db1.src WHERE key = 8
@@ -1293,7 +1265,6 @@ SELECT value FROM db1.src WHERE key = 8
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: db1@src
 POSTHOOK: Output: db1@conflict_name
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- query tables with the same names in different DBs
 SELECT * FROM (
   SELECT value FROM db1.conflict_name
@@ -1314,14 +1285,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@conflict_name
 POSTHOOK: Input: db2@conflict_name
 #### A masked pattern was here ####
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 val_66
 val_8
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SELECT * FROM (
   SELECT value FROM db1.conflict_name
 UNION ALL
@@ -1340,7 +1309,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@conflict_name
 POSTHOOK: Input: db2@conflict_name
 #### A masked pattern was here ####
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 val_66
 val_8
 PREHOOK: query: -- TABLESAMPLES
@@ -1354,7 +1322,6 @@ CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucketized_src
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: INSERT OVERWRITE TABLE bucketized_src
 SELECT key, value FROM src WHERE key=66
 PREHOOK: type: QUERY
@@ -1367,7 +1334,6 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@bucketized_src
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SELECT key FROM bucketized_src TABLESAMPLE(BUCKET 1 out of 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketized_src
@@ -1376,9 +1342,6 @@ POSTHOOK: query: SELECT key FROM bucketized_src TABLESAMPLE(BUCKET 1 out of 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketized_src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 66
 PREHOOK: query: -- CREATE TABLE LIKE
 CREATE TABLE db2.src1 LIKE default.src
@@ -1389,25 +1352,16 @@ CREATE TABLE db2.src1 LIKE default.src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db2
 POSTHOOK: Output: db2@src1
-POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE db2
 POSTHOOK: type: SWITCHDATABASE
-POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: DESC EXTENDED src1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db2@src1
 POSTHOOK: query: DESC EXTENDED src1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db2@src1
-POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -1422,9 +1376,6 @@ SELECT key FROM `default`.src ORDER BY key LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 0
 PREHOOK: query: SELECT key FROM `default`.`src` ORDER BY key LIMIT 1
 PREHOOK: type: QUERY
@@ -1434,9 +1385,6 @@ POSTHOOK: query: SELECT key FROM `default`.`src` ORDER BY key LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 0
 PREHOOK: query: SELECT key FROM default.`src` ORDER BY key LIMIT 1
 PREHOOK: type: QUERY
@@ -1446,14 +1394,8 @@ POSTHOOK: query: SELECT key FROM default.`src` ORDER BY key LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 0
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
-POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]

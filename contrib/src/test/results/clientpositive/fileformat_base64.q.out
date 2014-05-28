@@ -67,8 +67,6 @@ POSTHOOK: query: SELECT * FROM base64_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base64_test
 #### A masked pattern was here ####
-POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0
 4	val_4
 8	val_8
@@ -98,8 +96,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@base64_test
 POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM base64_test
 PREHOOK: type: QUERY
@@ -109,10 +105,6 @@ POSTHOOK: query: SELECT * FROM base64_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base64_test
 #### A masked pattern was here ####
-POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0
 4	val_4
 8	val_8
@@ -131,7 +123,3 @@ POSTHOOK: query: DROP TABLE base64_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@base64_test
 POSTHOOK: Output: default@base64_test
-POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

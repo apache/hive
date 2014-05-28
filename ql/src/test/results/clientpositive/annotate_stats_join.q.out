@@ -130,8 +130,6 @@ POSTHOOK: Input: default@dept_staging
 POSTHOOK: Output: default@dept_orc
 POSTHOOK: Lineage: dept_orc.deptid SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptid, type:int, comment:null), ]
 POSTHOOK: Lineage: dept_orc.deptname SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptname, type:string, comment:null), ]
-POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table loc_orc select * from loc_staging
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_staging
@@ -140,10 +138,6 @@ POSTHOOK: query: insert overwrite table loc_orc select * from loc_staging
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_staging
 POSTHOOK: Output: default@loc_orc
-POSTHOOK: Lineage: dept_orc.deptid SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: dept_orc.deptname SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptname, type:string, comment:null), ]
-POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
 POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
@@ -156,14 +150,6 @@ POSTHOOK: query: analyze table emp_orc compute statistics for columns lastname,d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dept_orc.deptid SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: dept_orc.deptname SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptname, type:string, comment:null), ]
-POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 PREHOOK: query: analyze table dept_orc compute statistics for columns deptname,deptid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dept_orc
@@ -172,14 +158,6 @@ POSTHOOK: query: analyze table dept_orc compute statistics for columns deptname,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dept_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dept_orc.deptid SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: dept_orc.deptname SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptname, type:string, comment:null), ]
-POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 PREHOOK: query: analyze table loc_orc compute statistics for columns state,locid,zip,year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc
@@ -188,14 +166,6 @@ POSTHOOK: query: analyze table loc_orc compute statistics for columns state,loci
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dept_orc.deptid SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: dept_orc.deptname SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptname, type:string, comment:null), ]
-POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 PREHOOK: query: -- number of rows
 -- emp_orc  - 6
 -- dept_orc - 4
@@ -230,14 +200,6 @@ POSTHOOK: query: -- number of rows
 -- Reason: #rows = (6*4)/max(3,6)
 explain extended select * from emp_orc e join dept_orc d on (e.deptid = d.deptid)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dept_orc.deptid SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: dept_orc.deptname SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptname, type:string, comment:null), ]
-POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -449,14 +411,6 @@ POSTHOOK: query: -- 3 way join
 -- Reason: #rows = (6*4*6)/max(3,6)*max(6,3)
 explain extended select * from emp_orc e join dept_orc d on (e.deptid = d.deptid) join emp_orc e1 on (e.deptid = e1.deptid)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dept_orc.deptid SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: dept_orc.deptname SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptname, type:string, comment:null), ]
-POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -693,14 +647,6 @@ POSTHOOK: query: -- Expected output rows: 5
 -- Reason: #rows = (6*4*8)/max(3,6)*max(6,6)
 explain extended select * from emp_orc e join dept_orc d  on (e.deptid = d.deptid) join loc_orc l on (e.deptid = l.locid)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dept_orc.deptid SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: dept_orc.deptname SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptname, type:string, comment:null), ]
-POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -986,14 +932,6 @@ POSTHOOK: query: -- join keys of different types
 -- Reason: #rows = (6*4*8)/max(3,6)*max(6,7)
 explain extended select * from emp_orc e join dept_orc d  on (e.deptid = d.deptid) join loc_orc l on (e.deptid = l.state)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dept_orc.deptid SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: dept_orc.deptname SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptname, type:string, comment:null), ]
-POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1279,14 +1217,6 @@ POSTHOOK: query: -- multi-attribute join
 -- Reason: #rows = (6*4)/max(3,6)*max(7,5)
 explain extended select * from emp_orc e join dept_orc d on (e.deptid = d.deptid and e.lastname = d.deptname)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dept_orc.deptid SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: dept_orc.deptname SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptname, type:string, comment:null), ]
-POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
@@ -1508,14 +1438,6 @@ POSTHOOK: query: -- 3 way and multi-attribute join
 -- Reason: #rows = (6*4*8)/max(3,6)*max(7,5)*max(3,6)*max(7,7)
 explain extended select * from emp_orc e join dept_orc d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc_orc l on (e.deptid = l.locid and e.lastname = l.state)
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: dept_orc.deptid SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: dept_orc.deptname SIMPLE [(dept_staging)dept_staging.FieldSchema(name:deptname, type:string, comment:null), ]
-POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
-POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 ABSTRACT SYNTAX TREE:
   
 TOK_QUERY
