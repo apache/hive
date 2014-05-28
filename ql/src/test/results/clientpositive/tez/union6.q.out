@@ -134,8 +134,6 @@ POSTHOOK: query: select * from tmptable x sort by x.key, x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 	
 	
 	

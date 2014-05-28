@@ -6,7 +6,7 @@ EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -397,7 +397,7 @@ EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 o
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -814,7 +814,7 @@ EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 o
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1255,7 +1255,7 @@ ORDER BY s1.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1643,7 +1643,7 @@ FROM
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1

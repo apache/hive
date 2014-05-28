@@ -53,10 +53,10 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
@@ -125,22 +125,6 @@ STAGE PLANS:
   Stage: Stage-3
     Dependency Collection
 
-  Stage: Stage-1
-    Move Operator
-      tables:
-          partition:
-            ds 2008-12-31
-            hr 
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.nzhang_part2
-
-  Stage: Stage-4
-    Stats-Aggr Operator
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -153,6 +137,22 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.nzhang_part1
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          partition:
+            ds 2008-12-31
+            hr 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.nzhang_part2
 
   Stage: Stage-5
     Stats-Aggr Operator
@@ -195,14 +195,6 @@ PREHOOK: Input: default@nzhang_part1
 POSTHOOK: query: show partitions nzhang_part1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@nzhang_part1
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 PREHOOK: query: show partitions nzhang_part2
@@ -211,14 +203,6 @@ PREHOOK: Input: default@nzhang_part2
 POSTHOOK: query: show partitions nzhang_part2
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@nzhang_part2
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 ds=2008-12-31/hr=11
 ds=2008-12-31/hr=12
 PREHOOK: query: select * from nzhang_part1 where ds is not null and hr is not null order by ds, hr, key
@@ -233,14 +217,6 @@ POSTHOOK: Input: default@nzhang_part1
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
@@ -1253,14 +1229,6 @@ POSTHOOK: Input: default@nzhang_part2
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=11
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=12
 #### A masked pattern was here ####
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	2008-12-31	11
 0	val_0	2008-12-31	11
 0	val_0	2008-12-31	11
