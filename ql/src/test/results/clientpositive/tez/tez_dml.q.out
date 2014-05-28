@@ -521,11 +521,6 @@ POSTHOOK: Input: default@tmp_src_part@d=3
 POSTHOOK: Input: default@tmp_src_part@d=4
 POSTHOOK: Input: default@tmp_src_part@d=5
 #### A masked pattern was here ####
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 val_490	1
 val_289	1
 val_291	1
@@ -844,11 +839,6 @@ CREATE TABLE even (c int, d string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@even
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE odd (c int, d string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -856,11 +846,6 @@ POSTHOOK: query: CREATE TABLE odd (c int, d string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@odd
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN
 FROM src
 INSERT INTO TABLE even SELECT key, value WHERE key % 2 = 0 
@@ -871,11 +856,6 @@ FROM src
 INSERT INTO TABLE even SELECT key, value WHERE key % 2 = 0 
 INSERT INTO TABLE odd SELECT key, value WHERE key % 2 = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -972,11 +952,6 @@ POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string
 POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM even
 PREHOOK: type: QUERY
 PREHOOK: Input: default@even
@@ -985,15 +960,6 @@ POSTHOOK: query: SELECT * FROM even
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@even
 #### A masked pattern was here ####
-POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 238	val_238
 86	val_86
 278	val_278
@@ -1249,15 +1215,6 @@ POSTHOOK: query: SELECT * FROM odd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@odd
 #### A masked pattern was here ####
-POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 311	val_311
 27	val_27
 165	val_165
@@ -1520,15 +1477,6 @@ CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tmp_src_part
 POSTHOOK: Output: default@empty
-POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM empty
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty
@@ -1537,15 +1485,6 @@ POSTHOOK: query: SELECT * FROM empty
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty
 #### A masked pattern was here ####
-POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: -- drop the tables
 DROP TABLE even
 PREHOOK: type: DROPTABLE
@@ -1556,15 +1495,6 @@ DROP TABLE even
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@even
 POSTHOOK: Output: default@even
-POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DROP TABLE odd
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@odd
@@ -1573,15 +1503,6 @@ POSTHOOK: query: DROP TABLE odd
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@odd
 POSTHOOK: Output: default@odd
-POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DROP TABLE tmp_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_src
@@ -1590,15 +1511,6 @@ POSTHOOK: query: DROP TABLE tmp_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_src
 POSTHOOK: Output: default@tmp_src
-POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DROP TABLE tmp_src_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_src_part
@@ -1607,12 +1519,3 @@ POSTHOOK: query: DROP TABLE tmp_src_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_src_part
 POSTHOOK: Output: default@tmp_src_part
-POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
