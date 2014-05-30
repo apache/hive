@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.parquet.convert.HiveSchemaConverter;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.junit.Test;
@@ -27,6 +28,8 @@ import org.junit.Test;
 import parquet.schema.MessageType;
 import parquet.schema.MessageTypeParser;
 import parquet.schema.OriginalType;
+import parquet.schema.Types;
+import parquet.schema.PrimitiveType.PrimitiveTypeName;
 import parquet.schema.Type.Repetition;
 
 public class TestHiveSchemaConverter {
@@ -80,7 +83,7 @@ public class TestHiveSchemaConverter {
             "a",
             "decimal(5,2)",
             "message hive_schema {\n"
-            + "  optional binary a (DECIMAL(5,2));\n"
+            + "  optional fixed_len_byte_array(3) a (DECIMAL(5,2));\n"
             + "}\n");
   }
 
@@ -104,7 +107,7 @@ public class TestHiveSchemaConverter {
             "message hive_schema {\n"
             + "  optional group arrayCol (LIST) {\n"
             + "    repeated group bag {\n"
-            + "      optional binary array_element (DECIMAL(5,2));\n"
+            + "      optional fixed_len_byte_array(3) array_element (DECIMAL(5,2));\n"
             + "    }\n"
             + "  }\n"
             + "}\n");
@@ -119,7 +122,7 @@ public class TestHiveSchemaConverter {
             + "    optional int32 a;\n"
             + "    optional double b;\n"
             + "    optional boolean c;\n"
-            + "    optional binary d (DECIMAL(5,2));\n"
+            + "    optional fixed_len_byte_array(3) d (DECIMAL(5,2));\n"
             + "  }\n"
             + "}\n");
   }
@@ -146,7 +149,7 @@ public class TestHiveSchemaConverter {
             + "  optional group mapCol (MAP) {\n"
             + "    repeated group map (MAP_KEY_VALUE) {\n"
             + "      required binary key;\n"
-            + "      optional binary value (DECIMAL(5,2));\n"
+            + "      optional fixed_len_byte_array(3) value (DECIMAL(5,2));\n"
             + "    }\n"
             + "  }\n"
             + "}\n");

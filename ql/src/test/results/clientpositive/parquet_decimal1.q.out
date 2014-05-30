@@ -70,9 +70,6 @@ POSTHOOK: query: SELECT * FROM parq_dec_comp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parq_dec_comp
 #### A masked pattern was here ####
-POSTHOOK: Lineage: parq_dec_comp.arr SIMPLE [(dec_comp)dec_comp.FieldSchema(name:arr, type:array<decimal(5,2)>, comment:null), ]
-POSTHOOK: Lineage: parq_dec_comp.m SIMPLE [(dec_comp)dec_comp.FieldSchema(name:m, type:map<string,decimal(5,2)>, comment:null), ]
-POSTHOOK: Lineage: parq_dec_comp.s SIMPLE [(dec_comp)dec_comp.FieldSchema(name:s, type:struct<i:int,d:decimal(5,2)>, comment:null), ]
 [3.14,6.28,7.3]	{"k2":29.39,"k1":92.77}	{"i":5,"d":9.03}
 [12.4,1.33,0.34]	{"k4":29.09,"k2":2.79}	{"i":11,"d":0.03}
 PREHOOK: query: DROP TABLE dec_comp
@@ -83,9 +80,6 @@ POSTHOOK: query: DROP TABLE dec_comp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dec_comp
 POSTHOOK: Output: default@dec_comp
-POSTHOOK: Lineage: parq_dec_comp.arr SIMPLE [(dec_comp)dec_comp.FieldSchema(name:arr, type:array<decimal(5,2)>, comment:null), ]
-POSTHOOK: Lineage: parq_dec_comp.m SIMPLE [(dec_comp)dec_comp.FieldSchema(name:m, type:map<string,decimal(5,2)>, comment:null), ]
-POSTHOOK: Lineage: parq_dec_comp.s SIMPLE [(dec_comp)dec_comp.FieldSchema(name:s, type:struct<i:int,d:decimal(5,2)>, comment:null), ]
 PREHOOK: query: DROP TABLE parq_dec_comp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parq_dec_comp
@@ -94,6 +88,3 @@ POSTHOOK: query: DROP TABLE parq_dec_comp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parq_dec_comp
 POSTHOOK: Output: default@parq_dec_comp
-POSTHOOK: Lineage: parq_dec_comp.arr SIMPLE [(dec_comp)dec_comp.FieldSchema(name:arr, type:array<decimal(5,2)>, comment:null), ]
-POSTHOOK: Lineage: parq_dec_comp.m SIMPLE [(dec_comp)dec_comp.FieldSchema(name:m, type:map<string,decimal(5,2)>, comment:null), ]
-POSTHOOK: Lineage: parq_dec_comp.s SIMPLE [(dec_comp)dec_comp.FieldSchema(name:s, type:struct<i:int,d:decimal(5,2)>, comment:null), ]
