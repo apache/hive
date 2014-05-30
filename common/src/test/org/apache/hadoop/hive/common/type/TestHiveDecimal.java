@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.common.type;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -116,6 +117,19 @@ public class TestHiveDecimal {
     Assert.assertNull(dec);
     dec = HiveDecimal.create("3abc43");
     Assert.assertNull(dec);
+  }
+
+  @Test
+  public void testBinaryConversion() {
+    HiveDecimal dec = HiveDecimal.create("234.79");
+    int scale = 2;
+    byte[] d = dec.setScale(2).unscaledValue().toByteArray();
+    Assert.assertEquals(dec, HiveDecimal.create(new BigInteger(d), scale));
+    int prec = 5;
+    int len =  (int) (Math.ceil((Math.log(Math.pow(10, prec)) - 1)/Math.log(2) + 1) / 8);
+    byte[] res = new byte[len];
+    System.arraycopy(d, 0, res, len-d.length, d.length); // Padding leading zeros.
+    Assert.assertEquals(dec, HiveDecimal.create(new BigInteger(res), scale));
   }
 
 }
