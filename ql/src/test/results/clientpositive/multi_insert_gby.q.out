@@ -1,8 +1,12 @@
-PREHOOK: query: --HIVE-3699 Multiple insert overwrite into multiple tables query stores same results in all tables
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+--HIVE-3699 Multiple insert overwrite into multiple tables query stores same results in all tables
 create table e1 (key string, count int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: --HIVE-3699 Multiple insert overwrite into multiple tables query stores same results in all tables
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+--HIVE-3699 Multiple insert overwrite into multiple tables query stores same results in all tables
 create table e1 (key string, count int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -16,24 +20,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e2
 PREHOOK: query: explain FROM src
 INSERT OVERWRITE TABLE e1
-    SELECT key, COUNT(*) WHERE key>450 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
 INSERT OVERWRITE TABLE e2
-    SELECT key, COUNT(*) WHERE key>500 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>500 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain FROM src
 INSERT OVERWRITE TABLE e1
-    SELECT key, COUNT(*) WHERE key>450 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
 INSERT OVERWRITE TABLE e2
-    SELECT key, COUNT(*) WHERE key>500 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>500 GROUP BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-0
-  Stage-5 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-5
-  Stage-6 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
@@ -67,15 +69,17 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: _col0 (type: string), _col1 (type: bigint)
+                expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.e1
           Filter Operator
             predicate: (KEY._col0 > 500) (type: boolean)
             Statistics: Num rows: 12 Data size: 1202 Basic stats: COMPLETE Column stats: NONE
@@ -86,40 +90,17 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: _col0 (type: string), _col1 (type: bigint)
+                expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.e1
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.e2
 
   Stage: Stage-0
     Move Operator
@@ -131,33 +112,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.e1
 
-  Stage: Stage-4
+  Stage: Stage-3
     Stats-Aggr Operator
-
-  Stage: Stage-5
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.e2
 
   Stage: Stage-1
     Move Operator
@@ -169,23 +125,23 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.e2
 
-  Stage: Stage-6
+  Stage: Stage-4
     Stats-Aggr Operator
 
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE e1
-    SELECT key, COUNT(*) WHERE key>450 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
 INSERT OVERWRITE TABLE e2
-    SELECT key, COUNT(*) WHERE key>500 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>500 GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@e1
 PREHOOK: Output: default@e2
 POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE e1
-    SELECT key, COUNT(*) WHERE key>450 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
 INSERT OVERWRITE TABLE e2
-    SELECT key, COUNT(*) WHERE key>500 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>500 GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@e1
@@ -247,24 +203,22 @@ POSTHOOK: Input: default@e2
 #### A masked pattern was here ####
 PREHOOK: query: explain FROM src
 INSERT OVERWRITE TABLE e1
-    SELECT key, COUNT(*) WHERE key>450 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
 INSERT OVERWRITE TABLE e2
-    SELECT key, COUNT(*) GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain FROM src
 INSERT OVERWRITE TABLE e1
-    SELECT key, COUNT(*) WHERE key>450 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
 INSERT OVERWRITE TABLE e2
-    SELECT key, COUNT(*) GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) GROUP BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-0
-  Stage-5 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-5
-  Stage-6 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
@@ -295,15 +249,17 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: _col0 (type: string), _col1 (type: bigint)
+                expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.e1
           Group By Operator
             aggregations: count()
             keys: KEY._col0 (type: string)
@@ -311,40 +267,17 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), _col1 (type: bigint)
+              expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.e1
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.e2
 
   Stage: Stage-0
     Move Operator
@@ -356,33 +289,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.e1
 
-  Stage: Stage-4
+  Stage: Stage-3
     Stats-Aggr Operator
-
-  Stage: Stage-5
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.e2
 
   Stage: Stage-1
     Move Operator
@@ -394,23 +302,23 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.e2
 
-  Stage: Stage-6
+  Stage: Stage-4
     Stats-Aggr Operator
 
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE e1
-    SELECT key, COUNT(*) WHERE key>450 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
 INSERT OVERWRITE TABLE e2
-    SELECT key, COUNT(*) GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@e1
 PREHOOK: Output: default@e2
 POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE e1
-    SELECT key, COUNT(*) WHERE key>450 GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
 INSERT OVERWRITE TABLE e2
-    SELECT key, COUNT(*) GROUP BY key ORDER BY key
+    SELECT key, COUNT(*) GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@e1

@@ -1,9 +1,13 @@
-PREHOOK: query: CREATE TABLE src1_rot13_iof(key STRING, value STRING) 
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src1_rot13_iof(key STRING, value STRING)
   STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13InputFormat'
             OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13OutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE src1_rot13_iof(key STRING, value STRING) 
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src1_rot13_iof(key STRING, value STRING)
   STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13InputFormat'
             OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13OutputFormat'
 POSTHOOK: type: CREATETABLE
@@ -19,11 +23,11 @@ key                 	string
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: SELECT * FROM src1 ORDER BY key, value
+PREHOOK: query: SELECT * FROM src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM src1 ORDER BY key, value
+POSTHOOK: query: SELECT * FROM src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -62,11 +66,11 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@src1_rot13_iof
 POSTHOOK: Lineage: src1_rot13_iof.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src1_rot13_iof.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM src1_rot13_iof ORDER BY key, value
+PREHOOK: query: SELECT * FROM src1_rot13_iof
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1_rot13_iof
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM src1_rot13_iof ORDER BY key, value
+POSTHOOK: query: SELECT * FROM src1_rot13_iof
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1_rot13_iof
 #### A masked pattern was here ####

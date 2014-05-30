@@ -1,7 +1,11 @@
-PREHOOK: query: create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dst_union22
@@ -841,12 +845,12 @@ POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k1 EXPRESSION [(dst_union22_delta
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k2 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k2, type:string, comment:null), (dst_union22)a.FieldSchema(name:k2, type:string, comment:null), ]
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k3 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), ]
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k4 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), ]
-PREHOOK: query: select * from dst_union22 where ds = '2' order by k1, k2, k3, k4
+PREHOOK: query: select * from dst_union22 where ds = '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dst_union22
 PREHOOK: Input: default@dst_union22@ds=2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dst_union22 where ds = '2' order by k1, k2, k3, k4
+POSTHOOK: query: select * from dst_union22 where ds = '2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dst_union22
 POSTHOOK: Input: default@dst_union22@ds=2
@@ -1187,10 +1191,10 @@ POSTHOOK: Input: default@dst_union22@ds=2
 239	val_239	239	val_239	2
 239	val_239	239	val_239	2
 239	val_239	239	val_239	2
-24	val_24	NULL	NULL	2
-24	val_24	NULL	NULL	2
 24	val_24	24	val_24	2
 24	val_24	24	val_24	2
+24	val_24	NULL	NULL	2
+24	val_24	NULL	NULL	2
 241	val_241	241	val_241	2
 242	val_242	242	val_242	2
 242	val_242	242	val_242	2
@@ -1211,10 +1215,10 @@ POSTHOOK: Input: default@dst_union22@ds=2
 256	val_256	256	val_256	2
 257	val_257	257	val_257	2
 258	val_258	258	val_258	2
-26	val_26	NULL	NULL	2
-26	val_26	NULL	NULL	2
 26	val_26	26	val_26	2
 26	val_26	26	val_26	2
+26	val_26	NULL	NULL	2
+26	val_26	NULL	NULL	2
 260	val_260	260	val_260	2
 262	val_262	262	val_262	2
 263	val_263	263	val_263	2
@@ -1223,8 +1227,8 @@ POSTHOOK: Input: default@dst_union22@ds=2
 265	val_265	265	val_265	2
 265	val_265	265	val_265	2
 266	val_266	266	val_266	2
-27	val_27	NULL	NULL	2
 27	val_27	27	val_27	2
+27	val_27	NULL	NULL	2
 272	val_272	272	val_272	2
 272	val_272	272	val_272	2
 272	val_272	272	val_272	2
@@ -1260,8 +1264,8 @@ POSTHOOK: Input: default@dst_union22@ds=2
 278	val_278	278	val_278	2
 278	val_278	278	val_278	2
 278	val_278	278	val_278	2
-28	val_28	NULL	NULL	2
 28	val_28	28	val_28	2
+28	val_28	NULL	NULL	2
 280	val_280	280	val_280	2
 280	val_280	280	val_280	2
 280	val_280	280	val_280	2
@@ -1296,8 +1300,8 @@ POSTHOOK: Input: default@dst_union22@ds=2
 298	val_298	298	val_298	2
 298	val_298	298	val_298	2
 298	val_298	298	val_298	2
-30	val_30	NULL	NULL	2
 30	val_30	30	val_30	2
+30	val_30	NULL	NULL	2
 302	val_302	302	val_302	2
 305	val_305	305	val_305	2
 306	val_306	306	val_306	2
@@ -1365,8 +1369,8 @@ POSTHOOK: Input: default@dst_union22@ds=2
 327	val_327	327	val_327	2
 327	val_327	327	val_327	2
 327	val_327	327	val_327	2
-33	val_33	NULL	NULL	2
 33	val_33	33	val_33	2
+33	val_33	NULL	NULL	2
 331	val_331	331	val_331	2
 331	val_331	331	val_331	2
 331	val_331	331	val_331	2
@@ -1380,8 +1384,8 @@ POSTHOOK: Input: default@dst_union22@ds=2
 336	val_336	336	val_336	2
 338	val_338	338	val_338	2
 339	val_339	339	val_339	2
-34	val_34	NULL	NULL	2
 34	val_34	34	val_34	2
+34	val_34	NULL	NULL	2
 341	val_341	341	val_341	2
 342	val_342	342	val_342	2
 342	val_342	342	val_342	2
@@ -1417,12 +1421,12 @@ POSTHOOK: Input: default@dst_union22@ds=2
 348	val_348	348	val_348	2
 348	val_348	348	val_348	2
 348	val_348	348	val_348	2
-35	val_35	NULL	NULL	2
-35	val_35	NULL	NULL	2
-35	val_35	NULL	NULL	2
 35	val_35	35	val_35	2
 35	val_35	35	val_35	2
 35	val_35	35	val_35	2
+35	val_35	NULL	NULL	2
+35	val_35	NULL	NULL	2
+35	val_35	NULL	NULL	2
 351	val_351	351	val_351	2
 353	val_353	353	val_353	2
 353	val_353	353	val_353	2
@@ -1448,10 +1452,10 @@ POSTHOOK: Input: default@dst_union22@ds=2
 369	val_369	369	val_369	2
 369	val_369	369	val_369	2
 369	val_369	369	val_369	2
-37	val_37	NULL	NULL	2
-37	val_37	NULL	NULL	2
 37	val_37	37	val_37	2
 37	val_37	37	val_37	2
+37	val_37	NULL	NULL	2
+37	val_37	NULL	NULL	2
 373	val_373	373	val_373	2
 374	val_374	374	val_374	2
 375	val_375	375	val_375	2
@@ -1564,8 +1568,8 @@ POSTHOOK: Input: default@dst_union22@ds=2
 409	val_409	409	val_409	2
 409	val_409	409	val_409	2
 409	val_409	409	val_409	2
-41	val_41	NULL	NULL	2
 41	val_41	41	val_41	2
+41	val_41	NULL	NULL	2
 411	val_411	411	val_411	2
 413	val_413	413	val_413	2
 413	val_413	413	val_413	2
@@ -1586,10 +1590,10 @@ POSTHOOK: Input: default@dst_union22@ds=2
 417	val_417	417	val_417	2
 418	val_418	418	val_418	2
 419	val_419	419	val_419	2
-42	val_42	NULL	NULL	2
-42	val_42	NULL	NULL	2
 42	val_42	42	val_42	2
 42	val_42	42	val_42	2
+42	val_42	NULL	NULL	2
+42	val_42	NULL	NULL	2
 421	val_421	421	val_421	2
 424	val_424	424	val_424	2
 424	val_424	424	val_424	2
@@ -1600,8 +1604,8 @@ POSTHOOK: Input: default@dst_union22@ds=2
 429	val_429	429	val_429	2
 429	val_429	429	val_429	2
 429	val_429	429	val_429	2
-43	val_43	NULL	NULL	2
 43	val_43	43	val_43	2
+43	val_43	NULL	NULL	2
 430	val_430	430	val_430	2
 430	val_430	430	val_430	2
 430	val_430	430	val_430	2
@@ -1637,8 +1641,8 @@ POSTHOOK: Input: default@dst_union22@ds=2
 439	val_439	439	val_439	2
 439	val_439	439	val_439	2
 439	val_439	439	val_439	2
-44	val_44	NULL	NULL	2
 44	val_44	44	val_44	2
+44	val_44	NULL	NULL	2
 443	val_443	443	val_443	2
 444	val_444	444	val_444	2
 446	val_446	446	val_446	2
@@ -1725,8 +1729,8 @@ POSTHOOK: Input: default@dst_union22@ds=2
 469	val_469	469	val_469	2
 469	val_469	469	val_469	2
 469	val_469	469	val_469	2
-47	val_47	NULL	NULL	2
 47	val_47	47	val_47	2
+47	val_47	NULL	NULL	2
 470	val_470	470	val_470	2
 472	val_472	472	val_472	2
 475	val_475	475	val_475	2

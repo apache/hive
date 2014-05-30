@@ -1,4 +1,6 @@
-PREHOOK: query: -- When Correlation Optimizer is turned off, 6 MR jobs are needed.
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- When Correlation Optimizer is turned off, 6 MR jobs are needed.
 -- When Correlation Optimizer is turned on, 2 MR jobs are needed.
 -- The first job will evaluate subquery xx, subquery yy, and xx join yy.
 EXPLAIN
@@ -7,9 +9,11 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 6 MR jobs are needed.
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- When Correlation Optimizer is turned off, 6 MR jobs are needed.
 -- When Correlation Optimizer is turned on, 2 MR jobs are needed.
 -- The first job will evaluate subquery xx, subquery yy, and xx join yy.
 EXPLAIN
@@ -18,16 +22,15 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-2, Stage-7
-  Stage-4 depends on stages: Stage-3
-  Stage-6 is a root stage
-  Stage-7 depends on stages: Stage-6
-  Stage-0 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-2, Stage-6
+  Stage-5 is a root stage
+  Stage-6 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -136,32 +139,13 @@ STAGE PLANS:
             Statistics: Num rows: 34 Data size: 3459 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-4
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
-              sort order: ++++
               Statistics: Num rows: 34 Data size: 3459 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 34 Data size: 3459 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 34 Data size: 3459 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-6
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -207,7 +191,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-7
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -246,7 +230,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -256,7 +240,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -282,7 +266,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.cnt
@@ -290,12 +274,11 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -378,10 +361,11 @@ STAGE PLANS:
                           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                           File Output Operator
                             compressed: false
+                            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                             table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Join Operator
             condition map:
                  Inner Join 0 to 1
@@ -422,30 +406,11 @@ STAGE PLANS:
                           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                           File Output Operator
                             compressed: false
+                            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                             table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
-              sort order: ++++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -458,7 +423,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -468,7 +433,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -495,7 +460,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Enable hive.auto.convert.join.
 EXPLAIN
@@ -504,16 +469,15 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-9 is a root stage
-  Stage-2 depends on stages: Stage-9
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
+  Stage-8 is a root stage
+  Stage-2 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-9
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         xx:x 
@@ -640,10 +604,11 @@ STAGE PLANS:
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Group By Operator
             aggregations: count(VALUE._col0)
             keys: KEY._col0 (type: string)
@@ -670,30 +635,11 @@ STAGE PLANS:
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
-              sort order: ++++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -706,7 +652,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -716,7 +662,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -744,7 +690,7 @@ SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x GROUP BY x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- When Correlation Optimizer is turned off, 3 MR jobs are needed.
 -- When Correlation Optimizer is turned on, 2 MR jobs are needed.
@@ -754,13 +700,12 @@ SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x GROUP BY x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -837,30 +782,11 @@ STAGE PLANS:
             Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-              sort order: +++
               Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -872,7 +798,7 @@ PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x GROUP BY x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -881,7 +807,7 @@ POSTHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x GROUP BY x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -906,19 +832,18 @@ SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x GROUP BY x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x GROUP BY x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -971,10 +896,11 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Group By Operator
             aggregations: count(VALUE._col0)
             keys: KEY._col0 (type: string)
@@ -1001,30 +927,11 @@ STAGE PLANS:
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-              sort order: +++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1036,7 +943,7 @@ PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x GROUP BY x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -1045,7 +952,7 @@ POSTHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x GROUP BY x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -1073,7 +980,7 @@ SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
 -- When Correlation Optimizer is turned on, 2 MR jobs are needed.
@@ -1083,14 +990,13 @@ SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-4 depends on stages: Stage-3
-  Stage-0 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1201,30 +1107,11 @@ STAGE PLANS:
             Statistics: Num rows: 34 Data size: 3459 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-4
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-              sort order: +++
               Statistics: Num rows: 34 Data size: 3459 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 34 Data size: 3459 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 34 Data size: 3459 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1236,7 +1123,7 @@ PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -1245,7 +1132,7 @@ POSTHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -1270,19 +1157,18 @@ SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1333,10 +1219,11 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Join Operator
             condition map:
                  Inner Join 0 to 1
@@ -1377,30 +1264,11 @@ STAGE PLANS:
                           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                           File Output Operator
                             compressed: false
+                            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                             table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-              sort order: +++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1412,7 +1280,7 @@ PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -1421,7 +1289,7 @@ POSTHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON xx.key=yy.key ORDER BY xx.key, yy.key, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -1449,7 +1317,7 @@ SELECT xx.key, xx.cnt, yy.key
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN src yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
 -- When Correlation Optimizer is turned on, 2 MR jobs are needed.
@@ -1459,17 +1327,16 @@ SELECT xx.key, xx.cnt, yy.key
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN src yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-4 depends on stages: Stage-3
-  Stage-1 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1515,7 +1382,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-4
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1577,30 +1444,11 @@ STAGE PLANS:
             Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string)
-              sort order: +++
               Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1612,7 +1460,7 @@ PREHOOK: query: SELECT xx.key, xx.cnt, yy.key
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN src yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -1621,7 +1469,7 @@ POSTHOOK: query: SELECT xx.key, xx.cnt, yy.key
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN src yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -1668,19 +1516,18 @@ SELECT xx.key, xx.cnt, yy.key
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN src yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN src yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1755,10 +1602,11 @@ STAGE PLANS:
                           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                           File Output Operator
                             compressed: false
+                            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                             table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Mux Operator
             Statistics: Num rows: 62 Data size: 6244 Basic stats: COMPLETE Column stats: NONE
             Join Operator
@@ -1775,30 +1623,11 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string)
-              sort order: +++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1810,7 +1639,7 @@ PREHOOK: query: SELECT xx.key, xx.cnt, yy.key
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN src yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -1819,7 +1648,7 @@ POSTHOOK: query: SELECT xx.key, xx.cnt, yy.key
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN src yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -1870,8 +1699,7 @@ FROM src1 xx
 JOIN src zz ON xx.key=zz.key
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON zz.key=yy.key 
-ORDER BY xx.key, yy.key, yy.cnt
+ON zz.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
 -- When Correlation Optimizer is turned on, 2 MR jobs are needed.
@@ -1882,18 +1710,16 @@ FROM src1 xx
 JOIN src zz ON xx.key=zz.key
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON zz.key=yy.key 
-ORDER BY xx.key, yy.key, yy.cnt
+ON zz.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-4 depends on stages: Stage-3
-  Stage-1 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1939,7 +1765,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-4
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2011,30 +1837,11 @@ STAGE PLANS:
             Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-              sort order: +++
               Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2047,8 +1854,7 @@ FROM src1 xx
 JOIN src zz ON xx.key=zz.key
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON zz.key=yy.key 
-ORDER BY xx.key, yy.key, yy.cnt
+ON zz.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -2058,8 +1864,7 @@ FROM src1 xx
 JOIN src zz ON xx.key=zz.key
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON zz.key=yy.key 
-ORDER BY xx.key, yy.key, yy.cnt
+ON zz.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -2110,8 +1915,7 @@ FROM src1 xx
 JOIN src zz ON xx.key=zz.key
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON zz.key=yy.key 
-ORDER BY xx.key, yy.key, yy.cnt
+ON zz.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
 -- When Correlation Optimizer is turned on, 2 MR jobs are needed.
@@ -2122,13 +1926,11 @@ FROM src1 xx
 JOIN src zz ON xx.key=zz.key
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON zz.key=yy.key 
-ORDER BY xx.key, yy.key, yy.cnt
+ON zz.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2189,10 +1991,11 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Join Operator
             condition map:
                  Inner Join 0 to 1
@@ -2235,30 +2038,11 @@ STAGE PLANS:
                           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                           File Output Operator
                             compressed: false
+                            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                             table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-              sort order: +++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2271,8 +2055,7 @@ FROM src1 xx
 JOIN src zz ON xx.key=zz.key
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON zz.key=yy.key 
-ORDER BY xx.key, yy.key, yy.cnt
+ON zz.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -2282,8 +2065,7 @@ FROM src1 xx
 JOIN src zz ON xx.key=zz.key
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
-ON zz.key=yy.key 
-ORDER BY xx.key, yy.key, yy.cnt
+ON zz.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -2334,7 +2116,7 @@ FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON xx.key=yy.key JOIN src zz
-ON yy.key=zz.key ORDER BY xx.key, yy.key, yy.cnt
+ON yy.key=zz.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
 -- When Correlation Optimizer is turned on, 2 MR jobs are needed.
@@ -2345,17 +2127,16 @@ FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON xx.key=yy.key JOIN src zz
-ON yy.key=zz.key ORDER BY xx.key, yy.key, yy.cnt
+ON yy.key=zz.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-4 depends on stages: Stage-3
-  Stage-1 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2401,7 +2182,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-4
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2473,30 +2254,11 @@ STAGE PLANS:
             Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-              sort order: +++
               Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2509,7 +2271,7 @@ FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON xx.key=yy.key JOIN src zz
-ON yy.key=zz.key ORDER BY xx.key, yy.key, yy.cnt
+ON yy.key=zz.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -2519,7 +2281,7 @@ FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON xx.key=yy.key JOIN src zz
-ON yy.key=zz.key ORDER BY xx.key, yy.key, yy.cnt
+ON yy.key=zz.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -2567,7 +2329,7 @@ FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON xx.key=yy.key JOIN src zz
-ON yy.key=zz.key ORDER BY xx.key, yy.key, yy.cnt
+ON yy.key=zz.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
@@ -2575,12 +2337,11 @@ FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON xx.key=yy.key JOIN src zz
-ON yy.key=zz.key ORDER BY xx.key, yy.key, yy.cnt
+ON yy.key=zz.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2641,10 +2402,11 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Join Operator
             condition map:
                  Inner Join 0 to 1
@@ -2687,30 +2449,11 @@ STAGE PLANS:
                           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                           File Output Operator
                             compressed: false
+                            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                             table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-              sort order: +++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2723,7 +2466,7 @@ FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON xx.key=yy.key JOIN src zz
-ON yy.key=zz.key ORDER BY xx.key, yy.key, yy.cnt
+ON yy.key=zz.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -2733,7 +2476,7 @@ FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON xx.key=yy.key JOIN src zz
-ON yy.key=zz.key ORDER BY xx.key, yy.key, yy.cnt
+ON yy.key=zz.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -2786,7 +2529,6 @@ FROM
  JOIN (SELECT y.key as key, count(*) AS cnt FROM src1 y group by y.key) yy
  ON (xx.key=yy.key) GROUP BY xx.key) tmp
 JOIN src z ON tmp.key=z.key
-ORDER BY tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 PREHOOK: type: QUERY
 POSTHOOK: query: -- When Correlation Optimizer is turned off, 6 MR jobs are needed.
 -- When Correlation Optimizer is turned on, 2 MR jobs are needed.
@@ -2799,16 +2541,14 @@ FROM
  JOIN (SELECT y.key as key, count(*) AS cnt FROM src1 y group by y.key) yy
  ON (xx.key=yy.key) GROUP BY xx.key) tmp
 JOIN src z ON tmp.key=z.key
-ORDER BY tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-7
+  Stage-2 depends on stages: Stage-1, Stage-6
   Stage-3 depends on stages: Stage-2
   Stage-4 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-4
-  Stage-7 is a root stage
-  Stage-0 depends on stages: Stage-5
+  Stage-6 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2956,32 +2696,13 @@ STAGE PLANS:
             Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-5
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: string), _col4 (type: string)
-              sort order: +++++
               Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: string), _col4 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-7
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -3034,7 +2755,6 @@ FROM
  JOIN (SELECT y.key as key, count(*) AS cnt FROM src1 y group by y.key) yy
  ON (xx.key=yy.key) GROUP BY xx.key) tmp
 JOIN src z ON tmp.key=z.key
-ORDER BY tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -3046,7 +2766,6 @@ FROM
  JOIN (SELECT y.key as key, count(*) AS cnt FROM src1 y group by y.key) yy
  ON (xx.key=yy.key) GROUP BY xx.key) tmp
 JOIN src z ON tmp.key=z.key
-ORDER BY tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -3096,7 +2815,6 @@ FROM
  JOIN (SELECT y.key as key, count(*) AS cnt FROM src1 y group by y.key) yy
  ON (xx.key=yy.key) GROUP BY xx.key) tmp
 JOIN src z ON tmp.key=z.key
-ORDER BY tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
@@ -3106,12 +2824,10 @@ FROM
  JOIN (SELECT y.key as key, count(*) AS cnt FROM src1 y group by y.key) yy
  ON (xx.key=yy.key) GROUP BY xx.key) tmp
 JOIN src z ON tmp.key=z.key
-ORDER BY tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3219,10 +2935,11 @@ STAGE PLANS:
                                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                                 File Output Operator
                                   compressed: false
+                                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                                   table:
-                                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                                      input format: org.apache.hadoop.mapred.TextInputFormat
+                                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Group By Operator
             aggregations: count(VALUE._col0)
             keys: KEY._col0 (type: string)
@@ -3275,10 +2992,11 @@ STAGE PLANS:
                                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                                 File Output Operator
                                   compressed: false
+                                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                                   table:
-                                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                                      input format: org.apache.hadoop.mapred.TextInputFormat
+                                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Mux Operator
             Statistics: Num rows: 89 Data size: 11840 Basic stats: COMPLETE Column stats: NONE
             Join Operator
@@ -3295,30 +3013,11 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: string), _col4 (type: string)
-              sort order: +++++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: string), _col4 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -3333,7 +3032,6 @@ FROM
  JOIN (SELECT y.key as key, count(*) AS cnt FROM src1 y group by y.key) yy
  ON (xx.key=yy.key) GROUP BY xx.key) tmp
 JOIN src z ON tmp.key=z.key
-ORDER BY tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -3345,7 +3043,6 @@ FROM
  JOIN (SELECT y.key as key, count(*) AS cnt FROM src1 y group by y.key) yy
  ON (xx.key=yy.key) GROUP BY xx.key) tmp
 JOIN src z ON tmp.key=z.key
-ORDER BY tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -3673,7 +3370,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, x.value as value, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key, x.value) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value, yy.cnt
@@ -3681,14 +3378,13 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, x.value as value, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key, x.value) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-4 depends on stages: Stage-3
-  Stage-0 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -3835,10 +3531,11 @@ STAGE PLANS:
                           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                           File Output Operator
                             compressed: false
+                            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                             table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Mux Operator
             Statistics: Num rows: 35 Data size: 3577 Basic stats: COMPLETE Column stats: NONE
             Join Operator
@@ -3855,30 +3552,11 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-4
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: string), _col4 (type: bigint)
-              sort order: +++++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: string), _col4 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -3891,7 +3569,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, x.value as value, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key, x.value) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -3901,7 +3579,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, x.value as value, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key, x.value) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -3927,7 +3605,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, x.value as value, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key, x.value) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value, yy.cnt
@@ -3935,18 +3613,17 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, x.value as value, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key, x.value) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-11 is a root stage
-  Stage-2 depends on stages: Stage-11
-  Stage-10 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-10
-  Stage-4 depends on stages: Stage-3
-  Stage-0 depends on stages: Stage-4
+  Stage-10 is a root stage
+  Stage-2 depends on stages: Stage-10
+  Stage-9 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-9
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-11
+  Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
         yy:x 
@@ -4018,7 +3695,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-10
+  Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
         xx:x 
@@ -4108,10 +3785,11 @@ STAGE PLANS:
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Mux Operator
             Statistics: Num rows: 49 Data size: 5021 Basic stats: COMPLETE Column stats: NONE
             Join Operator
@@ -4128,30 +3806,11 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-4
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: string), _col4 (type: bigint)
-              sort order: +++++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: string), _col4 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -4164,7 +3823,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, x.value as value, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key, x.value) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value, yy.cnt
+ON xx.key=yy.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -4174,7 +3833,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN
 (SELECT x.key as key, x.value as value, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key, x.value) yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value, yy.cnt
+ON xx.key=yy.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1

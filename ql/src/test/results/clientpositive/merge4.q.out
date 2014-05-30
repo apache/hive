@@ -1,7 +1,11 @@
-PREHOOK: query: create table nzhang_part like srcpart
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table nzhang_part like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: create table nzhang_part like srcpart
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table nzhang_part like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part
@@ -122,13 +126,13 @@ POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpa
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from nzhang_part ORDER BY key, value, ds, hr
+PREHOOK: query: select * from nzhang_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from nzhang_part ORDER BY key, value, ds, hr
+POSTHOOK: query: select * from nzhang_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
@@ -1239,13 +1243,13 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@nzhang_part@ds=2010-08-15/hr=11
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from nzhang_part ORDER BY key, value, ds, hr
+PREHOOK: query: select * from nzhang_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from nzhang_part ORDER BY key, value, ds, hr
+POSTHOOK: query: select * from nzhang_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11

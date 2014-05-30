@@ -1,4 +1,4 @@
-
+-- SORT_QUERY_RESULTS
 
 -- exists test
 create view cv1 as 
@@ -11,7 +11,7 @@ where exists
 ;
 
 select * 
-from cv1 where cv1.key in (select key from cv1 c where c.key > '95') order by key;
+from cv1 where cv1.key in (select key from cv1 c where c.key > '95');
 ;
 
 
@@ -27,7 +27,7 @@ where b.key not in
 ;
 
 select * 
-from cv2 where cv2.key in (select key from cv2 c where c.key < '11') order by key;
+from cv2 where cv2.key in (select key from cv2 c where c.key < '11');
 ;
 
 -- in where + having
@@ -39,10 +39,10 @@ group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 ;
 
-select * from cv3 order by key;
+select * from cv3;
 
 
 -- join of subquery views
 select *
 from cv3
-where cv3.key in (select key from cv1) order by key;
+where cv3.key in (select key from cv1);

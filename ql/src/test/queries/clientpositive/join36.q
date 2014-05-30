@@ -1,8 +1,6 @@
 set hive.mapjoin.numrows = 2;
 
-
-
-
+-- SORT_QUERY_RESULTS
 
 CREATE TABLE tmp1(key INT, cnt INT);
 CREATE TABLE tmp2(key INT, cnt INT);
@@ -23,7 +21,7 @@ INSERT OVERWRITE TABLE dest_j1
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
 FROM tmp1 x JOIN tmp2 y ON (x.key = y.key);
 
-select * from dest_j1 x order by x.key;
+select * from dest_j1;
 
 
 

@@ -1,20 +1,22 @@
 set hive.auto.convert.join=true;
-
 set hive.optimize.correlation=false;
+
+-- SORT_QUERY_RESULTS
+
 EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
       GROUP BY x.key) xx
 JOIN src1 yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value;
+ON xx.key=yy.key;
 
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
       GROUP BY x.key) xx
 JOIN src1 yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value;
+ON xx.key=yy.key;
 
 
 set hive.optimize.correlation=true;
@@ -24,14 +26,14 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
       GROUP BY x.key) xx
 JOIN src1 yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value;
+ON xx.key=yy.key;
 
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
       GROUP BY x.key) xx
 JOIN src1 yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value;
+ON xx.key=yy.key;
 
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
@@ -42,22 +44,22 @@ set hive.optimize.correlation=false;
 -- The first one is a MapJoin and Aggregation (in the Reduce Phase).
 -- The second one is another MapJoin. The third one is for ordering.
 -- With the correlation optimizer, right now, we have
--- 2 MR jobs. The first one will evaluate the sub-query xx and the join of
--- xx and yy. The second one will do the ORDER BY.
+-- 1 MR jobs, evaluatinf the sub-query xx and the join of
+-- xx and yy.
 EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
       GROUP BY x.key) xx
 JOIN src1 yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value;
+ON xx.key=yy.key;
 
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
       GROUP BY x.key) xx
 JOIN src1 yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value;
+ON xx.key=yy.key;
 
 set hive.optimize.correlation=true;
 EXPLAIN
@@ -66,12 +68,12 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
       GROUP BY x.key) xx
 JOIN src1 yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value;
+ON xx.key=yy.key;
 
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
       GROUP BY x.key) xx
 JOIN src1 yy
-ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value;
+ON xx.key=yy.key;
 

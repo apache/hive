@@ -1,6 +1,8 @@
 set hive.map.aggr=true;
 set hive.groupby.skewindata=false;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
@@ -8,28 +10,24 @@ LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
 EXPLAIN
 SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube;
 
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
-ORDER BY key, val;
+SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube;
 
 EXPLAIN
 SELECT key, count(distinct val) FROM T1 GROUP BY key with cube;
 
-SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
-ORDER BY key;
+SELECT key, count(distinct val) FROM T1 GROUP BY key with cube;
 
 set hive.groupby.skewindata=true;
 
 EXPLAIN
 SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube;
 
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
-ORDER BY key, val;
+SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube;
 
 EXPLAIN
 SELECT key, count(distinct val) FROM T1 GROUP BY key with cube;
 
-SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
-ORDER BY key;
+SELECT key, count(distinct val) FROM T1 GROUP BY key with cube;
 
 
 set hive.multigroupby.singlereducer=true;

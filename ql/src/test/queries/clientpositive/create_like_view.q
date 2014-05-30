@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 DROP TABLE IF EXISTS table1;
 DROP TABLE IF EXISTS table2;
 DROP TABLE IF EXISTS table3;
@@ -24,8 +26,8 @@ DESCRIBE FORMATTED table3;
 INSERT OVERWRITE TABLE table1 SELECT key, value FROM src WHERE key = 86;
 INSERT OVERWRITE TABLE table2 SELECT key, value FROM src WHERE key = 100;
 
-SELECT * FROM table1 order by a, b;
-SELECT * FROM table2 order by a, b;
+SELECT * FROM table1;
+SELECT * FROM table2;
 
 DROP TABLE table1;
 DROP TABLE table2;

@@ -1,7 +1,11 @@
-PREHOOK: query: create table insert1(key int, value string) stored as textfile
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table insert1(key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: create table insert1(key int, value string) stored as textfile
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table insert1(key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert1
@@ -595,11 +599,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: db2@result
 POSTHOOK: Lineage: result.col1 SIMPLE []
-PREHOOK: query: SELECT * FROM result order by col1
+PREHOOK: query: SELECT * FROM result
 PREHOOK: type: QUERY
 PREHOOK: Input: db2@result
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM result order by col1
+POSTHOOK: query: SELECT * FROM result
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db2@result
 #### A masked pattern was here ####
@@ -638,11 +642,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: db1@result
 POSTHOOK: Lineage: result.col1 SIMPLE []
-PREHOOK: query: SELECT * FROM db1.result order by col1
+PREHOOK: query: SELECT * FROM db1.result
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@result
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM db1.result order by col1
+POSTHOOK: query: SELECT * FROM db1.result
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@result
 #### A masked pattern was here ####

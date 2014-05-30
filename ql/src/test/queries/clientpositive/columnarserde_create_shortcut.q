@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE columnarserde_create_shortcut(a array<int>, b array<string>, c map<string,string>, d int, e string) STORED AS RCFILE;
 
 EXPLAIN
@@ -16,9 +18,9 @@ CREATE table columnShortcutTable (key STRING, value STRING) STORED AS RCFILE;
 FROM src
 INSERT OVERWRITE TABLE columnShortcutTable SELECT src.key, src.value LIMIT 10;
 describe columnShortcutTable;
-SELECT columnShortcutTable.* FROM columnShortcutTable ORDER BY key ASC, value ASC;
+SELECT * FROM columnShortcutTable;
 
 ALTER TABLE columnShortcutTable ADD COLUMNS (c string);
-SELECT columnShortcutTable.* FROM columnShortcutTable ORDER BY key ASC, value ASC;
+SELECT * FROM columnShortcutTable;
 ALTER TABLE columnShortcutTable REPLACE COLUMNS (key int);
-SELECT columnShortcutTable.* FROM columnShortcutTable ORDER BY key ASC;
+SELECT * FROM columnShortcutTable;

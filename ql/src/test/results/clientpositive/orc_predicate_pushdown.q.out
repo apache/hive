@@ -1,4 +1,6 @@
-PREHOOK: query: CREATE TABLE orc_pred(t tinyint,
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE orc_pred(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -12,7 +14,9 @@ PREHOOK: query: CREATE TABLE orc_pred(t tinyint,
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE orc_pred(t tinyint,
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE orc_pred(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -420,7 +424,6 @@ PREHOOK: query: SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
@@ -428,7 +431,6 @@ POSTHOOK: query: SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
@@ -438,7 +440,6 @@ PREHOOK: query: SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
@@ -446,7 +447,6 @@ POSTHOOK: query: SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
@@ -456,13 +456,11 @@ PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -482,21 +480,13 @@ STAGE PLANS:
                 expressions: t (type: tinyint), s (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 131 Data size: 38859 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: string)
-                  sort order: +
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 131 Data size: 38859 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: tinyint), _col1 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 131 Data size: 38859 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 131 Data size: 38859 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -508,13 +498,11 @@ PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-  ORDER BY s
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -535,21 +523,13 @@ STAGE PLANS:
                 expressions: t (type: tinyint), s (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 131 Data size: 38859 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: string)
-                  sort order: +
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 131 Data size: 38859 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: tinyint), _col1 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 131 Data size: 38859 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 131 Data size: 38859 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -734,8 +714,8 @@ POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-15	334	11.12	jessica robinson
 101	327	11.48	gabriella ellison
+15	334	11.12	jessica robinson
 7	320	11.54	bob ellison
 PREHOOK: query: SELECT t, si, d, s FROM orc_pred
   WHERE d >= ROUND(9.99)
@@ -763,8 +743,8 @@ POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-15	334	11.12	jessica robinson
 101	327	11.48	gabriella ellison
+15	334	11.12	jessica robinson
 7	320	11.54	bob ellison
 PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE d >= ROUND(9.99)

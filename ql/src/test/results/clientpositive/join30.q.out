@@ -1,7 +1,11 @@
-PREHOOK: query: CREATE TABLE dest_j1(key INT, cnt INT)
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE dest_j1(key INT, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE dest_j1(key INT, cnt INT)
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE dest_j1(key INT, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_j1
@@ -121,16 +125,14 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_j1
 POSTHOOK: Lineage: dest_j1.cnt EXPRESSION [(src1)x.null, (src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select * from dest_j1 x order by x.key
+PREHOOK: query: select * from dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j1 x order by x.key
+POSTHOOK: query: select * from dest_j1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
 #### A masked pattern was here ####
-66	1
-98	2
 128	3
 146	2
 150	1
@@ -144,3 +146,5 @@ POSTHOOK: Input: default@dest_j1
 369	3
 401	5
 406	4
+66	1
+98	2

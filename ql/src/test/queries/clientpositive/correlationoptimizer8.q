@@ -1,5 +1,8 @@
 set hive.auto.convert.join=false;
 set hive.optimize.correlation=false;
+
+-- SORT_QUERY_RESULTS
+
 -- When the Correlation Optimizer is turned off, this query will be evaluated by
 -- 4 MR jobs. 
 -- When the Correlation Optimizer is turned on, because both inputs of the 
@@ -13,7 +16,7 @@ FROM
      UNION ALL
   SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key
 ) subq1
-JOIN src1 x ON (x.key = subq1.key) ORDER BY x.key, x.value, subq1.cnt;
+JOIN src1 x ON (x.key = subq1.key);
 
 SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -21,7 +24,7 @@ FROM
      UNION ALL
   SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key
 ) subq1
-JOIN src1 x ON (x.key = subq1.key) ORDER BY x.key, x.value, subq1.cnt;
+JOIN src1 x ON (x.key = subq1.key);
 
 set hive.optimize.correlation=true;
 EXPLAIN
@@ -31,7 +34,7 @@ FROM
      UNION ALL
   SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key
 ) subq1
-JOIN src1 x ON (x.key = subq1.key) ORDER BY x.key, x.value, subq1.cnt;
+JOIN src1 x ON (x.key = subq1.key);
 
 SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -39,7 +42,7 @@ FROM
      UNION ALL
   SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key
 ) subq1
-JOIN src1 x ON (x.key = subq1.key) ORDER BY x.key, x.value, subq1.cnt;
+JOIN src1 x ON (x.key = subq1.key);
 
 set hive.optimize.correlation=false;
 -- When the Correlation Optimizer is turned off, this query will be evaluated by
@@ -55,7 +58,7 @@ FROM
      UNION ALL
   SELECT x1.value as key, count(1) as cnt from src1 x1 where x1.key > 100 group by x1.value
 ) subq1
-LEFT OUTER JOIN src1 x ON (x.key = subq1.key) ORDER BY subq1.key, subq1.cnt, x.key, x.value;
+LEFT OUTER JOIN src1 x ON (x.key = subq1.key);
 
 SELECT subq1.key, subq1.cnt, x.key, x.value
 FROM 
@@ -63,7 +66,7 @@ FROM
      UNION ALL
   SELECT x1.value as key, count(1) as cnt from src1 x1 where x1.key > 100 group by x1.value
 ) subq1
-LEFT OUTER JOIN src1 x ON (x.key = subq1.key) ORDER BY subq1.key, subq1.cnt, x.key, x.value;
+LEFT OUTER JOIN src1 x ON (x.key = subq1.key);
 
 set hive.optimize.correlation=true;
 EXPLAIN
@@ -73,7 +76,7 @@ FROM
      UNION ALL
   SELECT x1.value as key, count(1) as cnt from src1 x1 where x1.key > 100 group by x1.value
 ) subq1
-LEFT OUTER JOIN src1 x ON (x.key = subq1.key) ORDER BY subq1.key, subq1.cnt, x.key, x.value;
+LEFT OUTER JOIN src1 x ON (x.key = subq1.key);
 
 SELECT subq1.key, subq1.cnt, x.key, x.value
 FROM 
@@ -81,7 +84,7 @@ FROM
      UNION ALL
   SELECT x1.value as key, count(1) as cnt from src1 x1 where x1.key > 100 group by x1.value
 ) subq1
-LEFT OUTER JOIN src1 x ON (x.key = subq1.key) ORDER BY subq1.key, subq1.cnt, x.key, x.value;
+LEFT OUTER JOIN src1 x ON (x.key = subq1.key);
 
 set hive.optimize.correlation=true;
 -- When the Correlation Optimizer is turned on, because a input of UnionOperator is
@@ -94,7 +97,7 @@ FROM
      UNION ALL
   SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key, x1.value
 ) subq1
-JOIN src1 x ON (x.key = subq1.key) ORDER BY x.key, x.value, subq1.cnt;
+JOIN src1 x ON (x.key = subq1.key);
 
 set hive.optimize.correlation=true;
 -- When the Correlation Optimizer is turned on, because a input of UnionOperator is
@@ -107,4 +110,4 @@ FROM
      UNION ALL
   SELECT count(1) as key, cast(x1.key as INT) as value from src x1 where x1.key > 100 group by x1.key
 ) subq1
-FULL OUTER JOIN src1 x ON (x.key = subq1.key) ORDER BY subq1.key, subq1.value, x.key, x.value;
+FULL OUTER JOIN src1 x ON (x.key = subq1.key);

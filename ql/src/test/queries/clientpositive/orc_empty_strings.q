@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE test_orc (key STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
@@ -13,4 +15,4 @@ INSERT OVERWRITE TABLE test_orc SELECT IF (key % 3 = 0, key, '') FROM src tables
 
 -- Test reading a column which has some empty strings
 
-SELECT * FROM test_orc ORDER BY key;
+SELECT * FROM test_orc;

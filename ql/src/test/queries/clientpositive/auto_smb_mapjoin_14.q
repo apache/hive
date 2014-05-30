@@ -2,6 +2,8 @@ set hive.enforce.bucketing = true;
 set hive.enforce.sorting = true;
 set hive.exec.reducers.max = 1;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 
@@ -64,8 +66,7 @@ join
     select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
   ) subq2 group by key
 ) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1;
+on src1.key = src2.key;
 
 select src1.key, src1.cnt1, src2.cnt1 from
 (
@@ -81,8 +82,7 @@ join
     select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
   ) subq2 group by key
 ) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1;
+on src1.key = src2.key;
 
 -- The subquery itself is being joined. Since the sub-query only contains selects and filters, it should 
 -- be converted to a sort-merge join.
@@ -271,8 +271,8 @@ from (
 insert overwrite table dest1 select key, val1
 insert overwrite table dest2 select key, val1, val2;
 
-select * from dest1 order by key, value;
-select * from dest2 order by key, val1, val2;
+select * from dest1;
+select * from dest2;
 
 DROP TABLE dest2;
 CREATE TABLE dest2(key int, cnt int);
@@ -292,5 +292,5 @@ from (
 insert overwrite table dest1 select key, val1
 insert overwrite table dest2 select key, count(*) group by key;
 
-select * from dest1 order by key, value;
-select * from dest2 order by key;
+select * from dest1;
+select * from dest2;

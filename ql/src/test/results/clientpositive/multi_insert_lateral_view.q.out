@@ -1,7 +1,11 @@
-PREHOOK: query: create table src_10 as select * from src limit 10
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table src_10 as select * from src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
-POSTHOOK: query: create table src_10 as select * from src limit 10
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table src_10 as select * from src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_10
@@ -279,11 +283,11 @@ POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type
 POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-PREHOOK: query: select * from src_lv1 order by key, value
+PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv1 order by key, value
+POSTHOOK: query: select * from src_lv1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
@@ -307,11 +311,11 @@ POSTHOOK: Input: default@src_lv1
 86	88.0
 98	100.0
 98	99.0
-PREHOOK: query: select * from src_lv2 order by key, value
+PREHOOK: query: select * from src_lv2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv2 order by key, value
+POSTHOOK: query: select * from src_lv2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
@@ -566,11 +570,11 @@ POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type
 POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-PREHOOK: query: select * from src_lv1 order by key, value
+PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv1 order by key, value
+POSTHOOK: query: select * from src_lv1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
@@ -584,11 +588,11 @@ POSTHOOK: Input: default@src_lv1
 484	971.0
 86	175.0
 98	199.0
-PREHOOK: query: select * from src_lv2 order by key, value
+PREHOOK: query: select * from src_lv2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv2 order by key, value
+POSTHOOK: query: select * from src_lv2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
@@ -844,11 +848,11 @@ POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, ty
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
-PREHOOK: query: select * from src_lv1 order by key, value
+PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv1 order by key, value
+POSTHOOK: query: select * from src_lv1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
@@ -862,11 +866,11 @@ POSTHOOK: Input: default@src_lv1
 484	971.0
 86	175.0
 98	199.0
-PREHOOK: query: select * from src_lv2 order by key, value
+PREHOOK: query: select * from src_lv2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv2 order by key, value
+POSTHOOK: query: select * from src_lv2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
@@ -876,11 +880,11 @@ POSTHOOK: Input: default@src_lv2
 311	1
 409	1
 484	1
-PREHOOK: query: select * from src_lv3 order by key, value
+PREHOOK: query: select * from src_lv3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv3 order by key, value
+POSTHOOK: query: select * from src_lv3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv3
 #### A masked pattern was here ####
@@ -1189,11 +1193,11 @@ POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FI
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: select * from src_lv1 order by key, value
+PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv1 order by key, value
+POSTHOOK: query: select * from src_lv1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
@@ -1217,11 +1221,11 @@ POSTHOOK: Input: default@src_lv1
 87.0	86.0
 88.0	86.0
 99.0	98.0
-PREHOOK: query: select * from src_lv2 order by key, value
+PREHOOK: query: select * from src_lv2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv2 order by key, value
+POSTHOOK: query: select * from src_lv2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
@@ -1245,11 +1249,11 @@ POSTHOOK: Input: default@src_lv2
 488.0	484.0
 89.0	86.0
 90.0	86.0
-PREHOOK: query: select * from src_lv3 order by key, value
+PREHOOK: query: select * from src_lv3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv3 order by key, value
+POSTHOOK: query: select * from src_lv3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv3
 #### A masked pattern was here ####
@@ -1603,11 +1607,11 @@ POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION []
 POSTHOOK: Lineage: src_lv4.value EXPRESSION []
-PREHOOK: query: select * from src_lv1 order by key, value
+PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv1 order by key, value
+POSTHOOK: query: select * from src_lv1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
@@ -1621,11 +1625,11 @@ POSTHOOK: Input: default@src_lv1
 484	971.0
 86	175.0
 98	199.0
-PREHOOK: query: select * from src_lv2 order by key, value
+PREHOOK: query: select * from src_lv2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv2 order by key, value
+POSTHOOK: query: select * from src_lv2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
@@ -1639,11 +1643,11 @@ POSTHOOK: Input: default@src_lv2
 484	975.0
 86	179.0
 98	203.0
-PREHOOK: query: select * from src_lv3 order by key, value
+PREHOOK: query: select * from src_lv3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv3 order by key, value
+POSTHOOK: query: select * from src_lv3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv3
 #### A masked pattern was here ####
@@ -1653,11 +1657,11 @@ val_278	278.0
 val_311	311.0
 val_409	409.0
 val_484	484.0
-PREHOOK: query: select * from src_lv4 order by key, value
+PREHOOK: query: select * from src_lv4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_lv4 order by key, value
+POSTHOOK: query: select * from src_lv4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv4
 #### A masked pattern was here ####

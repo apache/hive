@@ -1,6 +1,10 @@
-PREHOOK: query: drop table t1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table t1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table t1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table t1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table t2
 PREHOOK: type: DROPTABLE
@@ -258,11 +262,11 @@ POSTHOOK: Lineage: t3.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
 POSTHOOK: Lineage: t3.key EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), (t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t4.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
 POSTHOOK: Lineage: t4.value EXPRESSION [(t2)t2.FieldSchema(name:value, type:string, comment:null), (t1)t1.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from t3 order by key
+PREHOOK: query: select * from t3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t3 order by key
+POSTHOOK: query: select * from t3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
@@ -272,11 +276,11 @@ POSTHOOK: Input: default@t3
 5	6
 8	2
 9	2
-PREHOOK: query: select * from t4 order by value
+PREHOOK: query: select * from t4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t4 order by value
+POSTHOOK: query: select * from t4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4
 #### A masked pattern was here ####
@@ -543,11 +547,11 @@ POSTHOOK: Lineage: t5.c1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, c
 POSTHOOK: Lineage: t5.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
 POSTHOOK: Lineage: t6.c1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), (t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t6.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
-PREHOOK: query: select * from t5 order by c1
+PREHOOK: query: select * from t5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t5 order by c1
+POSTHOOK: query: select * from t5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t5
 #### A masked pattern was here ####
@@ -557,11 +561,11 @@ POSTHOOK: Input: default@t5
 5	6
 8	2
 9	2
-PREHOOK: query: select * from t6 order by c1
+PREHOOK: query: select * from t6
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t6
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t6 order by c1
+POSTHOOK: query: select * from t6
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t6
 #### A masked pattern was here ####
@@ -821,11 +825,11 @@ POSTHOOK: Lineage: t7.c1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, c
 POSTHOOK: Lineage: t7.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
 POSTHOOK: Lineage: t8.c1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), (t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t8.cnt EXPRESSION [(t2)t2.null, (t1)t1.null, ]
-PREHOOK: query: select * from t7 order by c1
+PREHOOK: query: select * from t7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t7
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t7 order by c1
+POSTHOOK: query: select * from t7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t7
 #### A masked pattern was here ####
@@ -835,11 +839,11 @@ POSTHOOK: Input: default@t7
 5	2
 8	2
 9	2
-PREHOOK: query: select * from t8 order by c1
+PREHOOK: query: select * from t8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t8 order by c1
+POSTHOOK: query: select * from t8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t8
 #### A masked pattern was here ####

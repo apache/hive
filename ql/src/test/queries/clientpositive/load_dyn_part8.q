@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 show partitions srcpart;
 
 
@@ -20,5 +22,5 @@ insert overwrite table nzhang_part8 partition(ds='2008-12-31', hr) select key, v
 
 show partitions nzhang_part8;
 
-select * from nzhang_part8 where ds is not null and hr is not null order by ds, hr, key;
+select * from nzhang_part8 where ds is not null and hr is not null;
 

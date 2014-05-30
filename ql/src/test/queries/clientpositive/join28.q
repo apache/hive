@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE dest_j1(key STRING, value STRING) STORED AS TEXTFILE;
 
 set hive.auto.convert.join=true;
@@ -21,7 +23,7 @@ FROM
  FROM src1 x JOIN src y ON (x.key = y.key)) subq
  JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11);
 
-select * from dest_j1 x order by x.key;
+select * from dest_j1;
 
 
 

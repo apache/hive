@@ -1,7 +1,11 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
@@ -72,27 +76,25 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
-ORDER BY key, val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
-ORDER BY key, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-NULL	NULL	6
-1	NULL	1
 1	11	1
-2	NULL	1
+1	NULL	1
 2	12	1
-3	NULL	1
+2	NULL	1
 3	13	1
-7	NULL	1
+3	NULL	1
 7	17	1
-8	NULL	2
+7	NULL	1
 8	18	1
 8	28	1
+8	NULL	2
+NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
 PREHOOK: type: QUERY
@@ -151,21 +153,19 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
-ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
-ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-NULL	6
 1	1
 2	1
 3	1
 7	1
 8	2
+NULL	6
 PREHOOK: query: EXPLAIN
 SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
 PREHOOK: type: QUERY
@@ -250,27 +250,25 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
-ORDER BY key, val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
-ORDER BY key, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-NULL	NULL	6
-1	NULL	1
 1	11	1
-2	NULL	1
+1	NULL	1
 2	12	1
-3	NULL	1
+2	NULL	1
 3	13	1
-7	NULL	1
+3	NULL	1
 7	17	1
-8	NULL	2
+7	NULL	1
 8	18	1
 8	28	1
+8	NULL	2
+NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
 PREHOOK: type: QUERY
@@ -329,21 +327,19 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
-ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
-ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-NULL	6
 1	1
 2	1
 3	1
 7	1
 8	2
+NULL	6
 PREHOOK: query: CREATE TABLE T2(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

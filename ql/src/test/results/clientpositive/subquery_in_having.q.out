@@ -1,4 +1,6 @@
-PREHOOK: query: -- data setup
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- data setup
 CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
@@ -12,7 +14,9 @@ CREATE TABLE part(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: -- data setup
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- data setup
 CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
@@ -186,11 +190,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s1.key, count(*) from src s1 where s1.key > '9' group by s1.key order by s1.key
+PREHOOK: query: select s1.key, count(*) from src s1 where s1.key > '9' group by s1.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select s1.key, count(*) from src s1 where s1.key > '9' group by s1.key order by s1.key
+POSTHOOK: query: select s1.key, count(*) from src s1 where s1.key > '9' group by s1.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -204,7 +208,6 @@ PREHOOK: query: select key, count(*)
 from src 
 group by key
 having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
-order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -212,7 +215,6 @@ POSTHOOK: query: select key, count(*)
 from src 
 group by key
 having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
-order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -567,7 +569,6 @@ having b.key in ( select a.key
                 from src a
                 where a.value > 'val_9' and a.value = min(b.value)
                 )
-order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -579,7 +580,6 @@ having b.key in ( select a.key
                 from src a
                 where a.value > 'val_9' and a.value = min(b.value)
                 )
-order by b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

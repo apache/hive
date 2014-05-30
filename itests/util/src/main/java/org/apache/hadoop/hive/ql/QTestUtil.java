@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -32,6 +33,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -63,6 +65,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.io.DigestPrintStream;
+import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
+import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -118,6 +123,9 @@ public class QTestUtil {
   private final TreeMap<String, String> qMap;
   private final Set<String> qSkipSet;
   private final Set<String> qSortSet;
+  private final Set<String> qSortQuerySet;
+  private final Set<String> qHashQuerySet;
+  private final Set<String> qSortNHashQuerySet;
   private static final String SORT_SUFFIX = ".sorted";
   public static final HashSet<String> srcTables = new HashSet<String>();
   private static MiniClusterType clusterType = MiniClusterType.none;
@@ -309,6 +317,9 @@ public class QTestUtil {
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
     qSortSet = new HashSet<String>();
+    qSortQuerySet = new HashSet<String>();
+    qHashQuerySet = new HashSet<String>();
+    qSortNHashQuerySet = new HashSet<String>();
     this.clusterType = clusterType;
 
     HadoopShims shims = ShimLoader.getHadoopShims();
@@ -400,15 +411,24 @@ public class QTestUtil {
       qSkipSet.add(qf.getName());
     }
 
-    if (checkNeedsSort(qf.getName(), query)) {
+    if (matches(SORT_BEFORE_DIFF, query)) {
       qSortSet.add(qf.getName());
+    } else if (matches(SORT_QUERY_RESULTS, query)) {
+      qSortQuerySet.add(qf.getName());
+    } else if (matches(HASH_QUERY_RESULTS, query)) {
+      qHashQuerySet.add(qf.getName());
+    } else if (matches(SORT_AND_HASH_QUERY_RESULTS, query)) {
+      qSortNHashQuerySet.add(qf.getName());
     }
   }
 
-  private boolean checkNeedsSort(String fileName, String query) {
-    Pattern pattern = Pattern.compile("-- SORT_BEFORE_DIFF");
-    Matcher matcher = pattern.matcher(query);
+  private static final Pattern SORT_BEFORE_DIFF = Pattern.compile("-- SORT_BEFORE_DIFF");
+  private static final Pattern SORT_QUERY_RESULTS = Pattern.compile("-- SORT_QUERY_RESULTS");
+  private static final Pattern HASH_QUERY_RESULTS = Pattern.compile("-- HASH_QUERY_RESULTS");
+  private static final Pattern SORT_AND_HASH_QUERY_RESULTS = Pattern.compile("-- SORT_AND_HASH_QUERY_RESULTS");
 
+  private boolean matches(Pattern pattern, String query) {
+    Matcher matcher = pattern.matcher(query);
     if (matcher.find()) {
       return true;
     }
@@ -820,10 +840,17 @@ public class QTestUtil {
       stdoutName = tname + ".out";
     }
 
-    File outf = new File(logDir);
-    outf = new File(outf, stdoutName);
-    FileOutputStream fo = new FileOutputStream(outf);
-    ss.out = new PrintStream(fo, true, "UTF-8");
+    File outf = new File(logDir, stdoutName);
+    OutputStream fo = new BufferedOutputStream(new FileOutputStream(outf));
+    if (qSortQuerySet.contains(tname)) {
+      ss.out = new SortPrintStream(fo, "UTF-8");
+    } else if (qHashQuerySet.contains(tname)) {
+      ss.out = new DigestPrintStream(fo, "UTF-8");
+    } else if (qSortNHashQuerySet.contains(tname)) {
+      ss.out = new SortAndDigestPrintStream(fo, "UTF-8");
+    } else {
+      ss.out = new PrintStream(fo, true, "UTF-8");
+    }
     ss.err = new CachingPrintStream(fo, true, "UTF-8");
     ss.setIsSilent(true);
     SessionState oldSs = SessionState.get();

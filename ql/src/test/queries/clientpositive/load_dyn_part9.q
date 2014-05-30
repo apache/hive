@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 show partitions srcpart;
 
 
@@ -19,5 +21,5 @@ insert overwrite table nzhang_part9 partition (ds, hr) select key, value, ds, hr
 
 show partitions nzhang_part9;
 
-select * from nzhang_part9 where ds is not null and hr is not null order by ds, hr, key;
+select * from nzhang_part9 where ds is not null and hr is not null;
 

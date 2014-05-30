@@ -1,4 +1,6 @@
-PREHOOK: query: CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '1'
 COLLECTION ITEMS TERMINATED BY '2'
@@ -7,7 +9,9 @@ LINES TERMINATED BY '10'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '1'
 COLLECTION ITEMS TERMINATED BY '2'
@@ -94,6 +98,7 @@ POSTHOOK: query: SELECT dest1.* FROM dest1 CLUSTER BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
+NULL	NULL	NULL	0	NULL
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -104,7 +109,6 @@ POSTHOOK: Input: default@dest1
 [7,14,21]	["70","700","7000"]	{"key_7":"value_7"}	-1461153973	record_7
 [8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
 [9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
-NULL	NULL	NULL	0	NULL
 PREHOOK: query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1 CLUSTER BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -148,14 +152,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
-PREHOOK: query: SELECT * from dest1 ORDER BY 1 ASC
+PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from dest1 ORDER BY 1 ASC
+POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
+NULL
 [0,0,0]
 [1,2,3]
 [2,4,6]
@@ -166,7 +171,6 @@ POSTHOOK: Input: default@dest1
 [7,14,21]
 [8,16,24]
 [9,18,27]
-NULL
 PREHOOK: query: DROP TABLE dest1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1
@@ -191,14 +195,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
-PREHOOK: query: SELECT * from dest1 ORDER BY 1 ASC
+PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from dest1 ORDER BY 1 ASC
+POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
+NULL
 {"key_0":"value_0"}
 {"key_1":"value_1"}
 {"key_2":"value_2"}
@@ -209,4 +214,3 @@ POSTHOOK: Input: default@dest1
 {"key_7":"value_7"}
 {"key_8":"value_8"}
 {"key_9":"value_9"}
-NULL

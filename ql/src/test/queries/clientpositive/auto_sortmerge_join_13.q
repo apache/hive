@@ -2,6 +2,8 @@ set hive.enforce.bucketing = true;
 set hive.enforce.sorting = true;
 set hive.exec.reducers.max = 1;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 
@@ -35,8 +37,8 @@ from (
 INSERT OVERWRITE TABLE dest1 select key1, key2
 INSERT OVERWRITE TABLE dest2 select value1, value2;
 
-select * from dest1 order by k1, k2;
-select * from dest2 order by k1, k2;
+select * from dest1;
+select * from dest2;
 
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=200;
@@ -57,8 +59,8 @@ from (
 INSERT OVERWRITE TABLE dest1 select key1, key2
 INSERT OVERWRITE TABLE dest2 select value1, value2;
 
-select * from dest1 order by k1, k2;
-select * from dest2 order by k1, k2;
+select * from dest1;
+select * from dest2;
 
 set hive.auto.convert.sortmerge.join.to.mapjoin=true;
 -- A SMB join followed by a mutli-insert
@@ -77,5 +79,5 @@ from (
 INSERT OVERWRITE TABLE dest1 select key1, key2
 INSERT OVERWRITE TABLE dest2 select value1, value2;
 
-select * from dest1 order by k1, k2;
-select * from dest2 order by k1, k2;
+select * from dest1;
+select * from dest2;

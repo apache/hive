@@ -1,7 +1,11 @@
-PREHOOK: query: -- negative, references twice for result of funcion
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- negative, references twice for result of funcion
 explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- negative, references twice for result of funcion
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- negative, references twice for result of funcion
 explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -48,7 +52,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4 order by key, value, count
+      ) tmp4
 PREHOOK: type: QUERY
 POSTHOOK: query: -- This test query is introduced for HIVE-4968.
 -- First, we do not convert the join to MapJoin.
@@ -60,13 +64,12 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4 order by key, value, count
+      ) tmp4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -137,30 +140,11 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 237 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-              sort order: +++
               Statistics: Num rows: 1 Data size: 237 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 1 Data size: 237 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 237 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -176,7 +160,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4 order by key, value, count
+      ) tmp4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -187,7 +171,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4 order by key, value, count
+      ) tmp4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -216,7 +200,7 @@ POSTHOOK: Input: default@src1
 406	val_406	25
 66	val_66	25
 98	val_98	25
-Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[17][bigTable=?] in task 'Stage-4:MAPRED' is a cross product
 PREHOOK: query: -- Then, we convert the join to MapJoin.
 EXPLAIN
 SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
@@ -226,7 +210,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4 order by key, value, count
+      ) tmp4
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Then, we convert the join to MapJoin.
 EXPLAIN
@@ -237,13 +221,13 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4 order by key, value, count
+      ) tmp4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-6 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-6
-  Stage-0 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
@@ -280,7 +264,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-6
+  Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
         tmp4:tmp2:tmp1:src1 
@@ -303,7 +287,7 @@ STAGE PLANS:
                   0 
                   1 
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -322,23 +306,15 @@ STAGE PLANS:
                 expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 237 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  sort order: +++
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 1 Data size: 237 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 1 Data size: 237 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 237 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -346,7 +322,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[17][bigTable=?] in task 'Stage-4:MAPRED' is a cross product
 PREHOOK: query: SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
 FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
       FROM (SELECT *
@@ -354,7 +330,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4 order by key, value, count
+      ) tmp4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -365,7 +341,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4 order by key, value, count
+      ) tmp4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

@@ -1,12 +1,16 @@
 PREHOOK: query: -- Create a table with one column, write to it, then add an additional column
 -- This can break reads
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE test_orc (key STRING)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 POSTHOOK: query: -- Create a table with one column, write to it, then add an additional column
 -- This can break reads
+
+-- SORT_QUERY_RESULTS
 
 CREATE TABLE test_orc (key STRING)
 STORED AS ORC
@@ -30,11 +34,11 @@ POSTHOOK: query: ALTER TABLE test_orc ADD COLUMNS (value STRING)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@test_orc
 POSTHOOK: Output: default@test_orc
-PREHOOK: query: SELECT * FROM test_orc order by key
+PREHOOK: query: SELECT * FROM test_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_orc
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_orc order by key
+POSTHOOK: query: SELECT * FROM test_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_orc
 #### A masked pattern was here ####

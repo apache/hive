@@ -1,7 +1,11 @@
-PREHOOK: query: CREATE TABLE myinput1(key int, value int)
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE myinput1(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE myinput1(key int, value int)
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE myinput1(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@myinput1
@@ -14,15 +18,14 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@myinput1
 PREHOOK: query: -- merging
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+explain select * from myinput1 a join myinput1 b on a.key<=>b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: -- merging
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+explain select * from myinput1 a join myinput1 b on a.key<=>b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -62,30 +65,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
-              sort order: ++++
               Statistics: Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -93,33 +77,32 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	10	NULL	NULL
-NULL	10	10	NULL
-NULL	10	48	NULL
-NULL	35	NULL	NULL
-NULL	35	10	NULL
-NULL	35	48	NULL
 10	NULL	NULL	10
 100	100	100	100
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	10	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+NULL	35	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -169,30 +152,11 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int)
-              sort order: ++++++
               Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -200,24 +164,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 10	NULL	NULL	10	10	NULL
 100	100	100	100	100	100
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -268,30 +231,11 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int)
-              sort order: ++++++
               Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -299,51 +243,50 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	10
-NULL	NULL	NULL	NULL	NULL	35
-NULL	NULL	10	NULL	NULL	NULL
-NULL	NULL	10	NULL	NULL	10
-NULL	NULL	10	NULL	NULL	35
-NULL	NULL	48	NULL	NULL	NULL
-NULL	NULL	48	NULL	NULL	10
-NULL	NULL	48	NULL	NULL	35
-NULL	10	NULL	NULL	NULL	NULL
-NULL	10	NULL	NULL	NULL	10
-NULL	10	NULL	NULL	NULL	35
-NULL	10	10	NULL	NULL	NULL
-NULL	10	10	NULL	NULL	10
-NULL	10	10	NULL	NULL	35
-NULL	10	48	NULL	NULL	NULL
-NULL	10	48	NULL	NULL	10
-NULL	10	48	NULL	NULL	35
-NULL	35	NULL	NULL	NULL	NULL
-NULL	35	NULL	NULL	NULL	10
-NULL	35	NULL	NULL	NULL	35
-NULL	35	10	NULL	NULL	NULL
-NULL	35	10	NULL	NULL	10
-NULL	35	10	NULL	NULL	35
-NULL	35	48	NULL	NULL	NULL
-NULL	35	48	NULL	NULL	10
-NULL	35	48	NULL	NULL	35
 10	NULL	NULL	10	10	NULL
 100	100	100	100	100	100
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+NULL	10	10	NULL	NULL	10
+NULL	10	10	NULL	NULL	35
+NULL	10	10	NULL	NULL	NULL
+NULL	10	48	NULL	NULL	10
+NULL	10	48	NULL	NULL	35
+NULL	10	48	NULL	NULL	NULL
+NULL	10	NULL	NULL	NULL	10
+NULL	10	NULL	NULL	NULL	35
+NULL	10	NULL	NULL	NULL	NULL
+NULL	35	10	NULL	NULL	10
+NULL	35	10	NULL	NULL	35
+NULL	35	10	NULL	NULL	NULL
+NULL	35	48	NULL	NULL	10
+NULL	35	48	NULL	NULL	35
+NULL	35	48	NULL	NULL	NULL
+NULL	35	NULL	NULL	NULL	10
+NULL	35	NULL	NULL	NULL	35
+NULL	35	NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL	NULL	10
+NULL	NULL	10	NULL	NULL	35
+NULL	NULL	10	NULL	NULL	NULL
+NULL	NULL	48	NULL	NULL	10
+NULL	NULL	48	NULL	NULL	35
+NULL	NULL	48	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	10
+NULL	NULL	NULL	NULL	NULL	35
+NULL	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -394,30 +337,11 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int)
-              sort order: ++++++
               Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -425,24 +349,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-NULL	10	10	NULL	NULL	10
 100	100	100	100	100	100
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+NULL	10	10	NULL	NULL	10
+PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -493,30 +416,11 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int)
-              sort order: ++++++
               Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -524,121 +428,121 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL
-NULL	10	10	NULL	NULL	10
 10	NULL	NULL	10	10	NULL
 100	100	100	100	100	100
+NULL	10	10	NULL	NULL	10
+NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: -- outer joins
-SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: -- outer joins
-SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	10	NULL	NULL
+10	NULL	NULL	10
+100	100	100	100
+48	NULL	NULL	NULL
 NULL	10	10	NULL
 NULL	10	48	NULL
-NULL	35	NULL	NULL
+NULL	10	NULL	NULL
 NULL	35	10	NULL
 NULL	35	48	NULL
-10	NULL	NULL	10
-48	NULL	NULL	NULL
-100	100	100	100
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+NULL	35	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	35
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	10	NULL	NULL
-NULL	10	10	NULL
-NULL	10	48	NULL
-NULL	35	NULL	NULL
-NULL	35	10	NULL
-NULL	35	48	NULL
 10	NULL	NULL	10
 100	100	100	100
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	10	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+NULL	35	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	35
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	35
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	10	NULL	NULL
+10	NULL	NULL	10
+100	100	100	100
+48	NULL	NULL	NULL
 NULL	10	10	NULL
 NULL	10	48	NULL
-NULL	35	NULL	NULL
+NULL	10	NULL	NULL
 NULL	35	10	NULL
 NULL	35	48	NULL
-10	NULL	NULL	10
-48	NULL	NULL	NULL
-100	100	100	100
+NULL	35	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	35
+NULL	NULL	NULL	NULL
 PREHOOK: query: -- map joins
-SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: -- map joins
-SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	10	NULL	NULL
-NULL	10	10	NULL
-NULL	10	48	NULL
-NULL	35	NULL	NULL
-NULL	35	10	NULL
-NULL	35	48	NULL
 10	NULL	NULL	10
 100	100	100	100
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	10	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+NULL	35	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	10	NULL	NULL
-NULL	10	10	NULL
-NULL	10	48	NULL
-NULL	35	NULL	NULL
-NULL	35	10	NULL
-NULL	35	48	NULL
 10	NULL	NULL	10
 100	100	100	100
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	10	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+NULL	35	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL
 PREHOOK: query: -- smbs
 CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
@@ -687,632 +591,632 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in9.txt' into table sm
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_input2
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	10
-NULL	NULL	NULL	10
-NULL	NULL	NULL	35
-NULL	NULL	NULL	35
-NULL	NULL	NULL	110
-NULL	NULL	NULL	110
-NULL	NULL	NULL	135
-NULL	NULL	NULL	135
-NULL	10	NULL	NULL
-NULL	10	NULL	NULL
+10	NULL	10	NULL
+100	100	100	100
+110	NULL	110	NULL
+148	NULL	148	NULL
+200	200	200	200
+48	NULL	48	NULL
 NULL	10	NULL	10
-NULL	10	NULL	35
 NULL	10	NULL	110
 NULL	10	NULL	135
-NULL	35	NULL	NULL
-NULL	35	NULL	NULL
-NULL	35	NULL	10
-NULL	35	NULL	35
-NULL	35	NULL	110
-NULL	35	NULL	135
-NULL	110	NULL	NULL
-NULL	110	NULL	NULL
+NULL	10	NULL	35
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
 NULL	110	NULL	10
-NULL	110	NULL	35
 NULL	110	NULL	110
 NULL	110	NULL	135
-NULL	135	NULL	NULL
-NULL	135	NULL	NULL
+NULL	110	NULL	35
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
 NULL	135	NULL	10
-NULL	135	NULL	35
 NULL	135	NULL	110
 NULL	135	NULL	135
+NULL	135	NULL	35
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	35	NULL	10
+NULL	35	NULL	110
+NULL	35	NULL	135
+NULL	35	NULL	35
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	NULL	NULL	10
+NULL	NULL	NULL	10
+NULL	NULL	NULL	110
+NULL	NULL	NULL	110
+NULL	NULL	NULL	135
+NULL	NULL	NULL	135
+NULL	NULL	NULL	35
+NULL	NULL	NULL	35
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
 10	NULL	10	NULL
-48	NULL	48	NULL
 100	100	100	100
 110	NULL	110	NULL
 148	NULL	148	NULL
 200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
-PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-#### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
+48	NULL	48	NULL
 NULL	10	NULL	10
-NULL	35	NULL	35
 NULL	110	NULL	110
 NULL	135	NULL	135
+NULL	35	NULL	35
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
 10	NULL	10	NULL
-48	NULL	48	NULL
 100	100	100	100
 110	NULL	110	NULL
 148	NULL	148	NULL
 200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
-PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-#### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	10
-NULL	NULL	NULL	10
-NULL	NULL	NULL	35
-NULL	NULL	NULL	35
-NULL	NULL	NULL	110
-NULL	NULL	NULL	110
-NULL	NULL	NULL	135
-NULL	NULL	NULL	135
-NULL	10	NULL	NULL
-NULL	10	NULL	NULL
+48	NULL	48	NULL
 NULL	10	NULL	10
-NULL	10	NULL	35
 NULL	10	NULL	110
 NULL	10	NULL	135
-NULL	35	NULL	NULL
-NULL	35	NULL	NULL
-NULL	35	NULL	10
-NULL	35	NULL	35
-NULL	35	NULL	110
-NULL	35	NULL	135
-NULL	110	NULL	NULL
-NULL	110	NULL	NULL
+NULL	10	NULL	35
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
 NULL	110	NULL	10
-NULL	110	NULL	35
 NULL	110	NULL	110
 NULL	110	NULL	135
-NULL	135	NULL	NULL
-NULL	135	NULL	NULL
+NULL	110	NULL	35
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
 NULL	135	NULL	10
-NULL	135	NULL	35
 NULL	135	NULL	110
 NULL	135	NULL	135
-10	NULL	10	NULL
-48	NULL	48	NULL
-100	100	100	100
-110	NULL	110	NULL
-148	NULL	148	NULL
-200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+NULL	135	NULL	35
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	35	NULL	10
+NULL	35	NULL	110
+NULL	35	NULL	135
+NULL	35	NULL	35
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	NULL	NULL	10
+NULL	NULL	NULL	10
+NULL	NULL	NULL	110
+NULL	NULL	NULL	110
+NULL	NULL	NULL	135
+NULL	NULL	NULL	135
+NULL	NULL	NULL	35
+NULL	NULL	NULL	35
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	10
-NULL	NULL	NULL	10
-NULL	NULL	NULL	35
-NULL	NULL	NULL	35
-NULL	NULL	NULL	110
-NULL	NULL	NULL	110
-NULL	NULL	NULL	135
-NULL	NULL	NULL	135
-NULL	10	NULL	NULL
-NULL	10	NULL	NULL
-NULL	10	NULL	10
-NULL	10	NULL	35
-NULL	10	NULL	110
-NULL	10	NULL	135
-NULL	35	NULL	NULL
-NULL	35	NULL	NULL
-NULL	35	NULL	10
-NULL	35	NULL	35
-NULL	35	NULL	110
-NULL	35	NULL	135
-NULL	110	NULL	NULL
-NULL	110	NULL	NULL
-NULL	110	NULL	10
-NULL	110	NULL	35
-NULL	110	NULL	110
-NULL	110	NULL	135
-NULL	135	NULL	NULL
-NULL	135	NULL	NULL
-NULL	135	NULL	10
-NULL	135	NULL	35
-NULL	135	NULL	110
-NULL	135	NULL	135
 10	NULL	10	NULL
-48	NULL	48	NULL
 100	100	100	100
 110	NULL	110	NULL
 148	NULL	148	NULL
 200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+48	NULL	48	NULL
+NULL	10	NULL	10
+NULL	10	NULL	110
+NULL	10	NULL	135
+NULL	10	NULL	35
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	110	NULL	10
+NULL	110	NULL	110
+NULL	110	NULL	135
+NULL	110	NULL	35
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	135	NULL	10
+NULL	135	NULL	110
+NULL	135	NULL	135
+NULL	135	NULL	35
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	35	NULL	10
+NULL	35	NULL	110
+NULL	35	NULL	135
+NULL	35	NULL	35
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	NULL	NULL	10
+NULL	NULL	NULL	10
+NULL	NULL	NULL	110
+NULL	NULL	NULL	110
+NULL	NULL	NULL	135
+NULL	NULL	NULL	135
+NULL	NULL	NULL	35
+NULL	NULL	NULL	35
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	10
-NULL	NULL	NULL	10
-NULL	NULL	NULL	35
-NULL	NULL	NULL	35
-NULL	NULL	NULL	110
-NULL	NULL	NULL	110
-NULL	NULL	NULL	135
-NULL	NULL	NULL	135
-NULL	10	NULL	NULL
-NULL	10	NULL	NULL
-NULL	10	NULL	10
-NULL	10	NULL	35
-NULL	10	NULL	110
-NULL	10	NULL	135
-NULL	35	NULL	NULL
-NULL	35	NULL	NULL
-NULL	35	NULL	10
-NULL	35	NULL	35
-NULL	35	NULL	110
-NULL	35	NULL	135
-NULL	110	NULL	NULL
-NULL	110	NULL	NULL
-NULL	110	NULL	10
-NULL	110	NULL	35
-NULL	110	NULL	110
-NULL	110	NULL	135
-NULL	135	NULL	NULL
-NULL	135	NULL	NULL
-NULL	135	NULL	10
-NULL	135	NULL	35
-NULL	135	NULL	110
-NULL	135	NULL	135
 10	NULL	10	NULL
-48	NULL	48	NULL
 100	100	100	100
 110	NULL	110	NULL
 148	NULL	148	NULL
 200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+48	NULL	48	NULL
+NULL	10	NULL	10
+NULL	10	NULL	110
+NULL	10	NULL	135
+NULL	10	NULL	35
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	110	NULL	10
+NULL	110	NULL	110
+NULL	110	NULL	135
+NULL	110	NULL	35
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	135	NULL	10
+NULL	135	NULL	110
+NULL	135	NULL	135
+NULL	135	NULL	35
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	35	NULL	10
+NULL	35	NULL	110
+NULL	35	NULL	135
+NULL	35	NULL	35
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	NULL	NULL	10
+NULL	NULL	NULL	10
+NULL	NULL	NULL	110
+NULL	NULL	NULL	110
+NULL	NULL	NULL	135
+NULL	NULL	NULL	135
+NULL	NULL	NULL	35
+NULL	NULL	NULL	35
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	NULL	48	NULL
-NULL	NULL	110	NULL
-NULL	NULL	110	NULL
-NULL	NULL	148	NULL
-NULL	NULL	148	NULL
-NULL	10	NULL	NULL
-NULL	10	NULL	NULL
-NULL	10	10	NULL
-NULL	10	48	NULL
-NULL	10	110	NULL
-NULL	10	148	NULL
-NULL	35	NULL	NULL
-NULL	35	NULL	NULL
-NULL	35	10	NULL
-NULL	35	48	NULL
-NULL	35	110	NULL
-NULL	35	148	NULL
-NULL	110	NULL	NULL
-NULL	110	NULL	NULL
-NULL	110	10	NULL
-NULL	110	48	NULL
-NULL	110	110	NULL
-NULL	110	148	NULL
-NULL	135	NULL	NULL
-NULL	135	NULL	NULL
-NULL	135	10	NULL
-NULL	135	48	NULL
-NULL	135	110	NULL
-NULL	135	148	NULL
 10	NULL	NULL	10
 100	100	100	100
 110	NULL	NULL	110
 200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+NULL	10	10	NULL
+NULL	10	110	NULL
+NULL	10	148	NULL
+NULL	10	48	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	110	10	NULL
+NULL	110	110	NULL
+NULL	110	148	NULL
+NULL	110	48	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	135	10	NULL
+NULL	135	110	NULL
+NULL	135	148	NULL
+NULL	135	48	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	35	10	NULL
+NULL	35	110	NULL
+NULL	35	148	NULL
+NULL	35	48	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	NULL	48	NULL
-NULL	NULL	110	NULL
-NULL	NULL	110	NULL
-NULL	NULL	148	NULL
-NULL	NULL	148	NULL
-NULL	10	NULL	NULL
-NULL	10	NULL	NULL
-NULL	10	10	NULL
-NULL	10	48	NULL
-NULL	10	110	NULL
-NULL	10	148	NULL
-NULL	35	NULL	NULL
-NULL	35	NULL	NULL
-NULL	35	10	NULL
-NULL	35	48	NULL
-NULL	35	110	NULL
-NULL	35	148	NULL
-NULL	110	NULL	NULL
-NULL	110	NULL	NULL
-NULL	110	10	NULL
-NULL	110	48	NULL
-NULL	110	110	NULL
-NULL	110	148	NULL
-NULL	135	NULL	NULL
-NULL	135	NULL	NULL
-NULL	135	10	NULL
-NULL	135	48	NULL
-NULL	135	110	NULL
-NULL	135	148	NULL
 10	NULL	NULL	10
 100	100	100	100
 110	NULL	NULL	110
 200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+NULL	10	10	NULL
+NULL	10	110	NULL
+NULL	10	148	NULL
+NULL	10	48	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	110	10	NULL
+NULL	110	110	NULL
+NULL	110	148	NULL
+NULL	110	48	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	135	10	NULL
+NULL	135	110	NULL
+NULL	135	148	NULL
+NULL	135	48	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	35	10	NULL
+NULL	35	110	NULL
+NULL	35	148	NULL
+NULL	35	48	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key <=> b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key <=> b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	NULL	48	NULL
-NULL	NULL	110	NULL
-NULL	NULL	110	NULL
-NULL	NULL	148	NULL
-NULL	NULL	148	NULL
-NULL	10	NULL	NULL
-NULL	10	NULL	NULL
-NULL	10	10	NULL
-NULL	10	48	NULL
-NULL	10	110	NULL
-NULL	10	148	NULL
-NULL	35	NULL	NULL
-NULL	35	NULL	NULL
-NULL	35	10	NULL
-NULL	35	48	NULL
-NULL	35	110	NULL
-NULL	35	148	NULL
-NULL	110	NULL	NULL
-NULL	110	NULL	NULL
-NULL	110	10	NULL
-NULL	110	48	NULL
-NULL	110	110	NULL
-NULL	110	148	NULL
-NULL	135	NULL	NULL
-NULL	135	NULL	NULL
-NULL	135	10	NULL
-NULL	135	48	NULL
-NULL	135	110	NULL
-NULL	135	148	NULL
 10	NULL	NULL	10
-48	NULL	NULL	NULL
 100	100	100	100
 110	NULL	NULL	110
 148	NULL	NULL	NULL
 200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+48	NULL	NULL	NULL
+NULL	10	10	NULL
+NULL	10	110	NULL
+NULL	10	148	NULL
+NULL	10	48	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	110	10	NULL
+NULL	110	110	NULL
+NULL	110	148	NULL
+NULL	110	48	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	135	10	NULL
+NULL	135	110	NULL
+NULL	135	148	NULL
+NULL	135	48	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	35	10	NULL
+NULL	35	110	NULL
+NULL	35	148	NULL
+NULL	35	48	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key <=> b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key <=> b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	35
+10	NULL	NULL	10
+100	100	100	100
+110	NULL	NULL	110
+200	200	200	200
+NULL	10	10	NULL
+NULL	10	110	NULL
+NULL	10	148	NULL
+NULL	10	48	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	110	10	NULL
+NULL	110	110	NULL
+NULL	110	148	NULL
+NULL	110	48	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	135	10	NULL
+NULL	135	110	NULL
+NULL	135	148	NULL
+NULL	135	48	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	35	10	NULL
+NULL	35	110	NULL
+NULL	35	148	NULL
+NULL	35	48	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
 NULL	NULL	NULL	135
-NULL	NULL	10	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	NULL	48	NULL
-NULL	NULL	110	NULL
-NULL	NULL	110	NULL
-NULL	NULL	148	NULL
-NULL	NULL	148	NULL
-NULL	10	NULL	NULL
-NULL	10	NULL	NULL
-NULL	10	10	NULL
-NULL	10	48	NULL
-NULL	10	110	NULL
-NULL	10	148	NULL
-NULL	35	NULL	NULL
-NULL	35	NULL	NULL
-NULL	35	10	NULL
-NULL	35	48	NULL
-NULL	35	110	NULL
-NULL	35	148	NULL
-NULL	110	NULL	NULL
-NULL	110	NULL	NULL
-NULL	110	10	NULL
-NULL	110	48	NULL
-NULL	110	110	NULL
-NULL	110	148	NULL
-NULL	135	NULL	NULL
-NULL	135	NULL	NULL
-NULL	135	10	NULL
-NULL	135	48	NULL
-NULL	135	110	NULL
-NULL	135	148	NULL
-10	NULL	NULL	10
-100	100	100	100
-110	NULL	NULL	110
-200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+NULL	NULL	NULL	35
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	NULL	48	NULL
-NULL	NULL	110	NULL
-NULL	NULL	110	NULL
-NULL	NULL	148	NULL
-NULL	NULL	148	NULL
-NULL	10	NULL	10
-NULL	35	NULL	35
-NULL	110	NULL	110
-NULL	135	NULL	135
-10	NULL	NULL	NULL
-10	NULL	NULL	NULL
 10	NULL	10	NULL
-10	NULL	48	NULL
 10	NULL	110	NULL
 10	NULL	148	NULL
-48	NULL	NULL	NULL
-48	NULL	NULL	NULL
-48	NULL	10	NULL
-48	NULL	48	NULL
-48	NULL	110	NULL
-48	NULL	148	NULL
+10	NULL	48	NULL
+10	NULL	NULL	NULL
+10	NULL	NULL	NULL
 100	100	100	100
-110	NULL	NULL	NULL
-110	NULL	NULL	NULL
 110	NULL	10	NULL
-110	NULL	48	NULL
 110	NULL	110	NULL
 110	NULL	148	NULL
-148	NULL	NULL	NULL
-148	NULL	NULL	NULL
+110	NULL	48	NULL
+110	NULL	NULL	NULL
+110	NULL	NULL	NULL
 148	NULL	10	NULL
-148	NULL	48	NULL
 148	NULL	110	NULL
 148	NULL	148	NULL
+148	NULL	48	NULL
+148	NULL	NULL	NULL
+148	NULL	NULL	NULL
 200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+48	NULL	10	NULL
+48	NULL	110	NULL
+48	NULL	148	NULL
+48	NULL	48	NULL
+48	NULL	NULL	NULL
+48	NULL	NULL	NULL
+NULL	10	NULL	10
+NULL	110	NULL	110
+NULL	135	NULL	135
+NULL	35	NULL	35
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value <=> b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value <=> b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	NULL	48	NULL
-NULL	NULL	110	NULL
-NULL	NULL	110	NULL
-NULL	NULL	148	NULL
-NULL	NULL	148	NULL
-NULL	10	NULL	10
-NULL	35	NULL	35
-NULL	110	NULL	110
-NULL	135	NULL	135
-10	NULL	NULL	NULL
-10	NULL	NULL	NULL
 10	NULL	10	NULL
-10	NULL	48	NULL
 10	NULL	110	NULL
 10	NULL	148	NULL
-48	NULL	NULL	NULL
-48	NULL	NULL	NULL
-48	NULL	10	NULL
-48	NULL	48	NULL
-48	NULL	110	NULL
-48	NULL	148	NULL
+10	NULL	48	NULL
+10	NULL	NULL	NULL
+10	NULL	NULL	NULL
 100	100	100	100
-110	NULL	NULL	NULL
-110	NULL	NULL	NULL
 110	NULL	10	NULL
-110	NULL	48	NULL
 110	NULL	110	NULL
 110	NULL	148	NULL
-148	NULL	NULL	NULL
-148	NULL	NULL	NULL
+110	NULL	48	NULL
+110	NULL	NULL	NULL
+110	NULL	NULL	NULL
 148	NULL	10	NULL
-148	NULL	48	NULL
 148	NULL	110	NULL
 148	NULL	148	NULL
+148	NULL	48	NULL
+148	NULL	NULL	NULL
+148	NULL	NULL	NULL
 200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+48	NULL	10	NULL
+48	NULL	110	NULL
+48	NULL	148	NULL
+48	NULL	48	NULL
+48	NULL	NULL	NULL
+48	NULL	NULL	NULL
+NULL	10	NULL	10
+NULL	110	NULL	110
+NULL	135	NULL	135
+NULL	35	NULL	35
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	NULL	48	NULL
-NULL	NULL	110	NULL
-NULL	NULL	110	NULL
-NULL	NULL	148	NULL
-NULL	NULL	148	NULL
-NULL	10	NULL	10
-NULL	35	NULL	35
-NULL	110	NULL	110
-NULL	135	NULL	135
-10	NULL	NULL	NULL
-10	NULL	NULL	NULL
 10	NULL	10	NULL
-10	NULL	48	NULL
 10	NULL	110	NULL
 10	NULL	148	NULL
-48	NULL	NULL	NULL
-48	NULL	NULL	NULL
-48	NULL	10	NULL
-48	NULL	48	NULL
-48	NULL	110	NULL
-48	NULL	148	NULL
+10	NULL	48	NULL
+10	NULL	NULL	NULL
+10	NULL	NULL	NULL
 100	100	100	100
-110	NULL	NULL	NULL
-110	NULL	NULL	NULL
 110	NULL	10	NULL
-110	NULL	48	NULL
 110	NULL	110	NULL
 110	NULL	148	NULL
-148	NULL	NULL	NULL
-148	NULL	NULL	NULL
+110	NULL	48	NULL
+110	NULL	NULL	NULL
+110	NULL	NULL	NULL
 148	NULL	10	NULL
-148	NULL	48	NULL
 148	NULL	110	NULL
 148	NULL	148	NULL
+148	NULL	48	NULL
+148	NULL	NULL	NULL
+148	NULL	NULL	NULL
 200	200	200	200
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+48	NULL	10	NULL
+48	NULL	110	NULL
+48	NULL	148	NULL
+48	NULL	48	NULL
+48	NULL	NULL	NULL
+48	NULL	NULL	NULL
+NULL	10	NULL	10
+NULL	110	NULL	110
+NULL	135	NULL	135
+NULL	35	NULL	35
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value <=> b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value <=> b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	NULL	48	NULL
-NULL	NULL	110	NULL
-NULL	NULL	110	NULL
-NULL	NULL	148	NULL
-NULL	NULL	148	NULL
-NULL	10	NULL	10
-NULL	35	NULL	35
-NULL	110	NULL	110
-NULL	135	NULL	135
-10	NULL	NULL	NULL
-10	NULL	NULL	NULL
 10	NULL	10	NULL
-10	NULL	48	NULL
 10	NULL	110	NULL
 10	NULL	148	NULL
-48	NULL	NULL	NULL
-48	NULL	NULL	NULL
-48	NULL	10	NULL
-48	NULL	48	NULL
-48	NULL	110	NULL
-48	NULL	148	NULL
+10	NULL	48	NULL
+10	NULL	NULL	NULL
+10	NULL	NULL	NULL
 100	100	100	100
-110	NULL	NULL	NULL
-110	NULL	NULL	NULL
 110	NULL	10	NULL
-110	NULL	48	NULL
 110	NULL	110	NULL
 110	NULL	148	NULL
-148	NULL	NULL	NULL
-148	NULL	NULL	NULL
+110	NULL	48	NULL
+110	NULL	NULL	NULL
+110	NULL	NULL	NULL
 148	NULL	10	NULL
-148	NULL	48	NULL
 148	NULL	110	NULL
 148	NULL	148	NULL
+148	NULL	48	NULL
+148	NULL	NULL	NULL
+148	NULL	NULL	NULL
 200	200	200	200
+48	NULL	10	NULL
+48	NULL	110	NULL
+48	NULL	148	NULL
+48	NULL	48	NULL
+48	NULL	NULL	NULL
+48	NULL	NULL	NULL
+NULL	10	NULL	10
+NULL	110	NULL	110
+NULL	135	NULL	135
+NULL	35	NULL	35
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
 PREHOOK: query: --HIVE-3315 join predicate transitive
 explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL
 PREHOOK: type: QUERY
@@ -1379,20 +1283,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL order by a.value ASC, b.key ASC
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL order by a.value ASC, b.key ASC
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
-NULL	NULL	10	NULL
-NULL	NULL	48	NULL
-NULL	10	NULL	NULL
 NULL	10	10	NULL
 NULL	10	48	NULL
-NULL	35	NULL	NULL
+NULL	10	NULL	NULL
 NULL	35	10	NULL
 NULL	35	48	NULL
+NULL	35	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL

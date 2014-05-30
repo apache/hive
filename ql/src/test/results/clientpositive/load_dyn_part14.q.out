@@ -1,14 +1,18 @@
 PREHOOK: query: -- EXCLUDE_OS_WINDOWS
 -- excluded on windows because of difference in file name encoding logic
 
-create table if not exists nzhang_part14 (key string) 
+-- SORT_QUERY_RESULTS
+
+create table if not exists nzhang_part14 (key string)
   partitioned by (value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 POSTHOOK: query: -- EXCLUDE_OS_WINDOWS
 -- excluded on windows because of difference in file name encoding logic
 
-create table if not exists nzhang_part14 (key string) 
+-- SORT_QUERY_RESULTS
+
+create table if not exists nzhang_part14 (key string)
   partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -250,14 +254,12 @@ POSTHOOK: Input: default@nzhang_part14
 value= 
 value=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: select * from nzhang_part14 where value <> 'a'
-order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part14
 PREHOOK: Input: default@nzhang_part14@value= 
 PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part14 where value <> 'a'
-order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part14
 POSTHOOK: Input: default@nzhang_part14@value= 

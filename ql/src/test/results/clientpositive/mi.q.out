@@ -1,7 +1,11 @@
-PREHOOK: query: create table nzhang_t1 like srcpart
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table nzhang_t1 like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: create table nzhang_t1 like srcpart
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table nzhang_t1 like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_t1
@@ -58,12 +62,12 @@ POSTHOOK: query: show partitions nzhang_t2
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@nzhang_t2
 ds=2008-04-08/hr=12
-PREHOOK: query: select * from nzhang_t1 order by key, value
+PREHOOK: query: select * from nzhang_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_t1
 PREHOOK: Input: default@nzhang_t1@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from nzhang_t1 order by key, value
+POSTHOOK: query: select * from nzhang_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_t1
 POSTHOOK: Input: default@nzhang_t1@ds=2008-04-08/hr=11
@@ -568,12 +572,12 @@ POSTHOOK: Input: default@nzhang_t1@ds=2008-04-08/hr=11
 97	val_97	2008-04-08	11
 98	val_98	2008-04-08	11
 98	val_98	2008-04-08	11
-PREHOOK: query: select * from nzhang_t2 order by key, value
+PREHOOK: query: select * from nzhang_t2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_t2
 PREHOOK: Input: default@nzhang_t2@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from nzhang_t2 order by key, value
+POSTHOOK: query: select * from nzhang_t2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_t2
 POSTHOOK: Input: default@nzhang_t2@ds=2008-04-08/hr=12

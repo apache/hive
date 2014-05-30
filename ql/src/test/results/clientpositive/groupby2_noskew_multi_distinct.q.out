@@ -1,7 +1,11 @@
-PREHOOK: query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g2
@@ -83,11 +87,11 @@ POSTHOOK: Lineage: dest_g2.c2 EXPRESSION [(src)src.FieldSchema(name:key, type:st
 POSTHOOK: Lineage: dest_g2.c3 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest_g2.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_g2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT dest_g2.* FROM dest_g2 ORDER BY key
+PREHOOK: query: SELECT dest_g2.* FROM dest_g2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest_g2.* FROM dest_g2 ORDER BY key
+POSTHOOK: query: SELECT dest_g2.* FROM dest_g2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_g2
 #### A masked pattern was here ####

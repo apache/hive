@@ -1,8 +1,12 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE T1(key STRING, val STRING)
 CLUSTERED BY (key, val) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE T1(key STRING, val STRING)
 CLUSTERED BY (key, val) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -120,11 +124,11 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl1 ORDER BY key
+PREHOOK: query: SELECT * FROM outputTbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl1 ORDER BY key
+POSTHOOK: query: SELECT * FROM outputTbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
@@ -226,11 +230,11 @@ POSTHOOK: Output: default@outputtbl2
 POSTHOOK: Lineage: outputtbl2.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl2.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl2 ORDER BY key, val
+PREHOOK: query: SELECT * FROM outputTbl2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl2 ORDER BY key, val
+POSTHOOK: query: SELECT * FROM outputTbl2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl2
 #### A masked pattern was here ####
