@@ -1,4 +1,5 @@
 PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
+-- SORT_QUERY_RESULTS
 
 -- List bucketing query logic test case. 
 -- Test condition: 
@@ -16,6 +17,7 @@ CREATE TABLE fact_daily(x int) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
+-- SORT_QUERY_RESULTS
 
 -- List bucketing query logic test case. 
 -- Test condition: 
@@ -157,12 +159,12 @@ Skewed Values:      	[[484]]
 #### A masked pattern was here ####
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1' ORDER BY x
+PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1' ORDER BY x
+POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1

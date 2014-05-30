@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 -- verify that new fields in schema get propagated to table scans
 CREATE TABLE doctors_with_new_field 
 ROW FORMAT
@@ -38,5 +40,5 @@ DESCRIBE doctors_with_new_field;
 
 LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors_with_new_field;
 
-SELECT * FROM doctors_with_new_field ORDER BY first_name;
+SELECT * FROM doctors_with_new_field;
 

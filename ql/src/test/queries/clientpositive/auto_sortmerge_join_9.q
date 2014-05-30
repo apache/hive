@@ -2,6 +2,8 @@ set hive.enforce.bucketing = true;
 set hive.enforce.sorting = true;
 set hive.exec.reducers.max = 1;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 
@@ -27,21 +29,18 @@ select count(*) from (
 ) subq1;
 
 -- The join is being performed as part of sub-query. It should be converted to a sort-merge join
--- Add a order by at the end to make the results deterministic.
 explain
 select key, count(*) from 
 (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
-group by key
-order by key;
+group by key;
 
 select key, count(*) from 
 (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
-group by key
-order by key;
+group by key;
 
 -- The join is being performed as part of more than one sub-query. It should be converted to a sort-merge join
 explain
@@ -80,8 +79,7 @@ join
     select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
   ) subq2 group by key
 ) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1;
+on src1.key = src2.key;
 
 select src1.key, src1.cnt1, src2.cnt1 from
 (
@@ -97,8 +95,7 @@ join
     select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
   ) subq2 group by key
 ) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1;
+on src1.key = src2.key;
 
 -- The subquery itself is being joined. Since the sub-query only contains selects and filters, it should 
 -- be converted to a sort-merge join.
@@ -295,21 +292,18 @@ select count(*) from (
 ) subq1;
 
 -- The join is being performed as part of sub-query. It should be converted to a sort-merge join
--- Add a order by at the end to make the results deterministic.
 explain
 select key, count(*) from 
 (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
-group by key
-order by key;
+group by key;
 
 select key, count(*) from 
 (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
-group by key
-order by key;
+group by key;
 
 -- The join is being performed as part of more than one sub-query. It should be converted to a sort-merge join
 explain
@@ -348,8 +342,7 @@ join
     select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
   ) subq2 group by key
 ) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1;
+on src1.key = src2.key;
 
 select src1.key, src1.cnt1, src2.cnt1 from
 (
@@ -365,8 +358,7 @@ join
     select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
   ) subq2 group by key
 ) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1;
+on src1.key = src2.key;
 
 -- The subquery itself is being joined. Since the sub-query only contains selects and filters, it should 
 -- be converted to a sort-merge join.

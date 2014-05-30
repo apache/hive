@@ -1,6 +1,10 @@
-PREHOOK: query: DROP TABLE IF EXISTS table1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP TABLE IF EXISTS table1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS table1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP TABLE IF EXISTS table1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE IF EXISTS table2
 PREHOOK: type: DROPTABLE
@@ -188,20 +192,20 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@table2
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM table1 order by a, b
+PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM table1 order by a, b
+POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 #### A masked pattern was here ####
 86	val_86
-PREHOOK: query: SELECT * FROM table2 order by a, b
+PREHOOK: query: SELECT * FROM table2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM table2 order by a, b
+POSTHOOK: query: SELECT * FROM table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table2
 #### A masked pattern was here ####

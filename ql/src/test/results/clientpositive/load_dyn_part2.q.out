@@ -1,9 +1,13 @@
-PREHOOK: query: create table if not exists nzhang_part_bucket (key string, value string) 
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table if not exists nzhang_part_bucket (key string, value string) 
   partitioned by (ds string, hr string) 
   clustered by (key) into 10 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: create table if not exists nzhang_part_bucket (key string, value string) 
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table if not exists nzhang_part_bucket (key string, value string) 
   partitioned by (ds string, hr string) 
   clustered by (key) into 10 buckets
 POSTHOOK: type: CREATETABLE
@@ -111,12 +115,12 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@nzhang_part_bucket
 ds=2010-03-23/hr=11
 ds=2010-03-23/hr=12
-PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key
+PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part_bucket
 PREHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key
+POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part_bucket
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
@@ -1121,12 +1125,12 @@ POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
 98	val_98	2010-03-23	11
 98	val_98	2010-03-23	11
 98	val_98	2010-03-23	11
-PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key
+PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part_bucket
 PREHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key
+POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part_bucket
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=12

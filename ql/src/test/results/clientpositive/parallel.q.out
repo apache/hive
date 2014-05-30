@@ -1,7 +1,11 @@
-PREHOOK: query: create table if not exists src_a like src
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table if not exists src_a like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: create table if not exists src_a like src
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table if not exists src_a like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_a
@@ -159,11 +163,11 @@ POSTHOOK: Lineage: src_a.key SIMPLE [(src)src.FieldSchema(name:key, type:string,
 POSTHOOK: Lineage: src_a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_a order by key, value
+PREHOOK: query: select * from src_a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_a
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_a order by key, value
+POSTHOOK: query: select * from src_a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_a
 #### A masked pattern was here ####
@@ -476,11 +480,11 @@ POSTHOOK: Input: default@src_a
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: select * from src_b order by key, value
+PREHOOK: query: select * from src_b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_b
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_b order by key, value
+POSTHOOK: query: select * from src_b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_b
 #### A masked pattern was here ####
@@ -811,11 +815,11 @@ POSTHOOK: Lineage: src_a.key SIMPLE [(src)src.FieldSchema(name:key, type:string,
 POSTHOOK: Lineage: src_a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_a order by key, value
+PREHOOK: query: select * from src_a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_a
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_a order by key, value
+POSTHOOK: query: select * from src_a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_a
 #### A masked pattern was here ####
@@ -1128,11 +1132,11 @@ POSTHOOK: Input: default@src_a
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: select * from src_b order by key, value
+PREHOOK: query: select * from src_b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_b
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_b order by key, value
+POSTHOOK: query: select * from src_b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_b
 #### A masked pattern was here ####

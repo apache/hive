@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 drop table t1;
 drop table t2;
 
@@ -29,8 +31,8 @@ insert overwrite table t3
 insert overwrite table t4
   select value, count(1) group by value;
 
-select * from t3 order by key;
-select * from t4 order by value;
+select * from t3;
+select * from t4;
 
 create table t5(c1 string, cnt int);
 create table t6(c1 string, cnt int);
@@ -58,8 +60,8 @@ insert overwrite table t5
 insert overwrite table t6
   select c1, sum(cnt) group by c1;
 
-select * from t5 order by c1;
-select * from t6 order by c1;
+select * from t5;
+select * from t6;
 
 drop table t1;
 drop table t2;
@@ -93,5 +95,5 @@ insert overwrite table t7
 insert overwrite table t8
   select c1, count(1) group by c1;
 
-select * from t7 order by c1;
-select * from t8 order by c1;
+select * from t7;
+select * from t8;

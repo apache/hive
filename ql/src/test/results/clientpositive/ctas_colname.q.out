@@ -1,12 +1,14 @@
-PREHOOK: query: -- HIVE-4392, column aliases from expressionRR (GBY, etc.) are not valid name for table
--- use internal name as column name instead
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- HIVE-4392, column aliases from expressionRR (GBY, etc.) are not valid name for table
 
 -- group by
 explain
 create table summary as select *, sum(key), count(value) from src
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: -- HIVE-4392, column aliases from expressionRR (GBY, etc.) are not valid name for table
--- use internal name as column name instead
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- HIVE-4392, column aliases from expressionRR (GBY, etc.) are not valid name for table
 
 -- group by
 explain
@@ -119,11 +121,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from summary order by `_col0`, `_col1`, `_c1`, `_c2`
+PREHOOK: query: select * from summary
 PREHOOK: type: QUERY
 PREHOOK: Input: default@summary
 #### A masked pattern was here ####
-POSTHOOK: query: select * from summary order by `_col0`, `_col1`, `_c1`, `_c2`
+POSTHOOK: query: select * from summary
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@summary
 #### A masked pattern was here ####
@@ -234,11 +236,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from x4 order by key, value, rr
+PREHOOK: query: select * from x4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@x4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from x4 order by key, value, rr
+POSTHOOK: query: select * from x4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x4
 #### A masked pattern was here ####
@@ -396,33 +398,33 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from x5 order by key, value, lead1
+PREHOOK: query: select * from x5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@x5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from x5 order by key, value, lead1
+POSTHOOK: query: select * from x5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x5
 #### A masked pattern was here ####
+0	val_0	0
+0	val_0	0
 0	val_0	NULL
-0	val_0	0
-0	val_0	0
 10	val_10	NULL
-100	val_100	NULL
 100	val_100	100
-103	val_103	NULL
+100	val_100	NULL
 103	val_103	103
-104	val_104	NULL
+103	val_103	NULL
 104	val_104	104
+104	val_104	NULL
 105	val_105	NULL
 11	val_11	NULL
 111	val_111	NULL
-113	val_113	NULL
 113	val_113	113
+113	val_113	NULL
 114	val_114	NULL
 116	val_116	NULL
-118	val_118	NULL
 118	val_118	118
+118	val_118	NULL
 119	val_119	119
 PREHOOK: query: -- sub queries
 explain
@@ -537,11 +539,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from x6 order by `_col0`, `_c1`
+PREHOOK: query: select * from x6
 PREHOOK: type: QUERY
 PREHOOK: Input: default@x6
 #### A masked pattern was here ####
-POSTHOOK: query: select * from x6 order by `_col0`, `_c1`
+POSTHOOK: query: select * from x6
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x6
 #### A masked pattern was here ####
@@ -657,11 +659,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from x7 order by `_col0`
+PREHOOK: query: select * from x7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@x7
 #### A masked pattern was here ####
-POSTHOOK: query: select * from x7 order by `_col0`
+POSTHOOK: query: select * from x7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x7
 #### A masked pattern was here ####
@@ -1088,11 +1090,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from x8 order by `_col0`
+PREHOOK: query: select * from x8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@x8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from x8 order by `_col0`
+POSTHOOK: query: select * from x8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x8
 #### A masked pattern was here ####
@@ -1222,11 +1224,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from x9 order by key, `_c0`
+PREHOOK: query: select * from x9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@x9
 #### A masked pattern was here ####
-POSTHOOK: query: select * from x9 order by key, `_c0`
+POSTHOOK: query: select * from x9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x9
 #### A masked pattern was here ####

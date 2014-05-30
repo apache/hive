@@ -1,6 +1,10 @@
-PREHOOK: query: DROP TABLE orc_create
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orc_create
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP TABLE orc_create
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE orc_create_complex
 PREHOOK: type: DROPTABLE
@@ -407,9 +411,9 @@ POSTHOOK: query: SELECT strct from orc_create_complex
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
+{"a":"five","b":"six"}
 {"a":"one","b":"two"}
 {"a":"three","b":"four"}
-{"a":"five","b":"six"}
 PREHOOK: query: CREATE TABLE orc_create_people_staging (
   id int,
   first_name string,
@@ -650,7 +654,6 @@ POSTHOOK: Input: default@orc_create_people@state=Ca
 PREHOOK: query: -- test predicate push down with no column projection
 SELECT id, first_name, last_name, address
   FROM orc_create_people WHERE id > 90
-  ORDER BY id, first_name, last_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people
 PREHOOK: Input: default@orc_create_people@state=Ca
@@ -659,12 +662,12 @@ PREHOOK: Input: default@orc_create_people@state=Or
 POSTHOOK: query: -- test predicate push down with no column projection
 SELECT id, first_name, last_name, address
   FROM orc_create_people WHERE id > 90
-  ORDER BY id, first_name, last_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Input: default@orc_create_people@state=Ca
 POSTHOOK: Input: default@orc_create_people@state=Or
 #### A masked pattern was here ####
+100	Wang	Mitchell	4023 Lacinia. Ave
 91	Genevieve	Wilkins	908 Turpis. Street
 92	Thane	Oneil	6766 Lectus St.
 93	Mariko	Cline	P.O. Box 329, 5375 Ac St.
@@ -674,7 +677,6 @@ POSTHOOK: Input: default@orc_create_people@state=Or
 97	Dana	Carter	814-601 Purus. Av.
 98	Juliet	Battle	Ap #535-1965 Cursus St.
 99	Wynter	Vincent	626-8492 Mollis Avenue
-100	Wang	Mitchell	4023 Lacinia. Ave
 PREHOOK: query: DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create

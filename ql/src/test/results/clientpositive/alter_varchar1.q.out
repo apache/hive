@@ -1,6 +1,10 @@
-PREHOOK: query: drop table alter_varchar_1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table alter_varchar_1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table alter_varchar_1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table alter_varchar_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table alter_varchar_1 (key string, value string)
 PREHOOK: type: CREATETABLE
@@ -21,11 +25,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@alter_varchar_1
 POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from alter_varchar_1 order by key
+PREHOOK: query: select * from alter_varchar_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alter_varchar_1 order by key
+POSTHOOK: query: select * from alter_varchar_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
@@ -45,12 +49,12 @@ POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_varchar_1
 POSTHOOK: Output: default@alter_varchar_1
 PREHOOK: query: -- contents should still look the same
-select * from alter_varchar_1 order by key
+select * from alter_varchar_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
 POSTHOOK: query: -- contents should still look the same
-select * from alter_varchar_1 order by key
+select * from alter_varchar_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
@@ -70,12 +74,12 @@ POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_varchar_1
 POSTHOOK: Output: default@alter_varchar_1
 PREHOOK: query: -- value column should be truncated now
-select * from alter_varchar_1 order by key
+select * from alter_varchar_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
 POSTHOOK: query: -- value column should be truncated now
-select * from alter_varchar_1 order by key
+select * from alter_varchar_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
@@ -95,12 +99,12 @@ POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_varchar_1
 POSTHOOK: Output: default@alter_varchar_1
 PREHOOK: query: -- column values should be full size again
-select * from alter_varchar_1 order by key
+select * from alter_varchar_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
 POSTHOOK: query: -- column values should be full size again
-select * from alter_varchar_1 order by key
+select * from alter_varchar_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
@@ -119,11 +123,11 @@ alter table alter_varchar_1 add columns (key2 int, value2 varchar(10))
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@alter_varchar_1
 POSTHOOK: Output: default@alter_varchar_1
-PREHOOK: query: select * from alter_varchar_1 order by key
+PREHOOK: query: select * from alter_varchar_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alter_varchar_1 order by key
+POSTHOOK: query: select * from alter_varchar_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
@@ -146,11 +150,11 @@ POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, ty
 POSTHOOK: Lineage: alter_varchar_1.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from alter_varchar_1 order by key
+PREHOOK: query: select * from alter_varchar_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alter_varchar_1 order by key
+POSTHOOK: query: select * from alter_varchar_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####

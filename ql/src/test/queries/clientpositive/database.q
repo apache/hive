@@ -1,5 +1,7 @@
 set hive.support.concurrency = true;
 
+-- SORT_QUERY_RESULTS
+
 SHOW DATABASES;
 
 -- CREATE with comment
@@ -191,7 +193,7 @@ SELECT * FROM (
   SELECT value FROM db1.conflict_name
 UNION ALL
   SELECT value FROM db2.conflict_name
-) subq ORDER BY value;
+) subq;
 
 -- TABLESAMPLES
 CREATE TABLE bucketized_src (key INT, value STRING)

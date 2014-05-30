@@ -23,7 +23,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.io.FetchConverter;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -38,6 +40,12 @@ public class PreExecutePrinter implements ExecuteWithHookContext {
   public void run(HookContext hookContext) throws Exception {
     assert(hookContext.getHookType() == HookType.PRE_EXEC_HOOK);
     SessionState ss = SessionState.get();
+    if (ss != null && ss.out instanceof FetchConverter) {
+      boolean foundQuery = ss.getHiveOperation() == HiveOperation.QUERY &&
+              !hookContext.getQueryPlan().isForExplain();
+      ((FetchConverter)ss.out).foundQuery(foundQuery);
+    }
+
     Set<ReadEntity> inputs = hookContext.getInputs();
     Set<WriteEntity> outputs = hookContext.getOutputs();
     UserGroupInformation ugi = hookContext.getUgi();

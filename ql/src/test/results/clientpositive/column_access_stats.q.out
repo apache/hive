@@ -1,4 +1,5 @@
-PREHOOK: query: -- This test is used for testing the ColumnAccessAnalyzer
+PREHOOK: query: -- SORT_QUERY_RESULTS
+-- This test is used for testing the ColumnAccessAnalyzer
 
 CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -17,7 +18,7 @@ PREHOOK: query: CREATE TABLE T4(key STRING, val STRING) PARTITIONED BY (p STRING
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: query: -- Simple select queries
-SELECT key FROM T1 ORDER BY key
+SELECT key FROM T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -30,7 +31,7 @@ Columns:key
 7
 8
 8
-PREHOOK: query: SELECT key, val FROM T1 ORDER BY key, val
+PREHOOK: query: SELECT key, val FROM T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -75,7 +76,7 @@ Table:default@t4
 Columns:p,val
 
 PREHOOK: query: -- More complicated select queries
-EXPLAIN SELECT key FROM (SELECT key, val FROM T1) subq1 ORDER BY key
+EXPLAIN SELECT key FROM (SELECT key, val FROM T1) subq1
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -92,21 +93,13 @@ STAGE PLANS:
               expressions: key (type: string)
               outputColumnNames: _col0
               Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: string)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-                value expressions: _col0 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -114,7 +107,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key FROM (SELECT key, val FROM T1) subq1 ORDER BY key
+PREHOOK: query: SELECT key FROM (SELECT key, val FROM T1) subq1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -127,7 +120,7 @@ Columns:key
 7
 8
 8
-PREHOOK: query: EXPLAIN SELECT k FROM (SELECT key as k, val as v FROM T1) subq1 ORDER BY k
+PREHOOK: query: EXPLAIN SELECT k FROM (SELECT key as k, val as v FROM T1) subq1
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -144,21 +137,13 @@ STAGE PLANS:
               expressions: key (type: string)
               outputColumnNames: _col0
               Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: string)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-                value expressions: _col0 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -166,7 +151,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT k FROM (SELECT key as k, val as v FROM T1) subq1 ORDER BY k
+PREHOOK: query: SELECT k FROM (SELECT key as k, val as v FROM T1) subq1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -179,7 +164,7 @@ Columns:key
 7
 8
 8
-PREHOOK: query: SELECT key + 1 as k FROM T1 ORDER BY k
+PREHOOK: query: SELECT key + 1 as k FROM T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -192,7 +177,7 @@ Columns:key
 8.0
 9.0
 9.0
-PREHOOK: query: SELECT key + val as k FROM T1 ORDER BY k
+PREHOOK: query: SELECT key + val as k FROM T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -211,7 +196,7 @@ SELECT * FROM (
 SELECT key as c FROM T1
  UNION ALL
 SELECT val as c FROM T1
-) subq1 ORDER BY c
+) subq1
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -234,11 +219,13 @@ STAGE PLANS:
                   expressions: _col0 (type: string)
                   outputColumnNames: _col0
                   Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-                    value expressions: _col0 (type: string)
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: t1
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
@@ -252,21 +239,13 @@ STAGE PLANS:
                   expressions: _col0 (type: string)
                   outputColumnNames: _col0
                   Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-                    value expressions: _col0 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -278,7 +257,7 @@ PREHOOK: query: SELECT * FROM (
 SELECT key as c FROM T1
  UNION ALL
 SELECT val as c FROM T1
-) subq1 ORDER BY c
+) subq1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -302,7 +281,7 @@ SELECT * FROM (
 SELECT key as c FROM T1
  UNION ALL
 SELECT key as c FROM T1
-) subq1 ORDER BY c
+) subq1
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -325,11 +304,13 @@ STAGE PLANS:
                   expressions: _col0 (type: string)
                   outputColumnNames: _col0
                   Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-                    value expressions: _col0 (type: string)
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: t1
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
@@ -343,21 +324,13 @@ STAGE PLANS:
                   expressions: _col0 (type: string)
                   outputColumnNames: _col0
                   Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-                    value expressions: _col0 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 60 Basic stats: PARTIAL Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -369,7 +342,7 @@ PREHOOK: query: SELECT * FROM (
 SELECT key as c FROM T1
  UNION ALL
 SELECT key as c FROM T1
-) subq1 ORDER BY c
+) subq1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -403,7 +376,6 @@ PREHOOK: query: -- Simple joins
 SELECT *
 FROM T1 JOIN T2
 ON T1.key = T2.key
-ORDER BY T1.key, T1.val, T2.key, T2.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -424,12 +396,10 @@ PREHOOK: query: EXPLAIN
 SELECT T1.key
 FROM T1 JOIN T2
 ON T1.key = T2.key
-ORDER BY T1.key
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -467,30 +437,11 @@ STAGE PLANS:
             Statistics: Num rows: 5 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
               Statistics: Num rows: 5 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 5 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 5 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -501,7 +452,6 @@ STAGE PLANS:
 PREHOOK: query: SELECT T1.key
 FROM T1 JOIN T2
 ON T1.key = T2.key
-ORDER BY T1.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -521,7 +471,6 @@ Columns:key
 PREHOOK: query: SELECT *
 FROM T1 JOIN T2
 ON T1.key = T2.key AND T1.val = T2.val
-ORDER BY T1.key, T1.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -536,7 +485,6 @@ PREHOOK: query: -- Map join
 SELECT /*+ MAPJOIN(a) */ * 
 FROM T1 a JOIN T2 b 
 ON a.key = b.key
-ORDER BY a.key, a.val, b.key, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -558,12 +506,10 @@ EXPLAIN
 SELECT *
 FROM T1 JOIN T2
 ON T1.key = T2.key AND T1.val = 3 and T2.val = 3
-ORDER BY T1.key, T1.val
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -608,30 +554,11 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string)
-              sort order: ++
               Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -642,7 +569,6 @@ STAGE PLANS:
 PREHOOK: query: SELECT *
 FROM T1 JOIN T2
 ON T1.key = T2.key AND T1.val = 3 and T2.val = 3
-ORDER BY T1.key, T1.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -664,12 +590,10 @@ JOIN
   SELECT val FROM T2 WHERE key = 6
 ) subq2 
 ON subq1.val = subq2.val
-ORDER BY subq1.val
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -721,30 +645,11 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
               Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -762,7 +667,6 @@ JOIN
   SELECT val FROM T2 WHERE key = 6
 ) subq2 
 ON subq1.val = subq2.val
-ORDER BY subq1.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -791,16 +695,14 @@ FROM
 ) T4
 JOIN T3
 ON T3.key = T4.key
-ORDER BY T3.key, T4.key
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -882,30 +784,11 @@ STAGE PLANS:
             Statistics: Num rows: 5 Data size: 17 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col1 (type: string), _col0 (type: string)
-              sort order: ++
               Statistics: Num rows: 5 Data size: 17 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 5 Data size: 17 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 5 Data size: 17 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -929,7 +812,6 @@ FROM
 ) T4
 JOIN T3
 ON T3.key = T4.key
-ORDER BY T3.key, T4.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -962,16 +844,16 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 Table:default@srcpart
 Columns:ds,hr,key,value
 
-238	val_238	2008-04-08	11
-86	val_86	2008-04-08	11
-311	val_311	2008-04-08	11
-27	val_27	2008-04-08	11
 165	val_165	2008-04-08	11
-409	val_409	2008-04-08	11
+238	val_238	2008-04-08	11
 255	val_255	2008-04-08	11
+27	val_27	2008-04-08	11
 278	val_278	2008-04-08	11
-98	val_98	2008-04-08	11
+311	val_311	2008-04-08	11
+409	val_409	2008-04-08	11
 484	val_484	2008-04-08	11
+86	val_86	2008-04-08	11
+98	val_98	2008-04-08	11
 PREHOOK: query: SELECT key,ds FROM srcpart TABLESAMPLE (10 ROWS) WHERE hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -981,16 +863,16 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 Table:default@srcpart
 Columns:ds,hr,key
 
-238	2008-04-08
-86	2008-04-08
-311	2008-04-08
-27	2008-04-08
 165	2008-04-08
-409	2008-04-08
+238	2008-04-08
 255	2008-04-08
+27	2008-04-08
 278	2008-04-08
-98	2008-04-08
+311	2008-04-08
+409	2008-04-08
 484	2008-04-08
+86	2008-04-08
+98	2008-04-08
 PREHOOK: query: SELECT value FROM srcpart TABLESAMPLE (10 ROWS) WHERE ds='2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -1000,13 +882,13 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 Table:default@srcpart
 Columns:ds,value
 
-val_238
-val_86
-val_311
-val_27
 val_165
-val_409
+val_238
 val_255
+val_27
 val_278
-val_98
+val_311
+val_409
 val_484
+val_86
+val_98

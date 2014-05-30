@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string);
 create table dst_union22_delta(k0 string, k1 string, k2 string, k3 string, k4 string, k5 string) partitioned by (ds string);
 
@@ -40,4 +42,4 @@ where a.k1 > 20
 )
 subq;
 
-select * from dst_union22 where ds = '2' order by k1, k2, k3, k4;
+select * from dst_union22 where ds = '2';

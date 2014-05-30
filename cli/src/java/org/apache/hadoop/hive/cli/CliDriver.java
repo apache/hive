@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
+import org.apache.hadoop.hive.common.io.FetchConverter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
@@ -283,6 +284,9 @@ public class CliDriver {
             // print the results
             int counter = 0;
             try {
+              if (out instanceof FetchConverter) {
+                ((FetchConverter)out).fetchStarted();
+              }
               while (qp.getResults(res)) {
                 for (String r : res) {
                   out.println(r);
@@ -303,6 +307,10 @@ public class CliDriver {
             int cret = qp.close();
             if (ret == 0) {
               ret = cret;
+            }
+
+            if (out instanceof FetchConverter) {
+              ((FetchConverter)out).fetchFinished();
             }
 
             console.printInfo("Time taken: " + timeTaken + " seconds" +

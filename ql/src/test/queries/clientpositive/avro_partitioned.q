@@ -1,3 +1,4 @@
+-- SORT_QUERY_RESULTS
 -- Verify that table scans work with partitioned Avro tables
 CREATE TABLE episodes
 ROW FORMAT
@@ -63,7 +64,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 SET hive.exec.dynamic.partition.mode=nonstrict;
 INSERT OVERWRITE TABLE episodes_partitioned PARTITION (doctor_pt) SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes;
 
-SELECT * FROM episodes_partitioned WHERE doctor_pt > 6 ORDER BY air_date;
+SELECT * FROM episodes_partitioned WHERE doctor_pt > 6;
 
 -- Verify that Fetch works in addition to Map
 SELECT * FROM episodes_partitioned ORDER BY air_date LIMIT 5;
@@ -142,4 +143,4 @@ WITH SERDEPROPERTIES ('avro.schema.literal'='{
 }');
 
 -- Try selecting from the evolved table
-SELECT * FROM episodes_partitioned_serdeproperties ORDER BY air_date;
+SELECT * FROM episodes_partitioned_serdeproperties;

@@ -1,4 +1,4 @@
-
+-- SORT_QUERY_RESULTS
 
 create table src_multi1 like src;
 create table src_multi2 like src;
@@ -15,8 +15,8 @@ from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20;
 
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
+select * from src_multi1;
+select * from src_multi2;
 
 
 set hive.merge.mapfiles=true;
@@ -31,8 +31,8 @@ from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20;
 
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
+select * from src_multi1;
+select * from src_multi2;
 
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=true;
@@ -46,8 +46,8 @@ from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20;
 
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
+select * from src_multi1;
+select * from src_multi2;
 
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
@@ -61,12 +61,43 @@ from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20;
 
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
+select * from src_multi1;
+select * from src_multi2;
 
 
 
 set hive.merge.mapfiles=false;
+set hive.merge.mapredfiles=false;
+
+explain
+from src
+insert overwrite table src_multi1 select * where key < 10 group by key, value
+insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value;
+
+from src
+insert overwrite table src_multi1 select * where key < 10 group by key, value
+insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value;
+
+select * from src_multi1;
+select * from src_multi2;
+
+
+set hive.merge.mapfiles=false;
+set hive.merge.mapredfiles=true;
+
+explain
+from src
+insert overwrite table src_multi1 select * where key < 10 group by key, value
+insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value;
+
+from src
+insert overwrite table src_multi1 select * where key < 10 group by key, value
+insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value;
+
+select * from src_multi1;
+select * from src_multi2;
+
+set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=false;
 
 explain
@@ -78,39 +109,8 @@ from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
 insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value;
 
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
-
-
-set hive.merge.mapfiles=false;
-set hive.merge.mapredfiles=true;
-
-explain
-from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value;
-
-from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value;
-
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
-
-set hive.merge.mapfiles=true;
-set hive.merge.mapredfiles=false;
-
-explain
-from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value;
-
-from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value;
-
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
+select * from src_multi1;
+select * from src_multi2;
 
 
 set hive.merge.mapfiles=true;
@@ -125,8 +125,8 @@ from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
 insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value;
 
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
+select * from src_multi1;
+select * from src_multi2;
 
 
 
@@ -143,8 +143,8 @@ from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20;
 
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
+select * from src_multi1;
+select * from src_multi2;
 
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=false;
@@ -158,8 +158,8 @@ from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20;
 
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
+select * from src_multi1;
+select * from src_multi2;
 
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=true;
@@ -173,8 +173,8 @@ from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20;
 
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
+select * from src_multi1;
+select * from src_multi2;
 
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
@@ -188,8 +188,8 @@ from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20;
 
-select * from src_multi1 order by key, value;
-select * from src_multi2 order by key, value;
+select * from src_multi1;
+select * from src_multi2;
 
 
 

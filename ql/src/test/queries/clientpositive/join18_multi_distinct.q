@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 EXPLAIN
  SELECT a.key, a.value, b.key, b.value1,  b.value2
  FROM 
@@ -10,7 +12,7 @@ EXPLAIN
   count(distinct(src2.key)) AS value2
   FROM src1 src2 group by src2.key
  ) b 
- ON (a.key = b.key) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value1 ASC, b.value2 ASC;
+ ON (a.key = b.key);
 
  SELECT a.key, a.value, b.key, b.value1,  b.value2
  FROM 
@@ -23,4 +25,4 @@ EXPLAIN
   count(distinct(src2.key)) AS value2
   FROM src1 src2 group by src2.key
  ) b 
- ON (a.key = b.key) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value1 ASC, b.value2 ASC;
+ ON (a.key = b.key);

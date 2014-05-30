@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 -- verify that we can actually read avro files
 CREATE TABLE doctors 
 ROW FORMAT
@@ -32,5 +34,5 @@ DESCRIBE doctors;
 
 LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors;
 
-SELECT * FROM doctors ORDER BY number;
+SELECT * FROM doctors;
 

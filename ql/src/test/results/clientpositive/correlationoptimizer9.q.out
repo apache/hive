@@ -1,7 +1,11 @@
-PREHOOK: query: CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING)
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING)
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp
@@ -25,7 +29,7 @@ FROM
 (SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
-ON (xx.key = yy.key) ORDER BY xx.key, yy.key, xx.cnt, yy.cnt
+ON (xx.key = yy.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, xx.cnt, yy.cnt
@@ -33,14 +37,13 @@ FROM
 (SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
-ON (xx.key = yy.key) ORDER BY xx.key, yy.key, xx.cnt, yy.cnt
+ON (xx.key = yy.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-4
-  Stage-3 depends on stages: Stage-2
-  Stage-4 is a root stage
-  Stage-0 depends on stages: Stage-3
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-3 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -118,32 +121,13 @@ STAGE PLANS:
             Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
+              Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
               table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint)
-              sort order: ++++
-              Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -197,7 +181,7 @@ FROM
 (SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
-ON (xx.key = yy.key) ORDER BY xx.key, yy.key, xx.cnt, yy.cnt
+ON (xx.key = yy.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp
 #### A masked pattern was here ####
@@ -206,7 +190,7 @@ FROM
 (SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
-ON (xx.key = yy.key) ORDER BY xx.key, yy.key, xx.cnt, yy.cnt
+ON (xx.key = yy.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp
 #### A masked pattern was here ####
@@ -226,7 +210,7 @@ FROM
 (SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
-ON (xx.key = yy.key) ORDER BY xx.key, yy.key, xx.cnt, yy.cnt
+ON (xx.key = yy.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: -- The merged table scan should be able to load both c1 and c2
 EXPLAIN
@@ -235,12 +219,11 @@ FROM
 (SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
-ON (xx.key = yy.key) ORDER BY xx.key, yy.key, xx.cnt, yy.cnt
+ON (xx.key = yy.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -319,10 +302,11 @@ STAGE PLANS:
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Group By Operator
             aggregations: count(VALUE._col0)
             keys: KEY._col0 (type: int)
@@ -349,30 +333,11 @@ STAGE PLANS:
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint)
-              sort order: ++++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -385,7 +350,7 @@ FROM
 (SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
-ON (xx.key = yy.key) ORDER BY xx.key, yy.key, xx.cnt, yy.cnt
+ON (xx.key = yy.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp
 #### A masked pattern was here ####
@@ -394,7 +359,7 @@ FROM
 (SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
-ON (xx.key = yy.key) ORDER BY xx.key, yy.key, xx.cnt, yy.cnt
+ON (xx.key = yy.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp
 #### A masked pattern was here ####
@@ -413,7 +378,7 @@ FROM
 (SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
-ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2) ORDER BY xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
+ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
@@ -421,14 +386,13 @@ FROM
 (SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
-ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2) ORDER BY xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
+ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-4
-  Stage-3 depends on stages: Stage-2
-  Stage-4 is a root stage
-  Stage-0 depends on stages: Stage-3
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-3 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -506,32 +470,13 @@ STAGE PLANS:
             Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
+              Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
               table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: bigint), _col5 (type: bigint)
-              sort order: ++++++
-              Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: bigint), _col5 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -585,7 +530,7 @@ FROM
 (SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
-ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2) ORDER BY xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
+ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp
 #### A masked pattern was here ####
@@ -594,7 +539,7 @@ FROM
 (SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
-ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2) ORDER BY xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
+ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp
 #### A masked pattern was here ####
@@ -613,7 +558,7 @@ FROM
 (SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
-ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2) ORDER BY xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
+ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
@@ -621,12 +566,11 @@ FROM
 (SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
-ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2) ORDER BY xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
+ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -705,10 +649,11 @@ STAGE PLANS:
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Group By Operator
             aggregations: count(VALUE._col0)
             keys: KEY._col0 (type: int), KEY._col1 (type: string)
@@ -735,30 +680,11 @@ STAGE PLANS:
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: bigint), _col5 (type: bigint)
-              sort order: ++++++
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: bigint), _col5 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -771,7 +697,7 @@ FROM
 (SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
-ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2) ORDER BY xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
+ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp
 #### A masked pattern was here ####
@@ -780,7 +706,7 @@ FROM
 (SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
-ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2) ORDER BY xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
+ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp
 #### A masked pattern was here ####

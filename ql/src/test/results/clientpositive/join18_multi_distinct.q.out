@@ -1,4 +1,6 @@
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
  SELECT a.key, a.value, b.key, b.value1,  b.value2
  FROM 
   (
@@ -10,9 +12,11 @@ PREHOOK: query: EXPLAIN
   count(distinct(src2.key)) AS value2
   FROM src1 src2 group by src2.key
  ) b 
- ON (a.key = b.key) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value1 ASC, b.value2 ASC
+ ON (a.key = b.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
  SELECT a.key, a.value, b.key, b.value1,  b.value2
  FROM 
   (
@@ -24,14 +28,13 @@ POSTHOOK: query: EXPLAIN
   count(distinct(src2.key)) AS value2
   FROM src1 src2 group by src2.key
  ) b 
- ON (a.key = b.key) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value1 ASC, b.value2 ASC
+ ON (a.key = b.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-4
-  Stage-3 depends on stages: Stage-2
-  Stage-4 is a root stage
-  Stage-0 depends on stages: Stage-3
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-3 is a root stage
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -106,32 +109,13 @@ STAGE PLANS:
             Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
+              Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
               table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint), _col4 (type: bigint)
-              sort order: +++++
-              Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint), _col4 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 15 Data size: 3085 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -188,7 +172,7 @@ PREHOOK: query: SELECT a.key, a.value, b.key, b.value1,  b.value2
   count(distinct(src2.key)) AS value2
   FROM src1 src2 group by src2.key
  ) b 
- ON (a.key = b.key) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value1 ASC, b.value2 ASC
+ ON (a.key = b.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -204,12 +188,11 @@ POSTHOOK: query: SELECT a.key, a.value, b.key, b.value1,  b.value2
   count(distinct(src2.key)) AS value2
   FROM src1 src2 group by src2.key
  ) b 
- ON (a.key = b.key) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value1 ASC, b.value2 ASC
+ ON (a.key = b.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-NULL	NULL		7	1
 0	3	NULL	NULL	NULL
 10	1	NULL	NULL	NULL
 100	2	NULL	NULL	NULL
@@ -519,3 +502,4 @@ NULL	NULL		7	1
 96	1	NULL	NULL	NULL
 97	2	NULL	NULL	NULL
 98	2	98	1	1
+NULL	NULL		7	1

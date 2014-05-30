@@ -1,7 +1,11 @@
-PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl1
@@ -164,11 +168,11 @@ POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comm
 POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from dest1 order by k1, k2
+PREHOOK: query: select * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest1 order by k1, k2
+POSTHOOK: query: select * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
@@ -194,11 +198,11 @@ POSTHOOK: Input: default@dest1
 5	5
 8	8
 9	9
-PREHOOK: query: select * from dest2 order by k1, k2
+PREHOOK: query: select * from dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest2 order by k1, k2
+POSTHOOK: query: select * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
@@ -342,11 +346,11 @@ POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comm
 POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from dest1 order by k1, k2
+PREHOOK: query: select * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest1 order by k1, k2
+POSTHOOK: query: select * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
@@ -372,11 +376,11 @@ POSTHOOK: Input: default@dest1
 5	5
 8	8
 9	9
-PREHOOK: query: select * from dest2 order by k1, k2
+PREHOOK: query: select * from dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest2 order by k1, k2
+POSTHOOK: query: select * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
@@ -520,11 +524,11 @@ POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comm
 POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from dest1 order by k1, k2
+PREHOOK: query: select * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest1 order by k1, k2
+POSTHOOK: query: select * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
@@ -550,11 +554,11 @@ POSTHOOK: Input: default@dest1
 5	5
 8	8
 9	9
-PREHOOK: query: select * from dest2 order by k1, k2
+PREHOOK: query: select * from dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest2 order by k1, k2
+POSTHOOK: query: select * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####

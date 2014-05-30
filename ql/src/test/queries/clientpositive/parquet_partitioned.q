@@ -1,6 +1,8 @@
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 
+-- SORT_QUERY_RESULTS
+
 DROP TABLE parquet_partitioned_staging;
 DROP TABLE parquet_partitioned;
 
@@ -26,9 +28,9 @@ SELECT * FROM parquet_partitioned_staging;
 INSERT OVERWRITE TABLE parquet_partitioned PARTITION (part) SELECT * FROM parquet_partitioned_staging;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-SELECT * FROM parquet_partitioned ORDER BY id, str;
+SELECT * FROM parquet_partitioned;
 SELECT part, COUNT(0) FROM parquet_partitioned GROUP BY part;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
-SELECT * FROM parquet_partitioned ORDER BY id, str;
+SELECT * FROM parquet_partitioned;
 SELECT part, COUNT(0) FROM parquet_partitioned GROUP BY part;

@@ -1,4 +1,5 @@
-PREHOOK: query: -- Verify that table scans work with partitioned Avro tables
+PREHOOK: query: -- SORT_QUERY_RESULTS
+-- Verify that table scans work with partitioned Avro tables
 CREATE TABLE episodes
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -29,7 +30,8 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: -- Verify that table scans work with partitioned Avro tables
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+-- Verify that table scans work with partitioned Avro tables
 CREATE TABLE episodes
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -167,20 +169,20 @@ POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=6).title SIMPLE [(ep
 POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=9).air_date SIMPLE [(episodes)episodes.FieldSchema(name:air_date, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=9).doctor SIMPLE [(episodes)episodes.FieldSchema(name:doctor, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=9).title SIMPLE [(episodes)episodes.FieldSchema(name:title, type:string, comment:from deserializer), ]
-PREHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt > 6 ORDER BY air_date
+PREHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt > 6
 PREHOOK: type: QUERY
 PREHOOK: Input: default@episodes_partitioned
 PREHOOK: Input: default@episodes_partitioned@doctor_pt=11
 PREHOOK: Input: default@episodes_partitioned@doctor_pt=9
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt > 6 ORDER BY air_date
+POSTHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt > 6
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@episodes_partitioned
 POSTHOOK: Input: default@episodes_partitioned@doctor_pt=11
 POSTHOOK: Input: default@episodes_partitioned@doctor_pt=9
 #### A masked pattern was here ####
-The Doctor's Wife	14 May 2011	11	11
 Rose	26 March 2005	9	9
+The Doctor's Wife	14 May 2011	11	11
 The Eleventh Hour	3 April 2010	11	11
 PREHOOK: query: -- Verify that Fetch works in addition to Map
 SELECT * FROM episodes_partitioned ORDER BY air_date LIMIT 5
@@ -206,11 +208,11 @@ POSTHOOK: Input: default@episodes_partitioned@doctor_pt=5
 POSTHOOK: Input: default@episodes_partitioned@doctor_pt=6
 POSTHOOK: Input: default@episodes_partitioned@doctor_pt=9
 #### A masked pattern was here ####
-The Doctor's Wife	14 May 2011	11	11
 An Unearthly Child	23 November 1963	1	1
-Rose	26 March 2005	9	9
-The Eleventh Hour	3 April 2010	11	11
 Horror of Fang Rock	3 September 1977	4	4
+Rose	26 March 2005	9	9
+The Doctor's Wife	14 May 2011	11	11
+The Eleventh Hour	3 April 2010	11	11
 PREHOOK: query: -- Fetch w/filter to specific partition
 SELECT * FROM episodes_partitioned WHERE doctor_pt = 6
 PREHOOK: type: QUERY
@@ -409,7 +411,7 @@ POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@episodes_partitioned_serdeproperties
 POSTHOOK: Output: default@episodes_partitioned_serdeproperties
 PREHOOK: query: -- Try selecting from the evolved table
-SELECT * FROM episodes_partitioned_serdeproperties ORDER BY air_date
+SELECT * FROM episodes_partitioned_serdeproperties
 PREHOOK: type: QUERY
 PREHOOK: Input: default@episodes_partitioned_serdeproperties
 PREHOOK: Input: default@episodes_partitioned_serdeproperties@doctor_pt=1
@@ -421,7 +423,7 @@ PREHOOK: Input: default@episodes_partitioned_serdeproperties@doctor_pt=6
 PREHOOK: Input: default@episodes_partitioned_serdeproperties@doctor_pt=9
 #### A masked pattern was here ####
 POSTHOOK: query: -- Try selecting from the evolved table
-SELECT * FROM episodes_partitioned_serdeproperties ORDER BY air_date
+SELECT * FROM episodes_partitioned_serdeproperties
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@episodes_partitioned_serdeproperties
 POSTHOOK: Input: default@episodes_partitioned_serdeproperties@doctor_pt=1
@@ -432,11 +434,11 @@ POSTHOOK: Input: default@episodes_partitioned_serdeproperties@doctor_pt=5
 POSTHOOK: Input: default@episodes_partitioned_serdeproperties@doctor_pt=6
 POSTHOOK: Input: default@episodes_partitioned_serdeproperties@doctor_pt=9
 #### A masked pattern was here ####
-[]	The Doctor's Wife	14 May 2011	11	11
 []	An Unearthly Child	23 November 1963	1	1
-[]	Rose	26 March 2005	9	9
-[]	The Eleventh Hour	3 April 2010	11	11
-[]	Horror of Fang Rock	3 September 1977	4	4
 []	Castrolava	4 January 1982	5	5
-[]	The Power of the Daleks	5 November 1966	2	2
+[]	Horror of Fang Rock	3 September 1977	4	4
+[]	Rose	26 March 2005	9	9
+[]	The Doctor's Wife	14 May 2011	11	11
+[]	The Eleventh Hour	3 April 2010	11	11
 []	The Mysterious Planet	6 September 1986	6	6
+[]	The Power of the Daleks	5 November 1966	2	2

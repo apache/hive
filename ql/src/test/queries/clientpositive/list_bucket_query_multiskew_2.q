@@ -4,6 +4,7 @@ set mapred.input.dir.recursive=true;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
+-- SORT_QUERY_RESULTS
 
 -- List bucketing query logic test case. We simulate the directory structure by DML here.
 -- Test condition: 
@@ -30,21 +31,21 @@ SELECT count(1) FROM fact_daily WHERE ds='1' and hr='4';
 
 -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value;
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484';
 -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value;
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484';
 
 -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key;
+explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406';
 -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key;
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406';
 
 -- pruner only pick up skewed-value directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value;
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'));
 -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value;
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'));
 
 -- clean up
 drop table fact_daily;

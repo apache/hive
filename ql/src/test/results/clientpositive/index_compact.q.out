@@ -1,6 +1,10 @@
-PREHOOK: query: DROP INDEX srcpart_index_proj on srcpart
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP INDEX srcpart_index_proj on srcpart
 PREHOOK: type: DROPINDEX
-POSTHOOK: query: DROP INDEX srcpart_index_proj on srcpart
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP INDEX srcpart_index_proj on srcpart
 POSTHOOK: type: DROPINDEX
 PREHOOK: query: EXPLAIN
 CREATE INDEX srcpart_index_proj ON TABLE srcpart(key) as 'COMPACT' WITH DEFERRED REBUILD
@@ -44,12 +48,12 @@ POSTHOOK: Output: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT x.* FROM default__srcpart_srcpart_index_proj__ x WHERE x.ds = '2008-04-08' and x.hr = 11 ORDER BY key
+PREHOOK: query: SELECT x.* FROM default__srcpart_srcpart_index_proj__ x WHERE x.ds = '2008-04-08' and x.hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM default__srcpart_srcpart_index_proj__ x WHERE x.ds = '2008-04-08' and x.hr = 11 ORDER BY key
+POSTHOOK: query: SELECT x.* FROM default__srcpart_srcpart_index_proj__ x WHERE x.ds = '2008-04-08' and x.hr = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
@@ -64,13 +68,13 @@ POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' ORDER BY key
+PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' ORDER BY key
+POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -89,24 +93,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
+PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
+POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 100	val_100
 100	val_100
-PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
+PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
+POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -189,7 +193,7 @@ POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 ORDER BY key
+PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -197,7 +201,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 ORDER BY key
+POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -213,7 +217,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 100	val_100
 100	val_100
 100	val_100
-PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 ORDER BY key
+PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -221,7 +225,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 ORDER BY key
+POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11

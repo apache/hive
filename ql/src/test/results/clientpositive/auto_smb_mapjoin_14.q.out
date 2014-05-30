@@ -1,7 +1,11 @@
-PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl1
@@ -258,7 +262,6 @@ join
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1
 PREHOOK: type: QUERY
 POSTHOOK: query: -- A join is being performed across different sub-queries, where a join is being performed in each of them.
 -- Each sub-query should be converted to a sort-merge join.
@@ -278,14 +281,12 @@ join
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-3 depends on stages: Stage-1, Stage-5
-  Stage-4 depends on stages: Stage-3
-  Stage-5 is a root stage
-  Stage-0 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-1, Stage-4
+  Stage-4 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -362,28 +363,11 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-4
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint)
-              sort order: +++
-              value expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint)
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -449,7 +433,6 @@ join
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
@@ -469,7 +452,6 @@ join
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
@@ -1573,11 +1555,11 @@ POSTHOOK: Lineage: dest1.value SIMPLE [(tbl1)a.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: dest2.key SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.val1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.val2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from dest1 order by key, value
+PREHOOK: query: select * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest1 order by key, value
+POSTHOOK: query: select * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
@@ -1603,11 +1585,11 @@ POSTHOOK: Input: default@dest1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from dest2 order by key, val1, val2
+PREHOOK: query: select * from dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest2 order by key, val1, val2
+POSTHOOK: query: select * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
@@ -1827,11 +1809,11 @@ POSTHOOK: Lineage: dest1.key SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, com
 POSTHOOK: Lineage: dest1.value SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.cnt EXPRESSION [(tbl1)a.null, (tbl2)b.null, ]
 POSTHOOK: Lineage: dest2.key SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: select * from dest1 order by key, value
+PREHOOK: query: select * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest1 order by key, value
+POSTHOOK: query: select * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
@@ -1857,11 +1839,11 @@ POSTHOOK: Input: default@dest1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from dest2 order by key
+PREHOOK: query: select * from dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest2 order by key
+POSTHOOK: query: select * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####

@@ -1,5 +1,7 @@
 set hive.exec.dynamic.partition.mode=nonstrict;
 
+-- SORT_AND_HASH_QUERY_RESULTS
+
 create table partint(key string, value string) partitioned by (ds string, hr int);
 insert overwrite table partint partition(ds, hr) select * from srcpart where ds = '2008-04-08';
 

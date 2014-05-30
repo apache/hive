@@ -1,9 +1,11 @@
 set hive.stats.dbclass=counter;
 set hive.stats.autogather=true;
 
+-- SORT_QUERY_RESULTS
+
 -- try the query without indexing, with manual indexing, and with automatic indexing
 -- without indexing
-SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key;
+SELECT key, value FROM src WHERE key=0 AND value = "val_0";
 
 -- create indices
 EXPLAIN
@@ -16,8 +18,8 @@ CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD;
 CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD;
 ALTER INDEX src1_index ON src REBUILD;
 ALTER INDEX src2_index ON src REBUILD;
-SELECT * FROM default__src_src1_index__ ORDER BY key;
-SELECT * FROM default__src_src2_index__ ORDER BY value;
+SELECT * FROM default__src_src1_index__;
+SELECT * FROM default__src_src2_index__;
 
 
 -- manual indexing
@@ -43,12 +45,12 @@ FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bit
     a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
 EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname;
 
-SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key;
+SELECT key, value FROM src WHERE key=0 AND value = "val_0";
 
 
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET hive.optimize.index.filter=true;
-SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key;
+SELECT key, value FROM src WHERE key=0 AND value = "val_0";
 
 DROP INDEX src1_index ON src;
 DROP INDEX src2_index ON src;

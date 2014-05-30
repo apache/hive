@@ -1,6 +1,10 @@
-PREHOOK: query: drop table char1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table char1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table char1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table char1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table char1_1
 PREHOOK: type: DROPTABLE
@@ -54,11 +58,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@char1
 POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select key, value from char1 order by key, value
+PREHOOK: query: select key, value from char1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char1
 #### A masked pattern was here ####
-POSTHOOK: query: select key, value from char1 order by key, value
+POSTHOOK: query: select key, value from char1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char1
 #### A masked pattern was here ####
@@ -78,11 +82,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@char1
 POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select key, value from char1 order by key, value
+PREHOOK: query: select key, value from char1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char1
 #### A masked pattern was here ####
-POSTHOOK: query: select key, value from char1 order by key, value
+POSTHOOK: query: select key, value from char1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char1
 #### A masked pattern was here ####
@@ -102,11 +106,11 @@ POSTHOOK: Input: default@char1
 POSTHOOK: Output: default@char1_1
 POSTHOOK: Lineage: char1_1.key SIMPLE [(char1)char1.FieldSchema(name:key, type:char(10), comment:null), ]
 POSTHOOK: Lineage: char1_1.value SIMPLE [(char1)char1.FieldSchema(name:value, type:char(20), comment:null), ]
-PREHOOK: query: select key, value from char1_1 order by key, value
+PREHOOK: query: select key, value from char1_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char1_1
 #### A masked pattern was here ####
-POSTHOOK: query: select key, value from char1_1 order by key, value
+POSTHOOK: query: select key, value from char1_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char1_1
 #### A masked pattern was here ####
@@ -126,11 +130,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@char1
 POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select key, value from char1 order by key, value
+PREHOOK: query: select key, value from char1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char1
 #### A masked pattern was here ####
-POSTHOOK: query: select key, value from char1 order by key, value
+POSTHOOK: query: select key, value from char1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char1
 #### A masked pattern was here ####

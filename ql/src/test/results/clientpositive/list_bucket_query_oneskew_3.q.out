@@ -1,4 +1,5 @@
 PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
+-- SORT_QUERY_RESULTS
 
 -- List bucketing query logic test case. 
 -- Test condition: 
@@ -17,6 +18,7 @@ CREATE TABLE fact_daily(x int, y STRING, z STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
+-- SORT_QUERY_RESULTS
 
 -- List bucketing query logic test case. 
 -- Test condition: 
@@ -180,29 +182,29 @@ Skewed Values:      	[[484], [238]]
 #### A masked pattern was here ####
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1' ORDER BY x, y, z
+PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1' ORDER BY x, y, z
+POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
-86	val_86	val_86	1
 238	val_238	val_238	1
 238	val_238	val_238	1
 278	val_278	val_278	1
 278	val_278	val_278	1
 484	val_484	val_484	1
+86	val_86	val_86	1
 PREHOOK: query: -- pruner  pick up right directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT x FROM fact_daily WHERE ds='1' and not (x = 86) ORDER BY x
+explain extended SELECT x FROM fact_daily WHERE ds='1' and not (x = 86)
 PREHOOK: type: QUERY
 POSTHOOK: query: -- pruner  pick up right directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT x FROM fact_daily WHERE ds='1' and not (x = 86) ORDER BY x
+explain extended SELECT x FROM fact_daily WHERE ds='1' and not (x = 86)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   
@@ -230,10 +232,6 @@ TOK_QUERY
                   TOK_TABLE_OR_COL
                      x
                   86
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               x
 
 
 STAGE DEPENDENCIES:
@@ -256,12 +254,27 @@ STAGE PLANS:
                 expressions: x (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  sort order: +
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
                   Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-                  tag: -1
-                  value expressions: _col0 (type: int)
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0
+                        columns.types int
+                        escape.delim \
+                        hive.serialization.extend.nesting.levels true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -407,31 +420,6 @@ STAGE PLANS:
         /fact_tz/ds=1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
         /fact_tz/ds=1/x=238 [fact_daily]
         /fact_tz/ds=1/x=484 [fact_daily]
-      Needs Tagging: false
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-#### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-            Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                properties:
-                  columns _col0
-                  columns.types int
-                  escape.delim \
-                  hive.serialization.extend.nesting.levels true
-                  serialization.format 1
-                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -440,13 +428,13 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: -- List Bucketing Query
-SELECT x FROM fact_daily WHERE ds='1' and not (x = 86) ORDER BY x
+SELECT x FROM fact_daily WHERE ds='1' and not (x = 86)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
-SELECT x FROM fact_daily WHERE ds='1' and not (x = 86) ORDER BY x
+SELECT x FROM fact_daily WHERE ds='1' and not (x = 86)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
