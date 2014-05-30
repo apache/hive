@@ -24,7 +24,7 @@
 
 export HADOOP_VERSION=2.4.1-SNAPSHOT
 export HIVE_VERSION=0.14.0-SNAPSHOT
-export PIG_VERSION=0.12.0
+export PIG_VERSION=0.12.2-SNAPSHOT
 
 #Root of project source tree
 export PROJ_HOME=/Users/${USER}/dev/hive
@@ -33,9 +33,9 @@ export HADOOP_HOME=/Users/${USER}/dev/hwxhadoop/hadoop-dist/target/hadoop-${HADO
 #export SQOOP_HOME=/
 
 #Make sure Pig is built for the Hadoop version you are running
-export PIG_TAR_PATH=/Users/${USER}/dev/pig-0.12.0-src/build
+export PIG_TAR_PATH=/Users/${USER}/dev/pig-${PIG_VERSION}-src/build
 #this is part of Pig distribution
-export PIG_PIGGYBANK_PATH=/Users/${USER}/dev/pig-0.12.0-src/build/tar/pig-0.12.0/contrib/piggybank/java/piggybank.jar
+export PIG_PIGGYBANK_PATH=/Users/${USER}/dev/pig-${PIG_VERSION}-src/build/tar/pig-${PIG_VERSION}/contrib/piggybank/java/piggybank.jar
 
 export WEBHCAT_LOG_DIR=/tmp/webhcat_e2e/logs
 export WEBHCAT_PID_DIR=${WEBHCAT_LOG_DIR}
