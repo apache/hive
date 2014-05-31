@@ -207,6 +207,9 @@ public class MapRecordProcessor extends RecordProcessor {
 
     // detecting failed executions by exceptions thrown by the operator tree
     try {
+      if (mapOp == null || mapWork == null) {
+        return;
+      }
       mapOp.close(abort);
 
       // Need to close the dummyOps as well. The operator pipeline
@@ -236,5 +239,4 @@ public class MapRecordProcessor extends RecordProcessor {
       MapredContext.close();
     }
   }
-
 }
