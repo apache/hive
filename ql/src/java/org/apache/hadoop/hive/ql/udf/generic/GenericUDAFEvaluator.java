@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -232,5 +233,25 @@ public abstract class GenericUDAFEvaluator implements Closeable {
    * @return final aggregation result.
    */
   public abstract Object terminate(AggregationBuffer agg) throws HiveException;
+
+  /**
+   * When evaluating an aggregates over a fixed Window, the naive way to compute
+   * results is to compute the aggregate for each row. But often there is a way
+   * to compute results in a more efficient manner. This method enables the
+   * basic evaluator to provide a function object that does the job in a more
+   * efficient manner.
+   * <p>
+   * This method is called after this Evaluator is initialized. The returned
+   * Function must be initialized. It is passed the 'window' of aggregation for
+   * each row.
+   * 
+   * @param wFrmDef
+   *          the Window definition in play for this evaluation.
+   * @return null implies that this fn cannot be processed in Streaming mode. So
+   *         each row is evaluated independently.
+   */
+  public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+    return null;
+  }
 
 }

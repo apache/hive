@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /*
@@ -91,6 +93,7 @@ public abstract class TableFunctionEvaluator {
   protected PTFDesc ptfDesc;
   boolean transformsRawInput;
   transient protected PTFPartition outputPartition;
+  transient protected boolean canAcceptInputAsStream;
 
   static {
     PTFUtils.makeTransient(TableFunctionEvaluator.class, "outputOI", "rawInputOI");
@@ -215,9 +218,14 @@ public abstract class TableFunctionEvaluator {
    *   remaining o/p rows.
    */
   public boolean canAcceptInputAsStream() {
-    return false;
+    return canAcceptInputAsStream;
   }
-  
+
+  public void initializeStreaming(Configuration cfg,
+      StructObjectInspector inputOI, boolean isMapSide) throws HiveException {
+    canAcceptInputAsStream = false;
+  }
+
   public void startPartition() throws HiveException {
     if (!canAcceptInputAsStream() ) {
       throw new HiveException(String.format(

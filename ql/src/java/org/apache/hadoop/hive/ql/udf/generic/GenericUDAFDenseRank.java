@@ -43,7 +43,7 @@ public class GenericUDAFDenseRank extends GenericUDAFRank
 	static final Log LOG = LogFactory.getLog(GenericUDAFDenseRank.class.getName());
 
 	@Override
-  protected GenericUDAFRankEvaluator createEvaluator()
+  protected GenericUDAFAbstractRankEvaluator createEvaluator()
 	{
 		return new GenericUDAFDenseRankEvaluator();
 	}
