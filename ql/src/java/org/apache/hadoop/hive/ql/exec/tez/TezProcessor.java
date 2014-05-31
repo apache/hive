@@ -29,6 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
@@ -45,8 +46,8 @@ import org.apache.tez.runtime.library.api.KeyValueWriter;
  */
 public class TezProcessor implements LogicalIOProcessor {
 
-  
-  
+
+
   private static final Log LOG = LogFactory.getLog(TezProcessor.class);
   private boolean isMap = false;
 
@@ -74,7 +75,7 @@ public class TezProcessor implements LogicalIOProcessor {
 
   @Override
   public void close() throws IOException {
-    // we have to close in the processor's run method, because tez closes inputs 
+    // we have to close in the processor's run method, because tez closes inputs
     // before calling close (TEZ-955) and we might need to read inputs
     // when we flush the pipeline.
   }
@@ -124,16 +125,16 @@ public class TezProcessor implements LogicalIOProcessor {
   @Override
   public void run(Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs)
       throws Exception {
-    
-    Exception processingException = null;
-    
+
+    Throwable originalThrowable = null;
+
     try{
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
       // in case of broadcast-join read the broadcast edge inputs
       // (possibly asynchronously)
-      
+
       LOG.info("Running task: " + processorContext.getUniqueIdentifier());
-      
+
       if (isMap) {
         rproc = new MapRecordProcessor();
         MRInputLegacy mrInput = getMRInput(inputs);
@@ -156,29 +157,35 @@ public class TezProcessor implements LogicalIOProcessor {
           LOG.info("Input: " + inputEntry.getKey() + " is already cached. Skipping start");
         }
       }
-      
+
       // Outputs will be started later by the individual Processors.
-      
+
       MRTaskReporter mrReporter = new MRTaskReporter(processorContext);
       rproc.init(jobConf, processorContext, mrReporter, inputs, outputs);
       rproc.run();
 
       //done - output does not need to be committed as hive does not use outputcommitter
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
-    } catch (Exception e) {
-      processingException = e;
+    } catch (Throwable t) {
+      originalThrowable = t;
     } finally {
+      if (originalThrowable != null && originalThrowable instanceof Error) {
+        LOG.error(StringUtils.stringifyException(originalThrowable));
+        throw new RuntimeException(originalThrowable);
+      }
+
       try {
         if(rproc != null){
           rproc.close();
         }
-      } catch (Exception e) {
-        if (processingException == null) {
-          processingException = e;
+      } catch (Throwable t) {
+        if (originalThrowable == null) {
+          originalThrowable = t;
         }
       }
-      if (processingException != null) {
-        throw processingException;
+      if (originalThrowable != null) {
+        LOG.error(StringUtils.stringifyException(originalThrowable));
+        throw new RuntimeException(originalThrowable);
       }
     }
   }
@@ -186,7 +193,7 @@ public class TezProcessor implements LogicalIOProcessor {
   /**
    * KVOutputCollector. OutputCollector that writes using KVWriter.
    * Must be initialized before it is used.
-   * 
+   *
    */
   static class TezKVOutputCollector implements OutputCollector {
     private KeyValueWriter writer;
