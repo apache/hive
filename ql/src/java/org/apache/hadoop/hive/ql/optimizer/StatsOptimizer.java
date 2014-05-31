@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -342,12 +344,14 @@ public class StatsOptimizer implements Transform {
               ColumnStatisticsData statData = stats.get(0).getStatsData();
               switch (type) {
                 case Integeral:
-                  oneRow.add(statData.getLongStats().getHighValue());
+                  LongColumnStatsData lstats = statData.getLongStats();
+                  oneRow.add(lstats.isSetHighValue() ? lstats.getHighValue() : null);
                   ois.add(PrimitiveObjectInspectorFactory.
                       getPrimitiveJavaObjectInspector(PrimitiveCategory.LONG));
                   break;
                 case Double:
-                  oneRow.add(statData.getDoubleStats().getHighValue());
+                  DoubleColumnStatsData dstats = statData.getDoubleStats();
+                  oneRow.add(dstats.isSetHighValue() ? dstats.getHighValue() : null);
                   ois.add(PrimitiveObjectInspectorFactory.
                       getPrimitiveJavaObjectInspector(PrimitiveCategory.DOUBLE));
                   break;
@@ -362,7 +366,7 @@ public class StatsOptimizer implements Transform {
                   tsOp.getConf().getAlias(), tsOp).getPartitions();
               switch (type) {
                 case Integeral: {
-                  long maxVal = Long.MIN_VALUE;
+                  Long maxVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
                   if (result == null) {
@@ -371,8 +375,12 @@ public class StatsOptimizer implements Transform {
                   for (List<ColumnStatisticsObj> statObj : result) {
                     ColumnStatisticsData statData = validateSingleColStat(statObj);
                     if (statData == null) return null;
-                    long curVal = statData.getLongStats().getHighValue();
-                    maxVal = Math.max(maxVal, curVal);
+                    LongColumnStatsData lstats = statData.getLongStats();
+                    if (!lstats.isSetHighValue()) {
+                      continue;
+                    }
+                    long curVal = lstats.getHighValue();
+                    maxVal = maxVal == null ? curVal : Math.max(maxVal, curVal);
                   }
                   oneRow.add(maxVal);
                   ois.add(PrimitiveObjectInspectorFactory.
@@ -380,7 +388,7 @@ public class StatsOptimizer implements Transform {
                   break;
                 }
                 case Double: {
-                  double maxVal = Double.MIN_VALUE;
+                  Double maxVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
                   if (result == null) {
@@ -389,8 +397,12 @@ public class StatsOptimizer implements Transform {
                   for (List<ColumnStatisticsObj> statObj : result) {
                     ColumnStatisticsData statData = validateSingleColStat(statObj);
                     if (statData == null) return null;
+                    DoubleColumnStatsData dstats = statData.getDoubleStats();
+                    if (!dstats.isSetHighValue()) {
+                      continue;
+                    }
                     double curVal = statData.getDoubleStats().getHighValue();
-                    maxVal = Math.max(maxVal, curVal);
+                    maxVal = maxVal == null ? curVal : Math.max(maxVal, curVal);
                   }
                   oneRow.add(maxVal);
                   ois.add(PrimitiveObjectInspectorFactory.
@@ -418,12 +430,14 @@ public class StatsOptimizer implements Transform {
                   .get(0).getStatsData();
               switch (type) {
                 case Integeral:
-                  oneRow.add(statData.getLongStats().getLowValue());
+                  LongColumnStatsData lstats = statData.getLongStats();
+                  oneRow.add(lstats.isSetLowValue() ? lstats.getLowValue() : null);
                   ois.add(PrimitiveObjectInspectorFactory.
                       getPrimitiveJavaObjectInspector(PrimitiveCategory.LONG));
                   break;
                 case Double:
-                  oneRow.add(statData.getDoubleStats().getLowValue());
+                  DoubleColumnStatsData dstats = statData.getDoubleStats();
+                  oneRow.add(dstats.isSetLowValue() ? dstats.getLowValue() : null);
                   ois.add(PrimitiveObjectInspectorFactory.
                       getPrimitiveJavaObjectInspector(PrimitiveCategory.DOUBLE));
                   break;
@@ -436,7 +450,7 @@ public class StatsOptimizer implements Transform {
               Set<Partition> parts = pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp).getPartitions();
               switch(type) {
                 case Integeral: {
-                  long minVal = Long.MAX_VALUE;
+                  Long minVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
                   if (result == null) {
@@ -445,8 +459,12 @@ public class StatsOptimizer implements Transform {
                   for (List<ColumnStatisticsObj> statObj : result) {
                     ColumnStatisticsData statData = validateSingleColStat(statObj);
                     if (statData == null) return null;
-                    long curVal = statData.getLongStats().getLowValue();
-                    minVal = Math.min(minVal, curVal);
+                    LongColumnStatsData lstats = statData.getLongStats();
+                    if (!lstats.isSetLowValue()) {
+                      continue;
+                    }
+                    long curVal = lstats.getLowValue();
+                    minVal = minVal == null ? curVal : Math.min(minVal, curVal);
                   }
                   oneRow.add(minVal);
                   ois.add(PrimitiveObjectInspectorFactory.
@@ -454,7 +472,7 @@ public class StatsOptimizer implements Transform {
                   break;
                 }
                 case Double: {
-                  double minVal = Double.MAX_VALUE;
+                  Double minVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
                   if (result == null) {
@@ -463,8 +481,12 @@ public class StatsOptimizer implements Transform {
                   for (List<ColumnStatisticsObj> statObj : result) {
                     ColumnStatisticsData statData = validateSingleColStat(statObj);
                     if (statData == null) return null;
+                    DoubleColumnStatsData dstats = statData.getDoubleStats();
+                    if (!dstats.isSetLowValue()) {
+                      continue;
+                    }
                     double curVal = statData.getDoubleStats().getLowValue();
-                    minVal = Math.min(minVal, curVal);
+                    minVal = minVal == null ? curVal : Math.min(minVal, curVal);
                   }
                   oneRow.add(minVal);
                   ois.add(PrimitiveObjectInspectorFactory.

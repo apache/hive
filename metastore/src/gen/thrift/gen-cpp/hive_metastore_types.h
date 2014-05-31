@@ -1741,12 +1741,17 @@ class BooleanColumnStatsData {
 
 void swap(BooleanColumnStatsData &a, BooleanColumnStatsData &b);
 
+typedef struct _DoubleColumnStatsData__isset {
+  _DoubleColumnStatsData__isset() : lowValue(false), highValue(false) {}
+  bool lowValue;
+  bool highValue;
+} _DoubleColumnStatsData__isset;
 
 class DoubleColumnStatsData {
  public:
 
-  static const char* ascii_fingerprint; // = "97F958CB0709C3B109A57EEE01946C13";
-  static const uint8_t binary_fingerprint[16]; // = {0x97,0xF9,0x58,0xCB,0x07,0x09,0xC3,0xB1,0x09,0xA5,0x7E,0xEE,0x01,0x94,0x6C,0x13};
+  static const char* ascii_fingerprint; // = "DA7C011321D74C48396AA002E61A0CBB";
+  static const uint8_t binary_fingerprint[16]; // = {0xDA,0x7C,0x01,0x13,0x21,0xD7,0x4C,0x48,0x39,0x6A,0xA0,0x02,0xE6,0x1A,0x0C,0xBB};
 
   DoubleColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0) {
   }
@@ -1758,12 +1763,16 @@ class DoubleColumnStatsData {
   int64_t numNulls;
   int64_t numDVs;
 
+  _DoubleColumnStatsData__isset __isset;
+
   void __set_lowValue(const double val) {
     lowValue = val;
+    __isset.lowValue = true;
   }
 
   void __set_highValue(const double val) {
     highValue = val;
+    __isset.highValue = true;
   }
 
   void __set_numNulls(const int64_t val) {
@@ -1776,9 +1785,13 @@ class DoubleColumnStatsData {
 
   bool operator == (const DoubleColumnStatsData & rhs) const
   {
-    if (!(lowValue == rhs.lowValue))
+    if (__isset.lowValue != rhs.__isset.lowValue)
       return false;
-    if (!(highValue == rhs.highValue))
+    else if (__isset.lowValue && !(lowValue == rhs.lowValue))
+      return false;
+    if (__isset.highValue != rhs.__isset.highValue)
+      return false;
+    else if (__isset.highValue && !(highValue == rhs.highValue))
       return false;
     if (!(numNulls == rhs.numNulls))
       return false;
@@ -1799,12 +1812,17 @@ class DoubleColumnStatsData {
 
 void swap(DoubleColumnStatsData &a, DoubleColumnStatsData &b);
 
+typedef struct _LongColumnStatsData__isset {
+  _LongColumnStatsData__isset() : lowValue(false), highValue(false) {}
+  bool lowValue;
+  bool highValue;
+} _LongColumnStatsData__isset;
 
 class LongColumnStatsData {
  public:
 
-  static const char* ascii_fingerprint; // = "66C8E6F97F0275919D86FEB536251B17";
-  static const uint8_t binary_fingerprint[16]; // = {0x66,0xC8,0xE6,0xF9,0x7F,0x02,0x75,0x91,0x9D,0x86,0xFE,0xB5,0x36,0x25,0x1B,0x17};
+  static const char* ascii_fingerprint; // = "E685FC220B24E3B8B93604790DCB9AEA";
+  static const uint8_t binary_fingerprint[16]; // = {0xE6,0x85,0xFC,0x22,0x0B,0x24,0xE3,0xB8,0xB9,0x36,0x04,0x79,0x0D,0xCB,0x9A,0xEA};
 
   LongColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0) {
   }
@@ -1816,12 +1834,16 @@ class LongColumnStatsData {
   int64_t numNulls;
   int64_t numDVs;
 
+  _LongColumnStatsData__isset __isset;
+
   void __set_lowValue(const int64_t val) {
     lowValue = val;
+    __isset.lowValue = true;
   }
 
   void __set_highValue(const int64_t val) {
     highValue = val;
+    __isset.highValue = true;
   }
 
   void __set_numNulls(const int64_t val) {
@@ -1834,9 +1856,13 @@ class LongColumnStatsData {
 
   bool operator == (const LongColumnStatsData & rhs) const
   {
-    if (!(lowValue == rhs.lowValue))
+    if (__isset.lowValue != rhs.__isset.lowValue)
       return false;
-    if (!(highValue == rhs.highValue))
+    else if (__isset.lowValue && !(lowValue == rhs.lowValue))
+      return false;
+    if (__isset.highValue != rhs.__isset.highValue)
+      return false;
+    else if (__isset.highValue && !(highValue == rhs.highValue))
       return false;
     if (!(numNulls == rhs.numNulls))
       return false;
@@ -2010,12 +2036,17 @@ class Decimal {
 
 void swap(Decimal &a, Decimal &b);
 
+typedef struct _DecimalColumnStatsData__isset {
+  _DecimalColumnStatsData__isset() : lowValue(false), highValue(false) {}
+  bool lowValue;
+  bool highValue;
+} _DecimalColumnStatsData__isset;
 
 class DecimalColumnStatsData {
  public:
 
-  static const char* ascii_fingerprint; // = "3AE5C36598A014EE815B87600C3087B5";
-  static const uint8_t binary_fingerprint[16]; // = {0x3A,0xE5,0xC3,0x65,0x98,0xA0,0x14,0xEE,0x81,0x5B,0x87,0x60,0x0C,0x30,0x87,0xB5};
+  static const char* ascii_fingerprint; // = "B6D47E7A28922BFA93FE05E9F1B04748";
+  static const uint8_t binary_fingerprint[16]; // = {0xB6,0xD4,0x7E,0x7A,0x28,0x92,0x2B,0xFA,0x93,0xFE,0x05,0xE9,0xF1,0xB0,0x47,0x48};
 
   DecimalColumnStatsData() : numNulls(0), numDVs(0) {
   }
@@ -2027,12 +2058,16 @@ class DecimalColumnStatsData {
   int64_t numNulls;
   int64_t numDVs;
 
+  _DecimalColumnStatsData__isset __isset;
+
   void __set_lowValue(const Decimal& val) {
     lowValue = val;
+    __isset.lowValue = true;
   }
 
   void __set_highValue(const Decimal& val) {
     highValue = val;
+    __isset.highValue = true;
   }
 
   void __set_numNulls(const int64_t val) {
@@ -2045,9 +2080,13 @@ class DecimalColumnStatsData {
 
   bool operator == (const DecimalColumnStatsData & rhs) const
   {
-    if (!(lowValue == rhs.lowValue))
+    if (__isset.lowValue != rhs.__isset.lowValue)
       return false;
-    if (!(highValue == rhs.highValue))
+    else if (__isset.lowValue && !(lowValue == rhs.lowValue))
+      return false;
+    if (__isset.highValue != rhs.__isset.highValue)
+      return false;
+    else if (__isset.highValue && !(highValue == rhs.highValue))
       return false;
     if (!(numNulls == rhs.numNulls))
       return false;
@@ -2081,8 +2120,8 @@ typedef struct _ColumnStatisticsData__isset {
 class ColumnStatisticsData {
  public:
 
-  static const char* ascii_fingerprint; // = "343F5865568AF7DA61829A616EB8C57C";
-  static const uint8_t binary_fingerprint[16]; // = {0x34,0x3F,0x58,0x65,0x56,0x8A,0xF7,0xDA,0x61,0x82,0x9A,0x61,0x6E,0xB8,0xC5,0x7C};
+  static const char* ascii_fingerprint; // = "D079ACEA6EE0998D0A45CB65FF1EAADD";
+  static const uint8_t binary_fingerprint[16]; // = {0xD0,0x79,0xAC,0xEA,0x6E,0xE0,0x99,0x8D,0x0A,0x45,0xCB,0x65,0xFF,0x1E,0xAA,0xDD};
 
   ColumnStatisticsData() {
   }
@@ -2155,8 +2194,8 @@ void swap(ColumnStatisticsData &a, ColumnStatisticsData &b);
 class ColumnStatisticsObj {
  public:
 
-  static const char* ascii_fingerprint; // = "CFDBB9DFF4F1670367EA5356861EC180";
-  static const uint8_t binary_fingerprint[16]; // = {0xCF,0xDB,0xB9,0xDF,0xF4,0xF1,0x67,0x03,0x67,0xEA,0x53,0x56,0x86,0x1E,0xC1,0x80};
+  static const char* ascii_fingerprint; // = "E49E62CFC71682004614EFEDAC3CD3F4";
+  static const uint8_t binary_fingerprint[16]; // = {0xE4,0x9E,0x62,0xCF,0xC7,0x16,0x82,0x00,0x46,0x14,0xEF,0xED,0xAC,0x3C,0xD3,0xF4};
 
   ColumnStatisticsObj() : colName(), colType() {
   }
@@ -2284,8 +2323,8 @@ void swap(ColumnStatisticsDesc &a, ColumnStatisticsDesc &b);
 class ColumnStatistics {
  public:
 
-  static const char* ascii_fingerprint; // = "37AA2F226C29DF25254CCCE6A7DDBAF3";
-  static const uint8_t binary_fingerprint[16]; // = {0x37,0xAA,0x2F,0x22,0x6C,0x29,0xDF,0x25,0x25,0x4C,0xCC,0xE6,0xA7,0xDD,0xBA,0xF3};
+  static const char* ascii_fingerprint; // = "6682E234199B2CD3807B1ED420C6A7F8";
+  static const uint8_t binary_fingerprint[16]; // = {0x66,0x82,0xE2,0x34,0x19,0x9B,0x2C,0xD3,0x80,0x7B,0x1E,0xD4,0x20,0xC6,0xA7,0xF8};
 
   ColumnStatistics() {
   }
@@ -2544,8 +2583,8 @@ void swap(PartitionsByExprRequest &a, PartitionsByExprRequest &b);
 class TableStatsResult {
  public:
 
-  static const char* ascii_fingerprint; // = "178DBEC75B48CDDEDB3B8338EF6FBF2F";
-  static const uint8_t binary_fingerprint[16]; // = {0x17,0x8D,0xBE,0xC7,0x5B,0x48,0xCD,0xDE,0xDB,0x3B,0x83,0x38,0xEF,0x6F,0xBF,0x2F};
+  static const char* ascii_fingerprint; // = "CE3E8F0D9B310B8D33CB7A89A75F3E05";
+  static const uint8_t binary_fingerprint[16]; // = {0xCE,0x3E,0x8F,0x0D,0x9B,0x31,0x0B,0x8D,0x33,0xCB,0x7A,0x89,0xA7,0x5F,0x3E,0x05};
 
   TableStatsResult() {
   }
@@ -2581,8 +2620,8 @@ void swap(TableStatsResult &a, TableStatsResult &b);
 class PartitionsStatsResult {
  public:
 
-  static const char* ascii_fingerprint; // = "0E3D549A0384CD453E2CB90C734A6245";
-  static const uint8_t binary_fingerprint[16]; // = {0x0E,0x3D,0x54,0x9A,0x03,0x84,0xCD,0x45,0x3E,0x2C,0xB9,0x0C,0x73,0x4A,0x62,0x45};
+  static const char* ascii_fingerprint; // = "FF175B50C5EF6F442D3AF25B06435A39";
+  static const uint8_t binary_fingerprint[16]; // = {0xFF,0x17,0x5B,0x50,0xC5,0xEF,0x6F,0x44,0x2D,0x3A,0xF2,0x5B,0x06,0x43,0x5A,0x39};
 
   PartitionsStatsResult() {
   }

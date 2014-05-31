@@ -22,6 +22,7 @@ import javolution.util.FastBitSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.io.Text;
 
 public class NumDistinctValueEstimator {
@@ -287,6 +288,25 @@ public class NumDistinctValueEstimator {
     bitVector[hash%numBitVectors].set(index);
   }
 
+  public void addToEstimator(double d) {
+    int v = new Double(d).hashCode();
+    addToEstimator(v);
+  }
+
+  public void addToEstimatorPCSA(double d) {
+    int v = new Double(d).hashCode();
+    addToEstimatorPCSA(v);
+  }
+
+  public void addToEstimator(HiveDecimal decimal) {
+    int v = decimal.hashCode();
+    addToEstimator(v);
+  }
+
+  public void addToEstimatorPCSA(HiveDecimal decimal) {
+    int v = decimal.hashCode();
+    addToEstimatorPCSA(v);
+  }
 
   public void mergeEstimators(NumDistinctValueEstimator o) {
     // Bitwise OR the bitvector with the bitvector in the agg buffer

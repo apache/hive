@@ -651,8 +651,8 @@ class DoubleColumnStatsData
   NUMDVS = 4
 
   FIELDS = {
-    LOWVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'lowValue'},
-    HIGHVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'highValue'},
+    LOWVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'lowValue', :optional => true},
+    HIGHVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'highValue', :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
   }
@@ -660,8 +660,6 @@ class DoubleColumnStatsData
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lowValue is unset!') unless @lowValue
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field highValue is unset!') unless @highValue
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numNulls is unset!') unless @numNulls
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numDVs is unset!') unless @numDVs
   end
@@ -677,8 +675,8 @@ class LongColumnStatsData
   NUMDVS = 4
 
   FIELDS = {
-    LOWVALUE => {:type => ::Thrift::Types::I64, :name => 'lowValue'},
-    HIGHVALUE => {:type => ::Thrift::Types::I64, :name => 'highValue'},
+    LOWVALUE => {:type => ::Thrift::Types::I64, :name => 'lowValue', :optional => true},
+    HIGHVALUE => {:type => ::Thrift::Types::I64, :name => 'highValue', :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
   }
@@ -686,8 +684,6 @@ class LongColumnStatsData
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lowValue is unset!') unless @lowValue
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field highValue is unset!') unless @highValue
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numNulls is unset!') unless @numNulls
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numDVs is unset!') unless @numDVs
   end
@@ -772,8 +768,8 @@ class DecimalColumnStatsData
   NUMDVS = 4
 
   FIELDS = {
-    LOWVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'lowValue', :class => ::Decimal},
-    HIGHVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'highValue', :class => ::Decimal},
+    LOWVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'lowValue', :class => ::Decimal, :optional => true},
+    HIGHVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'highValue', :class => ::Decimal, :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
   }
@@ -781,8 +777,6 @@ class DecimalColumnStatsData
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lowValue is unset!') unless @lowValue
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field highValue is unset!') unless @highValue
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numNulls is unset!') unless @numNulls
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numDVs is unset!') unless @numDVs
   end

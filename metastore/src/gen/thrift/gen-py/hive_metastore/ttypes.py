@@ -2877,10 +2877,6 @@ class DoubleColumnStatsData:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.lowValue is None:
-      raise TProtocol.TProtocolException(message='Required field lowValue is unset!')
-    if self.highValue is None:
-      raise TProtocol.TProtocolException(message='Required field highValue is unset!')
     if self.numNulls is None:
       raise TProtocol.TProtocolException(message='Required field numNulls is unset!')
     if self.numDVs is None:
@@ -2981,10 +2977,6 @@ class LongColumnStatsData:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.lowValue is None:
-      raise TProtocol.TProtocolException(message='Required field lowValue is unset!')
-    if self.highValue is None:
-      raise TProtocol.TProtocolException(message='Required field highValue is unset!')
     if self.numNulls is None:
       raise TProtocol.TProtocolException(message='Required field numNulls is unset!')
     if self.numDVs is None:
@@ -3358,10 +3350,6 @@ class DecimalColumnStatsData:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.lowValue is None:
-      raise TProtocol.TProtocolException(message='Required field lowValue is unset!')
-    if self.highValue is None:
-      raise TProtocol.TProtocolException(message='Required field highValue is unset!')
     if self.numNulls is None:
       raise TProtocol.TProtocolException(message='Required field numNulls is unset!')
     if self.numDVs is None:

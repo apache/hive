@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +29,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -299,46 +297,49 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     }
   }
 
-  /**
-   * GenericUDAFLongStatsEvaluator.
-   *
-   */
-  public static class GenericUDAFLongStatsEvaluator extends GenericUDAFEvaluator {
+  public static abstract class GenericUDAFNumericStatsEvaluator<V, OI extends ObjectInspector>
+      extends GenericUDAFEvaluator {
+
+    protected final static int MAX_BIT_VECTORS = 1024;
 
     /* Object Inspector corresponding to the input parameter.
      */
-    private transient PrimitiveObjectInspector inputOI;
-    private transient PrimitiveObjectInspector numVectorsOI;
-    private final static int MAX_BIT_VECTORS = 1024;
+    protected transient PrimitiveObjectInspector inputOI;
+    protected transient PrimitiveObjectInspector numVectorsOI;
 
-    /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
-     * containing a long field named "count".
-     */
-    private transient Object[] partialResult;
 
     /* Object Inspectors corresponding to the struct returned by TerminatePartial and the long
      * field within the struct - "count"
      */
-    private transient StructObjectInspector soi;
+    protected transient StructObjectInspector soi;
 
-    private transient StructField minField;
-    private transient WritableLongObjectInspector minFieldOI;
+    protected transient StructField minField;
+    protected transient OI minFieldOI;
 
-    private transient StructField maxField;
-    private transient WritableLongObjectInspector maxFieldOI;
+    protected transient StructField maxField;
+    protected transient OI maxFieldOI;
 
-    private transient StructField countNullsField;
-    private transient WritableLongObjectInspector countNullsFieldOI;
+    protected transient StructField countNullsField;
+    protected transient WritableLongObjectInspector countNullsFieldOI;
 
-    private transient StructField ndvField;
-    private transient WritableStringObjectInspector ndvFieldOI;
+    protected transient StructField ndvField;
+    protected transient WritableStringObjectInspector ndvFieldOI;
 
-    private transient StructField numBitVectorsField;
-    private transient WritableIntObjectInspector numBitVectorsFieldOI;
+    protected transient StructField numBitVectorsField;
+    protected transient WritableIntObjectInspector numBitVectorsFieldOI;
+
+    /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
+     * containing a long field named "count".
+     */
+    protected transient Object[] partialResult;
 
     /* Output of final result of the aggregation
      */
-    private transient Object[] result;
+    protected transient Object[] result;
+
+    protected transient boolean warned;
+
+    protected abstract OI getValueObjectInspector();
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -352,10 +353,10 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         soi = (StructObjectInspector) parameters[0];
 
         minField = soi.getStructFieldRef("Min");
-        minFieldOI = (WritableLongObjectInspector) minField.getFieldObjectInspector();
+        minFieldOI = (OI) minField.getFieldObjectInspector();
 
         maxField = soi.getStructFieldRef("Max");
-        maxFieldOI = (WritableLongObjectInspector) maxField.getFieldObjectInspector();
+        maxFieldOI = (OI) maxField.getFieldObjectInspector();
 
         countNullsField = soi.getStructFieldRef("CountNulls");
         countNullsFieldOI = (WritableLongObjectInspector) countNullsField.getFieldObjectInspector();
@@ -365,15 +366,15 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
         numBitVectorsField = soi.getStructFieldRef("NumBitVectors");
         numBitVectorsFieldOI = (WritableIntObjectInspector)
-                                  numBitVectorsField.getFieldObjectInspector();
+            numBitVectorsField.getFieldObjectInspector();
       }
 
       // initialize output
       if (mode == Mode.PARTIAL1 || mode == Mode.PARTIAL2) {
         List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
         foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
+        foi.add(getValueObjectInspector());
+        foi.add(getValueObjectInspector());
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableIntObjectInspector);
@@ -388,19 +389,17 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
         partialResult = new Object[6];
         partialResult[0] = new Text();
-        partialResult[1] = new LongWritable(0);
-        partialResult[2] = new LongWritable(0);
         partialResult[3] = new LongWritable(0);
         partialResult[4] = new Text();
         partialResult[5] = new IntWritable(0);
 
         return ObjectInspectorFactory.getStandardStructObjectInspector(fname,
-          foi);
+            foi);
       } else {
         List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
         foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
+        foi.add(getValueObjectInspector());
+        foi.add(getValueObjectInspector());
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
 
@@ -413,8 +412,6 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
         result = new Object[5];
         result[0] = new Text();
-        result[1] = new LongWritable(0);
-        result[2] = new LongWritable(0);
         result[3] = new LongWritable(0);
         result[4] = new LongWritable(0);
 
@@ -423,94 +420,88 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       }
     }
 
+    public abstract class NumericStatsAgg extends AbstractAggregationBuffer {
 
-    @AggregationType(estimable = true)
-    public static class LongStatsAgg extends AbstractAggregationBuffer {
       public String columnType;
-      public long min;                              /* Minimum value seen so far */
-      public long max;                              /* Maximum value seen so far */
-      public long countNulls;      /* Count of number of null values seen so far */
-      public LongNumDistinctValueEstimator numDV;    /* Distinct value estimator */
-      public boolean firstItem;                     /* First item in the aggBuf? */
-      public int numBitVectors;
+      public V min;                              /* Minimum value seen so far */
+      public V max;                              /* Maximum value seen so far */
+      public long countNulls;                    /* Count of number of null values seen so far */
+      public NumDistinctValueEstimator numDV;    /* Distinct value estimator */
+
       @Override
       public int estimate() {
         JavaDataModel model = JavaDataModel.get();
-        return model.primitive1() * 2 + model.primitive2() * 3 +
-            model.lengthFor(columnType) + model.lengthFor(numDV);
+        return model.lengthFor(columnType) + model.primitive1() + model.primitive2() +
+            model.lengthFor(numDV);
+      }
+
+      protected void initNDVEstimator(int numBitVectors) {
+        numDV = new NumDistinctValueEstimator(numBitVectors);
+      }
+
+      protected abstract void update(Object p, PrimitiveObjectInspector inputOI);
+
+      protected abstract void updateMin(Object minValue, OI minOI);
+
+      protected abstract void updateMax(Object maxValue, OI maxOI);
+
+      protected Object serialize(Object[] result) {
+        serializeCommon(result);
+        long dv = numDV != null ? numDV.estimateNumDistinctValues() : 0;
+        ((LongWritable) result[4]).set(dv);
+
+        return result;
+      }
+
+      protected Object serializePartial(Object[] result) {
+        // Serialize the rest of the values in the AggBuffer
+        serializeCommon(result);
+
+        // Serialize numDistinctValue Estimator
+        Text t = numDV.serialize();
+        ((Text) result[4]).set(t);
+        ((IntWritable) result[5]).set(numDV.getnumBitVectors());
+
+        return result;
+      }
+
+      private void serializeCommon(Object[] result) {
+        // Serialize rest of the field in the AggBuffer
+        ((Text) result[0]).set(columnType);
+        result[1] = min;
+        result[2] = max;
+        ((LongWritable) result[3]).set(countNulls);
+      }
+
+      public void reset(String type) throws HiveException {
+        columnType = type;
+        min = null;
+        max = null;
+        countNulls = 0;
+        numDV = null;
       }
     };
 
     @Override
-    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
-      LongStatsAgg result = new LongStatsAgg();
-      reset(result);
-      return result;
-    }
-    public void initNDVEstimator(LongStatsAgg aggBuffer, int numBitVectors) {
-      aggBuffer.numDV = new LongNumDistinctValueEstimator(numBitVectors);
-      aggBuffer.numDV.reset();
-    }
-
-    @Override
-    public void reset(AggregationBuffer agg) throws HiveException {
-      LongStatsAgg myagg = (LongStatsAgg) agg;
-      myagg.columnType = new String("Long");
-      myagg.min = 0;
-      myagg.max = 0;
-      myagg.countNulls = 0;
-      myagg.firstItem = true;
-    }
-
-    boolean warned = false;
-
-    @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
-      Object p = parameters[0];
-      LongStatsAgg myagg = (LongStatsAgg) agg;
-      boolean emptyTable = false;
+      NumericStatsAgg myagg = (NumericStatsAgg) agg;
 
-      if (parameters[1] == null) {
-        emptyTable = true;
-      }
-
-      if (myagg.firstItem) {
-        int numVectors = 0;
-        if (!emptyTable) {
-          numVectors = PrimitiveObjectInspectorUtils.getInt(parameters[1], numVectorsOI);
-        }
+      if (myagg.numDV == null) {
+        int numVectors = parameters[1] == null ? 0 :
+            PrimitiveObjectInspectorUtils.getInt(parameters[1], numVectorsOI);
         if (numVectors > MAX_BIT_VECTORS) {
           throw new HiveException("The maximum allowed value for number of bit vectors " +
-            " is " + MAX_BIT_VECTORS + ", but was passed " + numVectors + " bit vectors");
+              " is " + MAX_BIT_VECTORS + ", but was passed " + numVectors + " bit vectors");
         }
-        initNDVEstimator(myagg, numVectors);
-        myagg.firstItem = false;
-        myagg.numBitVectors = numVectors;
+        myagg.initNDVEstimator(numVectors);
       }
-
-      if (!emptyTable) {
 
       //Update null counter if a null value is seen
-      if (p == null) {
+      if (parameters[0] == null) {
         myagg.countNulls++;
-      }
-      else {
+      } else {
         try {
-          long v = PrimitiveObjectInspectorUtils.getLong(p, inputOI);
-
-          //Update min counter if new value is less than min seen so far
-          if (v < myagg.min) {
-            myagg.min = v;
-          }
-
-          //Update max counter if new value is greater than max seen so far
-          if (v > myagg.max) {
-            myagg.max = v;
-          }
-
-          // Add value to NumDistinctValue Estimator
-          myagg.numDV.addToEstimator(v);
-
+          myagg.update(parameters[0], inputOI);
         } catch (NumberFormatException e) {
           if (!warned) {
             warned = true;
@@ -521,82 +512,111 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
           }
         }
       }
-      }
     }
 
     @Override
     public Object terminatePartial(AggregationBuffer agg) throws HiveException {
-      LongStatsAgg myagg = (LongStatsAgg) agg;
+      return ((NumericStatsAgg) agg).serializePartial(partialResult);
+    }
 
-      // Serialize numDistinctValue Estimator
-      Text t = myagg.numDV.serialize();
-
-      // Serialize rest of the field in the AggBuffer
-      ((Text) partialResult[0]).set(myagg.columnType);
-      ((LongWritable) partialResult[1]).set(myagg.min);
-      ((LongWritable) partialResult[2]).set(myagg.max);
-      ((LongWritable) partialResult[3]).set(myagg.countNulls);
-      ((Text) partialResult[4]).set(t);
-      ((IntWritable) partialResult[5]).set(myagg.numDV.getnumBitVectors());
-
-      return partialResult;
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      return ((NumericStatsAgg) agg).serialize(result);
     }
 
     @Override
     public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       if (partial != null) {
-        LongStatsAgg myagg = (LongStatsAgg) agg;
+        NumericStatsAgg myagg = (NumericStatsAgg) agg;
 
-        if (myagg.firstItem) {
+        if (myagg.numDV == null) {
           Object partialValue = soi.getStructFieldData(partial, numBitVectorsField);
           int numVectors = numBitVectorsFieldOI.get(partialValue);
-          initNDVEstimator(myagg, numVectors);
-          myagg.firstItem = false;
-          myagg.numBitVectors = numVectors;
-
+          myagg.initNDVEstimator(numVectors);
         }
 
         // Update min if min is lesser than the smallest value seen so far
-        Object partialValue = soi.getStructFieldData(partial, minField);
-        if (myagg.min > minFieldOI.get(partialValue)) {
-          myagg.min = minFieldOI.get(partialValue);
-        }
+        Object minValue = soi.getStructFieldData(partial, minField);
+        myagg.updateMin(minValue, minFieldOI);
 
         // Update max if max is greater than the largest value seen so far
-        partialValue = soi.getStructFieldData(partial, maxField);
-        if (myagg.max < maxFieldOI.get(partialValue)) {
-          myagg.max = maxFieldOI.get(partialValue);
-        }
+        Object maxValue = soi.getStructFieldData(partial, maxField);
+        myagg.updateMax(maxValue, maxFieldOI);
 
         // Update the null counter
-        partialValue = soi.getStructFieldData(partial, countNullsField);
-        myagg.countNulls += countNullsFieldOI.get(partialValue);
+        Object countNull = soi.getStructFieldData(partial, countNullsField);
+        myagg.countNulls += countNullsFieldOI.get(countNull);
 
         // Merge numDistinctValue Estimators
-        partialValue = soi.getStructFieldData(partial, ndvField);
-        String v = ndvFieldOI.getPrimitiveJavaObject(partialValue);
-        NumDistinctValueEstimator o = new NumDistinctValueEstimator(v, myagg.numBitVectors);
+        Object numDistinct = soi.getStructFieldData(partial, ndvField);
+        String v = ndvFieldOI.getPrimitiveJavaObject(numDistinct);
+        NumDistinctValueEstimator o =
+            new NumDistinctValueEstimator(v, myagg.numDV.getnumBitVectors());
         myagg.numDV.mergeEstimators(o);
       }
     }
+  }
+
+  /**
+   * GenericUDAFLongStatsEvaluator.
+   *
+   */
+  public static class GenericUDAFLongStatsEvaluator
+      extends GenericUDAFNumericStatsEvaluator<Long, LongObjectInspector> {
 
     @Override
-    public Object terminate(AggregationBuffer agg) throws HiveException {
-      LongStatsAgg myagg = (LongStatsAgg) agg;
+    protected LongObjectInspector getValueObjectInspector() {
+      return PrimitiveObjectInspectorFactory.javaLongObjectInspector;
+    }
 
-      long numDV = 0;
-      if (myagg.numBitVectors != 0) {
-        numDV = myagg.numDV.estimateNumDistinctValues();
+    @AggregationType(estimable = true)
+    public class LongStatsAgg extends NumericStatsAgg {
+      @Override
+      public int estimate() {
+        JavaDataModel model = JavaDataModel.get();
+        return super.estimate() + model.primitive2() * 2;
       }
 
-      // Serialize the result struct
-      ((Text) result[0]).set(myagg.columnType);
-      ((LongWritable) result[1]).set(myagg.min);
-      ((LongWritable) result[2]).set(myagg.max);
-      ((LongWritable) result[3]).set(myagg.countNulls);
-      ((LongWritable) result[4]).set(numDV);
+      @Override
+      protected void update(Object p, PrimitiveObjectInspector inputOI) {
+        long v = PrimitiveObjectInspectorUtils.getLong(p, inputOI);
+        //Update min counter if new value is less than min seen so far
+        if (min == null || v < min) {
+          min = v;
+        }
+        //Update max counter if new value is greater than max seen so far
+        if (max == null || v > max) {
+          max = v;
+        }
+        // Add value to NumDistinctValue Estimator
+        numDV.addToEstimator(v);
+      }
 
+      @Override
+      protected void updateMin(Object minValue, LongObjectInspector minFieldOI) {
+        if (min == null || (minValue != null && min > minFieldOI.get(minValue))) {
+          min = minFieldOI.get(minValue);
+        }
+      }
+
+      @Override
+      protected void updateMax(Object maxValue, LongObjectInspector maxFieldOI) {
+        if (max == null || (maxValue != null && max < maxFieldOI.get(maxValue))) {
+          max = maxFieldOI.get(maxValue);
+        }
+      }
+    };
+
+    @Override
+    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
+      AggregationBuffer result = new LongStatsAgg();
+      reset(result);
       return result;
+    }
+
+    @Override
+    public void reset(AggregationBuffer agg) throws HiveException {
+      ((NumericStatsAgg)agg).reset("Long");
     }
   }
 
@@ -604,303 +624,62 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
    * GenericUDAFDoubleStatsEvaluator.
    *
    */
-  public static class GenericUDAFDoubleStatsEvaluator extends GenericUDAFEvaluator {
-
-    /* Object Inspector corresponding to the input parameter.
-     */
-    private transient PrimitiveObjectInspector inputOI;
-    private transient PrimitiveObjectInspector numVectorsOI;
-    private final static int MAX_BIT_VECTORS = 1024;
-
-    /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
-     * containing a long field named "count".
-     */
-    private transient Object[] partialResult;
-
-    /* Object Inspectors corresponding to the struct returned by TerminatePartial and the long
-     * field within the struct - "count"
-     */
-    private transient StructObjectInspector soi;
-
-    private transient StructField minField;
-    private transient WritableDoubleObjectInspector minFieldOI;
-
-    private transient StructField maxField;
-    private transient WritableDoubleObjectInspector maxFieldOI;
-
-    private transient StructField countNullsField;
-    private transient WritableLongObjectInspector countNullsFieldOI;
-
-    private transient StructField ndvField;
-    private transient WritableStringObjectInspector ndvFieldOI;
-
-    private transient StructField numBitVectorsField;
-    private transient WritableIntObjectInspector numBitVectorsFieldOI;
-
-    /* Output of final result of the aggregation
-     */
-    private transient Object[] result;
+  public static class GenericUDAFDoubleStatsEvaluator
+      extends GenericUDAFNumericStatsEvaluator<Double, DoubleObjectInspector> {
 
     @Override
-    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
-      super.init(m, parameters);
-
-      // initialize input
-      if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
-        inputOI = (PrimitiveObjectInspector) parameters[0];
-        numVectorsOI = (PrimitiveObjectInspector) parameters[1];
-      } else {
-        soi = (StructObjectInspector) parameters[0];
-
-        minField = soi.getStructFieldRef("Min");
-        minFieldOI = (WritableDoubleObjectInspector) minField.getFieldObjectInspector();
-
-        maxField = soi.getStructFieldRef("Max");
-        maxFieldOI = (WritableDoubleObjectInspector) maxField.getFieldObjectInspector();
-
-        countNullsField = soi.getStructFieldRef("CountNulls");
-        countNullsFieldOI = (WritableLongObjectInspector) countNullsField.getFieldObjectInspector();
-
-        ndvField = soi.getStructFieldRef("BitVector");
-        ndvFieldOI = (WritableStringObjectInspector) ndvField.getFieldObjectInspector();
-
-        numBitVectorsField = soi.getStructFieldRef("NumBitVectors");
-        numBitVectorsFieldOI = (WritableIntObjectInspector)
-                                  numBitVectorsField.getFieldObjectInspector();
-      }
-
-      // initialize output
-      if (mode == Mode.PARTIAL1 || mode == Mode.PARTIAL2) {
-        List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-        foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableIntObjectInspector);
-
-        List<String> fname = new ArrayList<String>();
-        fname.add("ColumnType");
-        fname.add("Min");
-        fname.add("Max");
-        fname.add("CountNulls");
-        fname.add("BitVector");
-        fname.add("NumBitVectors");
-
-        partialResult = new Object[6];
-        partialResult[0] = new Text();
-        partialResult[1] = new DoubleWritable(0);
-        partialResult[2] = new DoubleWritable(0);
-        partialResult[3] = new LongWritable(0);
-        partialResult[4] = new Text();
-        partialResult[5] = new IntWritable(0);
-
-        return ObjectInspectorFactory.getStandardStructObjectInspector(fname,
-          foi);
-      } else {
-        List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-        foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-
-        List<String> fname = new ArrayList<String>();
-        fname.add("ColumnType");
-        fname.add("Min");
-        fname.add("Max");
-        fname.add("CountNulls");
-        fname.add("NumDistinctValues");
-
-        result = new Object[5];
-        result[0] = new Text();
-        result[1] = new DoubleWritable(0);
-        result[2] = new DoubleWritable(0);
-        result[3] = new LongWritable(0);
-        result[4] = new LongWritable(0);
-
-        return ObjectInspectorFactory.getStandardStructObjectInspector(fname,
-            foi);
-      }
+    protected DoubleObjectInspector getValueObjectInspector() {
+      return PrimitiveObjectInspectorFactory.javaDoubleObjectInspector;
     }
 
     @AggregationType(estimable = true)
-    public static class DoubleStatsAgg extends AbstractAggregationBuffer {
-      public String columnType;
-      public double min;                            /* Minimum value seen so far */
-      public double max;                            /* Maximum value seen so far */
-      public long countNulls;      /* Count of number of null values seen so far */
-      public DoubleNumDistinctValueEstimator numDV;  /* Distinct value estimator */
-      public boolean firstItem;                     /* First item in the aggBuf? */
-      public int numBitVectors;
+    public class DoubleStatsAgg extends NumericStatsAgg {
       @Override
       public int estimate() {
         JavaDataModel model = JavaDataModel.get();
-        return model.primitive1() * 2 + model.primitive2() * 3 +
-            model.lengthFor(columnType) + model.lengthFor(numDV);
+        return super.estimate() + model.primitive2() * 2;
+      }
+
+      @Override
+      protected void update(Object p, PrimitiveObjectInspector inputOI) {
+        double v = PrimitiveObjectInspectorUtils.getDouble(p, inputOI);
+        //Update min counter if new value is less than min seen so far
+        if (min == null || v < min) {
+          min = v;
+        }
+        //Update max counter if new value is greater than max seen so far
+        if (max == null || v > max) {
+          max = v;
+        }
+        // Add value to NumDistinctValue Estimator
+        numDV.addToEstimator(v);
+      }
+
+      @Override
+      protected void updateMin(Object minValue, DoubleObjectInspector minFieldOI) {
+        if (min == null || (minValue != null && min > minFieldOI.get(minValue))) {
+          min = minFieldOI.get(minValue);
+        }
+      }
+
+      @Override
+      protected void updateMax(Object maxValue, DoubleObjectInspector maxFieldOI) {
+        if (max == null || (maxValue != null && max < maxFieldOI.get(maxValue))) {
+          max = maxFieldOI.get(maxValue);
+        }
       }
     };
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
-      DoubleStatsAgg result = new DoubleStatsAgg();
+      AggregationBuffer result = new DoubleStatsAgg();
       reset(result);
       return result;
     }
 
-    public void initNDVEstimator(DoubleStatsAgg aggBuffer, int numBitVectors) {
-      aggBuffer.numDV = new DoubleNumDistinctValueEstimator(numBitVectors);
-      aggBuffer.numDV.reset();
-    }
-
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
-      DoubleStatsAgg myagg = (DoubleStatsAgg) agg;
-      myagg.columnType = new String("Double");
-      myagg.min = 0.0;
-      myagg.max = 0.0;
-      myagg.countNulls = 0;
-      myagg.firstItem = true;
-    }
-
-    boolean warned = false;
-
-    @Override
-    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
-      Object p = parameters[0];
-      DoubleStatsAgg myagg = (DoubleStatsAgg) agg;
-      boolean emptyTable = false;
-
-      if (parameters[1] == null) {
-        emptyTable = true;
-      }
-
-      if (myagg.firstItem) {
-        int numVectors = 0;
-        if (!emptyTable) {
-          numVectors = PrimitiveObjectInspectorUtils.getInt(parameters[1], numVectorsOI);
-        }
-
-        if (numVectors > MAX_BIT_VECTORS) {
-          throw new HiveException("The maximum allowed value for number of bit vectors " +
-            " is " + MAX_BIT_VECTORS + ", but was passed " + numVectors + " bit vectors");
-        }
-
-        initNDVEstimator(myagg, numVectors);
-        myagg.firstItem = false;
-        myagg.numBitVectors = numVectors;
-      }
-
-      if (!emptyTable) {
-
-        //Update null counter if a null value is seen
-        if (p == null) {
-          myagg.countNulls++;
-        }
-        else {
-          try {
-
-            double v = PrimitiveObjectInspectorUtils.getDouble(p, inputOI);
-
-            //Update min counter if new value is less than min seen so far
-            if (v < myagg.min) {
-              myagg.min = v;
-            }
-
-            //Update max counter if new value is greater than max seen so far
-            if (v > myagg.max) {
-              myagg.max = v;
-            }
-
-            // Add value to NumDistinctValue Estimator
-            myagg.numDV.addToEstimator(v);
-
-          } catch (NumberFormatException e) {
-            if (!warned) {
-              warned = true;
-              LOG.warn(getClass().getSimpleName() + " "
-                  + StringUtils.stringifyException(e));
-              LOG.warn(getClass().getSimpleName()
-                  + " ignoring similar exceptions.");
-            }
-          }
-        }
-      }
-    }
-
-    @Override
-    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
-      DoubleStatsAgg myagg = (DoubleStatsAgg) agg;
-
-      // Serialize numDistinctValue Estimator
-      Text t = myagg.numDV.serialize();
-
-      // Serialize the rest of the values in the AggBuffer
-      ((Text) partialResult[0]).set(myagg.columnType);
-      ((DoubleWritable) partialResult[1]).set(myagg.min);
-      ((DoubleWritable) partialResult[2]).set(myagg.max);
-      ((LongWritable) partialResult[3]).set(myagg.countNulls);
-      ((Text) partialResult[4]).set(t);
-      ((IntWritable) partialResult[5]).set(myagg.numBitVectors);
-
-      return partialResult;
-    }
-
-    @Override
-    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
-      if (partial != null) {
-        DoubleStatsAgg myagg = (DoubleStatsAgg) agg;
-
-        if (myagg.firstItem) {
-          Object partialValue = soi.getStructFieldData(partial, numBitVectorsField);
-          int numVectors = numBitVectorsFieldOI.get(partialValue);
-          initNDVEstimator(myagg, numVectors);
-          myagg.firstItem = false;
-          myagg.numBitVectors = numVectors;
-        }
-
-        // Update min if min is lesser than the smallest value seen so far
-        Object partialValue = soi.getStructFieldData(partial, minField);
-        if (myagg.min > minFieldOI.get(partialValue)) {
-          myagg.min = minFieldOI.get(partialValue);
-        }
-
-        // Update max if max is greater than the largest value seen so far
-        partialValue = soi.getStructFieldData(partial, maxField);
-        if (myagg.max < maxFieldOI.get(partialValue)) {
-          myagg.max = maxFieldOI.get(partialValue);
-        }
-
-        // Update the null counter
-        partialValue = soi.getStructFieldData(partial, countNullsField);
-        myagg.countNulls += countNullsFieldOI.get(partialValue);
-
-        // Merge numDistinctValue Estimators
-        partialValue = soi.getStructFieldData(partial, ndvField);
-        String v = ndvFieldOI.getPrimitiveJavaObject(partialValue);
-
-        NumDistinctValueEstimator o = new NumDistinctValueEstimator(v, myagg.numBitVectors);
-        myagg.numDV.mergeEstimators(o);
-      }
-    }
-
-    @Override
-    public Object terminate(AggregationBuffer agg) throws HiveException {
-      DoubleStatsAgg myagg = (DoubleStatsAgg) agg;
-      long numDV = 0;
-
-      if (myagg.numBitVectors != 0) {
-        numDV = myagg.numDV.estimateNumDistinctValues();
-      }
-
-      // Serialize the result struct
-      ((Text) result[0]).set(myagg.columnType);
-      ((DoubleWritable) result[1]).set(myagg.min);
-      ((DoubleWritable) result[2]).set(myagg.max);
-      ((LongWritable) result[3]).set(myagg.countNulls);
-      ((LongWritable) result[4]).set(numDV);
-
-      return result;
+      ((NumericStatsAgg)agg).reset("Double");
     }
   }
 
@@ -1475,304 +1254,64 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     }
   }
 
-  public static class GenericUDAFDecimalStatsEvaluator extends GenericUDAFEvaluator {
-
-    /*
-     * Object Inspector corresponding to the input parameter.
-     */
-    private transient PrimitiveObjectInspector inputOI;
-    private transient PrimitiveObjectInspector numVectorsOI;
-    private final static int MAX_BIT_VECTORS = 1024;
-
-    /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
-     * containing a long field named "count".
-     */
-    private transient Object[] partialResult;
-
-    /* Object Inspectors corresponding to the struct returned by TerminatePartial and the long
-     * field within the struct - "count"
-     */
-    private transient StructObjectInspector soi;
-
-    private transient StructField minField;
-    private transient WritableHiveDecimalObjectInspector minFieldOI;
-
-    private transient StructField maxField;
-    private transient WritableHiveDecimalObjectInspector maxFieldOI;
-
-    private transient StructField countNullsField;
-    private transient WritableLongObjectInspector countNullsFieldOI;
-
-    private transient StructField ndvField;
-    private transient WritableStringObjectInspector ndvFieldOI;
-
-    private transient StructField numBitVectorsField;
-    private transient WritableIntObjectInspector numBitVectorsFieldOI;
-
-    /* Output of final result of the aggregation
-     */
-    private transient Object[] result;
-
-    private boolean warned = false;
+  public static class GenericUDAFDecimalStatsEvaluator
+      extends GenericUDAFNumericStatsEvaluator<HiveDecimal, HiveDecimalObjectInspector> {
 
     @Override
-    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
-      super.init(m, parameters);
-
-      // initialize input
-      if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
-        inputOI = (PrimitiveObjectInspector) parameters[0];
-        numVectorsOI = (PrimitiveObjectInspector) parameters[1];
-      } else {
-        soi = (StructObjectInspector) parameters[0];
-
-        minField = soi.getStructFieldRef("Min");
-        minFieldOI = (WritableHiveDecimalObjectInspector) minField.getFieldObjectInspector();
-
-        maxField = soi.getStructFieldRef("Max");
-        maxFieldOI = (WritableHiveDecimalObjectInspector) maxField.getFieldObjectInspector();
-
-        countNullsField = soi.getStructFieldRef("CountNulls");
-        countNullsFieldOI = (WritableLongObjectInspector) countNullsField.getFieldObjectInspector();
-
-        ndvField = soi.getStructFieldRef("BitVector");
-        ndvFieldOI = (WritableStringObjectInspector) ndvField.getFieldObjectInspector();
-
-        numBitVectorsField = soi.getStructFieldRef("NumBitVectors");
-        numBitVectorsFieldOI = (WritableIntObjectInspector)
-            numBitVectorsField.getFieldObjectInspector();
-      }
-
-      // initialize output
-      if (mode == Mode.PARTIAL1 || mode == Mode.PARTIAL2) {
-        List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-        foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableIntObjectInspector);
-
-        List<String> fname = new ArrayList<String>();
-        fname.add("ColumnType");
-        fname.add("Min");
-        fname.add("Max");
-        fname.add("CountNulls");
-        fname.add("BitVector");
-        fname.add("NumBitVectors");
-
-        partialResult = new Object[6];
-        partialResult[0] = new Text();
-        partialResult[1] = new HiveDecimalWritable(HiveDecimal.create(0));
-        partialResult[2] = new HiveDecimalWritable(HiveDecimal.create(0));
-        partialResult[3] = new LongWritable(0);
-        partialResult[4] = new Text();
-        partialResult[5] = new IntWritable(0);
-
-        return ObjectInspectorFactory.getStandardStructObjectInspector(fname,
-            foi);
-      } else {
-        List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-        foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-
-        List<String> fname = new ArrayList<String>();
-        fname.add("ColumnType");
-        fname.add("Min");
-        fname.add("Max");
-        fname.add("CountNulls");
-        fname.add("NumDistinctValues");
-
-        result = new Object[5];
-        result[0] = new Text();
-        result[1] = new HiveDecimalWritable(HiveDecimal.create(0));
-        result[2] = new HiveDecimalWritable(HiveDecimal.create(0));
-        result[3] = new LongWritable(0);
-        result[4] = new LongWritable(0);
-
-        return ObjectInspectorFactory.getStandardStructObjectInspector(fname,
-            foi);
-      }
+    protected HiveDecimalObjectInspector getValueObjectInspector() {
+      return PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector;
     }
 
     @AggregationType(estimable = true)
-    public static class DecimalStatsAgg extends AbstractAggregationBuffer {
-      public String columnType;
-      public HiveDecimal min;                            /* Minimum value seen so far */
-      public HiveDecimal max;                            /* Maximum value seen so far */
-      public long countNulls;      /* Count of number of null values seen so far */
-      public DecimalNumDistinctValueEstimator numDV;  /* Distinct value estimator */
-      public boolean firstItem;                     /* First item in the aggBuf? */
-      public int numBitVectors;
+    public class DecimalStatsAgg extends NumericStatsAgg {
       @Override
       public int estimate() {
         JavaDataModel model = JavaDataModel.get();
-        return model.primitive1() * 2 + model.primitive2() + model.lengthOfDecimal() * 2 +
-            model.lengthFor(columnType) + model.lengthFor(numDV);
+        return super.estimate() + model.lengthOfDecimal() * 2;
+      }
+
+      @Override
+      protected void update(Object p, PrimitiveObjectInspector inputOI) {
+        HiveDecimal v = PrimitiveObjectInspectorUtils.getHiveDecimal(p, inputOI);
+        //Update min counter if new value is less than min seen so far
+        if (min == null || v.compareTo(min) < 0) {
+          min = v;
+        }
+        //Update max counter if new value is greater than max seen so far
+        if (max == null || v.compareTo(max) > 0) {
+          max = v;
+        }
+        // Add value to NumDistinctValue Estimator
+        numDV.addToEstimator(v);
+      }
+
+      @Override
+      protected void updateMin(Object minValue, HiveDecimalObjectInspector minFieldOI) {
+        if (min == null || (minValue != null &&
+            min.compareTo(minFieldOI.getPrimitiveJavaObject(minValue)) > 0)) {
+          min = minFieldOI.getPrimitiveJavaObject(minValue);
+        }
+      }
+
+      @Override
+      protected void updateMax(Object maxValue, HiveDecimalObjectInspector maxFieldOI) {
+        if (max == null || (maxValue != null &&
+            max.compareTo(maxFieldOI.getPrimitiveJavaObject(maxValue)) < 0)) {
+          max = maxFieldOI.getPrimitiveJavaObject(maxValue);
+        }
       }
     };
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
-      DecimalStatsAgg result = new DecimalStatsAgg();
+      AggregationBuffer result = new DecimalStatsAgg();
       reset(result);
       return result;
     }
 
-    public void initNDVEstimator(DecimalStatsAgg aggBuffer, int numBitVectors) {
-      aggBuffer.numDV = new DecimalNumDistinctValueEstimator(numBitVectors);
-      aggBuffer.numDV.reset();
-    }
-
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
-      DecimalStatsAgg myagg = (DecimalStatsAgg) agg;
-      myagg.columnType = new String("Decimal");
-      myagg.min = HiveDecimal.create(0);
-      myagg.max = HiveDecimal.create(0);
-      myagg.countNulls = 0;
-      myagg.firstItem = true;
-    }
-
-    @Override
-    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
-      Object p = parameters[0];
-      DecimalStatsAgg myagg = (DecimalStatsAgg) agg;
-      boolean emptyTable = false;
-
-      if (parameters[1] == null) {
-        emptyTable = true;
-      }
-
-      if (myagg.firstItem) {
-        int numVectors = 0;
-        if (!emptyTable) {
-          numVectors = PrimitiveObjectInspectorUtils.getInt(parameters[1], numVectorsOI);
-        }
-
-        if (numVectors > MAX_BIT_VECTORS) {
-          throw new HiveException("The maximum allowed value for number of bit vectors " +
-              " is " + MAX_BIT_VECTORS + ", but was passed " + numVectors + " bit vectors");
-        }
-
-        initNDVEstimator(myagg, numVectors);
-        myagg.firstItem = false;
-        myagg.numBitVectors = numVectors;
-      }
-
-      if (!emptyTable) {
-
-        //Update null counter if a null value is seen
-        if (p == null) {
-          myagg.countNulls++;
-        }
-        else {
-          try {
-
-            HiveDecimal v = PrimitiveObjectInspectorUtils.getHiveDecimal(p, inputOI);
-
-            //Update min counter if new value is less than min seen so far
-            if (v.compareTo(myagg.min) < 0) {
-              myagg.min = v;
-            }
-
-            //Update max counter if new value is greater than max seen so far
-            if (v.compareTo(myagg.max) > 0) {
-              myagg.max = v;
-            }
-
-            // Add value to NumDistinctValue Estimator
-            myagg.numDV.addToEstimator(v);
-
-          } catch (NumberFormatException e) {
-            if (!warned) {
-              warned = true;
-              LOG.warn(getClass().getSimpleName() + " "
-                  + StringUtils.stringifyException(e));
-              LOG.warn(getClass().getSimpleName()
-                  + " ignoring similar exceptions.");
-            }
-          }
-        }
-      }
-    }
-
-    @Override
-    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
-      DecimalStatsAgg myagg = (DecimalStatsAgg) agg;
-
-      // Serialize numDistinctValue Estimator
-      Text t = myagg.numDV.serialize();
-
-      // Serialize the rest of the values in the AggBuffer
-      ((Text) partialResult[0]).set(myagg.columnType);
-      ((HiveDecimalWritable) partialResult[1]).set(myagg.min);
-      ((HiveDecimalWritable) partialResult[2]).set(myagg.max);
-      ((LongWritable) partialResult[3]).set(myagg.countNulls);
-      ((Text) partialResult[4]).set(t);
-      ((IntWritable) partialResult[5]).set(myagg.numBitVectors);
-
-      return partialResult;
-    }
-
-    @Override
-    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
-      if (partial != null) {
-        DecimalStatsAgg myagg = (DecimalStatsAgg) agg;
-
-        if (myagg.firstItem) {
-          Object partialValue = soi.getStructFieldData(partial, numBitVectorsField);
-          int numVectors = numBitVectorsFieldOI.get(partialValue);
-          initNDVEstimator(myagg, numVectors);
-          myagg.firstItem = false;
-          myagg.numBitVectors = numVectors;
-        }
-
-        // Update min if min is lesser than the smallest value seen so far
-        Object partialValue = soi.getStructFieldData(partial, minField);
-        if (myagg.min.compareTo(minFieldOI.getPrimitiveJavaObject(partialValue)) > 0) {
-          myagg.min = minFieldOI.getPrimitiveJavaObject(partialValue);
-        }
-
-        // Update max if max is greater than the largest value seen so far
-        partialValue = soi.getStructFieldData(partial, maxField);
-        if (myagg.max.compareTo(maxFieldOI.getPrimitiveJavaObject(partialValue)) < 0) {
-          myagg.max = maxFieldOI.getPrimitiveJavaObject(partialValue);
-        }
-
-        // Update the null counter
-        partialValue = soi.getStructFieldData(partial, countNullsField);
-        myagg.countNulls += countNullsFieldOI.get(partialValue);
-
-        // Merge numDistinctValue Estimators
-        partialValue = soi.getStructFieldData(partial, ndvField);
-        String v = ndvFieldOI.getPrimitiveJavaObject(partialValue);
-
-        NumDistinctValueEstimator o = new NumDistinctValueEstimator(v, myagg.numBitVectors);
-        myagg.numDV.mergeEstimators(o);
-      }
-    }
-
-    @Override
-    public Object terminate(AggregationBuffer agg) throws HiveException {
-      DecimalStatsAgg myagg = (DecimalStatsAgg) agg;
-      long numDV = 0;
-
-      if (myagg.numBitVectors != 0) {
-        numDV = myagg.numDV.estimateNumDistinctValues();
-      }
-
-      // Serialize the result struct
-      ((Text) result[0]).set(myagg.columnType);
-      ((HiveDecimalWritable) result[1]).set(myagg.min);
-      ((HiveDecimalWritable) result[2]).set(myagg.max);
-      ((LongWritable) result[3]).set(myagg.countNulls);
-      ((LongWritable) result[4]).set(numDV);
-
-      return result;
+      ((NumericStatsAgg)agg).reset("Decimal");
     }
   }
 }

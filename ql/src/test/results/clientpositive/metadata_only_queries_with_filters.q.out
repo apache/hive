@@ -162,7 +162,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt = 2010
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####
-2322	2322	2322	2322	2322	2322	2322	65791	0	99.9800033569336	0.0
+2322	2322	2322	2322	2322	2322	2322	65791	4294967296	99.9800033569336	0.03
 PREHOOK: query: explain 
 select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt > 2010
 PREHOOK: type: QUERY
@@ -185,7 +185,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt > 2010
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####
-2219	2219	2219	4438	2219	2219	2219	2219	65791	0	99.95999908447266	0.0
+2219	2219	2219	4438	2219	2219	2219	2219	65791	4294967296	99.95999908447266	0.04
 PREHOOK: query: drop table stats_tbl_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_tbl_part

@@ -45,8 +45,8 @@ public class LongColumnStatsData implements org.apache.thrift.TBase<LongColumnSt
     schemes.put(TupleScheme.class, new LongColumnStatsDataTupleSchemeFactory());
   }
 
-  private long lowValue; // required
-  private long highValue; // required
+  private long lowValue; // optional
+  private long highValue; // optional
   private long numNulls; // required
   private long numDVs; // required
 
@@ -123,12 +123,13 @@ public class LongColumnStatsData implements org.apache.thrift.TBase<LongColumnSt
   private static final int __NUMNULLS_ISSET_ID = 2;
   private static final int __NUMDVS_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
+  private _Fields optionals[] = {_Fields.LOW_VALUE,_Fields.HIGH_VALUE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.LOW_VALUE, new org.apache.thrift.meta_data.FieldMetaData("lowValue", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.LOW_VALUE, new org.apache.thrift.meta_data.FieldMetaData("lowValue", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.HIGH_VALUE, new org.apache.thrift.meta_data.FieldMetaData("highValue", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.HIGH_VALUE, new org.apache.thrift.meta_data.FieldMetaData("highValue", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.NUM_NULLS, new org.apache.thrift.meta_data.FieldMetaData("numNulls", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
@@ -142,16 +143,10 @@ public class LongColumnStatsData implements org.apache.thrift.TBase<LongColumnSt
   }
 
   public LongColumnStatsData(
-    long lowValue,
-    long highValue,
     long numNulls,
     long numDVs)
   {
     this();
-    this.lowValue = lowValue;
-    setLowValueIsSet(true);
-    this.highValue = highValue;
-    setHighValueIsSet(true);
     this.numNulls = numNulls;
     setNumNullsIsSet(true);
     this.numDVs = numDVs;
@@ -360,8 +355,8 @@ public class LongColumnStatsData implements org.apache.thrift.TBase<LongColumnSt
     if (that == null)
       return false;
 
-    boolean this_present_lowValue = true;
-    boolean that_present_lowValue = true;
+    boolean this_present_lowValue = true && this.isSetLowValue();
+    boolean that_present_lowValue = true && that.isSetLowValue();
     if (this_present_lowValue || that_present_lowValue) {
       if (!(this_present_lowValue && that_present_lowValue))
         return false;
@@ -369,8 +364,8 @@ public class LongColumnStatsData implements org.apache.thrift.TBase<LongColumnSt
         return false;
     }
 
-    boolean this_present_highValue = true;
-    boolean that_present_highValue = true;
+    boolean this_present_highValue = true && this.isSetHighValue();
+    boolean that_present_highValue = true && that.isSetHighValue();
     if (this_present_highValue || that_present_highValue) {
       if (!(this_present_highValue && that_present_highValue))
         return false;
@@ -403,12 +398,12 @@ public class LongColumnStatsData implements org.apache.thrift.TBase<LongColumnSt
   public int hashCode() {
     HashCodeBuilder builder = new HashCodeBuilder();
 
-    boolean present_lowValue = true;
+    boolean present_lowValue = true && (isSetLowValue());
     builder.append(present_lowValue);
     if (present_lowValue)
       builder.append(lowValue);
 
-    boolean present_highValue = true;
+    boolean present_highValue = true && (isSetHighValue());
     builder.append(present_highValue);
     if (present_highValue)
       builder.append(highValue);
@@ -494,13 +489,17 @@ public class LongColumnStatsData implements org.apache.thrift.TBase<LongColumnSt
     StringBuilder sb = new StringBuilder("LongColumnStatsData(");
     boolean first = true;
 
-    sb.append("lowValue:");
-    sb.append(this.lowValue);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("highValue:");
-    sb.append(this.highValue);
-    first = false;
+    if (isSetLowValue()) {
+      sb.append("lowValue:");
+      sb.append(this.lowValue);
+      first = false;
+    }
+    if (isSetHighValue()) {
+      if (!first) sb.append(", ");
+      sb.append("highValue:");
+      sb.append(this.highValue);
+      first = false;
+    }
     if (!first) sb.append(", ");
     sb.append("numNulls:");
     sb.append(this.numNulls);
@@ -515,14 +514,6 @@ public class LongColumnStatsData implements org.apache.thrift.TBase<LongColumnSt
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetLowValue()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'lowValue' is unset! Struct:" + toString());
-    }
-
-    if (!isSetHighValue()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'highValue' is unset! Struct:" + toString());
-    }
-
     if (!isSetNumNulls()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'numNulls' is unset! Struct:" + toString());
     }
@@ -615,12 +606,16 @@ public class LongColumnStatsData implements org.apache.thrift.TBase<LongColumnSt
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(LOW_VALUE_FIELD_DESC);
-      oprot.writeI64(struct.lowValue);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(HIGH_VALUE_FIELD_DESC);
-      oprot.writeI64(struct.highValue);
-      oprot.writeFieldEnd();
+      if (struct.isSetLowValue()) {
+        oprot.writeFieldBegin(LOW_VALUE_FIELD_DESC);
+        oprot.writeI64(struct.lowValue);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetHighValue()) {
+        oprot.writeFieldBegin(HIGH_VALUE_FIELD_DESC);
+        oprot.writeI64(struct.highValue);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldBegin(NUM_NULLS_FIELD_DESC);
       oprot.writeI64(struct.numNulls);
       oprot.writeFieldEnd();
@@ -644,23 +639,40 @@ public class LongColumnStatsData implements org.apache.thrift.TBase<LongColumnSt
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, LongColumnStatsData struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      oprot.writeI64(struct.lowValue);
-      oprot.writeI64(struct.highValue);
       oprot.writeI64(struct.numNulls);
       oprot.writeI64(struct.numDVs);
+      BitSet optionals = new BitSet();
+      if (struct.isSetLowValue()) {
+        optionals.set(0);
+      }
+      if (struct.isSetHighValue()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetLowValue()) {
+        oprot.writeI64(struct.lowValue);
+      }
+      if (struct.isSetHighValue()) {
+        oprot.writeI64(struct.highValue);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, LongColumnStatsData struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.lowValue = iprot.readI64();
-      struct.setLowValueIsSet(true);
-      struct.highValue = iprot.readI64();
-      struct.setHighValueIsSet(true);
       struct.numNulls = iprot.readI64();
       struct.setNumNullsIsSet(true);
       struct.numDVs = iprot.readI64();
       struct.setNumDVsIsSet(true);
+      BitSet incoming = iprot.readBitSet(2);
+      if (incoming.get(0)) {
+        struct.lowValue = iprot.readI64();
+        struct.setLowValueIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.highValue = iprot.readI64();
+        struct.setHighValueIsSet(true);
+      }
     }
   }
 
