@@ -118,16 +118,23 @@ public class PartitionDesc implements Serializable, Cloneable {
     return inputFileFormatClass;
   }
 
-  /**
-   * Return a deserializer object corresponding to the partitionDesc.
-   */
-  public Deserializer getDeserializer(Configuration conf) throws Exception {
+  public String getDeserializerClassName() {
     Properties schema = getProperties();
     String clazzName = schema.getProperty(serdeConstants.SERIALIZATION_LIB);
     if (clazzName == null) {
       throw new IllegalStateException("Property " + serdeConstants.SERIALIZATION_LIB +
           " cannot be null");
     }
+
+    return clazzName;
+  }
+
+  /**
+   * Return a deserializer object corresponding to the partitionDesc.
+   */
+  public Deserializer getDeserializer(Configuration conf) throws Exception {
+    Properties schema = getProperties();
+    String clazzName = getDeserializerClassName();
     Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(clazzName)
         .asSubclass(Deserializer.class), conf);
     SerDeUtils.initializeSerDe(deserializer, conf, getTableDesc().getProperties(), schema);
