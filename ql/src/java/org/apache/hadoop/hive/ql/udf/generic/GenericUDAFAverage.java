@@ -26,7 +26,12 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
+import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.ValueBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum.GenericUDAFSumDouble.SumDoubleAgg;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -152,6 +157,59 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       reset(result);
       return result;
     }
+
+    @Override
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+
+      BoundaryDef start = wFrmDef.getStart();
+      BoundaryDef end = wFrmDef.getEnd();
+
+      /*
+       * Currently we are not handling dynamic sized windows implied by range based windows.
+       */
+      if (start instanceof ValueBoundaryDef || end instanceof ValueBoundaryDef) {
+        return null;
+      }
+
+      /*
+       * Windows that are unbounded following don't benefit from Streaming.
+       */
+      if (end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT) {
+        return null;
+      }
+
+      return new GenericUDAFStreamingEnhancer<DoubleWritable, Object[]>(this,
+          start.getAmt(), end.getAmt()) {
+
+        @Override
+        protected DoubleWritable getNextResult(
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEnhancer<DoubleWritable, Object[]>.StreamingState ss)
+            throws HiveException {
+          AverageAggregationBuffer<Double> myagg = (AverageAggregationBuffer<Double>) ss.wrappedBuf;
+          Double r = myagg.count == 0 ? null : myagg.sum;
+          long cnt = myagg.count;
+          if (ss.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+              && (ss.numRows - ss.numFollowing) >= (ss.numPreceding + 1)) {
+            Object[] o = ss.intermediateVals.remove(0);
+            Double d = o == null ? 0.0 : (Double) o[0];
+            r = r == null ? null : r - d;
+            cnt = cnt - ((Long) o[1]);
+          }
+
+          return r == null ? null : new DoubleWritable(r / cnt);
+        }
+
+        @Override
+        protected Object[] getCurrentIntermediateResult(
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEnhancer<DoubleWritable, Object[]>.StreamingState ss)
+            throws HiveException {
+          AverageAggregationBuffer<Double> myagg = (AverageAggregationBuffer<Double>) ss.wrappedBuf;
+          return myagg.count == 0 ? null : new Object[] {
+              new Double(myagg.sum), myagg.count };
+        }
+
+      };
+    }
   }
 
   public static class GenericUDAFAverageEvaluatorDecimal extends AbstractGenericUDAFAverageEvaluator<HiveDecimal> {
@@ -240,6 +298,54 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       AverageAggregationBuffer<HiveDecimal> result = new AverageAggregationBuffer<HiveDecimal>();
       reset(result);
       return result;
+    }
+
+    @Override
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+
+      BoundaryDef start = wFrmDef.getStart();
+      BoundaryDef end = wFrmDef.getEnd();
+
+      if (start instanceof ValueBoundaryDef || end instanceof ValueBoundaryDef) {
+        return null;
+      }
+
+      if (end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT) {
+        return null;
+      }
+
+      return new GenericUDAFStreamingEnhancer<HiveDecimalWritable, Object[]>(
+          this, start.getAmt(), end.getAmt()) {
+
+        @Override
+        protected HiveDecimalWritable getNextResult(
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEnhancer<HiveDecimalWritable, Object[]>.StreamingState ss)
+            throws HiveException {
+          AverageAggregationBuffer<HiveDecimal> myagg = (AverageAggregationBuffer<HiveDecimal>) ss.wrappedBuf;
+          HiveDecimal r = myagg.count == 0 ? null : myagg.sum;
+          long cnt = myagg.count;
+          if (ss.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+              && (ss.numRows - ss.numFollowing) >= (ss.numPreceding + 1)) {
+            Object[] o = ss.intermediateVals.remove(0);
+            HiveDecimal d = o == null ? HiveDecimal.ZERO : (HiveDecimal) o[0];
+            r = r == null ? null : r.subtract(d);
+            cnt = cnt - ((Long) o[1]);
+          }
+
+          return r == null ? null : new HiveDecimalWritable(
+              r.divide(HiveDecimal.create(cnt)));
+        }
+
+        @Override
+        protected Object[] getCurrentIntermediateResult(
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEnhancer<HiveDecimalWritable, Object[]>.StreamingState ss)
+            throws HiveException {
+          AverageAggregationBuffer<HiveDecimal> myagg = (AverageAggregationBuffer<HiveDecimal>) ss.wrappedBuf;
+          return myagg.count == 0 ? null : new Object[] { myagg.sum,
+              myagg.count };
+        }
+
+      };
     }
   }
 

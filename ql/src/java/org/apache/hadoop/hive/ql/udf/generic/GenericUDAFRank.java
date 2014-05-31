@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -71,7 +72,7 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver
 		return createEvaluator();
 	}
 
-	protected GenericUDAFRankEvaluator createEvaluator()
+	protected GenericUDAFAbstractRankEvaluator createEvaluator()
 	{
 		return new GenericUDAFRankEvaluator();
 	}
@@ -83,10 +84,12 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver
 		Object[] currVal;
 		int currentRank;
 		int numParams;
+		boolean supportsStreaming;
 
-		RankBuffer(int numParams)
+		RankBuffer(int numParams, boolean supportsStreaming)
 		{
 			this.numParams = numParams;
+			this.supportsStreaming = supportsStreaming;
 			init();
 		}
 
@@ -96,20 +99,33 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver
 			currentRowNum = 0;
 			currentRank = 0;
 			currVal = new Object[numParams];
+			if ( supportsStreaming ) {
+			  /* initialize rowNums to have 1 row */
+			  rowNums.add(null);
+			}
 		}
-
+		
 		void incrRowNum() { currentRowNum++; }
 
 		void addRank()
 		{
-			rowNums.add(new IntWritable(currentRank));
+		  if ( supportsStreaming ) {
+		    rowNums.set(0, new IntWritable(currentRank));
+		  } else {
+		    rowNums.add(new IntWritable(currentRank));
+		  }
 		}
 	}
 
-	public static class GenericUDAFRankEvaluator extends GenericUDAFEvaluator
+	public static abstract class GenericUDAFAbstractRankEvaluator extends GenericUDAFEvaluator 
 	{
 		ObjectInspector[] inputOI;
 		ObjectInspector[] outputOI;
+		boolean isStreamingMode = false;
+
+		protected boolean isStreaming() {
+		  return isStreamingMode;
+		}
 
 		@Override
 		public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException
@@ -132,7 +148,7 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver
 		@Override
 		public AggregationBuffer getNewAggregationBuffer() throws HiveException
 		{
-			return new RankBuffer(inputOI.length);
+			return new RankBuffer(inputOI.length, isStreamingMode);
 		}
 
 		@Override
@@ -182,6 +198,23 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver
 		}
 
 	}
+
+  public static class GenericUDAFRankEvaluator extends
+      GenericUDAFAbstractRankEvaluator implements
+      ISupportStreamingModeForWindowing {
+
+    @Override
+    public Object getNextResult(AggregationBuffer agg) throws HiveException {
+      return ((RankBuffer) agg).rowNums.get(0);
+    }
+
+    @Override
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+      isStreamingMode = true;
+      return this;
+    }
+
+  }
 
   public static int compare(Object[] o1, ObjectInspector[] oi1, Object[] o2,
       ObjectInspector[] oi2)

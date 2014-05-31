@@ -51,13 +51,25 @@ public class PTFPartition {
       SerDe serDe, StructObjectInspector inputOI,
       StructObjectInspector outputOI)
       throws HiveException {
+    this(cfg, serDe, inputOI, outputOI, true);
+  }
+  
+  protected PTFPartition(Configuration cfg,
+      SerDe serDe, StructObjectInspector inputOI,
+      StructObjectInspector outputOI,
+      boolean createElemContainer)
+      throws HiveException {
     this.serDe = serDe;
     this.inputOI = inputOI;
     this.outputOI = outputOI;
-    int containerNumRows = HiveConf.getIntVar(cfg, ConfVars.HIVEJOINCACHESIZE);
-    elems = new PTFRowContainer<List<Object>>(containerNumRows, cfg, null);
-    elems.setSerDe(serDe, outputOI);
-    elems.setTableDesc(PTFRowContainer.createTableDesc(inputOI));
+    if ( createElemContainer ) {
+      int containerNumRows = HiveConf.getIntVar(cfg, ConfVars.HIVEJOINCACHESIZE);
+      elems = new PTFRowContainer<List<Object>>(containerNumRows, cfg, null);
+      elems.setSerDe(serDe, outputOI);
+      elems.setTableDesc(PTFRowContainer.createTableDesc(inputOI));
+    } else {
+      elems = null;
+    }
   }
 
   public void reset() throws HiveException {
@@ -232,6 +244,16 @@ public class PTFPartition {
       StructObjectInspector outputOI)
       throws HiveException {
     return new PTFPartition(cfg, serDe, inputOI, outputOI);
+  }
+  
+  public static PTFRollingPartition createRolling(Configuration cfg,
+      SerDe serDe,
+      StructObjectInspector inputOI,
+      StructObjectInspector outputOI,
+      int precedingSpan,
+      int followingSpan)
+      throws HiveException {
+    return new PTFRollingPartition(cfg, serDe, inputOI, outputOI, precedingSpan, followingSpan);
   }
 
   public static StructObjectInspector setupPartitionOutputOI(SerDe serDe,

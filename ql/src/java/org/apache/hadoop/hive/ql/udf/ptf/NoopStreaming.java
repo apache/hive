@@ -21,37 +21,47 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 public class NoopStreaming extends Noop {
-  
+
   List<Object> rows;
-  
+  StructObjectInspector inputOI;
+
   NoopStreaming() {
     rows = new ArrayList<Object>();
   }
-  
-  public boolean canAcceptInputAsStream() {
-    return true;
-  } 
-  
+
+  public void initializeStreaming(Configuration cfg,
+      StructObjectInspector inputOI, boolean isMapSide) throws HiveException {
+    this.inputOI = inputOI;
+    canAcceptInputAsStream = true;
+  }
+
   public List<Object> processRow(Object row) throws HiveException {
-    if (!canAcceptInputAsStream() ) {
+    if (!canAcceptInputAsStream()) {
       throw new HiveException(String.format(
-          "Internal error: PTF %s, doesn't support Streaming",
-          getClass().getName()));
+          "Internal error: PTF %s, doesn't support Streaming", getClass()
+              .getName()));
     }
     rows.clear();
+    row = ObjectInspectorUtils.copyToStandardObject(row, inputOI,
+        ObjectInspectorCopyOption.WRITABLE);
     rows.add(row);
     return rows;
   }
-  
+
   public static class NoopStreamingResolver extends NoopResolver {
 
     @Override
-    protected TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc, PartitionedTableFunctionDef tDef) {
+    protected TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc,
+        PartitionedTableFunctionDef tDef) {
       return new NoopStreaming();
     }
   }

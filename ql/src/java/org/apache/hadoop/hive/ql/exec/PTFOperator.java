@@ -83,6 +83,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
 		setupKeysWrapper(inputObjInspectors[0]);
 		
 		ptfInvocation = setupChain();
+		ptfInvocation.initializeStreaming(jobConf, isMapOperator);
 		firstMapRow = true;
 
 		super.initializeOp(jobConf);
@@ -282,6 +283,19 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
       return tabFn.canAcceptInputAsStream();
     }
     
+    void initializeStreaming(Configuration cfg, boolean isMapSide) throws HiveException {
+      PartitionedTableFunctionDef tabDef = tabFn.getTableDef();
+      PTFInputDef inputDef = tabDef.getInput();
+      ObjectInspector inputOI = conf.getStartOfChain() == tabDef ? 
+          inputObjInspectors[0] : inputDef.getOutputShape().getOI();
+
+      tabFn.initializeStreaming(cfg, (StructObjectInspector) inputOI, isMapSide);
+
+      if ( next != null ) {
+        next.initializeStreaming(cfg, isMapSide);
+      }
+    }
+    
     void startPartition() throws HiveException {
       if ( isStreaming() ) {
         tabFn.startPartition();
@@ -301,15 +315,6 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
     
     void processRow(Object row) throws HiveException {
       if ( isStreaming() ) {
-        if ( prev == null ) {
-          /*
-           * this is needed because during Translation we are still assuming that rows
-           * are collected into a PTFPartition.
-           * @Todo make translation handle the case when the first PTF is Streaming.
-           */
-          row = ObjectInspectorUtils.copyToStandardObject(row, inputObjInspectors[0], 
-              ObjectInspectorCopyOption.WRITABLE);
-        }
         handleOutputRows(tabFn.processRow(row));
       } else {
         inputPart.append(row);

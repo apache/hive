@@ -25,9 +25,13 @@ import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
+import org.apache.hadoop.hive.ql.exec.PTFRollingPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -43,6 +47,9 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
+import org.apache.hadoop.hive.ql.udf.generic.ISupportStreamingModeForWindowing;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -52,6 +59,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @SuppressWarnings("deprecation")
 public class WindowingTableFunction extends TableFunctionEvaluator {
 
+  StreamingState streamingState;
+  
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
   public void execute(PTFPartitionIterator<Object> pItr, PTFPartition outP) throws HiveException {
@@ -133,6 +142,251 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     return true;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator#canAcceptInputAsStream
+   * ()
+   * 
+   * WindowTableFunction supports streaming if all functions meet one of these
+   * conditions: 1. The Function implements ISupportStreamingModeForWindowing 2.
+   * Or returns a non null Object for the getWindowingEvaluator, that implements
+   * ISupportStreamingModeForWindowing. 3. Is an invocation on a 'fixed' window.
+   * So no Unbounded Preceding or Following.
+   */
+  private int[] setCanAcceptInputAsStream(Configuration cfg) {
+
+    canAcceptInputAsStream = false;
+
+    if (ptfDesc.getLlInfo().getLeadLagExprs() != null) {
+      return null;
+    }
+
+    WindowTableFunctionDef tabDef = (WindowTableFunctionDef) getTableDef();
+    int precedingSpan = 0;
+    int followingSpan = 0;
+
+    for (int i = 0; i < tabDef.getWindowFunctions().size(); i++) {
+      WindowFunctionDef wFnDef = tabDef.getWindowFunctions().get(i);
+      WindowFrameDef wdwFrame = wFnDef.getWindowFrame();
+      GenericUDAFEvaluator fnEval = wFnDef.getWFnEval();
+      GenericUDAFEvaluator streamingEval = fnEval
+          .getWindowingEvaluator(wdwFrame);
+      if (streamingEval != null
+          && streamingEval instanceof ISupportStreamingModeForWindowing) {
+        continue;
+      }
+      BoundaryDef start = wdwFrame.getStart();
+      BoundaryDef end = wdwFrame.getEnd();
+      if (!(end instanceof ValueBoundaryDef)
+          && !(start instanceof ValueBoundaryDef)) {
+        if (end.getAmt() != BoundarySpec.UNBOUNDED_AMOUNT
+            && start.getAmt() != BoundarySpec.UNBOUNDED_AMOUNT
+            && end.getDirection() != Direction.PRECEDING
+            && start.getDirection() != Direction.FOLLOWING) {
+
+          int amt = wdwFrame.getStart().getAmt();
+          if (amt > precedingSpan) {
+            precedingSpan = amt;
+          }
+
+          amt = wdwFrame.getEnd().getAmt();
+          if (amt > followingSpan) {
+            followingSpan = amt;
+          }
+          continue;
+        }
+      }
+      return null;
+    }
+    
+    int windowLimit = HiveConf.getIntVar(cfg, ConfVars.HIVEJOINCACHESIZE);
+
+    if (windowLimit < (followingSpan + precedingSpan + 1)) {
+      return null;
+    }
+
+    canAcceptInputAsStream = true;
+    return new int[] {precedingSpan, followingSpan};
+  }
+
+  @Override
+  public void initializeStreaming(Configuration cfg,
+      StructObjectInspector inputOI, boolean isMapSide) throws HiveException {
+
+    int[] span = setCanAcceptInputAsStream(cfg);
+    if (!canAcceptInputAsStream) {
+      return;
+    }
+
+    WindowTableFunctionDef tabDef = (WindowTableFunctionDef) getTableDef();
+
+    for (int i = 0; i < tabDef.getWindowFunctions().size(); i++) {
+      WindowFunctionDef wFnDef = tabDef.getWindowFunctions().get(i);
+      WindowFrameDef wdwFrame = wFnDef.getWindowFrame();
+      GenericUDAFEvaluator fnEval = wFnDef.getWFnEval();
+      GenericUDAFEvaluator streamingEval = fnEval
+          .getWindowingEvaluator(wdwFrame);
+      if (streamingEval != null) {
+        wFnDef.setWFnEval(streamingEval);
+        if (wFnDef.isPivotResult()) {
+          ListObjectInspector listOI = (ListObjectInspector) wFnDef.getOI();
+          wFnDef.setOI(listOI.getListElementObjectInspector());
+        }
+      }
+    }
+    streamingState = new StreamingState(cfg, inputOI, isMapSide, tabDef,
+        span[0], span[1]);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator#startPartition()
+   */
+  @Override
+  public void startPartition() throws HiveException {
+    WindowTableFunctionDef tabDef = (WindowTableFunctionDef) getTableDef();
+    streamingState.reset(tabDef);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator#processRow(java
+   * .lang.Object)
+   * 
+   * - hand row to each Function, provided there are enough rows for Function's
+   * window. - call getNextObject on each Function. - output as many rows as
+   * possible, based on minimum sz of Output List
+   */
+  @Override
+  public List<Object> processRow(Object row) throws HiveException {
+
+    streamingState.rollingPart.append(row);
+    row = streamingState.rollingPart
+        .getAt(streamingState.rollingPart.size() - 1);
+
+    WindowTableFunctionDef tabDef = (WindowTableFunctionDef) getTableDef();
+
+    for (int i = 0; i < tabDef.getWindowFunctions().size(); i++) {
+      WindowFunctionDef wFn = tabDef.getWindowFunctions().get(i);
+      GenericUDAFEvaluator fnEval = wFn.getWFnEval();
+
+      int a = 0;
+      if (wFn.getArgs() != null) {
+        for (PTFExpressionDef arg : wFn.getArgs()) {
+          streamingState.funcArgs[i][a++] = arg.getExprEvaluator().evaluate(row);
+        }
+      }
+
+      if (fnEval instanceof ISupportStreamingModeForWindowing) {
+        fnEval.aggregate(streamingState.aggBuffers[i], streamingState.funcArgs[i]);
+        Object out = ((ISupportStreamingModeForWindowing) fnEval)
+            .getNextResult(streamingState.aggBuffers[i]);
+        if (out != null) {
+          streamingState.fnOutputs[i]
+              .add(out == ISupportStreamingModeForWindowing.NULL_RESULT ? null
+                  : out);
+        }
+      } else {
+        int rowToProcess = streamingState.rollingPart.rowToProcess(wFn);
+        if (rowToProcess >= 0) {
+          Range rng = getRange(wFn, rowToProcess, streamingState.rollingPart,
+              streamingState.order);
+          PTFPartitionIterator<Object> rItr = rng.iterator();
+          PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
+          Object out = evaluateWindowFunction(wFn, rItr);
+          streamingState.fnOutputs[i].add(out);
+        }
+      }
+    }
+
+    List<Object> oRows = new ArrayList<Object>();
+    while (true) {
+      boolean hasRow = streamingState.hasOutputRow();
+
+      if (!hasRow) {
+        break;
+      }
+
+      oRows.add(streamingState.nextOutputRow());
+    }
+
+    return oRows.size() == 0 ? null : oRows;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator#finishPartition()
+   * 
+   * for fns that are not ISupportStreamingModeForWindowing give them the
+   * remaining rows (rows whose span went beyond the end of the partition) for
+   * rest of the functions invoke terminate.
+   * 
+   * while numOutputRows < numInputRows for each Fn that doesn't have enough o/p
+   * invoke getNextObj if there is no O/p then flag this as an error.
+   */
+  @Override
+  public List<Object> finishPartition() throws HiveException {
+
+    WindowTableFunctionDef tabDef = (WindowTableFunctionDef) getTableDef();
+    for (int i = 0; i < tabDef.getWindowFunctions().size(); i++) {
+      WindowFunctionDef wFn = tabDef.getWindowFunctions().get(i);
+      GenericUDAFEvaluator fnEval = wFn.getWFnEval();
+
+      int numRowsRemaining = wFn.getWindowFrame().getEnd().getAmt();
+      if (fnEval instanceof ISupportStreamingModeForWindowing) {
+        fnEval.terminate(streamingState.aggBuffers[i]);
+        if (numRowsRemaining != BoundarySpec.UNBOUNDED_AMOUNT) {
+          while (numRowsRemaining > 0) {
+            Object out = ((ISupportStreamingModeForWindowing) fnEval)
+                .getNextResult(streamingState.aggBuffers[i]);
+            if (out != null) {
+              streamingState.fnOutputs[i]
+                  .add(out == ISupportStreamingModeForWindowing.NULL_RESULT ? null
+                      : out);
+            }
+            numRowsRemaining--;
+          }
+        }
+      } else {
+        while (numRowsRemaining > 0) {
+          int rowToProcess = streamingState.rollingPart.size()
+              - numRowsRemaining;
+          Range rng = getRange(wFn, rowToProcess, streamingState.rollingPart,
+              streamingState.order);
+          PTFPartitionIterator<Object> rItr = rng.iterator();
+          PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
+          Object out = evaluateWindowFunction(wFn, rItr);
+          streamingState.fnOutputs[i].add(out);
+          numRowsRemaining--;
+        }
+      }
+
+    }
+
+    List<Object> oRows = new ArrayList<Object>();
+
+    while (!streamingState.rollingPart.processedAllRows()) {
+      boolean hasRow = streamingState.hasOutputRow();
+      ;
+
+      if (!hasRow) {
+        throw new HiveException(
+            "Internal Error: cannot generate all output rows for a Partition");
+      }
+      oRows.add(streamingState.nextOutputRow());
+    }
+
+    return oRows.size() == 0 ? null : oRows;
+  }
+
   @Override
   public boolean canIterateOutput() {
     return true;
@@ -155,16 +409,19 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         Object out = evaluateWindowFunction(wFn, pItr);
         output.add(out);
       } else if (wFn.isPivotResult()) {
-        /*
-         * for functions that currently return the output as a List,
-         * for e.g. the ranking functions, lead/lag, ntile, cume_dist
-         * - for now continue to execute them here. The functions need to provide a way to get
-         *   each output row as we are iterating through the input. This is relative
-         *   easy to do for ranking functions; not possible for lead, ntile, cume_dist.
-         *
-         */
-        outputFromPivotFunctions[i] = (List) evaluateWindowFunction(wFn, pItr);
-        output.add(null);
+        GenericUDAFEvaluator streamingEval = wFn.getWFnEval().getWindowingEvaluator(wFn.getWindowFrame());
+        if ( streamingEval != null && streamingEval instanceof ISupportStreamingModeForWindowing ) {
+          wFn.setWFnEval(streamingEval);
+          if ( wFn.getOI() instanceof ListObjectInspector ) {
+            ListObjectInspector listOI = (ListObjectInspector) wFn.getOI();
+            wFn.setOI(listOI.getListElementObjectInspector());
+          }
+          output.add(null);
+          wFnsWithWindows.add(i);  
+        } else {
+          outputFromPivotFunctions[i] = (List) evaluateWindowFunction(wFn, pItr);
+          output.add(null);
+        }
       } else {
         output.add(null);
         wFnsWithWindows.add(i);
@@ -884,8 +1141,10 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     Order order;
     PTFDesc ptfDesc;
     StructObjectInspector inputOI;
+    AggregationBuffer[] aggBuffers;
+    Object[][] args;
 
-    WindowingIterator(PTFPartition iPart, ArrayList<Object>  output,
+    WindowingIterator(PTFPartition iPart, ArrayList<Object> output,
         List<?>[] outputFromPivotFunctions, int[] wFnsToProcess) {
       this.iPart = iPart;
       this.output = output;
@@ -896,6 +1155,18 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       order = wTFnDef.getOrder().getExpressions().get(0).getOrder();
       ptfDesc = getQueryDef();
       inputOI = iPart.getOutputOI();
+
+      aggBuffers = new AggregationBuffer[wTFnDef.getWindowFunctions().size()];
+      args = new Object[wTFnDef.getWindowFunctions().size()][];
+      try {
+        for (int j : wFnsToProcess) {
+          WindowFunctionDef wFn = wTFnDef.getWindowFunctions().get(j);
+          aggBuffers[j] = wFn.getWFnEval().getNewAggregationBuffer();
+          args[j] = new Object[wFn.getArgs() == null ? 0 : wFn.getArgs().size()];
+        }
+      } catch (HiveException he) {
+        throw new RuntimeException(he);
+      }
     }
 
     @Override
@@ -915,10 +1186,25 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       try {
         for (int j : wFnsToProcess) {
           WindowFunctionDef wFn = wTFnDef.getWindowFunctions().get(j);
-          Range rng = getRange(wFn, currIdx, iPart, order);
-          PTFPartitionIterator<Object> rItr = rng.iterator();
-          PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
-          output.set(j, evaluateWindowFunction(wFn, rItr));
+          if (wFn.getWFnEval() instanceof ISupportStreamingModeForWindowing) {
+            Object iRow = iPart.getAt(currIdx);
+            int a = 0;
+            if (wFn.getArgs() != null) {
+              for (PTFExpressionDef arg : wFn.getArgs()) {
+                args[j][a++] = arg.getExprEvaluator().evaluate(iRow);
+              }
+            }
+            wFn.getWFnEval().aggregate(aggBuffers[j], args[j]);
+            Object out = ((ISupportStreamingModeForWindowing) wFn.getWFnEval())
+                .getNextResult(aggBuffers[j]);
+            out = ObjectInspectorUtils.copyToStandardObject(out, wFn.getOI());
+            output.set(j, out);
+          } else {
+            Range rng = getRange(wFn, currIdx, iPart, order);
+            PTFPartitionIterator<Object> rItr = rng.iterator();
+            PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
+            output.set(j, evaluateWindowFunction(wFn, rItr));
+          }
         }
 
         Object iRow = iPart.getAt(currIdx);
@@ -940,6 +1226,74 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       throw new UnsupportedOperationException();
     }
 
+  }
+
+  class StreamingState {
+    PTFRollingPartition rollingPart;
+    List<Object>[] fnOutputs;
+    AggregationBuffer[] aggBuffers;
+    Object[][] funcArgs;
+    Order order;
+
+    @SuppressWarnings("unchecked")
+    StreamingState(Configuration cfg, StructObjectInspector inputOI,
+        boolean isMapSide, WindowTableFunctionDef tabDef, int precedingSpan,
+        int followingSpan) throws HiveException {
+      SerDe serde = isMapSide ? tabDef.getInput().getOutputShape().getSerde()
+          : tabDef.getRawInputShape().getSerde();
+      StructObjectInspector outputOI = isMapSide ? tabDef.getInput()
+          .getOutputShape().getOI() : tabDef.getRawInputShape().getOI();
+      rollingPart = PTFPartition.createRolling(cfg, serde, inputOI, outputOI,
+          precedingSpan, followingSpan);
+
+      order = tabDef.getOrder().getExpressions().get(0).getOrder();
+
+      int numFns = tabDef.getWindowFunctions().size();
+      fnOutputs = new ArrayList[numFns];
+
+      aggBuffers = new AggregationBuffer[numFns];
+      funcArgs = new Object[numFns][];
+      for (int i = 0; i < numFns; i++) {
+        fnOutputs[i] = new ArrayList<Object>();
+        WindowFunctionDef wFn = tabDef.getWindowFunctions().get(i);
+        funcArgs[i] = new Object[wFn.getArgs() == null ? 0 : wFn.getArgs().size()];
+      }
+    }
+
+    void reset(WindowTableFunctionDef tabDef) throws HiveException {
+      int numFns = tabDef.getWindowFunctions().size();
+      rollingPart.reset();
+      for (int i = 0; i < fnOutputs.length; i++) {
+        fnOutputs[i].clear();
+      }
+
+      for (int i = 0; i < numFns; i++) {
+        WindowFunctionDef wFn = tabDef.getWindowFunctions().get(i);
+        aggBuffers[i] = wFn.getWFnEval().getNewAggregationBuffer();
+      }
+    }
+
+    boolean hasOutputRow() {
+      for (int i = 0; i < fnOutputs.length; i++) {
+        if (fnOutputs[i].size() == 0) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    List<Object> nextOutputRow() throws HiveException {
+      List<Object> oRow = new ArrayList<Object>();
+      Object iRow = rollingPart.nextOutputRow();
+      int i = 0;
+      for (; i < fnOutputs.length; i++) {
+        oRow.add(fnOutputs[i].remove(0));
+      }
+      for (StructField f : rollingPart.getOutputOI().getAllStructFieldRefs()) {
+        oRow.add(rollingPart.getOutputOI().getStructFieldData(iRow, f));
+      }
+      return oRow;
+    }
   }
 
 }
