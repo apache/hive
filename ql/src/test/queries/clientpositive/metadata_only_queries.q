@@ -27,7 +27,7 @@ create table stats_tbl(
            d double,
            bo boolean,
            s string,
-	   ts timestamp, 
+           ts timestamp,
            dec decimal,  
            bin binary);
 
@@ -40,7 +40,7 @@ create table stats_tbl_part(
            d double,
            bo boolean,
            s string,
-	   ts timestamp, 
+           ts timestamp,
            dec decimal,  
            bin binary) partitioned by (dt string);
 
@@ -62,11 +62,18 @@ analyze table stats_tbl_part partition(dt='2011') compute statistics for columns
 analyze table stats_tbl_part partition(dt='2012') compute statistics for columns t,si,i,b,f,d,bo,s,bin;
 
 explain 
-select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl;
-select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl;
+select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si) from stats_tbl;
+select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si) from stats_tbl;
+explain
+select min(i), max(i), min(b), max(b), min(f), max(f), min(d), max(d) from stats_tbl;
+select min(i), max(i), min(b), max(b), min(f), max(f), min(d), max(d) from stats_tbl;
+
 explain 
-select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part;
-select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part;
+select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si) from stats_tbl_part;
+select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si) from stats_tbl_part;
+explain
+select min(i), max(i), min(b), max(b), min(f), max(f), min(d), max(d) from stats_tbl_part;
+select min(i), max(i), min(b), max(b), min(f), max(f), min(d), max(d) from stats_tbl_part;
 
 explain select count(ts) from stats_tbl_part;
 

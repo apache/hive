@@ -45,8 +45,8 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
     schemes.put(TupleScheme.class, new DecimalColumnStatsDataTupleSchemeFactory());
   }
 
-  private Decimal lowValue; // required
-  private Decimal highValue; // required
+  private Decimal lowValue; // optional
+  private Decimal highValue; // optional
   private long numNulls; // required
   private long numDVs; // required
 
@@ -121,12 +121,13 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
   private static final int __NUMNULLS_ISSET_ID = 0;
   private static final int __NUMDVS_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
+  private _Fields optionals[] = {_Fields.LOW_VALUE,_Fields.HIGH_VALUE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.LOW_VALUE, new org.apache.thrift.meta_data.FieldMetaData("lowValue", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.LOW_VALUE, new org.apache.thrift.meta_data.FieldMetaData("lowValue", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Decimal.class)));
-    tmpMap.put(_Fields.HIGH_VALUE, new org.apache.thrift.meta_data.FieldMetaData("highValue", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.HIGH_VALUE, new org.apache.thrift.meta_data.FieldMetaData("highValue", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Decimal.class)));
     tmpMap.put(_Fields.NUM_NULLS, new org.apache.thrift.meta_data.FieldMetaData("numNulls", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
@@ -140,14 +141,10 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
   }
 
   public DecimalColumnStatsData(
-    Decimal lowValue,
-    Decimal highValue,
     long numNulls,
     long numDVs)
   {
     this();
-    this.lowValue = lowValue;
-    this.highValue = highValue;
     this.numNulls = numNulls;
     setNumNullsIsSet(true);
     this.numDVs = numDVs;
@@ -494,21 +491,25 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
     StringBuilder sb = new StringBuilder("DecimalColumnStatsData(");
     boolean first = true;
 
-    sb.append("lowValue:");
-    if (this.lowValue == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.lowValue);
+    if (isSetLowValue()) {
+      sb.append("lowValue:");
+      if (this.lowValue == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.lowValue);
+      }
+      first = false;
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("highValue:");
-    if (this.highValue == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.highValue);
+    if (isSetHighValue()) {
+      if (!first) sb.append(", ");
+      sb.append("highValue:");
+      if (this.highValue == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.highValue);
+      }
+      first = false;
     }
-    first = false;
     if (!first) sb.append(", ");
     sb.append("numNulls:");
     sb.append(this.numNulls);
@@ -523,14 +524,6 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetLowValue()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'lowValue' is unset! Struct:" + toString());
-    }
-
-    if (!isSetHighValue()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'highValue' is unset! Struct:" + toString());
-    }
-
     if (!isSetNumNulls()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'numNulls' is unset! Struct:" + toString());
     }
@@ -632,14 +625,18 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.lowValue != null) {
-        oprot.writeFieldBegin(LOW_VALUE_FIELD_DESC);
-        struct.lowValue.write(oprot);
-        oprot.writeFieldEnd();
+        if (struct.isSetLowValue()) {
+          oprot.writeFieldBegin(LOW_VALUE_FIELD_DESC);
+          struct.lowValue.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.highValue != null) {
-        oprot.writeFieldBegin(HIGH_VALUE_FIELD_DESC);
-        struct.highValue.write(oprot);
-        oprot.writeFieldEnd();
+        if (struct.isSetHighValue()) {
+          oprot.writeFieldBegin(HIGH_VALUE_FIELD_DESC);
+          struct.highValue.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldBegin(NUM_NULLS_FIELD_DESC);
       oprot.writeI64(struct.numNulls);
@@ -664,25 +661,42 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, DecimalColumnStatsData struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      struct.lowValue.write(oprot);
-      struct.highValue.write(oprot);
       oprot.writeI64(struct.numNulls);
       oprot.writeI64(struct.numDVs);
+      BitSet optionals = new BitSet();
+      if (struct.isSetLowValue()) {
+        optionals.set(0);
+      }
+      if (struct.isSetHighValue()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetLowValue()) {
+        struct.lowValue.write(oprot);
+      }
+      if (struct.isSetHighValue()) {
+        struct.highValue.write(oprot);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, DecimalColumnStatsData struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.lowValue = new Decimal();
-      struct.lowValue.read(iprot);
-      struct.setLowValueIsSet(true);
-      struct.highValue = new Decimal();
-      struct.highValue.read(iprot);
-      struct.setHighValueIsSet(true);
       struct.numNulls = iprot.readI64();
       struct.setNumNullsIsSet(true);
       struct.numDVs = iprot.readI64();
       struct.setNumDVsIsSet(true);
+      BitSet incoming = iprot.readBitSet(2);
+      if (incoming.get(0)) {
+        struct.lowValue = new Decimal();
+        struct.lowValue.read(iprot);
+        struct.setLowValueIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.highValue = new Decimal();
+        struct.highValue.read(iprot);
+        struct.setHighValueIsSet(true);
+      }
     }
   }
 

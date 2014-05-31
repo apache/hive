@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -188,6 +186,9 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
 
   private void unpackPrimitiveObject (ObjectInspector oi, Object o, String fieldName,
       ColumnStatisticsObj statsObj) {
+    if (o == null) {
+      return;
+    }
     // First infer the type of object
     if (fieldName.equals("columntype")) {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
