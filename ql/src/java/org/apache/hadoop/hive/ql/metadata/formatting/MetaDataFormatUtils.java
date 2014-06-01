@@ -31,9 +31,17 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.ql.index.HiveIndex;
 import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -58,9 +66,10 @@ public final class MetaDataFormatUtils {
   private MetaDataFormatUtils() {
   }
 
-  private static void formatColumnsHeader(StringBuilder columnInformation) {
+  private static void formatColumnsHeader(StringBuilder columnInformation,
+      List<ColumnStatisticsObj> colStats) {
     columnInformation.append("# "); // Easy for shell scripts to ignore
-    formatOutput(getColumnsHeader(), columnInformation);
+    formatOutput(getColumnsHeader(colStats), columnInformation);
     columnInformation.append(LINE_DELIM);
   }
 
@@ -70,15 +79,17 @@ public final class MetaDataFormatUtils {
    * @param printHeader - if header should be included
    * @param isOutputPadded - make it more human readable by setting indentation
    *        with spaces. Turned off for use by HiveServer2
+   * @param colStats
    * @return string with formatted column information
    */
   public static String getAllColumnsInformation(List<FieldSchema> cols,
-      boolean printHeader, boolean isOutputPadded) {
+      boolean printHeader, boolean isOutputPadded, List<ColumnStatisticsObj> colStats) {
     StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
     if(printHeader){
-      formatColumnsHeader(columnInformation);
+      formatColumnsHeader(columnInformation, colStats);
     }
-    formatAllFields(columnInformation, cols, isOutputPadded);
+
+    formatAllFields(columnInformation, cols, isOutputPadded, colStats);
     return columnInformation.toString();
   }
 
@@ -96,15 +107,15 @@ public final class MetaDataFormatUtils {
       List<FieldSchema> partCols, boolean printHeader, boolean isOutputPadded, boolean showPartColsSep) {
     StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
     if(printHeader){
-      formatColumnsHeader(columnInformation);
+      formatColumnsHeader(columnInformation, null);
     }
-    formatAllFields(columnInformation, cols, isOutputPadded);
+    formatAllFields(columnInformation, cols, isOutputPadded, null);
 
     if ((partCols != null) && !partCols.isEmpty() && showPartColsSep) {
       columnInformation.append(LINE_DELIM).append("# Partition Information")
       .append(LINE_DELIM);
-      formatColumnsHeader(columnInformation);
-      formatAllFields(columnInformation, partCols, isOutputPadded);
+      formatColumnsHeader(columnInformation, null);
+      formatAllFields(columnInformation, partCols, isOutputPadded, null);
     }
 
     return columnInformation.toString();
@@ -116,25 +127,72 @@ public final class MetaDataFormatUtils {
    * @param cols - list of columns
    * @param isOutputPadded - make it more human readable by setting indentation
    *        with spaces. Turned off for use by HiveServer2
+   * @param colStats
    */
   private static void formatAllFields(StringBuilder tableInfo,
-      List<FieldSchema> cols, boolean isOutputPadded) {
+      List<FieldSchema> cols, boolean isOutputPadded, List<ColumnStatisticsObj> colStats) {
     for (FieldSchema col : cols) {
       if(isOutputPadded) {
-        formatWithIndentation(col.getName(), col.getType(), getComment(col), tableInfo);
+        formatWithIndentation(col.getName(), col.getType(), getComment(col), tableInfo, colStats);
       }
       else {
-        formatWithoutIndentation(col.getName(), col.getType(), col.getComment(), tableInfo);
+        formatWithoutIndentation(col.getName(), col.getType(), col.getComment(), tableInfo, colStats);
       }
     }
   }
 
+  private static ColumnStatisticsObj getColumnStatisticsObject(String colName,
+      String colType, List<ColumnStatisticsObj> colStats) {
+    if (colStats != null && !colStats.isEmpty()) {
+      for (ColumnStatisticsObj cso : colStats) {
+        if (cso.getColName().equalsIgnoreCase(colName)
+            && cso.getColType().equalsIgnoreCase(colType)) {
+          return cso;
+        }
+      }
+    }
+    return null;
+  }
+
   private static void formatWithoutIndentation(String name, String type, String comment,
-      StringBuilder colBuffer) {
+      StringBuilder colBuffer, List<ColumnStatisticsObj> colStats) {
     colBuffer.append(name);
     colBuffer.append(FIELD_DELIM);
     colBuffer.append(type);
     colBuffer.append(FIELD_DELIM);
+    if (colStats != null) {
+      ColumnStatisticsObj cso = getColumnStatisticsObject(name, type, colStats);
+      if (cso != null) {
+        ColumnStatisticsData csd = cso.getStatsData();
+        if (csd.isSetBinaryStats()) {
+          BinaryColumnStatsData bcsd = csd.getBinaryStats();
+          appendColumnStatsNoFormatting(colBuffer, "", "", bcsd.getNumNulls(), "",
+              bcsd.getAvgColLen(), bcsd.getMaxColLen(), "", "");
+        } else if (csd.isSetStringStats()) {
+          StringColumnStatsData scsd = csd.getStringStats();
+          appendColumnStatsNoFormatting(colBuffer, "", "", scsd.getNumNulls(), scsd.getNumDVs(),
+              scsd.getAvgColLen(), scsd.getMaxColLen(), "", "");
+        } else if (csd.isSetBooleanStats()) {
+          BooleanColumnStatsData bcsd = csd.getBooleanStats();
+          appendColumnStatsNoFormatting(colBuffer, "", "", bcsd.getNumNulls(), "", "", "",
+              bcsd.getNumTrues(), bcsd.getNumFalses());
+        } else if (csd.isSetDecimalStats()) {
+          DecimalColumnStatsData dcsd = csd.getDecimalStats();
+          appendColumnStatsNoFormatting(colBuffer, dcsd.getLowValue(), dcsd.getHighValue(),
+              dcsd.getNumNulls(), dcsd.getNumDVs(), "", "", "", "");
+        } else if (csd.isSetDoubleStats()) {
+          DoubleColumnStatsData dcsd = csd.getDoubleStats();
+          appendColumnStatsNoFormatting(colBuffer, dcsd.getLowValue(), dcsd.getHighValue(),
+              dcsd.getNumNulls(), dcsd.getNumDVs(), "", "", "", "");
+        } else if (csd.isSetLongStats()) {
+          LongColumnStatsData lcsd = csd.getLongStats();
+          appendColumnStatsNoFormatting(colBuffer, lcsd.getLowValue(), lcsd.getHighValue(),
+              lcsd.getNumNulls(), lcsd.getNumDVs(), "", "", "", "");
+        }
+      } else {
+        appendColumnStatsNoFormatting(colBuffer, "", "", "", "", "", "", "", "");
+      }
+    }
     colBuffer.append(comment == null ? "" : comment);
     colBuffer.append(LINE_DELIM);
   }
@@ -341,9 +399,43 @@ public final class MetaDataFormatUtils {
   }
 
   private static void formatWithIndentation(String colName, String colType, String colComment,
-      StringBuilder tableInfo) {
+      StringBuilder tableInfo, List<ColumnStatisticsObj> colStats) {
     tableInfo.append(String.format("%-" + ALIGNMENT + "s", colName)).append(FIELD_DELIM);
     tableInfo.append(String.format("%-" + ALIGNMENT + "s", colType)).append(FIELD_DELIM);
+
+    if (colStats != null) {
+      ColumnStatisticsObj cso = getColumnStatisticsObject(colName, colType, colStats);
+      if (cso != null) {
+        ColumnStatisticsData csd = cso.getStatsData();
+        if (csd.isSetBinaryStats()) {
+          BinaryColumnStatsData bcsd = csd.getBinaryStats();
+          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", bcsd.getAvgColLen(),
+              bcsd.getMaxColLen(), "", "");
+        } else if (csd.isSetStringStats()) {
+          StringColumnStatsData scsd = csd.getStringStats();
+          appendColumnStats(tableInfo, "", "", scsd.getNumNulls(), scsd.getNumDVs(),
+              scsd.getAvgColLen(), scsd.getMaxColLen(), "", "");
+        } else if (csd.isSetBooleanStats()) {
+          BooleanColumnStatsData bcsd = csd.getBooleanStats();
+          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", "", "",
+              bcsd.getNumTrues(), bcsd.getNumFalses());
+        } else if (csd.isSetDecimalStats()) {
+          DecimalColumnStatsData dcsd = csd.getDecimalStats();
+          appendColumnStats(tableInfo, dcsd.getLowValue(), dcsd.getHighValue(), dcsd.getNumNulls(),
+              dcsd.getNumDVs(), "", "", "", "");
+        } else if (csd.isSetDoubleStats()) {
+          DoubleColumnStatsData dcsd = csd.getDoubleStats();
+          appendColumnStats(tableInfo, dcsd.getLowValue(), dcsd.getHighValue(), dcsd.getNumNulls(),
+              dcsd.getNumDVs(), "", "", "", "");
+        } else if (csd.isSetLongStats()) {
+          LongColumnStatsData lcsd = csd.getLongStats();
+          appendColumnStats(tableInfo, lcsd.getLowValue(), lcsd.getHighValue(), lcsd.getNumNulls(),
+              lcsd.getNumDVs(), "", "", "", "");
+        }
+      } else {
+        appendColumnStats(tableInfo, "", "", "", "", "", "", "", "");
+      }
+    }
 
     // comment indent processing for multi-line comments
     // comments should be indented the same amount on each line
@@ -359,8 +451,37 @@ public final class MetaDataFormatUtils {
     }
   }
 
-  public static String[] getColumnsHeader() {
-    return DescTableDesc.getSchema().split("#")[0].split(",");
+  private static void appendColumnStats(StringBuilder sb, Object min, Object max, Object numNulls,
+      Object ndv, Object avgColLen, Object maxColLen, Object numTrues, Object numFalses) {
+    sb.append(String.format("%-" + ALIGNMENT + "s", min)).append(FIELD_DELIM);
+    sb.append(String.format("%-" + ALIGNMENT + "s", max)).append(FIELD_DELIM);
+    sb.append(String.format("%-" + ALIGNMENT + "s", numNulls)).append(FIELD_DELIM);
+    sb.append(String.format("%-" + ALIGNMENT + "s", ndv)).append(FIELD_DELIM);
+    sb.append(String.format("%-" + ALIGNMENT + "s", avgColLen)).append(FIELD_DELIM);
+    sb.append(String.format("%-" + ALIGNMENT + "s", maxColLen)).append(FIELD_DELIM);
+    sb.append(String.format("%-" + ALIGNMENT + "s", numTrues)).append(FIELD_DELIM);
+    sb.append(String.format("%-" + ALIGNMENT + "s", numFalses)).append(FIELD_DELIM);
+  }
+
+  private static void appendColumnStatsNoFormatting(StringBuilder sb, Object min,
+      Object max, Object numNulls, Object ndv, Object avgColLen, Object maxColLen,
+      Object numTrues, Object numFalses) {
+    sb.append(min).append(FIELD_DELIM);
+    sb.append(max).append(FIELD_DELIM);
+    sb.append(numNulls).append(FIELD_DELIM);
+    sb.append(ndv).append(FIELD_DELIM);
+    sb.append(avgColLen).append(FIELD_DELIM);
+    sb.append(maxColLen).append(FIELD_DELIM);
+    sb.append(numTrues).append(FIELD_DELIM);
+    sb.append(numFalses).append(FIELD_DELIM);
+  }
+
+  public static String[] getColumnsHeader(List<ColumnStatisticsObj> colStats) {
+    boolean showColStats = false;
+    if (colStats != null) {
+      showColStats = true;
+    }
+    return DescTableDesc.getSchema(showColStats).split("#")[0].split(",");
   }
 
   public static String getIndexColumnsHeader() {
