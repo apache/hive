@@ -56,6 +56,9 @@ public class DescTableDesc extends DDLDesc implements Serializable {
    * thrift ddl for the result of describe table.
    */
   private static final String schema = "col_name,data_type,comment#string:string:string";
+  private static final String colStatsSchema = "col_name,data_type,min,max,num_nulls,"
+      + "distinct_count,avg_col_len,max_col_len,num_trues,num_falses,comment"
+      + "#string:string:string:string:string:string:string:string:string:string:string";
 
   public DescTableDesc() {
   }
@@ -80,7 +83,10 @@ public class DescTableDesc extends DDLDesc implements Serializable {
     return table;
   }
 
-  public static String getSchema() {
+  public static String getSchema(boolean colStats) {
+    if (colStats) {
+      return colStatsSchema;
+    }
     return schema;
   }
 

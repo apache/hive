@@ -86,7 +86,7 @@ public final class MetaDataPrettyFormatUtils {
    */
   private static void formatColumnsHeaderPretty(StringBuilder columnInformation,
       int maxColNameLen, int prettyOutputNumCols) {
-    String columnHeaders[] = MetaDataFormatUtils.getColumnsHeader();
+    String columnHeaders[] = MetaDataFormatUtils.getColumnsHeader(null);
     formatOutputPretty(columnHeaders[0], columnHeaders[1], columnHeaders[2],
                         columnInformation, maxColNameLen, prettyOutputNumCols);
     columnInformation.append(MetaDataFormatUtils.LINE_DELIM);

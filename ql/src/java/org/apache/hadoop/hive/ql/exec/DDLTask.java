@@ -38,14 +38,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -63,6 +61,7 @@ import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
@@ -117,7 +116,6 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
@@ -601,14 +599,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Database dbObj = null;
 
         if (hiveObjectDesc.getTable()) {
-          String[] dbTab = obj.split("\\.");
-          if (dbTab.length == 2) {
-            dbName = dbTab[0];
-            tableName = dbTab[1];
-          } else {
-            dbName = SessionState.get().getCurrentDatabase();
-            tableName = obj;
-          }
+          String[] dbTab = splitTableName(obj);
+          dbName = dbTab[0];
+          tableName = dbTab[1];
           dbObj = db.getDatabase(dbName);
           tableObj = db.getTable(dbName, tableName);
           notFound = (dbObj == null || tableObj == null);
@@ -668,6 +661,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException(e);
     }
     return 0;
+  }
+
+  private static String[] splitTableName(String fullName) {
+    String[] dbTab = fullName.split("\\.");
+    String[] result = new String[2];
+    if (dbTab.length == 2) {
+      result[0] = dbTab[0];
+      result[1] = dbTab[1];
+    } else {
+      result[0] = SessionState.get().getCurrentDatabase();
+      result[1] = fullName;
+    }
+    return result;
   }
 
   private int showGrantsV2(ShowGrantDesc showGrantDesc) throws HiveException {
@@ -2590,7 +2596,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
       outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(
-          cols, false, isOutputPadded));
+          cols, false, isOutputPadded, null));
       outStream.close();
       outStream = null;
     } catch (IOException e) {
@@ -3415,6 +3421,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       outStream = fs.create(resFile);
 
       List<FieldSchema> cols = null;
+      List<ColumnStatisticsObj> colStats = null;
       if (colPath.equals(tableName)) {
         cols = (part == null || tbl.getTableType() == TableType.VIRTUAL_VIEW) ?
             tbl.getCols() : part.getCols();
@@ -3424,6 +3431,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       } else {
         cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
+        if (descTbl.isFormatted()) {
+          // when column name is specified in describe table DDL, colPath will
+          // will be table_name.column_name
+          String colName = colPath.split("\\.")[1];
+          String[] dbTab = splitTableName(tableName);
+          List<String> colNames = new ArrayList<String>();
+          colNames.add(colName.toLowerCase());
+          colStats = db.getTableColumnStatistics(dbTab[0].toLowerCase(),
+              dbTab[1].toLowerCase(), colNames);
+        }
       }
 
       fixDecimalColumnTypeName(cols);
@@ -3432,7 +3449,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
       formatter.describeTable(outStream, colPath, tableName, tbl, part,
           cols, descTbl.isFormatted(), descTbl.isExt(),
-          descTbl.isPretty(), isOutputPadded);
+          descTbl.isPretty(), isOutputPadded, colStats);
 
       LOG.info("DDLTask: written data for " + tbl.getTableName());
       outStream.close();

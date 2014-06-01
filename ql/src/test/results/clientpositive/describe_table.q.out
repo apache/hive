@@ -205,9 +205,9 @@ PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted srcpart.key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
-# col_name            	data_type           	comment             
-	 	 
-key                 	string              	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
 PREHOOK: query: describe formatted srcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart
@@ -293,9 +293,9 @@ PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted `srcpart`.`key`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
-# col_name            	data_type           	comment             
-	 	 
-key                 	string              	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
 PREHOOK: query: describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart

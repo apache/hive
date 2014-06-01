@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
+import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -1980,17 +1981,27 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     DescTableDesc descTblDesc = new DescTableDesc(
       ctx.getResFile(), tableName, partSpec, colPath);
 
+    boolean showColStats = false;
     if (ast.getChildCount() == 2) {
       int descOptions = ast.getChild(1).getType();
       descTblDesc.setFormatted(descOptions == HiveParser.KW_FORMATTED);
       descTblDesc.setExt(descOptions == HiveParser.KW_EXTENDED);
       descTblDesc.setPretty(descOptions == HiveParser.KW_PRETTY);
+      // in case of "DESCRIBE FORMATTED tablename column_name" statement, colPath
+      // will contain tablename.column_name. If column_name is not specified
+      // colPath will be equal to tableName. This is how we can differentiate
+      // if we are describing a table or column
+      if (!colPath.equalsIgnoreCase(tableName) && descTblDesc.isFormatted()) {
+        showColStats = true;
+      }
     }
 
     inputs.add(new ReadEntity(getTable(tableName)));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        descTblDesc), conf));
-    setFetchTask(createFetchTask(DescTableDesc.getSchema()));
+    Task ddlTask = TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        descTblDesc), conf);
+    rootTasks.add(ddlTask);
+    String schema = DescTableDesc.getSchema(showColStats);
+    setFetchTask(createFetchTask(schema));
     LOG.info("analyzeDescribeTable done");
   }
 
