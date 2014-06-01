@@ -177,6 +177,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Shell;
 
@@ -1354,9 +1355,9 @@ public final class Utilities {
    * @return output stream over the created sequencefile
    */
   public static SequenceFile.Writer createSequenceWriter(JobConf jc, FileSystem fs, Path file,
-      Class<?> keyClass, Class<?> valClass) throws IOException {
+      Class<?> keyClass, Class<?> valClass, Progressable progressable) throws IOException {
     boolean isCompressed = FileOutputFormat.getCompressOutput(jc);
-    return createSequenceWriter(jc, fs, file, keyClass, valClass, isCompressed);
+    return createSequenceWriter(jc, fs, file, keyClass, valClass, isCompressed, progressable);
   }
 
   /**
@@ -1376,7 +1377,8 @@ public final class Utilities {
    * @return output stream over the created sequencefile
    */
   public static SequenceFile.Writer createSequenceWriter(JobConf jc, FileSystem fs, Path file,
-      Class<?> keyClass, Class<?> valClass, boolean isCompressed) throws IOException {
+      Class<?> keyClass, Class<?> valClass, boolean isCompressed, Progressable progressable)
+      throws IOException {
     CompressionCodec codec = null;
     CompressionType compressionType = CompressionType.NONE;
     Class codecClass = null;
@@ -1385,7 +1387,8 @@ public final class Utilities {
       codecClass = FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
       codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
     }
-    return (SequenceFile.createWriter(fs, jc, file, keyClass, valClass, compressionType, codec));
+    return (SequenceFile.createWriter(fs, jc, file, keyClass, valClass, compressionType, codec,
+	progressable));
 
   }
 
@@ -1402,14 +1405,14 @@ public final class Utilities {
    * @return output stream over the created rcfile
    */
   public static RCFile.Writer createRCFileWriter(JobConf jc, FileSystem fs, Path file,
-      boolean isCompressed) throws IOException {
+      boolean isCompressed, Progressable progressable) throws IOException {
     CompressionCodec codec = null;
     Class<?> codecClass = null;
     if (isCompressed) {
       codecClass = FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
       codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
     }
-    return new RCFile.Writer(fs, jc, file, null, codec);
+    return new RCFile.Writer(fs, jc, file, progressable, codec);
   }
 
   /**

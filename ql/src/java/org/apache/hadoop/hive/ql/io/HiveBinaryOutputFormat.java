@@ -64,7 +64,7 @@ public class HiveBinaryOutputFormat<K extends WritableComparable, V extends Writ
       Properties tableProperties, Progressable progress) throws IOException {
 
     FileSystem fs = outPath.getFileSystem(jc);
-    final OutputStream outStream = fs.create(outPath);
+    final OutputStream outStream = fs.create(outPath, progress);
 
     return new RecordWriter() {
       @Override

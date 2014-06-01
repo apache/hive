@@ -61,8 +61,8 @@ public class HiveSequenceFileOutputFormat<K,V> extends SequenceFileOutputFormat<
       Properties tableProperties, Progressable progress) throws IOException {
 
     FileSystem fs = finalOutPath.getFileSystem(jc);
-    final SequenceFile.Writer outStream = Utilities.createSequenceWriter(jc,
-        fs, finalOutPath, BytesWritable.class, valueClass, isCompressed);
+    final SequenceFile.Writer outStream = Utilities.createSequenceWriter(jc, fs, finalOutPath,
+	BytesWritable.class, valueClass, isCompressed, progress);
 
     return new RecordWriter() {
       @Override
