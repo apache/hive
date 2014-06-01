@@ -85,10 +85,10 @@ Beck	77.34
 Snow	55.71
 Mary	4.33
 Cluck	5.96
-Tom	12.25
+Tom	-12.25
 Mary	33.33
 Tom	19
-Beck	3.15
+Beck	0
 Beck	79.9
 PREHOOK: query: DROP TABLE IF EXISTS avro_dec1
 PREHOOK: type: DROPTABLE

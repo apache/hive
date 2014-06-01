@@ -264,7 +264,13 @@ public class ParquetHiveSerDe extends AbstractSerDe {
         return new BinaryWritable(Binary.fromByteArray(src));
       }
       byte[] tgt = new byte[bytes];
-      System.arraycopy(src, 0, tgt, bytes - src.length, src.length); // Padding leading zeroes.
+      if ( hd.signum() == -1) {
+        // For negative number, initializing bits to 1
+        for (int i = 0; i < bytes; i++) {
+          tgt[i] |= 0xFF;
+        }
+      }
+      System.arraycopy(src, 0, tgt, bytes - src.length, src.length); // Padding leading zeroes/ones.
       return new BinaryWritable(Binary.fromByteArray(tgt));
     default:
       throw new SerDeException("Unknown primitive : " + inspector.getPrimitiveCategory());

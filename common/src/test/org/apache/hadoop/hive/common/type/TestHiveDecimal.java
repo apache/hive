@@ -121,13 +121,23 @@ public class TestHiveDecimal {
 
   @Test
   public void testBinaryConversion() {
-    HiveDecimal dec = HiveDecimal.create("234.79");
+    testBinaryConversion("0.0");
+    testBinaryConversion("-12.25");
+    testBinaryConversion("234.79");
+  }
+
+  private void testBinaryConversion(String num) {
+    HiveDecimal dec = HiveDecimal.create(num);
     int scale = 2;
     byte[] d = dec.setScale(2).unscaledValue().toByteArray();
     Assert.assertEquals(dec, HiveDecimal.create(new BigInteger(d), scale));
     int prec = 5;
-    int len =  (int) (Math.ceil((Math.log(Math.pow(10, prec)) - 1)/Math.log(2) + 1) / 8);
+    int len =  (int)
+        Math.ceil((Math.log(Math.pow(10, prec) - 1) / Math.log(2) + 1) / 8);
     byte[] res = new byte[len];
+    if ( dec.signum() == -1)
+      for (int i = 0; i < len; i++)
+        res[i] |= 0xFF;
     System.arraycopy(d, 0, res, len-d.length, d.length); // Padding leading zeros.
     Assert.assertEquals(dec, HiveDecimal.create(new BigInteger(res), scale));
   }
