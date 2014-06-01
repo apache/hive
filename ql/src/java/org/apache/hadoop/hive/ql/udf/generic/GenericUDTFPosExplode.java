@@ -72,6 +72,11 @@ public class GenericUDTFPosExplode extends GenericUDTF {
   @Override
   public void process(Object[] o) throws HiveException {
     List<?> list = listOI.getList(o[0]);
+    if(list == null)
+    {
+      return;
+    }
+
     for (int i = 0; i < list.size(); i++) {
       Object r = list.get(i);
       forwardObj[0] = new Integer(i);
