@@ -2649,6 +2649,8 @@ class RecordReaderImpl implements RecordReader {
       case LIST:
       case UNION:
         return base;
+      case CHAR:
+      case VARCHAR:
       case STRING:
         if (encoding == OrcProto.ColumnEncoding.Kind.DICTIONARY ||
             encoding == OrcProto.ColumnEncoding.Kind.DICTIONARY_V2) {
