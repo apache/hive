@@ -18,8 +18,12 @@ Release Notes - Hive - Version 0.13.1
     * [HIVE-6957] - SQL authorization does not work with HS2 binary mode and Kerberos auth
     * [HIVE-6961] - Drop partitions treats partition columns as strings
     * [HIVE-6985] - sql std auth - privileges grants to public role not being honored
+    * [HIVE-6996] - FS based stats broken with indexed tables
     * [HIVE-7001] - fs.permissions.umask-mode is getting unset when Session is started
-
+    * [HIVE-7067] - Min() and Max() on Timestamp and Date columns for ORC returns wrong results
+    * [HIVE-7116] - HDFS FileSystem object cache causes permission issues in creating tmp directories
+    * [HIVE-7130] - schematool is broken for minor version upgrades (eg 0.13.x)
+    * [HIVE-7165] - Fix hive-default.xml.template errors & omissions
 
 Release Notes - Hive - Version 0.13.0
 
