@@ -40,12 +40,14 @@ import java.util.Set;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
@@ -78,9 +80,6 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hadoop.util.VersionInfo;
 
-/**
- * Implemention of shims against Hadoop 0.20.0.
- */
 public class Hadoop20Shims implements HadoopShims {
 
   /**
@@ -636,6 +635,51 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public HdfsFileStatus getFullFileStatus(Configuration conf, FileSystem fs, Path file)
+      throws IOException {
+    return new Hadoop20FileStatus(fs.getFileStatus(file));
+  }
+
+  @Override
+  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
+    FileSystem fs, Path target) throws IOException {
+    String group = sourceStatus.getFileStatus().getGroup();
+    String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
+    //use FsShell to change group and permissions recursively
+    try {
+      FsShell fshell = new FsShell();
+      fshell.setConf(conf);
+      run(fshell, new String[]{"-chgrp", "-R", group, target.toString()});
+      run(fshell, new String[]{"-chmod", "-R", permission, target.toString()});
+    } catch (Exception e) {
+      throw new IOException("Unable to set permissions of " + target, e);
+    }
+    try {
+      if (LOG.isDebugEnabled()) {  //some trace logging
+        getFullFileStatus(conf, fs, target).debugLog();
+      }
+    } catch (Exception e) {
+      //ignore.
+    }
+  }
+
+  public class Hadoop20FileStatus implements HdfsFileStatus {
+    private FileStatus fileStatus;
+    public Hadoop20FileStatus(FileStatus fileStatus) {
+      this.fileStatus = fileStatus;
+    }
+    @Override
+    public FileStatus getFileStatus() {
+      return fileStatus;
+    }
+    public void debugLog() {
+      if (fileStatus != null) {
+        LOG.debug(fileStatus.toString());
+      }
+    }
+  }
+
+  @Override
   public void authorizeProxyAccess(String proxyUser, UserGroupInformation realUserUgi,
       String ipAddress, Configuration conf) throws IOException {
     // This hadoop version doesn't have proxy verification
@@ -807,5 +851,10 @@ public class Hadoop20Shims implements HadoopShims {
     FileSystem fs = FileSystem.get(uri, conf);
     conf.setBoolean("fs." + uri.getScheme() + ".impl.disable.cache", origDisableHDFSCache);
     return fs;
+  }
+
+  protected void run(FsShell shell, String[] command) throws Exception {
+    LOG.debug(ArrayUtils.toString(command));
+    shell.run(command);
   }
 }

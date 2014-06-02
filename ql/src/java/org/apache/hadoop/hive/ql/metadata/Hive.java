@@ -45,10 +45,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -105,6 +103,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatus;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.util.StringUtils;
@@ -2244,33 +2244,29 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public static boolean renameFile(HiveConf conf, Path srcf, Path destf,
       FileSystem fs, boolean replace, boolean isSrcLocal) throws HiveException {
     boolean success = false;
+
+    //needed for perm inheritance.
     boolean inheritPerms = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
-    String group = null;
-    String permission = null;
+    HadoopShims shims = ShimLoader.getHadoopShims();
+    HadoopShims.HdfsFileStatus destStatus = null;
 
     try {
       if (inheritPerms || replace) {
         try{
-          FileStatus deststatus = fs.getFileStatus(destf);
-          if (inheritPerms) {
-            group = deststatus.getGroup();
-            permission= Integer.toString(deststatus.getPermission().toShort(), 8);
-          }
+          destStatus = shims.getFullFileStatus(conf, fs, destf);
           //if destf is an existing directory:
           //if replace is true, delete followed by rename(mv) is equivalent to replace
           //if replace is false, rename (mv) actually move the src under dest dir
           //if destf is an existing file, rename is actually a replace, and do not need
           // to delete the file first
-          if (replace && deststatus.isDir()) {
+          if (replace && destStatus.getFileStatus().isDir()) {
             fs.delete(destf, true);
           }
         } catch (FileNotFoundException ignore) {
           //if dest dir does not exist, any re
           if (inheritPerms) {
-            FileStatus deststatus = fs.getFileStatus(destf.getParent());
-            group = deststatus.getGroup();
-            permission= Integer.toString(deststatus.getPermission().toShort(), 8);
+            destStatus = shims.getFullFileStatus(conf, fs, destf.getParent());
           }
         }
       }
@@ -2289,14 +2285,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     if (success && inheritPerms) {
-      //use FsShell to change group and permissions recursively
       try {
-        FsShell fshell = new FsShell();
-        fshell.setConf(conf);
-        fshell.run(new String[]{"-chgrp", "-R", group, destf.toString()});
-        fshell.run(new String[]{"-chmod", "-R", permission, destf.toString()});
-      } catch (Exception e) {
-        throw new HiveException("Unable to set permissions of " + destf, e);
+        ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, fs, destf);
+      } catch (IOException e) {
+        LOG.warn("Error setting permission of file " + destf + ": "+ StringUtils.stringifyException(e));
       }
     }
     return success;
