@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
@@ -399,6 +400,52 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   @Override
   public void hflush(FSDataOutputStream stream) throws IOException {
     stream.sync();
+  }
+
+  @Override
+  public HdfsFileStatus getFullFileStatus(Configuration conf, FileSystem fs, Path file)
+      throws IOException {
+    return new Hadoop20SFileStatus(fs.getFileStatus(file));
+  }
+
+  @Override
+  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
+    FileSystem fs, Path target) throws IOException {
+    String group = sourceStatus.getFileStatus().getGroup();
+    String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
+    //use FsShell to change group and permissions recursively
+    try {
+      FsShell fshell = new FsShell();
+      fshell.setConf(conf);
+      run(fshell, new String[]{"-chgrp", "-R", group, target.toString()});
+      run(fshell, new String[]{"-chmod", "-R", permission, target.toString()});
+    } catch (Exception e) {
+      throw new IOException("Unable to set permissions of " + target, e);
+    }
+    try {
+      if (LOG.isDebugEnabled()) {  //some trace logging
+        getFullFileStatus(conf, fs, target).debugLog();
+      }
+    } catch (Exception e) {
+      //ignore.
+    }
+  }
+
+  public class Hadoop20SFileStatus implements HdfsFileStatus {
+    private FileStatus fileStatus;
+    public Hadoop20SFileStatus(FileStatus fileStatus) {
+      this.fileStatus = fileStatus;
+    }
+    @Override
+    public FileStatus getFileStatus() {
+      return fileStatus;
+    }
+    @Override
+    public void debugLog() {
+      if (fileStatus != null) {
+        LOG.debug(fileStatus.toString());
+      }
+    }
   }
 
   @Override

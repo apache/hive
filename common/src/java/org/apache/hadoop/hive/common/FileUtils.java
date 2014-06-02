@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatus;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
@@ -483,29 +484,23 @@ public final class FileUtils {
       } catch (FileNotFoundException ignore) {
       }
       //inherit perms: need to find last existing parent path, and apply its permission on entire subtree.
-      Path path = f;
-      List<Path> pathsToSet = new ArrayList<Path>();
-      while (!fs.exists(path)) {
-        pathsToSet.add(path);
-        path = path.getParent();
+      Path lastExistingParent = f;
+      Path firstNonExistentParent = null;
+      while (!fs.exists(lastExistingParent)) {
+        firstNonExistentParent = lastExistingParent;
+        lastExistingParent = lastExistingParent.getParent();
       }
-      //at the end of this loop, path is the last-existing parent path.
       boolean success = fs.mkdirs(f);
       if (!success) {
         return false;
       } else {
-        FsPermission parentPerm = fs.getFileStatus(path).getPermission();
-        String permString = Integer.toString(parentPerm.toShort(), 8);
-        for (Path pathToSet : pathsToSet) {
-          LOG.info("Setting permission of parent directory: " + path.toString() +
-            " on new directory: " + pathToSet.toString());
-          try {
-            FsShell fshell = new FsShell();
-            fshell.setConf(conf);
-            fshell.run(new String[]{"-chmod", "-R", permString, pathToSet.toString()});
-          } catch (Exception e) {
-            LOG.warn("Error setting permissions of " + pathToSet, e);
-          }
+        HadoopShims shim = ShimLoader.getHadoopShims();
+        HdfsFileStatus fullFileStatus = shim.getFullFileStatus(conf, fs, lastExistingParent);
+        try {
+          //set on the entire subtree
+          shim.setFullFileStatus(conf, fullFileStatus, fs, firstNonExistentParent);
+        } catch (Exception e) {
+          LOG.warn("Error setting permissions of " + firstNonExistentParent, e);
         }
         return true;
       }
@@ -523,16 +518,10 @@ public final class FileUtils {
     boolean copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
     boolean inheritPerms = conf.getBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     if (copied && inheritPerms) {
-      FileStatus destFileStatus = dstFS.getFileStatus(dst);
-      FsPermission perm = destFileStatus.getPermission();
-      String permString = Integer.toString(perm.toShort(), 8);
-      String group = destFileStatus.getGroup();
-      //use FsShell to change group and permissions recursively
+      HadoopShims shims = ShimLoader.getHadoopShims();
+      HdfsFileStatus fullFileStatus = shims.getFullFileStatus(conf, dstFS, dst);
       try {
-        FsShell fshell = new FsShell();
-        fshell.setConf(conf);
-        fshell.run(new String[]{"-chgrp", "-R", group, dst.toString()});
-        fshell.run(new String[]{"-chmod", "-R", permString, dst.toString()});
+        shims.setFullFileStatus(conf, fullFileStatus, dstFS, dst);
       } catch (Exception e) {
         LOG.warn("Error setting permissions or group of " + dst, e);
       }
@@ -587,5 +576,4 @@ public final class FileUtils {
     }
     return result;
   }
-
 }

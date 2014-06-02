@@ -480,6 +480,35 @@ public interface HadoopShims {
    */
   public void hflush(FSDataOutputStream stream) throws IOException;
 
+  /**
+   * For a given file, return a file status
+   * @param conf
+   * @param fs
+   * @param file
+   * @return
+   * @throws IOException
+   */
+  public HdfsFileStatus getFullFileStatus(Configuration conf, FileSystem fs, Path file) throws IOException;
+
+  /**
+   * For a given file, set a given file status.
+   * @param conf
+   * @param sourceStatus
+   * @param fs
+   * @param target
+   * @throws IOException
+   */
+  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
+    FileSystem fs, Path target) throws IOException;
+
+  /**
+   * Includes the vanilla FileStatus, and AclStatus if it applies to this version of hadoop.
+   */
+  public interface HdfsFileStatus {
+    public FileStatus getFileStatus();
+    public void debugLog();
+  }
+
   public HCatHadoopShims getHCatShim();
   public interface HCatHadoopShims {
 
