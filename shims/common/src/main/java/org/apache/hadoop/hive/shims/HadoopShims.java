@@ -27,7 +27,6 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -628,4 +627,7 @@ public interface HadoopShims {
    * Get configuration from JobContext
    */
   public Configuration getConfiguration(JobContext context);
+
+  public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException;
+
 }

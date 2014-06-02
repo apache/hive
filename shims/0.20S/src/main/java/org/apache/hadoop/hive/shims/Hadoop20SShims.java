@@ -420,4 +420,15 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
     return context.getConfiguration();
   }
+
+  @Override
+  public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException {
+    boolean origDisableHDFSCache =
+        conf.getBoolean("fs." + uri.getScheme() + ".impl.disable.cache", false);
+    // hadoop-1 compatible flag.
+    conf.setBoolean("fs." + uri.getScheme() + ".impl.disable.cache", true);
+    FileSystem fs = FileSystem.get(uri, conf);
+    conf.setBoolean("fs." + uri.getScheme() + ".impl.disable.cache", origDisableHDFSCache);
+    return fs;
+  }
 }
