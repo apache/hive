@@ -103,6 +103,36 @@ public final class ColumnProjectionUtils {
     appendReadColumnNames(conf, names);
   }
 
+  public static void appendReadColumns(
+      StringBuilder readColumnsBuffer, StringBuilder readColumnNamesBuffer, List<Integer> ids,
+      List<String> names) {
+    appendReadColumns(readColumnsBuffer, ids);
+    appendReadColumnNames(readColumnNamesBuffer, names);
+  }
+
+  public static void appendReadColumns(StringBuilder readColumnsBuffer, List<Integer> ids) {
+    String id = toReadColumnIDString(ids);
+    String newConfStr = id;
+    if (readColumnsBuffer.length() > 0) {
+      readColumnsBuffer.append(StringUtils.COMMA_STR).append(newConfStr);
+    }
+    if (readColumnsBuffer.length() == 0) {
+      readColumnsBuffer.append(READ_COLUMN_IDS_CONF_STR_DEFAULT);
+    }
+  }
+
+  private static void appendReadColumnNames(StringBuilder readColumnNamesBuffer, List<String> cols) {
+    boolean first = readColumnNamesBuffer.length() > 0;
+    for(String col: cols) {
+      if (first) {
+        first = false;
+      } else {
+        readColumnNamesBuffer.append(',');
+      }
+      readColumnNamesBuffer.append(col);
+    }
+  }
+
   /**
    * Returns an array of column ids(start from zero) which is set in the given
    * parameter <tt>conf</tt>.
