@@ -500,8 +500,8 @@ public class HiveEndPoint {
       if (txnIds==null || txnIds.isEmpty()) {
         return "{}";
       }
-      return "TxnIds=[" + txnIds.get(0) + "src/gen/thrift" + txnIds.get(txnIds.size()-1)
-              + "] on endPoint= " + endPt;
+      return "TxnIds=[" + txnIds.get(0) + "..." + txnIds.get(txnIds.size()-1)
+              + "] on endPoint = " + endPt;
     }
 
     /**
