@@ -24,9 +24,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.common.util.HiveVersionInfo;
+
+import com.google.common.collect.ImmutableMap;
 
 
 public class MetaStoreSchemaInfo {
@@ -38,6 +41,11 @@ public class MetaStoreSchemaInfo {
   private final String hiveSchemaVersions[];
   private final HiveConf hiveConf;
   private final String hiveHome;
+
+  // Minor version upgrades often don't change schema. So they are equivalent to a version
+  // that has a corresponding schema. eg "0.13.1" is equivalent to "0.13.0"
+  private static final Map<String, String> EQUIVALENT_VERSIONS =
+      ImmutableMap.of("0.13.1", "0.13.0");
 
   public MetaStoreSchemaInfo(String hiveHome, HiveConf hiveConf, String dbType) throws HiveMetaException {
     this.hiveHome = hiveHome;
@@ -130,9 +138,15 @@ public class MetaStoreSchemaInfo {
     return UPGRADE_FILE_PREFIX +  fileVersion + "." + dbType + SQL_FILE_EXTENSION;
   }
 
-  // Current hive version, in majorVersion.minorVersion.changeVersion format
   public static String getHiveSchemaVersion() {
-    return HiveVersionInfo.getShortVersion();
+    String hiveVersion = HiveVersionInfo.getShortVersion();
+    // if there is an equivalent version, return that, else return this version
+    String equivalentVersion = EQUIVALENT_VERSIONS.get(hiveVersion);
+    if (equivalentVersion != null) {
+      return equivalentVersion;
+    } else {
+      return hiveVersion;
+    }
   }
 
 }
