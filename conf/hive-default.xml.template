@@ -611,7 +611,7 @@
 <property>
   <name>hive.smbjoin.cache.rows</name>
   <value>10000</value>
-  <description>How many rows with the same key value should be cached in memory per smb joined table. </description>
+  <description>How many rows with the same key value should be cached in memory per SMB joined table.</description>
 </property>
 
 <property>
@@ -857,7 +857,7 @@
 
 <property>
   <name>hive.auto.convert.join</name>
-  <value>false</value>
+  <value>true</value>
   <description>Whether Hive enables the optimization about converting common join into mapjoin based on the input file size</description>
 </property>
 
@@ -1244,8 +1244,11 @@
 
 <property>
   <name>hive.stats.dbclass</name>
-  <value>counter</value>
-  <description>The storage that stores temporary Hive statistics. Currently, jdbc, hbase, counter and custom type are supported.</description>
+  <value>fs</value>
+  <description>The storage that stores temporary Hive statistics. Supported values are
+  fs (filesystem), jdbc(:.*), hbase, counter, and custom. In FS based statistics collection,
+  each task writes statistics it has collected in a file on the filesystem, which will be
+  aggregated after the job has finished.</description>
 </property>
 
 <property>
@@ -2245,7 +2248,7 @@
     hive.server2.authentication.spnego.principal
     and
     hive.server2.authentication.spnego.keytab
-    are specified
+    are specified.
   </description>
 </property>
 
@@ -2253,7 +2256,7 @@
   <name>hive.server2.authentication.ldap.url</name>
   <value></value>
   <description>
-    LDAP connection URL
+    LDAP connection URL.
   </description>
 </property>
 
@@ -2261,7 +2264,15 @@
   <name>hive.server2.authentication.ldap.baseDN</name>
   <value></value>
   <description>
-    LDAP base DN
+    LDAP base DN (distinguished name).
+  </description>
+</property>
+
+<property>
+  <name>hive.server2.authentication.ldap.Domain</name>
+  <value></value>
+  <description>
+    LDAP domain.
   </description>
 </property>
 
@@ -2278,7 +2289,7 @@
   <name>hive.execution.engine</name>
   <value>mr</value>
   <description>
-    Chooses execution engine. Options are: mr (Map reduce, default) or tez (hadoop 2 only)
+    Chooses execution engine. Options are mr (MapReduce, default) or Tez (Hadoop 2 only).
   </description>
 </property>
 
@@ -2286,7 +2297,7 @@
   <name>hive.prewarm.enabled</name>
   <value>false</value>
   <description>
-    Enables container prewarm for tez (hadoop 2 only)
+    Enables container prewarm for Tez (Hadoop 2 only).
   </description>
 </property>
 
@@ -2294,7 +2305,7 @@
   <name>hive.prewarm.numcontainers</name>
   <value>10</value>
   <description>
-    Controls the number of containers to prewarm for tez (hadoop 2 only)
+    Controls the number of containers to prewarm for Tez (Hadoop 2 only).
   </description>
 </property>
 
@@ -2310,13 +2321,24 @@
 </property>
 
 <property>
+  <name>hive.server2.session.hook</name>
+  <value></value>
+  <description>
+    Session-level hook for HiveServer2.
+  </description>
+</property>
+
+<property>
   <name>hive.server2.thrift.sasl.qop</name>
   <value>auth</value>
-  <description>Sasl QOP value; Set it to one of following values to enable higher levels of
+  <description>Sasl QOP value; set it to one of the following values to enable higher levels of
      protection for HiveServer2 communication with clients.
       "auth" - authentication only (default)
       "auth-int" - authentication plus integrity protection
       "auth-conf" - authentication plus integrity and confidentiality protection
+     Note that hadoop.rpc.protection being set to a higher level than HiveServer2 does not
+     make sense in most situations. HiveServer2 ignores hadoop.rpc.protection in favor of
+     hive.server2.thrift.sasl.qop.
      This is applicable only if HiveServer2 is configured to use Kerberos authentication.
  </description>
 </property>
@@ -2383,11 +2405,11 @@
   <name>hive.metastore.integral.jdo.pushdown</name>
   <value>false</value>
   <description>
-   Allow JDO query pushdown for integral partition columns in metastore. Off by default. This
-   improves metastore perf for integral columns, especially if there's a large number of partitions.
-   However, it doesn't work correctly with integral values that are not normalized (e.g. have
-   leading zeroes, like 0012). If metastore direct SQL is enabled and works, this optimization
-   is also irrelevant.
+   Allow JDO query pushdown for integral partition columns in the metastore. Off by default.
+   This improves metastore performance for integral columns, especially with a large number of
+   partitions. However, it doesn't work correctly for integral values that are not normalized
+   (for example, if they have leading zeroes like 0012). If metastore direct SQL is enabled and
+   works (hive.metastore.try.direct.sql), this optimization is also irrelevant.
   </description>
 </property>
 
@@ -2437,8 +2459,8 @@
   <name>hive.jar.directory</name>
   <value></value>
   <description>
-    This is the location hive in tez mode will look for to find a site wide 
-    installed hive instance. If not set, the directory under hive.user.install.directory 
+    This is the location Hive in Tez mode will look for to find a site wide
+    installed Hive instance. If not set, the directory under hive.user.install.directory
     corresponding to current user name will be used.
   </description>
 </property>
@@ -2447,8 +2469,8 @@
   <name>hive.user.install.directory</name>
   <value>hdfs:///user/</value>
   <description>
-    If hive (in tez mode only) cannot find a usable hive jar in "hive.jar.directory", 
-    it will upload the hive jar to &lt;hive.user.install.directory&gt;/&lt;user name&gt;
+    If Hive (in Tez mode only) cannot find a usable Hive jar in "hive.jar.directory",
+    it will upload the Hive jar to &lt;hive.user.install.directory&gt;/&lt;user name&gt;
     and use it to run queries.
   </description>
 </property>
@@ -2456,13 +2478,13 @@
 <property>
   <name>hive.tez.container.size</name>
   <value>-1</value>
-  <description>By default tez will spawn containers of the size of a mapper. This can be used to overwrite.</description>
+  <description>By default Tez will spawn containers of the size of a mapper. This can be used to overwrite.</description>
 </property>
 
 <property>
   <name>hive.tez.java.opts</name>
   <value></value>
-  <description>By default tez will use the java opts from map tasks. This can be used to overwrite.</description>
+  <description>By default Tez will use the Java options from map tasks. This can be used to overwrite.</description>
 </property>
 
 <property>
@@ -2470,7 +2492,7 @@
   <value>INFO</value>
   <description>
     The log level to use for tasks executing as part of the DAG.
-    Used only if hive.tez.java.opts is used to configure java opts.
+    Used only if hive.tez.java.opts is used to configure Java options.
   </description>
 </property>
 
@@ -2478,9 +2500,9 @@
   <name>hive.server2.tez.default.queues</name>
   <value></value>
   <description>
-    A list of comma separated values corresponding to yarn queues of the same name.
-    When hive server 2 is launched in tez mode, this configuration needs to be set
-    for multiple tez sessions to run in parallel on the cluster.
+    A list of comma separated values corresponding to YARN queues of the same name.
+    When HiveServer2 is launched in Tez mode, this configuration needs to be set
+    for multiple Tez sessions to run in parallel on the cluster.
   </description>
 </property>
 
@@ -2488,7 +2510,7 @@
   <name>hive.server2.tez.sessions.per.default.queue</name>
   <value>1</value>
   <description>
-    A positive integer that determines the number of tez sessions that should be
+    A positive integer that determines the number of Tez sessions that should be
     launched on each of the queues specified by "hive.server2.tez.default.queues".
     Determines the parallelism on each queue.
   </description>
@@ -2498,9 +2520,9 @@
   <name>hive.server2.tez.initialize.default.sessions</name>
   <value>false</value>
   <description>
-    This flag is used in hive server 2 to enable a user to use hive server 2 without
-    turning on tez for hive server 2. The user could potentially want to run queries
-    over tez without the pool of sessions.
+    This flag is used in HiveServer2 to enable a user to use HiveServer2 without
+    turning on Tez for HiveServer2. The user could potentially want to run queries
+    over Tez without the pool of sessions.
   </description>
 </property>
 
@@ -2554,18 +2576,6 @@
   if that happens in your case.
   </description>
 </property>
-
-<property>
-  <name>hive.metastore.integral.jdo.pushdown</name>
-  <value>false</value>
-  <description>
-  Whether to enable JDO pushdown for integral types. Off by default. Irrelevant if
-  hive.metastore.try.direct.sql is enabled. Otherwise, filter pushdown in metastore can improve
-  performance, but for partition columns storing integers in non-canonical form, (e.g. '012'),
-  it can produce incorrect results.
-  </description>
-</property>
-
 
 <property>
   <name>hive.mapjoin.optimized.keys</name>
@@ -2631,8 +2641,9 @@
 <property>
   <name>hive.server2.authentication.pam.services</name>
   <value></value>
-  <description>List of the underlying pam services that should be used when auth type is PAM.
-  A file with the same name must exist in /etc/pam.d</description>
+  <description>List of the underlying PAM services that should be used when authentication
+  type is PAM (hive.server2.authentication). A file with the same name must exist in
+  /etc/pam.d</description>
 </property>
 
 <property>
