@@ -662,4 +662,6 @@ public interface HadoopShims {
 
   public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException;
 
+  public void getMergedCredentials(JobConf jobConf) throws IOException;
+
 }

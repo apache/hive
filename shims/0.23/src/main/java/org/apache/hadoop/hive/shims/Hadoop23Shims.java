@@ -218,6 +218,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   /**
    * Returns a shim to wrap MiniMrCluster
    */
+  @Override
   public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers,
                                      String nameNode, int numDir) throws IOException {
     return new MiniMrShim(conf, numberOfTaskTrackers, nameNode, numDir);
@@ -276,6 +277,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   /**
    * Returns a shim to wrap MiniMrTez
    */
+  @Override
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
                                      String nameNode, int numDir) throws IOException {
     return new MiniTezShim(conf, numberOfTaskTrackers, nameNode, numDir);
@@ -344,6 +346,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   // incompatibility between hadoop 1 and 2 wrt MiniDFSCluster and we
   // need to have two different shim classes even though they are
   // exactly the same.
+  @Override
   public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
       int numDataNodes,
       boolean format,
@@ -363,10 +366,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       this.cluster = cluster;
     }
 
+    @Override
     public FileSystem getFileSystem() throws IOException {
       return cluster.getFileSystem();
     }
 
+    @Override
     public void shutdown() {
       cluster.shutdown();
     }
@@ -689,7 +694,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     /* not supported */
     return null;
   }
-  
+
   @Override
   public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
     return context.getConfiguration();
@@ -698,5 +703,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException {
     return FileSystem.newInstance(uri, conf);
+  }
+
+  @Override
+  public void getMergedCredentials(JobConf jobConf) throws IOException {
+    jobConf.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
   }
 }

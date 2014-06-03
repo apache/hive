@@ -30,11 +30,11 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.VertexLocationHint.TaskLocationHint;
@@ -79,7 +79,7 @@ public class HiveSplitGenerator implements TezRootInputInitializer {
 
     // Read all credentials into the credentials instance stored in JobConf.
     JobConf jobConf = new JobConf(conf);
-    jobConf.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
+    ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
 
     InputSplitInfoMem inputSplitInfo = null;
     String realInputFormatName = userPayloadProto.getInputFormatName();
