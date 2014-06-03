@@ -85,6 +85,7 @@ public class Hadoop20Shims implements HadoopShims {
   /**
    * Returns a shim to wrap MiniMrCluster
    */
+  @Override
   public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers,
                                      String nameNode, int numDir) throws IOException {
     return new MiniMrShim(conf, numberOfTaskTrackers, nameNode, numDir);
@@ -124,6 +125,7 @@ public class Hadoop20Shims implements HadoopShims {
     }
   }
 
+  @Override
   public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
       int numDataNodes,
       boolean format,
@@ -142,15 +144,18 @@ public class Hadoop20Shims implements HadoopShims {
       this.cluster = cluster;
     }
 
+    @Override
     public FileSystem getFileSystem() throws IOException {
       return cluster.getFileSystem();
     }
 
+    @Override
     public void shutdown() {
       cluster.shutdown();
     }
   }
 
+  @Override
   public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
     return new CombineFileInputFormatShim() {
       @Override
@@ -161,6 +166,7 @@ public class Hadoop20Shims implements HadoopShims {
     };
   }
 
+  @Override
   public void setTotalOrderPartitionFile(JobConf jobConf, Path partitionFile){
     TotalOrderPartitioner.setPartitionFile(jobConf, partitionFile);
   }
@@ -254,6 +260,7 @@ public class Hadoop20Shims implements HadoopShims {
     protected boolean isShrinked;
     protected long shrinkedLength;
 
+    @Override
     public boolean next(K key, V value) throws IOException {
 
       while ((curReader == null)
@@ -266,11 +273,13 @@ public class Hadoop20Shims implements HadoopShims {
       return true;
     }
 
+    @Override
     public K createKey() {
       K newKey = curReader.createKey();
       return (K)(new CombineHiveKey(newKey));
     }
 
+    @Override
     public V createValue() {
       return curReader.createValue();
     }
@@ -278,10 +287,12 @@ public class Hadoop20Shims implements HadoopShims {
     /**
      * Return the amount of data processed.
      */
+    @Override
     public long getPos() throws IOException {
       return progress;
     }
 
+    @Override
     public void close() throws IOException {
       if (curReader != null) {
         curReader.close();
@@ -292,6 +303,7 @@ public class Hadoop20Shims implements HadoopShims {
     /**
      * Return progress based on the amount of data processed so far.
      */
+    @Override
     public float getProgress() throws IOException {
       long subprogress = 0;    // bytes processed in current split
       if (null != curReader) {
@@ -395,6 +407,7 @@ public class Hadoop20Shims implements HadoopShims {
       CombineFileInputFormat<K, V>
       implements HadoopShims.CombineFileInputFormatShim<K, V> {
 
+    @Override
     public Path[] getInputPathsShim(JobConf conf) {
       try {
         return FileInputFormat.getInputPaths(conf);
@@ -435,10 +448,12 @@ public class Hadoop20Shims implements HadoopShims {
       return isplits;
     }
 
+    @Override
     public InputSplitShim getInputSplitShim() throws IOException {
       return new InputSplitShim();
     }
 
+    @Override
     public RecordReader getRecordReader(JobConf job, HadoopShims.InputSplitShim split,
         Reporter reporter,
         Class<RecordReader<K, V>> rrClass)
@@ -449,6 +464,7 @@ public class Hadoop20Shims implements HadoopShims {
 
   }
 
+  @Override
   public String getInputFormatClassName() {
     return "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat";
   }
@@ -478,6 +494,7 @@ public class Hadoop20Shims implements HadoopShims {
    * compared against the one used by Hadoop 1.0 (within HadoopShimsSecure)
    * where a relative path is stored within the archive.
    */
+  @Override
   public URI getHarUri (URI original, URI base, URI originalBase)
     throws URISyntaxException {
     URI relative = null;
@@ -510,6 +527,7 @@ public class Hadoop20Shims implements HadoopShims {
     public void abortTask(TaskAttemptContext taskContext) { }
   }
 
+  @Override
   public void prepareJobOutput(JobConf conf) {
     conf.setOutputCommitter(Hadoop20Shims.NullOutputCommitter.class);
 
@@ -685,6 +703,7 @@ public class Hadoop20Shims implements HadoopShims {
     // This hadoop version doesn't have proxy verification
   }
 
+  @Override
   public boolean isSecurityEnabled() {
     return false;
   }
@@ -702,7 +721,6 @@ public class Hadoop20Shims implements HadoopShims {
 
   @Override
   public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
-    JobTrackerState state;
     switch (clusterStatus.getJobTrackerState()) {
     case INITIALIZING:
       return JobTrackerState.INITIALIZING;
@@ -851,6 +869,11 @@ public class Hadoop20Shims implements HadoopShims {
     FileSystem fs = FileSystem.get(uri, conf);
     conf.setBoolean("fs." + uri.getScheme() + ".impl.disable.cache", origDisableHDFSCache);
     return fs;
+  }
+
+  @Override
+  public void getMergedCredentials(JobConf jobConf) throws IOException {
+    throw new IOException("Merging of credentials not supported in this version of hadoop");
   }
 
   protected void run(FsShell shell, String[] command) throws Exception {
