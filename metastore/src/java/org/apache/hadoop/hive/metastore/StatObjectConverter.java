@@ -303,27 +303,39 @@ public class StatObjectConverter {
         colType.equals("timestamp")) {
       LongColumnStatsData longStats = new LongColumnStatsData();
       longStats.setNumNulls(mStatsObj.getNumNulls());
-      longStats.setHighValue(mStatsObj.getLongHighValue());
-      longStats.setLowValue(mStatsObj.getLongLowValue());
+      if (mStatsObj.getLongHighValue() != null) {
+        longStats.setHighValue(mStatsObj.getLongHighValue());
+      }
+      if (mStatsObj.getLongLowValue() != null) {
+        longStats.setLowValue(mStatsObj.getLongLowValue());
+      }
       longStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setLongStats(longStats);
-   } else if (colType.equals("double") || colType.equals("float")) {
-     DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
-     doubleStats.setNumNulls(mStatsObj.getNumNulls());
-     doubleStats.setHighValue(mStatsObj.getDoubleHighValue());
-     doubleStats.setLowValue(mStatsObj.getDoubleLowValue());
-     doubleStats.setNumDVs(mStatsObj.getNumDVs());
-     colStatsData.setDoubleStats(doubleStats);
-   } else if (colType.equals("decimal")) {
-     DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
-     decimalStats.setNumNulls(mStatsObj.getNumNulls());
-     decimalStats.setHighValue(createThriftDecimal(mStatsObj.getDecimalHighValue()));
-     decimalStats.setLowValue(createThriftDecimal(mStatsObj.getDecimalLowValue()));
-     decimalStats.setNumDVs(mStatsObj.getNumDVs());
-     colStatsData.setDecimalStats(decimalStats);
-   }
-   statsObj.setStatsData(colStatsData);
-   return statsObj;
+    } else if (colType.equals("double") || colType.equals("float")) {
+      DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
+      doubleStats.setNumNulls(mStatsObj.getNumNulls());
+      if (mStatsObj.getDoubleHighValue() != null) {
+        doubleStats.setHighValue(mStatsObj.getDoubleHighValue());
+      }
+      if (mStatsObj.getDoubleLowValue() != null) {
+        doubleStats.setLowValue(mStatsObj.getDoubleLowValue());
+      }
+      doubleStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setDoubleStats(doubleStats);
+    } else if (colType.equals("decimal")) {
+      DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
+      decimalStats.setNumNulls(mStatsObj.getNumNulls());
+      if (mStatsObj.getDecimalHighValue() != null) {
+        decimalStats.setHighValue(createThriftDecimal(mStatsObj.getDecimalHighValue()));
+      }
+      if (mStatsObj.getDecimalLowValue() != null) {
+        decimalStats.setLowValue(createThriftDecimal(mStatsObj.getDecimalLowValue()));
+      }
+      decimalStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setDecimalStats(decimalStats);
+    }
+    statsObj.setStatsData(colStatsData);
+    return statsObj;
   }
 
   public static ColumnStatisticsDesc getPartitionColumnStatisticsDesc(
@@ -366,22 +378,34 @@ public class StatObjectConverter {
         colType.equals("timestamp")) {
       LongColumnStatsData longStats = new LongColumnStatsData();
       longStats.setNumNulls((Long)nulls);
-      longStats.setHighValue((Long)lhigh);
-      longStats.setLowValue((Long)llow);
+      if (lhigh != null) {
+        longStats.setHighValue((Long)lhigh);
+      }
+      if (llow != null) {
+        longStats.setLowValue((Long)llow);
+      }
       longStats.setNumDVs((Long)dist);
       data.setLongStats(longStats);
     } else if (colType.equals("double") || colType.equals("float")) {
       DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
       doubleStats.setNumNulls((Long)nulls);
-      doubleStats.setHighValue((Double)dhigh);
-      doubleStats.setLowValue((Double)dlow);
+      if (dhigh != null) {
+        doubleStats.setHighValue((Double)dhigh);
+      }
+      if (dlow != null) {
+        doubleStats.setLowValue((Double)dlow);
+      }
       doubleStats.setNumDVs((Long)dist);
       data.setDoubleStats(doubleStats);
     } else if (colType.equals("decimal")) {
       DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
       decimalStats.setNumNulls((Long)nulls);
-      decimalStats.setHighValue(createThriftDecimal((String)dechigh));
-      decimalStats.setLowValue(createThriftDecimal((String)declow));
+      if (dechigh != null) {
+        decimalStats.setHighValue(createThriftDecimal((String)dechigh));
+      }
+      if (declow != null) {
+        decimalStats.setLowValue(createThriftDecimal((String)declow));
+      }
       decimalStats.setNumDVs((Long)dist);
       data.setDecimalStats(decimalStats);
     }
