@@ -65,6 +65,11 @@ public interface MapJoinTableContainer {
      * @return The container w/the rows corresponding to a key set via a previous set... call.
      */
     MapJoinRowContainer getCurrentRows();
+
+    /**
+     * @return key
+     */
+    Object[] getCurrentKey();
   }
 
   /**

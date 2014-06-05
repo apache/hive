@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -97,6 +96,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   private boolean useBucketizedHiveInputFormat;
+
+  // dummy operator (for not increasing seqId)
+  private Operator(String name) {
+    id = name;
+  }
 
   public Operator() {
     id = String.valueOf(seqId.getAndIncrement());
@@ -334,7 +338,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return;
     }
 
-    LOG.info("Initializing Self " + id + " " + getName());
+    LOG.info("Initializing Self " + this);
 
     if (inputOIs != null) {
       inputObjInspectors = inputOIs;
@@ -1287,5 +1291,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public ObjectInspector getGroupKeyObjectInspector() {
     return groupKeyOI;
+  }
+
+  public static Operator createDummy() {
+    return new DummyOperator();
+  }
+
+  private static class DummyOperator extends Operator {
+    public DummyOperator() { super("dummy"); }
+    public void processOp(Object row, int tag) { }
+    public OperatorType getType() { return null; }
   }
 }

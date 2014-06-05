@@ -67,7 +67,6 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                value expressions: key (type: string)
           TableScan
             alias: b
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -85,8 +84,8 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0}
-            1 {VALUE._col1}
+            0 {KEY.reducesinkkey0}
+            1 {VALUE._col0}
           outputColumnNames: _col0, _col5
           Statistics: Num rows: 3 Data size: 13 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -210,7 +209,6 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                value expressions: key (type: string)
           TableScan
             alias: b
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -228,8 +226,8 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0}
-            1 {VALUE._col1}
+            0 {KEY.reducesinkkey0}
+            1 {VALUE._col0}
           outputColumnNames: _col0, _col5
           Statistics: Num rows: 3 Data size: 13 Basic stats: COMPLETE Column stats: NONE
           Select Operator

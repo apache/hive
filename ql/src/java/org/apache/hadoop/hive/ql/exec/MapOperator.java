@@ -383,7 +383,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
           if (!onepath.toUri().relativize(fpath.toUri()).equals(fpath.toUri())) {
             children.add(op);
             childrenOpToOpCtxMap.put(op, opCtx);
-            LOG.info("dump " + op.getName() + " "
+            LOG.info("dump " + op + " "
                 + opCtxMap.get(inp).rowObjectInspector.getTypeName());
           }
           current = opCtx;  // just need for TestOperators.testMapOperator

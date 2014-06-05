@@ -67,7 +67,7 @@ STAGE PLANS:
                 Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   condition expressions:
-                    0 {_col3} {_col0}
+                    0 {_col0} {_col3}
                     1 
                   keys:
                     0 (_col0 + _col2) (type: double)
@@ -101,19 +101,19 @@ STAGE PLANS:
                     condition map:
                          Inner Join 0 to 1
                     condition expressions:
-                      0 {_col3} {_col0}
+                      0 {_col0} {_col3}
                       1 
                     keys:
                       0 (_col0 + _col2) (type: double)
                       1 UDFToDouble(_col0) (type: double)
-                    outputColumnNames: _col1, _col2
+                    outputColumnNames: _col0, _col3
                     Statistics: Num rows: 22 Data size: 2302 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col2 (type: string), _col1 (type: string)
-                      outputColumnNames: _col2, _col1
+                      expressions: _col0 (type: string), _col3 (type: string)
+                      outputColumnNames: _col0, _col3
                       Statistics: Num rows: 22 Data size: 2302 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: sum(hash(_col2,_col1))
+                        aggregations: sum(hash(_col0,_col3))
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

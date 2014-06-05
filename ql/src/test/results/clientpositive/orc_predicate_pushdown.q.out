@@ -615,9 +615,10 @@ STAGE PLANS:
                   key expressions: _col0 (type: tinyint), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 65 Data size: 19281 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: tinyint), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 65 Data size: 19281 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -670,9 +671,10 @@ STAGE PLANS:
                   key expressions: _col0 (type: tinyint), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 65 Data size: 19281 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: tinyint), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 65 Data size: 19281 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -790,9 +792,11 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 2 Data size: 593 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double), _col3 (type: string)
+                  value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 2 Data size: 593 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 3
@@ -856,9 +860,11 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 2 Data size: 593 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double), _col3 (type: string)
+                  value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 2 Data size: 593 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 3
@@ -988,9 +994,11 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double), _col3 (type: string)
+                  value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Limit
             Number of rows: 3
@@ -1010,9 +1018,11 @@ STAGE PLANS:
               key expressions: _col3 (type: string)
               sort order: -
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double), _col3 (type: string)
+              value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Limit
             Number of rows: 3
@@ -1081,9 +1091,11 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double), _col3 (type: string)
+                  value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Limit
             Number of rows: 3
@@ -1103,9 +1115,11 @@ STAGE PLANS:
               key expressions: _col3 (type: string)
               sort order: -
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double), _col3 (type: string)
+              value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Limit
             Number of rows: 3

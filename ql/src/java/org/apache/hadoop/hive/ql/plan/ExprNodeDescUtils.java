@@ -74,7 +74,7 @@ public class ExprNodeDescUtils {
         }
         children.add(child);
       }
-      // duplicate function with possibily replaced children
+      // duplicate function with possibly replaced children
       ExprNodeGenericFuncDesc clone = (ExprNodeGenericFuncDesc) func.clone();
       clone.setChildren(children);
       return clone;
@@ -164,7 +164,7 @@ public class ExprNodeDescUtils {
   }
 
   /**
-   * Return false if the expression has any non determinitic function
+   * Return false if the expression has any non deterministic function
    */
   public static boolean isDeterministic(ExprNodeDesc desc) {
     if (desc instanceof ExprNodeGenericFuncDesc) {
@@ -180,6 +180,14 @@ public class ExprNodeDescUtils {
       }
     }
     return true;
+  }
+
+  public static ArrayList<ExprNodeDesc> clone(List<ExprNodeDesc> sources) {
+    ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc expr : sources) {
+      result.add(expr.clone());
+    }
+    return result;
   }
 
   /**

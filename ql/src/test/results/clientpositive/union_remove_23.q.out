@@ -140,13 +140,12 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: string)
               Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-              value expressions: key (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0}
+            0 {KEY.reducesinkkey0}
             1 
           outputColumnNames: _col0
           Statistics: Num rows: 0 Data size: 33 Basic stats: PARTIAL Column stats: NONE

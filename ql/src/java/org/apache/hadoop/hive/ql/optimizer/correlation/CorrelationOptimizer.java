@@ -36,7 +36,6 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -62,6 +61,7 @@ import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.optimizer.physical.CommonJoinTaskDispatcher;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -341,7 +341,6 @@ public class CorrelationOptimizer implements Transform {
         IntraQueryCorrelation correlation) throws SemanticException {
 
       LOG.info("now detecting operator " + current.getIdentifier() + " " + current.getName());
-
       LinkedHashSet<ReduceSinkOperator> correlatedReduceSinkOperators =
           new LinkedHashSet<ReduceSinkOperator>();
       if (skipedJoinOperators.contains(current)) {
@@ -387,18 +386,18 @@ public class CorrelationOptimizer implements Transform {
             ExprNodeDescUtils.backtrack(childKeyCols, child, current);
         List<ExprNodeDesc> backtrackedPartitionCols =
             ExprNodeDescUtils.backtrack(childPartitionCols, child, current);
+
+        OpParseContext opCtx = pCtx.getOpParseCtx().get(current);
+        RowResolver rowResolver = opCtx.getRowResolver();
         Set<String> tableNeedToCheck = new HashSet<String>();
         for (ExprNodeDesc expr: childKeyCols) {
           if (!(expr instanceof ExprNodeColumnDesc)) {
             return correlatedReduceSinkOperators;
-          } else {
-            String colName = ((ExprNodeColumnDesc)expr).getColumn();
-            OpParseContext opCtx = pCtx.getOpParseCtx().get(current);
-            for (ColumnInfo cinfo : opCtx.getRowResolver().getColumnInfos()) {
-              if (colName.equals(cinfo.getInternalName())) {
-                tableNeedToCheck.add(cinfo.getTabAlias());
-              }
-            }
+          }
+          String colName = ((ExprNodeColumnDesc)expr).getColumn();
+          String[] nm = rowResolver.reverseLookup(colName);
+          if (nm != null) {
+            tableNeedToCheck.add(nm[0]);
           }
         }
         if (current instanceof JoinOperator) {
@@ -576,7 +575,6 @@ public class CorrelationOptimizer implements Transform {
         Object... nodeOutputs) throws SemanticException {
       CorrelationNodeProcCtx corrCtx = (CorrelationNodeProcCtx) ctx;
       ReduceSinkOperator op = (ReduceSinkOperator) nd;
-
       // Check if we have visited this operator
       if (corrCtx.isWalked(op)) {
         return null;

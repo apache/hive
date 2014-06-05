@@ -136,10 +136,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_g2
 POSTHOOK: Output: default@dest_g3
 POSTHOOK: Lineage: dest_g2.c1 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest_g2.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_g2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_g3.c1 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest_g3.c2 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest_g3.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_g3.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_g3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM dest_g2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g2

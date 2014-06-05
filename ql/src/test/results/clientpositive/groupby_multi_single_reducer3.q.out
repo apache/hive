@@ -162,9 +162,9 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@e1
 POSTHOOK: Output: default@e2
 POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: e2.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from e1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e1
@@ -332,9 +332,9 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@e1
 POSTHOOK: Output: default@e2
 POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: e2.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from e1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e1
@@ -502,9 +502,9 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@e1
 POSTHOOK: Output: default@e2
 POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: e2.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from e1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e1
@@ -672,9 +672,9 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@e1
 POSTHOOK: Output: default@e2
 POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: e2.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from e1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e1

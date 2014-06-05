@@ -50,9 +50,10 @@ STAGE PLANS:
                 key expressions: _col0 (type: string), _col1 (type: string)
                 sort order: ++
                 Statistics: Num rows: 0 Data size: 72 Basic stats: PARTIAL Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 0 Data size: 72 Basic stats: PARTIAL Column stats: NONE
           File Output Operator
             compressed: false
@@ -115,9 +116,10 @@ STAGE PLANS:
                 key expressions: _col0 (type: string)
                 sort order: +
                 Statistics: Num rows: 0 Data size: 72 Basic stats: PARTIAL Column stats: NONE
-                value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
           Statistics: Num rows: 0 Data size: 72 Basic stats: PARTIAL Column stats: NONE
           File Output Operator
             compressed: false

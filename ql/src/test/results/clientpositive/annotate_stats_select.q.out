@@ -3315,7 +3315,9 @@ STAGE PLANS:
         /alltypes_orc [temp:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: int)
+          outputColumnNames: _col0
           Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
@@ -3474,7 +3476,9 @@ STAGE PLANS:
         /alltypes_orc [temp:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: int)
+          outputColumnNames: _col0
           Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
@@ -3635,7 +3639,9 @@ STAGE PLANS:
         /alltypes_orc [temp:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: int)
+          outputColumnNames: _col0
           Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
@@ -3795,7 +3801,9 @@ STAGE PLANS:
         /alltypes_orc [temp:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col1 (type: double)
+          outputColumnNames: _col1
           Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
@@ -3960,7 +3968,9 @@ STAGE PLANS:
         /alltypes_orc [temp:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: int)
+          outputColumnNames: _col0
           Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
@@ -4140,7 +4150,9 @@ STAGE PLANS:
         /alltypes_orc [in2:in1:alltypes_orc]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col1 (type: string)
+          outputColumnNames: _col1
           Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
@@ -4207,7 +4219,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string)
+          outputColumnNames: _col0
           Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10

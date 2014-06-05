@@ -62,7 +62,6 @@ STAGE PLANS:
                     key expressions: _col0 (type: bigint)
                     sort order: +
                     Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
           TableScan
             alias: src
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: COMPLETE
@@ -80,9 +79,10 @@ STAGE PLANS:
                     key expressions: _col0 (type: bigint)
                     sort order: +
                     Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: bigint)
+          outputColumnNames: _col0
           Statistics: Num rows: 0 Data size: 11624 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false

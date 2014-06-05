@@ -221,6 +221,13 @@ public final class Utilities {
     }
   }
 
+  public static String removeValueTag(String column) {
+    if (column.startsWith(ReduceField.VALUE + ".")) {
+      return column.substring(6);
+    }
+    return column;
+  }
+
   private Utilities() {
     // prevent instantiation
   }

@@ -2500,10 +2500,12 @@ STAGE PLANS:
                   key expressions: _col8 (type: boolean), _col1 (type: string), _col3 (type: timestamp), _col5 (type: float), _col6 (type: bigint), _col1 (type: string), _col4 (type: double), _col0 (type: int), _col7 (type: smallint), _col4 (type: double)
                   sort order: ++++++++++
                   Statistics: Num rows: 1195 Data size: 334668 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: boolean), _col3 (type: timestamp), _col4 (type: double), _col5 (type: float), _col6 (type: bigint), _col7 (type: smallint), _col8 (type: boolean), _col9 (type: int), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: float), _col13 (type: bigint), _col14 (type: double), _col15 (type: double), _col16 (type: bigint), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: smallint), _col21 (type: int)
+                  value expressions: _col2 (type: boolean), _col9 (type: int), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: float), _col13 (type: bigint), _col14 (type: double), _col15 (type: double), _col16 (type: bigint), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: smallint), _col21 (type: int)
       Execution mode: vectorized
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey7 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: boolean), KEY.reducesinkkey2 (type: timestamp), KEY.reducesinkkey6 (type: double), KEY.reducesinkkey3 (type: float), KEY.reducesinkkey4 (type: bigint), KEY.reducesinkkey8 (type: smallint), KEY.reducesinkkey0 (type: boolean), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: bigint), VALUE._col4 (type: float), VALUE._col5 (type: bigint), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col8 (type: bigint), VALUE._col9 (type: double), VALUE._col10 (type: double), VALUE._col11 (type: double), VALUE._col12 (type: smallint), VALUE._col13 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
           Statistics: Num rows: 1195 Data size: 334668 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -3253,17 +3255,19 @@ STAGE PLANS:
               predicate: (((((- 1.389) >= cint) and ((csmallint < ctinyint) and ((- 6432) > csmallint))) or ((cdouble >= cfloat) and (cstring2 <= 'a'))) or ((cstring1 like 'ss%') and (10.175 > cbigint))) (type: boolean)
               Statistics: Num rows: 436 Data size: 118669 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: ctimestamp1 (type: timestamp), cstring2 (type: string), cdouble (type: double), cfloat (type: float), cbigint (type: bigint), csmallint (type: smallint), (cbigint / 3569) (type: double), ((- 257) - csmallint) (type: int), ((- 6432) * cfloat) (type: float), (- cdouble) (type: double), (cdouble * 10.175) (type: double), (((- 6432) * cfloat) / cfloat) (type: double), (- cfloat) (type: float), (cint % csmallint) (type: int), (- cdouble) (type: double), (cdouble * (- cdouble)) (type: double)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+                expressions: ctimestamp1 (type: timestamp), cstring2 (type: string), (cdouble * 10.175) (type: double), (((- 6432) * cfloat) / cfloat) (type: double), (- cfloat) (type: float), (cint % csmallint) (type: int), (cdouble * (- cdouble)) (type: double), cdouble (type: double), cfloat (type: float), cbigint (type: bigint), csmallint (type: smallint), (cbigint / 3569) (type: double), ((- 257) - csmallint) (type: int), ((- 6432) * cfloat) (type: float), (- cdouble) (type: double)
+                outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col13, _col15, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
                 Statistics: Num rows: 436 Data size: 118669 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col5 (type: smallint), _col1 (type: string), _col2 (type: double)
                   sort order: +++
                   Statistics: Num rows: 436 Data size: 118669 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: timestamp), _col1 (type: string), _col2 (type: double), _col3 (type: float), _col4 (type: bigint), _col5 (type: smallint), _col6 (type: double), _col7 (type: int), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: float), _col13 (type: int), _col14 (type: double), _col15 (type: double)
+                  value expressions: _col0 (type: timestamp), _col3 (type: float), _col4 (type: bigint), _col6 (type: double), _col7 (type: int), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: float), _col13 (type: int), _col15 (type: double)
       Execution mode: vectorized
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: timestamp), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: double), VALUE._col1 (type: float), VALUE._col2 (type: bigint), KEY.reducesinkkey0 (type: smallint), VALUE._col3 (type: double), VALUE._col4 (type: int), VALUE._col5 (type: float), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col8 (type: double), VALUE._col9 (type: float), VALUE._col10 (type: int), VALUE._col6 (type: double), VALUE._col11 (type: double)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
           Statistics: Num rows: 436 Data size: 118669 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -4111,9 +4115,11 @@ STAGE PLANS:
               key expressions: _col0 (type: smallint)
               sort order: +
               Statistics: Num rows: 1371 Data size: 38389 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: double), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: int), _col7 (type: double), _col8 (type: int), _col9 (type: bigint), _col10 (type: bigint)
+              value expressions: _col1 (type: int), _col2 (type: double), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: int), _col7 (type: double), _col8 (type: int), _col9 (type: bigint), _col10 (type: bigint)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: int), VALUE._col1 (type: double), VALUE._col2 (type: double), VALUE._col3 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: int), VALUE._col6 (type: double), VALUE._col7 (type: int), VALUE._col8 (type: bigint), VALUE._col9 (type: bigint)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
           Statistics: Num rows: 1371 Data size: 38389 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -5728,8 +5734,8 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
           Statistics: Num rows: 1454 Data size: 40713 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: double), _col1 (type: double), (2563.58 * _col1) (type: double), (- _col1) (type: double), _col2 (type: bigint), ((2563.58 * _col1) + (- 5638.15)) (type: double), ((- _col1) * ((2563.58 * _col1) + (- 5638.15))) (type: double), _col3 (type: double), _col4 (type: double), (_col0 - (- _col1)) (type: double), _col5 (type: double), (_col0 + _col1) (type: double), (_col0 * 762) (type: double), _col6 (type: double), ((- 863.257) % (_col0 * 762)) (type: double), _col6 (type: double)
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+            expressions: _col0 (type: double), _col1 (type: double), _col5 (type: double), (_col0 + _col1) (type: double), (_col0 * 762) (type: double), _col6 (type: double), ((- 863.257) % (_col0 * 762)) (type: double), (2563.58 * _col1) (type: double), (- _col1) (type: double), _col2 (type: bigint), ((2563.58 * _col1) + (- 5638.15)) (type: double), ((- _col1) * ((2563.58 * _col1) + (- 5638.15))) (type: double), _col3 (type: double), _col4 (type: double), (_col0 - (- _col1)) (type: double)
+            outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col13, _col14, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
             Statistics: Num rows: 1454 Data size: 40713 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
@@ -5746,9 +5752,11 @@ STAGE PLANS:
               key expressions: _col0 (type: double)
               sort order: +
               Statistics: Num rows: 1454 Data size: 40713 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: double), _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: double)
+              value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col13 (type: double), _col14 (type: double)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: double), VALUE._col0 (type: double), VALUE._col1 (type: double), VALUE._col2 (type: double), VALUE._col3 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: double), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col8 (type: double), VALUE._col9 (type: double), VALUE._col10 (type: double), VALUE._col11 (type: double), VALUE._col12 (type: double), VALUE._col13 (type: double), VALUE._col12 (type: double)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
           Statistics: Num rows: 1454 Data size: 40713 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -6482,8 +6490,8 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
           Statistics: Num rows: 261 Data size: 73094 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: boolean), _col1 (type: float), (- _col1) (type: float), ((- 26.28) / _col1) (type: double), _col2 (type: bigint), (_col2 - 10.175) (type: double), _col3 (type: double), (_col3 % _col1) (type: double), (10.175 + (- _col1)) (type: double), _col4 (type: double), ((_col2 - 10.175) + _col3) (type: double), _col5 (type: bigint), _col6 (type: double), (- (10.175 + (- _col1))) (type: double), (79.553 / _col6) (type: double), (_col3 % (79.553 / _col6)) (type: double), (- (10.175 + (- _col1))) (type: double), _col7 (type: bigint), _col8 (type: double), ((- 1.389) * _col5) (type: double), (_col7 - ((- 1.389) * _col5)) (type: double), _col9 (type: double), (- (_col7 - ((- 1.389) * _col5))) (type: double), _col10 (type: double), (- _col10) (type: double), (_col10 * _col7) (type: double)
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
+            expressions: _col0 (type: boolean), _col1 (type: float), ((_col2 - 10.175) + _col3) (type: double), _col5 (type: bigint), _col6 (type: double), (- (10.175 + (- _col1))) (type: double), (79.553 / _col6) (type: double), (_col3 % (79.553 / _col6)) (type: double), _col7 (type: bigint), _col8 (type: double), ((- 1.389) * _col5) (type: double), (- _col1) (type: float), (_col7 - ((- 1.389) * _col5)) (type: double), _col9 (type: double), (- (_col7 - ((- 1.389) * _col5))) (type: double), _col10 (type: double), (- _col10) (type: double), (_col10 * _col7) (type: double), ((- 26.28) / _col1) (type: double), _col2 (type: bigint), (_col2 - 10.175) (type: double), _col3 (type: double), (_col3 % _col1) (type: double), (10.175 + (- _col1)) (type: double), _col4 (type: double)
+            outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col13, _col14, _col15, _col17, _col18, _col19, _col2, _col20, _col21, _col22, _col23, _col24, _col25, _col3, _col4, _col5, _col6, _col7, _col8, _col9
             Statistics: Num rows: 261 Data size: 73094 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
@@ -6500,9 +6508,11 @@ STAGE PLANS:
               key expressions: _col0 (type: boolean)
               sort order: +
               Statistics: Num rows: 261 Data size: 73094 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: boolean), _col1 (type: float), _col2 (type: float), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: bigint), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: double), _col16 (type: double), _col17 (type: bigint), _col18 (type: double), _col19 (type: double), _col20 (type: double), _col21 (type: double), _col22 (type: double), _col23 (type: double), _col24 (type: double), _col25 (type: double)
+              value expressions: _col1 (type: float), _col2 (type: float), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: bigint), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: double), _col17 (type: bigint), _col18 (type: double), _col19 (type: double), _col20 (type: double), _col21 (type: double), _col22 (type: double), _col23 (type: double), _col24 (type: double), _col25 (type: double)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: float), VALUE._col1 (type: float), VALUE._col2 (type: double), VALUE._col3 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: double), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col8 (type: double), VALUE._col9 (type: double), VALUE._col10 (type: bigint), VALUE._col11 (type: double), VALUE._col12 (type: double), VALUE._col13 (type: double), VALUE._col14 (type: double), VALUE._col12 (type: double), VALUE._col15 (type: bigint), VALUE._col16 (type: double), VALUE._col17 (type: double), VALUE._col18 (type: double), VALUE._col19 (type: double), VALUE._col20 (type: double), VALUE._col21 (type: double), VALUE._col22 (type: double), VALUE._col23 (type: double)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
           Statistics: Num rows: 261 Data size: 73094 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false

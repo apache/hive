@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -42,8 +44,11 @@ import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc.ExprNodeDescEqualityWrapper;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
 
 /**
  * Operator factory for the rule processors for inferring bucketing/sorting columns.
@@ -129,8 +134,11 @@ public class BucketingSortingOpProcFactory {
 
       BucketingSortingCtx bctx = (BucketingSortingCtx)procCtx;
       JoinOperator jop = (JoinOperator)nd;
-      List<ColumnInfo> colInfos = jop.getSchema().getSignature();
-      Byte[] order = jop.getConf().getTagOrder();
+      JoinDesc joinDesc = jop.getConf();
+
+      Byte[] order = joinDesc.getTagOrder();
+      Map<Byte, List<ExprNodeDesc>> expressions = joinDesc.getExprs();
+      List<String> outputValNames = joinDesc.getOutputColumnNames();
 
       BucketCol[] newBucketCols = null;
       SortCol[] newSortCols = null;
@@ -143,63 +151,55 @@ public class BucketingSortingOpProcFactory {
         assert(parent instanceof ReduceSinkOperator);
 
         ReduceSinkOperator rop = (ReduceSinkOperator)jop.getParentOperators().get(i);
+        ReduceSinkDesc rsDesc = rop.getConf();
 
-        String sortOrder = rop.getConf().getOrder();
-        List<BucketCol> bucketCols = new ArrayList<BucketCol>();
-        List<SortCol> sortCols = new ArrayList<SortCol>();
+        byte tag = (byte) rsDesc.getTag();
+        List<ExprNodeDesc> joinValues = expressions.get(tag);
+
+        // Columns are output from the join from the different reduce sinks in the order of their
+        // offsets
+        int offset = 0;
+        for (byte orderIndex = 0; orderIndex < order.length; orderIndex++) {
+          if (order[orderIndex] < order[tag]) {
+            offset += expressions.get(orderIndex).size();
+          }
+        }
+
+        String sortOrder = rsDesc.getOrder();
+        List<ExprNodeDesc> keyCols = rsDesc.getKeyCols();
+        List<ExprNodeDesc> valCols = ExprNodeDescUtils.backtrack(joinValues, jop, parent);
+
+        if (newBucketCols == null) {
+          newBucketCols = new BucketCol[keyCols.size()];
+          newSortCols = new SortCol[keyCols.size()];
+        }
+
         // Go through the Reduce keys and find the matching column(s) in the reduce values
-        for (int keyIndex = 0; keyIndex < rop.getConf().getKeyCols().size(); keyIndex++) {
-          for (int valueIndex = 0; valueIndex < rop.getConf().getValueCols().size();
-              valueIndex++) {
-
-            if (new ExprNodeDescEqualityWrapper(rop.getConf().getValueCols().get(valueIndex)).
-                equals(new ExprNodeDescEqualityWrapper(rop.getConf().getKeyCols().get(
-                    keyIndex)))) {
-
-              String colName = rop.getSchema().getSignature().get(valueIndex).getInternalName();
-              bucketCols.add(new BucketCol(colName, keyIndex));
-              sortCols.add(new SortCol(colName, keyIndex, sortOrder.charAt(keyIndex)));
-              break;
+        for (int keyIndex = 0 ; keyIndex < keyCols.size(); keyIndex++) {
+          ExprNodeDesc key = keyCols.get(keyIndex);
+          int index = ExprNodeDescUtils.indexOf(key, valCols);
+          if (index >= 0) {
+            int vindex = offset + index;
+            String vname = outputValNames.get(vindex);
+            if (newBucketCols[keyIndex] != null) {
+              newBucketCols[keyIndex].addAlias(vname, vindex);
+              newSortCols[keyIndex].addAlias(vname, vindex);
+            } else {
+              newBucketCols[keyIndex] = new BucketCol(vname, vindex);
+              newSortCols[keyIndex] = new SortCol(vname, vindex, sortOrder.charAt(keyIndex));
             }
           }
         }
-
-        if (bucketCols.isEmpty()) {
-          assert(sortCols.isEmpty());
-          continue;
-        }
-
-        if (newBucketCols == null) {
-          assert(newSortCols == null);
-          // The number of join keys is equal to the number of keys in every reducer, although
-          // not every key may map to a value in the reducer
-          newBucketCols = new BucketCol[rop.getConf().getKeyCols().size()];
-          newSortCols = new SortCol[rop.getConf().getKeyCols().size()];
-        } else {
-          assert(newSortCols != null);
-        }
-
-        byte tag = (byte)rop.getConf().getTag();
-        List<ExprNodeDesc> exprs = jop.getConf().getExprs().get(tag);
-
-        int colInfosOffset = 0;
-        int orderValue = order[tag];
-        // Columns are output from the join from the different reduce sinks in the order of their
-        // offsets
-        for (byte orderIndex = 0; orderIndex < order.length; orderIndex++) {
-          if (order[orderIndex] < orderValue) {
-            colInfosOffset += jop.getConf().getExprs().get(orderIndex).size();
-          }
-        }
-
-        findBucketingSortingColumns(exprs, colInfos, bucketCols, sortCols, newBucketCols,
-            newSortCols, colInfosOffset);
-
       }
 
-      setBucketingColsIfComplete(bctx, jop, newBucketCols);
-
-      setSortingColsIfComplete(bctx, jop, newSortCols);
+      List<BucketCol> bucketCols = Arrays.asList(newBucketCols);
+      if (!bucketCols.contains(null)) {
+        bctx.setBucketedCols(jop, bucketCols);
+      }
+      List<SortCol> sortCols = Arrays.asList(newSortCols);
+      if (!sortCols.contains(null)) {
+        bctx.setSortedCols(jop, sortCols);
+      }
 
       return null;
     }
@@ -331,6 +331,12 @@ public class BucketingSortingOpProcFactory {
       BucketingSortingCtx bctx = (BucketingSortingCtx)procCtx;
       SelectOperator sop = (SelectOperator)nd;
 
+      if (sop.getNumParent() == 1 &&
+          sop.getParentOperators().get(0) instanceof ReduceSinkOperator) {
+        ReduceSinkOperator rs = (ReduceSinkOperator) sop.getParentOperators().get(0);
+        extractTraits(bctx, rs, sop);
+        return null;
+      }
       Operator<? extends OperatorDesc> parent = getParent(stack);
 
       // if this is a selStarNoCompute then this select operator
@@ -506,71 +512,83 @@ public class BucketingSortingOpProcFactory {
       Operator<? extends OperatorDesc> parent = exop.getParentOperators().get(0);
 
       // The caller of this method should guarantee this
-      assert(parent instanceof ReduceSinkOperator);
-
-      ReduceSinkOperator rop = (ReduceSinkOperator)parent;
-
-      // Go through the set of partition columns, and find their representatives in the values
-      // These represent the bucketed columns
-      List<BucketCol> bucketCols = new ArrayList<BucketCol>();
-      for (int i = 0; i < rop.getConf().getPartitionCols().size(); i++) {
-        boolean valueColFound = false;
-        for (int j = 0; j < rop.getConf().getValueCols().size(); j++) {
-          if (new ExprNodeDescEqualityWrapper(rop.getConf().getValueCols().get(j)).equals(
-              new ExprNodeDescEqualityWrapper(rop.getConf().getPartitionCols().get(i)))) {
-
-            bucketCols.add(new BucketCol(
-                rop.getSchema().getSignature().get(j).getInternalName(), j));
-            valueColFound = true;
-            break;
-          }
-        }
-
-        // If the partition columns can't all be found in the values then the data is not bucketed
-        if (!valueColFound) {
-          bucketCols.clear();
-          break;
-        }
-      }
-
-      // Go through the set of key columns, and find their representatives in the values
-      // These represent the sorted columns
-      String sortOrder = rop.getConf().getOrder();
-      List<SortCol> sortCols = new ArrayList<SortCol>();
-      for (int i = 0; i < rop.getConf().getKeyCols().size(); i++) {
-        boolean valueColFound = false;
-        for (int j = 0; j < rop.getConf().getValueCols().size(); j++) {
-          if (new ExprNodeDescEqualityWrapper(rop.getConf().getValueCols().get(j)).equals(
-              new ExprNodeDescEqualityWrapper(rop.getConf().getKeyCols().get(i)))) {
-
-            sortCols.add(new SortCol(
-                rop.getSchema().getSignature().get(j).getInternalName(), j, sortOrder.charAt(i)));
-            valueColFound = true;
-            break;
-          }
-        }
-
-        // If the sorted columns can't all be found in the values then the data is only sorted on
-        // the columns seen up until now
-        if (!valueColFound) {
-          break;
-        }
-      }
-
-      List<ColumnInfo> colInfos = exop.getSchema().getSignature();
-
-      if (!bucketCols.isEmpty()) {
-        List<BucketCol> newBucketCols = getNewBucketCols(bucketCols, colInfos);
-        bctx.setBucketedCols(exop, newBucketCols);
-      }
-
-      if (!sortCols.isEmpty()) {
-        List<SortCol> newSortCols = getNewSortCols(sortCols, colInfos);
-        bctx.setSortedCols(exop, newSortCols);
+      if (parent instanceof ReduceSinkOperator) {
+        extractTraits(bctx, (ReduceSinkOperator)parent, exop);
       }
 
       return null;
     }
+  }
+
+  static void extractTraits(BucketingSortingCtx bctx, ReduceSinkOperator rop, Operator<?> exop)
+      throws SemanticException {
+
+    List<ExprNodeDesc> outputValues = Collections.emptyList();
+    if (exop instanceof ExtractOperator) {
+      outputValues = rop.getConf().getValueCols();
+    } else if (exop instanceof SelectOperator) {
+      SelectDesc select = ((SelectOperator)exop).getConf();
+      outputValues = ExprNodeDescUtils.backtrack(select.getColList(), exop, rop);
+    }
+    if (outputValues.isEmpty()) {
+      return;
+    }
+
+    // Go through the set of partition columns, and find their representatives in the values
+    // These represent the bucketed columns
+    List<BucketCol> bucketCols = extractBucketCols(rop, outputValues);
+
+    // Go through the set of key columns, and find their representatives in the values
+    // These represent the sorted columns
+    List<SortCol> sortCols = extractSortCols(rop, outputValues);
+
+    List<ColumnInfo> colInfos = exop.getSchema().getSignature();
+
+    if (!bucketCols.isEmpty()) {
+      List<BucketCol> newBucketCols = getNewBucketCols(bucketCols, colInfos);
+      bctx.setBucketedCols(exop, newBucketCols);
+    }
+
+    if (!sortCols.isEmpty()) {
+      List<SortCol> newSortCols = getNewSortCols(sortCols, colInfos);
+      bctx.setSortedCols(exop, newSortCols);
+    }
+  }
+
+  static List<BucketCol> extractBucketCols(ReduceSinkOperator rop, List<ExprNodeDesc> outputValues) {
+    List<BucketCol> bucketCols = new ArrayList<BucketCol>();
+    for (ExprNodeDesc partitionCol : rop.getConf().getPartitionCols()) {
+      if (!(partitionCol instanceof ExprNodeColumnDesc)) {
+        return Collections.emptyList();
+      }
+      int index = ExprNodeDescUtils.indexOf(partitionCol, outputValues);
+      if (index < 0) {
+        return Collections.emptyList();
+      }
+      bucketCols.add(new BucketCol(((ExprNodeColumnDesc) partitionCol).getColumn(), index));
+    }
+    // If the partition columns can't all be found in the values then the data is not bucketed
+    return bucketCols;
+  }
+
+  static List<SortCol> extractSortCols(ReduceSinkOperator rop, List<ExprNodeDesc> outputValues) {
+    String sortOrder = rop.getConf().getOrder();
+    List<SortCol> sortCols = new ArrayList<SortCol>();
+    ArrayList<ExprNodeDesc> keyCols = rop.getConf().getKeyCols();
+    for (int i = 0; i < keyCols.size(); i++) {
+      ExprNodeDesc keyCol = keyCols.get(i);
+      if (!(keyCol instanceof ExprNodeColumnDesc)) {
+        break;
+      }
+      int index = ExprNodeDescUtils.indexOf(keyCol, outputValues);
+      if (index < 0) {
+        break;
+      }
+      sortCols.add(new SortCol(((ExprNodeColumnDesc) keyCol).getColumn(), index, sortOrder.charAt(i)));
+    }
+    // If the sorted columns can't all be found in the values then the data is only sorted on
+    // the columns seen up until now
+    return sortCols;
   }
 
   /**

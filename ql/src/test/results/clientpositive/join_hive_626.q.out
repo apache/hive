@@ -93,8 +93,8 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col4}
+            0 {VALUE._col0}
+            1 {VALUE._col0} {VALUE._col3}
           outputColumnNames: _col1, _col8, _col12
           Statistics: Num rows: 0 Data size: 16 Basic stats: PARTIAL Column stats: NONE
           File Output Operator
@@ -128,8 +128,8 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col1} {VALUE._col12}
-            1 {VALUE._col1}
+            0 {VALUE._col1} {VALUE._col11}
+            1 {VALUE._col0}
           outputColumnNames: _col1, _col12, _col20
           Statistics: Num rows: 0 Data size: 17 Basic stats: PARTIAL Column stats: NONE
           Select Operator

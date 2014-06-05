@@ -252,60 +252,58 @@
                  <void property="schema"> 
                   <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                    <void property="signature"> 
-                    <object class="java.util.ArrayList"> 
-                     <void method="add"> 
-                      <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                       <void property="internalName"> 
-                        <string>_col0</string> 
-                       </void> 
-                       <void property="tabAlias"> 
-                        <string></string> 
-                       </void> 
-                       <void property="type"> 
-                        <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                         <void property="typeName"> 
-                          <string>int</string> 
-                         </void> 
-                        </object> 
-                       </void> 
-                       <void property="typeName"> 
-                        <string>int</string> 
-                       </void> 
-                      </object> 
-                     </void> 
-                     <void method="add"> 
-                      <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                       <void property="internalName"> 
-                        <string>_col1</string> 
-                       </void> 
-                       <void property="tabAlias"> 
-                        <string></string> 
-                       </void> 
-                       <void property="type"> 
-                        <object idref="PrimitiveTypeInfo0"/> 
-                       </void> 
-                       <void property="typeName"> 
-                        <string>int</string> 
-                       </void> 
-                      </object> 
-                     </void> 
-                     <void method="add"> 
-                      <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                       <void property="internalName"> 
-                        <string>_col2</string> 
-                       </void> 
-                       <void property="tabAlias"> 
-                        <string></string> 
-                       </void> 
-                       <void property="type"> 
-                        <object idref="PrimitiveTypeInfo0"/> 
-                       </void> 
-                       <void property="typeName"> 
-                        <string>int</string> 
-                       </void> 
-                      </object> 
-                     </void> 
-                    </object> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                      <void property="internalName"> 
+                       <string>_col0</string> 
+                      </void> 
+                      <void property="tabAlias"> 
+                       <string></string> 
+                      </void> 
+                      <void property="type"> 
+                       <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                        <void property="typeName"> 
+                         <string>int</string> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                      <void property="internalName"> 
+                       <string>_col1</string> 
+                      </void> 
+                      <void property="tabAlias"> 
+                       <string></string> 
+                      </void> 
+                      <void property="type"> 
+                       <object idref="PrimitiveTypeInfo0"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void method="add"> 
+                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                      <void property="internalName"> 
+                       <string>_col2</string> 
+                      </void> 
+                      <void property="tabAlias"> 
+                       <string></string> 
+                      </void> 
+                      <void property="type"> 
+                       <object idref="PrimitiveTypeInfo0"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
+                      </void> 
+                     </object> 
+                    </void> 
                    </void> 
                   </object> 
                  </void> 
@@ -487,56 +485,54 @@
               <void property="schema"> 
                <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                 <void property="signature"> 
-                 <object class="java.util.ArrayList"> 
-                  <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                    <void property="alias"> 
-                     <string>_c0</string> 
-                    </void> 
-                    <void property="internalName"> 
-                     <string>_col0</string> 
-                    </void> 
-                    <void property="type"> 
-                     <object idref="PrimitiveTypeInfo0"/> 
-                    </void> 
-                    <void property="typeName"> 
-                     <string>int</string> 
-                    </void> 
-                   </object> 
-                  </void> 
-                  <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                    <void property="alias"> 
-                     <string>_c1</string> 
-                    </void> 
-                    <void property="internalName"> 
-                     <string>_col1</string> 
-                    </void> 
-                    <void property="type"> 
-                     <object idref="PrimitiveTypeInfo0"/> 
-                    </void> 
-                    <void property="typeName"> 
-                     <string>int</string> 
-                    </void> 
-                   </object> 
-                  </void> 
-                  <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                    <void property="alias"> 
-                     <string>_c2</string> 
-                    </void> 
-                    <void property="internalName"> 
-                     <string>_col2</string> 
-                    </void> 
-                    <void property="type"> 
-                     <object idref="PrimitiveTypeInfo0"/> 
-                    </void> 
-                    <void property="typeName"> 
-                     <string>int</string> 
-                    </void> 
-                   </object> 
-                  </void> 
-                 </object> 
+                 <void method="add"> 
+                  <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                   <void property="alias"> 
+                    <string>_c0</string> 
+                   </void> 
+                   <void property="internalName"> 
+                    <string>_col0</string> 
+                   </void> 
+                   <void property="type"> 
+                    <object idref="PrimitiveTypeInfo0"/> 
+                   </void> 
+                   <void property="typeName"> 
+                    <string>int</string> 
+                   </void> 
+                  </object> 
+                 </void> 
+                 <void method="add"> 
+                  <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                   <void property="alias"> 
+                    <string>_c1</string> 
+                   </void> 
+                   <void property="internalName"> 
+                    <string>_col1</string> 
+                   </void> 
+                   <void property="type"> 
+                    <object idref="PrimitiveTypeInfo0"/> 
+                   </void> 
+                   <void property="typeName"> 
+                    <string>int</string> 
+                   </void> 
+                  </object> 
+                 </void> 
+                 <void method="add"> 
+                  <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                   <void property="alias"> 
+                    <string>_c2</string> 
+                   </void> 
+                   <void property="internalName"> 
+                    <string>_col2</string> 
+                   </void> 
+                   <void property="type"> 
+                    <object idref="PrimitiveTypeInfo0"/> 
+                   </void> 
+                   <void property="typeName"> 
+                    <string>int</string> 
+                   </void> 
+                  </object> 
+                 </void> 
                 </void> 
                </object> 
               </void> 
@@ -644,56 +640,54 @@
            <void property="schema"> 
             <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
              <void property="signature"> 
-              <object class="java.util.ArrayList"> 
-               <void method="add"> 
-                <object id="ColumnInfo0" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                 <void property="internalName"> 
-                  <string>lint</string> 
-                 </void> 
-                 <void property="tabAlias"> 
-                  <string>src_thrift</string> 
-                 </void> 
-                 <void property="type"> 
-                  <object idref="ListTypeInfo1"/> 
-                 </void> 
-                 <void property="typeName"> 
-                  <string>array&lt;int&gt;</string> 
-                 </void> 
-                </object> 
-               </void> 
-               <void method="add"> 
-                <object id="ColumnInfo1" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                 <void property="internalName"> 
-                  <string>lintstring</string> 
-                 </void> 
-                 <void property="tabAlias"> 
-                  <string>src_thrift</string> 
-                 </void> 
-                 <void property="type"> 
-                  <object idref="ListTypeInfo0"/> 
-                 </void> 
-                 <void property="typeName"> 
-                  <string>array&lt;struct&lt;myint:int,mystring:string,underscore_int:int&gt;&gt;</string> 
-                 </void> 
-                </object> 
-               </void> 
-               <void method="add"> 
-                <object id="ColumnInfo2" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                 <void property="internalName"> 
-                  <string>mstringstring</string> 
-                 </void> 
-                 <void property="tabAlias"> 
-                  <string>src_thrift</string> 
-                 </void> 
-                 <void property="type"> 
-                  <object idref="MapTypeInfo0"/> 
-                 </void> 
-                 <void property="typeName"> 
-                  <string>map&lt;string,string&gt;</string> 
-                 </void> 
-                </object> 
-               </void> 
-              </object> 
+              <void method="add"> 
+               <object id="ColumnInfo0" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                <void property="internalName"> 
+                 <string>lint</string> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>src_thrift</string> 
+                </void> 
+                <void property="type"> 
+                 <object idref="ListTypeInfo1"/> 
+                </void> 
+                <void property="typeName"> 
+                 <string>array&lt;int&gt;</string> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object id="ColumnInfo1" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                <void property="internalName"> 
+                 <string>lintstring</string> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>src_thrift</string> 
+                </void> 
+                <void property="type"> 
+                 <object idref="ListTypeInfo0"/> 
+                </void> 
+                <void property="typeName"> 
+                 <string>array&lt;struct&lt;myint:int,mystring:string,underscore_int:int&gt;&gt;</string> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object id="ColumnInfo2" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                <void property="internalName"> 
+                 <string>mstringstring</string> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>src_thrift</string> 
+                </void> 
+                <void property="type"> 
+                 <object idref="MapTypeInfo0"/> 
+                </void> 
+                <void property="typeName"> 
+                 <string>map&lt;string,string&gt;</string> 
+                </void> 
+               </object> 
+              </void> 
              </void> 
             </object> 
            </void> 
@@ -755,111 +749,109 @@
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
           <void property="signature"> 
-           <object class="java.util.ArrayList"> 
-            <void method="add"> 
-             <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-              <void property="internalName"> 
-               <string>aint</string> 
-              </void> 
-              <void property="tabAlias"> 
-               <string>src_thrift</string> 
-              </void> 
-              <void property="type"> 
-               <object idref="PrimitiveTypeInfo0"/> 
-              </void> 
-              <void property="typeName"> 
-               <string>int</string> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-              <void property="internalName"> 
-               <string>astring</string> 
-              </void> 
-              <void property="tabAlias"> 
-               <string>src_thrift</string> 
-              </void> 
-              <void property="type"> 
-               <object idref="PrimitiveTypeInfo1"/> 
-              </void> 
-              <void property="typeName"> 
-               <string>string</string> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object idref="ColumnInfo0"/> 
-            </void> 
-            <void method="add"> 
-             <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-              <void property="internalName"> 
-               <string>lstring</string> 
-              </void> 
-              <void property="tabAlias"> 
-               <string>src_thrift</string> 
-              </void> 
-              <void property="type"> 
-               <object class="org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo"> 
-                <void property="listElementTypeInfo"> 
-                 <object idref="PrimitiveTypeInfo1"/> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="typeName"> 
-               <string>array&lt;string&gt;</string> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object idref="ColumnInfo1"/> 
-            </void> 
-            <void method="add"> 
-             <object idref="ColumnInfo2"/> 
-            </void> 
-            <void method="add"> 
-             <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-              <void property="hiddenVirtualCol"> 
-               <boolean>true</boolean> 
-              </void> 
-              <void property="internalName"> 
-               <string>BLOCK__OFFSET__INSIDE__FILE</string> 
-              </void> 
-              <void property="tabAlias"> 
-               <string>src_thrift</string> 
-              </void> 
-              <void property="type"> 
-               <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                <void property="typeName"> 
-                 <string>bigint</string> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="typeName"> 
-               <string>bigint</string> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-              <void property="hiddenVirtualCol"> 
-               <boolean>true</boolean> 
-              </void> 
-              <void property="internalName"> 
-               <string>INPUT__FILE__NAME</string> 
-              </void> 
-              <void property="tabAlias"> 
-               <string>src_thrift</string> 
-              </void> 
-              <void property="type"> 
-               <object idref="PrimitiveTypeInfo1"/> 
-              </void> 
-              <void property="typeName"> 
-               <string>string</string> 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
+           <void method="add"> 
+            <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+             <void property="internalName"> 
+              <string>aint</string> 
+             </void> 
+             <void property="tabAlias"> 
+              <string>src_thrift</string> 
+             </void> 
+             <void property="type"> 
+              <object idref="PrimitiveTypeInfo0"/> 
+             </void> 
+             <void property="typeName"> 
+              <string>int</string> 
+             </void> 
+            </object> 
+           </void> 
+           <void method="add"> 
+            <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+             <void property="internalName"> 
+              <string>astring</string> 
+             </void> 
+             <void property="tabAlias"> 
+              <string>src_thrift</string> 
+             </void> 
+             <void property="type"> 
+              <object idref="PrimitiveTypeInfo1"/> 
+             </void> 
+             <void property="typeName"> 
+              <string>string</string> 
+             </void> 
+            </object> 
+           </void> 
+           <void method="add"> 
+            <object idref="ColumnInfo0"/> 
+           </void> 
+           <void method="add"> 
+            <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+             <void property="internalName"> 
+              <string>lstring</string> 
+             </void> 
+             <void property="tabAlias"> 
+              <string>src_thrift</string> 
+             </void> 
+             <void property="type"> 
+              <object class="org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo"> 
+               <void property="listElementTypeInfo"> 
+                <object idref="PrimitiveTypeInfo1"/> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="typeName"> 
+              <string>array&lt;string&gt;</string> 
+             </void> 
+            </object> 
+           </void> 
+           <void method="add"> 
+            <object idref="ColumnInfo1"/> 
+           </void> 
+           <void method="add"> 
+            <object idref="ColumnInfo2"/> 
+           </void> 
+           <void method="add"> 
+            <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+             <void property="hiddenVirtualCol"> 
+              <boolean>true</boolean> 
+             </void> 
+             <void property="internalName"> 
+              <string>BLOCK__OFFSET__INSIDE__FILE</string> 
+             </void> 
+             <void property="tabAlias"> 
+              <string>src_thrift</string> 
+             </void> 
+             <void property="type"> 
+              <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+               <void property="typeName"> 
+                <string>bigint</string> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="typeName"> 
+              <string>bigint</string> 
+             </void> 
+            </object> 
+           </void> 
+           <void method="add"> 
+            <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+             <void property="hiddenVirtualCol"> 
+              <boolean>true</boolean> 
+             </void> 
+             <void property="internalName"> 
+              <string>INPUT__FILE__NAME</string> 
+             </void> 
+             <void property="tabAlias"> 
+              <string>src_thrift</string> 
+             </void> 
+             <void property="type"> 
+              <object idref="PrimitiveTypeInfo1"/> 
+             </void> 
+             <void property="typeName"> 
+              <string>string</string> 
+             </void> 
+            </object> 
+           </void> 
           </void> 
          </object> 
         </void> 
