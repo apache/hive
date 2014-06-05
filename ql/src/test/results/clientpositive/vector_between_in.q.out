@@ -31,10 +31,11 @@ STAGE PLANS:
                   key expressions: _col0 (type: date)
                   sort order: +
                   Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: date)
       Execution mode: vectorized
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: date)
+          outputColumnNames: _col0
           Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -130,10 +131,11 @@ STAGE PLANS:
                   key expressions: _col0 (type: decimal(20,10))
                   sort order: +
                   Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: decimal(20,10))
       Execution mode: vectorized
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: decimal(20,10))
+          outputColumnNames: _col0
           Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -229,10 +231,11 @@ STAGE PLANS:
                   key expressions: _col0 (type: date)
                   sort order: +
                   Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: date)
       Execution mode: vectorized
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: date)
+          outputColumnNames: _col0
           Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -274,10 +277,11 @@ STAGE PLANS:
                   key expressions: _col0 (type: date)
                   sort order: +
                   Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: date)
       Execution mode: vectorized
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: date)
+          outputColumnNames: _col0
           Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -319,10 +323,11 @@ STAGE PLANS:
                   key expressions: _col0 (type: decimal(20,10))
                   sort order: +
                   Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: decimal(20,10))
       Execution mode: vectorized
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: decimal(20,10))
+          outputColumnNames: _col0
           Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false

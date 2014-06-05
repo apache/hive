@@ -46,8 +46,17 @@ public class MapJoinKeyObject extends MapJoinKey {
   public MapJoinKeyObject(Object[] key) {
     this.key = key;
   }
+
   public MapJoinKeyObject() {
     this(EMPTY_OBJECT_ARRAY);
+  }
+
+  public Object[] getKeyObjects() {
+    return key;
+  }
+
+  public void setKeyObjects(Object[] key) {
+    this.key = key;
   }
 
   public int getKeyLength() {
@@ -118,7 +127,7 @@ public class MapJoinKeyObject extends MapJoinKey {
     container.write(out);
   }
 
-  protected void readFromRow(Object[] fieldObjs, List<ObjectInspector> keyFieldsOI)
+  public void readFromRow(Object[] fieldObjs, List<ObjectInspector> keyFieldsOI)
       throws HiveException {
     if (key == null || key.length != fieldObjs.length) {
       key = new Object[fieldObjs.length];

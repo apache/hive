@@ -99,16 +99,6 @@ POSTHOOK: Input: default@test
 POSTHOOK: Input: default@test@p=1
 POSTHOOK: Input: default@test@p=2
 #### A masked pattern was here ####
-484	val_484	2
-98	val_98	2
-278	val_278	2
-255	val_255	2
-409	val_409	2
-165	val_165	2
-27	val_27	2
-311	val_311	2
-86	val_86	2
-238	val_238	2
 484	val_484	1
 98	val_98	1
 278	val_278	1
@@ -119,3 +109,13 @@ POSTHOOK: Input: default@test@p=2
 311	val_311	1
 86	val_86	1
 238	val_238	1
+484	val_484	2
+98	val_98	2
+278	val_278	2
+255	val_255	2
+409	val_409	2
+165	val_165	2
+27	val_27	2
+311	val_311	2
+86	val_86	2
+238	val_238	2

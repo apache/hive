@@ -844,10 +844,10 @@ POSTHOOK: Output: default@src_lv2
 POSTHOOK: Output: default@src_lv3
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
-POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
@@ -1605,8 +1605,10 @@ POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type
 POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: src_lv3.value EXPRESSION []
-POSTHOOK: Lineage: src_lv4.value EXPRESSION []
+POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
+POSTHOOK: Lineage: src_lv4.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv4.value EXPRESSION [(src_10)src_10.null, ]
 PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1

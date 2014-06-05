@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -163,7 +164,7 @@ public class ReduceSinkDeDuplication implements Transform {
         }
         return false;
       }
-      if (child instanceof ExtractOperator) {
+      if (child instanceof ExtractOperator || child instanceof SelectOperator) {
         return process(cRS, dedupCtx);
       }
       return false;

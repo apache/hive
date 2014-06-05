@@ -40,13 +40,13 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
             1 
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
@@ -265,13 +265,13 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
             1 
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE

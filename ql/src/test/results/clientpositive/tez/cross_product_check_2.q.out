@@ -124,7 +124,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: key (type: string)
                     Statistics: Num rows: 0 Data size: 114 Basic stats: PARTIAL Column stats: NONE
-                    value expressions: key (type: string), value (type: string)
+                    value expressions: value (type: string)
         Map 3 
             Map Operator Tree:
                 TableScan

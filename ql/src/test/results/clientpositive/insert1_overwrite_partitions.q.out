@@ -56,9 +56,10 @@ STAGE PLANS:
                 key expressions: _col0 (type: string), _col1 (type: string)
                 sort order: --
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 5
@@ -186,9 +187,10 @@ STAGE PLANS:
                 key expressions: _col0 (type: string), _col1 (type: string)
                 sort order: --
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 5

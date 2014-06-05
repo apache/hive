@@ -2708,7 +2708,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             fetchFilesNotInLocalFilesystem(stripQuotes(trfm.getChild(execPos).getText())),
             inInfo, inRecordWriter, outInfo, outRecordReader, errRecordReader, errInfo),
         new RowSchema(out_rwsch.getColumnInfos()), input), out_rwsch);
-    output.setColumnExprMap(Collections.emptyMap());  // disable backtracking
+    output.setColumnExprMap(new HashMap<String, ExprNodeDesc>());  // disable backtracking
 
     return output;
   }
@@ -3117,15 +3117,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       startPosn = 0;
     }
 
+    Set<String> colAliases = new HashSet<String>();
+    ASTNode[] exprs = new ASTNode[exprList.getChildCount()];
+    String[][] aliases = new String[exprList.getChildCount()][];
+    boolean[] hasAsClauses = new boolean[exprList.getChildCount()];
     // Iterate over all expression (either after SELECT, or in SELECT TRANSFORM)
     for (int i = startPosn; i < exprList.getChildCount(); ++i) {
 
       // child can be EXPR AS ALIAS, or EXPR.
       ASTNode child = (ASTNode) exprList.getChild(i);
       boolean hasAsClause = (!isInTransform) && (child.getChildCount() == 2);
-      boolean isWindowSpec = child.getChildCount() == 3 ?
-          (child.getChild(2).getType() == HiveParser.TOK_WINDOWSPEC) :
-            false;
+      boolean isWindowSpec = child.getChildCount() == 3 &&
+          child.getChild(2).getType() == HiveParser.TOK_WINDOWSPEC;
 
       // EXPR AS (ALIAS,...) parses, but is only allowed for UDTF's
       // This check is not needed and invalid when there is a transform b/c the
@@ -3156,8 +3159,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           unparseTranslator.addIdentifierTranslation((ASTNode) child
               .getChild(1));
         }
-
       }
+      exprs[i] = expr;
+      aliases[i] = new String[] {tabAlias, colAlias};
+      hasAsClauses[i] = hasAsClause;
+      colAliases.add(colAlias);
+    }
+
+    // Iterate over all expression (either after SELECT, or in SELECT TRANSFORM)
+    for (int i = startPosn; i < exprList.getChildCount(); ++i) {
+      // The real expression
+      ASTNode expr = exprs[i];
+      String tabAlias = aliases[i][0];
+      String colAlias = aliases[i][1];
+      boolean hasAsClause = hasAsClauses[i];
 
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         pos = genColListRegex(".*", expr.getChildCount() == 0 ? null
@@ -3193,7 +3208,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tcCtx.setAllowDistinctFunctions(false);
         ExprNodeDesc exp = genExprNodeDesc(expr, inputRR, tcCtx);
         String recommended = recommendName(exp, colAlias);
-        if (recommended != null && out_rwsch.get(null, recommended) == null) {
+        if (recommended != null && !colAliases.contains(recommended) &&
+            out_rwsch.get(null, recommended) == null) {
           colAlias = recommended;
         }
         col_list.add(exp);
@@ -4726,7 +4742,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *           distinct key in hope of getting a uniform distribution, and
    *           compute partial aggregates by the grouping key. Evaluate partial
    *           aggregates first, and spray by the grouping key to compute actual
-   *           aggregates in the second phase. The agggregation evaluation
+   *           aggregates in the second phase. The aggregation evaluation
    *           functions are as follows: Partitioning Key: distinct key
    *
    *           Sorting Key: distinct key
@@ -4794,7 +4810,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *           compute partial aggregates grouped by the reduction key (grouping
    *           key + distinct key). Evaluate partial aggregates first, and spray
    *           by the grouping key to compute actual aggregates in the second
-   *           phase. The agggregation evaluation functions are as follows:
+   *           phase. The aggregation evaluation functions are as follows:
    *           Partitioning Key: random() if no DISTINCT grouping + distinct key
    *           if DISTINCT
    *
@@ -4968,7 +4984,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * spray by the group by key, and sort by the distinct key (if any), and
    * compute aggregates based on actual aggregates
    *
-   * The agggregation evaluation functions are as follows:
+   * The aggregation evaluation functions are as follows:
    *
    * No grouping sets:
    * Group By Operator:
@@ -5135,7 +5151,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * key). Evaluate partial aggregates first, and spray by the grouping key to
    * compute actual aggregates in the second phase.
    *
-   * The agggregation evaluation functions are as follows:
+   * The aggregation evaluation functions are as follows:
    *
    * No grouping sets:
    * STAGE 1
@@ -5157,7 +5173,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Sorting Key: grouping key
    * Reducer: merge/terminate (mode = FINAL)
    *
-   * In the presence of grouping sets, the agggregation evaluation functions are as follows:
+   * In the presence of grouping sets, the aggregation evaluation functions are as follows:
    * STAGE 1
    * Group by Operator:
    * grouping keys: group by expressions + grouping id. if no DISTINCT
@@ -5406,8 +5422,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ((dest_tab.getNumBuckets() > 0) &&
         (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
       enforceBucketing = true;
-      partnCols = getParitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, true);
-      partnColsNoConvert = getParitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input,
+      partnCols = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, true);
+      partnColsNoConvert = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input,
           false);
     }
 
@@ -6205,7 +6221,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return genLimitPlan(dest, qb, curr, limit);
   }
 
-  private ArrayList<ExprNodeDesc> getParitionColsFromBucketCols(String dest, QB qb, Table tab,
+  private ArrayList<ExprNodeDesc> getPartitionColsFromBucketCols(String dest, QB qb, Table tab,
       TableDesc table_desc, Operator input, boolean convert)
       throws SemanticException {
     List<String> tabBucketCols = tab.getBucketCols();
@@ -6384,7 +6400,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genReduceSinkPlan(String dest, QB qb, Operator input,
+  private Operator genReduceSinkPlan(String dest, QB qb, Operator<?> input,
       int numReducers) throws SemanticException {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
@@ -6424,8 +6440,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+    Operator dummy = Operator.createDummy();
+    dummy.setParentOperators(Arrays.asList(input));
 
     ArrayList<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
+    ArrayList<ExprNodeDesc> sortColsBack = new ArrayList<ExprNodeDesc>();
     StringBuilder order = new StringBuilder();
     if (sortExprs != null) {
       int ccount = sortExprs.getChildCount();
@@ -6446,58 +6465,121 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         ExprNodeDesc exprNode = genExprNodeDesc(cl, inputRR);
         sortCols.add(exprNode);
+        sortColsBack.add(ExprNodeDescUtils.backtrack(exprNode, dummy, input));
       }
     }
-
     // For the generation of the values expression just get the inputs
     // signature and generate field expressions for those
+    RowResolver rsRR = new RowResolver();
     ArrayList<String> outputColumns = new ArrayList<String>();
-    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
     ArrayList<ExprNodeDesc> valueCols = new ArrayList<ExprNodeDesc>();
-    int i = 0;
-    for (ColumnInfo colInfo : inputRR.getColumnInfos()) {
-      String internalName = getColumnInternalName(i++);
-      outputColumns.add(internalName);
-      valueCols.add(new ExprNodeColumnDesc(colInfo.getType(), colInfo
-          .getInternalName(), colInfo.getTabAlias(), colInfo
-          .getIsVirtualCol()));
-      colExprMap.put(internalName, valueCols.get(valueCols.size() - 1));
+    ArrayList<ExprNodeDesc> valueColsBack = new ArrayList<ExprNodeDesc>();
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+
+    ArrayList<ColumnInfo> columnInfos = inputRR.getColumnInfos();
+
+    int[] index = new int[columnInfos.size()];
+    for (int i = 0; i < index.length; i++) {
+      ColumnInfo colInfo = columnInfos.get(i);
+      String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
+      String[] nm2 = inputRR.getAlternateMappings(colInfo.getInternalName());
+      ExprNodeColumnDesc value = new ExprNodeColumnDesc(colInfo.getType(),
+          colInfo.getInternalName(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+
+      // backtrack can be null when input is script operator
+      ExprNodeDesc valueBack = ExprNodeDescUtils.backtrack(value, dummy, input);
+      int kindex = valueBack == null ? -1 : ExprNodeDescUtils.indexOf(valueBack, sortColsBack);
+      if (kindex >= 0) {
+        index[i] = kindex;
+        ColumnInfo newColInfo = new ColumnInfo(colInfo);
+        newColInfo.setInternalName(Utilities.ReduceField.KEY + ".reducesinkkey" + kindex);
+        newColInfo.setTabAlias(nm[0]);
+        rsRR.addMappingOnly(nm[0], nm[1], newColInfo);
+        if (nm2 != null) {
+          rsRR.addMappingOnly(nm2[0], nm2[1], newColInfo);
+        }
+        continue;
+      }
+      int vindex = valueBack == null ? -1 : ExprNodeDescUtils.indexOf(valueBack, valueColsBack);
+      if (vindex >= 0) {
+        index[i] = -vindex - 1;
+        continue;
+      }
+      index[i] = -valueCols.size() - 1;
+      String outputColName = getColumnInternalName(valueCols.size());
+
+      valueCols.add(value);
+      valueColsBack.add(valueBack);
+
+      ColumnInfo newColInfo = new ColumnInfo(colInfo);
+      newColInfo.setInternalName(Utilities.ReduceField.VALUE + "." + outputColName);
+      newColInfo.setTabAlias(nm[0]);
+
+      rsRR.put(nm[0], nm[1], newColInfo);
+      if (nm2 != null) {
+        rsRR.addMappingOnly(nm2[0], nm2[1], newColInfo);
+      }
+      outputColumns.add(outputColName);
     }
 
-    Operator interim = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
-        .getReduceSinkDesc(sortCols, valueCols, outputColumns, false, -1,
-            partitionCols, order.toString(), numReducers),
-        new RowSchema(inputRR.getColumnInfos()), input), inputRR);
+    dummy.setParentOperators(null);
+
+    ReduceSinkDesc rsdesc = PlanUtils.getReduceSinkDesc(sortCols, valueCols, outputColumns,
+        false, -1, partitionCols, order.toString(), numReducers);
+    Operator interim = putOpInsertMap(OperatorFactory.getAndMakeChild(rsdesc,
+        new RowSchema(rsRR.getColumnInfos()), input), rsRR);
+
+    List<String> keyColNames = rsdesc.getOutputKeyColumnNames();
+    for (int i = 0 ; i < keyColNames.size(); i++) {
+      colExprMap.put(Utilities.ReduceField.KEY + "." + keyColNames.get(i), sortCols.get(i));
+    }
+    List<String> valueColNames = rsdesc.getOutputValueColumnNames();
+    for (int i = 0 ; i < valueColNames.size(); i++) {
+      colExprMap.put(Utilities.ReduceField.VALUE + "." + valueColNames.get(i), valueCols.get(i));
+    }
     interim.setColumnExprMap(colExprMap);
 
-    // Add the extract operator to get the value fields
-    RowResolver out_rwsch = new RowResolver();
-    RowResolver interim_rwsch = inputRR;
-    Integer pos = Integer.valueOf(0);
-    for (ColumnInfo colInfo : interim_rwsch.getColumnInfos()) {
-      String[] info = interim_rwsch.reverseLookup(colInfo.getInternalName());
-      out_rwsch.put(info[0], info[1], new ColumnInfo(
-          getColumnInternalName(pos), colInfo.getType(), info[0],
-          colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol()));
-      pos = Integer.valueOf(pos.intValue() + 1);
-    }
+    RowResolver selectRR = new RowResolver();
+    ArrayList<ExprNodeDesc> selCols = new ArrayList<ExprNodeDesc>();
+    ArrayList<String> selOutputCols = new ArrayList<String>();
+    Map<String, ExprNodeDesc> selColExprMap = new HashMap<String, ExprNodeDesc>();
 
-    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new ExtractDesc(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
-            Utilities.ReduceField.VALUE.toString(), "", false)), new RowSchema(
-            out_rwsch.getColumnInfos()), interim), out_rwsch);
+    for (int i = 0; i < index.length; i++) {
+      ColumnInfo prev = columnInfos.get(i);
+      String[] nm = inputRR.reverseLookup(prev.getInternalName());
+      String[] nm2 = inputRR.getAlternateMappings(prev.getInternalName());
+      ColumnInfo info = new ColumnInfo(prev);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Created ReduceSink Plan for clause: " + dest + " row schema: "
-          + out_rwsch.toString());
+      String field;
+      if (index[i] >= 0) {
+        field = Utilities.ReduceField.KEY + "." + keyColNames.get(index[i]);
+      } else {
+        field = Utilities.ReduceField.VALUE + "." + valueColNames.get(-index[i] - 1);
+      }
+      String internalName = getColumnInternalName(i);
+      ExprNodeColumnDesc desc = new ExprNodeColumnDesc(info.getType(),
+          field, info.getTabAlias(), info.getIsVirtualCol());
+      selCols.add(desc);
+
+      info.setInternalName(internalName);
+      selectRR.put(nm[0], nm[1], info);
+      if (nm2 != null) {
+        selectRR.addMappingOnly(nm2[0], nm2[1], info);
+      }
+      selOutputCols.add(internalName);
+      selColExprMap.put(internalName, desc);
     }
+    SelectDesc select = new SelectDesc(selCols, selOutputCols);
+    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(select,
+        new RowSchema(selectRR.getColumnInfos()), interim), selectRR);
+    output.setColumnExprMap(selColExprMap);
     return output;
   }
 
   private Operator genJoinOperatorChildren(QBJoinTree join, Operator left,
       Operator[] right, HashSet<Integer> omitOpts) throws SemanticException {
 
-    RowResolver outputRS = new RowResolver();
+    RowResolver outputRR = new RowResolver();
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     // all children are base classes
     Operator<?>[] rightOps = new Operator[right.length];
@@ -6511,56 +6593,73 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new HashMap<Byte, List<ExprNodeDesc>>();
 
     for (int pos = 0; pos < right.length; ++pos) {
-
-      Operator input = right[pos];
+      Operator<?> input = right[pos] == null ? left : right[pos];
       if (input == null) {
         input = left;
       }
+      ReduceSinkOperator rs = (ReduceSinkOperator) input;
+      if (rs.getNumParent() != 1) {
+        throw new SemanticException("RS should have single parent");
+      }
+      Operator<?> parent = rs.getParentOperators().get(0);
+      ReduceSinkDesc rsDesc = (ReduceSinkDesc) (input.getConf());
 
-      ArrayList<ExprNodeDesc> keyDesc = new ArrayList<ExprNodeDesc>();
+      int[] index = rs.getValueIndex();
+
+      ArrayList<ExprNodeDesc> valueDesc = new ArrayList<ExprNodeDesc>();
       ArrayList<ExprNodeDesc> filterDesc = new ArrayList<ExprNodeDesc>();
-      Byte tag = Byte.valueOf((byte) (((ReduceSinkDesc) (input.getConf()))
-          .getTag()));
+      Byte tag = (byte) rsDesc.getTag();
 
       // check whether this input operator produces output
-      if (omitOpts == null || !omitOpts.contains(pos)) {
-        // prepare output descriptors for the input opt
-        RowResolver inputRS = opParseCtx.get(input).getRowResolver();
-        Iterator<String> keysIter = inputRS.getTableNames().iterator();
-        Set<String> aliases = posToAliasMap.get(pos);
-        if (aliases == null) {
-          aliases = new HashSet<String>();
-          posToAliasMap.put(pos, aliases);
-        }
-        while (keysIter.hasNext()) {
-          String key = keysIter.next();
-          aliases.add(key);
-          HashMap<String, ColumnInfo> map = inputRS.getFieldMap(key);
-          Iterator<String> fNamesIter = map.keySet().iterator();
-          while (fNamesIter.hasNext()) {
-            String field = fNamesIter.next();
-            ColumnInfo valueInfo = inputRS.get(key, field);
-            keyDesc.add(new ExprNodeColumnDesc(valueInfo.getType(), valueInfo
-                .getInternalName(), valueInfo.getTabAlias(), valueInfo
-                .getIsVirtualCol()));
-
-            if (outputRS.get(key, field) == null) {
-              String colName = getColumnInternalName(outputPos);
-              outputPos++;
-              outputColumnNames.add(colName);
-              colExprMap.put(colName, keyDesc.get(keyDesc.size() - 1));
-              outputRS.put(key, field, new ColumnInfo(colName, valueInfo
-                  .getType(), key, valueInfo.getIsVirtualCol(), valueInfo
-                  .isHiddenVirtualCol()));
-              reversedExprs.put(colName, tag);
-            }
-          }
-        }
-        for (ASTNode cond : join.getFilters().get(tag)) {
-          filterDesc.add(genExprNodeDesc(cond, inputRS));
-        }
+      if (omitOpts != null && omitOpts.contains(pos)) {
+        exprMap.put(tag, valueDesc);
+        filterMap.put(tag, filterDesc);
+        rightOps[pos] = input;
+        continue;
       }
-      exprMap.put(tag, keyDesc);
+
+      List<String> keyColNames = rsDesc.getOutputKeyColumnNames();
+      List<String> valColNames = rsDesc.getOutputValueColumnNames();
+
+      // prepare output descriptors for the input opt
+      RowResolver inputRR = opParseCtx.get(input).getRowResolver();
+      RowResolver parentRR = opParseCtx.get(parent).getRowResolver();
+      posToAliasMap.put(pos, new HashSet<String>(inputRR.getTableNames()));
+
+      List<ColumnInfo> columns = parentRR.getColumnInfos();
+      for (int i = 0; i < index.length; i++) {
+        ColumnInfo prev = columns.get(i);
+        String[] nm = parentRR.reverseLookup(prev.getInternalName());
+        String[] nm2 = parentRR.getAlternateMappings(prev.getInternalName());
+        if (outputRR.get(nm[0], nm[1]) != null) {
+          continue;
+        }
+        ColumnInfo info = new ColumnInfo(prev);
+        String field;
+        if (index[i] >= 0) {
+          field = Utilities.ReduceField.KEY + "." + keyColNames.get(index[i]);
+        } else {
+          field = Utilities.ReduceField.VALUE + "." + valColNames.get(-index[i] - 1);
+        }
+        String internalName = getColumnInternalName(outputColumnNames.size());
+        ExprNodeColumnDesc desc = new ExprNodeColumnDesc(info.getType(),
+            field, info.getTabAlias(), info.getIsVirtualCol());
+
+        info.setInternalName(internalName);
+        colExprMap.put(internalName, desc);
+        outputRR.put(nm[0], nm[1], info);
+        if (nm2 != null) {
+          outputRR.addMappingOnly(nm2[0], nm2[1], info);
+        }
+
+        valueDesc.add(desc);
+        outputColumnNames.add(internalName);
+        reversedExprs.put(internalName, tag);
+      }
+      for (ASTNode cond : join.getFilters().get(tag)) {
+        filterDesc.add(genExprNodeDesc(cond, inputRR));
+      }
+      exprMap.put(tag, valueDesc);
       filterMap.put(tag, filterDesc);
       rightOps[pos] = input;
     }
@@ -6577,7 +6676,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     desc.setFilterMap(join.getFilterMap());
 
     JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(desc,
-        new RowSchema(outputRS.getColumnInfos()), rightOps);
+        new RowSchema(outputRR.getColumnInfos()), rightOps);
     joinOp.setColumnExprMap(colExprMap);
     joinOp.setPosToAliasMap(posToAliasMap);
 
@@ -6588,51 +6687,93 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       desc.setNullSafes(nullsafes);
     }
-    return putOpInsertMap(joinOp, outputRS);
+    return putOpInsertMap(joinOp, outputRR);
+  }
+
+  private ExprNodeDesc[][] genJoinKeys(QBJoinTree joinTree, Operator[] inputs)
+      throws SemanticException {
+    ExprNodeDesc[][] joinKeys = new ExprNodeDesc[inputs.length][];
+    for (int i = 0; i < inputs.length; i++) {
+      RowResolver inputRR = opParseCtx.get(inputs[i]).getRowResolver();
+      List<ASTNode> expressions = joinTree.getExpressions().get(i);
+      joinKeys[i] = new ExprNodeDesc[expressions.size()];
+      for (int j = 0; j < joinKeys[i].length; j++) {
+        joinKeys[i][j] = genExprNodeDesc(expressions.get(j), inputRR);
+      }
+    }
+    // Type checking and implicit type conversion for join keys
+    return genJoinOperatorTypeCheck(joinKeys);
   }
 
   @SuppressWarnings("nls")
-  private Operator genJoinReduceSinkChild(QB qb, QBJoinTree joinTree,
-      Operator child, String[] srcs, int pos) throws SemanticException {
-    RowResolver inputRS = opParseCtx.get(child).getRowResolver();
-    RowResolver outputRS = new RowResolver();
+  private Operator genJoinReduceSinkChild(QB qb, ExprNodeDesc[] joinKeys,
+      Operator<?> child, String[] srcs, int tag) throws SemanticException {
+
+    Operator dummy = Operator.createDummy();  // dummy for backtracking
+    dummy.setParentOperators(Arrays.asList(child));
+
+    RowResolver inputRR = opParseCtx.get(child).getRowResolver();
+    RowResolver outputRR = new RowResolver();
     ArrayList<String> outputColumns = new ArrayList<String>();
     ArrayList<ExprNodeDesc> reduceKeys = new ArrayList<ExprNodeDesc>();
+    ArrayList<ExprNodeDesc> reduceKeysBack = new ArrayList<ExprNodeDesc>();
 
     // Compute join keys and store in reduceKeys
-    ArrayList<ASTNode> exprs = joinTree.getExpressions().get(pos);
-    for (int i = 0; i < exprs.size(); i++) {
-      ASTNode expr = exprs.get(i);
-      reduceKeys.add(genExprNodeDesc(expr, inputRS));
+    for (ExprNodeDesc joinKey : joinKeys) {
+      reduceKeys.add(joinKey);
+      reduceKeysBack.add(ExprNodeDescUtils.backtrack(joinKey, dummy, child));
     }
 
     // Walk over the input row resolver and copy in the output
     ArrayList<ExprNodeDesc> reduceValues = new ArrayList<ExprNodeDesc>();
-    Iterator<String> tblNamesIter = inputRS.getTableNames().iterator();
+    ArrayList<ExprNodeDesc> reduceValuesBack = new ArrayList<ExprNodeDesc>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
-    while (tblNamesIter.hasNext()) {
-      String src = tblNamesIter.next();
-      HashMap<String, ColumnInfo> fMap = inputRS.getFieldMap(src);
-      for (Map.Entry<String, ColumnInfo> entry : fMap.entrySet()) {
-        String field = entry.getKey();
-        ColumnInfo valueInfo = entry.getValue();
-        ExprNodeColumnDesc inputExpr = new ExprNodeColumnDesc(valueInfo
-            .getType(), valueInfo.getInternalName(), valueInfo.getTabAlias(),
-            valueInfo.getIsVirtualCol());
-        reduceValues.add(inputExpr);
-        if (outputRS.get(src, field) == null) {
-          String col = getColumnInternalName(reduceValues.size() - 1);
-          outputColumns.add(col);
-          ColumnInfo newColInfo = new ColumnInfo(Utilities.ReduceField.VALUE
-              .toString()
-              + "." + col, valueInfo.getType(), src, valueInfo
-              .getIsVirtualCol(), valueInfo.isHiddenVirtualCol());
 
-          colExprMap.put(newColInfo.getInternalName(), inputExpr);
-          outputRS.put(src, field, newColInfo);
+    List<ColumnInfo> columns = inputRR.getColumnInfos();
+    int[] index = new int[columns.size()];
+    for (int i = 0; i < columns.size(); i++) {
+      ColumnInfo colInfo = columns.get(i);
+      String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
+      String[] nm2 = inputRR.getAlternateMappings(colInfo.getInternalName());
+      ExprNodeDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
+          colInfo.getInternalName(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+
+      // backtrack can be null when input is script operator
+      ExprNodeDesc exprBack = ExprNodeDescUtils.backtrack(expr, dummy, child);
+      int kindex = exprBack == null ? -1 : ExprNodeDescUtils.indexOf(exprBack, reduceKeysBack);
+      if (kindex >= 0) {
+        ColumnInfo newColInfo = new ColumnInfo(colInfo);
+        newColInfo.setInternalName(Utilities.ReduceField.KEY + ".reducesinkkey" + kindex);
+        newColInfo.setTabAlias(nm[0]);
+        outputRR.addMappingOnly(nm[0], nm[1], newColInfo);
+        if (nm2 != null) {
+          outputRR.addMappingOnly(nm2[0], nm2[1], newColInfo);
         }
+        index[i] = kindex;
+        continue;
       }
+      int vindex = exprBack == null ? -1 : ExprNodeDescUtils.indexOf(exprBack, reduceValuesBack);
+      if (kindex >= 0) {
+        index[i] = -vindex - 1;
+        continue;
+      }
+      index[i] = -reduceValues.size() - 1;
+      String outputColName = getColumnInternalName(reduceValues.size());
+
+      reduceValues.add(expr);
+      reduceValuesBack.add(exprBack);
+
+      ColumnInfo newColInfo = new ColumnInfo(colInfo);
+      newColInfo.setInternalName(Utilities.ReduceField.VALUE + "." + outputColName);
+      newColInfo.setTabAlias(nm[0]);
+
+      outputRR.put(nm[0], nm[1], newColInfo);
+      if (nm2 != null) {
+        outputRR.addMappingOnly(nm2[0], nm2[1], newColInfo);
+      }
+      outputColumns.add(outputColName);
     }
+    dummy.setParentOperators(null);
 
     int numReds = -1;
 
@@ -6647,11 +6788,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    ReduceSinkDesc rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys,
+        reduceValues, outputColumns, false, tag,
+        reduceKeys.size(), numReds);
+
     ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
-        OperatorFactory.getAndMakeChild(PlanUtils.getReduceSinkDesc(reduceKeys,
-            reduceValues, outputColumns, false, joinTree.getNextTag(),
-            reduceKeys.size(), numReds), new RowSchema(outputRS
-            .getColumnInfos()), child), outputRS);
+        OperatorFactory.getAndMakeChild(rsDesc, new RowSchema(outputRR
+            .getColumnInfos()), child), outputRR);
+    List<String> keyColNames = rsDesc.getOutputKeyColumnNames();
+    for (int i = 0 ; i < keyColNames.size(); i++) {
+      colExprMap.put(Utilities.ReduceField.KEY + "." + keyColNames.get(i), reduceKeys.get(i));
+    }
+    List<String> valColNames = rsDesc.getOutputValueColumnNames();
+    for (int i = 0 ; i < valColNames.size(); i++) {
+      colExprMap.put(Utilities.ReduceField.VALUE + "." + valColNames.get(i), reduceValues.get(i));
+    }
+
+    rsOp.setValueIndex(index);
     rsOp.setColumnExprMap(colExprMap);
     rsOp.setInputAliases(srcs);
     return rsOp;
@@ -6672,16 +6825,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (ASTNode cond : filter) {
         joinSrcOp = genFilterPlan(qb, cond, joinSrcOp);
       }
-      String[] leftAliases = joinTree.getLeftAliases();
-      joinSrcOp = genJoinReduceSinkChild(qb, joinTree, joinSrcOp, leftAliases, 0);
     }
 
-    Operator[] srcOps = new Operator[joinTree.getBaseSrc().length];
+    String[] baseSrc = joinTree.getBaseSrc();
+    Operator[] srcOps = new Operator[baseSrc.length];
 
     HashSet<Integer> omitOpts = null; // set of input to the join that should be
     // omitted by the output
     int pos = 0;
-    for (String src : joinTree.getBaseSrc()) {
+    for (String src : baseSrc) {
       if (src != null) {
         Operator srcOp = map.get(src.toLowerCase());
 
@@ -6700,21 +6852,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
           // generate a groupby operator (HASH mode) for a map-side partial
           // aggregation for semijoin
-          srcOp = genMapGroupByForSemijoin(qb, fields, srcOp,
+          srcOps[pos++] = genMapGroupByForSemijoin(qb, fields, srcOp,
               GroupByDesc.Mode.HASH);
+        } else {
+          srcOps[pos++] = srcOp;
         }
-
-        // generate a ReduceSink operator for the join
-        srcOps[pos] = genJoinReduceSinkChild(qb, joinTree, srcOp, new String[]{src}, pos);
-        pos++;
       } else {
         assert pos == 0;
-        srcOps[pos++] = null;
+        srcOps[pos++] = joinSrcOp;
       }
     }
 
-    // Type checking and implicit type conversion for join keys
-    genJoinOperatorTypeCheck(joinSrcOp, srcOps);
+    ExprNodeDesc[][] joinKeys = genJoinKeys(joinTree, srcOps);
+
+    for (int i = 0; i < srcOps.length; i++) {
+      // generate a ReduceSink operator for the join
+      String[] srcs = baseSrc[i] != null ? new String[] {baseSrc[i]} : joinTree.getLeftAliases();
+      srcOps[i] = genJoinReduceSinkChild(qb, joinKeys[i], srcOps[i], srcs, joinTree.getNextTag());
+    }
 
     JoinOperator joinOp = (JoinOperator) genJoinOperatorChildren(joinTree,
       joinSrcOp, srcOps, omitOpts);
@@ -6745,12 +6900,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
     ArrayList<String> columnNames = new ArrayList<String>();
 
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
     // construct the list of columns that need to be projected
     for (ASTNode field : fields) {
       ExprNodeColumnDesc exprNode = (ExprNodeColumnDesc) genExprNodeDesc(field,
           inputRR);
       colList.add(exprNode);
       columnNames.add(exprNode.getColumn());
+      colExprMap.put(exprNode.getColumn(), exprNode);
     }
 
     // create selection operator
@@ -6758,7 +6915,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new SelectDesc(colList, columnNames, false), new RowSchema(inputRR
             .getColumnInfos()), input), inputRR);
 
-    output.setColumnExprMap(input.getColumnExprMap());
+    output.setColumnExprMap(colExprMap);
     return output;
   }
 
@@ -6817,28 +6974,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return op;
   }
 
-  private void genJoinOperatorTypeCheck(Operator left, Operator[] right)
+  private ExprNodeDesc[][] genJoinOperatorTypeCheck(ExprNodeDesc[][] keys)
       throws SemanticException {
     // keys[i] -> ArrayList<exprNodeDesc> for the i-th join operator key list
-    ArrayList<ArrayList<ExprNodeDesc>> keys = new ArrayList<ArrayList<ExprNodeDesc>>();
     int keyLength = 0;
-    for (int i = 0; i < right.length; i++) {
-      Operator oi = (i == 0 && right[i] == null ? left : right[i]);
-      ReduceSinkDesc now = ((ReduceSinkOperator) (oi)).getConf();
+    for (int i = 0; i < keys.length; i++) {
       if (i == 0) {
-        keyLength = now.getKeyCols().size();
+        keyLength = keys[i].length;
       } else {
-        assert (keyLength == now.getKeyCols().size());
+        assert keyLength == keys[i].length;
       }
-      keys.add(now.getKeyCols());
     }
     // implicit type conversion hierarchy
     for (int k = 0; k < keyLength; k++) {
       // Find the common class for type conversion
-      TypeInfo commonType = keys.get(0).get(k).getTypeInfo();
-      for (int i = 1; i < right.length; i++) {
+      TypeInfo commonType = keys[0][k].getTypeInfo();
+      for (int i = 1; i < keys.length; i++) {
         TypeInfo a = commonType;
-        TypeInfo b = keys.get(i).get(k).getTypeInfo();
+        TypeInfo b = keys[i][k].getTypeInfo();
         commonType = FunctionRegistry.getCommonClassForComparison(a, b);
         if (commonType == null) {
           throw new SemanticException(
@@ -6847,27 +7000,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
       // Add implicit type conversion if necessary
-      for (int i = 0; i < right.length; i++) {
+      for (int i = 0; i < keys.length; i++) {
         if (TypeInfoUtils.isConversionRequiredForComparison(
-                keys.get(i).get(k).getTypeInfo(),
-                commonType)) {
-          keys.get(i).set(
-              k,
-              ParseUtils.createConversionCast(
-                  keys.get(i).get(k), (PrimitiveTypeInfo)commonType));
+                keys[i][k].getTypeInfo(), commonType)) {
+          keys[i][k] = ParseUtils.createConversionCast(
+                  keys[i][k], (PrimitiveTypeInfo)commonType);
         }
       }
     }
-    // regenerate keySerializationInfo because the ReduceSinkOperator's
-    // output key types might have changed.
-    for (int i = 0; i < right.length; i++) {
-      Operator oi = (i == 0 && right[i] == null ? left : right[i]);
-      ReduceSinkDesc now = ((ReduceSinkOperator) (oi)).getConf();
-
-      now.setKeySerializeInfo(PlanUtils.getReduceKeyTableDesc(PlanUtils
-          .getFieldSchemasFromColumnList(now.getKeyCols(), "joinkey"), now
-          .getOrder()));
-    }
+    return keys;
   }
 
   private Operator genJoinPlan(QB qb, Map<String, Operator> map)
@@ -9272,7 +9413,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     optm.setPctx(pCtx);
     optm.initialize(conf);
     pCtx = optm.optimize();
-    
+
     FetchTask origFetchTask = pCtx.getFetchTask();
 
     if (LOG.isDebugEnabled()) {
@@ -9301,7 +9442,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // if desired check we're not going over partition scan limits
       enforceScanLimits(pCtx, origFetchTask);
     }
-    
+
     return;
   }
 

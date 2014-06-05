@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -36,9 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
@@ -143,9 +140,13 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   }
 
   private class GetAdaptor implements ReusableGetAdaptor {
+
+    private Object[] currentKey;
+    private List<ObjectInspector> vectorKeyOIs;
+
     private MapJoinKey key;
     private MapJoinRowContainer currentValue;
-    private Output output;
+    private final Output output = new Output();
     private boolean isFirstKey = true;
 
     public GetAdaptor(MapJoinKey key) {
@@ -155,11 +156,17 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
     @Override
     public void setFromVector(VectorHashKeyWrapper kw, VectorExpressionWriter[] keyOutputWriters,
         VectorHashKeyWrapperBatch keyWrapperBatch) throws HiveException {
-      if (output == null) {
-        output = new Output(0);
+      if (currentKey == null) {
+        currentKey = new Object[keyOutputWriters.length];
+        vectorKeyOIs = new ArrayList<ObjectInspector>();
+        for (int i = 0; i < keyOutputWriters.length; i++) {
+          vectorKeyOIs.add(keyOutputWriters[i].getObjectInspector());
+        }
       }
-      key = MapJoinKey.readFromVector(
-          output, key, kw, keyOutputWriters, keyWrapperBatch, !isFirstKey);
+      for (int i = 0; i < keyOutputWriters.length; i++) {
+        currentKey[i] = keyWrapperBatch.getWritableKeyValue(kw, i, keyOutputWriters[i]);
+      }
+      key =  MapJoinKey.readFromVector(output, key, currentKey, vectorKeyOIs, !isFirstKey);
       isFirstKey = false;
       this.currentValue = mHash.get(key);
     }
@@ -167,10 +174,13 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
     @Override
     public void setFromRow(Object row, List<ExprNodeEvaluator> fields,
         List<ObjectInspector> ois) throws HiveException {
-      if (output == null) {
-        output = new Output(0);
+      if (currentKey == null) {
+        currentKey = new Object[fields.size()];
       }
-      key = MapJoinKey.readFromRow(output, key, row, fields, ois, !isFirstKey);
+      for (int keyIndex = 0; keyIndex < fields.size(); ++keyIndex) {
+        currentKey[keyIndex] = fields.get(keyIndex).evaluate(row);
+      }
+      key = MapJoinKey.readFromRow(output, key, currentKey, ois, !isFirstKey);
       isFirstKey = false;
       this.currentValue = mHash.get(key);
     }
@@ -192,6 +202,11 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
     @Override
     public MapJoinRowContainer getCurrentRows() {
       return currentValue;
+    }
+
+    @Override
+    public Object[] getCurrentKey() {
+      return currentKey;
     }
   }
 

@@ -202,7 +202,7 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 31 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string)
+              value expressions: _col1 (type: string)
           TableScan
             alias: s1
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
@@ -218,14 +218,13 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0}
+            0 {KEY.reducesinkkey0} {VALUE._col0}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col1, _col4
           Statistics: Num rows: 34 Data size: 7032 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -453,21 +452,20 @@ STAGE PLANS:
               sort order: ++
               Map-reduce partition columns: _col1 (type: string), _col2 (type: string)
               Statistics: Num rows: 16 Data size: 3490 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+              value expressions: _col5 (type: int)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string), _col1 (type: string)
               sort order: ++
               Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
               Statistics: Num rows: 5 Data size: 1057 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col1} {VALUE._col2} {VALUE._col5}
-            1 {VALUE._col0}
+            0 {KEY.reducesinkkey0} {KEY.reducesinkkey1} {VALUE._col3}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col1, _col2, _col5, _col11
           Statistics: Num rows: 17 Data size: 3839 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -728,7 +726,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: double)
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: double)
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col5) (type: double)
@@ -742,7 +739,7 @@ STAGE PLANS:
                Left Outer Join0 to 1
           condition expressions:
             0 {VALUE._col1} {VALUE._col5}
-            1 {VALUE._col0}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col1, _col5, _col11
           Statistics: Num rows: 36 Data size: 3839 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -1026,21 +1023,20 @@ STAGE PLANS:
               sort order: ++
               Map-reduce partition columns: _col5 (type: int), _col2 (type: string)
               Statistics: Num rows: 16 Data size: 3490 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+              value expressions: _col1 (type: string)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: string)
               sort order: ++
               Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
               Statistics: Num rows: 5 Data size: 528 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col1} {VALUE._col2} {VALUE._col5}
-            1 {VALUE._col0}
+            0 {VALUE._col1} {KEY.reducesinkkey1} {KEY.reducesinkkey0}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col1, _col2, _col5, _col11
           Statistics: Num rows: 17 Data size: 3839 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -1546,7 +1542,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 20 Data size: 2093 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string)
           TableScan
             alias: src
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
@@ -1562,14 +1557,13 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 19 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col0}
-            1 {VALUE._col0}
+            0 {KEY.reducesinkkey0}
+            1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 22 Data size: 2302 Basic stats: COMPLETE Column stats: NONE
           Filter Operator

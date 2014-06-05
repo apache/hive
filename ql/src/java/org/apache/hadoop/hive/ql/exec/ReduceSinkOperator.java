@@ -57,7 +57,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     implements Serializable, TopNHash.BinaryCollector {
 
   static {
-    PTFUtils.makeTransient(ReduceSinkOperator.class, "inputAliases");
+    PTFUtils.makeTransient(ReduceSinkOperator.class, "inputAliases", "valueIndex");
   }
 
   private static final long serialVersionUID = 1L;
@@ -95,6 +95,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   transient protected int numDistinctExprs;
   transient String[] inputAliases;  // input aliases of this RS for join (used for PPD)
   private boolean skipTag = false;
+
+  private transient int[] valueIndex; // index for value(+ from keys, - from values)
 
   public void setInputAliases(String[] inputAliases) {
     this.inputAliases = inputAliases;
@@ -469,5 +471,13 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   public void setSkipTag(boolean value) {
     this.skipTag = value;
+  }
+
+  public void setValueIndex(int[] valueIndex) {
+    this.valueIndex = valueIndex;
+  }
+
+  public int[] getValueIndex() {
+    return valueIndex;
   }
 }

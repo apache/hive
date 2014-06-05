@@ -34,8 +34,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionHandler;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKeyObject;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinPersistableTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinEagerRowContainer;
@@ -226,8 +224,13 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   public void processOp(Object row, int tag) throws HiveException {
     byte alias = (byte)tag;
     // compute keys and values as StandardObjects. Use non-optimized key (MR).
-    MapJoinKey key = MapJoinKey.readFromRow(null, new MapJoinKeyObject(),
-        row, joinKeys[alias], joinKeysObjectInspectors[alias], true);
+    Object[] currentKey = new Object[joinKeys[alias].size()];
+    for (int keyIndex = 0; keyIndex < joinKeys[alias].size(); ++keyIndex) {
+      currentKey[keyIndex] = joinKeys[alias].get(keyIndex).evaluate(row);
+    }
+    MapJoinKeyObject key = new MapJoinKeyObject();
+    key.readFromRow(currentKey, joinKeysObjectInspectors[alias]);
+
     Object[] value = EMPTY_OBJECT_ARRAY;
     if((hasFilter(alias) && filterMaps[alias].length > 0) || joinValues[alias].size() > 0) {
       value = JoinUtil.computeMapJoinValues(row, joinValues[alias],
@@ -269,8 +272,10 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         flushToFile();
       }
       super.closeOp(abort);
+    } catch (HiveException e) {
+      throw e;
     } catch (Exception e) {
-      LOG.error("Error generating side-table", e);
+      throw new HiveException(e);
     }
   }
 
@@ -290,7 +295,8 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
       // get the tmp URI path; it will be a hdfs path if not local mode
       String dumpFilePrefix = conf.getDumpFilePrefix();
       Path path = Utilities.generatePath(tmpURI, dumpFilePrefix, tag, fileName);
-      console.printInfo(Utilities.now() + "\tDump the side-table into file: " + path);
+      console.printInfo(Utilities.now() + "\tDump the side-table for tag: " + tag +
+          " with group count: " + tableContainer.size() + " into file: " + path);
       // get the hashtable file and path
       FileSystem fs = path.getFileSystem(hconf);
       ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(fs.create(path), 4096));

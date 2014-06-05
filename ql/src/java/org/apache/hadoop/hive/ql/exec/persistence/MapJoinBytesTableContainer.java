@@ -9,7 +9,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.debug.Utils;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
@@ -293,9 +292,18 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
   /** Implementation of ReusableGetAdaptor that has Output for key serialization; row
    * container is also created once and reused for every row. */
   private class GetAdaptor implements ReusableGetAdaptor {
-    private ReusableRowContainer currentValue = new ReusableRowContainer();
-    private Output output;
+
+    private Object[] currentKey;
     private boolean[] nulls;
+    private List<ObjectInspector> vectorKeyOIs;
+
+    private final ReusableRowContainer currentValue;
+    private final Output output;
+
+    public GetAdaptor() {
+      currentValue = new ReusableRowContainer();
+      output = new Output();
+    }
 
     @Override
     public void setFromVector(VectorHashKeyWrapper kw,
@@ -303,16 +311,20 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         VectorHashKeyWrapperBatch keyWrapperBatch) throws HiveException {
       if (nulls == null) {
         nulls = new boolean[keyOutputWriters.length];
+        currentKey = new Object[keyOutputWriters.length];
+        vectorKeyOIs = new ArrayList<ObjectInspector>();
+        for (int i = 0; i < keyOutputWriters.length; i++) {
+          vectorKeyOIs.add(keyOutputWriters[i].getObjectInspector());
+        }
       } else {
         assert nulls.length == keyOutputWriters.length;
       }
-      try {
-        output = MapJoinKey.serializeVector(
-            output, kw, keyOutputWriters, keyWrapperBatch, nulls, sortableSortOrders);
-      } catch (SerDeException e) {
-        throw new HiveException(e);
+      for (int i = 0; i < keyOutputWriters.length; i++) {
+        currentKey[i] = keyWrapperBatch.getWritableKeyValue(kw, i, keyOutputWriters[i]);
+        nulls[i] = currentKey[i] == null;
       }
-      this.currentValue.setFromOutput(output);
+      currentValue.setFromOutput(
+          MapJoinKey.serializeRow(output, currentKey, vectorKeyOIs, sortableSortOrders));
     }
 
     @Override
@@ -320,28 +332,23 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         List<ObjectInspector> ois) throws HiveException {
       if (nulls == null) {
         nulls = new boolean[fields.size()];
+        currentKey = new Object[fields.size()];
       }
-      Object[] fieldObjs = new Object[fields.size()];
       for (int keyIndex = 0; keyIndex < fields.size(); ++keyIndex) {
-        fieldObjs[keyIndex] = fields.get(keyIndex).evaluate(row);
-        nulls[keyIndex] = (fieldObjs[keyIndex] == null);
+        currentKey[keyIndex] = fields.get(keyIndex).evaluate(row);
+        nulls[keyIndex] = currentKey[keyIndex] == null;
       }
-      try {
-        output = MapJoinKey.serializeRow(output, fieldObjs, ois, sortableSortOrders);
-      } catch (SerDeException e) {
-        throw new HiveException(e);
-      }
-      this.currentValue.setFromOutput(output);
+      currentValue.setFromOutput(
+          MapJoinKey.serializeRow(output, currentKey, ois, sortableSortOrders));
     }
-
 
     @Override
     public void setFromOther(ReusableGetAdaptor other) {
       assert other instanceof GetAdaptor;
       GetAdaptor other2 = (GetAdaptor)other;
-      output = other2.output;
       nulls = other2.nulls;
-      this.currentValue.setFromOutput(output);
+      currentKey = other2.currentKey;
+      currentValue.setFromOutput(other2.output);
     }
 
     @Override
@@ -358,6 +365,11 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     @Override
     public MapJoinRowContainer getCurrentRows() {
       return currentValue.isEmpty() ? null : currentValue;
+    }
+
+    @Override
+    public Object[] getCurrentKey() {
+      return currentKey;
     }
   }
 

@@ -68,10 +68,11 @@ STAGE PLANS:
                 key expressions: _col0 (type: double)
                 sort order: +
                 Statistics: Num rows: 200 Data size: 41576 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: double)
       Execution mode: vectorized
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: double)
+          outputColumnNames: _col0
           Statistics: Num rows: 200 Data size: 41576 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 10

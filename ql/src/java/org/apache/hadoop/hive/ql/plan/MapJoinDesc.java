@@ -43,6 +43,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   private int posBigTable;
 
+  private Map<Byte, int[]> valueIndices;
   private Map<Byte, List<Integer>> retainList;
 
   private transient String bigTableAlias;
@@ -77,6 +78,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.keyTblDesc = clone.keyTblDesc;
     this.valueTblDescs = clone.valueTblDescs;
     this.posBigTable = clone.posBigTable;
+    this.valueIndices = clone.valueIndices;
     this.retainList = clone.retainList;
     this.bigTableAlias = clone.bigTableAlias;
     this.aliasBucketFileNameMapping = clone.aliasBucketFileNameMapping;
@@ -123,6 +125,18 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public void setParentToInput(Map<Integer, String> parentToInput) {
     this.parentToInput = parentToInput;
+  }
+
+  public Map<Byte, int[]> getValueIndices() {
+    return valueIndices;
+  }
+
+  public void setValueIndices(Map<Byte, int[]> valueIndices) {
+    this.valueIndices = valueIndices;
+  }
+
+  public int[] getValueIndex(byte alias) {
+    return valueIndices == null ? null : valueIndices.get(alias);
   }
 
   public Map<Byte, List<Integer>> getRetainList() {

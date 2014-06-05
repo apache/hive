@@ -27,9 +27,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.type.Decimal128;
-import org.apache.hadoop.hive.ql.debug.Utils;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -38,10 +35,7 @@ import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe.StringWrapper;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -66,7 +60,7 @@ public abstract class MapJoinKey {
   @SuppressWarnings("deprecation")
   public static MapJoinKey read(Output output, MapJoinKey key,
       MapJoinObjectSerDeContext context, Writable writable, boolean mayReuseKey)
-          throws SerDeException {
+      throws SerDeException, HiveException {
     SerDe serde = context.getSerDe();
     Object obj = serde.deserialize(writable);
     boolean useOptimized = useOptimizedKeyBasedOnPrev(key);
@@ -106,7 +100,7 @@ public abstract class MapJoinKey {
   }
 
   private static byte[] serialize(Output byteStream,
-      Object obj, ObjectInspector oi, boolean checkTypes) throws SerDeException {
+      Object obj, ObjectInspector oi, boolean checkTypes) throws HiveException {
     if (null == obj || !(oi instanceof StructObjectInspector)) {
       return null; // not supported
     }
@@ -141,29 +135,23 @@ public abstract class MapJoinKey {
     return true;
   }
 
-  public static MapJoinKey readFromVector(Output output, MapJoinKey key, VectorHashKeyWrapper kw,
-      VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch,
-      boolean mayReuseKey) throws HiveException {
+  public static MapJoinKey readFromVector(Output output, MapJoinKey key, Object[] keyObject,
+      List<ObjectInspector> keyOIs, boolean mayReuseKey) throws HiveException {
     boolean useOptimized = useOptimizedKeyBasedOnPrev(key);
     if (useOptimized || key == null) {
-      byte[] structBytes = null;
-      try {
-        if (keyOutputWriters.length <= 8) {
-          output = serializeVector(output, kw, keyOutputWriters, keyWrapperBatch, null, null);
-          structBytes = Arrays.copyOf(output.getData(), output.getLength());
-        }
-      } catch (SerDeException e) {
-        throw new HiveException(e);
+      if (keyObject.length <= 8) {
+        output = serializeRow(output, keyObject, keyOIs, null);
+        return MapJoinKeyBytes.fromBytes(key, mayReuseKey,
+            Arrays.copyOf(output.getData(), output.getLength()));
       }
-      if (structBytes != null) {
-        return MapJoinKeyBytes.fromBytes(key, mayReuseKey, structBytes);
-      } else if (useOptimized) {
+      if (useOptimized) {
         throw new HiveException(
-            "Failed to serialize " + kw + " even though optimized keys are used");
+            "Failed to serialize " + Arrays.toString(keyObject) +
+                " even though optimized keys are used");
       }
     }
     MapJoinKeyObject result = mayReuseKey ? (MapJoinKeyObject)key : new MapJoinKeyObject();
-    result.readFromVector(kw, keyOutputWriters, keyWrapperBatch);
+    result.setKeyObjects(keyObject);
     return result;
   }
 
@@ -189,37 +177,28 @@ public abstract class MapJoinKey {
     return serializeRow(byteStream, fieldData, fieldOis, sortableSortOrders);
   }
 
-  public static MapJoinKey readFromRow(Output output, MapJoinKey key, Object row,
-      List<ExprNodeEvaluator> fields, List<ObjectInspector> keyFieldsOI, boolean mayReuseKey)
-          throws HiveException {
-    Object[] fieldObjs = new Object[fields.size()];
-    for (int keyIndex = 0; keyIndex < fields.size(); ++keyIndex) {
-      fieldObjs[keyIndex] = fields.get(keyIndex).evaluate(row);
-    }
+  public static MapJoinKey readFromRow(Output output, MapJoinKey key, Object[] keyObject,
+      List<ObjectInspector> keyFieldsOI, boolean mayReuseKey) throws HiveException {
     boolean useOptimized = useOptimizedKeyBasedOnPrev(key);
     if (useOptimized || key == null) {
-      try {
-        byte[] structBytes = null;
-        if (fieldObjs.length <= 8) {
-          if (fieldObjs.length == 0) {
-            structBytes = EMPTY_BYTE_ARRAY; // shortcut for null keys
-          } else {
-            output = serializeRow(output, fieldObjs, keyFieldsOI, null);
-            structBytes = Arrays.copyOf(output.getData(), output.getLength());
-          }
+      if (keyObject.length <= 8) {
+        byte[] structBytes;
+        if (keyObject.length == 0) {
+          structBytes = EMPTY_BYTE_ARRAY; // shortcut for null keys
+        } else {
+          output = serializeRow(output, keyObject, keyFieldsOI, null);
+          structBytes = Arrays.copyOf(output.getData(), output.getLength());
         }
-        if (structBytes != null) {
-          return MapJoinKeyBytes.fromBytes(key, mayReuseKey, structBytes);
-        } else if (useOptimized) {
-          throw new HiveException(
-              "Failed to serialize " + row + " even though optimized keys are used");
-        }
-      } catch (SerDeException ex) {
-        throw new HiveException("Serialization error", ex);
+        return MapJoinKeyBytes.fromBytes(key, mayReuseKey, structBytes);
+      }
+      if (useOptimized) {
+        throw new HiveException(
+            "Failed to serialize " + Arrays.toString(keyObject) +
+                " even though optimized keys are used");
       }
     }
     MapJoinKeyObject result = mayReuseKey ? (MapJoinKeyObject)key : new MapJoinKeyObject();
-    result.readFromRow(fieldObjs, keyFieldsOI);
+    result.readFromRow(keyObject, keyFieldsOI);
     return result;
   }
 
@@ -231,18 +210,22 @@ public abstract class MapJoinKey {
    * @param byteStream Output to reuse. Can be null, in that case a new one would be created.
    */
   public static Output serializeRow(Output byteStream, Object[] fieldData,
-      List<ObjectInspector> fieldOis, boolean[] sortableSortOrders) throws SerDeException {
+      List<ObjectInspector> fieldOis, boolean[] sortableSortOrders) throws HiveException {
     if (byteStream == null) {
       byteStream = new Output();
     } else {
       byteStream.reset();
     }
-    if (fieldData.length == 0) {
-      byteStream.reset();
-    } else if (sortableSortOrders == null) {
-      LazyBinarySerDe.serializeStruct(byteStream, fieldData, fieldOis);
-    } else {
-      BinarySortableSerDe.serializeStruct(byteStream, fieldData, fieldOis, sortableSortOrders);
+    try {
+      if (fieldData.length == 0) {
+        byteStream.reset();
+      } else if (sortableSortOrders == null) {
+        LazyBinarySerDe.serializeStruct(byteStream, fieldData, fieldOis);
+      } else {
+        BinarySortableSerDe.serializeStruct(byteStream, fieldData, fieldOis, sortableSortOrders);
+      }
+    } catch (SerDeException e) {
+      throw new HiveException("Serialization error", e);
     }
     return byteStream;
   }

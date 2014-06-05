@@ -160,7 +160,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: key (type: int), value (type: string)
+                    value expressions: value (type: string)
 
   Stage: Stage-0
     Fetch Operator
@@ -259,7 +259,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col1 (type: int)
                     Statistics: Num rows: 13 Data size: 1352 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: double), _col1 (type: int)
+                    value expressions: _col0 (type: double)
 
   Stage: Stage-0
     Fetch Operator
@@ -342,7 +342,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: key (type: int), value (type: string)
+                    value expressions: value (type: string)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -493,7 +493,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col1 (type: int)
                     Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: double), _col1 (type: int)
+                    value expressions: _col0 (type: double)
 
   Stage: Stage-0
     Fetch Operator
@@ -758,7 +758,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 13 Data size: 1352 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: int), _col1 (type: double)
+                    value expressions: _col1 (type: double)
 
   Stage: Stage-0
     Fetch Operator
@@ -847,7 +847,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 13 Data size: 1352 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: int), _col1 (type: double)
+                    value expressions: _col1 (type: double)
 
   Stage: Stage-0
     Fetch Operator
@@ -913,7 +913,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: value (type: string)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: key (type: int), value (type: string)
+                    value expressions: key (type: int)
 
   Stage: Stage-0
     Fetch Operator
@@ -998,7 +998,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: key (type: int), value (type: string)
+                    value expressions: value (type: string)
 
   Stage: Stage-0
     Fetch Operator
@@ -1067,10 +1067,10 @@ STAGE PLANS:
                       keys:
                         0 _col1 (type: string)
                         1 value (type: string)
-                      outputColumnNames: _col5, _col10
+                      outputColumnNames: _col0, _col10
                       Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col5 (type: int), _col10 (type: int)
+                        expressions: _col0 (type: int), _col10 (type: int)
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator

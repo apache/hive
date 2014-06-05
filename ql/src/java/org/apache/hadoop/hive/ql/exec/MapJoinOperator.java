@@ -19,28 +19,29 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
+import org.apache.hadoop.hive.ql.exec.persistence.UnwrapRowContainer;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -63,6 +64,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;
   private transient boolean hashTblInitedOnce;
   private transient ReusableGetAdaptor[] hashMapRowGetters;
+
+  private UnwrapRowContainer[] unwrapContainer;
 
   public MapJoinOperator() {
   }
@@ -88,6 +91,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
+    unwrapContainer = new UnwrapRowContainer[conf.getTagLength()];
     super.initializeOp(hconf);
 
     int tagLen = conf.getTagLength();
@@ -111,6 +115,29 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       mapJoinTableSerdes = new MapJoinTableContainerSerDe[tagLen];
       hashTblInitedOnce = false;
     }
+  }
+
+  @Override
+  protected List<ObjectInspector> getValueObjectInspectors(
+      byte alias, List<ObjectInspector>[] aliasToObjectInspectors) {
+    int[] valueIndex = conf.getValueIndex(alias);
+    if (valueIndex == null) {
+      return super.getValueObjectInspectors(alias, aliasToObjectInspectors);
+    }
+    unwrapContainer[alias] = new UnwrapRowContainer(valueIndex);
+
+    List<ObjectInspector> inspectors = aliasToObjectInspectors[alias];
+
+    int bigPos = conf.getPosBigTable();
+    List<ObjectInspector> valueOI = new ArrayList<ObjectInspector>();
+    for (int i = 0; i < valueIndex.length; i++) {
+      if (valueIndex[i] >= 0) {
+        valueOI.add(joinKeysObjectInspectors[bigPos].get(valueIndex[i]));
+      } else {
+        valueOI.add(inspectors.get(i));
+      }
+    }
+    return valueOI;
   }
 
   public void generateMapMetaData() throws HiveException, SerDeException {
@@ -237,6 +264,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             adaptor.setFromOther(firstSetKey);
           }
           MapJoinRowContainer rowContainer = adaptor.getCurrentRows();
+          if (rowContainer != null && unwrapContainer[pos] != null) {
+            Object[] currentKey = adaptor.getCurrentKey();
+            rowContainer = unwrapContainer[pos].setInternal(rowContainer, currentKey);
+          }
           // there is no join-value or join-key has all null elements
           if (rowContainer == null || adaptor.hasAnyNulls(fieldCount, nullsafes)) {
             if (!noOuterJoin) {
@@ -267,7 +298,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
     } catch (Exception e) {
-      String msg = "Unxpected exception: " + e.getMessage();
+      String msg = "Unexpected exception: " + e.getMessage();
       LOG.error(msg, e);
       throw new HiveException(msg, e);
     }

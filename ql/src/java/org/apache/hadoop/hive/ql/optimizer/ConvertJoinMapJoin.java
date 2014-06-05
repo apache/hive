@@ -358,7 +358,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     ParseContext parseContext = context.parseContext;
     MapJoinOperator mapJoinOp = MapJoinProcessor.
       convertJoinOpMapJoinOp(context.conf, parseContext.getOpParseCtx(),
-          joinOp, parseContext.getJoinContext().get(joinOp), bigTablePosition, true);
+          joinOp, parseContext.getJoinContext().get(joinOp), bigTablePosition, true, true);
 
     Operator<? extends OperatorDesc> parentBigTableOp
       = mapJoinOp.getParentOperators().get(bigTablePosition);

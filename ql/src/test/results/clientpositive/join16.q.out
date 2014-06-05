@@ -25,7 +25,6 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string)
           TableScan
             alias: tab
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
@@ -37,14 +36,13 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0}
-            1 {VALUE._col1}
+            0 {KEY.reducesinkkey0}
+            1 {KEY.reducesinkkey1}
           outputColumnNames: _col0, _col3
           Statistics: Num rows: 3 Data size: 661 Basic stats: COMPLETE Column stats: NONE
           Select Operator
