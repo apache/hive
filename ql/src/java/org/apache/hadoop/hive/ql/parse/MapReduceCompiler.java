@@ -118,23 +118,6 @@ public class MapReduceCompiler extends TaskCompiler {
     }
   }
 
-  @Override
-  public ParseContext getParseContext(ParseContext pCtx, List<Task<? extends Serializable>> rootTasks) {
-    return new ParseContext(conf, pCtx.getQB(), pCtx.getParseTree(),
-        pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
-        pCtx.getTopSelOps(), pCtx.getOpParseCtx(), pCtx.getJoinContext(),
-        pCtx.getSmbMapJoinContext(), pCtx.getTopToTable(), pCtx.getTopToProps(),
-        pCtx.getFsopToTable(),
-        pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getContext(),
-        pCtx.getIdToTableNameMap(), pCtx.getDestTableId(), pCtx.getUCtx(),
-        pCtx.getListMapJoinOpsNoReducer(), pCtx.getGroupOpToInputTables(),
-        pCtx.getPrunedPartitions(), pCtx.getOpToSamplePruner(), pCtx.getGlobalLimitCtx(),
-        pCtx.getNameToSplitSample(), pCtx.getSemanticInputs(), rootTasks,
-        pCtx.getOpToPartToSkewedPruner(), pCtx.getViewAliasToInput(),
-        pCtx.getReduceSinkOperatorsAddedByEnforceBucketingSorting(),
-        pCtx.getQueryProperties());
-  }
-
   // loop over all the tasks recursively
   private void breakTaskTree(Task<? extends Serializable> task) {
 
@@ -223,7 +206,7 @@ public class MapReduceCompiler extends TaskCompiler {
     for (ExecDriver mrtask : mrtasks) {
       try {
         ContentSummary inputSummary = Utilities.getInputSummary
-            (ctx, ((MapredWork) mrtask.getWork()).getMapWork(), p);
+            (ctx, mrtask.getWork().getMapWork(), p);
         int numReducers = getNumberOfReducers(mrtask.getWork(), conf);
 
         long estimatedInput;
@@ -297,7 +280,6 @@ public class MapReduceCompiler extends TaskCompiler {
 
     // generate map reduce plans
     ParseContext tempParseContext = getParseContext(pCtx, rootTasks);
-    tempParseContext.setFetchTask(pCtx.getFetchTask());
 
     GenMRProcContext procCtx = new GenMRProcContext(
         conf,

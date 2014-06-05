@@ -124,9 +124,10 @@ public class GenMRFileSink1 implements NodeProcessor {
     }
 
     FetchTask fetchTask = parseCtx.getFetchTask();
-    if (fetchTask != null && currTask.getNumChild() == 0 &&
-        fileSinkDesc.getFinalDirName().equals(fetchTask.getWork().getTblDir())) {
-      currTask.setFetchSource(true);
+    if (fetchTask != null && currTask.getNumChild() == 0) {
+      if (fetchTask.isFetchFrom(fileSinkDesc)) {
+        currTask.setFetchSource(true);
+      }
     }
     return true;
   }

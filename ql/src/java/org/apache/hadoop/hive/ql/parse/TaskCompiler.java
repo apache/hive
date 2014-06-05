@@ -364,7 +364,8 @@ public abstract class TaskCompiler {
    * Create a clone of the parse context
    */
   public ParseContext getParseContext(ParseContext pCtx, List<Task<? extends Serializable>> rootTasks) {
-    return new ParseContext(conf, pCtx.getQB(), pCtx.getParseTree(),
+    ParseContext clone = new ParseContext(conf,
+        pCtx.getQB(), pCtx.getParseTree(),
         pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
         pCtx.getTopSelOps(), pCtx.getOpParseCtx(), pCtx.getJoinContext(),
         pCtx.getSmbMapJoinContext(), pCtx.getTopToTable(), pCtx.getTopToProps(),
@@ -377,5 +378,9 @@ public abstract class TaskCompiler {
         pCtx.getOpToPartToSkewedPruner(), pCtx.getViewAliasToInput(),
         pCtx.getReduceSinkOperatorsAddedByEnforceBucketingSorting(),
         pCtx.getQueryProperties());
+    clone.setFetchTask(pCtx.getFetchTask());
+    clone.setLineageInfo(pCtx.getLineageInfo());
+    clone.setMapJoinContext(pCtx.getMapJoinContext());
+    return clone;
   }
 }
