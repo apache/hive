@@ -13,7 +13,7 @@ SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -84,7 +84,7 @@ SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1

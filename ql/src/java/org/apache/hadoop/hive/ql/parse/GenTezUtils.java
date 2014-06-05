@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
@@ -280,6 +281,13 @@ public class GenTezUtils {
       GenMapRedUtils.createMRWorkForMergingFiles(fileSink, finalName,
           context.dependencyTask, context.moveTask,
           hconf, context.currentTask);
+    }
+
+    FetchTask fetchTask = parseContext.getFetchTask();
+    if (fetchTask != null && context.currentTask.getNumChild() == 0) {
+      if (fetchTask.isFetchFrom(fileSink.getConf())) {
+        context.currentTask.setFetchSource(true);
+      }
     }
   }
 }
