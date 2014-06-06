@@ -110,6 +110,43 @@
 
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
+   <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>${hive.jdbc.driver.classifier}</shadedClassifierName>
+              <artifactSet>
+                <excludes>
+                  <exclude>org.apache.hadoop:*</exclude>
+                  <exclude>org.apache.hive:hive-ant</exclude>
+                  <exclude>org.apache.ant:*</exclude>
+                  <exclude>junit:*</exclude>
+                  <exclude>org.hamcrest:*</exclude>
+                  <exclude>org.mortbay.jetty:*</exclude>
+                  <exclude>org.ow2.asm:*</exclude>
+                  <exclude>javax.jms:*</exclude>
+                  <exclude>com.sun.jersey:*</exclude>
+                  <exclude>com.sun.jersey.contribs:*</exclude>
+                  <exclude>org.eclipse.jetty.aggregate:*</exclude>
+                  <exclude>org.eclipse.jetty.orbit:*</exclude>
+                  <exclude>org.tukaani:*</exclude>
+                  <exclude>org.iq80.snappy:*</exclude>
+                  <exclude>org.apache.velocity:*</exclude>
+                </excludes>
+              </artifactSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 
 </project>
