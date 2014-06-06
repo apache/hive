@@ -347,8 +347,4 @@ public class TempletonUtils {
       args.add("call");
     }
   }
-
-  public static String unEscape(String input) {
-    return StringEscapeUtils.unescapeJava(input);
-  }
 }

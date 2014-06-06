@@ -31,6 +31,10 @@
         <value>thrift://localhost:9933</value>
         <description>For Hive CLI to connect to</description>
     </property>
+    <property>
+        <name>hive.execution.engine</name>
+        <value>mr</value><!--tez-->
+    </property>
     <!--
     This enables client side Hive (RDBMS style) security
     <property>

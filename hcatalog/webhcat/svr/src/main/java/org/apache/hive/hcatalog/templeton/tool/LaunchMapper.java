@@ -81,7 +81,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     if(conf.get(PigConstants.PIG_OPTS) != null) {
       StringBuilder pigOpts = new StringBuilder();
       for(String prop : StringUtils.split(conf.get(PigConstants.PIG_OPTS))) {
-        pigOpts.append("-D").append(TempletonUtils.unEscape(prop)).append(" ");
+        pigOpts.append("-D").append(StringUtils.unEscapeString(prop)).append(" ");
       }
       env.put(PigConstants.PIG_OPTS, pigOpts.toString());
     }
