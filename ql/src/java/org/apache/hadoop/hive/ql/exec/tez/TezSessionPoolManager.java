@@ -271,7 +271,7 @@ public class TezSessionPoolManager {
   public void closeAndOpen(TezSessionState sessionState, HiveConf conf)
       throws Exception {
     HiveConf sessionConf = sessionState.getConf();
-    if (sessionConf.get("tez.queue.name") != null) {
+    if (sessionConf != null && sessionConf.get("tez.queue.name") != null) {
       conf.set("tez.queue.name", sessionConf.get("tez.queue.name"));
     }
     close(sessionState);
