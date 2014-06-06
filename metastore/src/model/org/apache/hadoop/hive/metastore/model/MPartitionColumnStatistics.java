@@ -204,7 +204,7 @@ public class MPartitionColumnStatistics {
     return longLowValue;
   }
 
-  public void setLongLowValue(long longLowValue) {
+  public void setLongLowValue(Long longLowValue) {
     this.longLowValue = longLowValue;
   }
 
@@ -212,7 +212,7 @@ public class MPartitionColumnStatistics {
     return longHighValue;
   }
 
-  public void setLongHighValue(long longHighValue) {
+  public void setLongHighValue(Long longHighValue) {
     this.longHighValue = longHighValue;
   }
 
@@ -220,7 +220,7 @@ public class MPartitionColumnStatistics {
     return doubleLowValue;
   }
 
-  public void setDoubleLowValue(double doubleLowValue) {
+  public void setDoubleLowValue(Double doubleLowValue) {
     this.doubleLowValue = doubleLowValue;
   }
 
@@ -228,7 +228,7 @@ public class MPartitionColumnStatistics {
     return doubleHighValue;
   }
 
-  public void setDoubleHighValue(double doubleHighValue) {
+  public void setDoubleHighValue(Double doubleHighValue) {
     this.doubleHighValue = doubleHighValue;
   }
 
