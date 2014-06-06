@@ -398,7 +398,7 @@ public class HiveAlterHandler implements AlterHandler {
             if (!wh.mkdirs(destParentPath, true)) {
                 throw new IOException("Unable to create path " + destParentPath);
             }
-            srcFs.rename(srcPath, destPath);
+            wh.renameDir(srcPath, destPath, true);
             LOG.info("rename done!");
           }
         } catch (IOException e) {
