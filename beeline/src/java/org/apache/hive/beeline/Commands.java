@@ -22,6 +22,8 @@
  */
 package org.apache.hive.beeline;
 
+import org.apache.hadoop.io.IOUtils;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -831,7 +833,12 @@ public class Commands {
 
     for (int i = 1; i < parts.length; i++) {
       Properties props = new Properties();
-      props.load(new FileInputStream(parts[i]));
+      InputStream stream = new FileInputStream(parts[i]);
+      try {
+        props.load(stream);
+      } finally {
+        IOUtils.closeStream(stream);
+      }
       if (connect(props)) {
         successes++;
       }
