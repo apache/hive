@@ -33,10 +33,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hive.hcatalog.templeton.tool.JobState;
-import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 import org.apache.hive.hcatalog.templeton.tool.ZooKeeperCleanup;
 import org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage;
 
@@ -111,7 +111,8 @@ public class AppConfig extends Configuration {
   /**
    * is a comma separated list of name=value pairs;
    * In case some value is itself a comma-separated list, the comma needs to
-   * be escaped with {@link org.apache.hadoop.util.StringUtils#ESCAPE_CHAR}
+   * be escaped with {@link org.apache.hadoop.util.StringUtils#ESCAPE_CHAR}.  See other usage
+   * of escape/unescape methods in {@link org.apache.hadoop.util.StringUtils} in webhcat.
    */
   public static final String HIVE_PROPS_NAME     = "templeton.hive.properties";
   public static final String SQOOP_ARCHIVE_NAME  = "templeton.sqoop.archive";
@@ -167,8 +168,49 @@ public class AppConfig extends Configuration {
       loadOneFileConfig(hadoopConfDir, fname);
     }
     ProxyUserSupport.processProxyuserConfig(this);
+    handleHiveProperties();
     LOG.info(dumpEnvironent());
   }
+  /**
+   * When auto-shipping hive tar (for example when hive query or pig script
+   * is submitted via webhcat), Hive client is launched on some remote node where Hive has not
+   * been installed.  We need pass some properties to that client to make sure it connects to the
+   * right Metastore, configures Tez, etc.  Here we look for such properties in hive config,
+   * and set a comma-separated list of key values in {@link #HIVE_PROPS_NAME}.
+   * Note that the user may choose to set the same keys in HIVE_PROPS_NAME directly, in which case
+   * those values should take precedence.
+   */
+  private void handleHiveProperties() {
+    HiveConf hiveConf = new HiveConf();//load hive-site.xml from classpath
+    List<String> interestingPropNames = Arrays.asList(
+      "hive.metastore.uris","hive.metastore.sasl.enabled",
+      "hive.metastore.execute.setugi","hive.execution.engine");
+
+    //each items is a "key=value" format
+    List<String> webhcatHiveProps = new ArrayList<String>(hiveProps());
+    for(String interestingPropName : interestingPropNames) {
+      String value = hiveConf.get(interestingPropName);
+      if(value != null) {
+        boolean found = false;
+        for(String whProp : webhcatHiveProps) {
+          if(whProp.startsWith(interestingPropName + "=")) {
+            found = true;
+            break;
+          }
+        }
+        if(!found) {
+          webhcatHiveProps.add(interestingPropName + "=" + value);
+        }
+      }
+    }
+    StringBuilder hiveProps = new StringBuilder();
+    for(String whProp : webhcatHiveProps) {
+      //make sure to escape separator char in prop values
+      hiveProps.append(hiveProps.length() > 0 ? "," : "").append(StringUtils.escapeString(whProp));
+    }
+    set(HIVE_PROPS_NAME, hiveProps.toString());
+  }
+
   private static void logConfigLoadAttempt(String path) {
     LOG.info("Attempting to load config file: " + path);
   }
@@ -198,7 +240,8 @@ public class AppConfig extends Configuration {
       }
     });
     for(Map.Entry<String, String> entry : configVals) {
-      sb.append(entry.getKey()).append('=').append(entry.getValue()).append('\n');
+      //use get() to make sure variable substitution works
+      sb.append(entry.getKey()).append('=').append(get(entry.getKey())).append('\n');
     }
     return sb.toString();
   }
@@ -266,7 +309,7 @@ public class AppConfig extends Configuration {
     //since raw data was (possibly) escaped to make split work,
     //now need to remove escape chars so they don't interfere with downstream processing
     for(int i = 0; i < props.length; i++) {
-      props[i] = TempletonUtils.unEscape(props[i]);
+      props[i] = StringUtils.unEscapeString(props[i]);
     }
     return Arrays.asList(props);
   }
