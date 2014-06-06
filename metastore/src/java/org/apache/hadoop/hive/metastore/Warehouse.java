@@ -44,7 +44,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -52,8 +51,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -198,11 +195,13 @@ public class Warehouse {
   }
 
   public boolean renameDir(Path sourcePath, Path destPath) throws MetaException {
-    FileSystem fs = null;
+    return renameDir(sourcePath, destPath, false);
+  }
+
+  public boolean renameDir(Path sourcePath, Path destPath, boolean inheritPerms) throws MetaException {
     try {
-      fs = getFs(sourcePath);
-      fs.rename(sourcePath, destPath);
-      return true;
+      FileSystem fs = getFs(sourcePath);
+      return FileUtils.renameWithPerms(fs, sourcePath, destPath, inheritPerms, conf);
     } catch (Exception ex) {
       MetaStoreUtils.logAndThrowMetaException(ex);
     }

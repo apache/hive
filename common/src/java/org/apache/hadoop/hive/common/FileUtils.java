@@ -576,4 +576,29 @@ public final class FileUtils {
     }
     return result;
   }
+
+  public static boolean renameWithPerms(FileSystem fs, Path sourcePath,
+                               Path destPath, boolean inheritPerms,
+                               Configuration conf) throws IOException {
+    LOG.info("Renaming " + sourcePath + " to " + destPath);
+    if (!inheritPerms) {
+      //just rename the directory
+      return fs.rename(sourcePath, destPath);
+    } else {
+      //rename the directory
+      if (fs.rename(sourcePath, destPath)) {
+        HadoopShims shims = ShimLoader.getHadoopShims();
+        HdfsFileStatus fullFileStatus = shims.getFullFileStatus(conf, fs, destPath.getParent());
+        try {
+          shims.setFullFileStatus(conf, fullFileStatus, fs, destPath);
+        } catch (Exception e) {
+          LOG.warn("Error setting permissions or group of " + destPath, e);
+        }
+
+        return true;
+      }
+
+      return false;
+    }
+  }
 }

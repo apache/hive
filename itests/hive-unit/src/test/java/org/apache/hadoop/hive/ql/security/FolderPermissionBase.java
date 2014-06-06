@@ -185,17 +185,20 @@ public abstract class FolderPermissionBase {
     ret = driver.run("insert into table " + tableName + " partition(part1='1',part2='1',part3='1') select key,value from mysrc");
     Assert.assertEquals(0,ret.getResponseCode());
 
+    assertExistence(warehouseDir + "/" + tableName);
+    setPermission(warehouseDir + "/" + tableName, 1);
+
     //alter partition
     ret = driver.run("alter table " + tableName + " partition (part1='1',part2='1',part3='1') rename to partition (part1='2',part2='2',part3='2')");
     Assert.assertEquals(0,ret.getResponseCode());
 
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=2");
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=2/part2=2");
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=2/part2=2/part3=2");
+    verifyPermission(warehouseDir + "/" + tableName + "/part1=2", 1);
+    verifyPermission(warehouseDir + "/" + tableName + "/part1=2/part2=2", 1);
+    verifyPermission(warehouseDir + "/" + tableName + "/part1=2/part2=2/part3=2", 1);
 
     Assert.assertTrue(listStatus(warehouseDir + "/" + tableName + "/part1=2/part2=2/part3=2").size() > 0);
     for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=2/part2=2/part3=2")) {
-      verifyPermission(child);
+      verifyPermission(child, 1);
     }
   }
 
