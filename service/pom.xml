@@ -74,7 +74,7 @@
     <dependency>
       <groupId>org.eclipse.jetty.aggregate</groupId>
       <artifactId>jetty-all</artifactId>
-        <version>${jetty.hive-service.version}</version>
+        <version>${jetty.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.thrift</groupId>

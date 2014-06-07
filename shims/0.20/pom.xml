@@ -59,10 +59,5 @@
       <version>${hadoop-20.version}</version>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>org.mortbay.jetty</groupId>
-      <artifactId>jetty</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
   </dependencies>
 </project>
