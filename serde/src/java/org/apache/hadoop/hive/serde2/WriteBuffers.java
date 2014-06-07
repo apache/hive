@@ -199,7 +199,7 @@ public final class WriteBuffers implements RandomAccessOutput {
 
   private void nextBufferToWrite() {
     if (currentWriteBufferIndex == (writeBuffers.size() - 1)) {
-      if ((1 + writeBuffers.size()) * wbSize > maxSize) {
+      if ((1 + writeBuffers.size()) * ((long)wbSize) > maxSize) {
         // We could verify precisely at write time, but just do approximate at allocation time.
         throw new RuntimeException("Too much memory used by write buffers");
       }
@@ -283,11 +283,11 @@ public final class WriteBuffers implements RandomAccessOutput {
   }
 
   public long getWritePoint() {
-    return (currentWriteBufferIndex * wbSize) + currentWriteOffset;
+    return (currentWriteBufferIndex * (long)wbSize) + currentWriteOffset;
   }
 
   public long getReadPoint() {
-    return (currentReadBufferIndex * wbSize) + currentReadOffset;
+    return (currentReadBufferIndex * (long)wbSize) + currentReadOffset;
   }
 
   public void writeVLong(long value) {
