@@ -69,6 +69,7 @@ public class TestMetastoreVersion extends TestCase {
    * Test config defaults
    */
   public void testDefaults() {
+    System.clearProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString());
     hiveConf = new HiveConf(this.getClass());
     assertFalse(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION));
     assertTrue(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_AUTO_CREATE_SCHEMA));
