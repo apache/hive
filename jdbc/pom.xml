@@ -130,13 +130,11 @@
                   <exclude>org.apache.ant:*</exclude>
                   <exclude>junit:*</exclude>
                   <exclude>org.hamcrest:*</exclude>
-                  <exclude>org.mortbay.jetty:*</exclude>
                   <exclude>org.ow2.asm:*</exclude>
                   <exclude>javax.jms:*</exclude>
                   <exclude>com.sun.jersey:*</exclude>
                   <exclude>com.sun.jersey.contribs:*</exclude>
                   <exclude>org.eclipse.jetty.aggregate:*</exclude>
-                  <exclude>org.eclipse.jetty.orbit:*</exclude>
                   <exclude>org.tukaani:*</exclude>
                   <exclude>org.iq80.snappy:*</exclude>
                   <exclude>org.apache.velocity:*</exclude>

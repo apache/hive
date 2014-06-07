@@ -120,10 +120,7 @@
     <javaewah.version>0.3.2</javaewah.version>
     <javolution.version>5.5.1</javolution.version>
     <jdo-api.version>3.0.1</jdo-api.version>
-    <!-- TODO figure out how to reconcile jetty versions -->
-    <jetty.version>6.1.26</jetty.version>
-    <jetty.webhcat.version>7.6.0.v20120127</jetty.webhcat.version>
-    <jetty.hive-service.version>7.6.0.v20120127</jetty.hive-service.version>
+    <jetty.version>7.6.0.v20120127</jetty.version>
     <jersey.version>1.14</jersey.version>
     <jline.version>0.9.94</jline.version>
     <jms.version>1.1</jms.version>
@@ -468,7 +465,7 @@
       <dependency>
         <groupId>org.eclipse.jetty.aggregate</groupId>
         <artifactId>jetty-all-server</artifactId>
-        <version>${jetty.webhcat.version}</version>
+        <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>org.datanucleus</groupId>
@@ -499,16 +496,6 @@
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
         <version>${mockito-all.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty</artifactId>
-        <version>${jetty.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty-util</artifactId>
-        <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
