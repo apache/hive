@@ -214,6 +214,11 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver
       return this;
     }
 
+    @Override
+    public int getRowsRemainingAfterTerminate()
+        throws HiveException {
+      return 0;
+    }
   }
 
   public static int compare(Object[] o1, ObjectInspector[] oi1, Object[] o2,

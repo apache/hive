@@ -174,8 +174,14 @@ public class TestStreamingSum {
       fn.aggregate(agg, in);
       Object out = oS.getNextResult(agg);
       if (out != null) {
-        out = out == ISupportStreamingModeForWindowing.NULL_RESULT ? null
-            : typeHandler.get((TW) out);
+        if ( out == ISupportStreamingModeForWindowing.NULL_RESULT ) {
+          out = null;
+        } else {
+          try {
+            out = typeHandler.get((TW) out);
+          } catch(ClassCastException ce) {
+          }
+        }
         Assert.assertEquals(out, outVals.next());
         outSz++;
       }
@@ -185,8 +191,14 @@ public class TestStreamingSum {
 
     while (outSz < inSz) {
       Object out = oS.getNextResult(agg);
-      out = out == ISupportStreamingModeForWindowing.NULL_RESULT ? null
-          : typeHandler.get((TW) out);
+      if ( out == ISupportStreamingModeForWindowing.NULL_RESULT ) {
+        out = null;
+      } else {
+        try {
+          out = typeHandler.get((TW) out);
+        } catch(ClassCastException ce) {
+        }
+      }
       Assert.assertEquals(out, outVals.next());
       outSz++;
     }

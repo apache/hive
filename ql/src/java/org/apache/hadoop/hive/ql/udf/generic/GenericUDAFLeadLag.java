@@ -89,6 +89,20 @@ public abstract class GenericUDAFLeadLag extends AbstractGenericUDAFResolver {
     String fnName;
     private transient Converter defaultValueConverter;
 
+    public GenericUDAFLeadLagEvaluator() {
+    }
+
+    /*
+     * used to initialize Streaming Evaluator.
+     */
+    protected GenericUDAFLeadLagEvaluator(GenericUDAFLeadLagEvaluator src) {
+      this.inputOI = src.inputOI;
+      this.amt = src.amt;
+      this.fnName = src.fnName;
+      this.defaultValueConverter = src.defaultValueConverter;
+      this.mode = src.mode;
+    }
+
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       super.init(m, parameters);
