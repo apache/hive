@@ -28,8 +28,10 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
+import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.exec.PTFRollingPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -142,6 +144,49 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     return true;
   }
 
+  private boolean streamingPossible(Configuration cfg, WindowFunctionDef wFnDef) {
+    WindowFrameDef wdwFrame = wFnDef.getWindowFrame();
+    WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFnDef
+        .getName());
+
+    if (!wFnInfo.isSupportsWindow()) {
+      return true;
+    }
+
+    BoundaryDef start = wdwFrame.getStart();
+    BoundaryDef end = wdwFrame.getEnd();
+
+    /*
+     * Currently we are not handling dynamic sized windows implied by range
+     * based windows.
+     */
+    if (start instanceof ValueBoundaryDef || end instanceof ValueBoundaryDef) {
+      return false;
+    }
+
+    /*
+     * Windows that are unbounded following don't benefit from Streaming.
+     */
+    if (end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT) {
+      return false;
+    }
+
+    /*
+     * let function decide if it can handle this special case.
+     */
+    if (start.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT) {
+      return true;
+    }
+
+    int windowLimit = HiveConf.getIntVar(cfg, ConfVars.HIVEJOINCACHESIZE);
+
+    if (windowLimit < (start.getAmt() + end.getAmt() + 1)) {
+      return false;
+    }
+
+    return true;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -155,6 +200,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
    * ISupportStreamingModeForWindowing. 3. Is an invocation on a 'fixed' window.
    * So no Unbounded Preceding or Following.
    */
+  @SuppressWarnings("resource")
   private int[] setCanAcceptInputAsStream(Configuration cfg) {
 
     canAcceptInputAsStream = false;
@@ -171,8 +217,9 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       WindowFunctionDef wFnDef = tabDef.getWindowFunctions().get(i);
       WindowFrameDef wdwFrame = wFnDef.getWindowFrame();
       GenericUDAFEvaluator fnEval = wFnDef.getWFnEval();
-      GenericUDAFEvaluator streamingEval = fnEval
-          .getWindowingEvaluator(wdwFrame);
+      boolean streamingPossible = streamingPossible(cfg, wFnDef);
+      GenericUDAFEvaluator streamingEval = streamingPossible ? fnEval
+          .getWindowingEvaluator(wdwFrame) : null;
       if (streamingEval != null
           && streamingEval instanceof ISupportStreamingModeForWindowing) {
         continue;
@@ -343,6 +390,14 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       int numRowsRemaining = wFn.getWindowFrame().getEnd().getAmt();
       if (fnEval instanceof ISupportStreamingModeForWindowing) {
         fnEval.terminate(streamingState.aggBuffers[i]);
+
+        WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFn
+            .getName());
+        if (!wFnInfo.isSupportsWindow()) {
+          numRowsRemaining = ((ISupportStreamingModeForWindowing) fnEval)
+              .getRowsRemainingAfterTerminate();
+        }
+
         if (numRowsRemaining != BoundarySpec.UNBOUNDED_AMOUNT) {
           while (numRowsRemaining > 0) {
             Object out = ((ISupportStreamingModeForWindowing) fnEval)
@@ -411,13 +466,20 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       } else if (wFn.isPivotResult()) {
         GenericUDAFEvaluator streamingEval = wFn.getWFnEval().getWindowingEvaluator(wFn.getWindowFrame());
         if ( streamingEval != null && streamingEval instanceof ISupportStreamingModeForWindowing ) {
-          wFn.setWFnEval(streamingEval);
-          if ( wFn.getOI() instanceof ListObjectInspector ) {
-            ListObjectInspector listOI = (ListObjectInspector) wFn.getOI();
-            wFn.setOI(listOI.getListElementObjectInspector());
+          ISupportStreamingModeForWindowing strEval = (ISupportStreamingModeForWindowing) streamingEval;
+          if ( strEval.getRowsRemainingAfterTerminate() == 0 ) {
+            wFn.setWFnEval(streamingEval);
+            if ( wFn.getOI() instanceof ListObjectInspector ) {
+              ListObjectInspector listOI = (ListObjectInspector) wFn.getOI();
+              wFn.setOI(listOI.getListElementObjectInspector());
+            }
+            output.add(null);
+            wFnsWithWindows.add(i);
+          } else {
+            outputFromPivotFunctions[i] = (List) evaluateWindowFunction(wFn,
+                pItr);
+            output.add(null);
           }
-          output.add(null);
-          wFnsWithWindows.add(i);  
         } else {
           outputFromPivotFunctions[i] = (List) evaluateWindowFunction(wFn, pItr);
           output.add(null);

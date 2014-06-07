@@ -33,6 +33,14 @@ import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction;
 public interface ISupportStreamingModeForWindowing {
 
   Object getNextResult(AggregationBuffer agg) throws HiveException;
+  
+  /*
+   * for functions that don't support a Window, this provides the rows remaining to be 
+   * added to output. Functions that return a Window can throw a UnsupportedException,
+   * this method shouldn't be called. For Ranking fns return 0; lead/lag fns return the
+   * lead/lag amt.
+   */
+  int getRowsRemainingAfterTerminate() throws HiveException;
 
   public static Object NULL_RESULT = new Object();
 }

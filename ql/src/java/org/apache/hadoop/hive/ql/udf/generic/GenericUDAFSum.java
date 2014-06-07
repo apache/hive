@@ -26,9 +26,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
-import org.apache.hadoop.hive.ql.plan.ptf.ValueBoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -189,20 +187,12 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       BoundaryDef start = wFrmDef.getStart();
       BoundaryDef end = wFrmDef.getEnd();
 
-      if (start instanceof ValueBoundaryDef || end instanceof ValueBoundaryDef) {
-        return null;
-      }
-
-      if (end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT) {
-        return null;
-      }
-
-      return new GenericUDAFStreamingEnhancer<HiveDecimalWritable, HiveDecimal>(
+      return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<HiveDecimalWritable, HiveDecimal>(
           this, start.getAmt(), end.getAmt()) {
 
         @Override
         protected HiveDecimalWritable getNextResult(
-            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEnhancer<HiveDecimalWritable, HiveDecimal>.StreamingState ss)
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<HiveDecimalWritable, HiveDecimal>.SumAvgStreamingState ss)
             throws HiveException {
           SumHiveDecimalAgg myagg = (SumHiveDecimalAgg) ss.wrappedBuf;
           HiveDecimal r = myagg.empty ? null : myagg.sum;
@@ -218,7 +208,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
         @Override
         protected HiveDecimal getCurrentIntermediateResult(
-            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEnhancer<HiveDecimalWritable, HiveDecimal>.StreamingState ss)
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<HiveDecimalWritable, HiveDecimal>.SumAvgStreamingState ss)
             throws HiveException {
           SumHiveDecimalAgg myagg = (SumHiveDecimalAgg) ss.wrappedBuf;
           return myagg.empty ? null : myagg.sum;
@@ -313,24 +303,15 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
-
       BoundaryDef start = wFrmDef.getStart();
       BoundaryDef end = wFrmDef.getEnd();
 
-      if (start instanceof ValueBoundaryDef || end instanceof ValueBoundaryDef) {
-        return null;
-      }
-
-      if (end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT) {
-        return null;
-      }
-
-      return new GenericUDAFStreamingEnhancer<DoubleWritable, Double>(this,
+      return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<DoubleWritable, Double>(this,
           start.getAmt(), end.getAmt()) {
 
         @Override
         protected DoubleWritable getNextResult(
-            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEnhancer<DoubleWritable, Double>.StreamingState ss)
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<DoubleWritable, Double>.SumAvgStreamingState ss)
             throws HiveException {
           SumDoubleAgg myagg = (SumDoubleAgg) ss.wrappedBuf;
           Double r = myagg.empty ? null : myagg.sum;
@@ -346,7 +327,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
         @Override
         protected Double getCurrentIntermediateResult(
-            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEnhancer<DoubleWritable, Double>.StreamingState ss)
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<DoubleWritable, Double>.SumAvgStreamingState ss)
             throws HiveException {
           SumDoubleAgg myagg = (SumDoubleAgg) ss.wrappedBuf;
           return myagg.empty ? null : new Double(myagg.sum);
@@ -443,20 +424,12 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       BoundaryDef start = wFrmDef.getStart();
       BoundaryDef end = wFrmDef.getEnd();
 
-      if (start instanceof ValueBoundaryDef || end instanceof ValueBoundaryDef) {
-        return null;
-      }
-
-      if (end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT) {
-        return null;
-      }
-
-      return new GenericUDAFStreamingEnhancer<LongWritable, Long>(this,
+      return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<LongWritable, Long>(this,
           start.getAmt(), end.getAmt()) {
 
         @Override
         protected LongWritable getNextResult(
-            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEnhancer<LongWritable, Long>.StreamingState ss)
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<LongWritable, Long>.SumAvgStreamingState ss)
             throws HiveException {
           SumLongAgg myagg = (SumLongAgg) ss.wrappedBuf;
           Long r = myagg.empty ? null : myagg.sum;
@@ -472,7 +445,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
         @Override
         protected Long getCurrentIntermediateResult(
-            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEnhancer<LongWritable, Long>.StreamingState ss)
+            org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<LongWritable, Long>.SumAvgStreamingState ss)
             throws HiveException {
           SumLongAgg myagg = (SumLongAgg) ss.wrappedBuf;
           return myagg.empty ? null : new Long(myagg.sum);

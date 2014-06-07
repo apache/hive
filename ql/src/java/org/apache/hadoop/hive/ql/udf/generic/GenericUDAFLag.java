@@ -25,6 +25,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead.GenericUDAFLeadEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead.GenericUDAFLeadEvaluatorStreaming;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead.LeadBuffer;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLeadLag.GenericUDAFLeadLagEvaluator;
 
 @WindowFunctionDescription
 (
@@ -53,10 +59,27 @@ public class GenericUDAFLag extends GenericUDAFLeadLag {
 
   public static class GenericUDAFLagEvaluator extends GenericUDAFLeadLagEvaluator {
 
+    public GenericUDAFLagEvaluator() {
+    }
+
+    /*
+     * used to initialize Streaming Evaluator.
+     */
+    protected GenericUDAFLagEvaluator(GenericUDAFLeadLagEvaluator src) {
+      super(src);
+    }
+
     @Override
     protected LeadLagBuffer getNewLLBuffer() throws HiveException {
      return new LagBuffer();
     }
+
+    @Override
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+
+      return new GenericUDAFLagEvaluatorStreaming(this);
+    }
+
   }
 
   static class LagBuffer implements LeadLagBuffer {
@@ -88,6 +111,7 @@ public class GenericUDAFLag extends GenericUDAFLeadLag {
        * the entire partition is in lagValues.
        */
       if ( values.size() < lagAmt ) {
+        values = lagValues;
         return lagValues;
       }
 
@@ -99,4 +123,42 @@ public class GenericUDAFLag extends GenericUDAFLeadLag {
       return values;
     }
   }
+
+  /*
+   * StreamingEval: wrap regular eval. on getNext remove first row from values
+   * and return it.
+   */
+  static class GenericUDAFLagEvaluatorStreaming extends GenericUDAFLagEvaluator
+      implements ISupportStreamingModeForWindowing {
+
+    protected GenericUDAFLagEvaluatorStreaming(GenericUDAFLeadLagEvaluator src) {
+      super(src);
+    }
+
+    @Override
+    public Object getNextResult(AggregationBuffer agg) throws HiveException {
+      LagBuffer lb = (LagBuffer) agg;
+
+      if (!lb.lagValues.isEmpty()) {
+        Object res = lb.lagValues.remove(0);
+        if (res == null) {
+          return ISupportStreamingModeForWindowing.NULL_RESULT;
+        }
+        return res;
+      } else if (!lb.values.isEmpty()) {
+        Object res = lb.values.remove(0);
+        if (res == null) {
+          return ISupportStreamingModeForWindowing.NULL_RESULT;
+        }
+        return res;
+      }
+      return null;
+    }
+
+    @Override
+    public int getRowsRemainingAfterTerminate() throws HiveException {
+      return getAmt();
+    }
+  }
+
 }
