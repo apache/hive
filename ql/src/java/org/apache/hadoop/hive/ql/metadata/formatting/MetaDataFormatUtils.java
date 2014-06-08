@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -28,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -35,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -141,6 +144,10 @@ public final class MetaDataFormatUtils {
     }
   }
 
+  private static String convertToString(Decimal val) {
+    return HiveDecimal.create(new BigInteger(val.getUnscaled()), val.getScale()).toString();
+  }
+
   private static ColumnStatisticsObj getColumnStatisticsObject(String colName,
       String colType, List<ColumnStatisticsObj> colStats) {
     if (colStats != null && !colStats.isEmpty()) {
@@ -178,8 +185,9 @@ public final class MetaDataFormatUtils {
               bcsd.getNumTrues(), bcsd.getNumFalses());
         } else if (csd.isSetDecimalStats()) {
           DecimalColumnStatsData dcsd = csd.getDecimalStats();
-          appendColumnStatsNoFormatting(colBuffer, dcsd.getLowValue(), dcsd.getHighValue(),
-              dcsd.getNumNulls(), dcsd.getNumDVs(), "", "", "", "");
+          appendColumnStatsNoFormatting(colBuffer, convertToString(dcsd.getLowValue()),
+              convertToString(dcsd.getHighValue()), dcsd.getNumNulls(), dcsd.getNumDVs(),
+              "", "", "", "");
         } else if (csd.isSetDoubleStats()) {
           DoubleColumnStatsData dcsd = csd.getDoubleStats();
           appendColumnStatsNoFormatting(colBuffer, dcsd.getLowValue(), dcsd.getHighValue(),
@@ -421,8 +429,9 @@ public final class MetaDataFormatUtils {
               bcsd.getNumTrues(), bcsd.getNumFalses());
         } else if (csd.isSetDecimalStats()) {
           DecimalColumnStatsData dcsd = csd.getDecimalStats();
-          appendColumnStats(tableInfo, dcsd.getLowValue(), dcsd.getHighValue(), dcsd.getNumNulls(),
-              dcsd.getNumDVs(), "", "", "", "");
+          appendColumnStats(tableInfo, convertToString(dcsd.getLowValue()), 
+              convertToString(dcsd.getHighValue()), dcsd.getNumNulls(), dcsd.getNumDVs(), 
+              "", "", "", "");
         } else if (csd.isSetDoubleStats()) {
           DoubleColumnStatsData dcsd = csd.getDoubleStats();
           appendColumnStats(tableInfo, dcsd.getLowValue(), dcsd.getHighValue(), dcsd.getNumNulls(),
