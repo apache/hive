@@ -51,7 +51,7 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 {_col0} {_col1}
-                1 {key} {value}
+                1 {value}
               keys:
                 0 _col0 (type: string)
                 1 key (type: string)

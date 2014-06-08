@@ -26,8 +26,8 @@ STAGE PLANS:
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
               condition expressions:
-                0 {key} {value}
-                1 {key} {value}
+                0 {value}
+                1 {value}
                 2 {key} {value}
               filter predicates:
                 0 {(key < 10)}
@@ -46,8 +46,8 @@ STAGE PLANS:
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 filter predicates:
                   0 {(key < 10)}
@@ -651,8 +651,8 @@ STAGE PLANS:
               HashTable Sink Operator
                 condition expressions:
                   0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
+                  1 {value}
+                  2 {value}
                 filter predicates:
                   0 {(key < 10)}
                   1 
@@ -671,8 +671,8 @@ STAGE PLANS:
               HashTable Sink Operator
                 condition expressions:
                   0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
+                  1 {value}
+                  2 {value}
                 filter predicates:
                   0 {(key < 10)}
                   1 
@@ -1274,9 +1274,9 @@ STAGE PLANS:
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
+                  0 {value}
                   1 {key} {value}
-                  2 {key} {value}
+                  2 {value}
                 filter predicates:
                   0 
                   1 {(key > 10)}
@@ -1294,9 +1294,9 @@ STAGE PLANS:
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
+                  0 {value}
                   1 {key} {value}
-                  2 {key} {value}
+                  2 {value}
                 filter predicates:
                   0 
                   1 {(key > 10)}
@@ -1910,8 +1910,8 @@ STAGE PLANS:
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 filter predicates:
                   0 
@@ -1927,8 +1927,8 @@ STAGE PLANS:
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
               condition expressions:
-                0 {key} {value}
-                1 {key} {value}
+                0 {value}
+                1 {value}
                 2 {key} {value}
               filter predicates:
                 0 
@@ -2543,9 +2543,9 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
+                  0 {value}
                   1 {key} {value}
-                  2 {key} {value}
+                  2 {value}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -2559,9 +2559,9 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
+                  0 {value}
                   1 {key} {value}
-                  2 {key} {value}
+                  2 {value}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -2658,8 +2658,8 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 filter predicates:
                   0 
@@ -2678,8 +2678,8 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 filter predicates:
                   0 
@@ -3283,8 +3283,8 @@ STAGE PLANS:
               HashTable Sink Operator
                 condition expressions:
                   0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
+                  1 {value}
+                  2 {value}
                 filter predicates:
                   0 {(key < 10)}
                   1 
@@ -3303,8 +3303,8 @@ STAGE PLANS:
               HashTable Sink Operator
                 condition expressions:
                   0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
+                  1 {value}
+                  2 {value}
                 filter predicates:
                   0 {(key < 10)}
                   1 
@@ -3406,8 +3406,8 @@ STAGE PLANS:
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 filter predicates:
                   0 
@@ -3426,8 +3426,8 @@ STAGE PLANS:
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 filter predicates:
                   0 
@@ -3555,8 +3555,8 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 keys:
                   0 key (type: string)
@@ -3571,8 +3571,8 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 keys:
                   0 key (type: string)

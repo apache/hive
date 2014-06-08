@@ -26,8 +26,8 @@ STAGE PLANS:
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
               condition expressions:
-                0 {key} {value}
-                1 {key} {value}
+                0 {value}
+                1 {value}
                 2 {key} {value}
               filter predicates:
                 0 {(key < 10)}
@@ -46,8 +46,8 @@ STAGE PLANS:
               Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 filter predicates:
                   0 {(key < 10)}

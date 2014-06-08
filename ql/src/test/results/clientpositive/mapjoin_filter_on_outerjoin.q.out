@@ -77,8 +77,8 @@ STAGE PLANS:
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 filter predicates:
                   0 
@@ -97,8 +97,8 @@ STAGE PLANS:
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 filter predicates:
                   0 
@@ -241,8 +241,8 @@ STAGE PLANS:
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 filter predicates:
                   0 
@@ -261,8 +261,8 @@ STAGE PLANS:
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
+                  0 {value}
+                  1 {value}
                   2 {key} {value}
                 filter predicates:
                   0 

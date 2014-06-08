@@ -223,7 +223,7 @@ public class MapJoinProcessor implements Transform {
    * @param newWork MapredWork in which the conversion is to happen
    * @param op
    *          The join operator that needs to be converted to map-join
-   * @param bigTablePos
+   * @param mapJoinPos
    * @throws SemanticException
    */
   public static void genMapJoinOpAndLocalWork(HiveConf conf, MapredWork newWork,
@@ -362,7 +362,7 @@ public class MapJoinProcessor implements Transform {
 
     // create the map-join operator
     MapJoinOperator mapJoinOp = convertJoinOpMapJoinOp(conf, opParseCtxMap,
-        op, joinTree, mapJoinPos, noCheckOuterJoin, false);
+        op, joinTree, mapJoinPos, noCheckOuterJoin);
 
 
     // remove old parents
@@ -384,10 +384,10 @@ public class MapJoinProcessor implements Transform {
     return mapJoinOp;
   }
 
-  public static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
+  static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
       LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
-      JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin,
-      boolean tezJoin) throws SemanticException {
+      JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin)
+      throws SemanticException {
 
     JoinDesc desc = op.getConf();
     JoinCondDesc[] condns = desc.getConds();
@@ -463,9 +463,9 @@ public class MapJoinProcessor implements Transform {
       ReduceSinkOperator inputRS = oldReduceSinkParentOps.get(pos);
       List<ExprNodeDesc> keyCols = inputRS.getConf().getKeyCols();
       List<ExprNodeDesc> valueCols = newValueExprs.get(pos);
-      // remove values referencing key
-      // todo: currently, mr-mapjoin stores whole value exprs of join operator, which may contain key
-      if (tezJoin && pos != mapJoinPos) {
+      if (pos != mapJoinPos) {
+        // remove values in key exprs for value table schema
+        // value expression for hashsink will be modified in LocalMapJoinProcessor
         int[] valueIndex = new int[valueCols.size()];
         List<ExprNodeDesc> valueColsInValueExpr = new ArrayList<ExprNodeDesc>();
         for (int i = 0; i < valueIndex.length; i++) {
@@ -792,7 +792,7 @@ public class MapJoinProcessor implements Transform {
    *
    * @param op
    *          join operator
-   * @param qbJoin
+   * @param joinTree
    *          qb join tree
    * @return -1 if it cannot be converted to a map-side join, position of the map join node
    *         otherwise

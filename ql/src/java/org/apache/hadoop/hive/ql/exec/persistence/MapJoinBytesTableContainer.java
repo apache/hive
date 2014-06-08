@@ -355,7 +355,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     public boolean hasAnyNulls(int fieldCount, boolean[] nullsafes) {
       if (nulls == null || nulls.length == 0) return false;
       for (int i = 0; i < nulls.length; i++) {
-        if (nulls[i] == true && (nullsafes == null || !nullsafes[i])) {
+        if (nulls[i] && (nullsafes == null || !nullsafes[i])) {
           return true;
         }
       }

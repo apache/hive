@@ -24,12 +24,18 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Unwraps values from current key with valueIndex in mapjoin desc
+ */
 public class UnwrapRowContainer
     implements MapJoinRowContainer, AbstractRowContainer.RowIterator<List<Object>> {
 
-  private final int[] index;
+  private final byte alias;
+  private final int[] valueIndex;
+  private final boolean tagged;
   private final List<Object> unwrapped;
 
   private transient Object[] currentKey;
@@ -37,9 +43,11 @@ public class UnwrapRowContainer
 
   private transient RowIterator<List<Object>> iterator;
 
-  public UnwrapRowContainer(int[] valueIndex)  {
-    index = valueIndex;
-    unwrapped = new ArrayList<Object>();
+  public UnwrapRowContainer(byte alias, int[] valueIndex, boolean tagged)  {
+    this.alias = alias;
+    this.valueIndex = valueIndex;
+    this.tagged = tagged;
+    this.unwrapped = new ArrayList<Object>();
   }
 
   public MapJoinRowContainer setInternal(MapJoinRowContainer internal, Object[] currentKey) {
@@ -64,15 +72,15 @@ public class UnwrapRowContainer
       return null;
     }
     unwrapped.clear();
-    for (int i = 0; i < index.length; i++) {
-      if (index[i] >= 0) {
-        unwrapped.add(currentKey[index[i]]);
+    for (int index : valueIndex) {
+      if (index >= 0) {
+        unwrapped.add(currentKey == null ? null : currentKey[index]);
       } else {
-        int vindex = -index[i] - 1;
-        if (vindex < values.size()) {
-          unwrapped.add(values.get(vindex));
-        }
+        unwrapped.add(values.get(-index - 1));
       }
+    }
+    if (tagged) {
+      unwrapped.add(values.get(values.size() - 1)); // append filter tag
     }
     return unwrapped;
   }
@@ -117,5 +125,10 @@ public class UnwrapRowContainer
   public void write(MapJoinObjectSerDeContext valueContext, ObjectOutputStream out)
       throws IOException, SerDeException {
     internal.write(valueContext, out);
+  }
+
+  @Override
+  public String toString() {
+    return alias + (tagged ? ":TAGGED" : "") + Arrays.toString(valueIndex);
   }
 }

@@ -45,7 +45,7 @@ STAGE PLANS:
               Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 condition expressions:
-                  0 {cdecimal1} {cint}
+                  0 {cdecimal1}
                   1 {cdecimal2} {cint}
                 keys:
                   0 cint (type: int)

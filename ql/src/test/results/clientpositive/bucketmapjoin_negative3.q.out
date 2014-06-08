@@ -211,7 +211,7 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
-                1 {key} {value}
+                1 
               keys:
                 0 key (type: string), value (type: string)
                 1 key (type: string), value (type: string)
@@ -402,7 +402,7 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
-                1 {key} {value}
+                1 
               keys:
                 0 key (type: string), value (type: string)
                 1 key (type: string), value (type: string)
@@ -773,7 +773,7 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
-                1 {key} {value}
+                1 
               keys:
                 0 key (type: string), value (type: string)
                 1 key (type: string), value (type: string)
@@ -956,7 +956,7 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
-                1 {key} {value}
+                1 
               keys:
                 0 key (type: string), value (type: string)
                 1 key (type: string), value (type: string)
@@ -1139,7 +1139,7 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
-                1 {key} {value}
+                1 
               keys:
                 0 key (type: string), value (type: string)
                 1 key (type: string), value (type: string)
@@ -1322,7 +1322,7 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
-                1 {key} {value}
+                1 
               keys:
                 0 key (type: string), value (type: string)
                 1 key (type: string), value (type: string)
@@ -1505,7 +1505,7 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
-                1 {key} {value}
+                1 
               keys:
                 0 key (type: string), value (type: string)
                 1 key (type: string), value (type: string)
@@ -1688,7 +1688,7 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
-                1 {key} {value}
+                1 
               keys:
                 0 key (type: string), value (type: string)
                 1 key (type: string), value (type: string)
