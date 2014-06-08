@@ -4,6 +4,9 @@ CREATE TABLE dec(name string, value decimal(8,4));
 
 LOAD DATA LOCAL INPATH '../../data/files/dec.txt' into TABLE dec;
 
+ANALYZE TABLE dec COMPUTE STATISTICS FOR COLUMNS value;
+DESC FORMATTED dec value;
+
 DROP TABLE IF EXISTS avro_dec;
 
 CREATE TABLE `avro_dec`(
