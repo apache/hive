@@ -930,7 +930,7 @@ STAGE PLANS:
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
-                0 {key} {value}
+                0 {value}
                 1 {value}
               keys:
                 0 key (type: int)

@@ -49,7 +49,7 @@ STAGE PLANS:
                 Statistics: Num rows: 6 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   condition expressions:
-                    0 {_col0}
+                    0 
                     1 {_col1}
                     2 
                   keys:
@@ -69,7 +69,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   condition expressions:
-                    0 {_col0}
+                    0 
                     1 {_col1}
                     2 
                   keys:

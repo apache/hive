@@ -43,7 +43,7 @@ STAGE PLANS:
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             HashTable Sink Operator
               condition expressions:
-                0 {name}
+                0 
                 1 {registration}
               keys:
                 0 name (type: string)

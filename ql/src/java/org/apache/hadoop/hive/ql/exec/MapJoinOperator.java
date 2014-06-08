@@ -124,7 +124,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     if (valueIndex == null) {
       return super.getValueObjectInspectors(alias, aliasToObjectInspectors);
     }
-    unwrapContainer[alias] = new UnwrapRowContainer(valueIndex);
+    unwrapContainer[alias] = new UnwrapRowContainer(alias, valueIndex, hasFilter(alias));
 
     List<ObjectInspector> inspectors = aliasToObjectInspectors[alias];
 
@@ -180,7 +180,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
     loader.init(getExecContext(), hconf, this);
     loader.load(mapJoinTables, mapJoinTableSerdes);
-    if (conf.isBucketMapJoin() == false) {
+    if (!conf.isBucketMapJoin()) {
       /*
        * The issue with caching in case of bucket map join is that different tasks
        * process different buckets and if the container is reused to join a different bucket,
@@ -265,11 +265,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           }
           MapJoinRowContainer rowContainer = adaptor.getCurrentRows();
           if (rowContainer != null && unwrapContainer[pos] != null) {
-            Object[] currentKey = adaptor.getCurrentKey();
+            Object[] currentKey = firstSetKey.getCurrentKey();
             rowContainer = unwrapContainer[pos].setInternal(rowContainer, currentKey);
           }
           // there is no join-value or join-key has all null elements
-          if (rowContainer == null || adaptor.hasAnyNulls(fieldCount, nullsafes)) {
+          if (rowContainer == null || firstSetKey.hasAnyNulls(fieldCount, nullsafes)) {
             if (!noOuterJoin) {
               joinNeeded = true;
               storage[pos] = dummyObjVectors[pos];

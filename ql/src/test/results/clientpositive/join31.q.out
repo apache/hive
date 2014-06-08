@@ -186,7 +186,7 @@ STAGE PLANS:
           TableScan
             HashTable Sink Operator
               condition expressions:
-                0 {_col0}
+                0 
                 1 
               keys:
                 0 _col0 (type: string)

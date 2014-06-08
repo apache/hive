@@ -685,7 +685,7 @@ STAGE PLANS:
               predicate: (key > 100) (type: boolean)
               HashTable Sink Operator
                 condition expressions:
-                  0 {key} {value}
+                  0 {value}
                   1 
                 keys:
                   0 key (type: string)

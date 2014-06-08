@@ -33,7 +33,7 @@ STAGE PLANS:
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
               condition expressions:
-                0 {key} {value}
+                0 {value}
                 1 {key} {value}
               keys:
                 0 key (type: string)

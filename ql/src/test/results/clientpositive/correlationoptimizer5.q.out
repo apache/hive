@@ -488,7 +488,7 @@ STAGE PLANS:
             Statistics: Num rows: 54 Data size: 216 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
               condition expressions:
-                0 {key}
+                0 
                 1 {val}
               keys:
                 0 key (type: int)
@@ -595,7 +595,7 @@ STAGE PLANS:
           TableScan
             HashTable Sink Operator
               condition expressions:
-                0 {_col0}
+                0 
                 1 {_col1}
               keys:
                 0 _col0 (type: int)

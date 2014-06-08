@@ -101,7 +101,7 @@ STAGE PLANS:
             Statistics: Num rows: 0 Data size: 6 Basic stats: PARTIAL Column stats: NONE
             HashTable Sink Operator
               condition expressions:
-                0 {id} {name}
+                0 {name}
                 1 {name} {id}
               keys:
                 0 id (type: int)
@@ -113,7 +113,7 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 {_col0} {_col1} {_col2} {_col3}
-                1 {id} {name}
+                1 {name}
               keys:
                 0 _col0 (type: int)
                 1 id (type: int)
