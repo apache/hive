@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -287,4 +288,23 @@ public class TestJsonSerDe extends TestCase {
 
   }
 
+  public void testUpperCaseKey() throws Exception {
+    Configuration conf = new Configuration();
+    Properties props = new Properties();
+
+    props.put(serdeConstants.LIST_COLUMNS, "empid,name");
+    props.put(serdeConstants.LIST_COLUMN_TYPES, "int,string");
+    JsonSerDe rjsd = new JsonSerDe();
+    SerDeUtils.initializeSerDe(rjsd, conf, props, null);
+
+    Text text1 = new Text("{ \"empId\" : 123, \"name\" : \"John\" } ");
+    Text text2 = new Text("{ \"empId\" : 456, \"name\" : \"Jane\" } ");
+
+    HCatRecord expected1 = new DefaultHCatRecord(Arrays.<Object>asList(123, "John"));
+    HCatRecord expected2 = new DefaultHCatRecord(Arrays.<Object>asList(456, "Jane"));
+
+    assertTrue(HCatDataCheckUtil.recordsEqual((HCatRecord)rjsd.deserialize(text1), expected1));
+    assertTrue(HCatDataCheckUtil.recordsEqual((HCatRecord)rjsd.deserialize(text2), expected2));
+
+  }
 }
