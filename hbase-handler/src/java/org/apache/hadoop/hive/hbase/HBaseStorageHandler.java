@@ -262,7 +262,10 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   @Override
   public Class<? extends OutputFormat> getOutputFormatClass() {
-    return org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat.class;
+    if (isHBaseGenerateHFiles(jobConf)) {
+      return HiveHFileOutputFormat.class;
+    }
+    return HiveHBaseTableOutputFormat.class;
   }
 
   @Override
@@ -349,8 +352,28 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       } //input job properties
     }
     else {
-      jobProperties.put(TableOutputFormat.OUTPUT_TABLE, tableName);
+      if (isHBaseGenerateHFiles(jobConf)) {
+        // only support bulkload when a hfile.family.path has been specified.
+        // TODO: support detecting cf's from column mapping
+        // TODO: support loading into multiple CF's at a time
+        String path = HiveHFileOutputFormat.getFamilyPath(jobConf, tableProperties);
+        if (path == null || path.isEmpty()) {
+          throw new RuntimeException("Please set " + HiveHFileOutputFormat.HFILE_FAMILY_PATH + " to target location for HFiles");
+        }
+        // TODO: should call HiveHFileOutputFormat#setOutputPath
+        jobProperties.put("mapred.output.dir", path);
+      } else {
+        jobProperties.put(TableOutputFormat.OUTPUT_TABLE, tableName);
+      }
     } // output job properties
+  }
+
+  /**
+   * Return true when HBaseStorageHandler should generate hfiles instead of operate against the
+   * online table. This mode is implicitly applied when "hive.hbase.completebulkload" is true.
+   */
+  public static boolean isHBaseGenerateHFiles(Configuration conf) {
+    return conf.getBoolean("hive.hbase.generatehfiles", false);
   }
 
   /**
