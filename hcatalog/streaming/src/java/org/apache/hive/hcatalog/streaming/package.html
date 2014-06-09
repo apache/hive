@@ -63,15 +63,21 @@ A few things are currently required to use streaming.
   <li> User of the client streaming process must have the necessary 
     permissions to write to the table or partition and create partitions in
     the table.</li>
-  <li> When issuing MapReduce queries on streaming tables, the user must set
-    <b>hive.input.format</b> to 
-    <b>org.apache.hadoop.hive.ql.io.HiveInputFormat</b></li>
-  <li> Settings required in hive-site.xml:
+  <li> Currently, when issuing queries on streaming tables, query client must set
     <ol>
-      <li><b>hive.txn.manager = 
+      <li><b>hive.input.format =
+             org.apache.hadoop.hive.ql.io.HiveInputFormat</b></li>
+      <li><b>hive.vectorized.execution.enabled = false</b></li>
+    </ol></li>
+  The above client settings are a temporary requirement and the intention is to
+  drop the need for them in the near future.
+  <li> Settings required in hive-site.xml for Metastore:
+    <ol>
+      <li><b>hive.txn.manager =
 	org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</b></li>
-      <li><b>hive.compactor.initiator.on = true</b></li>
-      <li><b>hive.compactor.worker.threads</b> > 0</li>
+      <li><b>hive.support.concurrency = true </b> </li>
+      <li><b>hive.compactor.initiator.on = true</b> </li>
+      <li><b>hive.compactor.worker.threads > 0 </b> </li>
     </ol></li>
 </ol></p>
 
