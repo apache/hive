@@ -75,14 +75,16 @@ import org.apache.thrift.TException;
 public class TempletonControllerJob extends Configured implements Tool, JobSubmissionConstants {
   private static final Log LOG = LogFactory.getLog(TempletonControllerJob.class);
   private final boolean secureMetastoreAccess;
+  private final AppConfig appConf;
 
   /**
    * @param secureMetastoreAccess - if true, a delegation token will be created
    *                              and added to the job
    */
-  public TempletonControllerJob(boolean secureMetastoreAccess) {
+  public TempletonControllerJob(boolean secureMetastoreAccess, AppConfig conf) {
     super();
     this.secureMetastoreAccess = secureMetastoreAccess;
+    this.appConf = conf;
   }
 
   private JobID submittedJobId;
@@ -108,6 +110,10 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     Configuration conf = getConf();
 
     conf.set(JAR_ARGS_NAME, TempletonUtils.encodeArray(args));
+    String memoryMb = appConf.mapperMemoryMb();
+    if(memoryMb != null && memoryMb.length() != 0) {
+      conf.set(AppConfig.HADOOP_MAP_MEMORY_MB, memoryMb);
+    }
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
     conf.set("user.name", user);
     Job job = new Job(conf);

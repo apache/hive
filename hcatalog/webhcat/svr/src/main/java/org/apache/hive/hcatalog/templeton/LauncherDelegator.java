@@ -103,7 +103,7 @@ public class LauncherDelegator extends TempletonDelegator {
     return ugi.doAs(new PrivilegedExceptionAction<String>() {
       public String run() throws Exception {
         String[] array = new String[args.size()];
-        TempletonControllerJob ctrl = new TempletonControllerJob(secureMeatastoreAccess);
+        TempletonControllerJob ctrl = new TempletonControllerJob(secureMeatastoreAccess, appConf);
         ToolRunner.run(ctrl, args.toArray(array));
         return ctrl.getSubmittedId();
       }

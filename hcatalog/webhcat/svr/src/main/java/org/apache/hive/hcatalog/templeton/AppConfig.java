@@ -100,6 +100,7 @@ public class AppConfig extends Configuration {
   public static final String PYTHON_NAME         = "templeton.python";
   public static final String HIVE_ARCHIVE_NAME   = "templeton.hive.archive";
   public static final String HIVE_PATH_NAME      = "templeton.hive.path";
+  public static final String MAPPER_MEMORY_MB    = "templeton.mapper.memory.mb";
   /**
    * see webhcat-default.xml
    */
@@ -142,6 +143,7 @@ public class AppConfig extends Configuration {
   public static final String HADOOP_SPECULATIVE_NAME
     = "mapred.map.tasks.speculative.execution";
   public static final String HADOOP_CHILD_JAVA_OPTS = "mapred.child.java.opts";
+  public static final String HADOOP_MAP_MEMORY_MB = "mapreduce.map.memory.mb";
   public static final String UNIT_TEST_MODE     = "templeton.unit.test.mode";
 
 
@@ -301,6 +303,8 @@ public class AppConfig extends Configuration {
   public String controllerMRChildOpts() { 
     return get(TEMPLETON_CONTROLLER_MR_CHILD_OPTS); 
   }
+  public String mapperMemoryMb()   { return get(MAPPER_MEMORY_MB); }
+
   /**
    * @see  #HIVE_PROPS_NAME
    */
