@@ -187,6 +187,17 @@
   </property>
 
   <property>
+    <name>templeton.mapper.memory.mb</name>
+    <value></value>
+    <description>Templeton controller job's Launch mapper's memory limit in
+        megabytes. When submitting controller job, Templeton will overwrite
+        mapreduce.map.memory.mb with this value. If empty, Templeton will
+        not set mapreduce.map.memory.mb when submitting the controller job,
+        therefore the configuration in mapred-site.xml will be used.
+    </description>
+  </property>
+
+  <property>
     <name>templeton.exec.envs</name>
     <value>HADOOP_PREFIX,HADOOP_HOME,JAVA_HOME,HIVE_HOME</value>
     <description>The environment variables passed through to exec.</description>
