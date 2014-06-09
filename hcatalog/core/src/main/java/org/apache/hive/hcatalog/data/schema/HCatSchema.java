@@ -58,9 +58,9 @@ public class HCatSchema implements Serializable {
       if (field == null)
         throw new IllegalArgumentException("Field cannot be null");
 
-      String fieldName = field.getName();
+      String fieldName = normalizeName(field.getName());
       if (fieldPositionMap.containsKey(fieldName))
-        throw new IllegalArgumentException("Field named " + fieldName +
+        throw new IllegalArgumentException("Field named " + field.getName() +
           " already exists");
       fieldPositionMap.put(fieldName, idx);
       fieldNames.add(fieldName);
@@ -72,7 +72,7 @@ public class HCatSchema implements Serializable {
     if (hfs == null)
       throw new HCatException("Attempt to append null HCatFieldSchema in HCatSchema.");
 
-    String fieldName = hfs.getName();
+    String fieldName = normalizeName(hfs.getName());
     if (fieldPositionMap.containsKey(fieldName))
       throw new HCatException("Attempt to append HCatFieldSchema with already " +
         "existing name: " + fieldName + ".");
@@ -98,7 +98,7 @@ public class HCatSchema implements Serializable {
    * present, returns null.
    */
   public Integer getPosition(String fieldName) {
-    return fieldPositionMap.get(fieldName);
+    return fieldPositionMap.get(normalizeName(fieldName));
   }
 
   public HCatFieldSchema get(String fieldName) throws HCatException {
@@ -134,9 +134,14 @@ public class HCatSchema implements Serializable {
     }     
     fieldSchemas.remove(hcatFieldSchema);
     // Re-align the positionMap by -1 for the columns appearing after hcatFieldSchema.
-    reAlignPositionMap(fieldPositionMap.get(hcatFieldSchema.getName())+1, -1);
-    fieldPositionMap.remove(hcatFieldSchema.getName());
-    fieldNames.remove(hcatFieldSchema.getName());
+    String fieldName = normalizeName(hcatFieldSchema.getName());
+    reAlignPositionMap(fieldPositionMap.get(fieldName)+1, -1);
+    fieldPositionMap.remove(fieldName);
+    fieldNames.remove(fieldName);
+  }
+
+  private String normalizeName(String name) {
+    return name == null ? null : name.toLowerCase();
   }
 
   @Override
