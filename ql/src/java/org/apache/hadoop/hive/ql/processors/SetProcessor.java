@@ -103,42 +103,39 @@ public class SetProcessor implements CommandProcessor {
   public void init() {
   }
 
-  private CommandProcessorResponse setVariable(String varname, String varvalue){
+  public CommandProcessorResponse executeSetVariable(String varname, String varvalue) {
+    try {
+      return new CommandProcessorResponse(setVariable(varname, varvalue));
+    } catch (Exception e) {
+      return new CommandProcessorResponse(1, e.getMessage(), "42000");
+    }
+  }
+
+  public static int setVariable(String varname, String varvalue) throws IllegalArgumentException {
     SessionState ss = SessionState.get();
     if (varvalue.contains("\n")){
       ss.err.println("Warning: Value had a \\n character in it.");
     }
     if (varname.startsWith(SetProcessor.ENV_PREFIX)){
       ss.err.println("env:* variables can not be set.");
-      return new CommandProcessorResponse(1);
+      return 1;
     } else if (varname.startsWith(SetProcessor.SYSTEM_PREFIX)){
       String propName = varname.substring(SetProcessor.SYSTEM_PREFIX.length());
       System.getProperties().setProperty(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
-      return new CommandProcessorResponse(0);
     } else if (varname.startsWith(SetProcessor.HIVECONF_PREFIX)){
       String propName = varname.substring(SetProcessor.HIVECONF_PREFIX.length());
-      try {
-        setConf(varname, propName, varvalue, false);
-        return new CommandProcessorResponse(0);
-      } catch (IllegalArgumentException e) {
-        return new CommandProcessorResponse(1, e.getMessage(), "42000");
-      }
+      setConf(varname, propName, varvalue, false);
     } else if (varname.startsWith(SetProcessor.HIVEVAR_PREFIX)) {
       String propName = varname.substring(SetProcessor.HIVEVAR_PREFIX.length());
       ss.getHiveVariables().put(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
-      return new CommandProcessorResponse(0);
     } else {
-      try {
-        setConf(varname, varname, varvalue, true);
-        return new CommandProcessorResponse(0);
-      } catch (IllegalArgumentException e) {
-        return new CommandProcessorResponse(1, e.getMessage(), "42000");
-      }
+      setConf(varname, varname, varvalue, true);
     }
+    return 0;
   }
 
   // returns non-null string for validation fail
-  private void setConf(String varname, String key, String varvalue, boolean register)
+  private static void setConf(String varname, String key, String varvalue, boolean register)
         throws IllegalArgumentException {
     HiveConf conf = SessionState.get().getConf();
     String value = new VariableSubstitution().substitute(conf, varvalue);
@@ -265,7 +262,7 @@ public class SetProcessor implements CommandProcessor {
         ss.setIsSilent(getBoolean(part[1]));
         return new CommandProcessorResponse(0);
       }
-      return setVariable(part[0],part[1]);
+      return executeSetVariable(part[0],part[1]);
     } else {
       return getVariable(nwcmd);
     }

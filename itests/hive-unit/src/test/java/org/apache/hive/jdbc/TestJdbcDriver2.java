@@ -60,7 +60,6 @@ import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
 import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
 import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMappings;
-import org.apache.hive.service.server.HiveServer2;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -105,7 +104,7 @@ public class TestJdbcDriver2 {
   @BeforeClass
   public static void setUpBeforeClass() throws SQLException, ClassNotFoundException{
     Class.forName(driverName);
-    Connection con1 = getConnection();
+    Connection con1 = getConnection("default");
 
     Statement stmt1 = con1.createStatement();
     assertNotNull("Statement is null", stmt1);
@@ -130,7 +129,7 @@ public class TestJdbcDriver2 {
 
   @Before
   public void setUp() throws Exception {
-    con = getConnection();
+    con = getConnection("default");
 
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
@@ -214,14 +213,14 @@ public class TestJdbcDriver2 {
         +"' as select * from "+ tableName);
   }
 
-  private static Connection getConnection() throws SQLException {
+  private static Connection getConnection(String postfix) throws SQLException {
     Connection con1;
     if (standAloneServer) {
       // get connection
-      con1 = DriverManager.getConnection("jdbc:hive2://localhost:10000/default",
+      con1 = DriverManager.getConnection("jdbc:hive2://localhost:10000/" + postfix,
           "", "");
     } else {
-      con1 = DriverManager.getConnection("jdbc:hive2://", "", "");
+      con1 = DriverManager.getConnection("jdbc:hive2:///" + postfix, "", "");
     }
     assertNotNull("Connection is null", con1);
     assertFalse("Connection should not be closed", con1.isClosed());
@@ -535,13 +534,26 @@ public class TestJdbcDriver2 {
     // execute() of Prepared statement
     ps.setString(1, val1);
     ps.execute();
-    verifyConfValue(key, val1);
+    verifyConfValue(con, key, val1);
 
     // executeUpdate() of Prepared statement
     ps.clearParameters();
     ps.setString(1, val2);
     ps.executeUpdate();
-    verifyConfValue(key, val2);
+    verifyConfValue(con, key, val2);
+  }
+
+  @Test
+  public void testSetOnConnection() throws Exception {
+    Connection connection = getConnection("test?conf1=conf2;conf3=conf4#var1=var2;var3=var4");
+    try {
+      verifyConfValue(connection, "conf1", "conf2");
+      verifyConfValue(connection, "conf3", "conf4");
+      verifyConfValue(connection, "var1", "var2");
+      verifyConfValue(connection, "var3", "var4");
+    } catch (Exception e) {
+      connection.close();
+    }
   }
 
   /**
@@ -551,14 +563,17 @@ public class TestJdbcDriver2 {
    * @param expectedVal
    * @throws Exception
    */
-  private void verifyConfValue(String key, String expectedVal) throws Exception {
+  private void verifyConfValue(Connection con, String key, String expectedVal) throws Exception {
     Statement stmt = con.createStatement();
     ResultSet res = stmt.executeQuery("set " + key);
     assertTrue(res.next());
-    String resultValues[] = res.getString(1).split("="); // "key = 'val'"
-    assertEquals("Result not in key = val format", 2, resultValues.length);
-    String result = resultValues[1].substring(1, resultValues[1].length() -1); // remove '
-    assertEquals("Conf value should be set by execute()", expectedVal, result);
+    String value = res.getString(1);
+    String resultValues[] = value.split("="); // "key = 'val'"
+    assertEquals("Result not in key = val format: " + value, 2, resultValues.length);
+    if (resultValues[1].startsWith("'") && resultValues[1].endsWith("'")) {
+      resultValues[1] = resultValues[1].substring(1, resultValues[1].length() -1); // remove '
+    }
+    assertEquals("Conf value should be set by execute()", expectedVal, resultValues[1]);
   }
 
   @Test

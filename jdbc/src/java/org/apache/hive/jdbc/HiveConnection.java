@@ -52,7 +52,6 @@ import javax.security.sasl.SaslException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.KerberosSaslHelper;
@@ -190,9 +189,7 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V7);
 
     // open client session
-    openSession(connParams.getSessionVars());
-
-    configureConnection(connParams.getDbName());
+    openSession(connParams);
   }
 
   private void openTransport() throws SQLException {
@@ -400,16 +397,28 @@ public class HiveConnection implements java.sql.Connection {
     return tokenStr;
   }
 
-  private void openSession(Map<String, String> sessVars) throws SQLException {
+  private void openSession(Utils.JdbcConnectionParams connParams) throws SQLException {
     TOpenSessionReq openReq = new TOpenSessionReq();
 
+    Map<String, String> openConf = new HashMap<String, String>();
+    // for remote JDBC client, try to set the conf var using 'set foo=bar'
+    for (Entry<String, String> hiveConf : connParams.getHiveConfs().entrySet()) {
+      openConf.put("set:hiveconf:" + hiveConf.getKey(), hiveConf.getValue());
+    }
+    // For remote JDBC client, try to set the hive var using 'set hivevar:key=value'
+    for (Entry<String, String> hiveVar : connParams.getHiveVars().entrySet()) {
+      openConf.put("set:hivevar:" + hiveVar.getKey(), hiveVar.getValue());
+    }
+    // switch the database
+    openConf.put("use:database", connParams.getDbName());
+
     // set the session configuration
+    Map<String, String> sessVars = connParams.getSessionVars();
     if (sessVars.containsKey(HiveAuthFactory.HS2_PROXY_USER)) {
-      Map<String, String> openConf = new HashMap<String, String>();
       openConf.put(HiveAuthFactory.HS2_PROXY_USER,
           sessVars.get(HiveAuthFactory.HS2_PROXY_USER));
-      openReq.setConfiguration(openConf);
     }
+    openReq.setConfiguration(openConf);
 
     try {
       TOpenSessionResp openResp = client.OpenSession(openReq);
@@ -427,31 +436,6 @@ public class HiveConnection implements java.sql.Connection {
           + jdbcURI + ": " + e.getMessage(), " 08S01", e);
     }
     isClosed = false;
-  }
-
-  private void configureConnection(String dbName) throws SQLException {
-    // set the hive variable in session state for local mode
-    if (isEmbeddedMode) {
-      if (!hiveVarMap.isEmpty()) {
-        SessionState.get().setHiveVariables(hiveVarMap);
-      }
-    } else {
-      // for remote JDBC client, try to set the conf var using 'set foo=bar'
-      Statement stmt = createStatement();
-      for (Entry<String, String> hiveConf : hiveConfMap.entrySet()) {
-        stmt.execute("set " + hiveConf.getKey() + "=" + hiveConf.getValue());
-      }
-
-      // For remote JDBC client, try to set the hive var using 'set hivevar:key=value'
-      for (Entry<String, String> hiveVar : hiveVarMap.entrySet()) {
-        stmt.execute("set hivevar:" + hiveVar.getKey() + "=" + hiveVar.getValue());
-      }
-      // if the client is setting a non-default db, then switch the database
-      if (!Utils.DEFAULT_DATABASE.equalsIgnoreCase(dbName)) {
-        stmt.execute("use " + dbName);
-      }
-      stmt.close();
-    }
   }
 
   /**
