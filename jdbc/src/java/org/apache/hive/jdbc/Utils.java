@@ -20,8 +20,7 @@ package org.apache.hive.jdbc;
 
 import java.net.URI;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,9 +50,9 @@ public class Utils {
     private String host = null;
     private int port;
     private String dbName = DEFAULT_DATABASE;
-    private Map<String,String> hiveConfs = new HashMap<String,String>();
-    private Map<String,String> hiveVars = new HashMap<String,String>();
-    private Map<String,String> sessionVars = new HashMap<String,String>();
+    private Map<String,String> hiveConfs = new LinkedHashMap<String,String>();
+    private Map<String,String> hiveVars = new LinkedHashMap<String,String>();
+    private Map<String,String> sessionVars = new LinkedHashMap<String,String>();
     private boolean isEmbeddedMode = false;
 
     public JdbcConnectionParams() {

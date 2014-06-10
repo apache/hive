@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.FetchFormatter;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
+import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -88,12 +89,6 @@ public class HiveSessionImpl implements HiveSession {
     this.hiveConf = new HiveConf(serverhiveConf);
     this.ipAddress = ipAddress;
 
-    //set conf properties specified by user from client side
-    if (sessionConfMap != null) {
-      for (Map.Entry<String, String> entry : sessionConfMap.entrySet()) {
-        hiveConf.verifyAndSet(entry.getKey(), entry.getValue());
-      }
-    }
     // set an explicit session name to control the download directory name
     hiveConf.set(ConfVars.HIVESESSIONID.varname,
         sessionHandle.getHandleIdentifier().toString());
@@ -101,9 +96,28 @@ public class HiveSessionImpl implements HiveSession {
     hiveConf.set(ListSinkOperator.OUTPUT_FORMATTER,
         FetchFormatter.ThriftFormatter.class.getName());
     hiveConf.setInt(ListSinkOperator.OUTPUT_PROTOCOL, protocol.getValue());
+
     sessionState = new SessionState(hiveConf, username);
     sessionState.setIsHiveServerQuery(true);
     SessionState.start(sessionState);
+
+    //set conf properties specified by user from client side
+    if (sessionConfMap != null) {
+      configureSession(sessionConfMap);
+    }
+  }
+
+  private void configureSession(Map<String, String> sessionConfMap) {
+    for (Map.Entry<String, String> entry : sessionConfMap.entrySet()) {
+      String key = entry.getKey();
+      if (key.startsWith("set:")) {
+        SetProcessor.setVariable(key.substring(4), entry.getValue());
+      } else if (key.startsWith("use:")) {
+        SessionState.get().setCurrentDatabase(entry.getValue());
+      } else {
+        hiveConf.verifyAndSet(key, entry.getValue());
+      }
+    }
   }
 
   @Override
