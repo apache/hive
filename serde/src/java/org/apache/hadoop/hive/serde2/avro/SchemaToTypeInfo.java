@@ -113,8 +113,8 @@ class SchemaToTypeInfo {
       int precision = 0;
       int scale = 0;
       try {
-        precision = schema.getJsonProp(AvroSerDe.AVRO_PROP_PRECISION).getValueAsInt();
-        scale = schema.getJsonProp(AvroSerDe.AVRO_PROP_SCALE).getValueAsInt(0);
+        precision = schema.getJsonProp(AvroSerDe.AVRO_PROP_PRECISION).getIntValue();
+        scale = schema.getJsonProp(AvroSerDe.AVRO_PROP_SCALE).getIntValue();
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain scale value from file schema: " + schema, ex);
       }
