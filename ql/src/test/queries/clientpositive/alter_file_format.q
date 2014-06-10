@@ -13,6 +13,9 @@ desc FORMATTED alter_file_format_test;
 alter table alter_file_format_test set fileformat sequencefile;
 desc FORMATTED alter_file_format_test;
 
+alter table alter_file_format_test set fileformat parquet;
+desc FORMATTED alter_file_format_test;
+
 ALTER TABLE alter_file_format_test SET FILEFORMAT INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat' SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe';
 desc FORMATTED alter_file_format_test;
 
@@ -34,6 +37,9 @@ alter table alter_partition_format_test partition(ds='2010') set fileformat rcfi
 desc FORMATTED alter_partition_format_test partition(ds='2010');
 
 alter table alter_partition_format_test partition(ds='2010') set fileformat sequencefile;
+desc FORMATTED alter_partition_format_test partition(ds='2010');
+
+alter table alter_partition_format_test partition(ds='2010') set fileformat parquet;
 desc FORMATTED alter_partition_format_test partition(ds='2010');
 
 drop table alter_partition_format_test;

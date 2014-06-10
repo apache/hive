@@ -1368,6 +1368,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       outputFormat = ORCFILE_OUTPUT;
       serde = ORCFILE_SERDE;
       break;
+    case HiveParser.TOK_TBLPARQUETFILE:
+      inputFormat = PARQUETFILE_INPUT;
+      outputFormat = PARQUETFILE_OUTPUT;
+      serde = PARQUETFILE_SERDE;
+      break;
     case HiveParser.TOK_FILEFORMAT_GENERIC:
       handleGenericFileFormat(child);
       break;
