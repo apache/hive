@@ -198,6 +198,7 @@ public class TopNHash {
     int index = size < topN ? size : evicted;
     keys[index] = Arrays.copyOf(key.getBytes(), key.getLength());
     distKeyLengths[index] = key.getDistKeyLength();
+    hashes[index] = key.hashCode();
     Integer collisionIndex = indexes.store(index);
     if (null != collisionIndex) {
       // forward conditional on the survival of the corresponding key currently in indexes.
@@ -256,6 +257,7 @@ public class TopNHash {
     int index = MAY_FORWARD - batchIndexToResult[batchIndex];
     HiveKey hk = new HiveKey();
     hk.set(keys[index], 0, keys[index].length);
+    hk.setHashCode(hashes[index]);
     hk.setDistKeyLength(distKeyLengths[index]);
     return hk;
   }
@@ -270,15 +272,23 @@ public class TopNHash {
   }
 
   /**
+   * After vectorized batch is processed, can return hashCode of a key.
+   * @param batchIndex index of the key in the batch.
+   * @return The hashCode corresponding to the key.
+   */
+  public int getVectorizedKeyHashCode(int batchIndex) {
+    return hashes[batchIndexToResult[batchIndex]];
+  }
+  
+  /**
    * Stores the value for the key in the heap.
    * @param index The index, either from tryStoreKey or from tryStoreVectorizedKey result.
    * @param value The value to store.
    * @param keyHash The key hash to store.
    * @param vectorized Whether the result is coming from a vectorized batch.
    */
-  public void storeValue(int index, BytesWritable value, int keyHash, boolean vectorized) {
+  public void storeValue(int index, BytesWritable value, boolean vectorized) {
     values[index] = Arrays.copyOf(value.getBytes(), value.getLength());
-    hashes[index] = keyHash;
     // Vectorized doesn't adjust usage for the keys while processing the batch
     usage += values[index].length + (vectorized ? keys[index].length : 0);
   }
@@ -317,6 +327,7 @@ public class TopNHash {
     int index = size < topN ? size : evicted;
     keys[index] = Arrays.copyOf(key.getBytes(), key.getLength());
     distKeyLengths[index] = key.getDistKeyLength();
+    hashes[index] = key.hashCode();
     if (null != indexes.store(index)) {
       // it's only for GBY which should forward all values associated with the key in the range
       // of limit. new value should be attatched with the key but in current implementation,
