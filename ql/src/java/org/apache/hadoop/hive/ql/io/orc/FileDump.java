@@ -17,20 +17,46 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
+import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 
 /**
  * A tool for printing out the file structure of ORC files.
  */
 public final class FileDump {
+  private static final String ROWINDEX_PREFIX = "--rowindex=";
 
   // not used
   private FileDump() {}
 
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
-    for(String filename: args) {
+    List<String> files = new ArrayList<String>();
+    List<Integer> rowIndexCols = null;
+    for (String arg : args) {
+      if (arg.startsWith("--")) {
+        if (arg.startsWith(ROWINDEX_PREFIX)) {
+          String[] colStrs = arg.substring(ROWINDEX_PREFIX.length()).split(",");
+          rowIndexCols = new ArrayList<Integer>(colStrs.length);
+          for (String colStr : colStrs) {
+            rowIndexCols.add(Integer.parseInt(colStr));
+          }
+        } else {
+          System.err.println("Unknown argument " + arg);
+        }
+      } else {
+        files.add(arg);
+      }
+    }
+
+    for (String filename : files) {
       System.out.println("Structure for " + filename);
       Path path = new Path(filename);
       Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
@@ -57,7 +83,9 @@ public final class FileDump {
         System.out.println("  Column " + i + ": " + stats[i].toString());
       }
       System.out.println("\nStripes:");
-      for(StripeInformation stripe: reader.getStripes()) {
+      int stripeIx = -1;
+      for (StripeInformation stripe : reader.getStripes()) {
+        ++stripeIx;
         long stripeStart = stripe.getOffset();
         System.out.println("  Stripe: " + stripe.toString());
         OrcProto.StripeFooter footer = rows.readStripeFooter(stripe);
@@ -68,7 +96,7 @@ public final class FileDump {
             " length " + section.getLength());
           sectionStart += section.getLength();
         }
-        for(int i=0; i < footer.getColumnsCount(); ++i) {
+        for (int i = 0; i < footer.getColumnsCount(); ++i) {
           OrcProto.ColumnEncoding encoding = footer.getColumns(i);
           StringBuilder buf = new StringBuilder();
           buf.append("    Encoding column ");
@@ -81,6 +109,42 @@ public final class FileDump {
             buf.append("]");
           }
           System.out.println(buf);
+        }
+        if (rowIndexCols != null) {
+          RowIndex[] indices = rows.readRowIndex(stripeIx);
+          for (int col : rowIndexCols) {
+            StringBuilder buf = new StringBuilder();
+            buf.append("    Column ").append(col).append(": row index");
+            RowIndex index = null;
+            if ((col >= indices.length) || ((index = indices[col]) == null)) {
+              buf.append(" not found\n");
+              continue;
+            }
+            for (int entryIx = 0; entryIx < index.getEntryCount(); ++entryIx) {
+              buf.append("      RG ").append(entryIx).append(": ");
+              RowIndexEntry entry = index.getEntry(entryIx);
+              if (entry == null) {
+                buf.append("unknown\n");
+                continue;
+              }
+              OrcProto.ColumnStatistics colStats = entry.getStatistics();
+              if (colStats == null) {
+                buf.append("no stats at ");
+              } else {
+                ColumnStatistics cs = ColumnStatisticsImpl.deserialize(colStats);
+                Object min = RecordReaderImpl.getMin(cs), max = RecordReaderImpl.getMax(cs);
+                buf.append("[").append(min).append(", ").append(max).append(") at ");
+              }
+              for (int posIx = 0; posIx < entry.getPositionsCount(); ++posIx) {
+                if (posIx != 0) {
+                  buf.append(",");
+                }
+                buf.append(entry.getPositions(posIx));
+              }
+              buf.append("\n");
+            }
+            System.out.println(buf);
+          }
         }
       }
       rows.close();
