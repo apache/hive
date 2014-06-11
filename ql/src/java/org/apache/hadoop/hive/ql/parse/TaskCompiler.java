@@ -132,6 +132,13 @@ public abstract class TaskCompiler {
         LOG.info("For FetchTask, LIMIT " + globalLimitCtx.getGlobalLimit() + " > " + fetchLimit
             + ". Doesn't qualify limit optimiztion.");
         globalLimitCtx.disableOpt();
+
+      }
+      if (qb.getParseInfo().getOuterQueryLimit() == 0) {
+        // Believe it or not, some tools do generate queries with limit 0 and than expect
+        // query to run quickly. Lets meet their requirement.
+        LOG.info("Limit 0. No query execution needed.");
+        return;
       }
     } else if (!isCStats) {
       for (LoadTableDesc ltd : loadTableWork) {
