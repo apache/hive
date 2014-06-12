@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.io.parquet.writable.BinaryWritable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -39,6 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -391,7 +391,7 @@ public class VectorColumnAssignFactory {
               assignNull(destIndex);
             }
             else {
-              BinaryWritable bw = (BinaryWritable) val;
+              BytesWritable bw = (BytesWritable) val;
               byte[] bytes = bw.getBytes();
               assignBytes(bytes, 0, bytes.length, destIndex);
             }
@@ -491,7 +491,7 @@ public class VectorColumnAssignFactory {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.DOUBLE);
       } else if (writables[i] instanceof Text) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.STRING);
-      } else if (writables[i] instanceof BinaryWritable) {
+      } else if (writables[i] instanceof BytesWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.BINARY);
       } else if (writables[i] instanceof TimestampWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.TIMESTAMP);

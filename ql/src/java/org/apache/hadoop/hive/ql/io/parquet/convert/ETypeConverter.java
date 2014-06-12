@@ -17,10 +17,10 @@ import java.math.BigDecimal;
 
 import java.util.ArrayList;
 
-import org.apache.hadoop.hive.ql.io.parquet.writable.BinaryWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -99,10 +99,10 @@ public enum ETypeConverter {
   EBINARY_CONVERTER(Binary.class) {
     @Override
     Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
-      return new BinaryConverter<BinaryWritable>(type, parent, index) {
+      return new BinaryConverter<BytesWritable>(type, parent, index) {
         @Override
-        protected BinaryWritable convert(Binary binary) {
-          return new BinaryWritable(binary);
+        protected BytesWritable convert(Binary binary) {
+          return new BytesWritable(binary.getBytes());
         }
       };
     }

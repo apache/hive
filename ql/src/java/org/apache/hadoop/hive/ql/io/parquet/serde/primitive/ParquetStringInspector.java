@@ -13,12 +13,13 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.serde.primitive;
 
-import org.apache.hadoop.hive.ql.io.parquet.writable.BinaryWritable;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.CharacterCodingException;
+
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableStringObjectInspector;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
-
-import parquet.io.api.Binary;
 
 /**
  * The ParquetStringInspector inspects a BinaryWritable to give a Text or String.
@@ -36,8 +37,8 @@ public class ParquetStringInspector extends JavaStringObjectInspector implements
       return null;
     }
 
-    if (o instanceof BinaryWritable) {
-      return new Text(((BinaryWritable) o).getBytes());
+    if (o instanceof BytesWritable) {
+      return new Text(((BytesWritable) o).getBytes());
     }
 
     if (o instanceof Text) {
@@ -57,8 +58,12 @@ public class ParquetStringInspector extends JavaStringObjectInspector implements
       return null;
     }
 
-    if (o instanceof BinaryWritable) {
-      return ((BinaryWritable) o).getString();
+    if (o instanceof BytesWritable) {
+      try {
+        return Text.decode(((BytesWritable) o).getBytes());
+      } catch (CharacterCodingException e) {
+        throw new RuntimeException("Failed to decode string", e);
+      }
     }
 
     if (o instanceof Text) {
@@ -74,12 +79,16 @@ public class ParquetStringInspector extends JavaStringObjectInspector implements
 
   @Override
   public Object set(final Object o, final Text text) {
-    return new BinaryWritable(text == null ? null : Binary.fromByteArray(text.getBytes()));
+    return new BytesWritable(text == null ? null : text.getBytes());
   }
 
   @Override
   public Object set(final Object o, final String string) {
-    return new BinaryWritable(string == null ? null : Binary.fromString(string));
+    try {
+      return new BytesWritable(string == null ? null : string.getBytes("UTF-8"));
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException("Failed to encode string in UTF-8", e);
+    }
   }
 
   @Override

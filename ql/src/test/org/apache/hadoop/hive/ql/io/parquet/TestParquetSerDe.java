@@ -19,7 +19,6 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
-import org.apache.hadoop.hive.ql.io.parquet.writable.BinaryWritable;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -27,8 +26,10 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 import parquet.io.api.Binary;
@@ -53,13 +54,13 @@ public class TestParquetSerDe extends TestCase {
       arr[2] = new IntWritable(789);
       arr[3] = new LongWritable(1000l);
       arr[4] = new DoubleWritable((double) 5.3);
-      arr[5] = new BinaryWritable(Binary.fromString("hive and hadoop and parquet. Big family."));
+      arr[5] = new BytesWritable("hive and hadoop and parquet. Big family.".getBytes("UTF-8"));
 
       final Writable[] mapContainer = new Writable[1];
       final Writable[] map = new Writable[3];
       for (int i = 0; i < 3; ++i) {
         final Writable[] pair = new Writable[2];
-        pair[0] = new BinaryWritable(Binary.fromString("key_" + i));
+        pair[0] = new BytesWritable(("key_" + i).getBytes("UTF-8"));
         pair[1] = new IntWritable(i);
         map[i] = new ArrayWritable(Writable.class, pair);
       }
@@ -69,7 +70,7 @@ public class TestParquetSerDe extends TestCase {
       final Writable[] arrayContainer = new Writable[1];
       final Writable[] array = new Writable[5];
       for (int i = 0; i < 5; ++i) {
-        array[i] = new BinaryWritable(Binary.fromString("elem_" + i));
+        array[i] = new BytesWritable(("elem_" + i).getBytes("UTF-8"));
       }
       arrayContainer[0] = new ArrayWritable(Writable.class, array);
       arr[7] = new ArrayWritable(Writable.class, arrayContainer);
