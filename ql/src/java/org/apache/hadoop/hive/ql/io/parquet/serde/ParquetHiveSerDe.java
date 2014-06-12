@@ -13,6 +13,7 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.serde;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +24,6 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.ql.io.parquet.writable.BinaryWritable;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -52,13 +52,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-
-import parquet.io.api.Binary;
 
 /**
  *
@@ -250,7 +249,12 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     case SHORT:
       return new ShortWritable((short) ((ShortObjectInspector) inspector).get(obj));
     case STRING:
-      return new BinaryWritable(Binary.fromString(((StringObjectInspector) inspector).getPrimitiveJavaObject(obj)));
+      String v = ((StringObjectInspector) inspector).getPrimitiveJavaObject(obj);
+      try {
+        return new BytesWritable(v.getBytes("UTF-8"));
+      } catch (UnsupportedEncodingException e) {
+        throw new SerDeException("Failed to encode string in UTF-8", e);
+      }
     case DECIMAL:
       HiveDecimal hd = (HiveDecimal)inspector.getPrimitiveJavaObject(obj);
       DecimalTypeInfo decTypeInfo = (DecimalTypeInfo) inspector.getTypeInfo();
@@ -261,7 +265,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
       int bytes =  PRECISION_TO_BYTE_COUNT[prec - 1];
       if (bytes == src.length) {
         // No padding needed.
-        return new BinaryWritable(Binary.fromByteArray(src));
+        return new BytesWritable(src);
       }
       byte[] tgt = new byte[bytes];
       if ( hd.signum() == -1) {
@@ -271,7 +275,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
         }
       }
       System.arraycopy(src, 0, tgt, bytes - src.length, src.length); // Padding leading zeroes/ones.
-      return new BinaryWritable(Binary.fromByteArray(tgt));
+      return new BytesWritable(tgt);
     default:
       throw new SerDeException("Unknown primitive : " + inspector.getPrimitiveCategory());
     }
