@@ -431,4 +431,10 @@ select p_name, p_retailprice,
 round(avg(p_retailprice) over(),2)
 from part
 order by p_name;
-        
+
+-- 45. empty partition test
+select p_mfgr, 
+  sum(p_size) over (partition by p_mfgr order by p_size rows between unbounded preceding and current row) 
+from part 
+where p_mfgr = 'Manufacturer#6'
+;
