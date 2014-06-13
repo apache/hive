@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -28,28 +27,23 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.UnionOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
-import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 
 /**
  * GenTezWork separates the operator tree into tez tasks.
@@ -136,7 +130,7 @@ public class GenTezWork implements NodeProcessor {
     if (!context.currentMapJoinOperators.isEmpty()) {
       for (MapJoinOperator mj: context.currentMapJoinOperators) {
         LOG.debug("Processing map join: " + mj);
-        // remember the mapping in case we scan another branch of the 
+        // remember the mapping in case we scan another branch of the
         // mapjoin later
         if (!context.mapJoinWorkMap.containsKey(mj)) {
           List<BaseWork> workItems = new LinkedList<BaseWork>();
@@ -175,7 +169,7 @@ public class GenTezWork implements NodeProcessor {
               LOG.debug("connecting "+parentWork.getName()+" with "+work.getName());
               TezEdgeProperty edgeProp = parentWorkMap.getValue();
               tezWork.connect(parentWork, work, edgeProp);
-              
+
               // need to set up output name for reduce sink now that we know the name
               // of the downstream work
               for (ReduceSinkOperator r:
@@ -206,7 +200,7 @@ public class GenTezWork implements NodeProcessor {
       root.removeParent(parent);
     }
 
-    if (!context.currentUnionOperators.isEmpty()) {      
+    if (!context.currentUnionOperators.isEmpty()) {
       // if there are union all operators we need to add the work to the set
       // of union operators.
 
@@ -249,6 +243,7 @@ public class GenTezWork implements NodeProcessor {
     if (context.leafOperatorToFollowingWork.containsKey(operator)) {
 
       BaseWork followingWork = context.leafOperatorToFollowingWork.get(operator);
+      long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
 
       LOG.debug("Second pass. Leaf operator: "+operator
         +" has common downstream work:"+followingWork);
@@ -268,7 +263,14 @@ public class GenTezWork implements NodeProcessor {
 
       if (!context.connectedReduceSinks.contains(rs)) {
         // add dependency between the two work items
-        TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.SIMPLE_EDGE);
+        TezEdgeProperty edgeProp;
+        if (rWork.isAutoReduceParallelism()) {
+          edgeProp =
+              new TezEdgeProperty(context.conf, EdgeType.SIMPLE_EDGE, true,
+                  rWork.getMinReduceTasks(), rWork.getMaxReduceTasks(), bytesPerReducer);
+        } else {
+          edgeProp = new TezEdgeProperty(EdgeType.SIMPLE_EDGE);
+        }
         tezWork.connect(work, rWork, edgeProp);
         context.connectedReduceSinks.add(rs);
       }

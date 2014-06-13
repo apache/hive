@@ -1,16 +1,12 @@
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 
 public class TezEdgeProperty {
-  
+
   public enum EdgeType {
     SIMPLE_EDGE,
-    BROADCAST_EDGE, 
+    BROADCAST_EDGE,
     CONTAINS,
     CUSTOM_EDGE,
     CUSTOM_SIMPLE_EDGE,
@@ -20,11 +16,25 @@ public class TezEdgeProperty {
   private EdgeType edgeType;
   private int numBuckets;
 
-  public TezEdgeProperty(HiveConf hiveConf, EdgeType edgeType, 
+  private boolean isAutoReduce;
+  private int minReducer;
+  private int maxReducer;
+  private long inputSizePerReducer;
+
+  public TezEdgeProperty(HiveConf hiveConf, EdgeType edgeType,
       int buckets) {
     this.hiveConf = hiveConf;
     this.edgeType = edgeType;
     this.numBuckets = buckets;
+  }
+
+  public TezEdgeProperty(HiveConf hiveConf, EdgeType edgeType, boolean isAutoReduce,
+      int minReducer, int maxReducer, long bytesPerReducer) {
+    this(hiveConf, edgeType, -1);
+    this.minReducer = minReducer;
+    this.maxReducer = maxReducer;
+    this.isAutoReduce = isAutoReduce;
+    this.inputSizePerReducer = bytesPerReducer;
   }
 
   public TezEdgeProperty(EdgeType edgeType) {
@@ -41,5 +51,21 @@ public class TezEdgeProperty {
 
   public int getNumBuckets() {
     return numBuckets;
+  }
+
+  public boolean isAutoReduce() {
+    return isAutoReduce;
+  }
+
+  public int getMinReducer() {
+    return minReducer;
+  }
+
+  public int getMaxReducer() {
+    return maxReducer;
+  }
+
+  public long getInputSizePerReducer() {
+    return inputSizePerReducer;
   }
 }

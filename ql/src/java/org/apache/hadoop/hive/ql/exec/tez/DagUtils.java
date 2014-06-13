@@ -40,7 +40,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -94,9 +93,10 @@ import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
+import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
-import org.apache.tez.dag.api.VertexGroup;
+import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
@@ -114,6 +114,7 @@ import org.apache.tez.runtime.library.output.OnFileUnorderedPartitionedKVOutput;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.protobuf.ByteString;
 
 /**
  * DagUtils. DagUtils is a collection of helper methods to convert
@@ -210,6 +211,7 @@ public class DagUtils {
    * @param edgeProp the edge property of connection between the two
    * endpoints.
    */
+  @SuppressWarnings("rawtypes")
   public GroupInputEdge createEdge(VertexGroup group, JobConf wConf,
       Vertex w, TezEdgeProperty edgeProp)
     throws IOException {
@@ -221,27 +223,31 @@ public class DagUtils {
 
     EdgeType edgeType = edgeProp.getEdgeType();
     switch (edgeType) {
-      case BROADCAST_EDGE:
-        mergeInputClass = ConcatenatedMergedKeyValueInput.class;
-        break;
-      case CUSTOM_EDGE:
-        mergeInputClass = ConcatenatedMergedKeyValueInput.class;
-        int numBuckets = edgeProp.getNumBuckets();
-        VertexManagerPluginDescriptor desc = new VertexManagerPluginDescriptor(
-            CustomPartitionVertex.class.getName());
-        byte[] userPayload = ByteBuffer.allocate(4).putInt(numBuckets).array();
-        desc.setUserPayload(userPayload);
-        w.setVertexManagerPlugin(desc);
-        break;
+    case BROADCAST_EDGE:
+      mergeInputClass = ConcatenatedMergedKeyValueInput.class;
+      break;
+    case CUSTOM_EDGE: {
+      mergeInputClass = ConcatenatedMergedKeyValueInput.class;
+      int numBuckets = edgeProp.getNumBuckets();
+      VertexManagerPluginDescriptor desc =
+          new VertexManagerPluginDescriptor(CustomPartitionVertex.class.getName());
+      byte[] userPayload = ByteBuffer.allocate(4).putInt(numBuckets).array();
+      desc.setUserPayload(userPayload);
+      w.setVertexManagerPlugin(desc);
+      break;
+    }
 
-      case CUSTOM_SIMPLE_EDGE:
-        mergeInputClass = ConcatenatedMergedKeyValueInput.class;
-        break;
+    case CUSTOM_SIMPLE_EDGE:
+      mergeInputClass = ConcatenatedMergedKeyValueInput.class;
+      break;
 
-      case SIMPLE_EDGE:
-      default:
-        mergeInputClass = TezMergedLogicalInput.class;
-        break;
+    case SIMPLE_EDGE:
+      setupAutoReducerParallelism(edgeProp, w);
+      // fall through
+
+    default:
+      mergeInputClass = TezMergedLogicalInput.class;
+      break;
     }
 
     return new GroupInputEdge(group, w, createEdgeProperty(edgeProp),
@@ -278,13 +284,22 @@ public class DagUtils {
 
     updateConfigurationForEdge(vConf, v, wConf, w);
 
-    if (edgeProp.getEdgeType() == EdgeType.CUSTOM_EDGE) {
+    switch(edgeProp.getEdgeType()) {
+    case CUSTOM_EDGE: {
       int numBuckets = edgeProp.getNumBuckets();
       byte[] userPayload = ByteBuffer.allocate(4).putInt(numBuckets).array();
       VertexManagerPluginDescriptor desc = new VertexManagerPluginDescriptor(
           CustomPartitionVertex.class.getName());
       desc.setUserPayload(userPayload);
       w.setVertexManagerPlugin(desc);
+      break;
+    }
+    case SIMPLE_EDGE: {
+      setupAutoReducerParallelism(edgeProp, w);
+      break;
+    }
+    default:
+      // nothing
     }
 
     return new Edge(v, w, createEdgeProperty(edgeProp));
@@ -293,6 +308,7 @@ public class DagUtils {
   /*
    * Helper function to create an edge property from an edge type.
    */
+  @SuppressWarnings("rawtypes")
   private EdgeProperty createEdgeProperty(TezEdgeProperty edgeProp) throws IOException {
     DataMovementType dataMovementType;
     Class logicalInputClass;
@@ -301,45 +317,44 @@ public class DagUtils {
     EdgeProperty edgeProperty = null;
     EdgeType edgeType = edgeProp.getEdgeType();
     switch (edgeType) {
-      case BROADCAST_EDGE:
-        dataMovementType = DataMovementType.BROADCAST;
-        logicalOutputClass = OnFileUnorderedKVOutput.class;
-        logicalInputClass = ShuffledUnorderedKVInput.class;
-        break;
+    case BROADCAST_EDGE:
+      dataMovementType = DataMovementType.BROADCAST;
+      logicalOutputClass = OnFileUnorderedKVOutput.class;
+      logicalInputClass = ShuffledUnorderedKVInput.class;
+      break;
 
-      case CUSTOM_EDGE:
-
-        dataMovementType = DataMovementType.CUSTOM;
-        logicalOutputClass = OnFileUnorderedPartitionedKVOutput.class;
-        logicalInputClass = ShuffledUnorderedKVInput.class;
-        EdgeManagerDescriptor edgeDesc = new EdgeManagerDescriptor(
-            CustomPartitionEdge.class.getName());
-        CustomEdgeConfiguration edgeConf =
-            new CustomEdgeConfiguration(edgeProp.getNumBuckets(), null);
-          DataOutputBuffer dob = new DataOutputBuffer();
-          edgeConf.write(dob);
-          byte[] userPayload = dob.getData();
-        edgeDesc.setUserPayload(userPayload);
-        edgeProperty =
+    case CUSTOM_EDGE:
+      dataMovementType = DataMovementType.CUSTOM;
+      logicalOutputClass = OnFileUnorderedPartitionedKVOutput.class;
+      logicalInputClass = ShuffledUnorderedKVInput.class;
+      EdgeManagerDescriptor edgeDesc =
+          new EdgeManagerDescriptor(CustomPartitionEdge.class.getName());
+      CustomEdgeConfiguration edgeConf =
+          new CustomEdgeConfiguration(edgeProp.getNumBuckets(), null);
+      DataOutputBuffer dob = new DataOutputBuffer();
+      edgeConf.write(dob);
+      byte[] userPayload = dob.getData();
+      edgeDesc.setUserPayload(userPayload);
+      edgeProperty =
           new EdgeProperty(edgeDesc,
               DataSourceType.PERSISTED,
               SchedulingType.SEQUENTIAL,
               new OutputDescriptor(logicalOutputClass.getName()),
               new InputDescriptor(logicalInputClass.getName()));
-        break;
+      break;
 
-      case CUSTOM_SIMPLE_EDGE:
-        dataMovementType = DataMovementType.SCATTER_GATHER;
-        logicalOutputClass = OnFileUnorderedPartitionedKVOutput.class;
-        logicalInputClass = ShuffledUnorderedKVInput.class;
-        break;
+    case CUSTOM_SIMPLE_EDGE:
+      dataMovementType = DataMovementType.SCATTER_GATHER;
+      logicalOutputClass = OnFileUnorderedPartitionedKVOutput.class;
+      logicalInputClass = ShuffledUnorderedKVInput.class;
+      break;
 
-      case SIMPLE_EDGE:
-      default:
-        dataMovementType = DataMovementType.SCATTER_GATHER;
-        logicalOutputClass = OnFileSortedOutput.class;
-        logicalInputClass = ShuffledMergedInputLegacy.class;
-        break;
+    case SIMPLE_EDGE:
+    default:
+      dataMovementType = DataMovementType.SCATTER_GATHER;
+      logicalOutputClass = OnFileSortedOutput.class;
+      logicalInputClass = ShuffledMergedInputLegacy.class;
+      break;
     }
 
     if (edgeProperty == null) {
@@ -360,7 +375,6 @@ public class DagUtils {
    * container size isn't set.
    */
   private Resource getContainerResource(Configuration conf) {
-    Resource containerResource;
     int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0 ?
       HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
       conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
@@ -414,7 +428,7 @@ public class DagUtils {
     boolean useTezGroupedSplits = false;
 
     int numTasks = -1;
-    Class amSplitGeneratorClass = null;
+    Class<HiveSplitGenerator> amSplitGeneratorClass = null;
     InputSplitInfo inputSplitInfo = null;
     Class inputFormatClass = conf.getClass("mapred.input.format.class",
         InputFormat.class);
@@ -533,7 +547,8 @@ public class DagUtils {
     Vertex reducer = new Vertex(reduceWork.getName(),
         new ProcessorDescriptor(ReduceTezProcessor.class.getName()).
         setUserPayload(MRHelpers.createUserPayloadFromConf(conf)),
-        reduceWork.getNumReduceTasks(), getContainerResource(conf));
+            reduceWork.isAutoReduceParallelism() ? reduceWork.getMaxReduceTasks() : reduceWork
+                .getNumReduceTasks(), getContainerResource(conf));
 
     Map<String, String> environment = new HashMap<String, String>();
 
@@ -812,7 +827,7 @@ public class DagUtils {
         for (int i = 0; i < waitAttempts; i++) {
           if (!checkPreExisting(src, dest, conf)) {
             try {
-              Thread.currentThread().sleep(sleepInterval);
+              Thread.sleep(sleepInterval);
             } catch (InterruptedException interruptedException) {
               throw new IOException(interruptedException);
             }
@@ -999,6 +1014,25 @@ public class DagUtils {
       instance = new DagUtils();
     }
     return instance;
+  }
+
+  private void setupAutoReducerParallelism(TezEdgeProperty edgeProp, Vertex v)
+    throws IOException {
+    if (edgeProp.isAutoReduce()) {
+      Configuration pluginConf = new Configuration(false);
+      VertexManagerPluginDescriptor desc =
+          new VertexManagerPluginDescriptor(ShuffleVertexManager.class.getName());
+      pluginConf.setBoolean(
+          ShuffleVertexManager.TEZ_AM_SHUFFLE_VERTEX_MANAGER_ENABLE_AUTO_PARALLEL, true);
+      pluginConf.setInt(ShuffleVertexManager.TEZ_AM_SHUFFLE_VERTEX_MANAGER_MIN_TASK_PARALLELISM,
+          edgeProp.getMinReducer());
+      pluginConf.setLong(
+          ShuffleVertexManager.TEZ_AM_SHUFFLE_VERTEX_MANAGER_DESIRED_TASK_INPUT_SIZE,
+          edgeProp.getInputSizePerReducer());
+      ByteString payload = MRHelpers.createByteStringFromConf(pluginConf);
+      desc.setUserPayload(payload.toByteArray());
+      v.setVertexManagerPlugin(desc);
+    }
   }
 
   private DagUtils() {
