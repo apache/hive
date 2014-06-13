@@ -2314,3 +2314,19 @@ almond aquamarine sandy cyan gainsboro	1701.6	1546.78
 almond aquamarine yellow dodger mint	1844.92	1546.78
 almond azure aquamarine papaya violet	1290.35	1546.78
 almond azure blanched chiffon midnight	1464.48	1546.78
+PREHOOK: query: -- 45. empty partition test
+select p_mfgr, 
+  sum(p_size) over (partition by p_mfgr order by p_size rows between unbounded preceding and current row) 
+from part 
+where p_mfgr = 'Manufacturer#6'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- 45. empty partition test
+select p_mfgr, 
+  sum(p_size) over (partition by p_mfgr order by p_size rows between unbounded preceding and current row) 
+from part 
+where p_mfgr = 'Manufacturer#6'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
