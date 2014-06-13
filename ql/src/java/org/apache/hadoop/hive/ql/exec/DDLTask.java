@@ -92,6 +92,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateTask;
@@ -3700,7 +3701,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           MetadataTypedColumnsetSerDe.class.getName())
           && !tbl.getSerializationLib().equals(LazySimpleSerDe.class.getName())
           && !tbl.getSerializationLib().equals(ColumnarSerDe.class.getName())
-          && !tbl.getSerializationLib().equals(DynamicSerDe.class.getName())) {
+          && !tbl.getSerializationLib().equals(DynamicSerDe.class.getName()) 
+          && !tbl.getSerializationLib().equals(ParquetHiveSerDe.class.getName())) {
         throw new HiveException(ErrorMsg.CANNOT_REPLACE_COLUMNS, alterTbl.getOldName());
       }
       tbl.getTTable().getSd().setCols(alterTbl.getNewCols());
