@@ -2779,4 +2779,26 @@
   joins unnecessary memory will be allocated and then trimmed.</description>
 </property>
 
+<property>
+  <name>hive.tez.auto.reducer.parallelism</name>
+  <value>false</value>
+  <description>Turn on Tez' auto reducer parallelism feature. When enabled, Hive will still estimate data sizes
+  and set parallelism estimates. Tez will sample source vertices' output sizes and adjust the estimates at runtime as
+  necessary.</description>
+</property>
+
+<property>
+  <name>hive.tez.max.partition.factor</name>
+  <value>2f</value>
+  <description>When auto reducer parallelism is enabled this factor will be used to over-partition data in shuffle
+  edges.</description>
+</property>
+
+<property>
+  <name>hive.tez.min.partition.factor</name>
+  <value>0.25f</value>
+  <description>When auto reducer parallelism is enabled this factor will be used to put a lower limit to the number
+  of reducers that tez specifies.</description>
+</property>
+
 </configuration>

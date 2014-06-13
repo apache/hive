@@ -190,8 +190,8 @@ public class HiveConf extends Configuration {
     COMPRESSINTERMEDIATE("hive.exec.compress.intermediate", false),
     COMPRESSINTERMEDIATECODEC("hive.intermediate.compression.codec", ""),
     COMPRESSINTERMEDIATETYPE("hive.intermediate.compression.type", ""),
-    BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long) (1000 * 1000 * 1000)),
-    MAXREDUCERS("hive.exec.reducers.max", 999),
+    BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long) (256 * 1000 * 1000)),
+    MAXREDUCERS("hive.exec.reducers.max", 1009), // pick a prime
     PREEXECHOOKS("hive.exec.pre.hooks", ""),
     POSTEXECHOOKS("hive.exec.post.hooks", ""),
     ONFAILUREHOOKS("hive.exec.failure.hooks", ""),
@@ -1028,6 +1028,9 @@ public class HiveConf extends Configuration {
     HIVE_CHECK_CROSS_PRODUCT("hive.exec.check.crossproducts", true),
     HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL("hive.localize.resource.wait.interval", 5000L), // in ms
     HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS("hive.localize.resource.num.wait.attempts", 5),
+    TEZ_AUTO_REDUCER_PARALLELISM("hive.tez.auto.reducer.parallelism", false),
+    TEZ_MAX_PARTITION_FACTOR("hive.tez.max.partition.factor", 2f),
+    TEZ_MIN_PARTITION_FACTOR("hive.tez.min.partition.factor", 0.25f)
     ;
 
     public final String varname;

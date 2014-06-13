@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,7 +42,7 @@ import org.apache.hadoop.mapred.JobConf;
  * distributed on the cluster. The ExecReducer will ultimately deserialize this
  * class on the data nodes and setup it's operator pipeline accordingly.
  *
- * This class is also used in the explain command any property with the 
+ * This class is also used in the explain command any property with the
  * appropriate annotation will be displayed in the explain output.
  */
 @SuppressWarnings({"serial", "deprecation"})
@@ -69,11 +69,20 @@ public class ReduceWork extends BaseWork {
   // desired parallelism of the reduce task.
   private Integer numReduceTasks;
 
-  // boolean to signal whether tagging will be used (e.g.: join) or 
+  // boolean to signal whether tagging will be used (e.g.: join) or
   // not (e.g.: group by)
   private boolean needsTagging;
 
   private Map<Integer, String> tagToInput = new HashMap<Integer, String>();
+
+  // boolean that says whether tez auto reduce parallelism should be used
+  private boolean isAutoReduceParallelism;
+
+  // for auto reduce parallelism - minimum reducers requested
+  private int minReduceTasks;
+
+  // for auto reduce parallelism - max reducers requested
+  private int maxReduceTasks;
 
   /**
    * If the plan has a reducer and correspondingly a reduce-sink, then store the TableDesc pointing
@@ -157,11 +166,36 @@ public class ReduceWork extends BaseWork {
     this.numReduceTasks = numReduceTasks;
   }
 
+  @Override
   public void configureJobConf(JobConf job) {
     if (reducer != null) {
       for (FileSinkOperator fs : OperatorUtils.findOperators(reducer, FileSinkOperator.class)) {
         PlanUtils.configureJobConf(fs.getConf().getTableInfo(), job);
       }
     }
+  }
+
+  public void setAutoReduceParallelism(boolean isAutoReduceParallelism) {
+    this.isAutoReduceParallelism = isAutoReduceParallelism;
+  }
+
+  public boolean isAutoReduceParallelism() {
+    return isAutoReduceParallelism;
+  }
+
+  public void setMinReduceTasks(int minReduceTasks) {
+    this.minReduceTasks = minReduceTasks;
+  }
+
+  public int getMinReduceTasks() {
+    return minReduceTasks;
+  }
+
+  public int getMaxReduceTasks() {
+    return maxReduceTasks;
+  }
+
+  public void setMaxReduceTasks(int maxReduceTasks) {
+    this.maxReduceTasks = maxReduceTasks;
   }
 }
