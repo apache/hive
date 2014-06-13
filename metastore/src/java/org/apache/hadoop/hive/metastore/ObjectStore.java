@@ -3167,7 +3167,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
         List<MPartitionColumnPrivilege> partColumnGrants = listPrincipalAllPartitionColumnGrants(
             mRol.getRoleName(), PrincipalType.ROLE);
-        if (tblColumnGrants.size() > 0) {
+        if (partColumnGrants.size() > 0) {
           pm.deletePersistentAll(partColumnGrants);
         }
         // finally remove the role
