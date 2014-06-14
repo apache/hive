@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hive.hcatalog.templeton.tool.JobState;
+import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 import org.apache.hive.hcatalog.templeton.tool.ZooKeeperCleanup;
 import org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage;
 
@@ -313,7 +314,7 @@ public class AppConfig extends Configuration {
     //since raw data was (possibly) escaped to make split work,
     //now need to remove escape chars so they don't interfere with downstream processing
     for(int i = 0; i < props.length; i++) {
-      props[i] = StringUtils.unEscapeString(props[i]);
+      props[i] = TempletonUtils.unEscapeString(props[i]);
     }
     return Arrays.asList(props);
   }
