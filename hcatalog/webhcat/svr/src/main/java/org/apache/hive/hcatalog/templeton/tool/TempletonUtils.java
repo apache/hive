@@ -347,4 +347,11 @@ public class TempletonUtils {
       args.add("call");
     }
   }
+
+  /**
+   * replaces all occurrences of "\," with ","; returns {@code s} if no modifications needed
+   */
+  public static String unEscapeString(String s) {
+    return s != null && s.contains("\\,") ? StringUtils.unEscapeString(s) : s;
+  }
 }
