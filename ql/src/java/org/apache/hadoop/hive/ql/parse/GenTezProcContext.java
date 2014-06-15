@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -147,24 +147,24 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.outputs = outputs;
     this.currentTask = (TezTask) TaskFactory.get(
          new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
-    this.leafOperatorToFollowingWork = new HashMap<Operator<?>, BaseWork>();
-    this.linkOpWithWorkMap = new HashMap<Operator<?>, Map<BaseWork, TezEdgeProperty>>();
-    this.linkWorkWithReduceSinkMap = new HashMap<BaseWork, List<ReduceSinkOperator>>();
-    this.mapJoinWorkMap = new HashMap<MapJoinOperator, List<BaseWork>>();
-    this.rootToWorkMap = new HashMap<Operator<?>, BaseWork>();
-    this.childToWorkMap = new HashMap<Operator<?>, List<BaseWork>>();
-    this.mapJoinParentMap = new HashMap<MapJoinOperator, List<Operator<?>>>();
-    this.currentMapJoinOperators = new HashSet<MapJoinOperator>();
-    this.linkChildOpWithDummyOp = new HashMap<Operator<?>, List<Operator<?>>>();
+    this.leafOperatorToFollowingWork = new LinkedHashMap<Operator<?>, BaseWork>();
+    this.linkOpWithWorkMap = new LinkedHashMap<Operator<?>, Map<BaseWork, TezEdgeProperty>>();
+    this.linkWorkWithReduceSinkMap = new LinkedHashMap<BaseWork, List<ReduceSinkOperator>>();
+    this.mapJoinWorkMap = new LinkedHashMap<MapJoinOperator, List<BaseWork>>();
+    this.rootToWorkMap = new LinkedHashMap<Operator<?>, BaseWork>();
+    this.childToWorkMap = new LinkedHashMap<Operator<?>, List<BaseWork>>();
+    this.mapJoinParentMap = new LinkedHashMap<MapJoinOperator, List<Operator<?>>>();
+    this.currentMapJoinOperators = new LinkedHashSet<MapJoinOperator>();
+    this.linkChildOpWithDummyOp = new LinkedHashMap<Operator<?>, List<Operator<?>>>();
     this.dependencyTask = (DependencyCollectionTask)
         TaskFactory.get(new DependencyCollectionWork(), conf);
-    this.unionWorkMap = new HashMap<Operator<?>, BaseWork>();
+    this.unionWorkMap = new LinkedHashMap<Operator<?>, BaseWork>();
     this.currentUnionOperators = new LinkedList<UnionOperator>();
-    this.workWithUnionOperators = new HashSet<BaseWork>();
-    this.clonedReduceSinks = new HashSet<ReduceSinkOperator>();
-    this.linkedFileSinks = new HashMap<Path, List<FileSinkDesc>>();
-    this.fileSinkSet = new HashSet<FileSinkOperator>();
-    this.connectedReduceSinks = new HashSet<ReduceSinkOperator>();
+    this.workWithUnionOperators = new LinkedHashSet<BaseWork>();
+    this.clonedReduceSinks = new LinkedHashSet<ReduceSinkOperator>();
+    this.linkedFileSinks = new LinkedHashMap<Path, List<FileSinkDesc>>();
+    this.fileSinkSet = new LinkedHashSet<FileSinkOperator>();
+    this.connectedReduceSinks = new LinkedHashSet<ReduceSinkOperator>();
 
     rootTasks.add(currentTask);
   }
