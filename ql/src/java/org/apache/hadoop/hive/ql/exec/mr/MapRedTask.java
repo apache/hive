@@ -276,6 +276,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
       int exitVal = jobExecHelper.progressLocal(executor, getId());
 
+      // wait for stream threads to finish
+      outPrinter.join();
+      errPrinter.join();
+
       if (exitVal != 0) {
         LOG.error("Execution failed with exit status: " + exitVal);
         if (SessionState.get() != null) {

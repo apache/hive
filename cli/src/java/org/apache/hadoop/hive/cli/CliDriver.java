@@ -148,6 +148,11 @@ public class CliDriver {
         errPrinter.start();
 
         ret = executor.waitFor();
+
+        // wait for stream threads to finish
+        outPrinter.join();
+        errPrinter.join();
+
         if (ret != 0) {
           console.printError("Command failed with exit code = " + ret);
         }
