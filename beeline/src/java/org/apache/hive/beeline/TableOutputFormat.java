@@ -66,13 +66,16 @@ class TableOutputFormat implements OutputFormat {
             .truncate(headerCols.getVisibleLength());
       }
 
-      if (index == 0 ||
-          (beeLine.getOpts().getHeaderInterval() > 0
-              && index % beeLine.getOpts().getHeaderInterval() == 0
-              && beeLine.getOpts().getShowHeader())) {
-        printRow(header, true);
-        printRow(headerCols, false);
-        printRow(header, true);
+      if (beeLine.getOpts().getShowHeader()) {
+        if (index == 0 ||
+            (index - 1 > 0 && ((index - 1) % beeLine.getOpts().getHeaderInterval() == 0))
+           ) {
+          printRow(header, true);
+          printRow(headerCols, false);
+          printRow(header, true);
+        }
+      } else if (index == 0) {
+          printRow(header, true);
       }
 
       if (index != 0) {
@@ -81,7 +84,7 @@ class TableOutputFormat implements OutputFormat {
       index++;
     }
 
-    if (header != null && beeLine.getOpts().getShowHeader()) {
+    if (header != null) {
       printRow(header, true);
     }
 
