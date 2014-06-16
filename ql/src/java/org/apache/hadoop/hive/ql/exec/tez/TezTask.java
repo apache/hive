@@ -120,33 +120,28 @@ public class TezTask extends Task<TezWork> {
 
       // create the tez tmp dir
       scratchDir = utils.createTezDir(scratchDir, conf);
-      boolean hasResources = session.hasResources(inputOutputJars);
-
-      if (ss.hasAddedResource()) {
-        // need to re-launch session because of new added jars.
-        hasResources = false;
-        // reset the added resource flag for this session since we would
-        // relocalize (either by restarting or relocalizing) due to the above
-        // hasResources flag.
-        ss.setAddedResource(false);
-      }
-
-      // If we have any jars from input format, we need to restart the session because
-      // AM will need them; so, AM has to be restarted. What a mess...
-      if (!hasResources && session.isOpen()) {
-        LOG.info("Tez session being reopened to pass custom jars to AM");
-        TezSessionPoolManager.getInstance().close(session);
-        session = TezSessionPoolManager.getInstance().getSession(null, conf, false);
-        ss.setTezSession(session);
-      }
 
       if (!session.isOpen()) {
         // can happen if the user sets the tez flag after the session was
         // established
         LOG.info("Tez session hasn't been created yet. Opening session");
         session.open(conf, inputOutputJars);
+      } else {
+        session.refreshLocalResourcesFromConf(conf);
       }
+
       List<LocalResource> additionalLr = session.getLocalizedResources();
+      
+      // log which resources we're adding (apart from the hive exec)
+      if (LOG.isDebugEnabled()) {
+        if (additionalLr == null || additionalLr.size() == 0) {
+          LOG.debug("No local resources to process (other than hive-exec)");
+        } else {
+          for (LocalResource lr: additionalLr) {
+            LOG.debug("Adding local resource: " + lr.getResource());
+          }
+        }
+      }
 
       // unless already installed on all the cluster nodes, we'll have to
       // localize hive-exec.jar as well.
@@ -156,7 +151,7 @@ public class TezTask extends Task<TezWork> {
       DAG dag = build(jobConf, work, scratchDir, appJarLr, additionalLr, ctx);
 
       // submit will send the job to the cluster and start executing
-      client = submit(jobConf, dag, scratchDir, appJarLr, session);
+      client = submit(jobConf, dag, scratchDir, appJarLr, session, additionalLr);
 
       // finally monitor will print progress until the job is done
       TezJobMonitor monitor = new TezJobMonitor();
@@ -290,15 +285,23 @@ public class TezTask extends Task<TezWork> {
   }
 
   DAGClient submit(JobConf conf, DAG dag, Path scratchDir,
-      LocalResource appJarLr, TezSessionState sessionState)
+      LocalResource appJarLr, TezSessionState sessionState,
+      List<LocalResource> additionalLr)
       throws Exception {
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     DAGClient dagClient = null;
 
+    Map<String, LocalResource> resourceMap = new HashMap<String, LocalResource>();
+    if (additionalLr != null) {
+      for (LocalResource lr: additionalLr) {
+        resourceMap.put(utils.getBaseName(lr), lr);
+      }
+    }
+
     try {
       // ready to start execution on the cluster
-      dagClient = sessionState.getSession().submitDAG(dag);
+      dagClient = sessionState.getSession().submitDAG(dag, resourceMap);
     } catch (SessionNotRunning nr) {
       console.printInfo("Tez session was closed. Reopening...");
 
@@ -306,7 +309,7 @@ public class TezTask extends Task<TezWork> {
       TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf);
       console.printInfo("Session re-established.");
 
-      dagClient = sessionState.getSession().submitDAG(dag);
+      dagClient = sessionState.getSession().submitDAG(dag, resourceMap);
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
