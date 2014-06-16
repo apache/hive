@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.security.auth.login.LoginException;
@@ -76,8 +77,8 @@ public class TezSessionState {
   private boolean defaultQueue = false;
   private String user;
 
-  private HashSet<String> additionalFilesNotFromConf = null;
-  private List<LocalResource> localizedResources;
+  private final Set<String> additionalFilesNotFromConf = new HashSet<String>();
+  private final Set<LocalResource> localizedResources = new HashSet<LocalResource>();
 
   private static List<TezSessionState> openSessions
     = Collections.synchronizedList(new LinkedList<TezSessionState>());
@@ -143,21 +144,14 @@ public class TezSessionState {
     // create the tez tmp dir
     tezScratchDir = createTezDir(sessionId);
 
-    String dir = tezScratchDir.toString();
-    // Localize resources to session scratch dir
-    localizedResources = utils.localizeTempFilesFromConf(dir, conf);
-    List<LocalResource> handlerLr = utils.localizeTempFiles(dir, conf, additionalFiles);
-    if (handlerLr != null) {
-      if (localizedResources == null) {
-        localizedResources = handlerLr;
-      } else {
-        localizedResources.addAll(handlerLr);
-      }
-      additionalFilesNotFromConf = new HashSet<String>();
+    additionalFilesNotFromConf.clear();
+    if (additionalFiles != null) {
       for (String originalFile : additionalFiles) {
         additionalFilesNotFromConf.add(originalFile);
       }
     }
+
+    refreshLocalResourcesFromConf(conf);
 
     // generate basic tez config
     TezConfiguration tezConfig = new TezConfiguration(conf);
@@ -171,10 +165,8 @@ public class TezSessionState {
     // configuration for the application master
     Map<String, LocalResource> commonLocalResources = new HashMap<String, LocalResource>();
     commonLocalResources.put(utils.getBaseName(appJarLr), appJarLr);
-    if (localizedResources != null) {
-      for (LocalResource lr : localizedResources) {
-        commonLocalResources.put(utils.getBaseName(lr), lr);
-      }
+    for (LocalResource lr : localizedResources) {
+      commonLocalResources.put(utils.getBaseName(lr), lr);
     }
 
     // Create environment for AM.
@@ -216,9 +208,31 @@ public class TezSessionState {
     openSessions.add(this);
   }
 
+  public void refreshLocalResourcesFromConf(HiveConf conf)
+    throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
+
+    String dir = tezScratchDir.toString();
+
+    localizedResources.clear();
+
+    // these are local resources set through add file, jar, etc
+    List<LocalResource> lrs = utils.localizeTempFilesFromConf(dir, conf);
+    if (lrs != null) {
+      localizedResources.addAll(lrs);
+    }
+
+    // these are local resources that are set through the mr "tmpjars" property
+    List<LocalResource> handlerLr = utils.localizeTempFiles(dir, conf,
+      additionalFilesNotFromConf.toArray(new String[additionalFilesNotFromConf.size()]));
+
+    if (handlerLr != null) {
+      localizedResources.addAll(handlerLr);
+    }
+  }
+
   public boolean hasResources(String[] localAmResources) {
     if (localAmResources == null || localAmResources.length == 0) return true;
-    if (additionalFilesNotFromConf == null || additionalFilesNotFromConf.isEmpty()) return false;
+    if (additionalFilesNotFromConf.isEmpty()) return false;
     for (String s : localAmResources) {
       if (!additionalFilesNotFromConf.contains(s)) return false;
     }
@@ -252,8 +266,8 @@ public class TezSessionState {
     tezScratchDir = null;
     conf = null;
     appJarLr = null;
-    additionalFilesNotFromConf = null;
-    localizedResources = null;
+    additionalFilesNotFromConf.clear();
+    localizedResources.clear();
   }
 
   public void cleanupScratchDir () throws IOException {
@@ -369,7 +383,7 @@ public class TezSessionState {
   }
 
   public List<LocalResource> getLocalizedResources() {
-    return localizedResources;
+    return new ArrayList<LocalResource>(localizedResources);
   }
 
   public String getUser() {

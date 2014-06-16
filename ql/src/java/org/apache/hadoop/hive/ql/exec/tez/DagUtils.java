@@ -845,7 +845,7 @@ public class DagUtils {
     }
 
     return createLocalResource(destFS, dest, LocalResourceType.FILE,
-        LocalResourceVisibility.APPLICATION);
+        LocalResourceVisibility.PRIVATE);
   }
 
   /**

@@ -164,8 +164,6 @@ public class SessionState {
   private final String CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER =
       "hive.internal.ss.authz.settings.applied.marker";
 
-  private boolean addedResource;
-
   /**
    * Lineage state.
    */
@@ -1003,13 +1001,5 @@ public class SessionState {
     // set a marker that this conf has been processed.
     conf.set(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, Boolean.TRUE.toString());
 
-  }
-
-  public boolean hasAddedResource() {
-    return addedResource;
-  }
-
-  public void setAddedResource(boolean addedResouce) {
-    this.addedResource = addedResouce;
   }
 }

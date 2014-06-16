@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -200,7 +201,7 @@ public class TestTezTask {
   @Test
   public void testSubmit() throws Exception {
     DAG dag = new DAG("test");
-    task.submit(conf, dag, path, appLr, sessionState);
+    task.submit(conf, dag, path, appLr, sessionState, new LinkedList());
     // validate close/reopen
     verify(sessionState, times(1)).open(any(HiveConf.class));
     verify(sessionState, times(1)).close(eq(false));  // now uses pool after HIVE-7043
