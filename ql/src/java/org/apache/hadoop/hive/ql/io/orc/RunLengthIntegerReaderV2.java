@@ -39,12 +39,14 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
   private int numLiterals = 0;
   private int used = 0;
   private final boolean skipCorrupt;
+  private final SerializationUtils utils;
 
   RunLengthIntegerReaderV2(InStream input, boolean signed,
       Configuration conf) throws IOException {
     this.input = input;
     this.signed = signed;
     this.skipCorrupt = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
+    this.utils = new SerializationUtils();
   }
 
   private void readValues() throws IOException {
@@ -71,7 +73,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
     // extract the number of fixed bits
     int fb = (firstByte >>> 1) & 0x1f;
     if (fb != 0) {
-      fb = SerializationUtils.decodeBitWidth(fb);
+      fb = utils.decodeBitWidth(fb);
     }
 
     // extract the blob run length
@@ -81,9 +83,9 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
     // read the first value stored as vint
     long firstVal = 0;
     if (signed) {
-      firstVal = SerializationUtils.readVslong(input);
+      firstVal = utils.readVslong(input);
     } else {
-      firstVal = SerializationUtils.readVulong(input);
+      firstVal = utils.readVulong(input);
     }
 
     // store first value to result buffer
@@ -94,14 +96,14 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
     if (fb == 0) {
       // read the fixed delta value stored as vint (deltas can be negative even
       // if all number are positive)
-      long fd = SerializationUtils.readVslong(input);
+      long fd = utils.readVslong(input);
 
       // add fixed deltas to adjacent values
       for(int i = 0; i < len; i++) {
         literals[numLiterals++] = literals[numLiterals - 2] + fd;
       }
     } else {
-      long deltaBase = SerializationUtils.readVslong(input);
+      long deltaBase = utils.readVslong(input);
       // add delta base and first value
       literals[numLiterals++] = firstVal + deltaBase;
       prevVal = literals[numLiterals - 1];
@@ -110,7 +112,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
       // write the unpacked values, add it to previous value and store final
       // value to result buffer. if the delta base value is negative then it
       // is a decreasing sequence else an increasing sequence
-      SerializationUtils.readInts(literals, numLiterals, len, fb, input);
+      utils.readInts(literals, numLiterals, len, fb, input);
       while (len > 0) {
         if (deltaBase < 0) {
           literals[numLiterals] = prevVal - literals[numLiterals];
@@ -128,7 +130,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
 
     // extract the number of fixed bits
     int fbo = (firstByte >>> 1) & 0x1f;
-    int fb = SerializationUtils.decodeBitWidth(fbo);
+    int fb = utils.decodeBitWidth(fbo);
 
     // extract the run length of data blob
     int len = (firstByte & 0x01) << 8;
@@ -144,7 +146,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
 
     // extract patch width
     int pwo = thirdByte & 0x1f;
-    int pw = SerializationUtils.decodeBitWidth(pwo);
+    int pw = utils.decodeBitWidth(pwo);
 
     // read fourth byte and extract patch gap width
     int fourthByte = input.read();
@@ -156,7 +158,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
     int pl = fourthByte & 0x1f;
 
     // read the next base width number of bytes to extract base value
-    long base = SerializationUtils.bytesToLongBE(input, bw);
+    long base = utils.bytesToLongBE(input, bw);
     long mask = (1L << ((bw * 8) - 1));
     // if MSB of base value is 1 then base is negative value else positive
     if ((base & mask) != 0) {
@@ -166,7 +168,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
 
     // unpack the data blob
     long[] unpacked = new long[len];
-    SerializationUtils.readInts(unpacked, 0, len, fb, input);
+    utils.readInts(unpacked, 0, len, fb, input);
 
     // unpack the patch blob
     long[] unpackedPatch = new long[pl];
@@ -174,8 +176,8 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
     if ((pw + pgw) > 64 && !skipCorrupt) {
       throw new IOException(ErrorMsg.ORC_CORRUPTED_READ.getMsg());
     }
-    int bitSize = SerializationUtils.getClosestFixedBits(pw + pgw);
-    SerializationUtils.readInts(unpackedPatch, 0, pl, bitSize, input);
+    int bitSize = utils.getClosestFixedBits(pw + pgw);
+    utils.readInts(unpackedPatch, 0, pl, bitSize, input);
 
     // apply the patch directly when decoding the packed data
     int patchIdx = 0;
@@ -241,7 +243,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
 
     // extract the number of fixed bits
     int fbo = (firstByte >>> 1) & 0x1f;
-    int fb = SerializationUtils.decodeBitWidth(fbo);
+    int fb = utils.decodeBitWidth(fbo);
 
     // extract the run length
     int len = (firstByte & 0x01) << 8;
@@ -250,11 +252,10 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
     len += 1;
 
     // write the unpacked values and zigzag decode to result buffer
-    SerializationUtils.readInts(literals, numLiterals, len, fb, input);
+    utils.readInts(literals, numLiterals, len, fb, input);
     if (signed) {
       for(int i = 0; i < len; i++) {
-        literals[numLiterals] = SerializationUtils
-            .zigzagDecode(literals[numLiterals]);
+        literals[numLiterals] = utils.zigzagDecode(literals[numLiterals]);
         numLiterals++;
       }
     } else {
@@ -275,10 +276,10 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
     len += RunLengthIntegerWriterV2.MIN_REPEAT;
 
     // read the repeated value which is store using fixed bytes
-    long val = SerializationUtils.bytesToLongBE(input, size);
+    long val = utils.bytesToLongBE(input, size);
 
     if (signed) {
-      val = SerializationUtils.zigzagDecode(val);
+      val = utils.zigzagDecode(val);
     }
 
     // repeat the value for length times

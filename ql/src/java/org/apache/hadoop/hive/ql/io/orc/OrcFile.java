@@ -95,6 +95,9 @@ public final class OrcFile {
     }
   }
 
+  public static enum EncodingStrategy {
+    SPEED, COMPRESSION;
+  }
 
   // Note : these string definitions for table properties are deprecated,
   // and retained only for backward compatibility, please do not add to
@@ -117,7 +120,8 @@ public final class OrcFile {
     STRIPE_SIZE("orc.stripe.size"),
     ROW_INDEX_STRIDE("orc.row.index.stride"),
     ENABLE_INDEXES("orc.create.index"),
-    BLOCK_PADDING("orc.block.padding");
+    BLOCK_PADDING("orc.block.padding"),
+    ENCODING_STRATEGY("orc.encoding.strategy");
 
     private final String propName;
 
@@ -221,6 +225,7 @@ public final class OrcFile {
     private MemoryManager memoryManagerValue;
     private Version versionValue;
     private WriterCallback callback;
+    private EncodingStrategy encodingStrategy;
 
     WriterOptions(Configuration conf) {
       configuration = conf;
@@ -249,6 +254,13 @@ public final class OrcFile {
         versionValue = Version.CURRENT;
       } else {
         versionValue = Version.byName(versionName);
+      }
+      String enString =
+          conf.get(HiveConf.ConfVars.HIVE_ORC_ENCODING_STRATEGY.varname);
+      if (enString == null) {
+        encodingStrategy = EncodingStrategy.SPEED;
+      } else {
+        encodingStrategy = EncodingStrategy.valueOf(enString);
       }
     }
 
@@ -297,6 +309,14 @@ public final class OrcFile {
      */
     public WriterOptions blockPadding(boolean value) {
       blockPaddingValue = value;
+      return this;
+    }
+
+    /**
+     * Sets the encoding strategy that is used to encode the data.
+     */
+    public WriterOptions encodingStrategy(EncodingStrategy strategy) {
+      encodingStrategy = strategy;
       return this;
     }
 
@@ -370,7 +390,7 @@ public final class OrcFile {
                           opts.stripeSizeValue, opts.compressValue,
                           opts.bufferSizeValue, opts.rowIndexStrideValue,
                           opts.memoryManagerValue, opts.blockPaddingValue,
-                          opts.versionValue, opts.callback);
+                          opts.versionValue, opts.callback, opts.encodingStrategy);
   }
 
   /**

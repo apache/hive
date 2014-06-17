@@ -23,7 +23,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -746,9 +745,11 @@ class RecordReaderImpl implements RecordReader {
 
   private static class FloatTreeReader extends TreeReader{
     private InStream stream;
+    private final SerializationUtils utils;
 
     FloatTreeReader(Path path, int columnId, Configuration conf) {
       super(path, columnId, conf);
+      this.utils = new SerializationUtils();
     }
 
     @Override
@@ -777,7 +778,7 @@ class RecordReaderImpl implements RecordReader {
         } else {
           result = (FloatWritable) previous;
         }
-        result.set(SerializationUtils.readFloat(stream));
+        result.set(utils.readFloat(stream));
       }
       return result;
     }
@@ -797,7 +798,7 @@ class RecordReaderImpl implements RecordReader {
       // Read value entries based on isNull entries
       for (int i = 0; i < batchSize; i++) {
         if (!result.isNull[i]) {
-          result.vector[i] = SerializationUtils.readFloat(stream);
+          result.vector[i] = utils.readFloat(stream);
         } else {
 
           // If the value is not present then set NaN
@@ -819,16 +820,18 @@ class RecordReaderImpl implements RecordReader {
     void skipRows(long items) throws IOException {
       items = countNonNulls(items);
       for(int i=0; i < items; ++i) {
-        SerializationUtils.readFloat(stream);
+        utils.readFloat(stream);
       }
     }
   }
 
   private static class DoubleTreeReader extends TreeReader{
     private InStream stream;
+    private final SerializationUtils utils;
 
     DoubleTreeReader(Path path, int columnId, Configuration conf) {
       super(path, columnId, conf);
+      this.utils = new SerializationUtils();
     }
 
     @Override
@@ -858,7 +861,7 @@ class RecordReaderImpl implements RecordReader {
         } else {
           result = (DoubleWritable) previous;
         }
-        result.set(SerializationUtils.readDouble(stream));
+        result.set(utils.readDouble(stream));
       }
       return result;
     }
@@ -878,7 +881,7 @@ class RecordReaderImpl implements RecordReader {
       // Read value entries based on isNull entries
       for (int i = 0; i < batchSize; i++) {
         if (!result.isNull[i]) {
-          result.vector[i] = SerializationUtils.readDouble(stream);
+          result.vector[i] = utils.readDouble(stream);
         } else {
           // If the value is not present then set NaN
           result.vector[i] = Double.NaN;

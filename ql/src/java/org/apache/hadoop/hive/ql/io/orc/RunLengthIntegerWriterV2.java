@@ -157,10 +157,19 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
   private long[] gapVsPatchList;
   private long min;
   private boolean isFixedDelta;
+  private SerializationUtils utils;
+  private boolean alignedBitpacking;
 
   RunLengthIntegerWriterV2(PositionedOutputStream output, boolean signed) {
+    this(output, signed, true);
+  }
+
+  RunLengthIntegerWriterV2(PositionedOutputStream output, boolean signed,
+      boolean alignedBitpacking) {
     this.output = output;
     this.signed = signed;
+    this.alignedBitpacking = alignedBitpacking;
+    this.utils = new SerializationUtils();
     clear();
   }
 
@@ -187,6 +196,10 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     int fb = bitsDeltaMax;
     int efb = 0;
 
+    if (alignedBitpacking) {
+      fb = utils.getClosestAlignedFixedBits(fb);
+    }
+
     if (isFixedDelta) {
       // if fixed run length is greater than threshold then it will be fixed
       // delta sequence with delta value 0 else fixed delta sequence with
@@ -206,20 +219,20 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
       if (fb == 1) {
         fb = 2;
       }
-      efb = SerializationUtils.encodeBitWidth(fb);
+      efb = utils.encodeBitWidth(fb);
       efb = efb << 1;
       len = variableRunLength - 1;
       variableRunLength = 0;
     }
 
     // extract the 9th bit of run length
-    int tailBits = (len & 0x100) >>> 8;
+    final int tailBits = (len & 0x100) >>> 8;
 
     // create first byte of the header
-    int headerFirstByte = getOpcode() | efb | tailBits;
+    final int headerFirstByte = getOpcode() | efb | tailBits;
 
     // second byte of the header stores the remaining 8 bits of runlength
-    int headerSecondByte = len & 0xff;
+    final int headerSecondByte = len & 0xff;
 
     // write header
     output.write(headerFirstByte);
@@ -227,43 +240,50 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
 
     // store the first value from zigzag literal array
     if (signed) {
-      SerializationUtils.writeVslong(output, literals[0]);
+      utils.writeVslong(output, literals[0]);
     } else {
-      SerializationUtils.writeVulong(output, literals[0]);
+      utils.writeVulong(output, literals[0]);
     }
 
     if (isFixedDelta) {
       // if delta is fixed then we don't need to store delta blob
-      SerializationUtils.writeVslong(output, fixedDelta);
+      utils.writeVslong(output, fixedDelta);
     } else {
       // store the first value as delta value using zigzag encoding
-      SerializationUtils.writeVslong(output, adjDeltas[0]);
+      utils.writeVslong(output, adjDeltas[0]);
+
       // adjacent delta values are bit packed
-      SerializationUtils.writeInts(adjDeltas, 1, adjDeltas.length - 1, fb,
-          output);
+      utils.writeInts(adjDeltas, 1, adjDeltas.length - 1, fb, output);
     }
   }
 
   private void writePatchedBaseValues() throws IOException {
 
+    // NOTE: Aligned bit packing cannot be applied for PATCHED_BASE encoding
+    // because patch is applied to MSB bits. For example: If fixed bit width of
+    // base value is 7 bits and if patch is 3 bits, the actual value is
+    // constructed by shifting the patch to left by 7 positions.
+    // actual_value = patch << 7 | base_value
+    // So, if we align base_value then actual_value can not be reconstructed.
+
     // write the number of fixed bits required in next 5 bits
-    int fb = brBits95p;
-    int efb = SerializationUtils.encodeBitWidth(fb) << 1;
+    final int fb = brBits95p;
+    final int efb = utils.encodeBitWidth(fb) << 1;
 
     // adjust variable run length, they are one off
     variableRunLength -= 1;
 
     // extract the 9th bit of run length
-    int tailBits = (variableRunLength & 0x100) >>> 8;
+    final int tailBits = (variableRunLength & 0x100) >>> 8;
 
     // create first byte of the header
-    int headerFirstByte = getOpcode() | efb | tailBits;
+    final int headerFirstByte = getOpcode() | efb | tailBits;
 
     // second byte of the header stores the remaining 8 bits of runlength
-    int headerSecondByte = variableRunLength & 0xff;
+    final int headerSecondByte = variableRunLength & 0xff;
 
     // if the min value is negative toggle the sign
-    boolean isNegative = min < 0 ? true : false;
+    final boolean isNegative = min < 0 ? true : false;
     if (isNegative) {
       min = -min;
     }
@@ -271,9 +291,9 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     // find the number of bytes required for base and shift it by 5 bits
     // to accommodate patch width. The additional bit is used to store the sign
     // of the base value.
-    int baseWidth = SerializationUtils.findClosestNumBits(min) + 1;
-    int baseBytes = baseWidth % 8 == 0 ? baseWidth / 8 : (baseWidth / 8) + 1;
-    int bb = (baseBytes - 1) << 5;
+    final int baseWidth = utils.findClosestNumBits(min) + 1;
+    final int baseBytes = baseWidth % 8 == 0 ? baseWidth / 8 : (baseWidth / 8) + 1;
+    final int bb = (baseBytes - 1) << 5;
 
     // if the base value is negative then set MSB to 1
     if (isNegative) {
@@ -282,11 +302,11 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
 
     // third byte contains 3 bits for number of bytes occupied by base
     // and 5 bits for patchWidth
-    int headerThirdByte = bb | SerializationUtils.encodeBitWidth(patchWidth);
+    final int headerThirdByte = bb | utils.encodeBitWidth(patchWidth);
 
     // fourth byte contains 3 bits for page gap width and 5 bits for
     // patch length
-    int headerFourthByte = (patchGapWidth - 1) << 5 | patchLength;
+    final int headerFourthByte = (patchGapWidth - 1) << 5 | patchLength;
 
     // write header
     output.write(headerFirstByte);
@@ -301,15 +321,16 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     }
 
     // base reduced literals are bit packed
-    int closestFixedBits = SerializationUtils.getClosestFixedBits(brBits95p);
-    SerializationUtils.writeInts(baseRedLiterals, 0, baseRedLiterals.length,
-        closestFixedBits, output);
+    int closestFixedBits = utils.getClosestFixedBits(fb);
+
+    utils.writeInts(baseRedLiterals, 0, baseRedLiterals.length, closestFixedBits,
+        output);
 
     // write patch list
-    closestFixedBits = SerializationUtils.getClosestFixedBits(patchGapWidth
-        + patchWidth);
-    SerializationUtils.writeInts(gapVsPatchList, 0, gapVsPatchList.length,
-        closestFixedBits, output);
+    closestFixedBits = utils.getClosestFixedBits(patchGapWidth + patchWidth);
+
+    utils.writeInts(gapVsPatchList, 0, gapVsPatchList.length, closestFixedBits,
+        output);
 
     // reset run length
     variableRunLength = 0;
@@ -326,27 +347,32 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
   private void writeDirectValues() throws IOException {
 
     // write the number of fixed bits required in next 5 bits
-    int efb = SerializationUtils.encodeBitWidth(zzBits100p) << 1;
+    int fb = zzBits100p;
+
+    if (alignedBitpacking) {
+      fb = utils.getClosestAlignedFixedBits(fb);
+    }
+
+    final int efb = utils.encodeBitWidth(fb) << 1;
 
     // adjust variable run length
     variableRunLength -= 1;
 
     // extract the 9th bit of run length
-    int tailBits = (variableRunLength & 0x100) >>> 8;
+    final int tailBits = (variableRunLength & 0x100) >>> 8;
 
     // create first byte of the header
-    int headerFirstByte = getOpcode() | efb | tailBits;
+    final int headerFirstByte = getOpcode() | efb | tailBits;
 
     // second byte of the header stores the remaining 8 bits of runlength
-    int headerSecondByte = variableRunLength & 0xff;
+    final int headerSecondByte = variableRunLength & 0xff;
 
     // write header
     output.write(headerFirstByte);
     output.write(headerSecondByte);
 
     // bit packing the zigzag encoded literals
-    SerializationUtils.writeInts(zigzagLiterals, 0, zigzagLiterals.length,
-        zzBits100p, output);
+    utils.writeInts(zigzagLiterals, 0, zigzagLiterals.length, fb, output);
 
     // reset run length
     variableRunLength = 0;
@@ -356,13 +382,13 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     // get the value that is repeating, compute the bits and bytes required
     long repeatVal = 0;
     if (signed) {
-      repeatVal = SerializationUtils.zigzagEncode(literals[0]);
+      repeatVal = utils.zigzagEncode(literals[0]);
     } else {
       repeatVal = literals[0];
     }
 
-    int numBitsRepeatVal = SerializationUtils.findClosestNumBits(repeatVal);
-    int numBytesRepeatVal = numBitsRepeatVal % 8 == 0 ? numBitsRepeatVal >>> 3
+    final int numBitsRepeatVal = utils.findClosestNumBits(repeatVal);
+    final int numBytesRepeatVal = numBitsRepeatVal % 8 == 0 ? numBitsRepeatVal >>> 3
         : (numBitsRepeatVal >>> 3) + 1;
 
     // write encoding type in top 2 bits
@@ -440,7 +466,7 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
         // populate zigzag encoded literals
         long zzEncVal = 0;
         if (signed) {
-          zzEncVal = SerializationUtils.zigzagEncode(literals[i]);
+          zzEncVal = utils.zigzagEncode(literals[i]);
         } else {
           zzEncVal = literals[i];
         }
@@ -464,7 +490,7 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
 
       // stores the number of bits required for packing delta blob in
       // delta encoding
-      bitsDeltaMax = SerializationUtils.findClosestNumBits(deltaMax);
+      bitsDeltaMax = utils.findClosestNumBits(deltaMax);
 
       // if decreasing count equals total number of literals then the
       // sequence is monotonically decreasing
@@ -504,10 +530,10 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     // is not significant then we can use direct or delta encoding
 
     double p = 0.9;
-    zzBits90p = SerializationUtils.percentileBits(zigzagLiterals, p);
+    zzBits90p = utils.percentileBits(zigzagLiterals, p);
 
     p = 1.0;
-    zzBits100p = SerializationUtils.percentileBits(zigzagLiterals, p);
+    zzBits100p = utils.percentileBits(zigzagLiterals, p);
 
     int diffBitsLH = zzBits100p - zzBits90p;
 
@@ -524,11 +550,11 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
       // 95th percentile width is used to determine max allowed value
       // after which patching will be done
       p = 0.95;
-      brBits95p = SerializationUtils.percentileBits(baseRedLiterals, p);
+      brBits95p = utils.percentileBits(baseRedLiterals, p);
 
       // 100th percentile is used to compute the max patch width
       p = 1.0;
-      brBits100p = SerializationUtils.percentileBits(baseRedLiterals, p);
+      brBits100p = utils.percentileBits(baseRedLiterals, p);
 
       // after base reducing the values, if the difference in bits between
       // 95th percentile and 100th percentile value is zero then there
@@ -573,7 +599,7 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
 
     // #bit for patch
     patchWidth = brBits100p - brBits95p;
-    patchWidth = SerializationUtils.getClosestFixedBits(patchWidth);
+    patchWidth = utils.getClosestFixedBits(patchWidth);
 
     // if patch bit requirement is 64 then it will not possible to pack
     // gap and patch together in a long. To make sure gap and patch can be
@@ -619,7 +645,7 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
     if (maxGap == 0 && patchLength != 0) {
       patchGapWidth = 1;
     } else {
-      patchGapWidth = SerializationUtils.findClosestNumBits(maxGap);
+      patchGapWidth = utils.findClosestNumBits(maxGap);
     }
 
     // special case: if the patch gap width is greater than 256, then

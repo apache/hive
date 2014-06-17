@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde.OrcSerdeRow;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -162,6 +163,11 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     if ((propVal = getSettingFromPropsFallingBackToConf(
         OrcFile.OrcTableProperties.BLOCK_PADDING.getPropName(),props,conf)) != null){
       options.blockPadding(Boolean.parseBoolean(propVal));
+    }
+
+    if ((propVal = getSettingFromPropsFallingBackToConf(
+        OrcFile.OrcTableProperties.ENCODING_STRATEGY.getPropName(),props,conf)) != null){
+      options.encodingStrategy(EncodingStrategy.valueOf(propVal));
     }
 
     return options;

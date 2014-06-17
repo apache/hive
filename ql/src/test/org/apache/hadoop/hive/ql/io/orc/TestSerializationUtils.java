@@ -35,10 +35,15 @@ public class TestSerializationUtils {
 
   @Test
   public void testDoubles() throws Exception {
+    double tolerance = 0.0000000000000001;
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    SerializationUtils.writeDouble(buffer, 1343822337.759);
-    assertEquals(1343822337.759,
-        SerializationUtils.readDouble(fromBuffer(buffer)), 0.0001);
+    SerializationUtils utils = new SerializationUtils();
+    utils.writeDouble(buffer, 1343822337.759);
+    assertEquals(1343822337.759, utils.readDouble(fromBuffer(buffer)), tolerance);
+    buffer = new ByteArrayOutputStream();
+    utils.writeDouble(buffer, 0.8);
+    double got = utils.readDouble(fromBuffer(buffer));
+    assertEquals(0.8, got, tolerance);
   }
 
   @Test
