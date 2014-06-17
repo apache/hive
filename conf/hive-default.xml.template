@@ -1970,6 +1970,17 @@
 </property>
 
 <property>
+  <name>hive.exec.orc.encoding.strategy</name>
+  <value>SPEED</value>
+  <description>
+    Define the encoding strategy to use while writing data. Changing this will
+    only affect the light weight encoding for integers. This flag will not
+    change the compression level of higher level compression codec (like ZLIB).
+    Possible options are SPEED and COMPRESSION.
+  </description>
+</property>
+
+<property>
   <name>hive.exec.orc.dictionary.key.size.threshold</name>
   <value>0.8</value>
   <description>

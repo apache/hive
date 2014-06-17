@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -36,6 +37,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
@@ -134,6 +136,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private final Configuration conf;
   private final OrcFile.WriterCallback callback;
   private final OrcFile.WriterContext callbackContext;
+  private final OrcFile.EncodingStrategy encodingStrategy;
 
   WriterImpl(FileSystem fs,
              Path path,
@@ -146,7 +149,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
              MemoryManager memoryManager,
              boolean addBlockPadding,
              OrcFile.Version version,
-             OrcFile.WriterCallback callback) throws IOException {
+             OrcFile.WriterCallback callback,
+             OrcFile.EncodingStrategy encodingStrategy) throws IOException {
     this.fs = fs;
     this.path = path;
     this.conf = conf;
@@ -164,6 +168,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
     this.stripeSize = stripeSize;
     this.version = version;
+    this.encodingStrategy = encodingStrategy;
     this.addBlockPadding = addBlockPadding;
     // pick large block size to minimize block over or under hangs
     this.blockSize = Math.min(MAX_BLOCK_SIZE, 2 * stripeSize);
@@ -404,6 +409,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     /**
+     * Get the encoding strategy to use.
+     * @return encoding strategy
+     */
+    public EncodingStrategy getEncodingStrategy() {
+      return encodingStrategy;
+    }
+
+    /**
      * Get the writer's configuration.
      * @return configuration
      */
@@ -497,9 +510,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     IntegerWriter createIntegerWriter(PositionedOutputStream output,
-                                      boolean signed, boolean isDirectV2) {
+                                      boolean signed, boolean isDirectV2,
+                                      StreamFactory writer) {
       if (isDirectV2) {
-        return new RunLengthIntegerWriterV2(output, signed);
+        boolean alignedBitpacking = false;
+        if (writer.getEncodingStrategy().equals(EncodingStrategy.SPEED)) {
+          alignedBitpacking = true;
+        }
+        return new RunLengthIntegerWriterV2(output, signed, alignedBitpacking);
       } else {
         return new RunLengthIntegerWriter(output, signed);
       }
@@ -744,7 +762,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       PositionedOutputStream out = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
-      this.writer = createIntegerWriter(out, true, isDirectV2);
+      this.writer = createIntegerWriter(out, true, isDirectV2, writer);
       if (inspector instanceof IntObjectInspector) {
         intInspector = (IntObjectInspector) inspector;
         shortInspector = null;
@@ -806,6 +824,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static class FloatTreeWriter extends TreeWriter {
     private final PositionedOutputStream stream;
+    private final SerializationUtils utils;
 
     FloatTreeWriter(int columnId,
                       ObjectInspector inspector,
@@ -814,6 +833,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super(columnId, inspector, writer, nullable);
       this.stream = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
+      this.utils = new SerializationUtils();
       recordPosition(rowIndexPosition);
     }
 
@@ -823,7 +843,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       if (obj != null) {
         float val = ((FloatObjectInspector) inspector).get(obj);
         indexStatistics.updateDouble(val);
-        SerializationUtils.writeFloat(stream, val);
+        utils.writeFloat(stream, val);
       }
     }
 
@@ -844,6 +864,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static class DoubleTreeWriter extends TreeWriter {
     private final PositionedOutputStream stream;
+    private final SerializationUtils utils;
 
     DoubleTreeWriter(int columnId,
                     ObjectInspector inspector,
@@ -852,6 +873,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super(columnId, inspector, writer, nullable);
       this.stream = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
+      this.utils = new SerializationUtils();
       recordPosition(rowIndexPosition);
     }
 
@@ -861,7 +883,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       if (obj != null) {
         double val = ((DoubleObjectInspector) inspector).get(obj);
         indexStatistics.updateDouble(val);
-        SerializationUtils.writeDouble(stream, val);
+        utils.writeDouble(stream, val);
       }
     }
 
@@ -909,15 +931,15 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       stringOutput = writer.createStream(id,
           OrcProto.Stream.Kind.DICTIONARY_DATA);
       lengthOutput = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       rowOutput = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.DATA), false, isDirectV2);
+          OrcProto.Stream.Kind.DATA), false, isDirectV2, writer);
       recordPosition(rowIndexPosition);
       rowIndexValueCount.add(0L);
       buildIndex = writer.buildIndex();
       directStreamOutput = writer.createStream(id, OrcProto.Stream.Kind.DATA);
       directLengthOutput = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       dictionaryKeySizeThreshold = writer.getConfiguration().getFloat(
         HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname,
         HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.
@@ -1129,7 +1151,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
       this.length = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 
@@ -1188,9 +1210,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super(columnId, inspector, writer, nullable);
       this.isDirectV2 = isNewWriteFormat(writer);
       this.seconds = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.DATA), true, isDirectV2);
+          OrcProto.Stream.Kind.DATA), true, isDirectV2, writer);
       this.nanos = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.SECONDARY), false, isDirectV2);
+          OrcProto.Stream.Kind.SECONDARY), false, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 
@@ -1261,7 +1283,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       PositionedOutputStream out = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
-      this.writer = createIntegerWriter(out, true, isDirectV2);
+      this.writer = createIntegerWriter(out, true, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 
@@ -1314,7 +1336,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       this.isDirectV2 = isNewWriteFormat(writer);
       valueStream = writer.createStream(id, OrcProto.Stream.Kind.DATA);
       this.scaleStream = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.SECONDARY), true, isDirectV2);
+          OrcProto.Stream.Kind.SECONDARY), true, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 
@@ -1419,7 +1441,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         createTreeWriter(listObjectInspector.getListElementObjectInspector(),
           writer, true);
       lengths = createIntegerWriter(writer.createStream(columnId,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 
@@ -1481,7 +1503,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       childrenWriters[1] =
         createTreeWriter(insp.getMapValueObjectInspector(), writer, true);
       lengths = createIntegerWriter(writer.createStream(columnId,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       recordPosition(rowIndexPosition);
     }
 

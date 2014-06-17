@@ -38,11 +38,13 @@ class RunLengthIntegerWriter implements IntegerWriter {
   private long delta = 0;
   private boolean repeat = false;
   private int tailRunLength = 0;
+  private SerializationUtils utils;
 
   RunLengthIntegerWriter(PositionedOutputStream output,
                          boolean signed) {
     this.output = output;
     this.signed = signed;
+    this.utils = new SerializationUtils();
   }
 
   private void writeValues() throws IOException {
@@ -51,17 +53,17 @@ class RunLengthIntegerWriter implements IntegerWriter {
         output.write(numLiterals - MIN_REPEAT_SIZE);
         output.write((byte) delta);
         if (signed) {
-          SerializationUtils.writeVslong(output, literals[0]);
+          utils.writeVslong(output, literals[0]);
         } else {
-          SerializationUtils.writeVulong(output, literals[0]);
+          utils.writeVulong(output, literals[0]);
         }
       } else {
         output.write(-numLiterals);
         for(int i=0; i < numLiterals; ++i) {
           if (signed) {
-            SerializationUtils.writeVslong(output, literals[i]);
+            utils.writeVslong(output, literals[i]);
           } else {
-            SerializationUtils.writeVulong(output, literals[i]);
+            utils.writeVulong(output, literals[i]);
           }
         }
       }
