@@ -24,13 +24,28 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 
+import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
+import org.apache.hadoop.yarn.api.protocolrecords.ApplicationsRequestScope;
+import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.yarn.api.records.ApplicationReport;
+import org.apache.hadoop.yarn.client.ClientRMProxy;
+import org.apache.hadoop.yarn.client.api.YarnClient;
+import org.apache.hadoop.yarn.exceptions.YarnException;
+
 import java.io.IOException;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class WebHCatJTShim23 implements WebHCatJTShim {
   private static final Log LOG = LogFactory.getLog(WebHCatJTShim23.class);
   private JobClient jc;
+  private final Configuration conf;
 
   /**
    * Create a connection to the Job Tracker.
@@ -38,6 +53,7 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
   public WebHCatJTShim23(final Configuration conf, final UserGroupInformation ugi)
           throws IOException {
     try {
+    this.conf = conf;
     jc = ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
       public JobClient run() throws IOException, InterruptedException  {
         //create this in doAs() so that it gets a security context based passed in 'ugi'
@@ -129,5 +145,66 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
       }
       throw ex;
     }
+  }
+
+  /**
+   * Kills all jobs tagged with the given tag that have been started after the
+   * given timestamp.
+   */
+  @Override
+  public void killJobs(String tag, long timestamp) {
+    try {
+      LOG.info("Looking for jobs to kill...");
+      Set<ApplicationId> childJobs = getYarnChildJobs(tag, timestamp);
+      if (childJobs.isEmpty()) {
+        LOG.info("No jobs found from");
+        return;
+      } else {
+        LOG.info(String.format("Found MR jobs count: %d", childJobs.size()));
+        LOG.info("Killing all found jobs");
+
+        YarnClient yarnClient = YarnClient.createYarnClient();
+        yarnClient.init(conf);
+        yarnClient.start();
+        for (ApplicationId app: childJobs) {
+          LOG.info(String.format("Killing job: %s ...", app));
+          yarnClient.killApplication(app);
+          LOG.info(String.format("Job %s killed", app));
+        }
+      }
+    } catch (YarnException ye) {
+      throw new RuntimeException("Exception occurred while killing child job(s)", ye);
+    } catch (IOException ioe) {
+      throw new RuntimeException("Exception occurred while killing child job(s)", ioe);
+    }
+  }
+
+  /**
+   * Queries RM for the list of applications with the given tag that have started
+   * after the given timestamp.
+   */
+  private Set<ApplicationId> getYarnChildJobs(String tag, long timestamp) {
+    Set<ApplicationId> childYarnJobs = new HashSet<ApplicationId>();
+
+    LOG.info(String.format("Querying RM for tag = %s, starting with ts = %s", tag, timestamp));
+
+    GetApplicationsRequest gar = GetApplicationsRequest.newInstance();
+    gar.setScope(ApplicationsRequestScope.OWN);
+    gar.setStartRange(timestamp, System.currentTimeMillis());
+    gar.setApplicationTags(Collections.singleton(tag));
+    try {
+      ApplicationClientProtocol proxy = ClientRMProxy.createRMProxy(conf,
+          ApplicationClientProtocol.class);
+      GetApplicationsResponse apps = proxy.getApplications(gar);
+      List<ApplicationReport> appsList = apps.getApplicationList();
+      for(ApplicationReport appReport : appsList) {
+        childYarnJobs.add(appReport.getApplicationId());
+      }
+    } catch (IOException ioe) {
+      throw new RuntimeException("Exception occurred while finding child jobs", ioe);
+    } catch (YarnException ye) {
+      throw new RuntimeException("Exception occurred while finding child jobs", ye);
+    }
+    return childYarnJobs;
   }
 }

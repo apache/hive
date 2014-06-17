@@ -82,6 +82,10 @@ public class HiveDelegator extends LauncherDelegator {
       args.add("--hiveconf");
       args.add(JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ);
 
+      //add mapreduce job tag placeholder
+      args.add("--hiveconf");
+      args.add(TempletonControllerJob.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER);
+
       for (String prop : appConf.hiveProps()) {
         args.add("--hiveconf");
         args.add(TempletonUtils.quoteForWindows(prop));

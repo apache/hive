@@ -581,6 +581,11 @@ public interface HadoopShims {
      * Assumes that both parameters are not {@code null}.
      */
     public void addCacheFile(URI uri, Job job);
+    /**
+     * Kills all jobs tagged with the given tag that have been started after the
+     * given timestamp.
+     */
+    public void killJobs(String tag, long timestamp);
   }
 
   /**

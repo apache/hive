@@ -69,9 +69,10 @@ public class SqoopDelegator extends LauncherDelegator {
         for (int i = 0; i < temArgs.length; i++) {
           args.add(TempletonUtils.quoteForWindows(temArgs[i]));
 
-          // The token file location should be right after the tool argument
+          // The token file location and mapreduce job tag should be right after the tool argument
           if (i == 0 && !temArgs[i].startsWith("--")) {
             args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
+            args.add("-D" + TempletonControllerJob.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER);
           }
         }
       } else if (TempletonUtils.isset(optionsFile)) {
