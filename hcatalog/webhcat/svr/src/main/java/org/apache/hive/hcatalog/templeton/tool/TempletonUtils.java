@@ -25,9 +25,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +38,6 @@ import java.util.regex.Pattern;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -353,5 +354,34 @@ public class TempletonUtils {
    */
   public static String unEscapeString(String s) {
     return s != null && s.contains("\\,") ? StringUtils.unEscapeString(s) : s;
+  }
+
+  /**
+   * Find a jar that contains a class of the same name and which
+   * file name matches the given pattern.
+   *
+   * @param clazz the class to find.
+   * @param fileNamePattern regex pattern that must match the jar full path
+   * @return a jar file that contains the class, or null
+   */
+  public static String findContainingJar(Class<?> clazz, String fileNamePattern) {
+    ClassLoader loader = clazz.getClassLoader();
+    String classFile = clazz.getName().replaceAll("\\.", "/") + ".class";
+    try {
+      for(final Enumeration<URL> itr = loader.getResources(classFile);
+          itr.hasMoreElements();) {
+        final URL url = itr.nextElement();
+        if ("jar".equals(url.getProtocol())) {
+          String toReturn = url.getPath();
+          if (fileNamePattern == null || toReturn.matches(fileNamePattern)) {
+            toReturn = URLDecoder.decode(toReturn, "UTF-8");
+            return toReturn.replaceAll("!.*$", "");
+          }
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return null;
   }
 }
