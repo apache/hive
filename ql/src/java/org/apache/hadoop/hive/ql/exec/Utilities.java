@@ -242,7 +242,7 @@ public final class Utilities {
     Path reducePath = getPlanPath(conf, REDUCE_PLAN_NAME);
 
     // if the plan path hasn't been initialized just return, nothing to clean.
-    if (mapPath == null || reducePath == null) {
+    if (mapPath == null && reducePath == null) {
       return;
     }
 
@@ -260,12 +260,7 @@ public final class Utilities {
     } finally {
       // where a single process works with multiple plans - we must clear
       // the cache before working with the next plan.
-      if (mapPath != null) {
-        gWorkMap.remove(mapPath);
-      }
-      if (reducePath != null) {
-        gWorkMap.remove(reducePath);
-      }
+      clearWorkMapForConf(conf);
     }
   }
 
@@ -3314,7 +3309,19 @@ public final class Utilities {
     return false;
   }
 
-    public static void clearWorkMap() {
+  public static void clearWorkMapForConf(Configuration conf) {
+    // Remove cached query plans for the current query only
+    Path mapPath = getPlanPath(conf, MAP_PLAN_NAME);
+    Path reducePath = getPlanPath(conf, REDUCE_PLAN_NAME);
+    if (mapPath != null) {
+      gWorkMap.remove(mapPath);
+    }
+    if (reducePath != null) {
+      gWorkMap.remove(reducePath);
+    }
+  }
+
+  public static void clearWorkMap() {
     gWorkMap.clear();
   }
 
