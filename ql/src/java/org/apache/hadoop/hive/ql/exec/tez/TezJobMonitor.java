@@ -216,8 +216,10 @@ public class TezJobMonitor {
     SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
     for (String s: keys) {
       Progress progress = progressMap.get(s);
-      int complete = progress.getSucceededTaskCount();
-      int total = progress.getTotalTaskCount();
+      final int complete = progress.getSucceededTaskCount();
+      final int total = progress.getTotalTaskCount();
+      final int running = progress.getRunningTaskCount();
+      final int failed = progress.getFailedTaskCount();
       if (total <= 0) {
         reportBuffer.append(String.format("%s: -/-\t", s, complete, total));
       } else {
@@ -225,7 +227,22 @@ public class TezJobMonitor {
           completed.add(s);
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
         }
-        reportBuffer.append(String.format("%s: %d/%d\t", s, complete, total));
+        if(complete < total && (complete > 0 || running > 0 || failed > 0)) {
+          /* vertex is started, but not complete */
+          if (failed > 0) {
+            reportBuffer.append(String.format("%s: %d(+%d,-%d)/%d\t", s, complete, running, failed, total));
+          } else {
+            reportBuffer.append(String.format("%s: %d(+%d)/%d\t", s, complete, running, total));
+          }
+        } else {
+          /* vertex is waiting for input/slots or complete */
+          if (failed > 0) {
+            /* tasks finished but some failed */
+            reportBuffer.append(String.format("%s: %d(-%d)/%d\t", s, complete, failed, total));
+          } else {
+            reportBuffer.append(String.format("%s: %d/%d\t", s, complete, total));
+          }
+        }
       }
     }
 
