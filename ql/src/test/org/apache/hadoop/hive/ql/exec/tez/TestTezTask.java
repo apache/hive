@@ -159,7 +159,8 @@ public class TestTezTask {
     session = mock(TezSession.class);
     sessionState = mock(TezSessionState.class);
     when(sessionState.getSession()).thenReturn(session);
-    when(session.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""))
+    when(session.submitDAG(any(DAG.class), any(Map.class)))
+      .thenThrow(new SessionNotRunning(""))
       .thenReturn(mock(DAGClient.class));
   }
 
@@ -205,7 +206,7 @@ public class TestTezTask {
     // validate close/reopen
     verify(sessionState, times(1)).open(any(HiveConf.class));
     verify(sessionState, times(1)).close(eq(false));  // now uses pool after HIVE-7043
-    verify(session, times(2)).submitDAG(any(DAG.class));
+    verify(session, times(2)).submitDAG(any(DAG.class), any(Map.class));
   }
 
   @Test
