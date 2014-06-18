@@ -964,6 +964,7 @@ public class Commands {
       beeLine.getDatabaseConnections().setConnection(
           new DatabaseConnection(beeLine, driver, url, props));
       beeLine.getDatabaseConnection().getConnection();
+      beeLine.runInit();
 
       beeLine.setCompletions();
       return true;
