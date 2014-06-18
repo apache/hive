@@ -69,9 +69,6 @@ POSTHOOK: query: SELECT * FROM parquet_columnar_access
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_columnar_access
 #### A masked pattern was here ####
-POSTHOOK: Lineage: parquet_columnar_access.f SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: parquet_columnar_access.i SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_columnar_access.s SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:s, type:string, comment:null), ]
 1abc00	1	1.0
 1def01	2	1.1
 1ghi02	3	1.2
@@ -101,9 +98,6 @@ POSTHOOK: query: ALTER TABLE parquet_columnar_access REPLACE COLUMNS (s1 string,
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@parquet_columnar_access
 POSTHOOK: Output: default@parquet_columnar_access
-POSTHOOK: Lineage: parquet_columnar_access.f SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: parquet_columnar_access.i SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_columnar_access.s SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:s, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM parquet_columnar_access
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_columnar_access
@@ -112,9 +106,6 @@ POSTHOOK: query: SELECT * FROM parquet_columnar_access
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_columnar_access
 #### A masked pattern was here ####
-POSTHOOK: Lineage: parquet_columnar_access.f SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: parquet_columnar_access.i SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_columnar_access.s SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:s, type:string, comment:null), ]
 1abc00	1	1.0
 1def01	2	1.1
 1ghi02	3	1.2
