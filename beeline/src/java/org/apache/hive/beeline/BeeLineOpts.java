@@ -86,6 +86,7 @@ class BeeLineOpts implements Completor {
   private String historyFile = new File(saveDir(), "history").getAbsolutePath();
 
   private String scriptFile = null;
+  private String initFile = null;
   private String authType = null;
 
 
@@ -358,6 +359,14 @@ class BeeLineOpts implements Completor {
     return scriptFile;
   }
 
+  public String getInitFile() {
+    return initFile;
+  }
+
+  public void setInitFile(String initFile) {
+    this.initFile = initFile;
+  }
+
   public void setColor(boolean color) {
     this.color = color;
   }
@@ -481,6 +490,5 @@ class BeeLineOpts implements Completor {
   public void setHiveConfVariables(Map<String, String> hiveConfVariables) {
     this.hiveConfVariables = hiveConfVariables;
   }
-
 }
 
