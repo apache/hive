@@ -90,6 +90,65 @@ public class TestVectorLogicalExpressions {
     Assert.assertEquals(1, outCol.vector[3]);
   }
 
+  @Test
+  public void testLongColAndLongCol() {
+    VectorizedRowBatch batch = getBatchThreeBooleanCols();
+    ColAndCol expr = new ColAndCol(0, 1, 2);
+    LongColumnVector outCol = (LongColumnVector) batch.cols[2];
+    expr.evaluate(batch);
+
+    // verify
+    Assert.assertEquals(0, outCol.vector[0]);
+    Assert.assertEquals(0, outCol.vector[1]);
+    Assert.assertEquals(0, outCol.vector[2]);
+    Assert.assertEquals(1, outCol.vector[3]);
+    Assert.assertEquals(0, outCol.vector[4]);
+    Assert.assertFalse(outCol.isNull[4]);
+    Assert.assertTrue(outCol.isNull[5]);    
+    Assert.assertEquals(0, outCol.vector[6]);
+    Assert.assertFalse(outCol.isNull[6]);
+    Assert.assertTrue(outCol.isNull[7]); 
+    Assert.assertTrue(outCol.isNull[8]);
+
+    Assert.assertEquals(batch.size, 9);
+    Assert.assertFalse(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+
+    // try non-null path
+    batch = getBatchThreeBooleanCols();
+    batch.cols[0].noNulls = true;
+    batch.cols[1].noNulls = true;
+    batch.cols[2].noNulls = false;
+    outCol = (LongColumnVector) batch.cols[2];
+    expr.evaluate(batch);
+
+    // spot check
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertEquals(0, outCol.vector[0]);
+    Assert.assertEquals(0, outCol.vector[1]);
+    Assert.assertEquals(0, outCol.vector[2]);
+    Assert.assertEquals(1, outCol.vector[3]);
+
+    // try isRepeating path (left input only), no nulls
+    batch = getBatchThreeBooleanCols();
+    ((LongColumnVector)batch.cols[0]).vector[0] = 1;
+    batch.cols[0].noNulls = true;
+    batch.cols[0].isRepeating = true;
+    batch.cols[1].noNulls = true;
+    batch.cols[1].isRepeating = false;
+    batch.cols[2].noNulls = false;
+    batch.cols[2].isRepeating = true;
+    outCol = (LongColumnVector) batch.cols[2];
+    expr.evaluate(batch);
+
+    // spot check
+    Assert.assertFalse(outCol.isRepeating);   
+    Assert.assertEquals(0, outCol.vector[0]);
+    Assert.assertEquals(1, outCol.vector[1]);
+    Assert.assertEquals(0, outCol.vector[2]);
+    Assert.assertEquals(1, outCol.vector[3]);
+  }  
+  
   /**
    * Get a batch with three boolean (long) columns.
    */
