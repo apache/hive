@@ -52,7 +52,7 @@ public class CompactionTxnHandler extends TxnHandler {
    * or runAs set since these are only potential compactions not actual ones.
    */
   public Set<CompactionInfo> findPotentialCompactions(int maxAborted) throws MetaException {
-    Connection dbConn = getDbConn();
+    Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
     Set<CompactionInfo> response = new HashSet<CompactionInfo>();
     try {
       Statement stmt = dbConn.createStatement();
@@ -105,7 +105,7 @@ public class CompactionTxnHandler extends TxnHandler {
    */
   public void setRunAs(long cq_id, String user) throws MetaException {
     try {
-      Connection dbConn = getDbConn();
+      Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
       try {
        Statement stmt = dbConn.createStatement();
        String s = "update COMPACTION_QUEUE set cq_run_as = '" + user + "' where cq_id = " + cq_id;
@@ -143,13 +143,13 @@ public class CompactionTxnHandler extends TxnHandler {
    */
   public CompactionInfo findNextToCompact(String workerId) throws MetaException {
     try {
-      Connection dbConn = getDbConn();
+      Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
       CompactionInfo info = new CompactionInfo();
 
       try {
         Statement stmt = dbConn.createStatement();
         String s = "select cq_id, cq_database, cq_table, cq_partition, " +
-            "cq_type from COMPACTION_QUEUE where cq_state = '" + INITIATED_STATE + "' for update";
+            "cq_type from COMPACTION_QUEUE where cq_state = '" + INITIATED_STATE + "'";
         LOG.debug("Going to execute query <" + s + ">");
         ResultSet rs = stmt.executeQuery(s);
         if (!rs.next()) {
@@ -207,7 +207,7 @@ public class CompactionTxnHandler extends TxnHandler {
    */
   public void markCompacted(CompactionInfo info) throws MetaException {
     try {
-      Connection dbConn = getDbConn();
+      Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
       try {
         Statement stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set cq_state = '" + READY_FOR_CLEANING + "', " +
@@ -246,7 +246,7 @@ public class CompactionTxnHandler extends TxnHandler {
    * @return information on the entry in the queue.
    */
   public List<CompactionInfo> findReadyToClean() throws MetaException {
-    Connection dbConn = getDbConn();
+    Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
     List<CompactionInfo> rc = new ArrayList<CompactionInfo>();
 
     try {
@@ -293,7 +293,7 @@ public class CompactionTxnHandler extends TxnHandler {
    */
   public void markCleaned(CompactionInfo info) throws MetaException {
     try {
-      Connection dbConn = getDbConn();
+      Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
       try {
         Statement stmt = dbConn.createStatement();
         String s = "delete from COMPACTION_QUEUE where cq_id = " + info.id;
@@ -384,7 +384,7 @@ public class CompactionTxnHandler extends TxnHandler {
    */
   public void cleanEmptyAbortedTxns() throws MetaException {
     try {
-      Connection dbConn = getDbConn();
+      Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
       try {
         Statement stmt = dbConn.createStatement();
         String s = "select txn_id from TXNS where " +
@@ -440,7 +440,7 @@ public class CompactionTxnHandler extends TxnHandler {
    */
   public void revokeFromLocalWorkers(String hostname) throws MetaException {
     try {
-      Connection dbConn = getDbConn();
+      Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
       try {
         Statement stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set cq_worker_id = null, cq_start = null, cq_state = '"
@@ -484,7 +484,7 @@ public class CompactionTxnHandler extends TxnHandler {
    */
   public void revokeTimedoutWorkers(long timeout) throws MetaException {
     try {
-      Connection dbConn = getDbConn();
+      Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
       long latestValidStart = getDbTime(dbConn) - timeout;
       try {
         Statement stmt = dbConn.createStatement();
