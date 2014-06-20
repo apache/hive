@@ -37,3 +37,7 @@ SELECT translate('abcd', 'abc', '1234') FROM src tablesample (1 rows);
 -- Test proper function over UTF-8 characters
 SELECT translate('Àbcd', 'À', 'Ã') FROM src tablesample (1 rows);
 
+-- Run some queries where the arguments are not strings but chars and varchars
+SELECT translate(CAST('abcd' AS CHAR(5)), CAST('aba' AS VARCHAR(5)), CAST('123' AS CHAR(5))),
+       translate(CAST('abcd' AS VARCHAR(9)), CAST('aba' AS CHAR(9)), CAST('12' AS VARCHAR(9)))
+       FROM src tablesample (1 rows);
