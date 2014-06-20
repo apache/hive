@@ -1402,7 +1402,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       outputs.add(new WriteEntity(tab, writeType));
     }
     else {
-      inputs.add(new ReadEntity(tab));
+      ReadEntity re = new ReadEntity(tab);
+      // In the case of altering a table for its partitions we don't need to lock the table
+      // itself, just the partitions.  But the table will have a ReadEntity.  So mark that
+      // ReadEntity as no lock.
+      re.noLockNeeded();
+      inputs.add(re);
       if (desc == null || desc.getOp() != AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
         Partition part = getPartition(tab, partSpec, true);
         outputs.add(new WriteEntity(part, writeType));

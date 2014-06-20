@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.Serializable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -32,6 +34,8 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
  * object may be a table, partition, dfs directory or a local directory.
  */
 public class WriteEntity extends Entity implements Serializable {
+
+  private static final Log LOG = LogFactory.getLog(WriteEntity.class);
 
   private boolean isTempURI = false;
 
