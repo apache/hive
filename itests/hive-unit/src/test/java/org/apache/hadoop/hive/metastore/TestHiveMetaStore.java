@@ -67,8 +67,11 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.junit.Test;
@@ -192,6 +195,9 @@ public abstract class TestHiveMetaStore extends TestCase {
           .put(serdeConstants.SERIALIZATION_FORMAT, "1");
       sd.setSortCols(new ArrayList<Order>());
       sd.setStoredAsSubDirectories(false);
+      sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+      sd.setInputFormat(HiveInputFormat.class.getName());
+      sd.setOutputFormat(HiveOutputFormat.class.getName());
 
       //skewed information
       SkewedInfo skewInfor = new SkewedInfo();
@@ -629,6 +635,9 @@ public abstract class TestHiveMetaStore extends TestCase {
     sd.getSerdeInfo().setParameters(new HashMap<String, String>());
     sd.getSerdeInfo().getParameters()
         .put(serdeConstants.SERIALIZATION_FORMAT, "1");
+    sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+    sd.setInputFormat(HiveInputFormat.class.getName());
+    sd.setOutputFormat(HiveOutputFormat.class.getName());
     sd.setSortCols(new ArrayList<Order>());
 
     client.createTable(tbl);
@@ -738,6 +747,9 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters()
           .put(serdeConstants.SERIALIZATION_FORMAT, "1");
+      sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+      sd.setInputFormat(HiveInputFormat.class.getName());
+      sd.setOutputFormat(HiveOutputFormat.class.getName());
       sd.setSortCols(new ArrayList<Order>());
 
       tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
@@ -834,6 +846,9 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters()
           .put(serdeConstants.SERIALIZATION_FORMAT, "1");
+      sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+      sd.setInputFormat(HiveInputFormat.class.getName());
+      sd.setOutputFormat(HiveOutputFormat.class.getName());
       sd.setSortCols(new ArrayList<Order>());
 
       tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
@@ -1217,6 +1232,9 @@ public abstract class TestHiveMetaStore extends TestCase {
           org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "1");
       sd.getSerdeInfo().setSerializationLib(
           org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+      sd.setInputFormat(HiveInputFormat.class.getName());
+      sd.setInputFormat(HiveOutputFormat.class.getName());
+
       tbl.setPartitionKeys(new ArrayList<FieldSchema>());
 
       client.createTable(tbl);
@@ -1570,6 +1588,10 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters().put(
           org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "1");
+      sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+      sd.setInputFormat(HiveInputFormat.class.getName());
+      sd.setOutputFormat(HiveOutputFormat.class.getName());
+      
       boolean failed = false;
       try {
         client.createTable(tbl);
@@ -1739,7 +1761,9 @@ public abstract class TestHiveMetaStore extends TestCase {
           org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "9");
       sd.getSerdeInfo().setSerializationLib(
           org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
-
+      sd.setInputFormat(HiveInputFormat.class.getName());
+      sd.setOutputFormat(HiveOutputFormat.class.getName());
+      
       tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
       tbl.getPartitionKeys().add(
           new FieldSchema("ds",
@@ -1833,6 +1857,8 @@ public abstract class TestHiveMetaStore extends TestCase {
           org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "9");
       sd.getSerdeInfo().setSerializationLib(
           org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+      sd.setInputFormat(HiveInputFormat.class.getName());
+      sd.setOutputFormat(HiveOutputFormat.class.getName());
 
       tbl.setSd(sd);
       tbl.getSd().setCols(cols);
@@ -1946,6 +1972,9 @@ public abstract class TestHiveMetaStore extends TestCase {
     sd.getSerdeInfo().setParameters(new HashMap<String, String>());
     sd.getSerdeInfo().getParameters()
         .put(serdeConstants.SERIALIZATION_FORMAT, "1");
+    sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+    sd.setInputFormat(HiveInputFormat.class.getName());
+    sd.setOutputFormat(HiveOutputFormat.class.getName());
     sd.setSortCols(new ArrayList<Order>());
 
     tbl.setPartitionKeys(partCols);
@@ -2136,6 +2165,9 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters()
           .put(serdeConstants.SERIALIZATION_FORMAT, "1");
+      sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+      sd.setInputFormat(HiveInputFormat.class.getName());
+      sd.setOutputFormat(HiveOutputFormat.class.getName());
       sd.setSortCols(new ArrayList<Order>());
 
       tbl.setPartitionKeys(partCols);
@@ -2713,7 +2745,10 @@ public abstract class TestHiveMetaStore extends TestCase {
     sd.getSerdeInfo().getParameters()
         .put(serdeConstants.SERIALIZATION_FORMAT, "1");
     sd.setSortCols(new ArrayList<Order>());
-
+    sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+    sd.setInputFormat(HiveInputFormat.class.getName());
+    sd.setOutputFormat(HiveOutputFormat.class.getName());
+    
     return sd;
   }
 

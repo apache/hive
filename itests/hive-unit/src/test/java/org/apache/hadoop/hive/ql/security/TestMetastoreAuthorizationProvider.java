@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider;
@@ -174,6 +176,8 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
         org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "1");
     sd.getSerdeInfo().setSerializationLib(
         org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+    sd.setInputFormat(HiveInputFormat.class.getName());
+    sd.setOutputFormat(HiveOutputFormat.class.getName());
     ttbl.setPartitionKeys(new ArrayList<FieldSchema>());
 
     MetaException me = null;
