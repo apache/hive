@@ -88,6 +88,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
     // For each source to read, get a shared lock
     for (ReadEntity input : plan.getInputs()) {
+      if (!input.needsLock()) continue;
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       compBuilder.setShared();
 
