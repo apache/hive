@@ -7,7 +7,8 @@ CREATE TABLE parquet_types_staging (
   csmallint smallint,
   cfloat float,
   cdouble double,
-  cstring1 string
+  cstring1 string,
+  t timestamp
 ) ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|';
 
@@ -17,7 +18,8 @@ CREATE TABLE parquet_types (
   csmallint smallint,
   cfloat float,
   cdouble double,
-  cstring1 string
+  cstring1 string,
+  t timestamp
 ) STORED AS PARQUET;
 
 LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging;

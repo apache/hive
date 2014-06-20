@@ -78,7 +78,7 @@ public class HiveSchemaConverter {
         // TODO : binaryTypeInfo is a byte array. Need to map it
         throw new UnsupportedOperationException("Binary type not implemented");
       } else if (typeInfo.equals(TypeInfoFactory.timestampTypeInfo)) {
-        throw new UnsupportedOperationException("Timestamp type not implemented");
+        return new PrimitiveType(repetition, PrimitiveTypeName.INT96, name);
       } else if (typeInfo.equals(TypeInfoFactory.voidTypeInfo)) {
         throw new UnsupportedOperationException("Void type not implemented");
       } else if (typeInfo instanceof DecimalTypeInfo) {
