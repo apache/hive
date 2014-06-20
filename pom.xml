@@ -123,6 +123,7 @@
     <jersey.version>1.14</jersey.version>
     <jline.version>0.9.94</jline.version>
     <jms.version>1.1</jms.version>
+    <jodd.version>3.5.2</jodd.version>
     <json.version>20090211</json.version>
     <junit.version>4.10</junit.version>
     <kryo.version>2.22</kryo.version>

@@ -13,10 +13,14 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.write;
 
+import java.sql.Timestamp;
+
+import org.apache.hadoop.hive.ql.io.parquet.utils.NanoTimeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
@@ -25,6 +29,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 
+import parquet.example.data.simple.NanoTime;
 import parquet.io.ParquetEncodingException;
 import parquet.io.api.Binary;
 import parquet.io.api.RecordConsumer;
@@ -149,6 +154,10 @@ public class DataWritableWriter {
       throw new UnsupportedOperationException("HiveDecimalWritable writing not implemented");
     } else if (value instanceof BytesWritable) {
       recordConsumer.addBinary((Binary.fromByteArray(((BytesWritable) value).getBytes())));
+    } else if (value instanceof TimestampWritable) {
+      Timestamp ts = ((TimestampWritable) value).getTimestamp();
+      NanoTime nt = NanoTimeUtils.getNanoTime(ts);
+      nt.writeValue(recordConsumer);
     } else {
       throw new IllegalArgumentException("Unknown value type: " + value + " " + value.getClass());
     }
