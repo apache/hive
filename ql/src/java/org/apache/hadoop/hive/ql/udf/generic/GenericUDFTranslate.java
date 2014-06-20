@@ -148,10 +148,12 @@ public class GenericUDFTranslate extends GenericUDF {
           .getPrimitiveCategory();
 
       if (primitiveCategory != PrimitiveCategory.STRING
+          && primitiveCategory != PrimitiveCategory.CHAR
+          && primitiveCategory != PrimitiveCategory.VARCHAR
           && primitiveCategory != PrimitiveCategory.VOID) {
         throw new UDFArgumentTypeException(i,
-            "A string argument was expected but an argument of type " + arguments[i].getTypeName()
-                + " was given.");
+            "A string, char, or varchar argument was expected but an argument of type "
+                + arguments[i].getTypeName() + " was given.");
 
       }
     }
