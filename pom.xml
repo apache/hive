@@ -83,6 +83,7 @@
     <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
     <maven.war.plugin.version>2.4</maven.war.plugin.version>
     <maven.dependency.plugin.version>2.8</maven.dependency.plugin.version>
+    <maven.eclipse.plugin.version>2.9</maven.eclipse.plugin.version>
     <maven.build-helper.plugin.version>1.8</maven.build-helper.plugin.version>
 
     <!-- Library Dependency Versions -->
@@ -571,6 +572,17 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
           <version>${maven.assembly.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-eclipse-plugin</artifactId>
+          <version>${maven.eclipse.plugin.version}</version>
+          <configuration>
+            <downloadJavadocs>true</downloadJavadocs>
+            <downloadSources>true</downloadSources>
+            <workspaceActiveCodeStyleProfileName>Hive</workspaceActiveCodeStyleProfileName>
+            <workspaceCodeStylesURL>${basedir}/dev-support/eclipse-styles.xml</workspaceCodeStylesURL>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
