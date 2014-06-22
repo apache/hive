@@ -17,7 +17,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
-import org.apache.hadoop.hive.ql.io.parquet.utils.NanoTimeUtils;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -30,7 +31,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 import parquet.column.Dictionary;
-import parquet.example.data.simple.NanoTime;
 import parquet.io.api.Binary;
 import parquet.io.api.Converter;
 import parquet.io.api.PrimitiveConverter;
