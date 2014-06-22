@@ -21,9 +21,10 @@ import java.util.TimeZone;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import org.apache.hadoop.hive.ql.io.parquet.utils.NanoTimeUtils;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 
-import parquet.example.data.simple.NanoTime;
+
 
 /**
  * Tests util-libraries used for parquet-timestamp.

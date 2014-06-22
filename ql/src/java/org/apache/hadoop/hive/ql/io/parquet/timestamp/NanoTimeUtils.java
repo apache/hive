@@ -11,16 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.parquet.utils;
+package org.apache.hadoop.hive.ql.io.parquet.timestamp;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.TimeZone;
 
 import jodd.datetime.JDateTime;
-import jodd.datetime.TimeUtil;
-import parquet.example.data.simple.NanoTime;
 
 /**
  * Utilities for converting from java.sql.Timestamp to parquet timestamp.
