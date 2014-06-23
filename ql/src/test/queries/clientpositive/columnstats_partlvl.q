@@ -23,3 +23,5 @@ explain
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns;
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns;
 
+describe formatted Employee_Part.employeeID   partition (employeeSalary=2000.0);
+describe formatted Employee_Part.employeeName partition (employeeSalary=2000.0);
