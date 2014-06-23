@@ -161,19 +161,25 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -182,11 +188,11 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0}
             1 
           outputColumnNames: _col0
-          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: UDFToDouble(UDFToLong(_col0)) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -205,28 +211,28 @@ STAGE PLANS:
               outputColumnNames: _col0
               Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
-                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: double)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: double)
                 outputColumnNames: _col0
-                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -312,19 +318,25 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -333,11 +345,11 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0}
             1 
           outputColumnNames: _col0
-          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: UDFToDouble(UDFToLong(_col0)) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -350,14 +362,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: double)
                 outputColumnNames: _col0
-                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -370,14 +382,14 @@ STAGE PLANS:
               outputColumnNames: _col0
               Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
-                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: double)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -463,19 +475,25 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -484,11 +502,11 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0}
             1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col4
-          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(UDFToDouble(_col4)) (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -507,28 +525,28 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
-                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: double), _col1 (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: double), _col1 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -614,19 +632,25 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -635,11 +659,11 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0}
             1 {KEY.reducesinkkey0}
           outputColumnNames: _col0, _col4
-          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToDouble(_col4) (type: double)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -652,14 +676,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: double), _col1 (type: double)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -672,14 +696,14 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
-                Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: double), _col1 (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

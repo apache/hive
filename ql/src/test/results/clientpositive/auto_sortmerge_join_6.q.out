@@ -96,28 +96,34 @@ STAGE PLANS:
           TableScan
             alias: c
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -200,28 +206,34 @@ STAGE PLANS:
           TableScan
             alias: d
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -304,28 +316,34 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
           TableScan
             alias: h
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -421,56 +439,62 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
         c 
           TableScan
             alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
 
   Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: a
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
 
@@ -513,56 +537,62 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
         c 
           TableScan
             alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
 
   Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: b
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
 
@@ -579,56 +609,62 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
         b 
           TableScan
             alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
 
   Stage: Stage-7
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: c
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
 
@@ -638,27 +674,36 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: c
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -668,9 +713,9 @@ STAGE PLANS:
             0 
             1 
             2 
-          Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count()
               mode: hash
@@ -719,26 +764,29 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -791,28 +839,34 @@ STAGE PLANS:
           TableScan
             alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -891,28 +945,34 @@ STAGE PLANS:
           TableScan
             alias: c
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1008,56 +1068,62 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
         c 
           TableScan
             alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
 
   Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: a
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
 
@@ -1100,56 +1166,62 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
         c 
           TableScan
             alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
 
   Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: b
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
 
@@ -1166,56 +1238,62 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
         b 
           TableScan
             alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
 
   Stage: Stage-7
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: c
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 UDFToDouble(key) (type: double)
-                1 UDFToDouble(key) (type: double)
-                2 UDFToDouble(key) (type: double)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(key) (type: double)
+                  2 UDFToDouble(key) (type: double)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
 
@@ -1225,27 +1303,36 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: c
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: UDFToDouble(key) (type: double)
-              sort order: +
-              Map-reduce partition columns: UDFToDouble(key) (type: double)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1255,9 +1342,9 @@ STAGE PLANS:
             0 
             1 
             2 
-          Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count()
               mode: hash
@@ -1323,53 +1410,59 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
         c 
           TableScan
             alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
 
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: a
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -1400,53 +1493,59 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
         c 
           TableScan
             alias: c
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
 
   Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: b
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -1477,53 +1576,59 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
         b 
           TableScan
             alias: b
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
 
   Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: c
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -1547,26 +1652,29 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1619,28 +1727,34 @@ STAGE PLANS:
           TableScan
             alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: value (type: string)
-              sort order: +
-              Map-reduce partition columns: value (type: string)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {value}
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              outputColumnNames: _col1
-              Reduce Output Operator
-                key expressions: _col1 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: string)
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {value}
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:

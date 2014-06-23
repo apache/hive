@@ -55,7 +55,7 @@ STAGE PLANS:
             alias: test_tbl
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: ((name = 'c') and (id = 'a')) (type: boolean)
+              predicate: ((id is not null and (name = 'c')) and (id = 'a')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: id (type: string), name (type: string)
@@ -85,7 +85,7 @@ STAGE PLANS:
             alias: t3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: (id = 'a') (type: boolean)
+              predicate: (id is not null and (id = 'a')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: id (type: string)

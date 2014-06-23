@@ -2328,6 +2328,57 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
+  /*
+   * for inner joins push a 'is not null predicate' to the join sources for
+   * every non nullSafe predicate.
+   */
+  private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input, 
+      QBJoinTree joinTree, ExprNodeDesc[] joinKeys) throws SemanticException {
+
+    if (qb == null || joinTree == null) {
+      return input;
+    }
+    
+    if (!joinTree.getNoOuterJoin()) {
+      return input;
+    }
+
+    if (joinKeys == null || joinKeys.length == 0) {
+      return input;
+    }
+
+    ExprNodeDesc filterPred = null;
+    List<Boolean> nullSafes = joinTree.getNullSafes();
+    for (int i = 0; i < joinKeys.length; i++) {
+      if ( nullSafes.get(i)) {
+        continue;
+      }
+      List<ExprNodeDesc> args = new ArrayList<ExprNodeDesc>();
+      args.add(joinKeys[i]);
+      ExprNodeDesc nextExpr = ExprNodeGenericFuncDesc.newInstance(
+          FunctionRegistry.getFunctionInfo("isnotnull").getGenericUDF(), args);
+      filterPred = filterPred == null ? nextExpr : ExprNodeDescUtils
+          .mergePredicates(filterPred, nextExpr);
+    }
+
+    if (filterPred == null) {
+      return input;
+    }
+
+    OpParseContext inputCtx = opParseCtx.get(input);
+    RowResolver inputRR = inputCtx.getRowResolver();
+
+    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
+        new FilterDesc(filterPred, false),
+        new RowSchema(inputRR.getColumnInfos()), input), inputRR);
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Created Filter Plan for " + qb.getId() + " row schema: "
+          + inputRR.toString());
+    }
+    return output;
+  }
+
   @SuppressWarnings("nls")
   private Integer genColListRegex(String colRegex, String tabAlias,
       ASTNode sel, ArrayList<ExprNodeDesc> col_list,
@@ -6867,6 +6918,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 0; i < srcOps.length; i++) {
       // generate a ReduceSink operator for the join
       String[] srcs = baseSrc[i] != null ? new String[] {baseSrc[i]} : joinTree.getLeftAliases();
+      srcOps[i] = genNotNullFilterForJoinSourcePlan(qb, srcOps[i], joinTree, joinKeys[i]);
       srcOps[i] = genJoinReduceSinkChild(qb, joinKeys[i], srcOps[i], srcs, joinTree.getNextTag());
     }
 

@@ -308,14 +308,18 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              Position of Big Table: 0
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1070 Data size: 4281 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                Position of Big Table: 0
       Bucket Mapjoin Context:
           Alias Bucket Base File Name Mapping:
             b {part=1/srcbucket20.txt=[part=1/srcbucket20.txt, part=1/srcbucket22.txt, part=2/srcbucket20.txt], part=1/srcbucket21.txt=[part=1/srcbucket21.txt, part=1/srcbucket23.txt, part=2/srcbucket21.txt], part=2/srcbucket20.txt=[part=1/srcbucket20.txt, part=2/srcbucket20.txt], part=2/srcbucket21.txt=[part=1/srcbucket21.txt, part=2/srcbucket21.txt], part=2/srcbucket22.txt=[part=1/srcbucket22.txt, part=2/srcbucket20.txt], part=2/srcbucket23.txt=[part=1/srcbucket23.txt, part=2/srcbucket21.txt]}
@@ -331,30 +335,34 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              Position of Big Table: 0
-              Statistics: Num rows: 2354 Data size: 9418 Basic stats: COMPLETE Column stats: NONE
-              BucketMapJoin: true
-              Select Operator
-                Statistics: Num rows: 2354 Data size: 9418 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1070 Data size: 4281 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                Position of Big Table: 0
+                Statistics: Num rows: 1177 Data size: 4709 Basic stats: COMPLETE Column stats: NONE
+                BucketMapJoin: true
+                Select Operator
+                  Statistics: Num rows: 1177 Data size: 4709 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: _col0 (type: bigint)
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      tag: -1
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -699,14 +707,18 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: int), part (type: string)
-                1 key (type: int), part (type: string)
-              Position of Big Table: 0
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1070 Data size: 4281 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: int), part (type: string)
+                  1 key (type: int), part (type: string)
+                Position of Big Table: 0
       Bucket Mapjoin Context:
           Alias Bucket Base File Name Mapping:
             b {part=1/srcbucket20.txt=[part=1/srcbucket20.txt, part=1/srcbucket22.txt, part=2/srcbucket20.txt], part=1/srcbucket21.txt=[part=1/srcbucket21.txt, part=1/srcbucket23.txt, part=2/srcbucket21.txt], part=2/srcbucket20.txt=[part=1/srcbucket20.txt, part=2/srcbucket20.txt], part=2/srcbucket21.txt=[part=1/srcbucket21.txt, part=2/srcbucket21.txt], part=2/srcbucket22.txt=[part=1/srcbucket22.txt, part=2/srcbucket20.txt], part=2/srcbucket23.txt=[part=1/srcbucket23.txt, part=2/srcbucket21.txt]}
@@ -722,30 +734,34 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: int), part (type: string)
-                1 key (type: int), part (type: string)
-              Position of Big Table: 0
-              Statistics: Num rows: 2354 Data size: 9418 Basic stats: COMPLETE Column stats: NONE
-              BucketMapJoin: true
-              Select Operator
-                Statistics: Num rows: 2354 Data size: 9418 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1070 Data size: 4281 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: int), part (type: string)
+                  1 key (type: int), part (type: string)
+                Position of Big Table: 0
+                Statistics: Num rows: 1177 Data size: 4709 Basic stats: COMPLETE Column stats: NONE
+                BucketMapJoin: true
+                Select Operator
+                  Statistics: Num rows: 1177 Data size: 4709 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: _col0 (type: bigint)
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      tag: -1
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Path -> Alias:

@@ -164,25 +164,29 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-              Position of Big Table: 1
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                Position of Big Table: 1
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions: _col0 (type: bigint)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -388,25 +392,29 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-              Position of Big Table: 0
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                Position of Big Table: 0
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions: _col0 (type: bigint)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -719,14 +727,17 @@ STAGE PLANS:
           TableScan
             alias: b
             GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-              Position of Big Table: 0
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                Position of Big Table: 0
 
   Stage: Stage-3
     Map Reduce
@@ -734,25 +745,28 @@ STAGE PLANS:
           TableScan
             alias: a
             GatherStats: false
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-              Position of Big Table: 0
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                Position of Big Table: 0
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -1087,14 +1101,17 @@ STAGE PLANS:
           TableScan
             alias: a
             GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-              Position of Big Table: 1
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                Position of Big Table: 1
 
   Stage: Stage-4
     Map Reduce
@@ -1102,25 +1119,28 @@ STAGE PLANS:
           TableScan
             alias: b
             GatherStats: false
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-              Position of Big Table: 1
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                Position of Big Table: 1
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -1356,25 +1376,29 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-              Position of Big Table: 0
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                Position of Big Table: 0
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions: _col0 (type: bigint)
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

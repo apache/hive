@@ -183,38 +183,41 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
-                   Inner Join 0 to 3
-                   Inner Join 0 to 4
-                   Inner Join 0 to 5
-                   Inner Join 0 to 6
-              condition expressions:
-                0 
-                1 
-                2 
-                3 
-                4 
-                5 
-                6 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-                2 key (type: int)
-                3 key (type: int)
-                4 key (type: int)
-                5 key (type: int)
-                6 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                     Inner Join 0 to 3
+                     Inner Join 0 to 4
+                     Inner Join 0 to 5
+                     Inner Join 0 to 6
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                  3 
+                  4 
+                  5 
+                  6 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 key (type: int)
+                  3 key (type: int)
+                  4 key (type: int)
+                  5 key (type: int)
+                  6 key (type: int)
+                Select Operator
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

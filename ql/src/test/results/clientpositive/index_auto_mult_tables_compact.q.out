@@ -22,18 +22,18 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 232 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
-              Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((((key is not null and (key > 70)) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
+              predicate: ((((key is not null and (key > 80)) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -49,14 +49,14 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -243,22 +243,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            filterExpr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
+            filterExpr: ((((key is not null and (key > 70)) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
             Statistics: Num rows: 232 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
-              Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((((key is not null and (key > 70)) and (key < 90)) and (key > 80)) and (key < 100)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
-            filterExpr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
+            filterExpr: ((((key is not null and (key > 80)) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
+              predicate: ((((key is not null and (key > 80)) and (key < 100)) and (key > 70)) and (key < 90)) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -274,14 +274,14 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0} {VALUE._col0}
             1 
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

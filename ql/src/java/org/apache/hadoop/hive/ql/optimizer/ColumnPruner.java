@@ -117,6 +117,9 @@ public class ColumnPruner implements Transform {
     opRules.put(new RuleRegExp("R10",
         PTFOperator.getOperatorName() + "%"),
         ColumnPrunerProcFactory.getPTFProc());
+    opRules.put(new RuleRegExp("R11",
+        ScriptOperator.getOperatorName() + "%"),
+        ColumnPrunerProcFactory.getScriptProc());
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(ColumnPrunerProcFactory

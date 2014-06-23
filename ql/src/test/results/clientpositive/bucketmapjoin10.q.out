@@ -298,14 +298,18 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 1737 Data size: 6950 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              Position of Big Table: 0
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 869 Data size: 3477 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                Position of Big Table: 0
 
   Stage: Stage-1
     Map Reduce
@@ -314,29 +318,33 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1737 Data size: 6950 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              Position of Big Table: 0
-              Statistics: Num rows: 1910 Data size: 7645 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                Statistics: Num rows: 1910 Data size: 7645 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 869 Data size: 3477 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 
+                  1 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                Position of Big Table: 0
+                Statistics: Num rows: 955 Data size: 3824 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  Statistics: Num rows: 955 Data size: 3824 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: _col0 (type: bigint)
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      tag: -1
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Path -> Alias:

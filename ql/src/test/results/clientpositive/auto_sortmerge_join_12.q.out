@@ -135,7 +135,7 @@ POSTHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket3out
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_medium@ds=2008-04-08
-Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
@@ -368,31 +368,39 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-                2 key (type: string)
-              Position of Big Table: 2
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
+                Position of Big Table: 2
         b 
           TableScan
             alias: b
             Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-                2 key (type: string)
-              Position of Big Table: 2
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                  2 
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
+                Position of Big Table: 2
         d 
           TableScan
             alias: d
@@ -414,43 +422,47 @@ STAGE PLANS:
             alias: c
             Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 1 to 2
-              condition expressions:
-                0 
-                1 
-                2 
-              keys:
-                0 key (type: string)
-                1 key (type: string)
-                2 key (type: string)
-              Position of Big Table: 2
-              Statistics: Num rows: 255 Data size: 25572 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
+                     Inner Join 1 to 2
                 condition expressions:
                   0 
                   1 
+                  2 
                 keys:
-                  0 
-                  1 
-                Position of Big Table: 0
-                Statistics: Num rows: 280 Data size: 28129 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 280 Data size: 28129 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
+                Position of Big Table: 2
+                Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 
+                    1 
+                  keys:
+                    0 
+                    1 
+                  Position of Big Table: 0
+                  Statistics: Num rows: 139 Data size: 14064 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    Statistics: Num rows: 139 Data size: 14064 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      tag: -1
-                      value expressions: _col0 (type: bigint)
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        tag: -1
+                        value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -690,7 +702,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket_big

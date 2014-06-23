@@ -49,39 +49,51 @@ STAGE PLANS:
           TableScan
             alias: d
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Reduce Output Operator
-              key expressions: val1 (type: int)
-              sort order: +
-              Map-reduce partition columns: val1 (type: int)
+            Filter Operator
+              predicate: val1 is not null (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: val2 (type: int)
+              Reduce Output Operator
+                key expressions: val1 (type: int)
+                sort order: +
+                Map-reduce partition columns: val1 (type: int)
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                value expressions: val2 (type: int)
           TableScan
             alias: b
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Reduce Output Operator
-              key expressions: val1 (type: int)
-              sort order: +
-              Map-reduce partition columns: val1 (type: int)
+            Filter Operator
+              predicate: val1 is not null (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: val2 (type: int)
+              Reduce Output Operator
+                key expressions: val1 (type: int)
+                sort order: +
+                Map-reduce partition columns: val1 (type: int)
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                value expressions: val2 (type: int)
           TableScan
             alias: c
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Reduce Output Operator
-              key expressions: val1 (type: int)
-              sort order: +
-              Map-reduce partition columns: val1 (type: int)
+            Filter Operator
+              predicate: val1 is not null (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: val2 (type: int)
+              Reduce Output Operator
+                key expressions: val1 (type: int)
+                sort order: +
+                Map-reduce partition columns: val1 (type: int)
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                value expressions: val2 (type: int)
           TableScan
             alias: a
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Reduce Output Operator
-              key expressions: val1 (type: int)
-              sort order: +
-              Map-reduce partition columns: val1 (type: int)
+            Filter Operator
+              predicate: (val1 is not null and val2 is not null) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: val2 (type: int)
+              Reduce Output Operator
+                key expressions: val1 (type: int)
+                sort order: +
+                Map-reduce partition columns: val1 (type: int)
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                value expressions: val2 (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -115,12 +127,15 @@ STAGE PLANS:
           TableScan
             alias: e
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Reduce Output Operator
-              key expressions: val2 (type: int)
-              sort order: +
-              Map-reduce partition columns: val2 (type: int)
+            Filter Operator
+              predicate: val2 is not null (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: val1 (type: int)
+              Reduce Output Operator
+                key expressions: val2 (type: int)
+                sort order: +
+                Map-reduce partition columns: val2 (type: int)
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                value expressions: val1 (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
