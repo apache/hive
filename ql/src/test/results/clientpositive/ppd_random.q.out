@@ -28,30 +28,39 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key > '2') (type: boolean)
-              Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((key > '2') and key is not null) (type: boolean)
+              Statistics: Num rows: 5 Data size: 1002 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: string)
+                Statistics: Num rows: 5 Data size: 1002 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: string)
           TableScan
             alias: src
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: _col0
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col0 (type: string)
-                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 15 Data size: 1503 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 15 Data size: 1503 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -60,17 +69,17 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0}
             1 {VALUE._col0}
           outputColumnNames: _col0, _col3
-          Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 16 Data size: 1653 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (rand() > 0.5) (type: boolean)
-            Statistics: Num rows: 21 Data size: 2131 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 516 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col3 (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 21 Data size: 2131 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 516 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 21 Data size: 2131 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 516 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -112,30 +121,33 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key > '2') (type: boolean)
-              Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((key > '2') and key is not null) (type: boolean)
+              Statistics: Num rows: 5 Data size: 1002 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 1002 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 1002 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
           TableScan
             alias: src
             Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: _col0
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col0 (type: string)
-                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -144,17 +156,17 @@ STAGE PLANS:
             0 {KEY.reducesinkkey0}
             1 {VALUE._col0}
           outputColumnNames: _col0, _col3
-          Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (rand() > 0.5) (type: boolean)
-            Statistics: Num rows: 21 Data size: 2131 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 1030 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col3 (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 21 Data size: 2131 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 1030 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 21 Data size: 2131 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 1030 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

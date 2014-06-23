@@ -51,7 +51,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 0 Data size: 36 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (a < 3) (type: boolean)
+              predicate: ((a < 3) and a is not null) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: a (type: string), b (type: string)
@@ -132,7 +132,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 0 Data size: 36 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (a < 3) (type: boolean)
+              predicate: ((a < 3) and a is not null) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: a (type: string), b (type: string)
@@ -237,7 +237,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 0 Data size: 36 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (a < 3) (type: boolean)
+              predicate: ((a < 3) and a is not null) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: a (type: string), b (type: string)
@@ -342,7 +342,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 0 Data size: 36 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (a < 3) (type: boolean)
+              predicate: ((a < 3) and a is not null) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: a (type: string), b (type: string)

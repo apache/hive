@@ -74,7 +74,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (not (key = '2')) (type: boolean)
+              predicate: (key is not null and (not (key = '2'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -86,7 +86,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (not (key = '2')) (type: boolean)
+              predicate: (key is not null and (not (key = '2'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -181,7 +181,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key = '2') (type: boolean)
+              predicate: (key is not null and (key = '2')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -193,7 +193,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key = '2') (type: boolean)
+              predicate: (key is not null and (key = '2')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -228,7 +228,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key = '2') (type: boolean)
+              predicate: (key is not null and (key = '2')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -240,7 +240,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key = '2') (type: boolean)
+              predicate: (key is not null and (key = '2')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -303,7 +303,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (not (key = '2')) (type: boolean)
+              predicate: (key is not null and (not (key = '2'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -315,7 +315,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (not (key = '2')) (type: boolean)
+              predicate: (key is not null and (not (key = '2'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
