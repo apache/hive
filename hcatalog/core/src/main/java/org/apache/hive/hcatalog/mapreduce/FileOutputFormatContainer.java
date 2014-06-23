@@ -95,18 +95,19 @@ class FileOutputFormatContainer extends OutputFormatContainer {
       // When Dynamic partitioning is used, the RecordWriter instance initialized here isn't used. Can use null.
       // (That's because records can't be written until the values of the dynamic partitions are deduced.
       // By that time, a new local instance of RecordWriter, with the correct output-path, will be constructed.)
-      rw = new FileRecordWriterContainer((org.apache.hadoop.mapred.RecordWriter)null,context);
+      rw = new DynamicPartitionFileRecordWriterContainer(
+          (org.apache.hadoop.mapred.RecordWriter)null, context);
     } else {
       Path parentDir = new Path(context.getConfiguration().get("mapred.work.output.dir"));
       Path childPath = new Path(parentDir,FileOutputFormat.getUniqueName(new JobConf(context.getConfiguration()), "part"));
 
-      rw = new FileRecordWriterContainer(
-            getBaseOutputFormat().getRecordWriter(
-                parentDir.getFileSystem(context.getConfiguration()),
-                new JobConf(context.getConfiguration()),
-                childPath.toString(),
-                InternalUtil.createReporter(context)),
-            context);
+      rw = new StaticPartitionFileRecordWriterContainer(
+          getBaseOutputFormat().getRecordWriter(
+              parentDir.getFileSystem(context.getConfiguration()),
+              new JobConf(context.getConfiguration()),
+              childPath.toString(),
+              InternalUtil.createReporter(context)),
+          context);
     }
     return rw;
   }
