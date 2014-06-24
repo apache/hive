@@ -25,7 +25,6 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
     planner.addRelTraitDef(ConventionTraitDef.INSTANCE);
     if (ENABLE_COLLATION_TRAIT) {
       planner.addRelTraitDef(RelCollationTraitDef.INSTANCE);
-      planner.registerAbstractRelationalRules();
     }
     return planner;
   }

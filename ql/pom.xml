@@ -28,7 +28,7 @@
   <name>Hive Query Language</name>
 
   <properties>
-    <optiq.version>0.5</optiq.version>
+    <optiq.version>0.7</optiq.version>
     <hive.path.to.root>..</hive.path.to.root>
   </properties>
 

@@ -51,7 +51,9 @@ public class SqlFunctionConverter {
       node = (ASTNode) ParseDriver.adaptor.create(hToken.type, hToken.text);
     } else {
       node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
-      node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, op.getName()));
+      if (op.kind != SqlKind.CAST)
+        node.addChild((ASTNode) ParseDriver.adaptor.create(
+            HiveParser.Identifier, op.getName()));
     }
 
     for (ASTNode c : children) {
@@ -212,14 +214,18 @@ public class SqlFunctionConverter {
       registerFunction(name, optiqFn, null);
     }
 
-    private void registerFunction(String name, SqlOperator optiqFn, HiveToken hiveToken) {
-      FunctionInfo hFn = FunctionRegistry.getFunctionInfo(name);
+    private void registerFunction(String name, SqlOperator optiqFn,
+        HiveToken hiveToken) {
       operatorMap.put(name, optiqFn);
 
-      String hFnName = getName(hFn.getGenericUDF());
-      hiveToOptiq.put(hFnName, optiqFn);
-      if (hiveToken != null) {
-        optiqToHiveToken.put(optiqFn, hiveToken);
+      FunctionInfo hFn = FunctionRegistry.getFunctionInfo(name);
+      if (hFn != null) {
+        String hFnName = getName(hFn.getGenericUDF());
+        hiveToOptiq.put(hFnName, optiqFn);
+
+        if (hiveToken != null) {
+          optiqToHiveToken.put(optiqFn, hiveToken);
+        }
       }
     }
   }
@@ -228,17 +234,7 @@ public class SqlFunctionConverter {
     return new HiveToken(type, text);
   }
 
-  static class HiveToken {
-    int    type;
-    String text;
-
-    HiveToken(int type, String text) {
-      this.type = type;
-      this.text = text;
-    }
-  }
-
-  static SqlAggFunction hiveAggFunction(String name) {
+  public static SqlAggFunction hiveAggFunction(String name) {
     return new HiveAggFunction(name);
   }
 
@@ -258,4 +254,16 @@ public class SqlFunctionConverter {
     }
 
   }
+
+  static class HiveToken {
+    int    type;
+    String text;
+    String[] args;
+
+    HiveToken(int type, String text, String... args) {
+      this.type = type;
+      this.text = text;
+      this.args = args;
+    }
+  }  
 }

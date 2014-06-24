@@ -16,7 +16,10 @@ public class HiveSwapJoinRule extends SwapJoinRule {
 
   @Override
   public boolean matches(RelOptRuleCall call) {
-    return super.matches(call)
-        && call.<HiveJoinRel> rel(0).getJoinAlgorithm() == JoinAlgorithm.NONE;
+    if (call.<HiveJoinRel> rel(0).isLeftSemiJoin())
+      return false;
+    else
+      return super.matches(call)
+          && call.<HiveJoinRel> rel(0).getJoinAlgorithm() == JoinAlgorithm.NONE;
   }
 }

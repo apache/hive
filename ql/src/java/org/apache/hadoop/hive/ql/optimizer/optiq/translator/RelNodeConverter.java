@@ -73,12 +73,10 @@ import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
-import org.eigenbase.rex.RexUtil;
 import org.eigenbase.sql.fun.SqlStdOperatorTable;
 import org.eigenbase.util.CompositeList;
 import org.eigenbase.util.Pair;
 
-import com.esotericsoftware.minlog.Log;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -231,11 +229,11 @@ public class RelNodeConverter {
       opPositionMap.put(node, opPositionMap.get(parent));
     }
 
-    RexNode convertToOptiqExpr(final ExprNodeDesc expr, final RelNode optiqOP, final boolean flatten) {
+    RexNode convertToOptiqExpr(final ExprNodeDesc expr, final RelNode optiqOP, final boolean flatten) throws SemanticException {
       return convertToOptiqExpr(expr, optiqOP, 0, flatten);
     }
 
-    RexNode convertToOptiqExpr(final ExprNodeDesc expr, final RelNode optiqOP, int offset, final boolean flatten) {
+    RexNode convertToOptiqExpr(final ExprNodeDesc expr, final RelNode optiqOP, int offset, final boolean flatten) throws SemanticException {
       ImmutableMap<String, Integer> posMap = opPositionMap.get(optiqOP);
       RexNodeConverter c = new RexNodeConverter(cluster, optiqOP.getRowType(), posMap, offset, flatten);
       return c.convert(expr);
@@ -268,7 +266,7 @@ public class RelNodeConverter {
      * @todo: cleanup, for now just copied from HiveToOptiqRelConvereter
      */
     private HiveJoinRel convertJoinOp(Context ctx, JoinOperator op, JoinCondDesc jc,
-        HiveRel leftRel, HiveRel rightRel) {
+        HiveRel leftRel, HiveRel rightRel) throws SemanticException {
       HiveJoinRel joinRel;
       Operator<? extends OperatorDesc> leftParent = op.getParentOperators().get(jc.getLeft());
       Operator<? extends OperatorDesc> rightParent = op.getParentOperators().get(jc.getRight());
@@ -350,17 +348,18 @@ public class RelNodeConverter {
           }
         }
 
-        joinRel = HiveJoinRel.getJoin(ctx.cluster, leftRel, rightRel, joinPredicate, joinType);
+        joinRel = HiveJoinRel.getJoin(ctx.cluster, leftRel, rightRel, joinPredicate, joinType, false);
       } else {
         throw new RuntimeException("Right & Left of Join Condition columns are not equal");
       }
 
       return joinRel;
     }
+
   }
 
   private static int convertExpr(Context ctx, RelNode input, ExprNodeDesc expr,
-      List<RexNode> extraExprs) {
+      List<RexNode> extraExprs) throws SemanticException {
     final RexNode rex = ctx.convertToOptiqExpr(expr, input, false);
     final int index;
     if (rex instanceof RexInputRef) {
@@ -373,7 +372,7 @@ public class RelNodeConverter {
   }
 
   private static AggregateCall convertAgg(Context ctx, AggregationDesc agg, RelNode input,
-      ColumnInfo cI, List<RexNode> extraExprs) {
+      ColumnInfo cI, List<RexNode> extraExprs) throws SemanticException {
     final Aggregation aggregation = AGG_MAP.get(agg.getGenericUDAFName());
     if (aggregation == null) {
       throw new AssertionError("agg not found: " + agg.getGenericUDAFName());

@@ -8,7 +8,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import net.hydromatic.optiq.util.BitSets;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveJoinRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
+import org.apache.hadoop.hive.ql.optimizer.optiq.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
@@ -27,7 +29,6 @@ import org.eigenbase.rex.RexCall;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexLiteral;
 import org.eigenbase.rex.RexNode;
-import org.eigenbase.rex.RexUtil;
 import org.eigenbase.rex.RexVisitorImpl;
 import org.eigenbase.sql.SqlKind;
 import org.eigenbase.sql.SqlOperator;
@@ -179,7 +180,10 @@ public class ASTConverter {
       QueryBlockInfo right = convertSource(join.getRight());
       s = new Schema(left.schema, right.schema);
       ASTNode cond = join.getCondition().accept(new RexVisitor(s));
-      ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond);
+      boolean semiJoin = ((join instanceof HiveJoinRel) && ((HiveJoinRel)join).isLeftSemiJoin()) ? true : false;
+      ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond, semiJoin);
+      if (semiJoin)
+        s = left.schema;
     } else {
       ASTConverter src = new ASTConverter(r);
       ASTNode srcAST = src.convert(order);
@@ -266,9 +270,20 @@ public class ASTConverter {
 
       SqlOperator op = call.getOperator();
       List<ASTNode> astNodeLst = new LinkedList<ASTNode>();
+      if (op.kind == SqlKind.CAST) {
+        HiveToken ht = TypeConverter.convert(call.getType());
+        ASTBuilder astBldr = ASTBuilder.construct(ht.type, ht.text);
+        if (ht.args != null) {
+          for (String castArg : ht.args)
+            astBldr.add(HiveParser.Identifier, castArg);
+        }
+        astNodeLst.add(astBldr.node());
+      }
+
       for (RexNode operand : call.operands) {
         astNodeLst.add(operand.accept(this));
       }
+
       if (isFlat(call))
         return SqlFunctionConverter.buildAST(op, astNodeLst, 0);
       else

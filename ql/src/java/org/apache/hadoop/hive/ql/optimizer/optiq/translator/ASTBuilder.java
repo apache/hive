@@ -41,21 +41,30 @@ class ASTBuilder {
     return b.node();
   }
 
-  static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond) {
+  static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType,
+      ASTNode cond, boolean semiJoin) {
     ASTBuilder b = null;
 
     switch (joinType) {
     case INNER:
-      b = ASTBuilder.construct(HiveParser.TOK_JOIN, "TOK_JOIN");
+      if (semiJoin) {
+        b = ASTBuilder.construct(HiveParser.TOK_LEFTSEMIJOIN,
+            "TOK_LEFTSEMIJOIN");
+      } else {
+        b = ASTBuilder.construct(HiveParser.TOK_JOIN, "TOK_JOIN");
+      }
       break;
     case LEFT:
-      b = ASTBuilder.construct(HiveParser.TOK_LEFTOUTERJOIN, "TOK_LEFTOUTERJOIN");
+      b = ASTBuilder.construct(HiveParser.TOK_LEFTOUTERJOIN,
+          "TOK_LEFTOUTERJOIN");
       break;
     case RIGHT:
-      b = ASTBuilder.construct(HiveParser.TOK_RIGHTOUTERJOIN, "TOK_RIGHTOUTERJOIN");
+      b = ASTBuilder.construct(HiveParser.TOK_RIGHTOUTERJOIN,
+          "TOK_RIGHTOUTERJOIN");
       break;
     case FULL:
-      b = ASTBuilder.construct(HiveParser.TOK_FULLOUTERJOIN, "TOK_FULLOUTERJOIN");
+      b = ASTBuilder.construct(HiveParser.TOK_FULLOUTERJOIN,
+          "TOK_FULLOUTERJOIN");
       break;
     }
 
