@@ -279,22 +279,6 @@ public class Driver implements CommandProcessor {
     this.maxRows = maxRows;
   }
 
-  public boolean hasReduceTasks(List<Task<? extends Serializable>> tasks) {
-    if (tasks == null) {
-      return false;
-    }
-
-    boolean hasReduce = false;
-    for (Task<? extends Serializable> task : tasks) {
-      if (task.hasReduce()) {
-        return true;
-      }
-
-      hasReduce = (hasReduce || hasReduceTasks(task.getChildTasks()));
-    }
-    return hasReduce;
-  }
-
   /**
    * for backwards compatibility with current tests
    */
@@ -505,7 +489,7 @@ public class Driver implements CommandProcessor {
     HashSet<ReadEntity> inputs = sem.getInputs();
     HashSet<WriteEntity> outputs = sem.getOutputs();
     SessionState ss = SessionState.get();
-    HiveOperation op = sem.getHiveOperation();
+    HiveOperation op = ss.getHiveOperation();
     Hive db = sem.getDb();
     if (ss.isAuthorizationModeV2()) {
       doAuthorizationV2(ss, op, inputs, outputs);
@@ -1471,8 +1455,6 @@ public class Driver implements CommandProcessor {
    *          Id of the query containing the task
    * @param noName
    *          whether the task has a name set
-   * @param running
-   *          map from taskresults to taskrunners
    * @param jobname
    *          name of the task, if it is a map-reduce job
    * @param jobs

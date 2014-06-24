@@ -311,7 +311,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       throws Exception {
 
     BaseSemanticAnalyzer analyzer = work.getAnalyzer();
-    HiveOperation operation = analyzer.getHiveOperation();
+    HiveOperation operation = SessionState.get().getHiveOperation();
 
     JSONObject object = new JSONObject();
     Object jsonInput = toJson("INPUTS", toString(analyzer.getInputs()), out, work);
