@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -150,7 +149,7 @@ public class SessionState {
   private Map<String, List<List<String>>> stackTraces;
 
   // This mapping collects all the configuration variables which have been set by the user
-  // explicitely, either via SET in the CLI, the hiveconf option, or a System property.
+  // explicitly, either via SET in the CLI, the hiveconf option, or a System property.
   // It is a mapping from the variable name to its value.  Note that if a user repeatedly
   // changes the value of a variable, the corresponding change will be made in this mapping.
   private Map<String, String> overriddenConfigurations;
@@ -247,9 +246,6 @@ public class SessionState {
     parentLoader = JavaUtils.getClassLoader();
   }
 
-  private static final SimpleDateFormat DATE_FORMAT =
-      new SimpleDateFormat("yyyyMMddHHmm");
-
   public void setCmd(String cmdString) {
     conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, cmdString);
   }
@@ -307,7 +303,6 @@ public class SessionState {
    * set current session to existing session object if a thread is running
    * multiple sessions - it must call this method with the new session object
    * when switching from one session to another.
-   * @throws HiveException
    */
   public static SessionState start(SessionState startSs) {
 
@@ -352,7 +347,9 @@ public class SessionState {
         if (startSs.tezSessionState == null) {
           startSs.tezSessionState = new TezSessionState(startSs.getSessionId());
         }
-        startSs.tezSessionState.open(startSs.conf);
+        if (!startSs.tezSessionState.isOpen()) {
+          startSs.tezSessionState.open(startSs.conf); // should use conf on session start-up
+        }
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -364,7 +361,6 @@ public class SessionState {
 
   /**
    * Setup authentication and authorization plugins for this session.
-   * @param startSs
    */
   private void setupAuth() {
 
@@ -714,10 +710,6 @@ public class SessionState {
     return localized;
   }
 
-  public void add_builtin_resource(ResourceType t, String value) {
-    getResourceMap(t).add(value);
-  }
-
   private Set<String> getResourceMap(ResourceType t) {
     Set<String> result = resource_map.get(t);
     if (result == null) {
@@ -982,9 +974,6 @@ public class SessionState {
   /**
    * If authorization mode is v2, then pass it through authorizer so that it can apply
    * any security configuration changes.
-   * @param hiveConf
-   * @return
-   * @throws HiveException
    */
   public void applyAuthorizationPolicy() throws HiveException {
     if(!isAuthorizationModeV2()){
