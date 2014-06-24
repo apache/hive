@@ -2,7 +2,6 @@ package org.apache.hadoop.hive.ql.optimizer.optiq.reloperators;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.TraitsUtil;
 import org.eigenbase.rel.RelCollation;
-import org.eigenbase.rel.RelCollationImpl;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.SortRel;
 import org.eigenbase.relopt.RelOptCluster;
@@ -10,12 +9,12 @@ import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.rex.RexNode;
 
 public class HiveSortRel extends SortRel implements HiveRel {
-
+  
   public HiveSortRel(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
       RelCollation collation, RexNode offset, RexNode fetch) {
     super(cluster, TraitsUtil.getSortTraitSet(cluster, traitSet, collation), child, collation,
         offset, fetch);
-
+    
     assert getConvention() == child.getConvention();
   }
 

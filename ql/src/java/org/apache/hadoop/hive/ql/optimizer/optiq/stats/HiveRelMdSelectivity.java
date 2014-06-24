@@ -50,15 +50,18 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
   private Double computeInnerJoinSelectivity(HiveJoinRel j, RexNode predicate) {
     double ndvCrossProduct = 1;
     RexNode combinedPredicate = getCombinedPredicateForJoin(j, predicate);
-    JoinPredicateInfo jpi = JoinPredicateInfo.constructJoinPredicateInfo(j, combinedPredicate);
-    ImmutableMap.Builder<Integer, Double> colStatMapBuilder = ImmutableMap.builder();
+    JoinPredicateInfo jpi = JoinPredicateInfo.constructJoinPredicateInfo(j,
+        combinedPredicate);
+    ImmutableMap.Builder<Integer, Double> colStatMapBuilder = ImmutableMap
+        .builder();
     ImmutableMap<Integer, Double> colStatMap;
     int rightOffSet = j.getLeft().getRowType().getFieldCount();
 
     // 1. Update Col Stats Map with col stats for columns from left side of
     // Join which are part of join keys
     for (Integer ljk : jpi.getProjsFromLeftPartOfJoinKeysInChildSchema()) {
-      colStatMapBuilder.put(ljk, HiveRelMdDistinctRowCount.getDistinctRowCount(j.getLeft(), ljk));
+      colStatMapBuilder.put(ljk,
+          HiveRelMdDistinctRowCount.getDistinctRowCount(j.getLeft(), ljk));
     }
 
     // 2. Update Col Stats Map with col stats for columns from right side of
@@ -116,9 +119,12 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
             ndvCrossProduct *= ndvToBeSmoothed;
         }
 
-        ndvCrossProduct = Math.min(
-            RelMetadataQuery.getRowCount(j.getLeft()) * RelMetadataQuery.getRowCount(j.getRight()),
-            ndvCrossProduct);
+        if (j.isLeftSemiJoin())
+          ndvCrossProduct = Math.min(RelMetadataQuery.getRowCount(j.getLeft()),
+              ndvCrossProduct);
+        else
+          ndvCrossProduct = Math.min(RelMetadataQuery.getRowCount(j.getLeft())
+              * RelMetadataQuery.getRowCount(j.getRight()), ndvCrossProduct);
       }
     }
 

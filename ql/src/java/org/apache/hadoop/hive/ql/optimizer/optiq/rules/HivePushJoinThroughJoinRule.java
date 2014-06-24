@@ -27,7 +27,7 @@ public class HivePushJoinThroughJoinRule extends PushJoinThroughJoinRule {
     final HiveJoinRel topJoin = call.rel(0);
     final HiveJoinRel bottomJoin = call.rel(1);
 
-    if (topJoin.getJoinAlgorithm() == JoinAlgorithm.NONE
+    if (!topJoin.isLeftSemiJoin() && topJoin.getJoinAlgorithm() == JoinAlgorithm.NONE
         && bottomJoin.getJoinAlgorithm() == JoinAlgorithm.NONE) {
       isAMatch = true;
     }

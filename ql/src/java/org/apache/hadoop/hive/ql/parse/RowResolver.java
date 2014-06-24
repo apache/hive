@@ -351,4 +351,54 @@ public class RowResolver implements Serializable{
     this.expressionMap = expressionMap;
   }
 
+
+  // TODO: 1) How to handle collisions? 2) Should we be cloning ColumnInfo or
+  // not?
+  public static int add(RowResolver rrToAddTo, RowResolver rrToAddFrom,
+      int outputColPos) throws SemanticException {
+    String tabAlias;
+    String colAlias;
+    String[] qualifiedColName;
+
+    for (ColumnInfo cInfoFrmInput : rrToAddFrom.getRowSchema().getSignature()) {
+      ColumnInfo newCI = null;
+      qualifiedColName = rrToAddFrom.getInvRslvMap().get(
+          cInfoFrmInput.getInternalName());
+      tabAlias = qualifiedColName[0];
+      colAlias = qualifiedColName[1];
+
+      newCI = new ColumnInfo(cInfoFrmInput);
+      newCI.setInternalName(SemanticAnalyzer
+          .getColumnInternalName(outputColPos));
+
+      outputColPos++;
+
+      if (rrToAddTo.get(tabAlias, colAlias) != null)
+        throw new RuntimeException("Ambigous Column Names");
+
+      rrToAddTo.put(tabAlias, colAlias, newCI);
+    }
+
+    return outputColPos;
+	}
+
+	/**
+	 * Return a new row resolver that is combination of left RR and right RR.
+	 * The schema will be schema of left, schema of right
+	 * 
+	 * @param leftRR
+	 * @param rightRR
+	 * @return
+	 * @throws SemanticException
+	 */
+	public static RowResolver getCombinedRR(RowResolver leftRR,
+			RowResolver rightRR) throws SemanticException {
+		int outputColPos = 0;
+
+		RowResolver combinedRR = new RowResolver();
+		outputColPos = add(combinedRR, leftRR, outputColPos);
+		outputColPos = add(combinedRR, rightRR, outputColPos);
+
+		return combinedRR;
+	}
 }
