@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -104,8 +103,6 @@ public abstract class BaseSemanticAnalyzer {
 
   public static int HIVE_COLUMN_ORDER_ASC = 1;
   public static int HIVE_COLUMN_ORDER_DESC = 0;
-
-  protected HiveOperation hiveOperation;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -144,14 +141,6 @@ public abstract class BaseSemanticAnalyzer {
   protected static final String PARQUETFILE_INPUT = MapredParquetInputFormat.class.getName();
   protected static final String PARQUETFILE_OUTPUT = MapredParquetOutputFormat.class.getName();
   protected static final String PARQUETFILE_SERDE = ParquetHiveSerDe.class.getName();
-
-  public HiveOperation getHiveOperation() {
-    return hiveOperation;
-  }
-
-  public void setHiveOperation(HiveOperation hiveOperation) {
-    this.hiveOperation = hiveOperation;
-  }
 
   public boolean skipAuthorization() {
     return false;
