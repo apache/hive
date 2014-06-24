@@ -425,7 +425,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           wExprsInDest.containsKey(wFnSpec.getExpression().toStringTree())) {
         continue;
       }
-      wFnSpec.setAlias("_wcol" + wColIdx++);
+      wFnSpec.setAlias("_wcol" + wColIdx);
       spec.addWindowFunction(wFnSpec);
       qb.getParseInfo().addWindowingExprToClause(dest, wFnSpec.getExpression());
     }
@@ -888,7 +888,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    * 1. Gets all the aliases for all the tables / subqueries and makes the
    * appropriate mapping in aliasToTabs, aliasToSubq 2. Gets the location of the
-   * destination and names the clase "inclause" + i 3. Creates a map from a
+   * destination and names the clause "inclause" + i 3. Creates a map from a
    * string representation of an aggregation tree to the actual aggregation AST
    * 4. Creates a mapping from the clause name to the select expression AST in
    * destToSelExpr 5. Creates a mapping from a table alias to the lateral view
@@ -1562,7 +1562,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *   that Operator.
    * - if the column resolves with more than one RowResolver, we treat it as an Ambiguous
    *   reference.
-   * - if the column doesn't resolve with any RowREsolver, we treat this as an Invalid
+   * - if the column doesn't resolve with any RowResolver, we treat this as an Invalid
    *   reference.
    */
   @SuppressWarnings("rawtypes")
@@ -5646,7 +5646,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ctx.getExternalTmpPath(dest_path.toUri());
       }
       if (dpCtx != null) {
-        // set the root of the temporay path where dynamic partition columns will populate
+        // set the root of the temporary path where dynamic partition columns will populate
         dpCtx.setRootPath(queryTmpdir);
       }
       // this table_desc does not contain the partitioning columns
@@ -7409,14 +7409,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         || (left.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
       String tableName = getUnescapedUnqualifiedTableName((ASTNode) left.getChild(0))
           .toLowerCase();
-      String alias = left.getChildCount() == 1 ? tableName
-          : unescapeIdentifier(left.getChild(left.getChildCount() - 1)
-          .getText().toLowerCase());
-      // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias? partitionTableFunctionSource partitioningSpec? expression*)
-      // guranteed to have an lias here: check done in processJoin
-      alias = (left.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) ?
-          unescapeIdentifier(left.getChild(1).getText().toLowerCase()) :
-            alias;
+      String alias = extractJoinAlias(left, tableName);
       joinTree.setLeftAlias(alias);
       String[] leftAliases = new String[1];
       leftAliases[0] = alias;
@@ -7446,14 +7439,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
       String tableName = getUnescapedUnqualifiedTableName((ASTNode) right.getChild(0))
           .toLowerCase();
-      String alias = right.getChildCount() == 1 ? tableName
-          : unescapeIdentifier(right.getChild(right.getChildCount() - 1)
-          .getText().toLowerCase());
-      // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias? partitionTableFunctionSource partitioningSpec? expression*)
-      // guranteed to have an lias here: check done in processJoin
-      alias = (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) ?
-          unescapeIdentifier(right.getChild(1).getText().toLowerCase()) :
-            alias;
+      String alias = extractJoinAlias(right, tableName);
       String[] rightAliases = new String[1];
       rightAliases[0] = alias;
       joinTree.setRightAliases(rightAliases);
@@ -7536,6 +7522,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return joinTree;
+  }
+
+  private String extractJoinAlias(ASTNode node, String tableName) {
+    // ptf node form is:
+    // ^(TOK_PTBLFUNCTION $name $alias? partitionTableFunctionSource partitioningSpec? expression*)
+    // guaranteed to have an alias here: check done in processJoin
+    if (node.getType() == HiveParser.TOK_PTBLFUNCTION) {
+      return unescapeIdentifier(node.getChild(1).getText().toLowerCase());
+    }
+    if (node.getChildCount() == 1) {
+      return tableName;
+    }
+    for (int i = node.getChildCount() - 1; i >= 1; i--) {
+      if (node.getChild(i).getType() == HiveParser.Identifier) {
+        return unescapeIdentifier(node.getChild(i).getText().toLowerCase());
+      }
+    }
+    return tableName;
   }
 
   private void parseStreamTables(QBJoinTree joinTree, QB qb) {
@@ -8790,7 +8794,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
       }
 
-      // put all virutal columns in RowResolver.
+      // put all virtual columns in RowResolver.
       Iterator<VirtualColumn> vcs = VirtualColumn.getRegistry(conf).iterator();
       // use a list for easy cumtomize
       List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
@@ -9024,7 +9028,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String k = tblName + Path.SEPARATOR;
       tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
 
-      // set up WritenEntity for replication
+      // set up WriteEntity for replication
       outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
 
       // add WriteEntity for each matching partition
@@ -9129,7 +9133,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         QBJoinTree joinTree = genJoinTree(qb, joinExpr, aliasToOpInfo);
         qb.setQbJoinTree(joinTree);
         /*
-         * if there is only one destintaion in Query try to push where predicates
+         * if there is only one destination in Query try to push where predicates
          * as Join conditions
          */
         Set<String> dests = qb.getParseInfo().getClauseNames();
@@ -11170,13 +11174,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     RowResolver rsOpRR = new RowResolver();
     /*
-     * Build an RR for the Extract Op from the ResuceSink Op's RR.
+     * Build an RR for the Extract Op from the ReduceSink Op's RR.
      * Why?
      * We need to remove the Virtual Columns present in the RS's RR. The OI
      * that gets passed to Extract at runtime doesn't contain the Virtual Columns.
      * So internal names get changed. Consider testCase testJoinWithLeadLag,
      * which is a self join on part and also has a Windowing expression.
-     * The RR of the RS op at transaltion time looks something like this:
+     * The RR of the RS op at translation time looks something like this:
      * (_co1,_col2,..,_col7, _col8(vc=true),_col9(vc=true),
      * _col10,_col11,.._col15(vc=true),_col16(vc=true),..)
      * At runtime the Virtual columns are removed and all the columns after _col7
