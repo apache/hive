@@ -2606,7 +2606,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (partSpecs.isEmpty()) return; // nothing to do
 
     validateAlterTableType(tab, AlterTableTypes.DROPPARTITION, expectView);
-    inputs.add(new ReadEntity(tab));
+    ReadEntity re = new ReadEntity(tab);
+    re.noLockNeeded();
+    inputs.add(re);
 
     boolean ignoreProtection = ast.getFirstChildWithType(HiveParser.TOK_IGNOREPROTECTION) != null;
     addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists, ignoreProtection);
@@ -3143,7 +3145,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(
               ErrorMsg.DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION.getMsg(p.getCompleteName()));
           }
-          outputs.add(new WriteEntity(p, WriteEntity.WriteType.DELETE));
+          outputs.add(new WriteEntity(p, WriteEntity.WriteType.DDL_EXCLUSIVE));
         }
       }
     }
