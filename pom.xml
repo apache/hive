@@ -199,6 +199,17 @@
          <enabled>false</enabled>
        </snapshots>
      </repository>
+     <repository>
+       <id>conjars</id>
+       <name>Optiq Conjars repository</name>
+       <url>http://conjars.org/repo</url>
+       <layout>default</layout>
+       <releases>
+          <enabled>true</enabled>
+          <updatePolicy>always</updatePolicy>
+          <checksumPolicy>warn</checksumPolicy>
+       </releases>
+     </repository>
   </repositories>
 
   <!-- Hadoop dependency management is done at the bottom under profiles -->

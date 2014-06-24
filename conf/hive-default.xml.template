@@ -547,6 +547,23 @@
 </property>
 
 <property>
+  <name>hive.cbo.enable</name>
+  <value>false</value>
+  <description>
+    Flag to control enabling Cost Based Optimizations using Optiq framework.
+  </description>
+</property>
+
+<property>
+  <name>hive.cbo.max.joins.supported</name>
+  <value>10</value>
+  <description>
+    Control queries that will be considered for join reordering, based on number of joins in them.
+    Beyond a certain number of joins, the cost of considering possible permutations is prohibitive.
+  </description>
+</property>
+
+<property>
   <name>hive.mapred.supports.subdirectories</name>
   <value>false</value>
   <description>Whether the version of Hadoop which is running supports sub-directories for tables/partitions.
