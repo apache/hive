@@ -100,7 +100,10 @@ import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.CostBasedOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
+import org.apache.hadoop.hive.ql.optimizer.PreCBOOptimizer;
+import org.apache.hadoop.hive.ql.optimizer.optiq.stats.CBOTableStatsValidator;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec.SpecType;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
@@ -259,6 +262,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   //flag for partial scan during analyze ... compute statistics
   protected boolean partialscan = false;
 
+  private volatile boolean runCBO = true;
+  private volatile boolean disableJoinMerge = false;
+
   /*
    * Capture the CTE definitions in a Query.
    */
@@ -271,6 +277,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private static class Phase1Ctx {
     String dest;
     int nextNum;
+  }
+
+  protected SemanticAnalyzer(HiveConf conf, boolean runCBO) throws SemanticException {
+    this(conf);
+    this.runCBO = runCBO;
   }
 
   public SemanticAnalyzer(HiveConf conf) throws SemanticException {
@@ -323,7 +334,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opParseCtx.clear();
     groupOpToInputTables.clear();
     prunedPartitions.clear();
+    disableJoinMerge = false;
     aliasToCTEs.clear();
+    topToTable.clear();
+    opToPartPruner.clear();
+    opToPartList.clear();
+    opToPartToSkewedPruner.clear();
+    opToSamplePruner.clear();
+    nameToSplitSample.clear();
+    fsopToTable.clear();
+    resultSchema = null;
+    createVwDesc = null;
+    viewsExpanded = null;
+    viewSelect = null;
+    ctesExpanded = null;
+    globalLimitCtx.disableOpt();
+    viewAliasToInput.clear();
+    reduceSinkOperatorsAddedByEnforceBucketingSorting.clear();
+    topToTableProps.clear();
+    listMapJoinOpsNoReducer.clear();
+    unparseTranslator.clear();
+    queryProperties.clear();
+    outputs.clear();
   }
 
   public void initParseCtx(ParseContext pctx) {
@@ -972,7 +1004,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
           processLateralView(qb, frm);
         } else if (isJoinToken(frm)) {
-          queryProperties.setHasJoin(true);
           processJoin(qb, frm);
           qbp.setJoinExpr(frm);
         }else if(frm.getToken().getType() == HiveParser.TOK_PTBLFUNCTION){
@@ -1187,6 +1218,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       getMetaData(qbexpr.getQBExpr1(), parentInput);
       getMetaData(qbexpr.getQBExpr2(), parentInput);
     }
+  }
+
+  public Table getTable(TableScanOperator ts) {
+    return topToTable.get(ts);
   }
 
   public void getMetaData(QB qb) throws SemanticException {
@@ -6737,6 +6772,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       desc.setNullSafes(nullsafes);
     }
+    queryProperties.incrementJoinCount(joinOp.getConf().getNoOuterJoin());
     return putOpInsertMap(joinOp, outputRR);
   }
 
@@ -9146,7 +9182,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 aliasToOpInfo );
           }
         }
-        mergeJoinTree(qb);
+
+        if (!disableJoinMerge)
+          mergeJoinTree(qb);
       }
 
       // if any filters are present in the join tree, push them on top of the
@@ -9411,6 +9449,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     getMetaData(qb);
     LOG.info("Completed getting MetaData in Semantic Analysis");
 
+    if (runCBO) {
+      boolean tokenTypeIsQuery = ast.getToken().getType() == HiveParser.TOK_QUERY
+          || ast.getToken().getType() == HiveParser.TOK_EXPLAIN;
+      if (!tokenTypeIsQuery || createVwDesc != null
+          || !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)) {
+        runCBO = false;
+      }
+
+      if (runCBO) {
+        disableJoinMerge = true;
+      }
+    }
+
     // Save the result schema derived from the sink operator produced
     // by genPlan. This has the correct column names, which clients
     // such as JDBC would prefer instead of the c0, c1 we'll end
@@ -9422,6 +9473,96 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     else
       resultSchema = convertRowSchemaToResultSetSchema(opParseCtx.get(sinkOp).getRowResolver(),
           HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
+
+    if (runCBO) {
+      /*
+       * For CBO: 1. Check if CBO can handle op tree. 2. Run PreCBOOptimizer on
+       * Plan. This applies: Partition Pruning, Predicate Pushdown, Column
+       * Pruning and Stats Annotation transformations on the generated plan. 3.
+       * Validate that all TS has valid stats 4. Hand the Plan to CBO, which
+       * searches the Plan space and returns the best Plan as an AST 5. We then
+       * run the Analysis Pipeline on the new AST: Phase 1, Get Metadata, Gen
+       * Plan. a. During Plan Generation, we disable Join Merging, because we
+       * don't want the Join order to be changed. Error Handling: On Failure -
+       * we restart the Analysis from the beginning on the original AST, with
+       * runCBO set to false.
+       */
+      boolean reAnalyzeAST = false;
+
+      try {
+        // 1. Can CBO handle OP tree
+        if (CostBasedOptimizer.canHandleOpTree(sinkOp, conf, queryProperties)) {
+          ASTNode newAST = null;
+
+          // 2. Set up parse ctx for CBO
+          ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner, opToPartList,
+              topOps, topSelOps, opParseCtx, joinContext, smbMapJoinContext, topToTable,
+              topToTableProps, fsopToTable, loadTableWork, loadFileWork, ctx, idToTableNameMap,
+              destTableId, uCtx, listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
+              opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
+              opToPartToSkewedPruner, viewAliasToInput,
+              reduceSinkOperatorsAddedByEnforceBucketingSorting, queryProperties);
+
+          // 3. Run Pre CBO optimizer
+          PreCBOOptimizer preCBOOptm = new PreCBOOptimizer();
+          preCBOOptm.setPctx(pCtx);
+          preCBOOptm.initialize(conf);
+          pCtx = preCBOOptm.optimize();
+
+          // 4. Validate Table Stats
+          CBOTableStatsValidator tableStatsValidator = new CBOTableStatsValidator();
+          if (tableStatsValidator.validStats(sinkOp, pCtx)) {
+
+            // 5. Optimize the plan with CBO & generate optimized AST
+            newAST = CostBasedOptimizer.optimize(sinkOp, this, pCtx, resultSchema);
+            if (LOG.isDebugEnabled()) {
+              String newAstExpanded = newAST.dump();
+              LOG.debug("CBO rewritten query: \n" + newAstExpanded);
+            }
+
+            // 6. Regen OP plan from optimized AST
+            init();
+            ctx_1 = initPhase1Ctx();
+            if (!doPhase1(newAST, qb, ctx_1)) {
+              throw new RuntimeException("Couldn't do phase1 on CBO optimized query plan");
+            }
+            getMetaData(qb);
+
+            disableJoinMerge = true;
+            sinkOp = genPlan(qb);
+
+            /*
+             * Use non CBO Result Set Schema so as to preserve user specified
+             * names. Hive seems to have bugs with OB/LIMIT in sub queries.
+             * // 7. Reset result set schema resultSchema =
+             * convertRowSchemaToResultSetSchema(opParseCtx.get(sinkOp)
+             * .getRowResolver(), true);
+             */
+          } else {
+            reAnalyzeAST = true;
+            LOG.warn("Skipping CBO. Incomplete column stats for Tables: "
+                + tableStatsValidator.getIncompleteStatsTabNames());
+          }
+        } else {
+          // Need to regen OP tree since join merge was disabled.
+          // TODO: can we just regen OP tree instead of reanalyzing AST.
+          if (queryProperties.getJoinCount() > 1)
+            reAnalyzeAST = true;
+          LOG.info("Skipping CBO as CBO can not handle OP tree.");
+        }
+      } catch (Exception e) {
+        reAnalyzeAST = true;
+        LOG.warn("CBO failed, skipping CBO. ", e);
+      } finally {
+        runCBO = false;
+        disableJoinMerge = false;
+        if (reAnalyzeAST) {
+          init();
+          analyzeInternal(ast);
+          return;
+        }
+      }
+    }
 
     ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner,
         opToPartList, topOps, topSelOps, opParseCtx, joinContext, smbMapJoinContext,
