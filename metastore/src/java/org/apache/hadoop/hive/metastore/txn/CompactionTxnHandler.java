@@ -54,8 +54,9 @@ public class CompactionTxnHandler extends TxnHandler {
   public Set<CompactionInfo> findPotentialCompactions(int maxAborted) throws MetaException {
     Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
     Set<CompactionInfo> response = new HashSet<CompactionInfo>();
+    Statement stmt = null;
     try {
-      Statement stmt = dbConn.createStatement();
+      stmt = dbConn.createStatement();
       // Check for completed transactions
       String s = "select distinct ctc_database, ctc_table, " +
           "ctc_partition from COMPLETED_TXN_COMPONENTS";
@@ -93,6 +94,7 @@ public class CompactionTxnHandler extends TxnHandler {
       LOG.error("Unable to connect to transaction database " + e.getMessage());
     } finally {
       closeDbConn(dbConn);
+      closeStmt(stmt);
     }
     return response;
   }
@@ -106,8 +108,9 @@ public class CompactionTxnHandler extends TxnHandler {
   public void setRunAs(long cq_id, String user) throws MetaException {
     try {
       Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+      Statement stmt = null;
       try {
-       Statement stmt = dbConn.createStatement();
+       stmt = dbConn.createStatement();
        String s = "update COMPACTION_QUEUE set cq_run_as = '" + user + "' where cq_id = " + cq_id;
        LOG.debug("Going to execute update <" + s + ">");
        if (stmt.executeUpdate(s) != 1) {
@@ -127,6 +130,7 @@ public class CompactionTxnHandler extends TxnHandler {
        detectDeadlock(e, "setRunAs");
      } finally {
        closeDbConn(dbConn);
+       closeStmt(stmt);
      }
     } catch (DeadlockException e) {
       setRunAs(cq_id, user);
@@ -146,8 +150,9 @@ public class CompactionTxnHandler extends TxnHandler {
       Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
       CompactionInfo info = new CompactionInfo();
 
+      Statement stmt = null;
       try {
-        Statement stmt = dbConn.createStatement();
+        stmt = dbConn.createStatement();
         String s = "select cq_id, cq_database, cq_table, cq_partition, " +
             "cq_type from COMPACTION_QUEUE where cq_state = '" + INITIATED_STATE + "'";
         LOG.debug("Going to execute query <" + s + ">");
@@ -192,6 +197,7 @@ public class CompactionTxnHandler extends TxnHandler {
             StringUtils.stringifyException(e));
       } finally {
         closeDbConn(dbConn);
+        closeStmt(stmt);
       }
     } catch (DeadlockException e) {
       return findNextToCompact(workerId);
@@ -208,8 +214,9 @@ public class CompactionTxnHandler extends TxnHandler {
   public void markCompacted(CompactionInfo info) throws MetaException {
     try {
       Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+      Statement stmt = null;
       try {
-        Statement stmt = dbConn.createStatement();
+        stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set cq_state = '" + READY_FOR_CLEANING + "', " +
             "cq_worker_id = null where cq_id = " + info.id;
         LOG.debug("Going to execute update <" + s + ">");
@@ -232,6 +239,7 @@ public class CompactionTxnHandler extends TxnHandler {
             StringUtils.stringifyException(e));
       } finally {
         closeDbConn(dbConn);
+        closeStmt(stmt);
       }
     } catch (DeadlockException e) {
       markCompacted(info);
@@ -249,8 +257,9 @@ public class CompactionTxnHandler extends TxnHandler {
     Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
     List<CompactionInfo> rc = new ArrayList<CompactionInfo>();
 
+    Statement stmt = null;
     try {
-      Statement stmt = dbConn.createStatement();
+      stmt = dbConn.createStatement();
       String s = "select cq_id, cq_database, cq_table, cq_partition, " +
           "cq_type, cq_run_as from COMPACTION_QUEUE where cq_state = '" + READY_FOR_CLEANING + "'";
       LOG.debug("Going to execute query <" + s + ">");
@@ -283,6 +292,7 @@ public class CompactionTxnHandler extends TxnHandler {
           StringUtils.stringifyException(e));
     } finally {
       closeDbConn(dbConn);
+      closeStmt(stmt);
     }
   }
 
@@ -294,8 +304,9 @@ public class CompactionTxnHandler extends TxnHandler {
   public void markCleaned(CompactionInfo info) throws MetaException {
     try {
       Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+      Statement stmt = null;
       try {
-        Statement stmt = dbConn.createStatement();
+        stmt = dbConn.createStatement();
         String s = "delete from COMPACTION_QUEUE where cq_id = " + info.id;
         LOG.debug("Going to execute update <" + s + ">");
         if (stmt.executeUpdate(s) != 1) {
@@ -371,6 +382,7 @@ public class CompactionTxnHandler extends TxnHandler {
             StringUtils.stringifyException(e));
       } finally {
         closeDbConn(dbConn);
+        closeStmt(stmt);
       }
     } catch (DeadlockException e) {
       markCleaned(info);
@@ -385,8 +397,9 @@ public class CompactionTxnHandler extends TxnHandler {
   public void cleanEmptyAbortedTxns() throws MetaException {
     try {
       Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+      Statement stmt = null;
       try {
-        Statement stmt = dbConn.createStatement();
+        stmt = dbConn.createStatement();
         String s = "select txn_id from TXNS where " +
             "txn_id not in (select tc_txnid from TXN_COMPONENTS) and " +
             "txn_state = '" + TXN_ABORTED + "'";
@@ -421,6 +434,7 @@ public class CompactionTxnHandler extends TxnHandler {
             StringUtils.stringifyException(e));
       } finally {
         closeDbConn(dbConn);
+        closeStmt(stmt);
       }
     } catch (DeadlockException e) {
       cleanEmptyAbortedTxns();
@@ -441,8 +455,9 @@ public class CompactionTxnHandler extends TxnHandler {
   public void revokeFromLocalWorkers(String hostname) throws MetaException {
     try {
       Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+      Statement stmt = null;
       try {
-        Statement stmt = dbConn.createStatement();
+        stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set cq_worker_id = null, cq_start = null, cq_state = '"
             + INITIATED_STATE+ "' where cq_state = '" + WORKING_STATE + "' and cq_worker_id like '"
             +  hostname + "%'";
@@ -465,6 +480,7 @@ public class CompactionTxnHandler extends TxnHandler {
             StringUtils.stringifyException(e));
       } finally {
         closeDbConn(dbConn);
+        closeStmt(stmt);
       }
     } catch (DeadlockException e) {
       revokeFromLocalWorkers(hostname);
@@ -486,8 +502,9 @@ public class CompactionTxnHandler extends TxnHandler {
     try {
       Connection dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
       long latestValidStart = getDbTime(dbConn) - timeout;
+      Statement stmt = null;
       try {
-        Statement stmt = dbConn.createStatement();
+        stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set cq_worker_id = null, cq_start = null, cq_state = '"
             + INITIATED_STATE+ "' where cq_state = '" + WORKING_STATE + "' and cq_start < "
             +  latestValidStart;
@@ -510,6 +527,7 @@ public class CompactionTxnHandler extends TxnHandler {
             StringUtils.stringifyException(e));
       } finally {
         closeDbConn(dbConn);
+        closeStmt(stmt);
       }
     } catch (DeadlockException e) {
       revokeTimedoutWorkers(timeout);
