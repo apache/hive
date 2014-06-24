@@ -677,6 +677,9 @@ sub compare
           @sorted_filtered_body = sort { $a cmp $b } @filtered_body;
         }
         my $value = $path->value(\@sorted_filtered_body);
+        if (JSON::is_bool($value)) {
+          $value = $value ? 'true' : 'false';
+        }
         
         if ($value !~ /$regex_expected_value/s) {
           print $log "$0::$subName INFO check failed:"
@@ -719,6 +722,9 @@ sub compare
             (!ref($json_field_val) && ! UNIVERSAL::isa(\$json_field_val,'SCALAR')) ){
           #flatten the object into a string
           $json_field_val = dump($json_field_val);
+        }
+        if (JSON::is_bool($json_field_val)) {
+          $json_field_val = $json_field_val ? 'true' : 'false';
         }
         my $regex_expected_value = $json_matches->{$key};
         print $log "Comparing $key: $json_field_val with regex /$regex_expected_value/\n";
@@ -830,7 +836,7 @@ sub compare
           #first wait for job completion
           while ($NUM_RETRIES-- > 0) {
             $jobComplete = $res_hash->{'status'}->{'jobComplete'};
-            if (defined $jobComplete && lc($jobComplete) eq "true") {
+            if (defined $jobComplete && (lc($jobComplete) eq "true" || lc($jobComplete) eq "1")) {
               last;
             }
             sleep $SLEEP_BETWEEN_RETRIES;
@@ -838,7 +844,7 @@ sub compare
             $json = new JSON;
             $res_hash = $json->utf8->decode($jobResult->{'body'});
           }
-          if ( (!defined $jobComplete) || lc($jobComplete) ne "true") {
+          if ( (!defined $jobComplete) || (lc($jobComplete) ne "true" && lc($jobComplete) ne "1")) {
             print $log "$0::$subName WARN check failed: " 
               . " timeout on wait for job completion ";
             $result = 0;
