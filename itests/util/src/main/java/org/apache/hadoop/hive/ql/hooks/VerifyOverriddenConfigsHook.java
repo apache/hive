@@ -34,11 +34,11 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  */
 public class VerifyOverriddenConfigsHook implements ExecuteWithHookContext {
 
-  // A config variable set via a System Propery, a config variable set in the CLI,
+  // A config variable set via a System Property, a config variable set in the CLI,
   // a config variable not in the default List of config variables, and a config variable in the
-  // default list of conifg variables, but which has not been overridden
+  // default list of config variables, but which has not been overridden
   private static String[] keysArray =
-    {"mapred.job.tracker", "hive.exec.post.hooks", "hive.config.doesnt.exit",
+    {"mapred.job.tracker", "hive.exec.post.hooks", "some.hive.config.doesnt.exit",
      "hive.exec.mode.local.auto"};
   private static List<String> keysList = Arrays.asList(keysArray);
 

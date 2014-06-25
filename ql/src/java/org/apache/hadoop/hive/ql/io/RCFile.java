@@ -340,14 +340,7 @@ public class RCFile {
 
   private static final Log LOG = LogFactory.getLog(RCFile.class);
 
-  public static final String RECORD_INTERVAL_CONF_STR = "hive.io.rcfile.record.interval";
-
   public static final String COLUMN_NUMBER_METADATA_STR = "hive.io.rcfile.column.number";
-
-  public static final String COLUMN_NUMBER_CONF_STR = "hive.io.rcfile.column.number.conf";
-
-  public static final String TOLERATE_CORRUPTIONS_CONF_STR =
-    "hive.io.rcfile.tolerate.corruptions";
 
   // HACK: We actually need BlockMissingException, but that is not available
   // in all hadoop versions.
@@ -985,8 +978,8 @@ public class RCFile {
     public Writer(FileSystem fs, Configuration conf, Path name, int bufferSize,
         short replication, long blockSize, Progressable progress,
         Metadata metadata, CompressionCodec codec) throws IOException {
-      RECORD_INTERVAL = conf.getInt(RECORD_INTERVAL_CONF_STR, RECORD_INTERVAL);
-      columnNumber = conf.getInt(COLUMN_NUMBER_CONF_STR, 0);
+      RECORD_INTERVAL = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_RCFILE_RECORD_INTERVAL);
+      columnNumber = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_RCFILE_COLUMN_NUMBER_CONF);
 
       if (metadata == null) {
         metadata = new Metadata();
@@ -1346,8 +1339,8 @@ public class RCFile {
     /** Create a new RCFile reader. */
     public Reader(FileSystem fs, Path file, int bufferSize, Configuration conf,
         long start, long length) throws IOException {
-      tolerateCorruptions = conf.getBoolean(
-        TOLERATE_CORRUPTIONS_CONF_STR, false);
+      tolerateCorruptions = HiveConf.getBoolVar(
+          conf, HiveConf.ConfVars.HIVE_RCFILE_TOLERATE_CORRUPTIONS);
       conf.setInt("io.file.buffer.size", bufferSize);
       this.file = file;
       in = openFile(fs, file, bufferSize, length);

@@ -49,8 +49,8 @@ LOAD DATA LOCAL INPATH '../../data/files/in2.txt' into table smb_input1;
 LOAD DATA LOCAL INPATH '../../data/files/in1.txt' into table smb_input2;
 LOAD DATA LOCAL INPATH '../../data/files/in2.txt' into table smb_input2;
 
-SET hive.optimize.bucketmapJOIN = true;
-SET hive.optimize.bucketmapJOIN.sortedmerge = true;
+SET hive.optimize.bucketmapjoin = true;
+SET hive.optimize.bucketmapjoin.sortedmerge = true;
 SET hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
 SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key;

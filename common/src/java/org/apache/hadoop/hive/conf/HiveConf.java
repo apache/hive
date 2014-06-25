@@ -519,6 +519,8 @@ public class HiveConf extends Configuration {
     HIVETESTMODEPREFIX("hive.test.mode.prefix", "test_"),
     HIVETESTMODESAMPLEFREQ("hive.test.mode.samplefreq", 32),
     HIVETESTMODENOSAMPLE("hive.test.mode.nosamplelist", ""),
+    HIVETESTMODEDUMMYSTATAGGR("hive.test.dummystats.aggregator", ""), // internal variable
+    HIVETESTMODEDUMMYSTATPUB("hive.test.dummystats.publisher", ""),   // internal variable
 
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true),
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false),
@@ -533,6 +535,11 @@ public class HiveConf extends Configuration {
 
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true),
     HIVEUSERCFILESYNCCACHE("hive.exec.rcfile.use.sync.cache", true),
+
+    HIVE_RCFILE_RECORD_INTERVAL("hive.io.rcfile.record.interval", Integer.MAX_VALUE),
+    HIVE_RCFILE_COLUMN_NUMBER_CONF("hive.io.rcfile.column.number.conf", 0),
+    HIVE_RCFILE_TOLERATE_CORRUPTIONS("hive.io.rcfile.tolerate.corruptions", false),
+    HIVE_RCFILE_RECORD_BUFFER_SIZE("hive.io.rcfile.record.buffer.size", 4194304),   // 4M
 
     // Maximum fraction of heap that can be used by ORC file writers
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f), // 50%
@@ -780,6 +787,7 @@ public class HiveConf extends Configuration {
 
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true),
+    HIVE_HBASE_GENERATE_HFILES("hive.hbase.generatehfiles", false),
 
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false),
@@ -837,6 +845,8 @@ public class HiveConf extends Configuration {
 
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false),
 
+    HIVE_INDEX_COMPACT_FILE("hive.index.compact.file", ""),           // internal variable
+    HIVE_INDEX_BLOCKFILTER_FILE("hive.index.blockfilter.file", ""),   // internal variable
     HIVE_INDEX_IGNORE_HDFS_LOC("hive.index.compact.file.ignore.hdfs", false),
 
     HIVE_EXIM_URI_SCHEME_WL("hive.exim.uri.scheme.whitelist", "hdfs,pfile"),
@@ -1422,6 +1432,31 @@ public class HiveConf extends Configuration {
       setBoolVar(ConfVars.METASTORE_FIXED_DATASTORE, true);
     }
 
+    if (getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
+      List<String> trimmed = new ArrayList<String>();
+      for (Map.Entry<String,String> entry : this) {
+        String key = entry.getKey();
+        if (key == null || !key.startsWith("hive.")) {
+          continue;
+        }
+        ConfVars var = HiveConf.getConfVars(key);
+        if (var == null) {
+          var = HiveConf.getConfVars(key.trim());
+          if (var != null) {
+            trimmed.add(key);
+          }
+        }
+        if (var == null) {
+          l4j.warn("HiveConf of name " + key + " does not exist");
+        } else if (!var.isType(entry.getValue())) {
+          l4j.warn("HiveConf " + var.varname + " expects " + var.typeString() + " type value");
+        }
+      }
+      for (String key : trimmed) {
+        set(key.trim(), getRaw(key));
+        unset(key);
+      }
+    }
     // setup list of conf vars that are not allowed to change runtime
     setupRestrictList();
   }

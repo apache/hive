@@ -1566,6 +1566,12 @@
 </property>
 
 <property>
+  <name>hive.hbase.generatehfiles</name>
+  <value>false</value>
+  <description>True when HBaseStorageHandler should generate hfiles instead of operate against the online table.</description>
+</property>
+
+<property>
   <name>hive.table.parameters.default</name>
   <value></value>
   <description>Default property values for newly created tables</description>
@@ -1927,6 +1933,26 @@
     set the header will be that borrowed from sequence files, e.g. SEQ- followed
     by the input and output RCFile formats.
   </description>
+</property>
+
+<property>
+  <name>hive.io.rcfile.record.interval</name>
+  <value>268435456</value>
+</property>
+
+<property>
+  <name>hive.io.rcfile.column.number.conf</name>
+  <value>0</value>
+</property>
+
+<property>
+  <name>hive.io.rcfile.tolerate.corruptions</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.io.rcfile.record.buffer.size</name>
+  <value>4194304</value>
 </property>
 
 <property>

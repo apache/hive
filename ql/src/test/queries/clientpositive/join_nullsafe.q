@@ -1,5 +1,3 @@
-set hive.nullsafe.equijoin=true;
-
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE myinput1(key int, value int);
@@ -30,16 +28,23 @@ SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value;
 SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value;
 SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value;
 
+CREATE TABLE smb_input(key int, value int);
+LOAD DATA LOCAL INPATH '../../data/files/in4.txt' into table smb_input;
+LOAD DATA LOCAL INPATH '../../data/files/in5.txt' into table smb_input;
+
+set hive.enforce.sorting = true;
+set hive.enforce.bucketing = true;
+
 -- smbs
 CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
-LOAD DATA LOCAL INPATH '../../data/files/in8.txt' into table smb_input1;
-LOAD DATA LOCAL INPATH '../../data/files/in9.txt' into table smb_input1;
-LOAD DATA LOCAL INPATH '../../data/files/in8.txt' into table smb_input2;
-LOAD DATA LOCAL INPATH '../../data/files/in9.txt' into table smb_input2;
 
-SET hive.optimize.bucketmapJOIN = true;
-SET hive.optimize.bucketmapJOIN.sortedmerge = true;
+from smb_input
+insert overwrite table smb_input1 select *
+insert overwrite table smb_input2 select *;
+
+SET hive.optimize.bucketmapjoin = true;
+SET hive.optimize.bucketmapjoin.sortedmerge = true;
 SET hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
 SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key;
