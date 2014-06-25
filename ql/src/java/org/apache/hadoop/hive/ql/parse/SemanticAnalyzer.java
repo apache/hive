@@ -120,7 +120,9 @@ import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HiveMergeProjectRule;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePullUpProjectsAboveJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePushFilterPastJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePushJoinThroughJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HiveSwapJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.RexNodeConverter;
@@ -234,6 +236,8 @@ import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptQuery;
 import org.eigenbase.relopt.RelOptSchema;
 import org.eigenbase.relopt.RelTraitSet;
+import org.eigenbase.relopt.hep.HepPlanner;
+import org.eigenbase.relopt.hep.HepProgramBuilder;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexBuilder;
@@ -11761,6 +11765,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new RuntimeException(e);
       }
 
+      optiqPlan = applyPreCBOTransforms(optiqPlan,
+          HiveDefaultRelMetadataProvider.INSTANCE);
+
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(HiveDefaultRelMetadataProvider.INSTANCE);
       planner.registerMetadataProviders(list);
@@ -11790,6 +11797,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       planner.setRoot(rootRel);
 
       return planner.findBestExp();
+    }
+
+    public RelNode applyPreCBOTransforms(RelNode basePlan,
+        RelMetadataProvider mdProvider) {
+
+      HepProgramBuilder programBuilder = new HepProgramBuilder();
+      programBuilder.addRuleInstance(HivePushFilterPastJoinRule.FILTER_ON_JOIN);
+      programBuilder.addRuleInstance(HivePushFilterPastJoinRule.JOIN);
+
+      HepPlanner planner = new HepPlanner(programBuilder.build());
+      List<RelMetadataProvider> list = Lists.newArrayList();
+      list.add(mdProvider);
+      planner.registerMetadataProviders(list);
+      RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
+      basePlan.getCluster().setMetadataProvider(
+          new CachingRelMetadataProvider(chainedProvider, planner));
+
+      planner.setRoot(basePlan);
+      basePlan = planner.findBestExp();
+
+      HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null);
+      basePlan = fieldTrimmer.trim(basePlan);
+      return basePlan;
+
     }
 
     private RelNode genUnionLogicalPlan(String unionalias, String leftalias,
