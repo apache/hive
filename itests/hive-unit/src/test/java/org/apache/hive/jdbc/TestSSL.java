@@ -412,7 +412,29 @@ public class TestSSL {
 
   private void setBinaryConfOverlay(Map<String, String> confOverlay) {
     confOverlay.put(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname, HS2_BINARY_MODE);
-    confOverlay.put(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname,  HS2_BINARY_AUTH_MODE);
+    confOverlay.put(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname, HS2_BINARY_AUTH_MODE);
     confOverlay.put(ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "true");
+  }
+
+  /***
+   * Test SSL client connection to SSL server
+   * @throws Exception
+   */
+  @Test
+  public void testSSLDeprecatConfig() throws Exception {
+    // Start HS2 with SSL using old config
+    miniHS2.setConfProperty("hive.server2.enable.SSL", "true");
+    miniHS2.setConfProperty(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH.varname,
+        dataFileDir + File.separator +  KEY_STORE_NAME);
+    miniHS2.setConfProperty(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
+        KEY_STORE_PASSWORD);
+    miniHS2.start(new HashMap<String, String>());
+
+    // make SSL connection
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL() + ";ssl=true;sslTrustStore=" +
+        dataFileDir + File.separator + TRUST_STORE_NAME + ";trustStorePassword=" +
+        KEY_STORE_PASSWORD, System.getProperty("user.name"), "bar");
+
+    hs2Conn.close();
   }
 }

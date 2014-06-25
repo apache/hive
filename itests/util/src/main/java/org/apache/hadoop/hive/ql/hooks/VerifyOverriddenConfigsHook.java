@@ -38,7 +38,7 @@ public class VerifyOverriddenConfigsHook implements ExecuteWithHookContext {
   // a config variable not in the default List of config variables, and a config variable in the
   // default list of config variables, but which has not been overridden
   private static String[] keysArray =
-    {"mapred.job.tracker", "hive.exec.post.hooks", "some.hive.config.doesnt.exit",
+    {"hive.exec.post.hooks", "hive.config.doesnt.exit",
      "hive.exec.mode.local.auto"};
   private static List<String> keysList = Arrays.asList(keysArray);
 

@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.apache.hive.hcatalog</groupId>
     <artifactId>hive-hcatalog</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.0-cdh5.4.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -72,6 +72,9 @@
   <profiles>
     <profile>
       <id>hadoop-1</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
@@ -109,7 +112,12 @@
           <groupId>org.apache.pig</groupId>
           <artifactId>pig</artifactId>
           <version>${pig.version}</version>
-          <classifier>h2</classifier>
+          <exclusions>
+            <exclusion>
+              <groupId>org.apache.hadoop</groupId>
+              <artifactId>hadoop-core</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
         <dependency>
           <!--this should be automatically brought in by Pig, it's not in Pig 0.12 due to a bug

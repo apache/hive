@@ -163,7 +163,7 @@ public class HCatStorer extends HCatBaseStorer {
         job.getCredentials().addAll(crd);
       }
     } else {
-      Job clone = new Job(job.getConfiguration());
+      Job clone = Job.getInstance(job.getConfiguration());
       OutputJobInfo outputJobInfo;
       if (userStr.length == 2) {
         outputJobInfo = OutputJobInfo.create(userStr[0], userStr[1], partitions);

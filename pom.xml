@@ -15,13 +15,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.apache</groupId>
-    <artifactId>apache</artifactId>
-    <version>14</version>
+    <groupId>com.cloudera.cdh</groupId>
+    <artifactId>cdh-root</artifactId>
+    <version>5.4.0-SNAPSHOT</version>
   </parent>
+
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.0-cdh5.4.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -53,6 +54,7 @@
   </modules>
 
   <properties>
+    <cdh.hive.version>1.1.0-cdh5.4.0-SNAPSHOT</cdh.hive.version>
     <hive.version.shortname>1.1.0</hive.version.shortname>
 
     <!-- Build Properties -->
@@ -98,12 +100,14 @@
     <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.4</antlr.version>
-    <avro.version>1.7.5</avro.version>
+    <avro.version>${cdh.avro.version}</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.0.0-incubating</calcite.version>
     <datanucleus-api-jdo.version>3.2.6</datanucleus-api-jdo.version>
     <datanucleus-core.version>3.2.10</datanucleus-core.version>
     <datanucleus-rdbms.version>3.2.9</datanucleus-rdbms.version>
+    <checkstyle.version>5.0</checkstyle.version>
+    <findbugs.version>1.3.9</findbugs.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.4</commons-codec.version>
     <commons-compress.version>1.4.1</commons-compress.version>
@@ -118,14 +122,14 @@
     <derby.version>10.11.1.1</derby.version>
     <guava.version>14.0.1</guava.version>
     <groovy.version>2.1.6</groovy.version>
-    <hadoop-20S.version>1.2.1</hadoop-20S.version>
-    <hadoop-23.version>2.6.0</hadoop-23.version>
+    <hadoop-20S.version>${cdh.mr1.version}</hadoop-20S.version>
+    <hadoop-23.version>${cdh.hadoop.version}</hadoop-23.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
-    <hbase.hadoop1.version>0.98.3-hadoop1</hbase.hadoop1.version>
-    <hbase.hadoop2.version>0.98.3-hadoop2</hbase.hadoop2.version>
+    <hbase.hadoop1.version>${cdh.hbase.version}</hbase.hadoop1.version>
+    <hbase.hadoop2.version>${cdh.hbase.version}</hbase.hadoop2.version>
     <!-- httpcomponents are not always in version sync -->
-    <httpcomponents.client.version>4.2.5</httpcomponents.client.version>
-    <httpcomponents.core.version>4.2.5</httpcomponents.core.version>
+    <httpcomponents.client.version>${cdh.httpcomponents.version}</httpcomponents.client.version>
+    <httpcomponents.core.version>${cdh.httpcomponents.core.version}</httpcomponents.core.version>
     <jackson.version>1.9.2</jackson.version>
     <javaewah.version>0.3.2</javaewah.version>
     <javolution.version>5.5.1</javolution.version>
@@ -146,15 +150,15 @@
     <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.0.23.Final</netty.version>
-    <parquet.version>1.6.0rc3</parquet.version>
-    <pig.version>0.12.0</pig.version>
-    <protobuf.version>2.5.0</protobuf.version>
+    <parquet.version>${cdh.parquet.version}</parquet.version>
+    <pig.version>${cdh.pig.version}</pig.version>
+    <protobuf.version>${cdh.protobuf.version}</protobuf.version>
     <stax.version>1.0.1</stax.version>
-    <slf4j.version>1.7.5</slf4j.version>
+    <slf4j.version>${cdh.slf4j.version}</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <tez.version>0.5.2</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>1.2.0</spark.version>
+    <spark.version>${cdh.spark.version}</spark.version>
     <scala.binary.version>2.10</scala.binary.version>
     <scala.version>2.10.4</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
@@ -162,7 +166,7 @@
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
     <velocity.version>1.5</velocity.version>
     <xerces.version>2.9.1</xerces.version>
-    <zookeeper.version>3.4.6</zookeeper.version>
+    <zookeeper.version>${cdh.zookeeper.version}</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
     <curator.version>2.6.0</curator.version>
@@ -171,6 +175,22 @@
 
   <repositories>
    <!-- This needs to be removed before checking in-->
+    <repository>
+      <id>cdh.releases.repo</id>
+      <url>https://repository.cloudera.com/content/groups/cdh-releases-rcs</url>
+      <name>CDH Releases Repository</name>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>cdh.snapshots.repo</id>
+      <url>https://repository.cloudera.com/content/repositories/snapshots</url>
+      <name>CDH Snapshots Repository</name>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
     <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
@@ -213,6 +233,14 @@
        <snapshots>
          <enabled>false</enabled>
        </snapshots>
+    </repository>
+    <repository>
+      <id>apache.snapshots</id>
+      <name>Apache Snapshot Repository</name>
+      <url>http://repository.apache.org/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
     </repository>
   </repositories>
 
@@ -834,7 +862,7 @@
             <LANG>en_US.UTF-8</LANG>
             <HADOOP_CLASSPATH>${test.tmp.dir}/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
             <HIVE_HADOOP_TEST_CLASSPATH>${test.hive.hadoop.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
-            <SPARK_SUBMIT_CLASSPATH>${spark.home}/lib/spark-assembly-${spark.version}-hadoop2.4.0.jar:${test.hive.hadoop.classpath}</SPARK_SUBMIT_CLASSPATH>
+            <SPARK_SUBMIT_CLASSPATH>${spark.home}/lib/spark-assembly-1.2.0-hadoop2.4.0.jar:${test.hive.hadoop.classpath}</SPARK_SUBMIT_CLASSPATH>
             <SPARK_OSX_TEST_OPTS>-Dorg.xerial.snappy.tempdir=/tmp -Dorg.xerial.snappy.lib.name=libsnappyjava.jnilib</SPARK_OSX_TEST_OPTS>
             <PATH>${env.PATH}${test.extra.path}</PATH>
           </environmentVariables>
@@ -1057,7 +1085,7 @@
           </dependency>
           <dependency>
             <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-hadoop1-compat</artifactId>
+            <artifactId>hbase-hadoop2-compat</artifactId>
             <version>${hbase.hadoop1.version}</version>
           </dependency>
           <dependency>
@@ -1070,6 +1098,14 @@
     </profile>
     <profile>
       <id>hadoop-2</id>
+      <!-- Force all deps to include MRVersion class, see CDH-22186 -->
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-common</artifactId>
+          <version>${hadoop-23.version}</version>
+        </dependency>
+      </dependencies>
       <dependencyManagement>
         <dependencies>
           <dependency>
@@ -1106,21 +1142,88 @@
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-common</artifactId>
             <version>${hbase.hadoop2.version}</version>
+            <!-- hbase depends on hadoop-core which pollutes our classpath -->
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+              </exclusion>
+            </exclusions>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-common</artifactId>
+            <version>${hbase.hadoop2.version}</version>
+            <type>test-jar</type>
+            <!-- hbase depends on hadoop-core which pollutes our classpath -->
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+              </exclusion>
+            </exclusions>
           </dependency>
           <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-hadoop-compat</artifactId>
             <version>${hbase.hadoop2.version}</version>
+            <!-- hbase depends on hadoop-core which pollutes our classpath -->
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+              </exclusion>
+            </exclusions>
           </dependency>
           <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-hadoop2-compat</artifactId>
             <version>${hbase.hadoop2.version}</version>
+            <!-- hbase depends on hadoop-core which pollutes our classpath -->
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+              </exclusion>
+            </exclusions>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-hadoop2-compat</artifactId>
+            <version>${hbase.hadoop2.version}</version>
+            <type>test-jar</type>
+            <!-- hbase depends on hadoop-core which pollutes our classpath -->
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+              </exclusion>
+            </exclusions>
           </dependency>
           <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-server</artifactId>
             <version>${hbase.hadoop2.version}</version>
+            <!-- hbase depends on hadoop-core which pollutes our classpath -->
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+              </exclusion>
+            </exclusions>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-server</artifactId>
+            <version>${hbase.hadoop2.version}</version>
+            <type>test-jar</type>
+            <!-- hbase depends on hadoop-core which pollutes our classpath -->
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+              </exclusion>
+            </exclusions>
           </dependency>
           <dependency>
             <groupId>org.apache.hadoop</groupId>

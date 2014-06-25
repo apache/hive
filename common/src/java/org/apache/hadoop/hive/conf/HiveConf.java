@@ -105,6 +105,8 @@ public class HiveConf extends Configuration {
     for (ConfVars confVar : ConfVars.values()) {
       vars.put(confVar.varname, confVar);
     }
+    Configuration.addDeprecation("hive.server2.enable.impersonation", "hive.server2.enable.doAs");
+    Configuration.addDeprecation("hive.server2.enable.SSL", "hive.server2.use.SSL");
   }
 
   /**
@@ -775,7 +777,7 @@ public class HiveConf extends Configuration {
 
     // default serde for rcfile
     HIVEDEFAULTRCFILESERDE("hive.default.rcfile.serde",
-        "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe",
+        "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe",
         "The default SerDe Hive will use for the RCFile format"),
 
     HIVEDEFAULTSERDE("hive.default.serde",
@@ -1528,7 +1530,7 @@ public class HiveConf extends Configuration {
         "of the table. Note that the default gives the creator of a table no access to the\n" +
         "table (but see HIVE-8067)."),
     HIVE_AUTHORIZATION_TASK_FACTORY("hive.security.authorization.task.factory",
-        "org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl",
+        "org.apache.hadoop.hive.ql.parse.authorization.RestrictedHiveAuthorizationTaskFactoryImpl",
         "Authorization DDL task factory implementation"),
 
     // if this is not set default value is set during config initialization

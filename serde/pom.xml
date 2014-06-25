@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.0-cdh5.4.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -109,6 +109,32 @@
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-servlet</artifactId>
       <version>${jersey.version}</version>
+    </dependency>
+    <!-- Following have only one version, which is cdh.hadoop.version -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop-23.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop-23.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop-23.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop-23.version}</version>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -116,6 +142,9 @@
   <profiles>
     <profile>
       <id>hadoop-1</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
@@ -136,35 +165,9 @@
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>${hadoop-23.version}</version>
-          <classifier>tests</classifier>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-mapreduce-client-core</artifactId>
           <version>${hadoop-23.version}</version>
           <optional>true</optional>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-hdfs</artifactId>
-          <version>${hadoop-23.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-hdfs</artifactId>
-          <version>${hadoop-23.version}</version>
-          <classifier>tests</classifier>
-          <scope>test</scope>
         </dependency>
       </dependencies>
     </profile>

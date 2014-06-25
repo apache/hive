@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.0-cdh5.4.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -119,11 +119,27 @@
     </profile>
     <profile>
       <id>hadoop-1</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
       <properties>
         <active.hadoop.version>${hadoop-20S.version}</active.hadoop.version>
-        <test.dfs.mkdir>-mkdir</test.dfs.mkdir>
+        <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
       </properties>
       <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop-23.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop-23.version}</version>
+          <scope>test</scope>
+          <classifier>tests</classifier>
+        </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-core</artifactId>
@@ -170,13 +186,13 @@
         </dependency>
         <dependency>
           <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-hadoop1-compat</artifactId>
+          <artifactId>hbase-hadoop2-compat</artifactId>
           <version>${hbase.hadoop1.version}</version>
           <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-hadoop1-compat</artifactId>
+          <artifactId>hbase-hadoop2-compat</artifactId>
           <version>${hbase.hadoop1.version}</version>
           <scope>test</scope>
           <classifier>tests</classifier>
@@ -208,6 +224,11 @@
           <artifactId>jersey-servlet</artifactId>
           <version>${jersey.version}</version>
           <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          <version>${hadoop-23.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>

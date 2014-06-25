@@ -53,7 +53,6 @@ public class IOContext {
    */
   private static final Map<String, IOContext> inputNameIOContextMap = new HashMap<String, IOContext>();
 
-
   public static IOContext get(Configuration conf) {
     if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
       return get();

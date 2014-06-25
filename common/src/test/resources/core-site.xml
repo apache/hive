@@ -24,4 +24,8 @@
     <name>fs.default.name</name>
     <value>core-site.xml</value>
   </property>
+    <property>
+    <name>mapred.reduce.tasks</name>
+    <value>1</value>
+  </property>
 </configuration>

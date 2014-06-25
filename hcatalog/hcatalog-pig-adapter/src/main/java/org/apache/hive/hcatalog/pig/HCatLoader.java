@@ -123,7 +123,7 @@ public class HCatLoader extends HCatBaseLoader {
         job.getCredentials().addAll(crd);
       }
     } else {
-      Job clone = new Job(job.getConfiguration());
+      Job clone = Job.getInstance(job.getConfiguration());
       HCatInputFormat.setInput(job, dbName, tableName, getPartitionFilterString());
 
       InputJobInfo inputJobInfo = (InputJobInfo) HCatUtil.deserialize(

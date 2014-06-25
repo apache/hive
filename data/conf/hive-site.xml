@@ -227,7 +227,6 @@
   <value>false</value>
 </property>
 
-
 <property>
   <name>hive.dummyparam.test.server.specific.config.override</name>
   <value>from.hive-site.xml</value>
@@ -240,7 +239,6 @@
   <description>Using dummy param to test server specific configuration</description>
 </property>
 
-
 <property>
   <name>hive.fetch.task.conversion</name>
   <value>minimal</value>
@@ -249,6 +247,12 @@
 <property>
   <name>hive.users.in.admin.role</name>
   <value>hive_admin_user</value>
+</property>
+
+<property>
+  <name>hive.security.authorization.task.factory</name>
+  <value>org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl</value>
+  <description>The default SerDe hive will use for the rcfile format</description>
 </property>
 
 </configuration>

@@ -116,8 +116,9 @@ public class JobDebugger implements Runnable {
   public void run() {
     try {
       showJobFailDebugInfo();
-    } catch (IOException e) {
-      console.printError(e.getMessage());
+    } catch (Throwable t) {
+      t.printStackTrace(); // best we can do at this point
+      console.printError("Could not obtain debuging information: " + t.getClass().getSimpleName() + ": " + t.getMessage());
     }
   }
 
