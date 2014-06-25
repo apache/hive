@@ -116,6 +116,7 @@ public class SetProcessor implements CommandProcessor {
     if (varvalue.contains("\n")){
       ss.err.println("Warning: Value had a \\n character in it.");
     }
+    varname = varname.trim();
     if (varname.startsWith(SetProcessor.ENV_PREFIX)){
       ss.err.println("env:* variables can not be set.");
       return 1;
@@ -145,8 +146,8 @@ public class SetProcessor implements CommandProcessor {
         if (!confVars.isType(value)) {
           StringBuilder message = new StringBuilder();
           message.append("'SET ").append(varname).append('=').append(varvalue);
-          message.append("' FAILED because ").append(key).append(" expects an ");
-          message.append(confVars.typeString()).append(" value.");
+          message.append("' FAILED because ").append(key).append(" expects ");
+          message.append(confVars.typeString()).append(" type value.");
           throw new IllegalArgumentException(message.toString());
         }
         String fail = confVars.validate(value);
@@ -156,6 +157,8 @@ public class SetProcessor implements CommandProcessor {
           message.append("' FAILED in validation : ").append(fail).append('.');
           throw new IllegalArgumentException(message.toString());
         }
+      } else if (key.startsWith("hive.")) {
+        throw new IllegalArgumentException("hive configuration " + key + " does not exists.");
       }
     }
     conf.verifyAndSet(key, value);

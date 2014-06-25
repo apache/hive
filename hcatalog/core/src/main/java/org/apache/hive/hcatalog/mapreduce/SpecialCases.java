@@ -20,15 +20,12 @@ package org.apache.hive.hcatalog.mapreduce;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.io.RCFile;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,7 +59,7 @@ public class SpecialCases {
       OutputJobInfo jobInfo, Class<? extends OutputFormat> ofclass) {
     if (ofclass == RCFileOutputFormat.class) {
       // RCFile specific parameter
-      jobProperties.put(RCFile.COLUMN_NUMBER_CONF_STR,
+      jobProperties.put(HiveConf.ConfVars.HIVE_RCFILE_COLUMN_NUMBER_CONF.varname,
           Integer.toOctalString(
               jobInfo.getOutputSchema().getFields().size()));
     } else if (ofclass == OrcOutputFormat.class) {

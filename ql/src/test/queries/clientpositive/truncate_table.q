@@ -12,7 +12,7 @@ load data local inpath '../../data/files/kv1.txt' into table srcpart_truncate pa
 load data local inpath '../../data/files/kv1.txt' into table srcpart_truncate partition (ds='2008-04-09', hr='11');
 load data local inpath '../../data/files/kv1.txt' into table srcpart_truncate partition (ds='2008-04-09', hr='12');
 
-set hive.fetch.task.convertion=more;
+set hive.fetch.task.conversion=more;
 
 -- truncate non-partitioned table
 explain TRUNCATE TABLE src_truncate;

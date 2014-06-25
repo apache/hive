@@ -3220,8 +3220,8 @@ public final class Utilities {
       HiveConf.setVar(conf, var, mWork.getInputformat());
     }
     if (mWork.getIndexIntermediateFile() != null) {
-      conf.set("hive.index.compact.file", mWork.getIndexIntermediateFile());
-      conf.set("hive.index.blockfilter.file", mWork.getIndexIntermediateFile());
+      conf.set(ConfVars.HIVE_INDEX_COMPACT_FILE.varname, mWork.getIndexIntermediateFile());
+      conf.set(ConfVars.HIVE_INDEX_BLOCKFILTER_FILE.varname, mWork.getIndexIntermediateFile());
     }
 
     // Intentionally overwrites anything the user may have put here

@@ -8,4 +8,4 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src
 key                 	string              	default             
 value               	string              	default             
-Query returned non-zero code: 1, cause: 'SET hive.join.cache.size=test' FAILED because hive.join.cache.size expects an INT value.
+Query returned non-zero code: 1, cause: 'SET hive.join.cache.size=test' FAILED because hive.join.cache.size expects INT type value.
