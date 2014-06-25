@@ -76,16 +76,6 @@ SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table@part=1
-Execution failed with exit status: 3
-Obtaining error information
-
-Task failed!
-Task ID:
-  Stage-7
-
-Logs:
-
-#### A masked pattern was here ####
 FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: -- This test tests the scenario when the mapper dies. So, create a conditional task for the mapjoin.

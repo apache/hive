@@ -2,22 +2,4 @@ PREHOOK: query: FROM src SELECT TRANSFORM(key, value) USING 'python ../../data/s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-Execution failed with exit status: 2
-Obtaining error information
-
-Task failed!
-Task ID:
-  Stage-1
-
-Logs:
-
-#### A masked pattern was here ####
-ID: Stage-1
-org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
-#### A masked pattern was here ####
-org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
-#### A masked pattern was here ####
-org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
-#### A masked pattern was here ####
-Error during job, obtaining debugging information...
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

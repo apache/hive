@@ -1,3 +1,6 @@
+set hive.exec.submitviachild=true;
+set hive.exec.submit.local.task.via.child=true;
+
 drop temporary function row_sequence;
 
 add jar ${system:maven.local.repository}/org/apache/hive/hive-contrib/${system:hive.version}/hive-contrib-${system:hive.version}.jar;

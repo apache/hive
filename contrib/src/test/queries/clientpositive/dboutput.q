@@ -6,6 +6,8 @@ set mapred.map.tasks.speculative.execution=false;
 set mapred.reduce.tasks.speculative.execution=false;
 set mapred.map.tasks=1;
 set mapred.reduce.tasks=1;
+set hive.exec.submitviachild=true;
+set hive.exec.submit.local.task.via.child=true;
 
 ADD JAR ${system:maven.local.repository}/org/apache/derby/derby/${system:derby.version}/derby-${system:derby.version}.jar;
 
