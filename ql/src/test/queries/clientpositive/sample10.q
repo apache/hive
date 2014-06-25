@@ -1,4 +1,5 @@
-
+set hive.exec.submitviachild=true;
+set hive.exec.submit.local.task.via.child=true;
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.enforce.bucketing=true;

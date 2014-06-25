@@ -732,7 +732,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       memoryMXBean = ManagementFactory.getMemoryMXBean();
       MapredLocalWork plan = Utilities.deserializePlan(pathData, MapredLocalWork.class, conf);
       MapredLocalTask ed = new MapredLocalTask(plan, conf, isSilent);
-      ret = ed.executeFromChildJVM(new DriverContext());
+      ret = ed.executeInProcess(new DriverContext());
 
     } else {
       MapredWork plan = Utilities.deserializePlan(pathData, MapredWork.class, conf);

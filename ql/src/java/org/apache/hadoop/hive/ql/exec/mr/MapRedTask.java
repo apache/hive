@@ -127,8 +127,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         }
       }
 
-      runningViaChild = ShimLoader.getHadoopShims().isLocalMode(conf) ||
-        conf.getBoolVar(HiveConf.ConfVars.SUBMITVIACHILD);
+      runningViaChild = conf.getBoolVar(HiveConf.ConfVars.SUBMITVIACHILD);
 
       if(!runningViaChild) {
         // we are not running this mapred task via child jvm

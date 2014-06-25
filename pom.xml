@@ -729,7 +729,7 @@
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
           <failIfNoTests>false</failIfNoTests>
-          <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+          <argLine>-Xmx2048m -XX:MaxPermSize=512m</argLine>
           <additionalClasspathElements>
             <additionalClasspathElement>${test.tmp.dir}/conf</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
