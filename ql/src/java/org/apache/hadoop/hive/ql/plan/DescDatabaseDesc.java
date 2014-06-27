@@ -38,7 +38,7 @@ public class DescDatabaseDesc extends DDLDesc implements Serializable {
   /**
    * thrift ddl for the result of describe database.
    */
-  private static final String schema = "db_name,comment,location,parameters#string:string:string:string";
+  private static final String schema = "db_name,comment,location,owner_name,owner_type,parameters#string:string:string:string:string:string";
 
   public DescDatabaseDesc() {
   }
