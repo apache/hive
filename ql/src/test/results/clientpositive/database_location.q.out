@@ -6,7 +6,7 @@ PREHOOK: query: DESCRIBE DATABASE EXTENDED db1
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED db1
 POSTHOOK: type: DESCDATABASE
-#### A masked pattern was here ####
+db1		location/in/test	hive_test_user	USER	
 PREHOOK: query: USE db1
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE db1
@@ -68,7 +68,7 @@ PREHOOK: query: DESCRIBE DATABASE EXTENDED db2
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED db2
 POSTHOOK: type: DESCDATABASE
-#### A masked pattern was here ####
+db2	database 2	location/in/test	hive_test_user	USER	
 PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE db2
