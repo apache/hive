@@ -38,22 +38,28 @@ STAGE PLANS:
                 TableScan
                   alias: orc_src
                   Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: key (type: string)
-                    sort order: +
-                    Map-reduce partition columns: key (type: string)
-                    Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 44000 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 250 Data size: 44000 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
                   Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: key (type: string)
-                    sort order: +
-                    Map-reduce partition columns: key (type: string)
-                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -63,12 +69,12 @@ STAGE PLANS:
                   0 {KEY.reducesinkkey0}
                   1 {KEY.reducesinkkey0}
                 outputColumnNames: _col0, _col4
-                Statistics: Num rows: 550 Data size: 96800 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 275 Data size: 48400 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col0 = _col4) (type: boolean)
-                  Statistics: Num rows: 275 Data size: 48400 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 137 Data size: 24112 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    Statistics: Num rows: 275 Data size: 48400 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 137 Data size: 24112 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       mode: hash
