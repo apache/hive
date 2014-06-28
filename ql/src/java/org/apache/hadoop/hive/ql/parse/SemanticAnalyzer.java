@@ -12125,9 +12125,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<Integer> argList = new ArrayList<Integer>();
       RelDataType type = TypeConverter.convert(agg.m_returnType,
           this.m_cluster.getTypeFactory());
-      if (aggregation.equals(SqlStdOperatorTable.AVG)) {
-        type = type.getField("sum", false).getType();
-      }
 
       // TODO: Does HQL allows expressions as aggregate args or can it only be
       // projections from child?
