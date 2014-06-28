@@ -1,3 +1,5 @@
+set hive.cbo.enable=true;
+
 drop table if exists t1;
 drop table if exists t2;
 drop table if exists t3;
