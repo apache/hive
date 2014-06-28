@@ -624,7 +624,7 @@ public class TestRCFile {
     int writeCount = 2500;
     Configuration cloneConf = new Configuration(conf);
     RCFileOutputFormat.setColumnNumber(cloneConf, bytesArray.length);
-    cloneConf.setInt(RCFile.RECORD_INTERVAL_CONF_STR, intervalRecordCount);
+    cloneConf.setInt(HiveConf.ConfVars.HIVE_RCFILE_RECORD_INTERVAL.varname, intervalRecordCount);
     RCFile.Writer writer = new RCFile.Writer(fs, cloneConf, testFile, null, codec);
 
     BytesRefArrayWritable bytes = new BytesRefArrayWritable(bytesArray.length);
@@ -690,7 +690,7 @@ public class TestRCFile {
     fs.delete(testFile, true);
     Configuration cloneConf = new Configuration(conf);
     RCFileOutputFormat.setColumnNumber(cloneConf, bytesArray.length);
-    cloneConf.setInt(RCFile.RECORD_INTERVAL_CONF_STR, intervalRecordCount);
+    cloneConf.setInt(HiveConf.ConfVars.HIVE_RCFILE_RECORD_INTERVAL.varname, intervalRecordCount);
 
     RCFile.Writer writer = new RCFile.Writer(fs, cloneConf, testFile, null, codec);
 

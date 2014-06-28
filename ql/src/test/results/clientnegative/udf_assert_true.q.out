@@ -151,14 +151,4 @@ PREHOOK: query: SELECT ASSERT_TRUE(x < 2) FROM src LATERAL VIEW EXPLODE(ARRAY(1,
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-Execution failed with exit status: 2
-Obtaining error information
-
-Task failed!
-Task ID:
-  Stage-1
-
-Logs:
-
-#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

@@ -1,0 +1,17 @@
+PREHOOK: query: create database test_db with dbproperties ('key1' = 'value1', 'key2' = 'value2')
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database test_db with dbproperties ('key1' = 'value1', 'key2' = 'value2')
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: desc database extended test_db
+PREHOOK: type: DESCDATABASE
+POSTHOOK: query: desc database extended test_db
+POSTHOOK: type: DESCDATABASE
+test_db		location/in/test	hive_test_user	USER	{key2=value2, key1=value1}
+PREHOOK: query: drop database test_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db
+PREHOOK: Output: database:test_db
+POSTHOOK: query: drop database test_db
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_db
+POSTHOOK: Output: database:test_db

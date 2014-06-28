@@ -551,8 +551,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       HiveConf.setVar(conf, ConfVars.HIVEINPUTFORMAT, mWork.getInputformat());
     }
     if (mWork.getIndexIntermediateFile() != null) {
-      conf.set("hive.index.compact.file", mWork.getIndexIntermediateFile());
-      conf.set("hive.index.blockfilter.file", mWork.getIndexIntermediateFile());
+      conf.set(ConfVars.HIVE_INDEX_COMPACT_FILE.varname, mWork.getIndexIntermediateFile());
+      conf.set(ConfVars.HIVE_INDEX_BLOCKFILTER_FILE.varname, mWork.getIndexIntermediateFile());
     }
 
     // Intentionally overwrites anything the user may have put here
@@ -732,7 +732,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       memoryMXBean = ManagementFactory.getMemoryMXBean();
       MapredLocalWork plan = Utilities.deserializePlan(pathData, MapredLocalWork.class, conf);
       MapredLocalTask ed = new MapredLocalTask(plan, conf, isSilent);
-      ret = ed.executeFromChildJVM(new DriverContext());
+      ret = ed.executeInProcess(new DriverContext());
 
     } else {
       MapredWork plan = Utilities.deserializePlan(pathData, MapredWork.class, conf);

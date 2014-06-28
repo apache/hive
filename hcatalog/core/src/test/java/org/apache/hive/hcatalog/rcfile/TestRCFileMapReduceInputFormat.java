@@ -29,6 +29,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -210,7 +211,7 @@ public class TestRCFileMapReduceInputFormat extends TestCase {
     fs.delete(testFile, true);
     Configuration cloneConf = new Configuration(conf);
     RCFileOutputFormat.setColumnNumber(cloneConf, bytesArray.length);
-    cloneConf.setInt(RCFile.RECORD_INTERVAL_CONF_STR, intervalRecordCount);
+    cloneConf.setInt(HiveConf.ConfVars.HIVE_RCFILE_RECORD_INTERVAL.varname, intervalRecordCount);
 
     RCFile.Writer writer = new RCFile.Writer(fs, cloneConf, testFile, null, codec);
 

@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.io.Writable;
@@ -57,7 +58,7 @@ public class RCFileOutputFormat extends
    */
   public static void setColumnNumber(Configuration conf, int columnNum) {
     assert columnNum > 0;
-    conf.setInt(RCFile.COLUMN_NUMBER_CONF_STR, columnNum);
+    conf.setInt(HiveConf.ConfVars.HIVE_RCFILE_COLUMN_NUMBER_CONF.varname, columnNum);
   }
 
   /**
@@ -67,7 +68,7 @@ public class RCFileOutputFormat extends
    * @return number of columns for RCFile's writer
    */
   public static int getColumnNumber(Configuration conf) {
-    return conf.getInt(RCFile.COLUMN_NUMBER_CONF_STR, 0);
+    return HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_RCFILE_COLUMN_NUMBER_CONF);
   }
 
   /** {@inheritDoc} */

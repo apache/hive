@@ -40,6 +40,7 @@ import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -370,10 +371,10 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   /**
    * Return true when HBaseStorageHandler should generate hfiles instead of operate against the
-   * online table. This mode is implicitly applied when "hive.hbase.completebulkload" is true.
+   * online table. This mode is implicitly applied when "hive.hbase.generatehfiles" is true.
    */
   public static boolean isHBaseGenerateHFiles(Configuration conf) {
-    return conf.getBoolean("hive.hbase.generatehfiles", false);
+    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_HBASE_GENERATE_HFILES);
   }
 
   /**

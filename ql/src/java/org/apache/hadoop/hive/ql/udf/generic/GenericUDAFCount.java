@@ -130,7 +130,6 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
         assert parameters.length == 0;
         ((CountAgg) agg).value++;
       } else {
-        assert parameters.length > 0;
         boolean countThisRow = true;
         for (Object nextParam : parameters) {
           if (nextParam == null) {

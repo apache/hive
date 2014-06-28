@@ -1,6 +1,5 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.txn.testing=true;
 
 create table T1(key string, val string) partitioned by (ds string) stored as textfile;
 

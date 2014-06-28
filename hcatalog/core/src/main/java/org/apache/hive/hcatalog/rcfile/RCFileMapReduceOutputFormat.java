@@ -24,6 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.RCFile;
+import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -50,7 +51,7 @@ public class RCFileMapReduceOutputFormat extends
    */
   public static void setColumnNumber(Configuration conf, int columnNum) {
     assert columnNum > 0;
-    conf.setInt(RCFile.COLUMN_NUMBER_CONF_STR, columnNum);
+    RCFileOutputFormat.setColumnNumber(conf, columnNum);
   }
 
   /* (non-Javadoc)

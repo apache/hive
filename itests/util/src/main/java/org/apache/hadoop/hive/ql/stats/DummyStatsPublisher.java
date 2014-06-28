@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.stats;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * An test implementation for StatsPublisher.
@@ -36,7 +37,7 @@ public class DummyStatsPublisher implements StatsPublisher {
   // This is a test. The parameter hive.test.dummystats.publisher's value
   // denotes the method which needs to throw an error.
   public boolean init(Configuration hconf) {
-    errorMethod = hconf.get("hive.test.dummystats.publisher", "");
+    errorMethod = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVETESTMODEDUMMYSTATPUB);
     if (errorMethod.equalsIgnoreCase("init")) {
       return false;
     }
@@ -45,7 +46,7 @@ public class DummyStatsPublisher implements StatsPublisher {
   }
 
   public boolean connect(Configuration hconf) {
-    errorMethod = hconf.get("hive.test.dummystats.publisher", "");
+    errorMethod = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVETESTMODEDUMMYSTATPUB);
     if (errorMethod.equalsIgnoreCase("connect")) {
       return false;
     }

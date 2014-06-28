@@ -1,4 +1,4 @@
-SET hive.exec.compress.result=true;
+SET hive.exec.compress.output=true;
 SET hive.stats.dbclass=fs;
 
 -- SORT_QUERY_RESULTS

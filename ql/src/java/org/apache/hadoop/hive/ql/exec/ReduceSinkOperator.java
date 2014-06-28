@@ -290,7 +290,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       populateCachedDistributionKeys(row, 0);
 
       // replace bucketing columns with hashcode % numBuckets
-      int buckNum = 0;
+      int buckNum = -1;
       if (bucketEval != null) {
         buckNum = computeBucketNumber(row, conf.getNumBuckets());
         cachedKeys[0][buckColIdxInKey] = new IntWritable(buckNum);
@@ -304,14 +304,12 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       }
 
       final int hashCode;
-      
-      if(autoParallel && partitionEval.length > 0) {
-        // distKeyLength doesn't include tag, but includes buckNum in cachedKeys[0]
-        hashCode = hash.hash(firstKey.getBytes(), distKeyLength, 0);  
-      } else if(bucketEval != null && bucketEval.length > 0) {
-        hashCode = computeHashCode(row, buckNum);
+
+      // distKeyLength doesn't include tag, but includes buckNum in cachedKeys[0]
+      if (autoParallel && partitionEval.length > 0) {
+        hashCode = computeMurmurHash(firstKey);
       } else {
-        hashCode = computeHashCode(row);
+        hashCode = computeHashCode(row, buckNum);
       }
       
       firstKey.setHashCode(hashCode);
@@ -384,7 +382,11 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     union.setTag((byte) index);
   }
 
-  private int computeHashCode(Object row) throws HiveException {
+  protected final int computeMurmurHash(HiveKey firstKey) {
+    return hash.hash(firstKey.getBytes(), firstKey.getDistKeyLength(), 0);
+  }
+
+  private int computeHashCode(Object row, int buckNum) throws HiveException {
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {
@@ -403,13 +405,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
             + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
       }
     }
-    return keyHashCode;
-  }
-
-  private int computeHashCode(Object row, int buckNum) throws HiveException {
-    int keyHashCode = computeHashCode(row);
-    keyHashCode = keyHashCode * 31 + buckNum;
-    return keyHashCode;
+    return buckNum < 0  ? keyHashCode : keyHashCode * 31 + buckNum;
   }
 
   // Serialize the keys and append the tag

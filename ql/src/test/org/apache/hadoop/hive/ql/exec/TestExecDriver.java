@@ -80,6 +80,9 @@ public class TestExecDriver extends TestCase {
   static {
     try {
       conf = new HiveConf(ExecDriver.class);
+      conf.setBoolVar(HiveConf.ConfVars.SUBMITVIACHILD, true);
+      conf.setBoolVar(HiveConf.ConfVars.SUBMITLOCALTASKVIACHILD, true);
+
       SessionState.start(conf);
 
       //convert possible incompatible Windows path in config

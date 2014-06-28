@@ -1076,16 +1076,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     switch (alterDbDesc.getAlterType()) {
     case ALTER_PROPERTY:
       Map<String, String> newParams = alterDbDesc.getDatabaseProperties();
-      if (database != null) {
-        Map<String, String> params = database.getParameters();
-        // if both old and new params are not null, merge them
-        if (params != null && newParams != null) {
-          params.putAll(newParams);
-          database.setParameters(params);
-        } else { // if one of them is null, replace the old params with the new
-                 // one
-          database.setParameters(newParams);
-        }
+      Map<String, String> params = database.getParameters();
+      // if both old and new params are not null, merge them
+      if (params != null && newParams != null) {
+        params.putAll(newParams);
+        database.setParameters(params);
+      } else {
+        // if one of them is null, replace the old params with the new one
+        database.setParameters(newParams);
       }
       break;
 
@@ -2618,7 +2616,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *           Throws this exception if an unexpected error occurs.
    */
   private int showFunctions(ShowFunctionsDesc showFuncs) throws HiveException {
-    // get the tables for the desired pattenn - populate the output stream
+    // get the tables for the desired patten - populate the output stream
     Set<String> funcs = null;
     if (showFuncs.getPattern() != null) {
       LOG.info("pattern: " + showFuncs.getPattern());
@@ -3216,16 +3214,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (database == null) {
         throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, descDatabase.getDatabaseName());
-      } else {
-        Map<String, String> params = null;
-        if(descDatabase.isExt()) {
-          params = database.getParameters();
-        }
-        PrincipalType ownerType = database.getOwnerType();
-        formatter.showDatabaseDescription(outStream, database.getName(),
-            database.getDescription(), database.getLocationUri(),
-            database.getOwnerName(), (null == ownerType) ? null : ownerType.name(), params);
       }
+      Map<String, String> params = null;
+      if (descDatabase.isExt()) {
+        params = database.getParameters();
+      }
+      String location = database.getLocationUri();
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
+        location = "location/in/test";
+      }
+      PrincipalType ownerType = database.getOwnerType();
+      formatter.showDatabaseDescription(outStream, database.getName(),
+          database.getDescription(), location,
+          database.getOwnerName(), (null == ownerType) ? null : ownerType.name(), params);
+
       outStream.close();
       outStream = null;
     } catch (IOException e) {
@@ -4018,7 +4020,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // drop the table
     db.dropTable(dropTbl.getTableName());
     if (tbl != null) {
-      // We have already locked the table in DDLSemenaticAnalyzer, don't do it again here
+      // We have already locked the table in DDLSemanticAnalyzer, don't do it again here
       work.getOutputs().add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
     }
   }
@@ -4556,8 +4558,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    /**
    * Make location in specified sd qualified.
    *
-   * @param conf
-   *          Hive configuration.
    * @param databaseName
    *          Database name.
    * @param sd
@@ -4592,8 +4592,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    /**
    * Make qualified location for an index .
    *
-   * @param conf
-   *          Hive configuration.
    * @param crtIndex
    *          Create index descriptor.
    * @param name
@@ -4623,8 +4621,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    /**
    * Make qualified location for a database .
    *
-   * @param conf
-   *          Hive configuration.
    * @param database
    *          Database.
    */

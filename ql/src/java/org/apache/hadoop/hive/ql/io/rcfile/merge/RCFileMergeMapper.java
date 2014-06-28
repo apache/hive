@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.RCFile;
+import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -150,7 +151,7 @@ public class RCFileMergeMapper extends MapReduceBase implements
       if (outWriter == null) {
         codec = key.codec;
         columnNumber = key.keyBuffer.getColumnNumber();
-        jc.setInt(RCFile.COLUMN_NUMBER_CONF_STR, columnNumber);
+        RCFileOutputFormat.setColumnNumber(jc, columnNumber);
         outWriter = new RCFile.Writer(fs, jc, outPath, null, codec);
       }
 

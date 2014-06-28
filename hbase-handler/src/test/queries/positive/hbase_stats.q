@@ -1,6 +1,6 @@
 set datanucleus.cache.collections=false;
 set hive.stats.autogather=true;
-set hive.ststs.atomic=false;
+set hive.stats.atomic=false;
 
 set hive.stats.dbclass=hbase;
 

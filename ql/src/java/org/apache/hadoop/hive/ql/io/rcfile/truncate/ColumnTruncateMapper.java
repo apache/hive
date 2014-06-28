@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.RCFile;
+import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileKeyBufferWrapper;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileValueBufferWrapper;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -124,7 +125,7 @@ public class ColumnTruncateMapper extends MapReduceBase implements
       if (outWriter == null) {
         codec = key.getCodec();
         columnNumber = key.getKeyBuffer().getColumnNumber();
-        jc.setInt(RCFile.COLUMN_NUMBER_CONF_STR, columnNumber);
+        RCFileOutputFormat.setColumnNumber(jc, columnNumber);
         outWriter = new RCFile.Writer(fs, jc, outPath, null, codec);
       }
 

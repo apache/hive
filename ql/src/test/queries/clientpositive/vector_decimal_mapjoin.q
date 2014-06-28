@@ -5,8 +5,8 @@ CREATE TABLE decimal_mapjoin STORED AS ORC AS
   FROM alltypesorc;
  
 SET hive.auto.convert.join=true;
-SET hive.auto.convert.join.nonconditionaltask=true;
-SET hive.auto.convert.join.nonconditionaltask.size=1000000000;
+SET hive.auto.convert.join.noconditionaltask=true;
+SET hive.auto.convert.join.noconditionaltask.size=1000000000;
 SET hive.vectorized.execution.enabled=true;
 
 EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
