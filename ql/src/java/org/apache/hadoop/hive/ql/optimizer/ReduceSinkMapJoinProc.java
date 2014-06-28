@@ -117,6 +117,10 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     int numBuckets = -1;
     EdgeType edgeType = EdgeType.BROADCAST_EDGE;
     if (mapJoinOp.getConf().isBucketMapJoin()) {
+
+      // disable auto parallelism for bucket map joins
+      parentRS.getConf().setAutoParallel(false);
+
       numBuckets = (Integer) mapJoinOp.getConf().getBigTableBucketNumMapping().values().toArray()[0];
       if (mapJoinOp.getConf().getCustomBucketMapJoin()) {
         edgeType = EdgeType.CUSTOM_EDGE;

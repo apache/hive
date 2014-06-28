@@ -87,7 +87,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   private float topNMemoryUsage = -1;
   private boolean mapGroupBy;  // for group-by, values with same key on top-K should be forwarded
   private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
-  private boolean autoParallel = false; // Is reducer parallelism automatic or fixed
+  private Boolean autoParallel = null; // Is reducer auto-parallelism enabled, disabled or unset
 
   private static transient Log LOG = LogFactory.getLog(ReduceSinkDesc.class);
   public ReduceSinkDesc() {
@@ -140,7 +140,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.setBucketCols(bucketCols);
     desc.setStatistics(this.getStatistics());
     desc.setSkipTag(skipTag);
-    desc.setAutoParallel(autoParallel);
+    desc.autoParallel = autoParallel;
     return desc;
   }
 
@@ -344,10 +344,16 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   public final boolean isAutoParallel() {
-    return autoParallel;
+    return (autoParallel != null) && autoParallel;
   }
 
   public final void setAutoParallel(final boolean autoParallel) {
-    this.autoParallel = autoParallel;
+    // we don't allow turning on auto parallel once it has been
+    // explicitly turned off. That is to avoid scenarios where
+    // auto parallelism could break assumptions about number of
+    // reducers or hash function.
+    if (this.autoParallel == null || this.autoParallel == true) {
+      this.autoParallel = autoParallel;
+    }
   }
 }
