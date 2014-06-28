@@ -1,5 +1,3 @@
-set hive.mapjoin.numrows = 2;
-
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE dest_j1(key INT, value STRING, val2 STRING) STORED AS TEXTFILE;

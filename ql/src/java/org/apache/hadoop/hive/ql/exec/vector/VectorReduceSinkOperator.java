@@ -210,6 +210,9 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
       if (limit >= 0 && memUsage > 0) {
         reducerHash.initialize(limit, memUsage, conf.isMapGroupBy(), this);
       }
+
+      autoParallel = conf.isAutoParallel();
+
     } catch(Exception e) {
       throw new HiveException(e);
     }
@@ -265,8 +268,8 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         populatedCachedDistributionKeys(vrg, rowIndex, 0);
 
         // replace bucketing columns with hashcode % numBuckets
-        int buckNum = 0;
-        if (bucketEval != null && bucketEval.length != 0) {
+        int buckNum = -1;
+        if (bucketEval != null) {
           buckNum = computeBucketNumber(vrg, rowIndex, conf.getNumBuckets());
           cachedKeys[0][buckColIdxInKey] = new IntWritable(buckNum);
         }
@@ -280,12 +283,11 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
 
         final int hashCode;
 
-        if(autoParallel && partitionEval.length > 0) {
-          hashCode = hash.hash(firstKey.getBytes(), firstKey.getDistKeyLength(), 0);
-        } else if(bucketEval != null && bucketEval.length > 0) {
-          hashCode = computeHashCode(vrg, rowIndex, buckNum);
+        // distKeyLength doesn't include tag, but includes buckNum in cachedKeys[0]
+        if (autoParallel && partitionEval.length > 0) {
+          hashCode = computeMurmurHash(firstKey);
         } else {
-          hashCode = computeHashCode(vrg, rowIndex);
+          hashCode = computeHashCode(vrg, rowIndex, buckNum);
         }
 
         firstKey.setHashCode(hashCode);
@@ -417,7 +419,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
     return (BytesWritable)valueSerializer.serialize(cachedValues, valueObjectInspector);
   }
 
-  private int computeHashCode(VectorizedRowBatch vrg, int rowIndex) throws HiveException {
+  private int computeHashCode(VectorizedRowBatch vrg, int rowIndex, int buckNum) throws HiveException {
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {
@@ -440,13 +442,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
                 partitionWriters[p].getObjectInspector());
       }
     }
-    return keyHashCode;
-  }
-
-  private int computeHashCode(VectorizedRowBatch vrg, int rowIndex, int buckNum) throws HiveException {
-    int keyHashCode = computeHashCode(vrg, rowIndex);
-    keyHashCode = keyHashCode * 31 + buckNum;
-    return keyHashCode;
+    return buckNum < 0  ? keyHashCode : keyHashCode * 31 + buckNum;
   }
 
   private int computeBucketNumber(VectorizedRowBatch vrg, int rowIndex, int numBuckets) throws HiveException {

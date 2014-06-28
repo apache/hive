@@ -935,28 +935,8 @@ select a.* from src a join src b on a.key=b.key join src c on a.value=c.value wh
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-Execution failed with exit status: 3
-Obtaining error information
-
-Task failed!
-Task ID:
-  Stage-14
-
-Logs:
-
-#### A masked pattern was here ####
 FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
-Execution failed with exit status: 3
-Obtaining error information
-
-Task failed!
-Task ID:
-  Stage-11
-
-Logs:
-
-#### A masked pattern was here ####
 FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: -- fallback to common join

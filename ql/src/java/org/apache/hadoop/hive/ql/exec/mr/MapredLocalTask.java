@@ -130,6 +130,17 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
   @Override
   public int execute(DriverContext driverContext) {
+    if (conf.getBoolVar(HiveConf.ConfVars.SUBMITLOCALTASKVIACHILD)) {
+      // send task off to another jvm
+      return executeInChildVM(driverContext);
+    } else {
+      // execute in process
+      return executeInProcess(driverContext);
+    }
+  }
+
+  public int executeInChildVM(DriverContext driverContext) {
+    // execute in child jvm
     try {
       // generate the cmd line to run in the child jvm
       Context ctx = driverContext.getCtx();
@@ -285,9 +296,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     }
   }
 
-
-
-  public int executeFromChildJVM(DriverContext driverContext) {
+  public int executeInProcess(DriverContext driverContext) {
     // check the local work
     if (work == null) {
       return -1;

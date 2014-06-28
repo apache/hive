@@ -1,4 +1,6 @@
 set hive.fetch.task.conversion=minimal;
+set hive.exec.submitviachild=true;
+set hive.exec.submit.local.task.via.child=true;
 
 -- backward compatible (minimal)
 explain select * from src limit 10;

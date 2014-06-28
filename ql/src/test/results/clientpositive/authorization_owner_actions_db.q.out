@@ -26,6 +26,7 @@ PREHOOK: query: desc database testdb
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: desc database testdb
 POSTHOOK: type: DESCDATABASE
+testdb		location/in/test	testrole	ROLE	
 #### A masked pattern was here ####
 -- create table
 use testdb

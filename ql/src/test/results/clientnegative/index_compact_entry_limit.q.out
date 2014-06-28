@@ -29,14 +29,5 @@ PREHOOK: query: SELECT key, value FROM src WHERE key=100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-Execution failed with exit status: 1
-Obtaining error information
-
-Task failed!
-Task ID:
-  Stage-1
-
-Logs:
-
-#### A masked pattern was here ####
+Job Submission failed with exception 'java.io.IOException(org.apache.hadoop.hive.ql.metadata.HiveException: Number of compact index entries loaded during the query exceeded the maximum of 5 set in hive.index.compact.query.max.entries)'
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

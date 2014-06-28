@@ -6,6 +6,7 @@ PREHOOK: query: describe database db_alter_onr
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: describe database db_alter_onr
 POSTHOOK: type: DESCDATABASE
+db_alter_onr		location/in/test	hive_test_user	USER	
 #### A masked pattern was here ####
 PREHOOK: type: ALTERDATABASE_OWNER
 PREHOOK: Output: database:db_alter_onr
@@ -16,6 +17,7 @@ PREHOOK: query: describe database db_alter_onr
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: describe database db_alter_onr
 POSTHOOK: type: DESCDATABASE
+db_alter_onr		location/in/test	user1	USER	
 #### A masked pattern was here ####
 PREHOOK: type: ALTERDATABASE_OWNER
 PREHOOK: Output: database:db_alter_onr
@@ -26,4 +28,4 @@ PREHOOK: query: describe database db_alter_onr
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: describe database db_alter_onr
 POSTHOOK: type: DESCDATABASE
-#### A masked pattern was here ####
+db_alter_onr		location/in/test	role1	ROLE	

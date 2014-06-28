@@ -216,4 +216,9 @@
   <description>Using dummy config value above because you cannot override config with empty value</description>
 </property>
 
+<property>
+  <name>hive.exec.submit.local.task.via.child</name>
+  <value>false</value>
+</property>
+
 </configuration>

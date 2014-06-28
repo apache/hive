@@ -22,11 +22,9 @@ set hive.optimize.bucketmapjoin.sortedmerge=true;
 set hive.mapred.reduce.tasks.speculative.execution=false;
 set hive.auto.convert.join=true;
 set hive.auto.convert.sortmerge.join=true;
-set hive.auto.convert.sortmerge.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000000000;
 set hive.optimize.reducededuplication.min.reducer=1;
-set hive.optimize.mapjoin.mapreduce=true;
 set hive.auto.convert.sortmerge.join.bigtable.selection.policy=org.apache.hadoop.hive.ql.optimizer.LeftmostBigTableSelectorForAutoSMJ;
 
 -- explain
