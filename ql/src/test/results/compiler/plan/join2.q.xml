@@ -399,7 +399,7 @@
                   <object class="java.util.ArrayList"/> 
                  </void> 
                  <void property="keyCols"> 
-                  <object id="ArrayList0" class="java.util.ArrayList"> 
+                  <object class="java.util.ArrayList"> 
                    <void method="add"> 
                     <object idref="ExprNodeGenericFuncDesc0"/> 
                    </void> 
@@ -459,7 +459,11 @@
                   </object> 
                  </void> 
                  <void property="partitionCols"> 
-                  <object idref="ArrayList0"/> 
+                  <object class="java.util.ArrayList"> 
+                   <void method="add"> 
+                    <object idref="ExprNodeGenericFuncDesc0"/> 
+                   </void> 
+                  </object> 
                  </void> 
                  <void property="valueCols"> 
                   <object class="java.util.ArrayList"> 
@@ -546,7 +550,7 @@
                </object> 
               </void> 
               <void property="neededColumns"> 
-               <object id="ArrayList1" class="java.util.ArrayList"> 
+               <object id="ArrayList0" class="java.util.ArrayList"> 
                 <void method="add"> 
                  <string>_col0</string> 
                 </void> 
@@ -561,7 +565,7 @@
              <string>TS_19</string> 
             </void> 
             <void property="referencedColumns"> 
-             <object idref="ArrayList1"/> 
+             <object idref="ArrayList0"/> 
             </void> 
             <void property="schema"> 
              <object id="RowSchema0" class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -671,7 +675,7 @@
                      <object class="java.util.ArrayList"/> 
                     </void> 
                     <void property="keyCols"> 
-                     <object id="ArrayList2" class="java.util.ArrayList"> 
+                     <object class="java.util.ArrayList"> 
                       <void method="add"> 
                        <object idref="ExprNodeGenericFuncDesc1"/> 
                       </void> 
@@ -731,7 +735,11 @@
                      </object> 
                     </void> 
                     <void property="partitionCols"> 
-                     <object idref="ArrayList2"/> 
+                     <object class="java.util.ArrayList"> 
+                      <void method="add"> 
+                       <object idref="ExprNodeGenericFuncDesc1"/> 
+                      </void> 
+                     </object> 
                     </void> 
                     <void property="tag"> 
                      <int>1</int> 
@@ -1815,7 +1823,7 @@
                  <object class="java.util.ArrayList"/> 
                 </void> 
                 <void property="keyCols"> 
-                 <object id="ArrayList3" class="java.util.ArrayList"> 
+                 <object class="java.util.ArrayList"> 
                   <void method="add"> 
                    <object idref="ExprNodeColumnDesc6"/> 
                   </void> 
@@ -1871,7 +1879,11 @@
                  <object class="java.util.ArrayList"/> 
                 </void> 
                 <void property="partitionCols"> 
-                 <object idref="ArrayList3"/> 
+                 <object class="java.util.ArrayList"> 
+                  <void method="add"> 
+                   <object idref="ExprNodeColumnDesc6"/> 
+                  </void> 
+                 </object> 
                 </void> 
                 <void property="tag"> 
                  <int>1</int> 
@@ -2121,7 +2133,7 @@
                  <object class="java.util.ArrayList"/> 
                 </void> 
                 <void property="keyCols"> 
-                 <object id="ArrayList4" class="java.util.ArrayList"> 
+                 <object class="java.util.ArrayList"> 
                   <void method="add"> 
                    <object idref="ExprNodeColumnDesc7"/> 
                   </void> 
@@ -2177,7 +2189,11 @@
                  <object class="java.util.ArrayList"/> 
                 </void> 
                 <void property="partitionCols"> 
-                 <object idref="ArrayList4"/> 
+                 <object class="java.util.ArrayList"> 
+                  <void method="add"> 
+                   <object idref="ExprNodeColumnDesc7"/> 
+                  </void> 
+                 </object> 
                 </void> 
                 <void property="valueCols"> 
                  <object class="java.util.ArrayList"/> 
