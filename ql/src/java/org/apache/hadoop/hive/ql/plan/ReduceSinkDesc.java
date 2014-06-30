@@ -86,6 +86,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   private int topN = -1;
   private float topNMemoryUsage = -1;
   private boolean mapGroupBy;  // for group-by, values with same key on top-K should be forwarded
+  //flag used to control how TopN handled for PTF/Windowing partitions.
+  private boolean isPTFReduceSink = false; 
   private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
   private Boolean autoParallel = null; // Is reducer auto-parallelism enabled, disabled or unset
 
@@ -251,6 +253,14 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   public void setMapGroupBy(boolean mapGroupBy) {
     this.mapGroupBy = mapGroupBy;
+  }
+
+  public boolean isPTFReduceSink() {
+    return isPTFReduceSink;
+  }
+
+  public void setPTFReduceSink(boolean isPTFReduceSink) {
+    this.isPTFReduceSink = isPTFReduceSink;
   }
 
   /**
