@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -4131,6 +4132,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         reduceSinkInputRowResolver, reduceSinkOutputRowResolver, outputKeyColumnNames,
         colExprMap);
 
+    int keyLength = reduceKeys.size();
+
     // add a key for reduce sink
     if (groupingSetsPresent) {
       // Process grouping set for the reduce sink operator
@@ -4182,7 +4185,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
         OperatorFactory.getAndMakeChild(
             PlanUtils.getReduceSinkDesc(reduceKeys,
-                groupingSetsPresent ? grpByExprs.size() + 1 : grpByExprs.size(),
+                groupingSetsPresent ? keyLength + 1 : keyLength,
                 reduceValues, distinctColIndices,
                 outputKeyColumnNames, outputValueColumnNames, true, -1, numPartitionFields,
                 numReducers),
@@ -4203,22 +4206,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode grpbyExpr = grpByExprs.get(i);
       ExprNodeDesc inputExpr = genExprNodeDesc(grpbyExpr,
           reduceSinkInputRowResolver);
-      reduceKeys.add(inputExpr);
-      if (reduceSinkOutputRowResolver.getExpression(grpbyExpr) == null) {
-        outputKeyColumnNames.add(getColumnInternalName(reduceKeys.size() - 1));
-        String field = Utilities.ReduceField.KEY.toString() + "."
-            + getColumnInternalName(reduceKeys.size() - 1);
-        ColumnInfo colInfo = new ColumnInfo(field, reduceKeys.get(
-            reduceKeys.size() - 1).getTypeInfo(), null, false);
-        reduceSinkOutputRowResolver.putExpression(grpbyExpr, colInfo);
-        colExprMap.put(colInfo.getInternalName(), inputExpr);
-      } else {
-        throw new SemanticException(ErrorMsg.DUPLICATE_GROUPBY_KEY
-            .getMsg(grpbyExpr));
+      ColumnInfo prev = reduceSinkOutputRowResolver.getExpression(grpbyExpr);
+      if (prev != null && isDeterministic(inputExpr)) {
+        colExprMap.put(prev.getInternalName(), inputExpr);
+        continue;
       }
+      reduceKeys.add(inputExpr);
+      outputKeyColumnNames.add(getColumnInternalName(reduceKeys.size() - 1));
+      String field = Utilities.ReduceField.KEY.toString() + "."
+          + getColumnInternalName(reduceKeys.size() - 1);
+      ColumnInfo colInfo = new ColumnInfo(field, reduceKeys.get(
+          reduceKeys.size() - 1).getTypeInfo(), null, false);
+      reduceSinkOutputRowResolver.putExpression(grpbyExpr, colInfo);
+      colExprMap.put(colInfo.getInternalName(), inputExpr);
     }
 
     return reduceKeys;
+  }
+
+  private boolean isDeterministic(ExprNodeDesc expr) throws SemanticException {
+    try {
+      return ExprNodeEvaluatorFactory.get(expr).isDeterministic();
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
   }
 
   private List<List<Integer>> getDistinctColIndicesForReduceSink(QBParseInfo parseInfo,
@@ -4326,6 +4337,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         reduceSinkInputRowResolver, reduceSinkOutputRowResolver, outputKeyColumnNames,
         colExprMap);
 
+    int keyLength = reduceKeys.size();
+
     List<List<Integer>> distinctColIndices = getDistinctColIndicesForReduceSink(parseInfo, dest,
         reduceKeys, reduceSinkInputRowResolver, reduceSinkOutputRowResolver, outputKeyColumnNames,
         colExprMap);
@@ -4373,8 +4386,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
         OperatorFactory.getAndMakeChild(PlanUtils.getReduceSinkDesc(reduceKeys,
-            grpByExprs.size(), reduceValues, distinctColIndices,
-            outputKeyColumnNames, outputValueColumnNames, true, -1, grpByExprs.size(),
+            keyLength, reduceValues, distinctColIndices,
+            outputKeyColumnNames, outputValueColumnNames, true, -1, keyLength,
             -1), new RowSchema(reduceSinkOutputRowResolver
             .getColumnInfos()), inputOperatorInfo), reduceSinkOutputRowResolver);
     rsOp.setColumnExprMap(colExprMap);

@@ -739,20 +739,15 @@ public final class PlanUtils {
       List<String> outputKeyColumnNames, List<String> outputValueColumnNames,
       boolean includeKey, int tag,
       int numPartitionFields, int numReducers) throws SemanticException {
-    ArrayList<ExprNodeDesc> partitionCols = null;
 
+    ArrayList<ExprNodeDesc> partitionCols = new ArrayList<ExprNodeDesc>();
     if (numPartitionFields >= keyCols.size()) {
-      partitionCols = keyCols;
+      partitionCols.addAll(keyCols);
     } else if (numPartitionFields >= 0) {
-      partitionCols = new ArrayList<ExprNodeDesc>(numPartitionFields);
-      for (int i = 0; i < numPartitionFields; i++) {
-        partitionCols.add(keyCols.get(i));
-      }
+      partitionCols.addAll(keyCols.subList(0, numPartitionFields));
     } else {
       // numPartitionFields = -1 means random partitioning
-      partitionCols = new ArrayList<ExprNodeDesc>(1);
-      partitionCols.add(TypeCheckProcFactory.DefaultExprProcessor
-          .getFuncExprNodeDesc("rand"));
+      partitionCols.add(TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("rand"));
     }
 
     StringBuilder order = new StringBuilder();

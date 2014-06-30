@@ -421,7 +421,7 @@
                  <object class="java.util.ArrayList"/> 
                 </void> 
                 <void property="keyCols"> 
-                 <object id="ArrayList0" class="java.util.ArrayList"> 
+                 <object class="java.util.ArrayList"> 
                   <void method="add"> 
                    <object idref="ExprNodeColumnDesc1"/> 
                   </void> 
@@ -481,7 +481,11 @@
                  </object> 
                 </void> 
                 <void property="partitionCols"> 
-                 <object idref="ArrayList0"/> 
+                 <object class="java.util.ArrayList"> 
+                  <void method="add"> 
+                   <object idref="ExprNodeColumnDesc1"/> 
+                  </void> 
+                 </object> 
                 </void> 
                 <void property="tag"> 
                  <int>1</int> 
@@ -774,7 +778,7 @@
                  <object class="java.util.ArrayList"/> 
                 </void> 
                 <void property="keyCols"> 
-                 <object id="ArrayList1" class="java.util.ArrayList"> 
+                 <object class="java.util.ArrayList"> 
                   <void method="add"> 
                    <object idref="ExprNodeColumnDesc2"/> 
                   </void> 
@@ -830,7 +834,11 @@
                  <object class="java.util.ArrayList"/> 
                 </void> 
                 <void property="partitionCols"> 
-                 <object idref="ArrayList1"/> 
+                 <object class="java.util.ArrayList"> 
+                  <void method="add"> 
+                   <object idref="ExprNodeColumnDesc2"/> 
+                  </void> 
+                 </object> 
                 </void> 
                 <void property="valueCols"> 
                  <object class="java.util.ArrayList"/> 
