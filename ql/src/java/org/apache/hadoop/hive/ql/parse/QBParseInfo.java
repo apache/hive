@@ -65,7 +65,6 @@ public class QBParseInfo {
   private String tableName;   // used for column statistics
   private List<String> colName;     // used for column statistics
   private List<String> colType;    // used for column statistics
-  private String partName;  // used for column statistics
   private boolean isTblLvl; // used for column statistics
 
 
@@ -580,14 +579,6 @@ public class QBParseInfo {
 
   public void setColName(List<String> colName) {
     this.colName = colName;
-  }
-
-  public String getPartName() {
-    return partName;
-  }
-
-  public void setPartName(String partName) {
-    this.partName = partName;
   }
 
   public boolean isTblLvl() {
