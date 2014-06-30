@@ -28,19 +28,17 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
   private static final long serialVersionUID = 1L;
   private boolean isTblLevel;
   private String tableName;
-  private String partName;
   private List<String> colName;
   private List<String> colType;
 
   public ColumnStatsDesc() {
   }
 
-  public ColumnStatsDesc(String tableName, String partName, List<String> colName,
+  public ColumnStatsDesc(String tableName, List<String> colName,
     List<String> colType, boolean isTblLevel) {
     this.tableName = tableName;
     this.colName = colName;
     this.colType = colType;
-    this.partName = partName;
     this.isTblLevel = isTblLevel;
   }
 
@@ -60,15 +58,6 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
 
   public void setTblLevel(boolean isTblLevel) {
     this.isTblLevel = isTblLevel;
-  }
-
-  @Explain(displayName = "Partition")
-  public String getPartName() {
-    return partName;
-  }
-
-  public void setPartName(String partName) {
-    this.partName = partName;
   }
 
   @Explain(displayName = "Columns")

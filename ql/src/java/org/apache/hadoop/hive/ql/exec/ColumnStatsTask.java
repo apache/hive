@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -37,12 +38,14 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -65,8 +68,6 @@ import org.apache.hadoop.util.StringUtils;
 public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private FetchOperator ftOp;
-  private int totalRows;
-  private int numRows = 0;
   private static transient final Log LOG = LogFactory.getLog(ColumnStatsTask.class);
 
   public ColumnStatsTask() {
@@ -262,11 +263,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     }
   }
 
-  private ColumnStatistics constructColumnStatsFromPackedRow(ObjectInspector oi,
-     Object o) throws HiveException {
-    if (oi.getCategory() != ObjectInspector.Category.STRUCT) {
-      throw new HiveException("Unexpected object type encountered while unpacking row");
-    }
+  private List<ColumnStatistics> constructColumnStatsFromPackedRows() throws HiveException, MetaException, IOException {
 
     String dbName = SessionState.get().getCurrentDatabase();
     String tableName = work.getColStats().getTableName();
@@ -275,33 +272,51 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     List<String> colType = work.getColStats().getColType();
     boolean isTblLevel = work.getColStats().isTblLevel();
 
-    if (!isTblLevel) {
-      partName = work.getColStats().getPartName();
+    List<ColumnStatistics> stats = new ArrayList<ColumnStatistics>();
+    InspectableObject packedRow;
+    while ((packedRow = ftOp.getNextRow()) != null) {
+      if (packedRow.oi.getCategory() != ObjectInspector.Category.STRUCT) {
+        throw new HiveException("Unexpected object type encountered while unpacking row");
+      }
+
+      List<ColumnStatisticsObj> statsObjs = new ArrayList<ColumnStatisticsObj>();
+      StructObjectInspector soi = (StructObjectInspector) packedRow.oi;
+      List<? extends StructField> fields = soi.getAllStructFieldRefs();
+      List<Object> list = soi.getStructFieldsDataAsList(packedRow.o);
+
+      Table tbl = db.getTable(dbName,tableName);
+      List<FieldSchema> partColSchema = tbl.getPartCols();
+      // Partition columns are appended at end, we only care about stats column
+      for (int i = 0; i < fields.size() - partColSchema.size(); i++) {
+        // Get the field objectInspector, fieldName and the field object.
+        ObjectInspector foi = fields.get(i).getFieldObjectInspector();
+        Object f = (list == null ? null : list.get(i));
+        String fieldName = fields.get(i).getFieldName();
+        ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
+        statsObj.setColName(colName.get(i));
+        statsObj.setColType(colType.get(i));
+        unpackStructObject(foi, f, fieldName, statsObj);
+        statsObjs.add(statsObj);
+      }
+
+      if (!isTblLevel) {
+        List<String> partVals = new ArrayList<String>();
+        // Iterate over partition columns to figure out partition name
+        for (int i = fields.size() - partColSchema.size(); i < fields.size(); i++) {
+          partVals.add(((PrimitiveObjectInspector)fields.get(i).getFieldObjectInspector()).
+            getPrimitiveJavaObject(list.get(i)).toString());
+        }
+        partName = Warehouse.makePartName(partColSchema, partVals);
+      }
+
+      ColumnStatisticsDesc statsDesc = getColumnStatsDesc(dbName, tableName, partName, isTblLevel);
+      ColumnStatistics colStats = new ColumnStatistics();
+      colStats.setStatsDesc(statsDesc);
+      colStats.setStatsObj(statsObjs);
+      stats.add(colStats);
     }
-
-    ColumnStatisticsDesc statsDesc = getColumnStatsDesc(dbName, tableName, partName, isTblLevel);
-
-    List<ColumnStatisticsObj> statsObjs = new ArrayList<ColumnStatisticsObj>();
-    StructObjectInspector soi = (StructObjectInspector) oi;
-    List<? extends StructField> fields = soi.getAllStructFieldRefs();
-    List<Object> list = soi.getStructFieldsDataAsList(o);
-
-    for (int i = 0; i < fields.size(); i++) {
-      // Get the field objectInspector, fieldName and the field object.
-      ObjectInspector foi = fields.get(i).getFieldObjectInspector();
-      Object f = (list == null ? null : list.get(i));
-      String fieldName = fields.get(i).getFieldName();
-      ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
-      statsObj.setColName(colName.get(i));
-      statsObj.setColType(colType.get(i));
-      unpackStructObject(foi, f, fieldName, statsObj);
-      statsObjs.add(statsObj);
-    }
-
-    ColumnStatistics colStats = new ColumnStatistics();
-    colStats.setStatsDesc(statsDesc);
-    colStats.setStatsObj(statsObjs);
-    return colStats;
+    ftOp.clearFetchContext();
+    return stats;
   }
 
   private ColumnStatisticsDesc getColumnStatsDesc(String dbName, String tableName,
@@ -320,53 +335,24 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     return statsDesc;
   }
 
-  private int persistPartitionStats() throws HiveException {
-    InspectableObject io = null;
-    // Fetch result of the analyze table .. compute statistics for columns ..
-    try {
-      io = fetchColumnStats();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (CommandNeedRetryException e) {
-      e.printStackTrace();
-    }
+  private int persistPartitionStats() throws HiveException, MetaException, IOException {
 
-    if (io != null) {
-      // Construct a column statistics object from the result
-      ColumnStatistics colStats = constructColumnStatsFromPackedRow(io.oi, io.o);
-
-      // Persist the column statistics object to the metastore
-      try {
-        db.updatePartitionColumnStatistics(colStats);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+    // Fetch result of the analyze table partition (p1=c1).. compute statistics for columns ..
+    // Construct a column statistics object from the result
+    List<ColumnStatistics> colStats = constructColumnStatsFromPackedRows();
+    // Persist the column statistics object to the metastore
+    for (ColumnStatistics colStat : colStats) {
+      db.updatePartitionColumnStatistics(colStat);
     }
     return 0;
   }
 
-  private int persistTableStats() throws HiveException {
-    InspectableObject io = null;
+  private int persistTableStats() throws HiveException, MetaException, IOException {
     // Fetch result of the analyze table .. compute statistics for columns ..
-    try {
-      io = fetchColumnStats();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (CommandNeedRetryException e) {
-      e.printStackTrace();
-    }
-
-    if (io != null) {
-      // Construct a column statistics object from the result
-      ColumnStatistics colStats = constructColumnStatsFromPackedRow(io.oi, io.o);
-
-      // Persist the column statistics object to the metastore
-      try {
-        db.updateTableColumnStatistics(colStats);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
+    // Construct a column statistics object from the result
+    ColumnStatistics colStats = constructColumnStatsFromPackedRows().get(0);
+    // Persist the column statistics object to the metastore
+    db.updateTableColumnStatistics(colStats);
     return 0;
   }
 
@@ -379,40 +365,9 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         return persistPartitionStats();
       }
     } catch (Exception e) {
-      e.printStackTrace();
+        LOG.info(e);
     }
     return 1;
-  }
-
-  private InspectableObject fetchColumnStats() throws IOException, CommandNeedRetryException {
-    InspectableObject io = null;
-
-    try {
-      int rowsRet = work.getLeastNumRows();
-      if (rowsRet <= 0) {
-        rowsRet = ColumnStatsWork.getLimit() >= 0 ?
-            Math.min(ColumnStatsWork.getLimit() - totalRows, 1) : 1;
-      }
-      if (rowsRet <= 0) {
-        ftOp.clearFetchContext();
-        return null;
-      }
-      while (numRows < rowsRet) {
-        if ((io = ftOp.getNextRow()) == null) {
-          if (work.getLeastNumRows() > 0) {
-            throw new CommandNeedRetryException();
-          }
-        }
-        numRows++;
-      }
-      return io;
-    } catch (CommandNeedRetryException e) {
-      throw e;
-    } catch (IOException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new IOException(e);
-    }
   }
 
   @Override
