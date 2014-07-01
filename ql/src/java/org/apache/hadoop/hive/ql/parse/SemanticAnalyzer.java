@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -2368,6 +2369,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
+
+    if (input instanceof FilterOperator) {
+      FilterOperator f = (FilterOperator) input;
+      List<ExprNodeDesc> preds = new ArrayList<ExprNodeDesc>();
+      preds.add(f.getConf().getPredicate());
+      preds.add(filterPred);
+      f.getConf().setPredicate(ExprNodeDescUtils.mergePredicates(preds));
+
+      return input;
+    }
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new FilterDesc(filterPred, false),
