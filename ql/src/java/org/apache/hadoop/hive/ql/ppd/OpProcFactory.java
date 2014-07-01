@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -53,7 +54,9 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -61,8 +64,23 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.ValueBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFDenseRank.GenericUDAFDenseRankEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead.GenericUDAFLeadEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFRank.GenericUDAFRankEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
+import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
 
 /**
@@ -132,6 +150,191 @@ public final class OpProcFactory {
       return null;
     }
 
+  }
+  
+  public static class PTFPPD extends ScriptPPD {
+    
+    /*
+     * For WindowingTableFunction if:
+     * a. there is a Rank/DenseRank function: if there are unpushedPred of the form 
+     *    rnkValue < Constant; then use the smallest Constant val as the 'rankLimit'
+     *    on the WindowingTablFn.
+     * b. If there are no Wdw Fns with an End Boundary past the current row, the 
+     *    condition can be pushed down as a limit pushdown(mapGroupBy=true)
+     * 
+     * (non-Javadoc)
+     * @see org.apache.hadoop.hive.ql.ppd.OpProcFactory.ScriptPPD#process(org.apache.hadoop.hive.ql.lib.Node, java.util.Stack, org.apache.hadoop.hive.ql.lib.NodeProcessorCtx, java.lang.Object[])
+     */
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      LOG.info("Processing for " + nd.getName() + "("
+          + ((Operator) nd).getIdentifier() + ")");
+      OpWalkerInfo owi = (OpWalkerInfo) procCtx;
+      PTFOperator ptfOp = (PTFOperator) nd;
+      
+      pushRankLimit(ptfOp, owi);
+      return super.process(nd, stack, procCtx, nodeOutputs);
+    }
+    
+    private void pushRankLimit(PTFOperator ptfOp, OpWalkerInfo owi) throws SemanticException {
+      PTFDesc conf = ptfOp.getConf();
+      
+      if ( !conf.forWindowing() ) {
+        return;
+      }
+      
+      float threshold = owi.getParseContext().getConf().getFloatVar(HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE);
+      if (threshold <= 0 || threshold >= 1) {
+        return;
+      }
+      
+      WindowTableFunctionDef wTFn = (WindowTableFunctionDef) conf.getFuncDef();
+      List<Integer> rFnIdxs = rankingFunctions(wTFn);
+      
+      if ( rFnIdxs.size() == 0 ) {
+        return;
+      }
+      
+      ExprWalkerInfo childInfo = getChildWalkerInfo((Operator<?>) ptfOp, owi);
+
+      if (childInfo == null) {
+        return;
+      }
+
+      List<ExprNodeDesc> preds = new ArrayList<ExprNodeDesc>();
+      Iterator<List<ExprNodeDesc>> iterator = childInfo.getFinalCandidates().values().iterator();
+      while (iterator.hasNext()) {
+        for (ExprNodeDesc pred : iterator.next()) {
+          preds = ExprNodeDescUtils.split(pred, preds);
+        }
+      }
+      
+      int rLimit = -1;
+      int fnIdx = -1;
+      for(ExprNodeDesc pred : preds) {
+        int[] pLimit = getLimit(wTFn, rFnIdxs, pred);
+        if ( pLimit != null ) {
+          if ( rLimit == -1 || rLimit >= pLimit[0] ) {
+            rLimit = pLimit[0];
+            fnIdx = pLimit[1];
+          }
+        }
+      }
+      
+      if ( rLimit != -1 ) {
+        wTFn.setRankLimit(rLimit);
+        wTFn.setRankLimitFunction(fnIdx);
+        if ( canPushLimitToReduceSink(wTFn)) {
+          pushRankLimitToRedSink(ptfOp, owi.getParseContext().getConf(), rLimit);
+        }
+      }
+    }
+    
+    private List<Integer> rankingFunctions(WindowTableFunctionDef wTFn) {
+      List<Integer> rFns = new ArrayList<Integer>();
+      for(int i=0; i < wTFn.getWindowFunctions().size(); i++ ) {
+        WindowFunctionDef wFnDef = wTFn.getWindowFunctions().get(i);
+        if ( (wFnDef.getWFnEval() instanceof GenericUDAFRankEvaluator) || 
+            (wFnDef.getWFnEval() instanceof GenericUDAFDenseRankEvaluator )  ) {
+          rFns.add(i);
+        }
+      }
+      return rFns;
+    }
+    
+    /*
+     * For a predicate check if it is a candidate for pushing down as limit optimization.
+     * The expression must be of the form rankFn <|<= constant.
+     */
+    private int[] getLimit(WindowTableFunctionDef wTFn, List<Integer> rFnIdxs, ExprNodeDesc expr) {
+      
+      if ( !(expr instanceof ExprNodeGenericFuncDesc) ) {
+        return null;
+      }
+      
+      ExprNodeGenericFuncDesc fExpr = (ExprNodeGenericFuncDesc) expr;
+      
+      if ( !(fExpr.getGenericUDF() instanceof GenericUDFOPLessThan) && 
+          !(fExpr.getGenericUDF() instanceof GenericUDFOPEqualOrLessThan) ) {
+        return null;
+      }
+      
+      if ( !(fExpr.getChildren().get(0) instanceof ExprNodeColumnDesc) ) {
+        return null;
+      }
+      
+      if ( !(fExpr.getChildren().get(1) instanceof ExprNodeConstantDesc) ) {
+        return null;
+      }
+      
+      ExprNodeConstantDesc constantExpr = (ExprNodeConstantDesc) fExpr.getChildren().get(1) ;
+      
+      if ( constantExpr.getTypeInfo() != TypeInfoFactory.intTypeInfo ) {
+        return null;
+      }
+      
+      int limit = (Integer) constantExpr.getValue();
+      if ( fExpr.getGenericUDF() instanceof GenericUDFOPEqualOrLessThan ) {
+        limit = limit + 1;
+      }
+      String colName = ((ExprNodeColumnDesc)fExpr.getChildren().get(0)).getColumn();
+      
+      for(int i=0; i < rFnIdxs.size(); i++ ) {
+        String fAlias = wTFn.getWindowFunctions().get(i).getAlias();
+        if ( fAlias.equals(colName)) {
+          return new int[] {limit,i};
+        }
+      }
+      
+      return null;
+    }
+    
+    /*
+     * Limit can be pushed down to Map-side if all Window Functions need access 
+     * to rows before the current row. This is true for:
+     * 1. Rank, DenseRank and Lead Fns. (the window doesn't matter for lead fn).
+     * 2. If the Window for the function is Row based and the End Boundary doesn't
+     * reference rows past the Current Row.
+     */
+    private boolean canPushLimitToReduceSink(WindowTableFunctionDef wTFn) {
+
+      for(WindowFunctionDef wFnDef : wTFn.getWindowFunctions() ) {
+        if ( (wFnDef.getWFnEval() instanceof GenericUDAFRankEvaluator) || 
+            (wFnDef.getWFnEval() instanceof GenericUDAFDenseRankEvaluator )  || 
+            (wFnDef.getWFnEval() instanceof GenericUDAFLeadEvaluator ) ) {
+          continue;
+        }
+        WindowFrameDef wdwFrame = wFnDef.getWindowFrame();
+        BoundaryDef end = wdwFrame.getEnd();
+        if ( end instanceof ValueBoundaryDef ) {
+          return false;
+        }
+        if ( end.getDirection() == Direction.FOLLOWING ) {
+          return false;
+        }
+      }
+      return true;
+    }
+    
+    private void pushRankLimitToRedSink(PTFOperator ptfOp, HiveConf conf, int rLimit) throws SemanticException {
+      
+      Operator<? extends OperatorDesc> parent = ptfOp.getParentOperators().get(0);
+      Operator<? extends OperatorDesc> gP = parent == null ? null : parent.getParentOperators().get(0);
+      
+      if ( gP == null || !(gP instanceof ReduceSinkOperator )) {
+        return;
+      }
+      
+      float threshold = conf.getFloatVar(HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE);
+      
+      ReduceSinkOperator rSink = (ReduceSinkOperator) gP;
+      ReduceSinkDesc rDesc = rSink.getConf();
+      rDesc.setTopN(rLimit);
+      rDesc.setTopNMemoryUsage(threshold);
+      rDesc.setMapGroupBy(true);
+      rDesc.setPTFReduceSink(true);
+    }
   }
 
   public static class UDTFPPD extends DefaultPPD implements NodeProcessor {
@@ -865,7 +1068,7 @@ public final class OpProcFactory {
   }
 
   public static NodeProcessor getPTFProc() {
-    return new ScriptPPD();
+    return new PTFPPD();
   }
 
   public static NodeProcessor getSCRProc() {

@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 public class WindowingTableFunction extends TableFunctionEvaluator {
 
   StreamingState streamingState;
+  RankLimit rnkLimitDef;
   
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
@@ -283,6 +284,12 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         }
       }
     }
+
+    if ( tabDef.getRankLimit() != -1 ) {
+      rnkLimitDef = new RankLimit(tabDef.getRankLimit(), 
+          tabDef.getRankLimitFunction(), tabDef.getWindowFunctions());
+    }
+    
     streamingState = new StreamingState(cfg, inputOI, isMapSide, tabDef,
         span[0], span[1]);
   }
@@ -312,6 +319,13 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
    */
   @Override
   public List<Object> processRow(Object row) throws HiveException {
+
+    /*
+     * Once enough rows have been output, there is no need to process input rows.
+     */
+    if ( streamingState.rankLimitReached() ) {
+      return null;
+    }
 
     streamingState.rollingPart.append(row);
     row = streamingState.rollingPart
@@ -382,6 +396,13 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   @Override
   public List<Object> finishPartition() throws HiveException {
 
+    /*
+     * Once enough rows have been output, there is no need to generate more output.
+     */
+    if ( streamingState.rankLimitReached() ) {
+      return null;
+    }
+
     WindowTableFunctionDef tabDef = (WindowTableFunctionDef) getTableDef();
     for (int i = 0; i < tabDef.getWindowFunctions().size(); i++) {
       WindowFunctionDef wFn = tabDef.getWindowFunctions().get(i);
@@ -428,15 +449,17 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
     List<Object> oRows = new ArrayList<Object>();
 
-    while (!streamingState.rollingPart.processedAllRows()) {
+    while (!streamingState.rollingPart.processedAllRows() && 
+        !streamingState.rankLimitReached() ) {
       boolean hasRow = streamingState.hasOutputRow();
-      ;
 
-      if (!hasRow) {
+      if (!hasRow && !streamingState.rankLimitReached() ) {
         throw new HiveException(
             "Internal Error: cannot generate all output rows for a Partition");
       }
-      oRows.add(streamingState.nextOutputRow());
+      if ( hasRow ) {
+        oRows.add(streamingState.nextOutputRow());
+      } 
     }
 
     return oRows.size() == 0 ? null : oRows;
@@ -494,6 +517,11 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     i=0;
     for(i=0; i < iPart.getOutputOI().getAllStructFieldRefs().size(); i++) {
       output.add(null);
+    }
+
+    if ( wTFnDef.getRankLimit() != -1 ) {
+      rnkLimitDef = new RankLimit(wTFnDef.getRankLimit(), 
+          wTFnDef.getRankLimitFunction(), wTFnDef.getWindowFunctions());
     }
 
     return new WindowingIterator(iPart, output, outputFromPivotFunctions,
@@ -1205,6 +1233,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     StructObjectInspector inputOI;
     AggregationBuffer[] aggBuffers;
     Object[][] args;
+    RankLimit rnkLimit;
 
     WindowingIterator(PTFPartition iPart, ArrayList<Object> output,
         List<?>[] outputFromPivotFunctions, int[] wFnsToProcess) {
@@ -1229,10 +1258,17 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       } catch (HiveException he) {
         throw new RuntimeException(he);
       }
+      if ( WindowingTableFunction.this.rnkLimitDef != null ) {
+        rnkLimit = new RankLimit(WindowingTableFunction.this.rnkLimitDef);
+      }
     }
 
     @Override
     public boolean hasNext() {
+
+      if ( rnkLimit != null && rnkLimit.limitReached() ) {
+        return false;
+      }
       return currIdx < iPart.size();
     }
 
@@ -1279,6 +1315,9 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         throw new RuntimeException(he);
       }
 
+      if ( rnkLimit != null ) {
+        rnkLimit.updateRank(output);
+      }
       currIdx++;
       return output;
     }
@@ -1296,6 +1335,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     AggregationBuffer[] aggBuffers;
     Object[][] funcArgs;
     Order order;
+    RankLimit rnkLimit;
 
     @SuppressWarnings("unchecked")
     StreamingState(Configuration cfg, StructObjectInspector inputOI,
@@ -1321,6 +1361,9 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         funcArgs[i] = new Object[wFn.getArgs() == null ? 0 : wFn.getArgs().size()];
         aggBuffers[i] = wFn.getWFnEval().getNewAggregationBuffer();
       }
+      if ( WindowingTableFunction.this.rnkLimitDef != null ) {
+        rnkLimit = new RankLimit(WindowingTableFunction.this.rnkLimitDef);
+      }
     }
 
     void reset(WindowTableFunctionDef tabDef) throws HiveException {
@@ -1334,9 +1377,17 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         WindowFunctionDef wFn = tabDef.getWindowFunctions().get(i);
         aggBuffers[i] = wFn.getWFnEval().getNewAggregationBuffer();
       }
+
+      if ( rnkLimit != null ) {
+        rnkLimit.reset();
+      }
     }
 
     boolean hasOutputRow() {
+      if ( rankLimitReached() ) {
+        return false;
+      }
+
       for (int i = 0; i < fnOutputs.length; i++) {
         if (fnOutputs[i].size() == 0) {
           return false;
@@ -1355,7 +1406,64 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       for (StructField f : rollingPart.getOutputOI().getAllStructFieldRefs()) {
         oRow.add(rollingPart.getOutputOI().getStructFieldData(iRow, f));
       }
+      if ( rnkLimit != null ) {
+        rnkLimit.updateRank(oRow);
+      }
       return oRow;
+    }
+
+    boolean rankLimitReached() {
+      return rnkLimit != null  && rnkLimit.limitReached();
+    }
+  }
+  
+  static class RankLimit {
+    
+    /*
+     * Rows with a rank <= rankLimit are output.
+     * Only the first row with rank = rankLimit is output.
+     */
+    final int rankLimit;
+    
+    /*
+     * the rankValue of the last row output.
+     */
+    int currentRank;
+    
+    /*
+     * index of Rank function.
+     */
+    final int rankFnIdx;
+    
+    final PrimitiveObjectInspector fnOutOI;
+    
+    RankLimit(int rankLimit, int rankFnIdx, List<WindowFunctionDef> wdwFnDefs) {
+      this.rankLimit = rankLimit;
+      this.rankFnIdx = rankFnIdx;
+      this.fnOutOI = (PrimitiveObjectInspector) wdwFnDefs.get(rankFnIdx).getOI();
+      this.currentRank = -1;
+    }
+    
+    RankLimit(RankLimit rl) {
+      this.rankLimit = rl.rankLimit;
+      this.rankFnIdx = rl.rankFnIdx;
+      this.fnOutOI = rl.fnOutOI;
+      this.currentRank = -1;
+    }
+    
+    void reset() {
+      this.currentRank = -1;
+    }
+    
+    void updateRank(List<Object> oRow) {
+      int r = (Integer) fnOutOI.getPrimitiveJavaObject(oRow.get(rankFnIdx));
+      if ( r > currentRank ) {
+        currentRank = r;
+      }
+    }
+    
+    boolean limitReached() {
+      return currentRank >= rankLimit;
     }
   }
 

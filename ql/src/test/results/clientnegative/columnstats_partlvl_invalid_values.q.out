@@ -65,4 +65,4 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@employee_part
 POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=UK
-FAILED: SemanticException [Error 30007]: Invalid partitioning key/value specified in ANALYZE statement
+FAILED: SemanticException [Error 30007]: Invalid partitioning key/value specified in ANALYZE statement : {employeesalary=4000.0, country=Canada}
