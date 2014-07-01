@@ -163,16 +163,18 @@ public class HiveStatement implements java.sql.Statement {
         TCloseOperationReq closeReq = new TCloseOperationReq();
         closeReq.setOperationHandle(stmtHandle);
         transportLock.lock();
-        TCloseOperationResp closeResp = client.CloseOperation(closeReq);
-        Utils.verifySuccessWithInfo(closeResp.getStatus());
+        try {
+          TCloseOperationResp closeResp = client.CloseOperation(closeReq);
+          Utils.verifySuccessWithInfo(closeResp.getStatus());
+        }
+        finally {
+          transportLock.unlock();
+        }
       }
     } catch (SQLException e) {
       throw e;
     } catch (Exception e) {
       throw new SQLException(e.toString(), "08S01", e);
-    }
-    finally {
-      transportLock.unlock();
     }
     stmtHandle = null;
   }
