@@ -53,8 +53,8 @@ STAGE PLANS:
             alias: tab
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key is not null and value is not null) and (value < 200)) (type: boolean)
-              Statistics: Num rows: 2 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((((key > 20) and key is not null) and value is not null) and (value < 200)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -65,11 +65,11 @@ STAGE PLANS:
                   0 _col0 (type: string), _col1 (type: string)
                   1 key (type: string), value (type: string)
                 outputColumnNames: _col0, _col3
-                Statistics: Num rows: 2 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col3
-                  Statistics: Num rows: 2 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: sum(hash(_col0,_col3))
                     mode: hash
