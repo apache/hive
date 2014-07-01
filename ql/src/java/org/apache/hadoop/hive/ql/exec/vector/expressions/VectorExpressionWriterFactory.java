@@ -443,6 +443,21 @@ public final class VectorExpressionWriterFactory {
       }
   }
 
+  /**
+   * Compiles the appropriate vector expression writers based on a struct object
+   * inspector.
+   */
+  public static VectorExpressionWriter[] genVectorStructExpressionWritables(
+      StructObjectInspector oi) throws HiveException {
+    VectorExpressionWriter[] writers = new VectorExpressionWriter[oi.getAllStructFieldRefs().size()];
+    final List<? extends StructField> fields = oi.getAllStructFieldRefs();
+    int i = 0;
+    for(StructField field : fields) {
+      writers[i++] = genVectorExpressionWritable(field.getFieldObjectInspector());
+    }
+    return writers;
+  }
+
   private static VectorExpressionWriter genVectorExpressionWritableDecimal(
       SettableHiveDecimalObjectInspector fieldObjInspector) throws HiveException {
 

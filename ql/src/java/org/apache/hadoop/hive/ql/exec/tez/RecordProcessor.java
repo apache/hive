@@ -55,6 +55,7 @@ public abstract class RecordProcessor  {
   // used to log memory usage periodically
   public static MemoryMXBean memoryMXBean;
   protected boolean isLogInfoEnabled = false;
+  protected boolean isLogTraceEnabled = false;
   protected MRTaskReporter reporter;
 
   private long numRows = 0;
@@ -85,6 +86,7 @@ public abstract class RecordProcessor  {
     l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
 
     isLogInfoEnabled = l4j.isInfoEnabled();
+    isLogTraceEnabled = l4j.isTraceEnabled();
 
     //log classpaths
     try {
