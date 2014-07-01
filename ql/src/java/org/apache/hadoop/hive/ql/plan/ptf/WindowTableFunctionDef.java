@@ -23,11 +23,26 @@ import java.util.List;
 
 public class WindowTableFunctionDef extends PartitionedTableFunctionDef {
   List<WindowFunctionDef> windowFunctions;
+  
+  int rankLimit = -1;
+  int rankLimitFunction;
 
   public List<WindowFunctionDef> getWindowFunctions() {
     return windowFunctions;
   }
   public void setWindowFunctions(List<WindowFunctionDef> windowFunctions) {
     this.windowFunctions = windowFunctions;
+  }
+  public int getRankLimit() {
+    return rankLimit;
+  }
+  public void setRankLimit(int rankLimit) {
+    this.rankLimit = rankLimit;
+  }
+  public int getRankLimitFunction() {
+    return rankLimitFunction;
+  }
+  public void setRankLimitFunction(int rankLimitFunction) {
+    this.rankLimitFunction = rankLimitFunction;
   }
 }

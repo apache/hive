@@ -59,6 +59,8 @@ import org.apache.hadoop.io.compress.Decompressor;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
+
 /**
  * <code>RCFile</code>s, short of Record Columnar File, are flat files
  * consisting of binary key/value pairs, which shares much similarity with
@@ -340,7 +342,14 @@ public class RCFile {
 
   private static final Log LOG = LogFactory.getLog(RCFile.class);
 
+  // internal variable
   public static final String COLUMN_NUMBER_METADATA_STR = "hive.io.rcfile.column.number";
+
+  public static final String RECORD_INTERVAL_CONF_STR = HIVE_RCFILE_RECORD_INTERVAL.varname;
+
+  public static final String COLUMN_NUMBER_CONF_STR = HIVE_RCFILE_COLUMN_NUMBER_CONF.varname;
+
+  public static final String TOLERATE_CORRUPTIONS_CONF_STR = HIVE_RCFILE_TOLERATE_CORRUPTIONS.varname;
 
   // HACK: We actually need BlockMissingException, but that is not available
   // in all hadoop versions.
@@ -978,8 +987,8 @@ public class RCFile {
     public Writer(FileSystem fs, Configuration conf, Path name, int bufferSize,
         short replication, long blockSize, Progressable progress,
         Metadata metadata, CompressionCodec codec) throws IOException {
-      RECORD_INTERVAL = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_RCFILE_RECORD_INTERVAL);
-      columnNumber = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_RCFILE_COLUMN_NUMBER_CONF);
+      RECORD_INTERVAL = HiveConf.getIntVar(conf, HIVE_RCFILE_RECORD_INTERVAL);
+      columnNumber = HiveConf.getIntVar(conf, HIVE_RCFILE_COLUMN_NUMBER_CONF);
 
       if (metadata == null) {
         metadata = new Metadata();
@@ -1051,8 +1060,7 @@ public class RCFile {
       this.out = out;
       this.codec = codec;
       this.metadata = metadata;
-      this.useNewMagic =
-          conf.getBoolean(HiveConf.ConfVars.HIVEUSEEXPLICITRCFILEHEADER.varname, true);
+      this.useNewMagic = conf.getBoolean(HIVEUSEEXPLICITRCFILEHEADER.varname, true);
     }
 
     /** Returns the compression codec of data in this file. */
@@ -1339,8 +1347,7 @@ public class RCFile {
     /** Create a new RCFile reader. */
     public Reader(FileSystem fs, Path file, int bufferSize, Configuration conf,
         long start, long length) throws IOException {
-      tolerateCorruptions = HiveConf.getBoolVar(
-          conf, HiveConf.ConfVars.HIVE_RCFILE_TOLERATE_CORRUPTIONS);
+      tolerateCorruptions = HiveConf.getBoolVar(conf, HIVE_RCFILE_TOLERATE_CORRUPTIONS);
       conf.setInt("io.file.buffer.size", bufferSize);
       this.file = file;
       in = openFile(fs, file, bufferSize, length);

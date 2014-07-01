@@ -293,7 +293,6 @@ public abstract class TaskCompiler {
     ColumnStatsWork cStatsWork = null;
     FetchWork fetch = null;
     String tableName = qbParseInfo.getTableName();
-    String partName = qbParseInfo.getPartName();
     List<String> colName = qbParseInfo.getColName();
     List<String> colType = qbParseInfo.getColType();
     boolean isTblLevel = qbParseInfo.isTblLvl();
@@ -307,7 +306,7 @@ public abstract class TaskCompiler {
     fetch = new FetchWork(loadFileWork.get(0).getSourcePath(),
         resultTab, qb.getParseInfo().getOuterQueryLimit());
 
-    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName, partName,
+    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName,
         colName, colType, isTblLevel);
     cStatsWork = new ColumnStatsWork(fetch, cStatsDesc);
     cStatsTask = (ColumnStatsTask) TaskFactory.get(cStatsWork, conf);

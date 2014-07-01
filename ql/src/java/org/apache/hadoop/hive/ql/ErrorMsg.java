@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
@@ -28,12 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.antlr.runtime.tree.Tree;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 
 /**
  * List of all error messages.
@@ -80,7 +75,6 @@ public enum ErrorMsg {
   INVALID_JOIN_CONDITION_2(10018, "Neither left nor right aliases encountered in JOIN"),
   INVALID_JOIN_CONDITION_3(10019, "OR not supported in JOIN currently"),
   INVALID_TRANSFORM(10020, "TRANSFORM with other SELECT columns not supported"),
-  DUPLICATE_GROUPBY_KEY(10021, "Repeated key in GROUP BY"),
   UNSUPPORTED_MULTIPLE_DISTINCTS(10022, "DISTINCT on different columns not supported" +
       " with skew in data"),
   NO_SUBQUERY_ALIAS(10023, "No alias for subquery"),
@@ -444,12 +438,8 @@ public enum ErrorMsg {
 
   COLUMNSTATSCOLLECTOR_INVALID_PART_KEY(30005, "Invalid partitioning key specified in ANALYZE " +
     "statement"),
-  COLUMNSTATSCOLLECTOR_INCORRECT_NUM_PART_KEY(30006, "Incorrect number of partitioning key " +
-    "specified in ANALYZE statement"),
   COLUMNSTATSCOLLECTOR_INVALID_PARTITION(30007, "Invalid partitioning key/value specified in " +
     "ANALYZE statement"),
-  COLUMNSTATSCOLLECTOR_INVALID_SYNTAX(30008, "Dynamic partitioning is not supported yet while " +
-    "gathering column statistics through ANALYZE statement"),
   COLUMNSTATSCOLLECTOR_PARSE_ERROR(30009, "Encountered parse error while parsing rewritten query"),
   COLUMNSTATSCOLLECTOR_IO_ERROR(30010, "Encountered I/O exception while parsing rewritten query"),
   DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION(30011, "Partition protected from being dropped"),
