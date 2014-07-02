@@ -17,6 +17,12 @@
 set CLASS=org.apache.hadoop.hive.cli.RCFileCat
 set HIVE_OPTS=
 
+pushd %HIVE_LIB%
+for /f %%a IN ('dir /b hive-cli-*.jar') do (
+	set JAR=%HIVE_LIB%\%%a
+)
+popd
+
 if [%1]==[rcfilecat_help] goto :rcfilecat_help
 
 :rcfilecat
