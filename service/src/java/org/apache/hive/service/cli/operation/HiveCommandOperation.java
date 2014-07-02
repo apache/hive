@@ -47,7 +47,6 @@ import org.apache.hive.service.cli.session.HiveSession;
  * Executes a HiveCommand
  */
 public class HiveCommandOperation extends ExecuteStatementOperation {
-  private CommandProcessorResponse response;
   private CommandProcessor commandProcessor;
   private TableSchema resultSchema = null;
 
@@ -106,11 +105,10 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       String[] tokens = statement.split("\\s");
       String commandArgs = command.substring(tokens[0].length()).trim();
 
-      response = commandProcessor.run(commandArgs);
+      CommandProcessorResponse response = commandProcessor.run(commandArgs);
       int returnCode = response.getResponseCode();
       if (returnCode != 0) {
-        throw new HiveSQLException("Error while processing statement: "
-            + response.getErrorMessage(), response.getSQLState(), response.getResponseCode());
+        throw toSQLException("Error while processing statement", response);
       }
       Schema schema = response.getSchema();
       if (schema != null) {
@@ -169,7 +167,6 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
   /**
    * Reads the temporary results for non-Hive (non-Driver) commands to the
    * resulting List of strings.
-   * @param results list of strings containing the results
    * @param nLines number of lines read at once. If it is <= 0, then read all lines.
    */
   private List<String> readResults(int nLines) throws HiveSQLException {
