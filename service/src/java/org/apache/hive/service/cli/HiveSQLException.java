@@ -19,6 +19,8 @@
 package org.apache.hive.service.cli;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hive.service.cli.thrift.TStatus;
 import org.apache.hive.service.cli.thrift.TStatusCode;
@@ -101,7 +103,10 @@ public class HiveSQLException extends SQLException {
 
   public HiveSQLException(TStatus status) {
     // TODO: set correct vendorCode field
-    super(status.getErrorMessage(), status.getSqlState(), 1);
+    super(status.getErrorMessage(), status.getSqlState(), status.getErrorCode());
+    if (status.getInfoMessages() != null) {
+      initCause(toCause(status.getInfoMessages()));
+    }
   }
 
   public TStatus toTStatus() {
@@ -110,6 +115,7 @@ public class HiveSQLException extends SQLException {
     tStatus.setSqlState(getSQLState());
     tStatus.setErrorCode(getErrorCode());
     tStatus.setErrorMessage(getMessage());
+    tStatus.setInfoMessages(toString(this));
     return tStatus;
   }
 
@@ -119,7 +125,101 @@ public class HiveSQLException extends SQLException {
     }
     TStatus tStatus = new TStatus(TStatusCode.ERROR_STATUS);
     tStatus.setErrorMessage(e.getMessage());
+    tStatus.setInfoMessages(toString(e));
     return tStatus;
   }
 
+  public static List<String> toString(Throwable ex) {
+    return toString(ex, null);
+  }
+
+  static List<String> toString(Throwable cause, StackTraceElement[] parent) {
+    StackTraceElement[] trace = cause.getStackTrace();
+    int m = trace.length - 1;
+    if (parent != null) {
+      int n = parent.length - 1;
+      while (m >= 0 && n >= 0 && trace[m].equals(parent[n])) {
+        m--; n--;
+      }
+    }
+    List<String> detail = enroll(cause, trace, m);
+    cause = cause.getCause();
+    if (cause != null) {
+      detail.addAll(toString(cause, trace));
+    }
+    return detail;
+  }
+
+  static List<String> enroll(Throwable ex, StackTraceElement[] trace, int max) {
+    List<String> details = new ArrayList<String>();
+    StringBuilder builder = new StringBuilder();
+    builder.append('*').append(ex.getClass().getName()).append(':');
+    builder.append(ex.getMessage()).append(':');
+    builder.append(trace.length).append(':').append(max);
+    details.add(builder.toString());
+    for (int i = 0; i <= max; i++) {
+      builder.setLength(0);
+      builder.append(trace[i].getClassName()).append(':');
+      builder.append(trace[i].getMethodName()).append(':');
+      String fileName = trace[i].getFileName();
+      builder.append(fileName == null ? "" : fileName).append(':');
+      builder.append(trace[i].getLineNumber());
+      details.add(builder.toString());
+    }
+    return details;
+  }
+
+  public static Throwable toCause(List<String> details) {
+    return toStackTrace(details, null, 0);
+  }
+
+  static Throwable toStackTrace(List<String> details, StackTraceElement[] parent, int index) {
+    String detail = details.get(index++);
+    if (!detail.startsWith("*")) {
+      return null;  // should not be happened. ignore remaining
+    }
+    int i1 = detail.indexOf(':');
+    int i3 = detail.lastIndexOf(':');
+    int i2 = detail.substring(0, i3).lastIndexOf(':');
+    String exceptionClass = detail.substring(1, i1);
+    String exceptionMessage = detail.substring(i1 + 1, i2);
+    Throwable ex = newInstance(exceptionClass, exceptionMessage);
+
+    Integer length = Integer.valueOf(detail.substring(i2 + 1, i3));
+    Integer unique = Integer.valueOf(detail.substring(i3 + 1));
+
+    int i = 0;
+    StackTraceElement[] trace = new StackTraceElement[length];
+    for (; i <= unique; i++) {
+      detail = details.get(index++);
+      int j1 = detail.indexOf(':');
+      int j3 = detail.lastIndexOf(':');
+      int j2 = detail.substring(0, j3).lastIndexOf(':');
+      String className = detail.substring(0, j1);
+      String methodName = detail.substring(j1 + 1, j2);
+      String fileName = detail.substring(j2 + 1, j3);
+      if (fileName.isEmpty()) {
+        fileName = null;
+      }
+      int lineNumber = Integer.valueOf(detail.substring(j3 + 1));
+      trace[i] = new StackTraceElement(className, methodName, fileName, lineNumber);
+    }
+    int common = trace.length - i;
+    if (common > 0) {
+      System.arraycopy(parent, parent.length - common, trace, trace.length - common, common);
+    }
+    if (details.size() > index) {
+      ex.initCause(toStackTrace(details, trace, index));
+    }
+    ex.setStackTrace(trace);
+    return ex;
+  }
+
+  private static Throwable newInstance(String className, String message) {
+    try {
+      return (Throwable)Class.forName(className).getConstructor(String.class).newInstance(message);
+    } catch (Exception e) {
+      return new RuntimeException(className + ":" + message);
+    }
+  }
 }
