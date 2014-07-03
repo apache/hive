@@ -24,7 +24,6 @@ import static org.apache.hadoop.fs.permission.AclEntryType.USER;
 
 import java.util.List;
 
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclEntryScope;
@@ -34,7 +33,6 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
