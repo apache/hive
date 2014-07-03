@@ -3,11 +3,17 @@ package org.apache.hadoop.hive.ql.optimizer.optiq;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.Statistics;
@@ -36,6 +42,9 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
   Statistics                m_hiveStats;
   List<ColStatistics>       m_hiveColStats = new ArrayList<ColStatistics>();
+
+	protected static final Log LOG = LogFactory.getLog(RelOptHiveTable.class
+			.getName());
 
   // NOTE: name here is the table alias which may or may not be the real name in
   // metadata. Use
@@ -90,12 +99,36 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     return m_hiveStats;
   }
 
+  private String getColNameList(Set<Integer> colLst) {
+    StringBuffer sb = new StringBuffer();
+    List<FieldSchema> schema = m_hiveTblMetadata.getAllCols();
+    for (Integer i : colLst) {
+      String colName = (i < schema.size()) ? m_hiveTblMetadata.getAllCols().get(i).getName() : "";
+      if (i == 0)
+        sb.append(colName);
+      else
+        sb.append(", " + colName);
+    }
+    return sb.toString();
+  }
+
   public List<ColStatistics> getColStat(List<Integer> projIndxLst) {
     if (projIndxLst != null) {
+      Set<Integer> colsWithoutStats = new HashSet<Integer>();
       List<ColStatistics> hiveColStatLst = new LinkedList<ColStatistics>();
       for (Integer i : projIndxLst) {
-        hiveColStatLst.add(m_hiveColStats.get(i));
+        if (i >= m_hiveColStats.size())
+          colsWithoutStats.add(i);
+        else
+          hiveColStatLst.add(m_hiveColStats.get(i));
       }
+      if (!colsWithoutStats.isEmpty()) {
+        String logMsg = "No Stats for DB@Table " + m_hiveTblMetadata.getCompleteName()
+            + ", Columns: " + getColNameList(colsWithoutStats);
+        LOG.error(logMsg);
+        throw new RuntimeException(logMsg);
+      }
+
       return hiveColStatLst;
     } else {
       return m_hiveColStats;
