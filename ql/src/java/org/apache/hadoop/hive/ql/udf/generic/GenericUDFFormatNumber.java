@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -166,16 +167,20 @@ public class GenericUDFFormatNumber extends GenericUDF {
     }
 
     double xDoubleValue = 0.0;
+    float xFloatValue = 0.0f;
     int xIntValue = 0;
     long xLongValue = 0L;
 
     PrimitiveObjectInspector xObjectInspector = (PrimitiveObjectInspector)argumentOIs[0];
     switch (xObjectInspector.getPrimitiveCategory()) {
       case VOID:
-      case FLOAT:
       case DOUBLE:
         xDoubleValue = ((DoubleObjectInspector) argumentOIs[0]).get(arguments[0].get());
         resultText.set(numberFormat.format(xDoubleValue));
+        break;
+      case FLOAT:
+        xFloatValue = ((FloatObjectInspector) argumentOIs[0]).get(arguments[0].get());
+        resultText.set(numberFormat.format(xFloatValue));
         break;
       case BYTE:
       case SHORT:
