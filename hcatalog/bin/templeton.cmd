@@ -46,6 +46,7 @@ setlocal enabledelayedexpansion
   set TEMPLETON_CLASSPATH=!TEMPLETON_CLASSPATH!;%HCATALOG_HOME%\share\hcatalog\*
   set TEMPLETON_CLASSPATH=!TEMPLETON_CLASSPATH!;%HCATALOG_HOME%\share\webhcat\svr\*
   set TEMPLETON_CLASSPATH=!TEMPLETON_CLASSPATH!;%HCATALOG_HOME%\share\webhcat\svr\lib\*
+  set TEMPLETON_CLASSPATH=!TEMPLETON_CLASSPATH!;%HIVE_HOME%\conf
 
   @rem TODO: append hcat classpath to the templeton classpath
   @rem append hadoop classpath
