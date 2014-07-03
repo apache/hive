@@ -16,30 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security.authorization;
+package org.apache.hadoop.hive.metastore.events;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
-import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-public class DefaultHiveMetastoreAuthorizationProvider extends BitSetCheckedAuthorizationProvider
-  implements HiveMetastoreAuthorizationProvider {
+public class PreAuthorizationCallEvent extends PreEventContext {
 
-  @Override
-  public void init(Configuration conf) throws HiveException {
-    hive_db = new HiveProxy();
+  public PreAuthorizationCallEvent (HMSHandler handler) {
+    super(PreEventType.AUTHORIZATION_API_CALL, handler);
   }
-
-  @Override
-  public void setMetaStoreHandler(HMSHandler handler) {
-    hive_db.setHandler(handler);
-  }
-
-  @Override
-  public void authorizeAuthorizationApiInvocation() throws HiveException, AuthorizationException {
-    // default no-op implementation
-  }
-
 
 }

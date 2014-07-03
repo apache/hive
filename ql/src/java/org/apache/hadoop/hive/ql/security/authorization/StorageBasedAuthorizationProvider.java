@@ -402,4 +402,9 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     return ace;
   }
 
+  @Override
+  public void authorizeAuthorizationApiInvocation() throws HiveException, AuthorizationException {
+    // no-op - SBA does not attempt to authorize auth api call. Allow it
+  }
+
 }
