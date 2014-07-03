@@ -374,8 +374,9 @@ public class SessionState {
           HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
       authenticator.setSessionState(this);
 
+      String clsStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
       authorizer = HiveUtils.getAuthorizeProviderManager(conf,
-          HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER, authenticator, true);
+          clsStr, authenticator, true);
 
       if (authorizer == null) {
         // if it was null, the new authorization plugin must be specified in

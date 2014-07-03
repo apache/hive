@@ -1624,8 +1624,9 @@
 <property>
   <name>hive.security.metastore.authorization.manager</name>
   <value>org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider</value>
-  <description>authorization manager class name to be used in the metastore for authorization.
-  The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider. 
+  <description>Names of authorization manager classes (comma separated) to be used in the metastore for authorization.
+  The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider.
+  All authorization manager classes have to successfully authorize the metastore api call for the command execution to be allowed.
   </description>
 </property>
 
