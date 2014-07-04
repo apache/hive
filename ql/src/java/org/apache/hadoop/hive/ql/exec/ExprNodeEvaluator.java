@@ -49,7 +49,7 @@ public abstract class ExprNodeEvaluator<T extends ExprNodeDesc> {
   public abstract ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException;
 
   /**
-   * Return initialized ObjectInspector. If it's not initilized, throws runtime exception
+   * Return initialized ObjectInspector. If it's not initialized, throws runtime exception
    */
   public ObjectInspector getOutputOI() {
     if (outputOI == null) {
