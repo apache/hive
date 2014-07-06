@@ -46,6 +46,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
+
 
 public class Commands {
   private final BeeLine beeLine;
@@ -657,6 +659,36 @@ public class Commands {
 
   public boolean sql(String line) {
     return execute(line, false);
+  }
+
+  public boolean sh(String line) {
+    if (line == null || line.length() == 0) {
+      return false;
+    }
+
+    if (!line.startsWith("sh")) {
+      return false;
+    }
+
+    line = line.substring("sh".length()).trim();
+
+    // Support variable substitution. HIVE-6791.
+    // line = new VariableSubstitution().substitute(new HiveConf(BeeLine.class), line.trim());
+
+    try {
+      ShellCmdExecutor executor = new ShellCmdExecutor(line, beeLine.getOutputStream(),
+          beeLine.getErrorStream());
+      int ret = executor.execute();
+      if (ret != 0) {
+        beeLine.output("Command failed with exit code = " + ret);
+        return false;
+      }
+      return true;
+    } catch (Exception e) {
+      beeLine.error("Exception raised from Shell command " + e);
+      beeLine.error(e);
+      return false;
+    }
   }
 
   public boolean call(String line) {

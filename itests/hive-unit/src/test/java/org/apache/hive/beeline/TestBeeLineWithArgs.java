@@ -309,6 +309,14 @@ public class TestBeeLineWithArgs {
     testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, false, argList);
   }
 
+  @Test
+  public void testBeelineShellCommand() throws Throwable {
+    List<String> argList = getBaseArgs(JDBC_URL);
+    final String TEST_NAME = "testBeelineShellCommand";
+    final String SCRIPT_TEXT = "!sh echo \"hello world.\" > hw.txt\n!sh cat hw.txt\n!rm hw.txt";
+    final String EXPECTED_PATTERN = "hello world";
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
 
   /**
    * Select null from table , check how null is printed

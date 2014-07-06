@@ -26,7 +26,6 @@ import java.beans.PersistenceDelegate;
 import java.beans.Statement;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -36,9 +35,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -161,7 +158,6 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Text;
@@ -1050,47 +1046,6 @@ public final class Utilities {
       ret.add(element);
     }
     return (ret);
-  }
-
-  /**
-   * StreamPrinter.
-   *
-   */
-  public static class StreamPrinter extends Thread {
-    InputStream is;
-    String type;
-    PrintStream os;
-
-    public StreamPrinter(InputStream is, String type, PrintStream os) {
-      this.is = is;
-      this.type = type;
-      this.os = os;
-    }
-
-    @Override
-    public void run() {
-      BufferedReader br = null;
-      try {
-        InputStreamReader isr = new InputStreamReader(is);
-        br = new BufferedReader(isr);
-        String line = null;
-        if (type != null) {
-          while ((line = br.readLine()) != null) {
-            os.println(type + ">" + line);
-          }
-        } else {
-          while ((line = br.readLine()) != null) {
-            os.println(line);
-          }
-        }
-        br.close();
-        br=null;
-      } catch (IOException ioe) {
-        ioe.printStackTrace();
-      }finally{
-        IOUtils.closeStream(br);
-      }
-    }
   }
 
   public static TableDesc getTableDesc(Table tbl) {
