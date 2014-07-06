@@ -238,6 +238,8 @@ public class BeeLine implements Closeable {
           null),
       new ReflectiveCommandHandler(this, new String[] {"sql"},
           null),
+      new ReflectiveCommandHandler(this, new String[] {"sh"},
+          null),
       new ReflectiveCommandHandler(this, new String[] {"call"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"nullemptystring"},
