@@ -547,6 +547,9 @@ public class HiveConf extends Configuration {
     HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null),
     // Define the default ORC stripe size
     HIVE_ORC_DEFAULT_STRIPE_SIZE("hive.exec.orc.default.stripe.size",
+        64L * 1024 * 1024),
+    // Define the default file system block size for ORC
+    HIVE_ORC_DEFAULT_BLOCK_SIZE("hive.exec.orc.default.block.size",
         256L * 1024 * 1024),
     HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD(
         "hive.exec.orc.dictionary.key.size.threshold", 0.8f),
@@ -558,6 +561,9 @@ public class HiveConf extends Configuration {
     // Define the default block padding
     HIVE_ORC_DEFAULT_BLOCK_PADDING("hive.exec.orc.default.block.padding",
         true),
+    // Define the tolerance for block padding. The total padded length will
+    // always be less than the specified percentage.
+    HIVE_ORC_BLOCK_PADDING_TOLERANCE("hive.exec.orc.block.padding.tolerance", 0.05f),
     // Define the default compression codec for ORC file
     HIVE_ORC_DEFAULT_COMPRESS("hive.exec.orc.default.compress", "ZLIB"),
     // Define the default encoding strategy to use
