@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
@@ -170,17 +169,15 @@ public abstract class TaskCompiler {
           String loc = qb.getTableDesc().getLocation();
           if (loc == null) {
             // get the table's default location
-            Table dumpTable;
             Path targetPath;
             try {
-              dumpTable = db.newTable(qb.getTableDesc().getTableName());
-              if (!db.databaseExists(dumpTable.getDbName())) {
-                throw new SemanticException("ERROR: The database " + dumpTable.getDbName()
+              String[] names = Utilities.getDbTableName(qb.getTableDesc().getTableName());
+              if (!db.databaseExists(names[0])) {
+                throw new SemanticException("ERROR: The database " + names[0]
                     + " does not exist.");
               }
               Warehouse wh = new Warehouse(conf);
-              targetPath = wh.getTablePath(db.getDatabase(dumpTable.getDbName()), dumpTable
-                  .getTableName());
+              targetPath = wh.getTablePath(db.getDatabase(names[0]), names[1]);
             } catch (HiveException e) {
               throw new SemanticException(e);
             } catch (MetaException e) {
