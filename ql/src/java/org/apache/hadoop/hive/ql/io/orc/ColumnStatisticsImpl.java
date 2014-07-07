@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Text;
 
 class ColumnStatisticsImpl implements ColumnStatistics {
 
@@ -335,8 +336,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
   protected static final class StringStatisticsImpl extends ColumnStatisticsImpl
       implements StringColumnStatistics {
-    private String minimum = null;
-    private String maximum = null;
+    private Text minimum = null;
+    private Text maximum = null;
     private long sum = 0;
 
     StringStatisticsImpl() {
@@ -346,10 +347,10 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       super(stats);
       OrcProto.StringStatistics str = stats.getStringStatistics();
       if (str.hasMaximum()) {
-        maximum = str.getMaximum();
+        maximum = new Text(str.getMaximum());
       }
       if (str.hasMinimum()) {
-        minimum = str.getMinimum();
+        minimum = new Text(str.getMinimum());
       }
       if(str.hasSum()) {
         sum = str.getSum();
@@ -365,16 +366,15 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     }
 
     @Override
-    void updateString(String value) {
+    void updateString(Text value) {
       if (minimum == null) {
-        minimum = value;
-        maximum = value;
+        maximum = minimum = new Text(value.copyBytes());
       } else if (minimum.compareTo(value) > 0) {
-        minimum = value;
+        minimum = new Text(value.copyBytes());
       } else if (maximum.compareTo(value) < 0) {
-        maximum = value;
+        maximum = new Text(value.copyBytes());
       }
-      sum += value.length();
+      sum += value.getLength();
     }
 
     @Override
@@ -382,13 +382,18 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       super.merge(other);
       StringStatisticsImpl str = (StringStatisticsImpl) other;
       if (minimum == null) {
-        minimum = str.minimum;
-        maximum = str.maximum;
+        if(str.minimum != null) {
+          maximum = new Text(str.getMaximum());
+          minimum = new Text(str.getMinimum());
+        } else {
+          /* both are empty */
+          maximum = minimum = null;
+        }
       } else if (str.minimum != null) {
         if (minimum.compareTo(str.minimum) > 0) {
-          minimum = str.minimum;
+          minimum = new Text(str.getMinimum());
         } else if (maximum.compareTo(str.maximum) < 0) {
-          maximum = str.maximum;
+          maximum = new Text(str.getMaximum());
         }
       }
       sum += str.sum;
@@ -400,8 +405,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       OrcProto.StringStatistics.Builder str =
         OrcProto.StringStatistics.newBuilder();
       if (getNumberOfValues() != 0) {
-        str.setMinimum(minimum);
-        str.setMaximum(maximum);
+        str.setMinimum(getMinimum());
+        str.setMaximum(getMaximum());
         str.setSum(sum);
       }
       result.setStringStatistics(str);
@@ -410,12 +415,12 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     public String getMinimum() {
-      return minimum;
+      return minimum == null ? null : minimum.toString();
     }
 
     @Override
     public String getMaximum() {
-      return maximum;
+      return maximum == null ? null : maximum.toString();
     }
 
     @Override
@@ -428,9 +433,9 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       StringBuilder buf = new StringBuilder(super.toString());
       if (getNumberOfValues() != 0) {
         buf.append(" min: ");
-        buf.append(minimum);
+        buf.append(getMinimum());
         buf.append(" max: ");
-        buf.append(maximum);
+        buf.append(getMaximum());
         buf.append(" sum: ");
         buf.append(sum);
       }
@@ -733,7 +738,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     throw new UnsupportedOperationException("Can't update double");
   }
 
-  void updateString(String value) {
+  void updateString(Text value) {
     throw new UnsupportedOperationException("Can't update string");
   }
 
