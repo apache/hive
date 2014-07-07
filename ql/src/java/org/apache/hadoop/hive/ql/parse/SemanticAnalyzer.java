@@ -4392,11 +4392,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    // Optimize the scenario when there are no grouping keys - only 1 reducer is needed
+    int numReducers = -1;
+    if (grpByExprs.isEmpty()) {
+      numReducers = 1;
+    }
+    ReduceSinkDesc rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys, keyLength, reduceValues,
+        distinctColIndices, outputKeyColumnNames, outputValueColumnNames,
+        true, -1, keyLength, numReducers);
+
     ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
-        OperatorFactory.getAndMakeChild(PlanUtils.getReduceSinkDesc(reduceKeys,
-            keyLength, reduceValues, distinctColIndices,
-            outputKeyColumnNames, outputValueColumnNames, true, -1, keyLength,
-            -1), new RowSchema(reduceSinkOutputRowResolver
+        OperatorFactory.getAndMakeChild(rsDesc, new RowSchema(reduceSinkOutputRowResolver
             .getColumnInfos()), inputOperatorInfo), reduceSinkOutputRowResolver);
     rsOp.setColumnExprMap(colExprMap);
     return rsOp;
