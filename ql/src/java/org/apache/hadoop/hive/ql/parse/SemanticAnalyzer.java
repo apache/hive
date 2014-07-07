@@ -405,7 +405,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LinkedHashMap<String, ASTNode> aggregationTrees = new LinkedHashMap<String, ASTNode>();
     List<ASTNode> wdwFns = new ArrayList<ASTNode>();
     for (int i = 0; i < selExpr.getChildCount(); ++i) {
-      ASTNode function = (ASTNode) selExpr.getChild(i).getChild(0);
+      ASTNode function = (ASTNode) selExpr.getChild(i);
+      if (function.getType() == HiveParser.TOK_SELEXPR ||
+          function.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
+        function = (ASTNode)function.getChild(0);
+      }
       doPhase1GetAllAggregations(function, aggregationTrees, wdwFns);
     }
 
