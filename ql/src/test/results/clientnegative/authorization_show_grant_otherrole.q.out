@@ -1,0 +1,11 @@
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create role role1
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role role1
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: show grant role role1
+PREHOOK: type: SHOW_GRANT
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Error showing privileges: User : user1 is not allowed check privileges of a role it does not belong to : role1. User has to belong to ADMIN role and have it as current role, for this action.

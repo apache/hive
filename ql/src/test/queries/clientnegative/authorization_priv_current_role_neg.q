@@ -22,7 +22,10 @@ grant all on table tpriv_current_role to user user3;
 set role role2;
 -- switch to role2, grant should work
 grant all on table tpriv_current_role to user user4;
+
+set user.name=user4;
 show grant user user4 on table tpriv_current_role;
+set user.name=user2;
 
 set role PUBLIC;
 -- set role to public, should fail as role2 is not one of the current roles

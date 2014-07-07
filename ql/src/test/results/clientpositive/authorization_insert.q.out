@@ -36,6 +36,10 @@ PREHOOK: Output: default@t_auth_ins
 POSTHOOK: query: GRANT INSERT,DELETE ON t_auth_ins TO USER userWInsAndDel
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@t_auth_ins
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: SHOW GRANT ON TABLE t_auth_ins
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT ON TABLE t_auth_ins
