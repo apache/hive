@@ -1950,9 +1950,17 @@
 
 <property>
   <name>hive.exec.orc.default.stripe.size</name>
-  <value>268435456</value>
+  <value>67108864</value>
   <description>
     Define the default ORC stripe size.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.default.block.size</name>
+  <value>268435456</value>
+  <description>
+    Define the default file system block size for ORC files.
   </description>
 </property>
 
@@ -1977,6 +1985,17 @@
   <value>true</value>
   <description>
     Define the default block padding.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.block.padding.tolerance</name>
+  <value>0.05</value>
+  <description>
+    Define the tolerance for block padding as a percentage of stripe size.
+    For the defaults of 64Mb ORC stripe and 256Mb HDFS blocks, a maximum of 3.2Mb will be reserved for padding within the 256Mb block. 
+    In that case, if the available size within the block is more than 3.2Mb, a new smaller stripe will be inserted to fit within that space. 
+    This will make sure that no stripe written will cross block boundaries and cause remote reads within a node local task.
   </description>
 </property>
 
