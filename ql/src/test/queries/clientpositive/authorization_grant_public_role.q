@@ -10,7 +10,8 @@ CREATE TABLE  t_gpr1(i int);
 
 GRANT ALL ON t_gpr1 TO ROLE public;
 
-SHOW GRANT ON TABLE t_gpr1;
+SHOW GRANT USER user1 ON TABLE t_gpr1;
+SHOW GRANT ROLE public ON TABLE t_gpr1;
 
 set user.name=user2;
 SHOW CURRENT ROLES;

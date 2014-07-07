@@ -7,7 +7,7 @@ set user.name=user1;
 -- Test view authorization , and 'show grant' variants
 
 create table t1(i int, j int, k int);
-show grant on table t1;
+show grant user user1 on table t1;
 
 -- protecting certain columns
 create view vt1 as select i,k from t1;
@@ -23,7 +23,9 @@ show grant user user1 on all;
 grant select on vt1 to user user2;
 grant insert on table vt1 to user user3;
 
+set user.name=user2;
 show grant user user2 on table vt1;
+set user.name=user3;
 show grant user user3 on table vt1;
 
 
@@ -33,20 +35,30 @@ select * from vt1;
 set user.name=user1;
 
 grant all on table vt2 to user user2;
+
+set user.name=user2;
 show grant user user2 on table vt2;
 show grant user user2 on all;
+set user.name=user1;
 
 revoke all on vt2 from user user2;
+
+set user.name=user2;
 show grant user user2 on table vt2;
 
+
+set user.name=hive_admin_user;
+set role admin;
 show grant on table vt2;
 
-
+set user.name=user1;
 revoke select on table vt1 from user user2;
-show grant user user2 on table vt1;
 
+set user.name=user2;
+show grant user user2 on table vt1;
 show grant user user2 on all;
 
+set user.name=user3;
 -- grant privileges on roles for view, after next statement
 show grant user user3 on table vt1;
 

@@ -1,3 +1,4 @@
+set hive.users.in.admin.role=hive_admin_user;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
 
@@ -12,6 +13,9 @@ GRANT ALL ON TABLE t_select TO ROLE public;
 -- grant insert privilege to another user
 GRANT INSERT ON t_auth_ins TO USER userWIns;
 GRANT INSERT,DELETE ON t_auth_ins TO USER userWInsAndDel;
+
+set user.name=hive_admin_user;
+set role admin;
 SHOW GRANT ON TABLE t_auth_ins;
 
 

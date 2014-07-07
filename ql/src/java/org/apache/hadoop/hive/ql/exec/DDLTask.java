@@ -877,7 +877,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
       throws HiveException {
-
+    if(privSubjectDesc == null){
+      return new HivePrivilegeObject(null, null, null);
+    }
     String [] dbTable = Utilities.getDbTableName(privSubjectDesc.getObject());
     return new HivePrivilegeObject(getPrivObjectType(privSubjectDesc), dbTable[0], dbTable[1]);
   }
