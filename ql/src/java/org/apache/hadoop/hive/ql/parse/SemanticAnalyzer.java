@@ -98,7 +98,6 @@ import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -1221,10 +1220,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       for (String alias : tabAliases) {
         String tab_name = qb.getTabNameForAlias(alias);
-        Table tab = null;
-        try {
-          tab = db.getTable(tab_name);
-        } catch (InvalidTableException ite) {
+        Table tab = db.getTable(tab_name, false);
+        if (tab == null) {
           /*
            * if this s a CTE reference:
            * Add its AST as a SubQuery to this QB.
@@ -1418,11 +1415,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
               // allocate a temporary output dir on the location of the table
               String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-              Table newTable = db.newTable(tableName);
+              String[] names = Utilities.getDbTableName(tableName);
               Path location;
               try {
                 Warehouse wh = new Warehouse(conf);
-                location = wh.getDatabasePath(db.getDatabase(newTable.getDbName()));
+                location = wh.getDatabasePath(db.getDatabase(names[0]));
               } catch (MetaException e) {
                 throw new SemanticException(e);
               }
