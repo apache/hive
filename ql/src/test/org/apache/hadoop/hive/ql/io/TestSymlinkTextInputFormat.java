@@ -177,7 +177,7 @@ public class TestSymlinkTextInputFormat extends TestCase {
       QueryPlan plan = drv.getPlan();
       MapRedTask selectTask = (MapRedTask)plan.getRootTasks().get(0);
 
-      List<Path> inputPaths = Utilities.getInputPaths(newJob, selectTask.getWork().getMapWork(), emptyScratchDir, ctx);
+      List<Path> inputPaths = Utilities.getInputPaths(newJob, selectTask.getWork().getMapWork(), emptyScratchDir, ctx, false);
       Utilities.setInputPaths(newJob, inputPaths);
 
       Utilities.setMapRedWork(newJob, selectTask.getWork(), ctx.getMRTmpPath());
