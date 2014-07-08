@@ -622,8 +622,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
   private static final class DateStatisticsImpl extends ColumnStatisticsImpl
       implements DateColumnStatistics {
-    private DateWritable minimum = null;
-    private DateWritable maximum = null;
+    private Integer minimum = null;
+    private Integer maximum = null;
 
     DateStatisticsImpl() {
     }
@@ -633,10 +633,10 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       OrcProto.DateStatistics dateStats = stats.getDateStatistics();
       // min,max values serialized/deserialized as int (days since epoch)
       if (dateStats.hasMaximum()) {
-        maximum = new DateWritable(dateStats.getMaximum());
+        maximum = dateStats.getMaximum();
       }
       if (dateStats.hasMinimum()) {
-        minimum = new DateWritable(dateStats.getMinimum());
+        minimum = dateStats.getMinimum();
       }
     }
 
@@ -650,12 +650,12 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     @Override
     void updateDate(DateWritable value) {
       if (minimum == null) {
-        minimum = value;
-        maximum = value;
-      } else if (minimum.compareTo(value) > 0) {
-        minimum = value;
-      } else if (maximum.compareTo(value) < 0) {
-        maximum = value;
+        minimum = value.getDays();
+        maximum = value.getDays();
+      } else if (minimum > value.getDays()) {
+        minimum = value.getDays();
+      } else if (maximum < value.getDays()) {
+        maximum = value.getDays();
       }
     }
 
@@ -667,9 +667,9 @@ class ColumnStatisticsImpl implements ColumnStatistics {
         minimum = dateStats.minimum;
         maximum = dateStats.maximum;
       } else if (dateStats.minimum != null) {
-        if (minimum.compareTo(dateStats.minimum) > 0) {
+        if (minimum > dateStats.minimum) {
           minimum = dateStats.minimum;
-        } else if (maximum.compareTo(dateStats.maximum) < 0) {
+        } else if (maximum < dateStats.maximum) {
           maximum = dateStats.maximum;
         }
       }
@@ -681,21 +681,26 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       OrcProto.DateStatistics.Builder dateStats =
           OrcProto.DateStatistics.newBuilder();
       if (getNumberOfValues() != 0) {
-        dateStats.setMinimum(minimum.getDays());
-        dateStats.setMaximum(maximum.getDays());
+        dateStats.setMinimum(minimum);
+        dateStats.setMaximum(maximum);
       }
       result.setDateStatistics(dateStats);
       return result;
     }
 
+    private transient final DateWritable minDate = new DateWritable();
+    private transient final DateWritable maxDate = new DateWritable();
+
     @Override
     public DateWritable getMinimum() {
-      return minimum;
+      minDate.set(minimum);
+      return minDate;
     }
 
     @Override
     public DateWritable getMaximum() {
-      return maximum;
+      maxDate.set(maximum);
+      return maxDate;
     }
 
     @Override
