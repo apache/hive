@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -36,6 +37,9 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -353,5 +357,43 @@ public class TezTask extends Task<TezWork> {
   @Override
   public String getName() {
     return "TEZ";
+  }
+
+  @Override
+  public Collection<MapWork> getMapWork() {
+    List<MapWork> result = new LinkedList<MapWork>();
+    TezWork work = getWork();
+
+    // framework expects MapWork instances that have no physical parents (i.e.: union parent is
+    // fine, broadcast parent isn't)
+    for (BaseWork w: work.getAllWorkUnsorted()) {
+      if (w instanceof MapWork) {
+        List<BaseWork> parents = work.getParents(w);
+        boolean candidate = true;
+        for (BaseWork parent: parents) {
+          if (!(parent instanceof UnionWork)) {
+            candidate = false;
+          }
+        }
+        if (candidate) {
+          result.add((MapWork)w);
+        }
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public Operator<? extends OperatorDesc> getReducer(MapWork mapWork) {
+    List<BaseWork> children = getWork().getChildren(mapWork);
+    if (children.size() != 1) {
+      return null;
+    }
+
+    if (!(children.get(0) instanceof ReduceWork)) {
+      return null;
+    }
+
+    return ((ReduceWork)children.get(0)).getReducer();
   }
 }

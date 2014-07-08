@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
+import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
@@ -247,15 +248,28 @@ public class TezCompiler extends TaskCompiler {
     PhysicalContext physicalCtx = new PhysicalContext(conf, pCtx, pCtx.getContext(), rootTasks,
        pCtx.getFetchTask());
 
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES)) {
+      physicalCtx = new MetadataOnlyOptimizer().resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping metadata only query optimization");
+    }
+
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_CHECK_CROSS_PRODUCT)) {
       physicalCtx = new CrossProductCheck().resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping cross product analysis");
     }
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
-      (new Vectorizer()).resolve(physicalCtx);
+      physicalCtx = new Vectorizer().resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping vectorization");
     }
+
     if (!"none".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE))) {
-      (new StageIDsRearranger()).resolve(physicalCtx);
+      physicalCtx = new StageIDsRearranger().resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping stage id rearranger");
     }
     return;
   }
