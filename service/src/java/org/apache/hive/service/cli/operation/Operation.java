@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -177,5 +178,14 @@ public abstract class Operation {
       throw new HiveSQLException("The fetch type " + orientation.toString() +
           " is not supported for this resultset", "HY106");
     }
+  }
+
+  protected HiveSQLException toSQLException(String prefix, CommandProcessorResponse response) {
+    HiveSQLException ex = new HiveSQLException(prefix + ": " + response.getErrorMessage(),
+        response.getSQLState(), response.getResponseCode());
+    if (response.getException() != null) {
+      ex.initCause(response.getException());
+    }
+    return ex;
   }
 }

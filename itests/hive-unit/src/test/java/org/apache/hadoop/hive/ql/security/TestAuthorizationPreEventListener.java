@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.security;
 
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,14 +77,6 @@ public class TestAuthorizationPreEventListener extends TestCase {
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf, null);
     driver = new Driver(clientHiveConf);
-  }
-
-  private static String getFreeAvailablePort() throws IOException {
-    ServerSocket socket = new ServerSocket(0);
-    socket.setReuseAddress(true);
-    int port = socket.getLocalPort();
-    socket.close();
-    return "" + port;
   }
 
   @Override

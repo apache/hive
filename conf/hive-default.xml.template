@@ -1641,8 +1641,9 @@
 <property>
   <name>hive.security.metastore.authorization.manager</name>
   <value>org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider</value>
-  <description>authorization manager class name to be used in the metastore for authorization.
-  The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider. 
+  <description>Names of authorization manager classes (comma separated) to be used in the metastore for authorization.
+  The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider.
+  All authorization manager classes have to successfully authorize the metastore api call for the command execution to be allowed.
   </description>
 </property>
 
@@ -1888,14 +1889,6 @@
 </property>
 
 <property>
-  <name>hive.warehouse.data.skipTrash</name>
-  <value>false</value>
-  <description>
-    Set this to true if you do not want table data to be moved to trash while dropping table.
-  </description>
-</property>
-
-<property>
   <name>hive.exec.job.debug.capture.stacktraces</name>
   <value>true</value>
   <description>Whether or not stack traces parsed from the task logs of a sampled failed task for
@@ -1974,9 +1967,17 @@
 
 <property>
   <name>hive.exec.orc.default.stripe.size</name>
-  <value>268435456</value>
+  <value>67108864</value>
   <description>
     Define the default ORC stripe size.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.default.block.size</name>
+  <value>268435456</value>
+  <description>
+    Define the default file system block size for ORC files.
   </description>
 </property>
 
@@ -2001,6 +2002,17 @@
   <value>true</value>
   <description>
     Define the default block padding.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.orc.block.padding.tolerance</name>
+  <value>0.05</value>
+  <description>
+    Define the tolerance for block padding as a percentage of stripe size.
+    For the defaults of 64Mb ORC stripe and 256Mb HDFS blocks, a maximum of 3.2Mb will be reserved for padding within the 256Mb block. 
+    In that case, if the available size within the block is more than 3.2Mb, a new smaller stripe will be inserted to fit within that space. 
+    This will make sure that no stripe written will cross block boundaries and cause remote reads within a node local task.
   </description>
 </property>
 

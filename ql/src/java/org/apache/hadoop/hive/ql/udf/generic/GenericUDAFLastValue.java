@@ -25,6 +25,9 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
+import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -129,11 +132,13 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver
 							PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
 				}
 			}
+			
+      Object o = ObjectInspectorUtils.copyToStandardObject(parameters[0],
+          inputOI, ObjectInspectorCopyOption.WRITABLE);
 
-			if ( !lb.skipNulls || lb.val != null )
-			{
-				lb.val = parameters[0];
-			}
+      if (!lb.skipNulls || o != null) {
+        lb.val = o;
+      }
 		}
 
 		@Override
@@ -154,11 +159,124 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver
 		public Object terminate(AggregationBuffer agg) throws HiveException
 		{
 			LastValueBuffer lb = (LastValueBuffer) agg;
-			return ObjectInspectorUtils.copyToStandardObject(lb.val, inputOI,
-					ObjectInspectorCopyOption.WRITABLE);
+			return lb.val;
 
 		}
+
+    @Override
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+      BoundaryDef start = wFrmDef.getStart();
+      BoundaryDef end = wFrmDef.getEnd();
+      return new LastValStreamingFixedWindow(this, start.getAmt(), end.getAmt());
+    }
 	}
 
+  static class LastValStreamingFixedWindow extends
+      GenericUDAFStreamingEvaluator<Object> {
+
+    class State extends GenericUDAFStreamingEvaluator<Object>.StreamingState {
+      private Object lastValue;
+      private int lastIdx;
+
+      public State(int numPreceding, int numFollowing, AggregationBuffer buf) {
+        super(numPreceding, numFollowing, buf);
+        lastValue = null;
+        lastIdx = -1;
+      }
+
+      @Override
+      public int estimate() {
+        if (!(wrappedBuf instanceof AbstractAggregationBuffer)) {
+          return -1;
+        }
+        int underlying = ((AbstractAggregationBuffer) wrappedBuf).estimate();
+        if (underlying == -1) {
+          return -1;
+        }
+        return 2 * underlying;
+      }
+
+      protected void reset() {
+        lastValue = null;
+        lastIdx = -1;
+        super.reset();
+      }
+    }
+
+    public LastValStreamingFixedWindow(GenericUDAFEvaluator wrappedEval,
+        int numPreceding, int numFollowing) {
+      super(wrappedEval, numPreceding, numFollowing);
+    }
+
+    @Override
+    public int getRowsRemainingAfterTerminate() throws HiveException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
+      AggregationBuffer underlying = wrappedEval.getNewAggregationBuffer();
+      return new State(numPreceding, numFollowing, underlying);
+    }
+
+    protected ObjectInspector inputOI() {
+      return ((GenericUDAFLastValueEvaluator) wrappedEval).inputOI;
+    }
+
+    @Override
+    public void iterate(AggregationBuffer agg, Object[] parameters)
+        throws HiveException {
+
+      State s = (State) agg;
+      LastValueBuffer lb = (LastValueBuffer) s.wrappedBuf;
+
+      /*
+       * on firstRow invoke underlying evaluator to initialize skipNulls flag.
+       */
+      if (lb.firstRow) {
+        wrappedEval.iterate(lb, parameters);
+      }
+
+      Object o = ObjectInspectorUtils.copyToStandardObject(parameters[0],
+          inputOI(), ObjectInspectorCopyOption.WRITABLE);
+
+      if (!lb.skipNulls || o != null) {
+        s.lastValue = o;
+        s.lastIdx = s.numRows;
+      } else if (lb.skipNulls && s.lastIdx != -1) {
+        if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+            && s.numRows > s.lastIdx + s.numPreceding + s.numFollowing) {
+          s.lastValue = null;
+          s.lastIdx = -1;
+        }
+      }
+
+      if (s.numRows >= (s.numFollowing)) {
+        s.results.add(s.lastValue);
+      }
+      s.numRows++;
+    }
+
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      State s = (State) agg;
+      LastValueBuffer lb = (LastValueBuffer) s.wrappedBuf;
+
+      if (lb.skipNulls && s.lastIdx != -1) {
+        if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+            && s.numRows > s.lastIdx + s.numPreceding + s.numFollowing) {
+          s.lastValue = null;
+          s.lastIdx = -1;
+        }
+      }
+
+      for (int i = 0; i < s.numFollowing; i++) {
+        s.results.add(s.lastValue);
+      }
+
+      return null;
+    }
+
+  }
 }
 

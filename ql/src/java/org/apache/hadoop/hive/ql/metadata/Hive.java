@@ -396,13 +396,13 @@ public class Hive {
    */
   public void alterTable(String tblName, Table newTbl)
       throws InvalidOperationException, HiveException {
-    Table t = newTable(tblName);
+    String[] names = Utilities.getDbTableName(tblName);
     try {
       // Remove the DDL_TIME so it gets refreshed
       if (newTbl.getParameters() != null) {
         newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
-      getMSC().alter_table(t.getDbName(), t.getTableName(), newTbl.getTTable());
+      getMSC().alter_table(names[0], names[1], newTbl.getTTable());
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table.", e);
     } catch (TException e) {
@@ -445,8 +445,8 @@ public class Hive {
    */
   public void alterPartition(String tblName, Partition newPart)
       throws InvalidOperationException, HiveException {
-    Table t = newTable(tblName);
-    alterPartition(t.getDbName(), t.getTableName(), newPart);
+    String[] names = Utilities.getDbTableName(tblName);
+    alterPartition(names[0], names[1], newPart);
   }
 
   /**
@@ -491,7 +491,7 @@ public class Hive {
    */
   public void alterPartitions(String tblName, List<Partition> newParts)
       throws InvalidOperationException, HiveException {
-    Table t = newTable(tblName);
+    String[] names = Utilities.getDbTableName(tblName);
     List<org.apache.hadoop.hive.metastore.api.Partition> newTParts =
       new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
     try {
@@ -502,7 +502,7 @@ public class Hive {
         }
         newTParts.add(tmpPart.getTPartition());
       }
-      getMSC().alter_partitions(t.getDbName(), t.getTableName(), newTParts);
+      getMSC().alter_partitions(names[0], names[1], newTParts);
     } catch (MetaException e) {
       throw new HiveException("Unable to alter partition.", e);
     } catch (TException e) {
@@ -828,8 +828,8 @@ public class Hive {
   }
 
   public Index getIndex(String baseTableName, String indexName) throws HiveException {
-    Table t = newTable(baseTableName);
-    return this.getIndex(t.getDbName(), t.getTableName(), indexName);
+    String[] names = Utilities.getDbTableName(baseTableName);
+    return this.getIndex(names[0], names[1], indexName);
   }
 
   public Index getIndex(String dbName, String baseTableName,
@@ -861,8 +861,8 @@ public class Hive {
    *           thrown if the drop fails
    */
   public void dropTable(String tableName) throws HiveException {
-    Table t = newTable(tableName);
-    dropTable(t.getDbName(), t.getTableName(), true, true);
+    String[] names = Utilities.getDbTableName(tableName);
+    dropTable(names[0], names[1], true, true);
   }
 
   /**
@@ -917,8 +917,7 @@ public class Hive {
    * table doesn't exist
    */
   public Table getTable(final String tableName) throws HiveException {
-    Table t = newTable(tableName);
-    return this.getTable(t.getDbName(), t.getTableName(), true);
+    return this.getTable(tableName, true);
   }
 
   /**
@@ -930,8 +929,8 @@ public class Hive {
    * table doesn't exist
    */
   public Table getTable(final String tableName, boolean throwException) throws HiveException {
-    Table t = newTable(tableName);
-    return this.getTable(t.getDbName(), t.getTableName(), throwException);
+    String[] names = Utilities.getDbTableName(tableName);
+    return this.getTable(names[0], names[1], throwException);
   }
 
   /**
@@ -947,8 +946,8 @@ public class Hive {
    */
   public Table getTable(final String dbName, final String tableName) throws HiveException {
     if (tableName.contains(".")) {
-      Table t = newTable(tableName);
-      return this.getTable(t.getDbName(), t.getTableName(), true);
+      String[] names = Utilities.getDbTableName(tableName);
+      return this.getTable(names[0], names[1], true);
     } else {
       return this.getTable(dbName, tableName, true);
     }
@@ -1502,7 +1501,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
- /**
+  /**
    * Creates a partition.
    *
    * @param tbl
@@ -1687,9 +1686,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public boolean dropPartition(String tblName, List<String> part_vals, boolean deleteData)
-  throws HiveException {
-    Table t = newTable(tblName);
-    return dropPartition(t.getDbName(), t.getTableName(), part_vals, deleteData);
+      throws HiveException {
+    String[] names = Utilities.getDbTableName(tblName);
+    return dropPartition(names[0], names[1], part_vals, deleteData);
   }
 
   public boolean dropPartition(String db_name, String tbl_name,
@@ -1705,9 +1704,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
       boolean deleteData, boolean ignoreProtection, boolean ifExists) throws HiveException {
-    Table t = newTable(tblName);
+    String[] names = Utilities.getDbTableName(tblName);
     return dropPartitions(
-        t.getDbName(), t.getTableName(), partSpecs, deleteData, ignoreProtection, ifExists);
+        names[0], names[1], partSpecs, deleteData, ignoreProtection, ifExists);
   }
 
   public List<Partition> dropPartitions(String dbName, String tblName,
@@ -1732,8 +1731,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public List<String> getPartitionNames(String tblName, short max) throws HiveException {
-    Table t = newTable(tblName);
-    return getPartitionNames(t.getDbName(), t.getTableName(), max);
+    String[] names = Utilities.getDbTableName(tblName);
+    return getPartitionNames(names[0], names[1], max);
   }
 
   public List<String> getPartitionNames(String dbName, String tblName, short max)
@@ -2210,7 +2209,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             // on "_copy_N" where N starts at 1 and works its way up until
             // we find a free space.
 
-            // removed source file staging.. it's more confusing when faild.
+            // removed source file staging.. it's more confusing when failed.
             for (int counter = 1; fs.exists(itemDest) || destExists(result, itemDest); counter++) {
               itemDest = new Path(destf, name + ("_copy_" + counter) + filetype);
             }

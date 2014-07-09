@@ -19,18 +19,22 @@ POSTHOOK: query: -- all privileges should have been set for user
 GRANT ALL ON t_gpr1 TO ROLE public
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@t_gpr1
-PREHOOK: query: SHOW GRANT ON TABLE t_gpr1
+PREHOOK: query: SHOW GRANT USER user1 ON TABLE t_gpr1
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: SHOW GRANT ON TABLE t_gpr1
+POSTHOOK: query: SHOW GRANT USER user1 ON TABLE t_gpr1
+POSTHOOK: type: SHOW_GRANT
+default	t_gpr1			user1	USER	DELETE	true	-1	user1
+default	t_gpr1			user1	USER	INSERT	true	-1	user1
+default	t_gpr1			user1	USER	SELECT	true	-1	user1
+default	t_gpr1			user1	USER	UPDATE	true	-1	user1
+PREHOOK: query: SHOW GRANT ROLE public ON TABLE t_gpr1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT ROLE public ON TABLE t_gpr1
 POSTHOOK: type: SHOW_GRANT
 default	t_gpr1			public	ROLE	DELETE	false	-1	user1
 default	t_gpr1			public	ROLE	INSERT	false	-1	user1
 default	t_gpr1			public	ROLE	SELECT	false	-1	user1
 default	t_gpr1			public	ROLE	UPDATE	false	-1	user1
-default	t_gpr1			user1	USER	DELETE	true	-1	user1
-default	t_gpr1			user1	USER	INSERT	true	-1	user1
-default	t_gpr1			user1	USER	SELECT	true	-1	user1
-default	t_gpr1			user1	USER	UPDATE	true	-1	user1
 PREHOOK: query: SHOW CURRENT ROLES
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: SHOW CURRENT ROLES

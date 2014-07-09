@@ -105,13 +105,15 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   private final FileSystem fs;
   private final Path path;
-  private final long stripeSize;
+  private final long defaultStripeSize;
+  private long adjustedStripeSize;
   private final int rowIndexStride;
   private final CompressionKind compress;
   private final CompressionCodec codec;
   private final boolean addBlockPadding;
   private final int bufferSize;
   private final long blockSize;
+  private final float paddingTolerance;
   // the streams that make up the current stripe
   private final Map<StreamName, BufferedStream> streams =
     new TreeMap<StreamName, BufferedStream>();
@@ -156,7 +158,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
              boolean addBlockPadding,
              OrcFile.Version version,
              OrcFile.WriterCallback callback,
-             OrcFile.EncodingStrategy encodingStrategy) throws IOException {
+             OrcFile.EncodingStrategy encodingStrategy,
+             float paddingTolerance,
+             long blockSizeValue) throws IOException {
     this.fs = fs;
     this.path = path;
     this.conf = conf;
@@ -172,12 +176,13 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     } else {
       callbackContext = null;
     }
-    this.stripeSize = stripeSize;
+    this.adjustedStripeSize = stripeSize;
+    this.defaultStripeSize = stripeSize;
     this.version = version;
     this.encodingStrategy = encodingStrategy;
     this.addBlockPadding = addBlockPadding;
-    // pick large block size to minimize block over or under hangs
-    this.blockSize = Math.min(MAX_BLOCK_SIZE, 2 * stripeSize);
+    this.blockSize = blockSizeValue;
+    this.paddingTolerance = paddingTolerance;
     this.compress = compress;
     this.rowIndexStride = rowIndexStride;
     this.memoryManager = memoryManager;
@@ -296,7 +301,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   @Override
   public synchronized boolean checkMemory(double newScale) throws IOException {
-    long limit = (long) Math.round(stripeSize * newScale);
+    long limit = (long) Math.round(adjustedStripeSize * newScale);
     long size = estimateStripeSize();
     if (LOG.isDebugEnabled()) {
       LOG.debug("ORC writer " + path + " size = " + size + " limit = " +
@@ -1027,20 +1032,20 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     /**
-     * Method to retrieve string values from the value object, which can be overridden
+     * Method to retrieve text values from the value object, which can be overridden
      * by subclasses.
      * @param obj  value
-     * @return String value from obj
+     * @return Text text value from obj
      */
-    String getStringValue(Object obj) {
-      return ((StringObjectInspector) inspector).getPrimitiveJavaObject(obj);
+    Text getTextValue(Object obj) {
+      return ((StringObjectInspector) inspector).getPrimitiveWritableObject(obj);
     }
 
     @Override
     void write(Object obj) throws IOException {
       super.write(obj);
       if (obj != null) {
-        String val = getStringValue(obj);
+        Text val = getTextValue(obj);
         rows.add(dictionary.add(val));
         indexStatistics.updateString(val);
       }
@@ -1189,9 +1194,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
      * Override base class implementation to support char values.
      */
     @Override
-    String getStringValue(Object obj) {
+    Text getTextValue(Object obj) {
       return (((HiveCharObjectInspector) inspector)
-          .getPrimitiveJavaObject(obj)).getValue();
+          .getPrimitiveWritableObject(obj)).getTextValue();
     }
   }
 
@@ -1211,9 +1216,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
      * Override base class implementation to support varchar values.
      */
     @Override
-    String getStringValue(Object obj) {
+    Text getTextValue(Object obj) {
       return (((HiveVarcharObjectInspector) inspector)
-          .getPrimitiveJavaObject(obj)).getValue();
+          .getPrimitiveWritableObject(obj)).getTextValue();
     }
   }
 
@@ -1904,18 +1909,49 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       // Do we need to pad the file so the stripe doesn't straddle a block
       // boundary?
       long start = rawWriter.getPos();
-      long stripeSize = indexSize + dataSize + footer.getSerializedSize();
-      if (addBlockPadding &&
-          stripeSize < blockSize &&
-          (start % blockSize) + stripeSize > blockSize) {
+      final long currentStripeSize = indexSize + dataSize + footer.getSerializedSize();
+      final long available = blockSize - (start % blockSize);
+      final long overflow = currentStripeSize - adjustedStripeSize;
+      final float availRatio = (float) available / (float) defaultStripeSize;
+
+      if (availRatio > 0.0f && availRatio < 1.0f
+          && availRatio > paddingTolerance) {
+        // adjust default stripe size to fit into remaining space, also adjust
+        // the next stripe for correction based on the current stripe size
+        // and user specified padding tolerance. Since stripe size can overflow
+        // the default stripe size we should apply this correction to avoid
+        // writing portion of last stripe to next hdfs block.
+        float correction = overflow > 0 ? (float) overflow
+            / (float) adjustedStripeSize : 0.0f;
+
+        // correction should not be greater than user specified padding
+        // tolerance
+        correction = correction > paddingTolerance ? paddingTolerance
+            : correction;
+
+        // adjust next stripe size based on current stripe estimate correction
+        adjustedStripeSize = (long) ((1.0f - correction) * (availRatio * defaultStripeSize));
+      } else if (availRatio >= 1.0) {
+        adjustedStripeSize = defaultStripeSize;
+      }
+
+      if (availRatio < paddingTolerance && addBlockPadding) {
         long padding = blockSize - (start % blockSize);
         byte[] pad = new byte[(int) Math.min(HDFS_BUFFER_SIZE, padding)];
+        LOG.info(String.format("Padding ORC by %d bytes (<=  %0.2f * %d)", 
+            padding, availRatio, defaultStripeSize));
         start += padding;
         while (padding > 0) {
           int writeLen = (int) Math.min(padding, pad.length);
           rawWriter.write(pad, 0, writeLen);
           padding -= writeLen;
         }
+        adjustedStripeSize = defaultStripeSize;
+      } else if (currentStripeSize < blockSize
+          && (start % blockSize) + currentStripeSize > blockSize) {
+        // even if you don't pad, reset the default stripe size when crossing a
+        // block boundary
+        adjustedStripeSize = defaultStripeSize;
       }
 
       // write out the data streams

@@ -13,14 +13,18 @@ PREHOOK: Output: default@t1
 POSTHOOK: query: grant insert on table t1 to user user1
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@t1
-PREHOOK: query: show grant on table t1
+PREHOOK: query: show grant user hive_test_user on table t1
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant on table t1
+POSTHOOK: query: show grant user hive_test_user on table t1
 POSTHOOK: type: SHOW_GRANT
 default	t1			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	t1			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	t1			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	t1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+PREHOOK: query: show grant user user1 on table t1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user1 on table t1
+POSTHOOK: type: SHOW_GRANT
 default	t1			user1	USER	INSERT	false	-1	hive_test_user
 PREHOOK: query: create table user1tab(i int)
 PREHOOK: type: CREATETABLE

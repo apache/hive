@@ -38,12 +38,21 @@ class StringRedBlackTree extends RedBlackTree {
 
   public int add(String value) {
     newKey.set(value);
-    // if the key is new, add it to our byteArray and store the offset & length
+    return addNewKey();
+  }
+
+  private int addNewKey() {
+    // if the newKey is actually new, add it to our byteArray and store the offset & length
     if (add()) {
       int len = newKey.getLength();
       keyOffsets.add(byteArray.add(newKey.getBytes(), 0, len));
     }
     return lastAdd;
+  }
+
+  public int add(Text value) {
+    newKey.set(value);
+    return addNewKey();
   }
 
   @Override

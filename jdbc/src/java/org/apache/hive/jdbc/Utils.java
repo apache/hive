@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.TStatus;
 import org.apache.hive.service.cli.thrift.TStatusCode;
 
@@ -117,9 +118,8 @@ public class Utils {
   public static void verifySuccess(TStatus status, boolean withInfo) throws SQLException {
     if ((status.getStatusCode() != TStatusCode.SUCCESS_STATUS) &&
         (withInfo && (status.getStatusCode() != TStatusCode.SUCCESS_WITH_INFO_STATUS))) {
-      throw new SQLException(status.getErrorMessage(),
-           status.getSqlState(), status.getErrorCode());
-      }
+        throw new HiveSQLException(status);
+    }
   }
 
   /**
@@ -229,12 +229,12 @@ public class Utils {
   }
 
   /**
-   * Takes a version string delmited by '.' and '-' characters
+   * Takes a version string delimited by '.' and '-' characters
    * and returns a partial version.
    *
    * @param fullVersion
    *          version string.
-   * @param tokenPosition
+   * @param position
    *          position of version string to get starting at 0. eg, for a X.x.xxx
    *          string, 0 will return the major version, 1 will return minor
    *          version.

@@ -92,7 +92,7 @@
         <property name="e2e.debug" value="false"/>
         <property name="tests.to.run" value=""/>
 
-        <exec executable="./test_harness.pl" dir="${test.location}" failonerror="true">
+        <exec executable="perl" dir="${test.location}" failonerror="true">
             <env key="HARNESS_ROOT" value="."/>
             <env key="DRIVER_ROOT" value="${basedir}/drivers"/>
             <env key="TH_WORKING_DIR" value="${test.location}"/>
@@ -112,6 +112,7 @@
             <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
             <env key="SECURE_MODE" value="${secure.mode}"/>
             <env key="HADOOP_VERSION" value="${hadoopversion}"/>
+            <arg value="./test_harness.pl"/>
             <arg line="${tests.to.run}"/>
             <arg value="${basedir}/tests/serverstatus.conf"/>
             <arg value="${basedir}/tests/jobsubmission_streaming.conf"/>
@@ -128,7 +129,7 @@
         <property name="fork.factor.conf.file" value="1"/>
         <property name="e2e.debug" value="false"/>
         <property name="tests.to.run" value=""/>
-        <exec executable="./test_harness.pl" dir="${test.location}" failonerror="true">
+        <exec executable="perl" dir="${test.location}" failonerror="true">
             <env key="HARNESS_ROOT" value="."/>
             <env key="DRIVER_ROOT" value="${basedir}/drivers"/>
             <env key="TH_WORKING_DIR" value="${test.location}"/>
@@ -148,6 +149,7 @@
             <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
             <env key="SECURE_MODE" value="${secure.mode}"/>
             <env key="KEYTAB_DIR" value="${keytab.dir}"/>
+            <arg value="./test_harness.pl"/>
             <arg line="${tests.to.run}"/>
             <arg value="${basedir}/tests/hcatperms.conf"/>
             <arg value="${basedir}/tests/jobstatus.conf"/>
@@ -169,7 +171,7 @@
             <isset property="doas.user.tmp"/>
         </condition>
 
-        <exec executable="./test_harness.pl" dir="${test.location}" failonerror="true">
+        <exec executable="perl" dir="${test.location}" failonerror="true">
             <env key="HARNESS_ROOT" value="."/>
             <env key="TH_WORKING_DIR" value="${test.location}"/>
             <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
@@ -185,6 +187,7 @@
             <env key="DOAS_USER" value="${doas.user}"/>
             <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
             <env key="SECURE_MODE" value="${secure.mode}"/>
+            <arg value="./test_harness.pl"/>
             <arg line="${tests.to.run}"/>
             <arg value="${basedir}/tests/doas.conf"/>
         </exec>

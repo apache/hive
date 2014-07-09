@@ -366,7 +366,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
       work.configureJobConf(job);
-      List<Path> inputPaths = Utilities.getInputPaths(job, mWork, emptyScratchDir, ctx);
+      List<Path> inputPaths = Utilities.getInputPaths(job, mWork, emptyScratchDir, ctx, false);
       Utilities.setInputPaths(job, inputPaths);
 
       Utilities.setMapRedWork(job, work, ctx.getMRTmpPath());
@@ -786,6 +786,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       }
     }
     return " -jobconffile " + hConfFilePath.toString();
+  }
+
+  @Override
+  public Collection<MapWork> getMapWork() {
+    return Collections.<MapWork>singleton(getWork().getMapWork());
   }
 
   @Override

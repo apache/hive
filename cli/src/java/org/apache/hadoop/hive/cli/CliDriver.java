@@ -51,6 +51,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.FetchConverter;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -59,7 +60,6 @@ import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
@@ -140,19 +140,8 @@ public class CliDriver {
 
       // shell_cmd = "/bin/bash -c \'" + shell_cmd + "\'";
       try {
-        Process executor = Runtime.getRuntime().exec(shell_cmd);
-        StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, ss.out);
-        StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, ss.err);
-
-        outPrinter.start();
-        errPrinter.start();
-
-        ret = executor.waitFor();
-
-        // wait for stream threads to finish
-        outPrinter.join();
-        errPrinter.join();
-
+        ShellCmdExecutor executor = new ShellCmdExecutor(shell_cmd, ss.out, ss.err);
+        ret = executor.execute();
         if (ret != 0) {
           console.printError("Command failed with exit code = " + ret);
         }
@@ -161,7 +150,6 @@ public class CliDriver {
             stringifyException(e));
         ret = 1;
       }
-
     } else if (tokens[0].toLowerCase().equals("list")) {
 
       SessionState.ResourceType t;
