@@ -368,11 +368,11 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     @Override
     void updateString(Text value) {
       if (minimum == null) {
-        maximum = minimum = new Text(value.copyBytes());
+        maximum = minimum = new Text(value);
       } else if (minimum.compareTo(value) > 0) {
-        minimum = new Text(value.copyBytes());
+        minimum = new Text(value);
       } else if (maximum.compareTo(value) < 0) {
-        maximum = new Text(value.copyBytes());
+        maximum = new Text(value);
       }
       sum += value.getLength();
     }
