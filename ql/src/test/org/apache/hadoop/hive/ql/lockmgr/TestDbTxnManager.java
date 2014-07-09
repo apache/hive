@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.junit.After;
@@ -51,6 +52,7 @@ public class TestDbTxnManager {
 
   public TestDbTxnManager() throws Exception {
     TxnDbUtil.setConfValues(conf);
+    SessionState.start(conf);
     ctx = new Context(conf);
     LogManager.getRootLogger().setLevel(Level.DEBUG);
     tearDown();

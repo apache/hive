@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.yarn.api.records.LocalResource;
@@ -156,6 +157,7 @@ public class TestTezTask {
     conf = new JobConf();
     appLr = mock(LocalResource.class);
 
+    SessionState.start(new HiveConf());
     session = mock(TezSession.class);
     sessionState = mock(TezSessionState.class);
     when(sessionState.getSession()).thenReturn(session);
@@ -166,6 +168,7 @@ public class TestTezTask {
 
   @After
   public void tearDown() throws Exception {
+    SessionState.get().close();
     utils = null;
     work = null;
     task = null;

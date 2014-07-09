@@ -2153,6 +2153,7 @@ class Table:
    - viewExpandedText
    - tableType
    - privileges
+   - temporary
   """
 
   thrift_spec = (
@@ -2170,9 +2171,10 @@ class Table:
     (11, TType.STRING, 'viewExpandedText', None, None, ), # 11
     (12, TType.STRING, 'tableType', None, None, ), # 12
     (13, TType.STRUCT, 'privileges', (PrincipalPrivilegeSet, PrincipalPrivilegeSet.thrift_spec), None, ), # 13
+    (14, TType.BOOL, 'temporary', None, False, ), # 14
   )
 
-  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None,):
+  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4],):
     self.tableName = tableName
     self.dbName = dbName
     self.owner = owner
@@ -2186,6 +2188,7 @@ class Table:
     self.viewExpandedText = viewExpandedText
     self.tableType = tableType
     self.privileges = privileges
+    self.temporary = temporary
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2275,6 +2278,11 @@ class Table:
           self.privileges.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 14:
+        if ftype == TType.BOOL:
+          self.temporary = iprot.readBool();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2343,6 +2351,10 @@ class Table:
     if self.privileges is not None:
       oprot.writeFieldBegin('privileges', TType.STRUCT, 13)
       self.privileges.write(oprot)
+      oprot.writeFieldEnd()
+    if self.temporary is not None:
+      oprot.writeFieldBegin('temporary', TType.BOOL, 14)
+      oprot.writeBool(self.temporary)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

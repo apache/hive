@@ -681,6 +681,10 @@ public class Hive {
       if (baseTbl.getTableType() == TableType.VIRTUAL_VIEW.toString()) {
         throw new HiveException("tableName="+ tableName +" is a VIRTUAL VIEW. Index on VIRTUAL VIEW is not supported.");
       }
+      if (baseTbl.isTemporary()) {
+        throw new HiveException("tableName=" + tableName
+            + " is a TEMPORARY TABLE. Index on TEMPORARY TABLE is not supported.");
+      }
 
       if (indexTblName == null) {
         indexTblName = MetaStoreUtils.getIndexTableName(dbName, tableName, indexName);
@@ -2486,7 +2490,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       };
     return RetryingMetaStoreClient.getProxy(conf, hookLoader,
-        HiveMetaStoreClient.class.getName());
+        SessionHiveMetaStoreClient.class.getName());
   }
 
   /**
