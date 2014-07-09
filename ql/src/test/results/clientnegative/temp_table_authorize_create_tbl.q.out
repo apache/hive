@@ -1,0 +1,9 @@
+PREHOOK: query: create database db23221
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database db23221
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: use db23221
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use db23221
+POSTHOOK: type: SWITCHDATABASE
+FAILED: HiveAccessControlException Permission denied. Principal [name=user44, type=USER] does not have following privileges on Object [type=DATABASE, name=db23221] : [OBJECT OWNERSHIP]

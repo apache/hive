@@ -804,7 +804,7 @@ databaseComment
 createTableStatement
 @init { pushMsg("create table statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
+    : KW_CREATE (temp=KW_TEMPORARY)? (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
       (  like=KW_LIKE likeName=tableName
          tableLocation?
          tablePropertiesPrefixed?
@@ -819,7 +819,7 @@ createTableStatement
          tablePropertiesPrefixed?
          (KW_AS selectStatementWithCTE)?
       )
-    -> ^(TOK_CREATETABLE $name $ext? ifNotExists?
+    -> ^(TOK_CREATETABLE $name $temp? $ext? ifNotExists?
          ^(TOK_LIKETABLE $likeName?)
          columnNameTypeList?
          tableComment?

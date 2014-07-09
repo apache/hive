@@ -996,4 +996,8 @@ public class Table implements Serializable {
       throw new RuntimeException("Cannot get path ", e);
     }
   }
+
+  public boolean isTemporary() {
+    return tTable.isTemporary();
+  }
 };

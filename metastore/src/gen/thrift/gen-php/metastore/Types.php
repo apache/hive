@@ -3162,6 +3162,7 @@ class Table {
   public $viewExpandedText = null;
   public $tableType = null;
   public $privileges = null;
+  public $temporary = false;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -3233,6 +3234,10 @@ class Table {
           'type' => TType::STRUCT,
           'class' => '\metastore\PrincipalPrivilegeSet',
           ),
+        14 => array(
+          'var' => 'temporary',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -3274,6 +3279,9 @@ class Table {
       }
       if (isset($vals['privileges'])) {
         $this->privileges = $vals['privileges'];
+      }
+      if (isset($vals['temporary'])) {
+        $this->temporary = $vals['temporary'];
       }
     }
   }
@@ -3414,6 +3422,13 @@ class Table {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 14:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->temporary);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -3521,6 +3536,11 @@ class Table {
       }
       $xfer += $output->writeFieldBegin('privileges', TType::STRUCT, 13);
       $xfer += $this->privileges->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->temporary !== null) {
+      $xfer += $output->writeFieldBegin('temporary', TType::BOOL, 14);
+      $xfer += $output->writeBool($this->temporary);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

@@ -76,7 +76,7 @@ PREHOOK: Input: default@null_tab1
 POSTHOOK: query: SHOW CREATE TABLE null_tab1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@null_tab1
-CREATE  TABLE `null_tab1`(
+CREATE TABLE `null_tab1`(
   `a` string, 
   `b` string)
 ROW FORMAT DELIMITED 
