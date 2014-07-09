@@ -208,6 +208,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
                   value expressions: _col0 (type: bigint)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

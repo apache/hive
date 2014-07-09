@@ -729,6 +729,7 @@ STAGE PLANS:
                 sort order: ++
                 Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -815,6 +816,7 @@ STAGE PLANS:
               sort order: ++
               Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
               tag: -1
+              auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
