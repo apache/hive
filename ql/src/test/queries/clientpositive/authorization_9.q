@@ -15,3 +15,11 @@ grant select on table dummy to user hive_test_user2;
 grant select (key, value) on table dummy to user hive_test_user2;
 
 show grant on all;
+
+revoke select on database default from user hive_test_user;
+revoke select on table dummy from user hive_test_user;
+revoke select (key, value) on table dummy from user hive_test_user;
+
+revoke select on database default from user hive_test_user2;
+revoke select on table dummy from user hive_test_user2;
+revoke select (key, value) on table dummy from user hive_test_user2;
