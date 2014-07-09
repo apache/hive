@@ -1332,7 +1332,7 @@ class StorageDescriptor {
 void swap(StorageDescriptor &a, StorageDescriptor &b);
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true) {}
   bool tableName;
   bool dbName;
   bool owner;
@@ -1346,15 +1346,16 @@ typedef struct _Table__isset {
   bool viewExpandedText;
   bool tableType;
   bool privileges;
+  bool temporary;
 } _Table__isset;
 
 class Table {
  public:
 
-  static const char* ascii_fingerprint; // = "68640B4B66B355CF317429AF70D2C260";
-  static const uint8_t binary_fingerprint[16]; // = {0x68,0x64,0x0B,0x4B,0x66,0xB3,0x55,0xCF,0x31,0x74,0x29,0xAF,0x70,0xD2,0xC2,0x60};
+  static const char* ascii_fingerprint; // = "29EFB2A5970EF572039E5D94CC78AA85";
+  static const uint8_t binary_fingerprint[16]; // = {0x29,0xEF,0xB2,0xA5,0x97,0x0E,0xF5,0x72,0x03,0x9E,0x5D,0x94,0xCC,0x78,0xAA,0x85};
 
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType() {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false) {
   }
 
   virtual ~Table() throw() {}
@@ -1372,6 +1373,7 @@ class Table {
   std::string viewExpandedText;
   std::string tableType;
   PrincipalPrivilegeSet privileges;
+  bool temporary;
 
   _Table__isset __isset;
 
@@ -1428,6 +1430,11 @@ class Table {
     __isset.privileges = true;
   }
 
+  void __set_temporary(const bool val) {
+    temporary = val;
+    __isset.temporary = true;
+  }
+
   bool operator == (const Table & rhs) const
   {
     if (!(tableName == rhs.tableName))
@@ -1457,6 +1464,10 @@ class Table {
     if (__isset.privileges != rhs.__isset.privileges)
       return false;
     else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.temporary != rhs.__isset.temporary)
+      return false;
+    else if (__isset.temporary && !(temporary == rhs.temporary))
       return false;
     return true;
   }

@@ -102,13 +102,17 @@ public class Warehouse {
   /**
    * Helper functions to convert IOException to MetaException
    */
-  public FileSystem getFs(Path f) throws MetaException {
+  public static FileSystem getFs(Path f, Configuration conf) throws MetaException {
     try {
       return f.getFileSystem(conf);
     } catch (IOException e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return null;
+  }
+
+  public FileSystem getFs(Path f) throws MetaException {
+    return getFs(f, conf);
   }
 
   public static void closeFs(FileSystem fs) throws MetaException {
@@ -135,10 +139,14 @@ public class Warehouse {
    *          Path to be canonicalized
    * @return Path with canonical scheme and authority
    */
-  public Path getDnsPath(Path path) throws MetaException {
-    FileSystem fs = getFs(path);
+  public static Path getDnsPath(Path path, Configuration conf) throws MetaException {
+    FileSystem fs = getFs(path, conf);
     return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(), path
         .toUri().getPath()));
+  }
+
+  public Path getDnsPath(Path path) throws MetaException {
+    return getDnsPath(path, conf);
   }
 
   /**
@@ -173,7 +181,6 @@ public class Warehouse {
     }
     return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
-
 
   public Path getTablePath(Database db, String tableName)
       throws MetaException {

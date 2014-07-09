@@ -124,12 +124,9 @@ public class Context {
 
     // local & non-local tmp location is configurable. however it is the same across
     // all external file systems
-    nonLocalScratchPath =
-      new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR),
-               executionId);
-    localScratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR),
-            executionId).toUri().getPath();
-    scratchDirPermission= HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
+    nonLocalScratchPath = new Path(SessionState.getHDFSSessionPath(conf), executionId);
+    localScratchDir = new Path(SessionState.getLocalSessionPath(conf), executionId).toUri().getPath();
+    scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
   }
 
 

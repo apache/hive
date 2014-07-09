@@ -230,6 +230,7 @@ struct Table {
   11: string viewExpandedText,         // expanded view text, null for non-view
   12: string tableType,                 // table type enum, e.g. EXTERNAL_TABLE
   13: optional PrincipalPrivilegeSet privileges,
+  14: optional bool temporary=false
 }
 
 struct Partition {

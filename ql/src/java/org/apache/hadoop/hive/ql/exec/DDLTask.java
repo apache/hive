@@ -2193,6 +2193,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int showCreateTable(Hive db, ShowCreateTableDesc showCreateTbl) throws HiveException {
     // get the create table statement for the table and populate the output
     final String EXTERNAL = "external";
+    final String TEMPORARY = "temporary";
     final String LIST_COLUMNS = "columns";
     final String TBL_COMMENT = "tbl_comment";
     final String LIST_PARTITIONS = "partitions";
@@ -2224,7 +2225,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return 0;
       }
 
-      createTab_str.append("CREATE <" + EXTERNAL + "> TABLE `");
+      createTab_str.append("CREATE <" + TEMPORARY + "><" + EXTERNAL + ">TABLE `");
       createTab_str.append(tableName + "`(\n");
       createTab_str.append("<" + LIST_COLUMNS + ">)\n");
       createTab_str.append("<" + TBL_COMMENT + ">\n");
@@ -2239,11 +2240,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       createTab_str.append("<" + TBL_PROPERTIES + ">)\n");
       ST createTab_stmt = new ST(createTab_str.toString());
 
+      // For cases where the table is temporary
+      String tbl_temp = "";
+      if (tbl.isTemporary()) {
+        duplicateProps.add("TEMPORARY");
+        tbl_temp = "TEMPORARY ";
+      }
       // For cases where the table is external
       String tbl_external = "";
       if (tbl.getTableType() == TableType.EXTERNAL_TABLE) {
         duplicateProps.add("EXTERNAL");
-        tbl_external = "EXTERNAL";
+        tbl_external = "EXTERNAL ";
       }
 
       // Columns
@@ -2399,6 +2406,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl_properties += StringUtils.join(realProps, ", \n");
       }
 
+      createTab_stmt.add(TEMPORARY, tbl_temp);
       createTab_stmt.add(EXTERNAL, tbl_external);
       createTab_stmt.add(LIST_COLUMNS, tbl_columns);
       createTab_stmt.add(TBL_COMMENT, tbl_comment);
@@ -4246,6 +4254,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setSkewedColValues(crtTbl.getSkewedColValues());
     }
 
+    tbl.getTTable().setTemporary(crtTbl.isTemporary());
+
     tbl.setStoredAsSubDirectories(crtTbl.isStoredAsSubDirectories());
 
     tbl.setInputFormatClass(crtTbl.getInputFormat());
@@ -4392,6 +4402,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (crtTbl.getTblProps() != null) {
         params.putAll(crtTbl.getTblProps());
       }
+
+      tbl.getTTable().setTemporary(crtTbl.isTemporary());
 
       if (crtTbl.isExternal()) {
         tbl.setProperty("EXTERNAL", "TRUE");

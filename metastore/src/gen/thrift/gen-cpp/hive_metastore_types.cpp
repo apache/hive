@@ -2455,8 +2455,8 @@ void swap(StorageDescriptor &a, StorageDescriptor &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* Table::ascii_fingerprint = "68640B4B66B355CF317429AF70D2C260";
-const uint8_t Table::binary_fingerprint[16] = {0x68,0x64,0x0B,0x4B,0x66,0xB3,0x55,0xCF,0x31,0x74,0x29,0xAF,0x70,0xD2,0xC2,0x60};
+const char* Table::ascii_fingerprint = "29EFB2A5970EF572039E5D94CC78AA85";
+const uint8_t Table::binary_fingerprint[16] = {0x29,0xEF,0xB2,0xA5,0x97,0x0E,0xF5,0x72,0x03,0x9E,0x5D,0x94,0xCC,0x78,0xAA,0x85};
 
 uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -2609,6 +2609,14 @@ uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 14:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->temporary);
+          this->__isset.temporary = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -2695,6 +2703,11 @@ uint32_t Table::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += this->privileges.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.temporary) {
+    xfer += oprot->writeFieldBegin("temporary", ::apache::thrift::protocol::T_BOOL, 14);
+    xfer += oprot->writeBool(this->temporary);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -2715,6 +2728,7 @@ void swap(Table &a, Table &b) {
   swap(a.viewExpandedText, b.viewExpandedText);
   swap(a.tableType, b.tableType);
   swap(a.privileges, b.privileges);
+  swap(a.temporary, b.temporary);
   swap(a.__isset, b.__isset);
 }
 

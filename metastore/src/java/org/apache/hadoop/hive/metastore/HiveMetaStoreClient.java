@@ -139,7 +139,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private boolean isConnected = false;
   private URI metastoreUris[];
   private final HiveMetaHookLoader hookLoader;
-  private final HiveConf conf;
+  protected final HiveConf conf;
   private String tokenStrForm;
   private final boolean localMetaStore;
 
@@ -147,7 +147,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private int retries = 5;
   private int retryDelaySeconds = 0;
 
-  static final private Log LOG = LogFactory.getLog("hive.metastore");
+  static final protected Log LOG = LogFactory.getLog("hive.metastore");
 
   public HiveMetaStoreClient(HiveConf conf)
     throws MetaException {
@@ -555,7 +555,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     boolean success = false;
     try {
-      client.create_table_with_environment_context(tbl, envContext);
+      // Subclasses can override this step (for example, for temporary tables)
+      create_table_with_environment_context(tbl, envContext);
       if (hook != null) {
         hook.commitCreateTable(tbl);
       }
@@ -617,7 +618,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
        List<String> tableList = getAllTables(name);
        for (String table : tableList) {
          try {
-            dropTable(name, table, deleteData, false);
+           // Subclasses can override this step (for example, for temporary tables)
+           dropTable(name, table, deleteData, false);
          } catch (UnsupportedOperationException e) {
            // Ignore Index tables, those will be dropped with parent tables
          }
@@ -771,7 +773,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     boolean success = false;
     try {
-      client.drop_table_with_environment_context(dbname, name, deleteData, envContext);
+      drop_table_with_environment_context(dbname, name, deleteData, envContext);
       if (hook != null) {
         hook.commitDropTable(tbl, deleteData);
       }
@@ -1342,7 +1344,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return copy;
   }
 
-  private Table deepCopy(Table table) {
+  protected Table deepCopy(Table table) {
     Table copy = null;
     if (table != null) {
       copy = new Table(table);
@@ -1378,6 +1380,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     Function copy = null;
     if (func != null) {
       copy = new Function(func);
+    }
+    return copy;
+  }
+
+  protected PrincipalPrivilegeSet deepCopy(PrincipalPrivilegeSet pps) {
+    PrincipalPrivilegeSet copy = null;
+    if (pps != null) {
+      copy = new PrincipalPrivilegeSet(pps);
     }
     return copy;
   }
@@ -1727,4 +1737,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return client.get_functions(dbName, pattern);
   }
 
+  protected void create_table_with_environment_context(Table tbl, EnvironmentContext envContext)
+      throws AlreadyExistsException, InvalidObjectException,
+      MetaException, NoSuchObjectException, TException {
+    client.create_table_with_environment_context(tbl, envContext);
+  }
+
+  protected void drop_table_with_environment_context(String dbname, String name,
+      boolean deleteData, EnvironmentContext envContext) throws MetaException, TException,
+      NoSuchObjectException, UnsupportedOperationException {
+    client.drop_table_with_environment_context(dbname, name, deleteData, envContext);
+  }
 }

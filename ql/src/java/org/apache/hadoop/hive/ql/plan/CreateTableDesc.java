@@ -77,11 +77,12 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   List<String> skewedColNames;
   List<List<String>> skewedColValues;
   boolean isStoredAsSubDirectories = false;
+  boolean isTemporary = false;
 
   public CreateTableDesc() {
   }
 
-  public CreateTableDesc(String databaseName, String tableName, boolean isExternal,
+  public CreateTableDesc(String databaseName, String tableName, boolean isExternal, boolean isTemporary,
       List<FieldSchema> cols, List<FieldSchema> partCols,
       List<String> bucketCols, List<Order> sortCols, int numBuckets,
       String fieldDelim, String fieldEscape, String collItemDelim,
@@ -92,7 +93,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       Map<String, String> tblProps,
       boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues) {
 
-    this(tableName, isExternal, cols, partCols,
+    this(tableName, isExternal, isTemporary, cols, partCols,
         bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
         collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
         outputFormat, location, serName, storageHandler, serdeProps,
@@ -101,7 +102,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.databaseName = databaseName;
   }
 
-  public CreateTableDesc(String tableName, boolean isExternal,
+  public CreateTableDesc(String tableName, boolean isExternal, boolean isTemporary,
       List<FieldSchema> cols, List<FieldSchema> partCols,
       List<String> bucketCols, List<Order> sortCols, int numBuckets,
       String fieldDelim, String fieldEscape, String collItemDelim,
@@ -113,6 +114,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues) {
     this.tableName = tableName;
     this.isExternal = isExternal;
+    this.isTemporary = isTemporary;
     this.bucketCols = new ArrayList<String>(bucketCols);
     this.sortCols = new ArrayList<Order>(sortCols);
     this.collItemDelim = collItemDelim;
@@ -533,6 +535,21 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
    */
   public void setNullFormat(String nullFormat) {
     this.nullFormat = nullFormat;
+  }
+
+  /**
+   * @return the isTemporary
+   */
+  @Explain(displayName = "isTemporary", displayOnlyOnTrue = true)
+  public boolean isTemporary() {
+    return isTemporary;
+  }
+
+  /**
+   * @param isTemporary table is Temporary or not.
+   */
+  public void setTemporary(boolean isTemporary) {
+    this.isTemporary = isTemporary;
   }
 
 }
