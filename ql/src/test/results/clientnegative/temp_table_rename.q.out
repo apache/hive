@@ -1,0 +1,19 @@
+PREHOOK: query: create temporary table tmp1 (c1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create temporary table tmp1 (c1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp1
+PREHOOK: query: create temporary table tmp2 (d1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: create temporary table tmp2 (d1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp2
+PREHOOK: query: alter table tmp2 rename to tmp1
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@tmp2
+PREHOOK: Output: default@tmp2
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table.

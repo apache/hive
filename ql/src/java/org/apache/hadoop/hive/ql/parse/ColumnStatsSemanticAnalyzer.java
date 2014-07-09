@@ -358,6 +358,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       originalTree = tree;
       boolean isPartitionStats = isPartitionLevelStats(tree);
       Map<String,String> partSpec = null;
+      checkIfTemporaryTable();
       checkForPartitionColumns(colNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
       validateSpecifiedColumnNames(colNames);
 
@@ -402,6 +403,13 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
               + " [Try removing column '" + sc + "' from column list]");
         }
       }
+    }
+  }
+
+  private void checkIfTemporaryTable() throws SemanticException {
+    if (tbl.isTemporary()) {
+      throw new SemanticException(tbl.getTableName()
+          + " is a temporary table.  Column statistics are not supported on temporary tables.");
     }
   }
 

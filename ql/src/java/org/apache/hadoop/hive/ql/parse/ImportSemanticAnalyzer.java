@@ -92,6 +92,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             table.getTableName(),
             false, // isExternal: set to false here, can be overwritten by the
                    // IMPORT stmt
+            table.isTemporary(),
             table.getSd().getCols(),
             table.getPartitionKeys(),
             table.getSd().getBucketCols(),

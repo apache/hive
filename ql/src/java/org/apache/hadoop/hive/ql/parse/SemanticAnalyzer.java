@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DATABASE_WAREHOUSE_SUFFIX;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -30,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -10017,6 +10019,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, String> tblProps = null;
     boolean ifNotExists = false;
     boolean isExt = false;
+    boolean isTemporary = false;
     ASTNode selectStmt = null;
     final int CREATE_TABLE = 0; // regular CREATE TABLE
     final int CTLT = 1; // CREATE TABLE LIKE ... (CTLT)
@@ -10052,6 +10055,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.KW_EXTERNAL:
         isExt = true;
+        break;
+      case HiveParser.KW_TEMPORARY:
+        isTemporary = true;
         break;
       case HiveParser.TOK_LIKETABLE:
         if (child.getChildCount() > 0) {
@@ -10176,6 +10182,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbName = qualified.length == 1 ? SessionState.get().getCurrentDatabase() : qualified[0];
     Database database  = getDatabase(dbName);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
+ 
+    if (isTemporary) {
+      if (partCols.size() > 0) {
+        throw new SemanticException("Partition columns are not supported on temporary tables");
+      }
+
+      if (location == null) {
+        // for temporary tables we set the location to something in the session's scratch dir
+        // it has the same life cycle as the tmp table
+        try {
+          // Generate a unique ID for temp table path.
+          // This path will be fixed for the life of the temp table.
+          Path path = new Path(SessionState.getTempTableSpace(conf), UUID.randomUUID().toString());
+          path = Warehouse.getDnsPath(path, conf);
+          location = path.toString();
+        } catch (MetaException err) {
+          throw new SemanticException("Error while generating temp table path:", err);
+        }
+      }
+    }
+
     // Handle different types of CREATE TABLE command
     CreateTableDesc crtTblDesc = null;
     switch (command_type) {
@@ -10183,7 +10210,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
       tblProps = addDefaultProperties(tblProps);
 
-      crtTblDesc = new CreateTableDesc(tableName, isExt, cols, partCols,
+      crtTblDesc = new CreateTableDesc(tableName, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim,
@@ -10205,7 +10232,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CTLT: // create table like <tbl_name>
       tblProps = addDefaultProperties(tblProps);
 
-      CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(tableName, isExt,
+      if (isTemporary) {
+        Table likeTable = getTableWithQN(likeTableName, false);
+        if (likeTable != null && likeTable.getPartCols().size() > 0) {
+          throw new SemanticException("Partition columns are not supported on temporary tables "
+              + "and source table in CREATE TABLE LIKE is partitioned.");
+        }
+      }
+      CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(tableName, isExt, isTemporary,
           storageFormat.inputFormat, storageFormat.outputFormat, location,
           shared.serde, shared.serdeProps, tblProps, ifNotExists, likeTableName);
       SessionState.get().setCommandType(HiveOperation.CREATETABLE);
@@ -10227,7 +10261,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = addDefaultProperties(tblProps);
 
-      crtTblDesc = new CreateTableDesc(dbName, tableName, isExt, cols, partCols,
+      crtTblDesc = new CreateTableDesc(dbName, tableName, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim,
