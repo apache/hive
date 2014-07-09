@@ -300,8 +300,11 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       rewrittenQueryBuilder.append(numBitVectors);
       rewrittenQueryBuilder.append(" )");
     }
-    for (FieldSchema fs : tbl.getPartCols()) {
-      rewrittenQueryBuilder.append(" , " + fs.getName());
+
+    if (isPartitionStats) {
+      for (FieldSchema fs : tbl.getPartCols()) {
+        rewrittenQueryBuilder.append(" , " + fs.getName());
+      }
     }
     rewrittenQueryBuilder.append(" from ");
     rewrittenQueryBuilder.append(tbl.getTableName());
