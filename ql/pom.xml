@@ -327,6 +327,13 @@
        </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -533,7 +540,7 @@
                   <include>org.iq80.snappy:snappy</include>
                   <include>org.codehaus.jackson:jackson-core-asl</include>
                   <include>org.codehaus.jackson:jackson-mapper-asl</include>
-                  <include>com.google.guava:guava</include>
+                  <!--include>com.google.guava:guava</include-->
                 </includes>
               </artifactSet>
               <relocations>

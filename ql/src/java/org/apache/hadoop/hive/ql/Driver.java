@@ -1209,8 +1209,9 @@ public class Driver implements CommandProcessor {
         }
       }
 
-      int jobs = Utilities.getMRTasks(plan.getRootTasks()).size()
-        + Utilities.getTezTasks(plan.getRootTasks()).size();
+      int jobs = Utilities.getMRTasks(plan.getRootTasks()).size() +
+                 Utilities.getTezTasks(plan.getRootTasks()).size() +
+                 Utilities.getSparkTasks(plan.getRootTasks()).size();
       if (jobs > 0) {
         console.printInfo("Query ID = " + plan.getQueryId());
         console.printInfo("Total jobs = " + jobs);

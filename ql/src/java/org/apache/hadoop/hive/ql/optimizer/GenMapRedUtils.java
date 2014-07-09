@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
@@ -100,6 +101,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -851,6 +853,16 @@ public final class GenMapRedUtils {
       for (BaseWork w : work.getAllWorkUnsorted()) {
         if (w instanceof MapWork) {
           ((MapWork)w).deriveExplainAttributes();
+        }
+      }
+    } else if (task instanceof SparkTask) {
+      SparkWork sw = ((SparkTask)task).getWork();
+      sw.getMapWork().deriveExplainAttributes();
+      HashMap<String, Operator<? extends OperatorDesc>> opMap = sw
+          .getMapWork().getAliasToWork();
+      if (opMap != null && !opMap.isEmpty()) {
+        for (Operator<? extends OperatorDesc> op : opMap.values()) {
+          setKeyAndValueDesc(sw.getReduceWork(), op);
         }
       }
     }
