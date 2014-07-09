@@ -16,31 +16,28 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.exec.spark;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.spark.api.java.function.VoidFunction;
 
 /**
- * TaskCompilerFactory is a factory class to choose the appropriate
- * TaskCompiler.
+ * Implementation of a voidFunction that does nothing.
+ *
  */
-public class TaskCompilerFactory {
+public class HiveVoidFunction implements VoidFunction<Object> {
+  private static final long serialVersionUID = 1L;
+  
+  private static HiveVoidFunction instance = new HiveVoidFunction();
 
-  private TaskCompilerFactory() {
-    // avoid instantiation
+  public static HiveVoidFunction getInstance() {
+    return instance;
+  }
+  
+  private HiveVoidFunction() {
   }
 
-  /**
-   * Returns the appropriate compiler to translate the operator tree
-   * into executable units.
-   */
-  public static TaskCompiler getCompiler(HiveConf conf, ParseContext parseContext) {
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      return new TezCompiler();
-    } else if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      return new SparkCompiler();
-    } else {
-      return new MapReduceCompiler();
-    }
+  @Override
+  public void call(Object arg0) throws Exception {
   }
+
 }

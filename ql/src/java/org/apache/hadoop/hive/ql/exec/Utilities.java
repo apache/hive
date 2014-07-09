@@ -110,6 +110,7 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -305,15 +306,18 @@ public final class Utilities {
     InputStream in = null;
     try {
       path = getPlanPath(conf, name);
+      LOG.info("PLAN PATH = " + path);
       assert path != null;
       if (!gWorkMap.containsKey(path)) {
         Path localPath;
         if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
           localPath = path;
         } else {
+          LOG.info("***************non-local mode***************");
           localPath = new Path(name);
         }
-
+        localPath = path;
+        LOG.info("local path = " + localPath);
         if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
           LOG.debug("Loading plan from string: "+path.toUri().getPath());
           String planString = conf.get(path.toUri().getPath());
@@ -325,7 +329,9 @@ public final class Utilities {
           in = new ByteArrayInputStream(planBytes);
           in = new InflaterInputStream(in);
         } else {
-          in = new FileInputStream(localPath.toUri().getPath());
+          LOG.info("Open file to read in plan: " + localPath);
+//          in = new FileInputStream(localPath.toUri().getPath());
+          in = localPath.getFileSystem(conf).open(localPath);
         }
 
         if(MAP_PLAN_NAME.equals(name)){
@@ -357,6 +363,7 @@ public final class Utilities {
       return gWork;
     } catch (FileNotFoundException fnf) {
       // happens. e.g.: no reduce work.
+      LOG.info("File not found: " + fnf.getMessage());
       LOG.info("No plan file found: "+path);
       return null;
     } catch (Exception e) {
@@ -2367,6 +2374,26 @@ public final class Utilities {
     }
   }
 
+  public static List<SparkTask> getSparkTasks(List<Task<? extends Serializable>> tasks) {
+    List<SparkTask> sparkTasks = new ArrayList<SparkTask>();
+    if (tasks != null) {
+      getSparkTasks(tasks, sparkTasks);
+    }
+    return sparkTasks;
+  }
+
+  private static void getSparkTasks(List<Task<? extends Serializable>> tasks, List<SparkTask> sparkTasks) {
+    for (Task<? extends Serializable> task : tasks) {
+      if (task instanceof SparkTask && !sparkTasks.contains(task)) {
+        sparkTasks.add((SparkTask) task);
+      }
+
+      if (task.getDependentTasks() != null) {
+        getSparkTasks(task.getDependentTasks(), sparkTasks);
+      }
+    }
+  }
+
   public static List<ExecDriver> getMRTasks(List<Task<? extends Serializable>> tasks) {
     List<ExecDriver> mrTasks = new ArrayList<ExecDriver>();
     if (tasks != null) {
@@ -3408,7 +3435,7 @@ public final class Utilities {
       if (origUmask != null) {
         conf.set("fs.permissions.umask-mode", origUmask);
       } else {
-        conf.unset("fs.permissions.umask-mode");
+        //conf.unset("fs.permissions.umask-mode");
       }
     }
 

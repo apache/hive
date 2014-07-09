@@ -16,31 +16,35 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.exec.spark;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.plan.api.StageType;
 
-/**
- * TaskCompilerFactory is a factory class to choose the appropriate
- * TaskCompiler.
- */
-public class TaskCompilerFactory {
+public class SparkTask extends Task<SparkWork> {
+  private static final long serialVersionUID = 1L;
 
-  private TaskCompilerFactory() {
-    // avoid instantiation
+  @Override
+  public int execute(DriverContext driverContext) {
+    SparkClient client = SparkClient.getInstance();
+    return client.execute(driverContext, getWork());
   }
 
-  /**
-   * Returns the appropriate compiler to translate the operator tree
-   * into executable units.
-   */
-  public static TaskCompiler getCompiler(HiveConf conf, ParseContext parseContext) {
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      return new TezCompiler();
-    } else if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      return new SparkCompiler();
-    } else {
-      return new MapReduceCompiler();
-    }
+  @Override
+  public boolean isMapRedTask() {
+    return true;
   }
+
+  @Override
+  public StageType getType() {
+    return StageType.MAPRED;
+  }
+
+  @Override
+  public String getName() {
+    return "SPARK";
+  }
+
 }
