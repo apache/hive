@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.FloatWritable;
@@ -69,19 +71,156 @@ public class VectorizedBatchUtil {
   }
 
   /**
-   * Iterates thru all the columns in a given row and populates the batch
-   * @param row Deserialized row object
-   * @param oi Object insepector for that row
-   * @param rowIndex index to which the row should be added to batch
-   * @param batch Vectorized batch to which the row is added at rowIndex
+   * Iterates thru all the column vectors and sets repeating to
+   * specified column.
+   *
+   */
+  public static void setRepeatingColumn(VectorizedRowBatch batch, int column) {
+    ColumnVector cv = batch.cols[column];
+    cv.isRepeating = true;
+  }
+
+  /**
+   * Reduce the batch size for a vectorized row batch
+   */
+  public static void setBatchSize(VectorizedRowBatch batch, int size) {
+    assert (size <= batch.getMaxSize());
+    batch.size = size;
+  }
+
+  /**
+   * Walk through the object inspector and add column vectors
+   *
+   * @param oi
+   * @param cvList
+   *          ColumnVectors are populated in this list
+   */
+  private static void allocateColumnVector(StructObjectInspector oi,
+      List<ColumnVector> cvList) throws HiveException {
+    if (cvList == null) {
+      throw new HiveException("Null columnvector list");
+    }
+    if (oi == null) {
+      return;
+    }
+    final List<? extends StructField> fields = oi.getAllStructFieldRefs();
+    for(StructField field : fields) {
+      ObjectInspector fieldObjectInspector = field.getFieldObjectInspector();
+      switch(fieldObjectInspector.getCategory()) {
+      case PRIMITIVE:
+        PrimitiveObjectInspector poi = (PrimitiveObjectInspector) fieldObjectInspector;
+        switch(poi.getPrimitiveCategory()) {
+        case BOOLEAN:
+        case BYTE:
+        case SHORT:
+        case INT:
+        case LONG:
+        case TIMESTAMP:
+        case DATE:
+          cvList.add(new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE));
+          break;
+        case FLOAT:
+        case DOUBLE:
+          cvList.add(new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE));
+          break;
+        case STRING:
+          cvList.add(new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE));
+          break;
+        case DECIMAL:
+          DecimalTypeInfo tInfo = (DecimalTypeInfo) poi.getTypeInfo();
+          cvList.add(new DecimalColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+              tInfo.precision(), tInfo.scale()));
+          break;
+        default:
+          throw new HiveException("Vectorizaton is not supported for datatype:"
+              + poi.getPrimitiveCategory());
+        }
+        break;
+      case STRUCT:
+        throw new HiveException("Struct not supported");
+      default:
+        throw new HiveException("Flattening is not supported for datatype:"
+            + fieldObjectInspector.getCategory());
+      }
+    }
+  }
+
+
+  /**
+   * Create VectorizedRowBatch from ObjectInspector
+   *
+   * @param oi
+   * @return
+   * @throws HiveException
+   */
+  public static VectorizedRowBatch constructVectorizedRowBatch(
+      StructObjectInspector oi) throws HiveException {
+    final List<ColumnVector> cvList = new LinkedList<ColumnVector>();
+    allocateColumnVector(oi, cvList);
+    final VectorizedRowBatch result = new VectorizedRowBatch(cvList.size());
+    int i = 0;
+    for(ColumnVector cv : cvList) {
+      result.cols[i++] = cv;
+    }
+    return result;
+  }
+
+  /**
+   * Create VectorizedRowBatch from key and value object inspectors
+   *
+   * @param keyInspector
+   * @param valueInspector
+   * @return VectorizedRowBatch
+   * @throws HiveException
+   */
+  public static VectorizedRowBatch constructVectorizedRowBatch(
+      StructObjectInspector keyInspector, StructObjectInspector valueInspector)
+          throws HiveException {
+    final List<ColumnVector> cvList = new LinkedList<ColumnVector>();
+    allocateColumnVector(keyInspector, cvList);
+    allocateColumnVector(valueInspector, cvList);
+    final VectorizedRowBatch result = new VectorizedRowBatch(cvList.size());
+    result.cols = cvList.toArray(result.cols);
+    return result;
+  }
+
+  /**
+   * Iterates through all columns in a given row and populates the batch
+   *
+   * @param row
+   * @param oi
+   * @param rowIndex
+   * @param batch
+   * @param buffer
    * @throws HiveException
    */
   public static void addRowToBatch(Object row, StructObjectInspector oi,
+          int rowIndex,
+          VectorizedRowBatch batch,
+          DataOutputBuffer buffer
+          ) throws HiveException {
+    addRowToBatchFrom(row, oi, rowIndex, 0, batch, buffer);
+  }
+
+  /**
+   * Iterates thru all the columns in a given row and populates the batch
+   * from a given offset
+   *
+   * @param row Deserialized row object
+   * @param oi Object insepector for that row
+   * @param rowIndex index to which the row should be added to batch
+   * @param colOffset offset from where the column begins
+   * @param batch Vectorized batch to which the row is added at rowIndex
+   * @throws HiveException
+   */
+  public static void addRowToBatchFrom(Object row, StructObjectInspector oi,
                                    int rowIndex,
+                                   int colOffset,
                                    VectorizedRowBatch batch,
                                    DataOutputBuffer buffer
                                    ) throws HiveException {
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
+    final int off = colOffset;
     // Iterate thru the cols and load the batch
     for (int i = 0; i < fieldRefs.size(); i++) {
       Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
@@ -98,7 +237,7 @@ public class VectorizedBatchUtil {
       // float/double. String types have no default value for null.
       switch (poi.getPrimitiveCategory()) {
       case BOOLEAN: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((BooleanWritable) writableCol).get() ? 1 : 0;
           lcv.isNull[rowIndex] = false;
@@ -109,7 +248,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case BYTE: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((ByteWritable) writableCol).get();
           lcv.isNull[rowIndex] = false;
@@ -120,7 +259,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case SHORT: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((ShortWritable) writableCol).get();
           lcv.isNull[rowIndex] = false;
@@ -131,7 +270,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case INT: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((IntWritable) writableCol).get();
           lcv.isNull[rowIndex] = false;
@@ -142,7 +281,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case LONG: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((LongWritable) writableCol).get();
           lcv.isNull[rowIndex] = false;
@@ -153,7 +292,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case DATE: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
         if (writableCol != null) {
           lcv.vector[rowIndex] = ((DateWritable) writableCol).getDays();
           lcv.isNull[rowIndex] = false;
@@ -164,7 +303,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case FLOAT: {
-        DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[i];
+        DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[off+i];
         if (writableCol != null) {
           dcv.vector[rowIndex] = ((FloatWritable) writableCol).get();
           dcv.isNull[rowIndex] = false;
@@ -175,7 +314,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case DOUBLE: {
-        DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[i];
+        DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[off+i];
         if (writableCol != null) {
           dcv.vector[rowIndex] = ((DoubleWritable) writableCol).get();
           dcv.isNull[rowIndex] = false;
@@ -186,7 +325,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case TIMESTAMP: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
+        LongColumnVector lcv = (LongColumnVector) batch.cols[off+i];
         if (writableCol != null) {
           Timestamp t = ((TimestampWritable) writableCol).getTimestamp();
           lcv.vector[rowIndex] = TimestampUtils.getTimeNanoSec(t);
@@ -198,7 +337,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case STRING: {
-        BytesColumnVector bcv = (BytesColumnVector) batch.cols[i];
+        BytesColumnVector bcv = (BytesColumnVector) batch.cols[off+i];
         if (writableCol != null) {
           bcv.isNull[rowIndex] = false;
           Text colText = (Text) writableCol;
@@ -216,7 +355,7 @@ public class VectorizedBatchUtil {
       }
         break;
       case DECIMAL:
-        DecimalColumnVector dcv = (DecimalColumnVector) batch.cols[i];
+        DecimalColumnVector dcv = (DecimalColumnVector) batch.cols[off+i];
         if (writableCol != null) {
           dcv.isNull[rowIndex] = false;
           HiveDecimalWritable wobj = (HiveDecimalWritable) writableCol;
@@ -234,3 +373,4 @@ public class VectorizedBatchUtil {
   }
 
 }
+

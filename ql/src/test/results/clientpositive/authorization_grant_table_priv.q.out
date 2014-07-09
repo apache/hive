@@ -40,12 +40,12 @@ POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv1
 POSTHOOK: type: SHOW_GRANT
 default	table_priv1			user2	USER	INSERT	false	-1	user1
 default	table_priv1			user2	USER	SELECT	true	-1	user1
-PREHOOK: query: -- change to other user - user2
+PREHOOK: query: -- changed to other user - user2
 -- grant permissions to another user as user2
 GRANT SELECT ON table_priv1 TO USER user3 with grant option
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv1
-POSTHOOK: query: -- change to other user - user2
+POSTHOOK: query: -- changed to other user - user2
 -- grant permissions to another user as user2
 GRANT SELECT ON table_priv1 TO USER user3 with grant option
 POSTHOOK: type: GRANT_PRIVILEGE

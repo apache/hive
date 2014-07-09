@@ -98,8 +98,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       String subStatement = new VariableSubstitution().substitute(sqlOperationConf, statement);
       response = driver.compileAndRespond(subStatement);
       if (0 != response.getResponseCode()) {
-        throw new HiveSQLException("Error while compiling statement: "
-            + response.getErrorMessage(), response.getSQLState(), response.getResponseCode());
+        throw toSQLException("Error while compiling statement", response);
       }
 
       mResultSchema = driver.getSchema();
@@ -143,8 +142,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       driver.setTryCount(Integer.MAX_VALUE);
       response = driver.run();
       if (0 != response.getResponseCode()) {
-        throw new HiveSQLException("Error while processing statement: "
-            + response.getErrorMessage(), response.getSQLState(), response.getResponseCode());
+        throw toSQLException("Error while processing statement", response);
       }
     } catch (HiveSQLException e) {
       // If the operation was cancelled by another thread,

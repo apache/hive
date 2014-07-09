@@ -77,9 +77,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead.GenericUDAFLeadEval
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFRank.GenericUDAFRankEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
-import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
 
@@ -196,7 +194,7 @@ public final class OpProcFactory {
         return;
       }
       
-      ExprWalkerInfo childInfo = getChildWalkerInfo((Operator<?>) ptfOp, owi);
+      ExprWalkerInfo childInfo = getChildWalkerInfo(ptfOp, owi);
 
       if (childInfo == null) {
         return;
@@ -411,16 +409,18 @@ public final class OpProcFactory {
         Object... nodeOutputs) throws SemanticException {
       LOG.info("Processing for " + nd.getName() + "("
           + ((Operator) nd).getIdentifier() + ")");
+
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
-      Operator<? extends OperatorDesc> op =
-        (Operator<? extends OperatorDesc>) nd;
-      ExprNodeDesc predicate = (((FilterOperator) nd).getConf()).getPredicate();
-      ExprWalkerInfo ewi = new ExprWalkerInfo();
+      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
+
+      // if this filter is generated one, predicates need not to be extracted
+      ExprWalkerInfo ewi = owi.getPrunedPreds(op);
       // Don't push a sampling predicate since createFilter() always creates filter
       // with isSamplePred = false. Also, the filterop with sampling pred is always
       // a child of TableScan, so there is no need to push this predicate.
-      if (!((FilterOperator)op).getConf().getIsSamplingPred()) {
+      if (ewi == null && !((FilterOperator)op).getConf().getIsSamplingPred()) {
         // get pushdown predicates for this operator's predicate
+        ExprNodeDesc predicate = (((FilterOperator) nd).getConf()).getPredicate();
         ewi = ExprWalkerProcFactory.extractPushdownPreds(owi, op, predicate);
         if (!ewi.isDeterministic()) {
           /* predicate is not deterministic */
@@ -964,6 +964,12 @@ public final class OpProcFactory {
       }
       owi.getCandidateFilterOps().clear();
     }
+    // push down current ppd context to newly added filter
+    ExprWalkerInfo walkerInfo = owi.getPrunedPreds(op);
+    if (walkerInfo != null) {
+      walkerInfo.getNonFinalCandidates().clear();
+      owi.putPrunedPreds(output, walkerInfo);
+    }
     return output;
   }
 
@@ -1048,7 +1054,7 @@ public final class OpProcFactory {
     tableScanDesc.setFilterExpr(decomposed.pushedPredicate);
     tableScanDesc.setFilterObject(decomposed.pushedPredicateObject);
 
-    return (ExprNodeGenericFuncDesc)decomposed.residualPredicate;
+    return decomposed.residualPredicate;
   }
 
   public static NodeProcessor getFilterProc() {

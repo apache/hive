@@ -230,6 +230,8 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
     }
 
     private void processAlias(MapWork work, String alias) {
+      work.setUseOneNullRowInputFormat(true);
+
       // Change the alias partition desc
       PartitionDesc aliasPartn = work.getAliasToPartnInfo().get(alias);
       changePartitionToMetadataOnly(aliasPartn);
@@ -258,13 +260,6 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
         throws SemanticException {
       Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
 
-      Collection<Operator<? extends OperatorDesc>> topOperators
-        = task.getTopOperators();
-      if (topOperators.size() == 0) {
-        return null;
-      }
-
-      LOG.info("Looking for table scans where optimization is applicable");
       // create a the context for walking operators
       ParseContext parseContext = physicalContext.getParseContext();
       WalkerCtx walkerCtx = new WalkerCtx();
@@ -277,41 +272,52 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
         GroupByOperator.getOperatorName() + "%.*" + FileSinkOperator.getOperatorName() + "%"),
         new FileSinkProcessor());
 
-      // The dispatcher fires the processor corresponding to the closest
-      // matching rule and passes the context along
-      Dispatcher disp = new DefaultRuleDispatcher(null, opRules, walkerCtx);
-      GraphWalker ogw = new PreOrderWalker(disp);
+      for (MapWork mapWork: task.getMapWork()) {
+        LOG.debug("Looking at: "+mapWork.getName());
+        Collection<Operator<? extends OperatorDesc>> topOperators
+          = mapWork.getAliasToWork().values();
+        if (topOperators.size() == 0) {
+          LOG.debug("No top operators");
+          return null;
+        }
 
-      // Create a list of topOp nodes
-      ArrayList<Node> topNodes = new ArrayList<Node>();
-      // Get the top Nodes for this map-reduce task
-      for (Operator<? extends OperatorDesc>
-           workOperator : topOperators) {
-        if (parseContext.getTopOps().values().contains(workOperator)) {
-          topNodes.add(workOperator);
+        LOG.info("Looking for table scans where optimization is applicable");
+
+        // The dispatcher fires the processor corresponding to the closest
+        // matching rule and passes the context along
+        Dispatcher disp = new DefaultRuleDispatcher(null, opRules, walkerCtx);
+        GraphWalker ogw = new PreOrderWalker(disp);
+
+        // Create a list of topOp nodes
+        ArrayList<Node> topNodes = new ArrayList<Node>();
+        // Get the top Nodes for this map-reduce task
+        for (Operator<? extends OperatorDesc>
+               workOperator : topOperators) {
+          if (parseContext.getTopOps().values().contains(workOperator)) {
+            topNodes.add(workOperator);
+          }
+        }
+
+        Operator<? extends OperatorDesc> reducer = task.getReducer(mapWork);
+        if (reducer != null) {
+          topNodes.add(reducer);
+        }
+
+        ogw.startWalking(topNodes, null);
+
+        LOG.info(String.format("Found %d metadata only table scans",
+            walkerCtx.getMetadataOnlyTableScans().size()));
+        Iterator<TableScanOperator> iterator
+          = walkerCtx.getMetadataOnlyTableScans().iterator();
+
+        while (iterator.hasNext()) {
+          TableScanOperator tso = iterator.next();
+          ((TableScanDesc)tso.getConf()).setIsMetadataOnly(true);
+          String alias = getAliasForTableScanOperator(mapWork, tso);
+          LOG.info("Metadata only table scan for " + alias);
+          processAlias(mapWork, alias);
         }
       }
-
-      if (task.getReducer() != null) {
-        topNodes.add(task.getReducer());
-      }
-
-      ogw.startWalking(topNodes, null);
-
-      LOG.info(String.format("Found %d metadata only table scans",
-          walkerCtx.getMetadataOnlyTableScans().size()));
-      Iterator<TableScanOperator> iterator
-        = walkerCtx.getMetadataOnlyTableScans().iterator();
-
-      while (iterator.hasNext()) {
-        TableScanOperator tso = iterator.next();
-        ((TableScanDesc)tso.getConf()).setIsMetadataOnly(true);
-        MapWork work = ((MapredWork) task.getWork()).getMapWork();
-        String alias = getAliasForTableScanOperator(work, tso);
-        LOG.info("Metadata only table scan for " + alias);
-        processAlias(work, alias);
-      }
-
       return null;
     }
   }

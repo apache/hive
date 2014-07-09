@@ -326,7 +326,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_8
+Operator:JOIN_6
 Table:default@t2
 Keys:key
 Table:default@t1

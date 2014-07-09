@@ -877,7 +877,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
       throws HiveException {
-
+    if(privSubjectDesc == null){
+      return new HivePrivilegeObject(null, null, null);
+    }
     String [] dbTable = Utilities.getDbTableName(privSubjectDesc.getObject());
     return new HivePrivilegeObject(getPrivObjectType(privSubjectDesc), dbTable[0], dbTable[1]);
   }
@@ -2025,8 +2027,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     List<String> repairOutput = new ArrayList<String>();
     try {
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db);
-      Table t = db.newTable(msckDesc.getTableName());
-      checker.checkMetastore(t.getDbName(), t.getTableName(), msckDesc.getPartSpecs(), result);
+      String[] names = Utilities.getDbTableName(msckDesc.getTableName());
+      checker.checkMetastore(names[0], names[1], msckDesc.getPartSpecs(), result);
       List<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
       if (msckDesc.isRepairPartitions() && !partsNotInMs.isEmpty()) {
         Table table = db.getTable(msckDesc.getTableName());
@@ -4366,10 +4368,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       // find out database name and table name of target table
       String targetTableName = crtTbl.getTableName();
-      Table newTable = db.newTable(targetTableName);
+      String[] names = Utilities.getDbTableName(targetTableName);
 
-      tbl.setDbName(newTable.getDbName());
-      tbl.setTableName(newTable.getTableName());
+      tbl.setDbName(names[0]);
+      tbl.setTableName(names[1]);
 
       if (crtTbl.getLocation() != null) {
         tbl.setDataLocation(new Path(crtTbl.getLocation()));

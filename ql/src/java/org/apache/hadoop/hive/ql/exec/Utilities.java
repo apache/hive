@@ -26,7 +26,6 @@ import java.beans.PersistenceDelegate;
 import java.beans.Statement;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -36,9 +35,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -161,7 +158,6 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Text;
@@ -271,6 +267,10 @@ public final class Utilities {
     return w;
   }
 
+  public static void cacheMapWork(Configuration conf, MapWork work, Path hiveScratchDir) {
+    cacheBaseWork(conf, MAP_PLAN_NAME, work, hiveScratchDir);
+  }
+
   public static void setMapWork(Configuration conf, MapWork work) {
     setBaseWork(conf, MAP_PLAN_NAME, work);
   }
@@ -285,6 +285,17 @@ public final class Utilities {
 
   public static ReduceWork getReduceWork(Configuration conf) {
     return (ReduceWork) getBaseWork(conf, REDUCE_PLAN_NAME);
+  }
+
+  public static void cacheBaseWork(Configuration conf, String name, BaseWork work,
+      Path hiveScratchDir) {
+    try {
+      setPlanPath(conf, hiveScratchDir);
+      setBaseWork(conf, name, work);
+    } catch (IOException e) {
+      LOG.error("Failed to cache plan", e);
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -1050,47 +1061,6 @@ public final class Utilities {
       ret.add(element);
     }
     return (ret);
-  }
-
-  /**
-   * StreamPrinter.
-   *
-   */
-  public static class StreamPrinter extends Thread {
-    InputStream is;
-    String type;
-    PrintStream os;
-
-    public StreamPrinter(InputStream is, String type, PrintStream os) {
-      this.is = is;
-      this.type = type;
-      this.os = os;
-    }
-
-    @Override
-    public void run() {
-      BufferedReader br = null;
-      try {
-        InputStreamReader isr = new InputStreamReader(is);
-        br = new BufferedReader(isr);
-        String line = null;
-        if (type != null) {
-          while ((line = br.readLine()) != null) {
-            os.println(type + ">" + line);
-          }
-        } else {
-          while ((line = br.readLine()) != null) {
-            os.println(line);
-          }
-        }
-        br.close();
-        br=null;
-      } catch (IOException ioe) {
-        ioe.printStackTrace();
-      }finally{
-        IOUtils.closeStream(br);
-      }
-    }
   }
 
   public static TableDesc getTableDesc(Table tbl) {
@@ -2369,13 +2339,15 @@ public final class Utilities {
 
   public static boolean isEmptyPath(JobConf job, Path dirPath, Context ctx)
       throws Exception {
-    ContentSummary cs = ctx.getCS(dirPath);
-    if (cs != null) {
-      LOG.info("Content Summary " + dirPath + "length: " + cs.getLength() + " num files: "
-          + cs.getFileCount() + " num directories: " + cs.getDirectoryCount());
-      return (cs.getLength() == 0 && cs.getFileCount() == 0 && cs.getDirectoryCount() <= 1);
-    } else {
-      LOG.info("Content Summary not cached for " + dirPath);
+    if (ctx != null) {
+      ContentSummary cs = ctx.getCS(dirPath);
+      if (cs != null) {
+        LOG.info("Content Summary " + dirPath + "length: " + cs.getLength() + " num files: "
+            + cs.getFileCount() + " num directories: " + cs.getDirectoryCount());
+        return (cs.getLength() == 0 && cs.getFileCount() == 0 && cs.getDirectoryCount() <= 1);
+      } else {
+        LOG.info("Content Summary not cached for " + dirPath);
+      }
     }
     return isEmptyPath(job, dirPath);
   }
@@ -3003,7 +2975,13 @@ public final class Utilities {
    * so we don't want to depend on scratch dir and context.
    */
   public static List<Path> getInputPathsTez(JobConf job, MapWork work) throws Exception {
-    List<Path> paths = getInputPaths(job, work, null, null);
+    String scratchDir = HiveConf.getVar(job, HiveConf.ConfVars.SCRATCHDIR);
+
+    // we usually don't want to create dummy files for tez, however the metadata only
+    // optimization relies on it.
+    List<Path> paths = getInputPaths(job, work, new Path(scratchDir), null,
+        !work.isUseOneNullRowInputFormat());
+
     return paths;
   }
 
@@ -3021,8 +2999,8 @@ public final class Utilities {
    * @return List of paths to process for the given MapWork
    * @throws Exception
    */
-  public static List<Path> getInputPaths(JobConf job, MapWork work, Path hiveScratchDir, Context ctx)
-      throws Exception {
+  public static List<Path> getInputPaths(JobConf job, MapWork work, Path hiveScratchDir,
+      Context ctx, boolean skipDummy) throws Exception {
     int sequenceNumber = 0;
 
     Set<Path> pathsProcessed = new HashSet<Path>();
@@ -3047,7 +3025,7 @@ public final class Utilities {
           pathsProcessed.add(path);
 
           LOG.info("Adding input file " + path);
-          if (!HiveConf.getVar(job, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
+          if (!skipDummy
               && isEmptyPath(job, path, ctx)) {
             path = createDummyFileForEmptyPartition(path, job, work,
                  hiveScratchDir, alias, sequenceNumber++);
@@ -3065,8 +3043,7 @@ public final class Utilities {
       // T2) x;
       // If T is empty and T2 contains 100 rows, the user expects: 0, 100 (2
       // rows)
-      if (path == null
-          && !HiveConf.getVar(job, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+      if (path == null && !skipDummy) {
         path = createDummyFileForEmptyTable(job, work, hiveScratchDir,
             alias, sequenceNumber++);
         pathsToAdd.add(path);

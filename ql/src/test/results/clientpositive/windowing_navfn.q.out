@@ -595,3 +595,168 @@ POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
 10	oscar allen	65662	65662
 10	oscar carson	65549	65549
+PREHOOK: query: drop table if exists wtest
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists wtest
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table wtest as
+select a, b
+from
+(
+SELECT explode(
+   map(
+   3, array(1,2,3,4,5), 
+   1, array(int(null),int(null),int(null), int(null), int(null)), 
+   2, array(1,null,2, null, 3)
+   )
+  ) as (a,barr) FROM (select * from src limit 1) s
+  ) s1 lateral view explode(barr) arr as b
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+POSTHOOK: query: create table wtest as
+select a, b
+from
+(
+SELECT explode(
+   map(
+   3, array(1,2,3,4,5), 
+   1, array(int(null),int(null),int(null), int(null), int(null)), 
+   2, array(1,null,2, null, 3)
+   )
+  ) as (a,barr) FROM (select * from src limit 1) s
+  ) s1 lateral view explode(barr) arr as b
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@wtest
+PREHOOK: query: select a, b,
+first_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ) 
+from wtest
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wtest
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b,
+first_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ) 
+from wtest
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wtest
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+2	NULL	NULL	NULL	NULL	NULL
+2	NULL	NULL	1	NULL	1
+2	1	NULL	1	NULL	1
+2	2	1	1	NULL	1
+2	3	2	2	NULL	1
+3	1	1	1	1	1
+3	2	1	1	1	1
+3	3	2	2	1	1
+3	4	3	3	1	1
+3	5	4	4	1	1
+PREHOOK: query: select a, b,
+first_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+first_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ) 
+from wtest
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wtest
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b,
+first_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+first_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ) 
+from wtest
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wtest
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+2	3	3	3	3	3
+2	2	3	3	3	3
+2	1	2	2	3	3
+2	NULL	1	1	3	3
+2	NULL	NULL	NULL	3	3
+3	5	5	5	5	5
+3	4	5	5	5	5
+3	3	4	4	5	5
+3	2	3	3	5	5
+3	1	2	2	5	5
+PREHOOK: query: select a, b,
+last_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ) 
+from wtest
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wtest
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b,
+last_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ) 
+from wtest
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wtest
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+2	NULL	NULL	NULL	NULL	NULL
+2	NULL	1	1	1	1
+2	1	2	2	2	2
+2	2	3	3	3	3
+2	3	3	3	3	3
+3	1	2	2	2	2
+3	2	3	3	3	3
+3	3	4	4	4	4
+3	4	5	5	5	5
+3	5	5	5	5	5
+PREHOOK: query: select a, b,
+last_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+last_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ) 
+from wtest
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wtest
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b,
+last_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+last_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ) 
+from wtest
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wtest
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL
+2	3	2	2	2	2
+2	2	1	1	1	1
+2	1	NULL	1	NULL	1
+2	NULL	NULL	1	NULL	1
+2	NULL	NULL	NULL	NULL	1
+3	5	4	4	4	4
+3	4	3	3	3	3
+3	3	2	2	2	2
+3	2	1	1	1	1
+3	1	1	1	1	1

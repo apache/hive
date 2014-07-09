@@ -105,7 +105,7 @@ public final class ExprNodeEvaluatorFactory {
     private boolean hasReference;
 
     public ExprNodeEvaluator getEvaluated(ExprNodeEvaluator eval) {
-      String key = eval.getExpr().getExprString();
+      String key = eval.getExpr().toString();
       ExprNodeEvaluator prev = cached.get(key);
       if (prev == null) {
         cached.put(key, eval);

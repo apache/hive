@@ -659,6 +659,7 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
                   tag: 1
                   value expressions: _col3 (type: string), _col4 (type: string)
+                  auto parallelism: false
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 11124 Basic stats: COMPLETE Column stats: NONE
@@ -674,6 +675,7 @@ STAGE PLANS:
                 Statistics: Num rows: 166 Data size: 3693 Basic stats: COMPLETE Column stats: NONE
                 tag: 0
                 value expressions: k2 (type: string), ds (type: string)
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
