@@ -353,6 +353,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return skipTag;
   }
 
+  @Explain(displayName = "auto parallelism", normalExplain = false)
   public final boolean isAutoParallel() {
     return (autoParallel != null) && autoParallel;
   }

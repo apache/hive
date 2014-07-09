@@ -177,6 +177,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 tag: 1
                 value expressions: key (type: string)
+                auto parallelism: false
           TableScan
             alias: t1_old
             Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
@@ -192,6 +193,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                 tag: 0
                 value expressions: value (type: string)
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

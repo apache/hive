@@ -174,6 +174,7 @@ STAGE PLANS:
                       sort order: 
                       tag: -1
                       value expressions: _col0 (type: bigint)
+                      auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -400,6 +401,7 @@ STAGE PLANS:
                       sort order: 
                       tag: -1
                       value expressions: _col0 (type: bigint)
+                      auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -702,6 +704,7 @@ STAGE PLANS:
                       sort order: 
                       tag: -1
                       value expressions: _col0 (type: bigint)
+                      auto parallelism: false
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -1029,6 +1032,7 @@ STAGE PLANS:
                       sort order: 
                       tag: -1
                       value expressions: _col0 (type: bigint)
+                      auto parallelism: false
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -1239,6 +1243,7 @@ STAGE PLANS:
                       sort order: 
                       tag: -1
                       value expressions: _col0 (type: bigint)
+                      auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
