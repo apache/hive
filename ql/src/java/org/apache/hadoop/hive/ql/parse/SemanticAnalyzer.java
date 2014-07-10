@@ -12211,7 +12211,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     private AggregateCall convertAgg(AggInfo agg, RelNode input,
         List<RexNode> gbChildProjLst, RexNodeConverter converter,
-        HashMap<RexNode, Integer> rexNodeToPosMap, Integer childProjLstIndx)
+        HashMap<String, Integer> rexNodeToPosMap, Integer childProjLstIndx)
         throws SemanticException {
       final Aggregation aggregation = AGG_MAP.get(agg.m_udfName);
       if (aggregation == null) {
@@ -12228,10 +12228,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       RexNode rexNd = null;
       for (ExprNodeDesc expr : agg.m_aggParams) {
         rexNd = converter.convert(expr);
-        inputIndx = rexNodeToPosMap.get(rexNd);
+        inputIndx = rexNodeToPosMap.get(rexNd.toString());
         if (inputIndx == null) {
           gbChildProjLst.add(rexNd);
-          rexNodeToPosMap.put(rexNd, childProjLstIndx);
+          rexNodeToPosMap.put(rexNd.toString(), childProjLstIndx);
           inputIndx = childProjLstIndx;
           childProjLstIndx++;
         }
@@ -12259,7 +12259,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           srcRel.getRowType(), posMap, 0, false);
 
       final List<RexNode> gbChildProjLst = Lists.newArrayList();
-      final HashMap<RexNode, Integer> rexNodeToPosMap = new HashMap<RexNode, Integer>();
+      final HashMap<String, Integer> rexNodeToPosMap = new HashMap<String, Integer>();
       final BitSet groupSet = new BitSet();
       Integer gbIndx = 0;
       RexNode rnd;
@@ -12267,7 +12267,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         rnd = converter.convert(key);
         gbChildProjLst.add(rnd);
         groupSet.set(gbIndx);
-        rexNodeToPosMap.put(rnd, gbIndx);
+        rexNodeToPosMap.put(rnd.toString(), gbIndx);
         gbIndx++;
       }
 
@@ -12321,6 +12321,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    private void addToGBExpr(RowResolver groupByOutputRowResolver,
+        RowResolver groupByInputRowResolver, ASTNode grpbyExpr, ExprNodeDesc grpbyExprNDesc, List<ExprNodeDesc> gbExprNDescLst,
+        List<String> outputColumnNames) {
+      // TODO: Should we use grpbyExprNDesc.getTypeInfo()? what if expr is
+      // UDF
+      int i = gbExprNDescLst.size();
+      String field = getColumnInternalName(i);
+      outputColumnNames.add(field);
+      gbExprNDescLst.add(grpbyExprNDesc);
+
+      ColumnInfo oColInfo = new ColumnInfo(field, grpbyExprNDesc.getTypeInfo(), null, false);
+      groupByOutputRowResolver.putExpression(grpbyExpr, oColInfo);
+
+      // TODO: Alternate mappings, are they necessary?
+      addAlternateGByKeyMappings(grpbyExpr, oColInfo, groupByInputRowResolver,
+          groupByOutputRowResolver);
+    }
+
     /**
      * Generate GB plan.
      * 
@@ -12329,89 +12347,79 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      * @return TODO: 1. Grouping Sets (roll up..)
      * @throws SemanticException
      */
-    private RelNode genGBLogicalPlan(QB qb, RelNode srcRel)
-        throws SemanticException {
+    private RelNode genGBLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
       RelNode gbRel = null;
       QBParseInfo qbp = getQBParseInfo(qb);
 
-      // 1. Gather GB Expressions (AST)
+      // 1. Gather GB Expressions (AST) (GB + Aggregations)
       // NOTE: Multi Insert is not supported
       String detsClauseName = qbp.getClauseNames().iterator().next();
       List<ASTNode> grpByAstExprs = getGroupByForClause(qbp, detsClauseName);
+      HashMap<String, ASTNode> aggregationTrees = qbp.getAggregationExprsForClause(detsClauseName);
+      boolean hasGrpByAstExprs = (grpByAstExprs != null && !grpByAstExprs.isEmpty()) ? true : false;
+      boolean hasAggregationTrees = (aggregationTrees != null && !aggregationTrees.isEmpty()) ? true
+          : false;
 
-      if (grpByAstExprs != null && !grpByAstExprs.isEmpty()) {
+      if (hasGrpByAstExprs || hasAggregationTrees) {
+        ArrayList<ExprNodeDesc> gbExprNDescLst = new ArrayList<ExprNodeDesc>();
+        ArrayList<String> outputColumnNames = new ArrayList<String>();
+        int numDistinctUDFs = 0;
+
         // 2. Input, Output Row Resolvers
         RowResolver groupByInputRowResolver = this.m_relToHiveRR.get(srcRel);
         RowResolver groupByOutputRowResolver = new RowResolver();
         groupByOutputRowResolver.setIsExprResolver(true);
 
-        // 3. Construct GB Keys (ExprNode)
-        ArrayList<ExprNodeDesc> gbExprNDescLst = new ArrayList<ExprNodeDesc>();
-        ArrayList<String> outputColumnNames = new ArrayList<String>();
-        for (int i = 0; i < grpByAstExprs.size(); ++i) {
-          ASTNode grpbyExpr = grpByAstExprs.get(i);
-          Map<ASTNode, ExprNodeDesc> astToExprNDescMap = TypeCheckProcFactory
-              .genExprNode(grpbyExpr, new TypeCheckCtx(groupByInputRowResolver));
-          ExprNodeDesc grpbyExprNDesc = astToExprNDescMap.get(grpbyExpr);
-          if (grpbyExprNDesc == null)
-            throw new RuntimeException("Invalid Column Reference: "
-                + grpbyExpr.dump());
-          gbExprNDescLst.add(grpbyExprNDesc);
+        if (hasGrpByAstExprs) {
+          // 3. Construct GB Keys (ExprNode)
+          for (int i = 0; i < grpByAstExprs.size(); ++i) {
+            ASTNode grpbyExpr = grpByAstExprs.get(i);
+            Map<ASTNode, ExprNodeDesc> astToExprNDescMap = TypeCheckProcFactory.genExprNode(
+                grpbyExpr, new TypeCheckCtx(groupByInputRowResolver));
+            ExprNodeDesc grpbyExprNDesc = astToExprNDescMap.get(grpbyExpr);
+            if (grpbyExprNDesc == null)
+              throw new RuntimeException("Invalid Column Reference: " + grpbyExpr.dump());
 
-          // TODO: Should we use grpbyExprNDesc.getTypeInfo()? what if expr is
-          // UDF
-          String field = getColumnInternalName(i);
-          outputColumnNames.add(field);
-          ColumnInfo oColInfo = new ColumnInfo(field,
-              grpbyExprNDesc.getTypeInfo(), null, false);
-          groupByOutputRowResolver.putExpression(grpbyExpr, oColInfo);
-
-         // TODO: Alternate mappings, are they necessary?
-          addAlternateGByKeyMappings(grpbyExpr, oColInfo,
-              groupByInputRowResolver, groupByOutputRowResolver);
+            addToGBExpr(groupByOutputRowResolver, groupByInputRowResolver, grpbyExpr,
+                grpbyExprNDesc, gbExprNDescLst, outputColumnNames);
+          }
         }
 
         // 4. Construct aggregation function Info
         ArrayList<AggInfo> aggregations = new ArrayList<AggInfo>();
-        HashMap<String, ASTNode> aggregationTrees = qbp
-            .getAggregationExprsForClause(detsClauseName);
-        assert (aggregationTrees != null);
-        int numDistinctUDFs = 0;
-        for (ASTNode value : aggregationTrees.values()) {
+        if (hasAggregationTrees) {
+          assert (aggregationTrees != null);
+          for (ASTNode value : aggregationTrees.values()) {
+            // 4.1 Determine type of UDAF
+            // This is the GenericUDAF name
+            String aggName = unescapeIdentifier(value.getChild(0).getText());
+            boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
+            boolean isAllColumns = value.getType() == HiveParser.TOK_FUNCTIONSTAR;
+            if (isDistinct) {
+//              continue;
+              numDistinctUDFs++;
+            }
 
-          // 4.1 Convert UDF Params to ExprNodeDesc
-          ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
-          for (int i = 1; i < value.getChildCount(); i++) {
-            ASTNode paraExpr = (ASTNode) value.getChild(i);
-            ExprNodeDesc paraExprNode = genExprNodeDesc(paraExpr,
-                groupByInputRowResolver);
-            aggParameters.add(paraExprNode);
+            // 4.2 Convert UDAF Params to ExprNodeDesc
+            ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
+            for (int i = 1; i < value.getChildCount(); i++) {
+              ASTNode paraExpr = (ASTNode) value.getChild(i);
+              ExprNodeDesc paraExprNode = genExprNodeDesc(paraExpr, groupByInputRowResolver);
+              aggParameters.add(paraExprNode);
+            }
+
+            Mode amode = groupByDescModeToUDAFMode(GroupByDesc.Mode.COMPLETE, isDistinct);
+            GenericUDAFEvaluator genericUDAFEvaluator = getGenericUDAFEvaluator(aggName,
+                aggParameters, value, isDistinct, isAllColumns);
+            assert (genericUDAFEvaluator != null);
+            GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
+            AggInfo aInfo = new AggInfo(aggParameters, udaf.returnType, aggName, isDistinct);
+            aggregations.add(aInfo);
+            String field = getColumnInternalName(gbExprNDescLst.size() + aggregations.size() - 1);
+            outputColumnNames.add(field);
+            groupByOutputRowResolver.putExpression(value, new ColumnInfo(field, aInfo.m_returnType,
+                "", false));
           }
-
-          // 4.2 Determine type of UDF
-          // This is the GenericUDAF name
-          String aggName = unescapeIdentifier(value.getChild(0).getText());
-          boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
-          boolean isAllColumns = value.getType() == HiveParser.TOK_FUNCTIONSTAR;
-
-          if (isDistinct) {
-            numDistinctUDFs++;
-          }
-          Mode amode = groupByDescModeToUDAFMode(GroupByDesc.Mode.COMPLETE,
-              isDistinct);
-          GenericUDAFEvaluator genericUDAFEvaluator = getGenericUDAFEvaluator(
-              aggName, aggParameters, value, isDistinct, isAllColumns);
-          assert (genericUDAFEvaluator != null);
-          GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator,
-              amode, aggParameters);
-          AggInfo aInfo = new AggInfo(aggParameters, udaf.returnType, aggName,
-              isDistinct);
-          aggregations.add(aInfo);
-          String field = getColumnInternalName(gbExprNDescLst.size()
-              + aggregations.size() - 1);
-          outputColumnNames.add(field);
-          groupByOutputRowResolver.putExpression(value, new ColumnInfo(field,
-              aInfo.m_returnType, "", false));
         }
 
         gbRel = genGBRelNode(gbExprNDescLst, aggregations, srcRel);

@@ -100,7 +100,9 @@ public class ASTConverter {
         RexInputRef iRef = new RexInputRef(i, new BasicSqlType(SqlTypeName.ANY));
         b.add(iRef.accept(new RexVisitor(schema)));
       }
-      hiveAST.groupBy = b.node();
+
+      if (!groupBy.getGroupSet().isEmpty())
+        hiveAST.groupBy = b.node();
       schema = new Schema(schema, groupBy);
     }
 
