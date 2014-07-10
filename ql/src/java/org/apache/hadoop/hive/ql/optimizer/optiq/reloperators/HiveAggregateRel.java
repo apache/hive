@@ -23,12 +23,6 @@ public class HiveAggregateRel extends AggregateRelBase implements HiveRel {
       BitSet groupSet, List<AggregateCall> aggCalls) throws InvalidRelException {
     super(cluster, TraitsUtil.getAggregateTraitSet(cluster, traitSet, BitSets.toList(groupSet),
         aggCalls, child), child, groupSet, aggCalls);
-
-    for (AggregateCall aggCall : aggCalls) {
-      if (aggCall.isDistinct()) {
-        throw new InvalidRelException("distinct aggregation not supported");
-      }
-    }
   }
 
   public AggregateRelBase copy(RelTraitSet traitSet, RelNode input, BitSet groupSet,
