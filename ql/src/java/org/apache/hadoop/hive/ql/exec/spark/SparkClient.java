@@ -56,7 +56,7 @@ public class SparkClient implements Serializable {
 
   private static String sparkHome = "/home/xzhang/apache/spark";
   
-  private static int reducerCount = 5;
+  private static int reducerCount = 1;
   
   private static String execMem = "1g";
   private static String execJvmOpts = "";
