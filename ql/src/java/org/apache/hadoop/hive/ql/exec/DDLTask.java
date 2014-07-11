@@ -3753,8 +3753,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
               alterTbl.getProps());
         }
-        if (!conf.getStringCollection(ConfVars.SERDESUSINGMETASTOREFORSCHEMA.varname)
-            .contains(serdeName)) {
+        if (!Table.hasMetastoreBasedSchema(conf, serdeName)) {
           tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), tbl.
               getDeserializer()));
         }

@@ -920,7 +920,7 @@ public abstract class BaseSemanticAnalyzer {
   /**
    * Sets the table access information.
    *
-   * @param taInfo The TableAccessInfo structure that is set in the optimization phase.
+   * @param tableAccessInfo The TableAccessInfo structure that is set in the optimization phase.
    */
   public void setTableAccessInfo(TableAccessInfo tableAccessInfo) {
     this.tableAccessInfo = tableAccessInfo;
@@ -1313,7 +1313,7 @@ public abstract class BaseSemanticAnalyzer {
     return getTable(currentDb, tblName, throwException);
   }
 
-  // qnName : possibly contains database name (dot seperated)
+  // qnName : possibly contains database name (dot separated)
   protected Table getTableWithQN(String qnName, boolean throwException) throws SemanticException {
     int dot = qnName.indexOf('.');
     if (dot < 0) {

@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
@@ -213,7 +212,6 @@ public class Hive {
   /**
    * Hive
    *
-   * @param argFsRoot
    * @param c
    *
    */
@@ -402,6 +400,7 @@ public class Hive {
       if (newTbl.getParameters() != null) {
         newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
+      newTbl.checkValidity();
       getMSC().alter_table(names[0], names[1], newTbl.getTTable());
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table.", e);
@@ -469,6 +468,7 @@ public class Hive {
       if (newPart.getParameters() != null) {
         newPart.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
+      newPart.checkValidity();
       getMSC().alter_partition(dbName, tblName, newPart.getTPartition());
 
     } catch (MetaException e) {
@@ -1018,10 +1018,7 @@ public class Hive {
       }
     }
 
-    Table table = new Table(tTable);
-
-    table.checkValidity();
-    return table;
+    return new Table(tTable);
   }
 
   /**
