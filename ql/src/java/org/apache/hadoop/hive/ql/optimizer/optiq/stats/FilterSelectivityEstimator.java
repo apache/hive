@@ -97,7 +97,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   }
 
   /**
-   * Disjunction Selectivity -> (1 Ð(1-m1/n)(1-m2/n)) where n is the total
+   * Disjunction Selectivity -> (1 D(1-m1/n)(1-m2/n)) where n is the total
    * number of tuples from child and m1 and m2 is the expected number of tuples
    * from each part of the disjunction predicate.
    * <p>
