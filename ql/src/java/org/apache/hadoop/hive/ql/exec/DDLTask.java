@@ -542,7 +542,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                 grantOrRevokeRoleDDL.getGrantor(), grantOrRevokeRoleDDL
                 .getGrantorType(), grantOrRevokeRoleDDL.isGrantOption());
           } else {
-            db.revokeRole(roleName, userName, principal.getType());
+            db.revokeRole(roleName, userName, principal.getType(),
+                grantOrRevokeRoleDDL.isGrantOption());
           }
         }
       }

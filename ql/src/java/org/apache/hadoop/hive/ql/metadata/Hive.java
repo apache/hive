@@ -2069,9 +2069,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public boolean revokeRole(String roleName, String userName,
-      PrincipalType principalType)  throws HiveException {
+      PrincipalType principalType, boolean grantOption)  throws HiveException {
     try {
-      return getMSC().revoke_role(roleName, userName, principalType);
+      return getMSC().revoke_role(roleName, userName, principalType, grantOption);
     } catch (Exception e) {
       throw new HiveException(e);
     }

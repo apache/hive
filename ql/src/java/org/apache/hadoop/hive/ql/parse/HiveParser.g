@@ -267,6 +267,7 @@ TOK_ROLE;
 TOK_RESOURCE_ALL;
 TOK_GRANT_WITH_OPTION;
 TOK_GRANT_WITH_ADMIN_OPTION;
+TOK_ADMIN_OPTION_FOR;
 TOK_PRIV_ALL;
 TOK_PRIV_ALTER_METADATA;
 TOK_PRIV_ALTER_DATA;
@@ -1409,8 +1410,8 @@ grantRole
 revokeRole
 @init {pushMsg("revoke role", state);}
 @after {popMsg(state);}
-    : KW_REVOKE KW_ROLE? identifier (COMMA identifier)* KW_FROM principalSpecification withAdminOption?
-    -> ^(TOK_REVOKE_ROLE principalSpecification withAdminOption? identifier+)
+    : KW_REVOKE adminOptionFor? KW_ROLE? identifier (COMMA identifier)* KW_FROM principalSpecification
+    -> ^(TOK_REVOKE_ROLE principalSpecification adminOptionFor? identifier+)
     ;
 
 showRoleGrants
@@ -1532,6 +1533,13 @@ withGrantOption
     : KW_WITH KW_GRANT KW_OPTION
     -> ^(TOK_GRANT_WITH_OPTION)
     ;
+
+adminOptionFor
+@init {pushMsg("admin option for", state);}
+@after {popMsg(state);}
+    : KW_ADMIN KW_OPTION KW_FOR
+    -> ^(TOK_ADMIN_OPTION_FOR)
+;
 
 withAdminOption
 @init {pushMsg("with admin option", state);}

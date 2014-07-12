@@ -97,6 +97,15 @@ struct CompactionType {
 
 extern const std::map<int, const char*> _CompactionType_VALUES_TO_NAMES;
 
+struct GrantRevokeType {
+  enum type {
+    GRANT = 1,
+    REVOKE = 2
+  };
+};
+
+extern const std::map<int, const char*> _GrantRevokeType_VALUES_TO_NAMES;
+
 struct FunctionType {
   enum type {
     JAVA = 1
@@ -924,6 +933,152 @@ class GetPrincipalsInRoleResponse {
 };
 
 void swap(GetPrincipalsInRoleResponse &a, GetPrincipalsInRoleResponse &b);
+
+typedef struct _GrantRevokeRoleRequest__isset {
+  _GrantRevokeRoleRequest__isset() : requestType(false), roleName(false), principalName(false), principalType(false), grantor(false), grantorType(false), grantOption(false) {}
+  bool requestType;
+  bool roleName;
+  bool principalName;
+  bool principalType;
+  bool grantor;
+  bool grantorType;
+  bool grantOption;
+} _GrantRevokeRoleRequest__isset;
+
+class GrantRevokeRoleRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "907DEA796F2BA7AF76DC2566E75FAEE7";
+  static const uint8_t binary_fingerprint[16]; // = {0x90,0x7D,0xEA,0x79,0x6F,0x2B,0xA7,0xAF,0x76,0xDC,0x25,0x66,0xE7,0x5F,0xAE,0xE7};
+
+  GrantRevokeRoleRequest() : requestType((GrantRevokeType::type)0), roleName(), principalName(), principalType((PrincipalType::type)0), grantor(), grantorType((PrincipalType::type)0), grantOption(0) {
+  }
+
+  virtual ~GrantRevokeRoleRequest() throw() {}
+
+  GrantRevokeType::type requestType;
+  std::string roleName;
+  std::string principalName;
+  PrincipalType::type principalType;
+  std::string grantor;
+  PrincipalType::type grantorType;
+  bool grantOption;
+
+  _GrantRevokeRoleRequest__isset __isset;
+
+  void __set_requestType(const GrantRevokeType::type val) {
+    requestType = val;
+  }
+
+  void __set_roleName(const std::string& val) {
+    roleName = val;
+  }
+
+  void __set_principalName(const std::string& val) {
+    principalName = val;
+  }
+
+  void __set_principalType(const PrincipalType::type val) {
+    principalType = val;
+  }
+
+  void __set_grantor(const std::string& val) {
+    grantor = val;
+    __isset.grantor = true;
+  }
+
+  void __set_grantorType(const PrincipalType::type val) {
+    grantorType = val;
+    __isset.grantorType = true;
+  }
+
+  void __set_grantOption(const bool val) {
+    grantOption = val;
+    __isset.grantOption = true;
+  }
+
+  bool operator == (const GrantRevokeRoleRequest & rhs) const
+  {
+    if (!(requestType == rhs.requestType))
+      return false;
+    if (!(roleName == rhs.roleName))
+      return false;
+    if (!(principalName == rhs.principalName))
+      return false;
+    if (!(principalType == rhs.principalType))
+      return false;
+    if (__isset.grantor != rhs.__isset.grantor)
+      return false;
+    else if (__isset.grantor && !(grantor == rhs.grantor))
+      return false;
+    if (__isset.grantorType != rhs.__isset.grantorType)
+      return false;
+    else if (__isset.grantorType && !(grantorType == rhs.grantorType))
+      return false;
+    if (__isset.grantOption != rhs.__isset.grantOption)
+      return false;
+    else if (__isset.grantOption && !(grantOption == rhs.grantOption))
+      return false;
+    return true;
+  }
+  bool operator != (const GrantRevokeRoleRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GrantRevokeRoleRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GrantRevokeRoleRequest &a, GrantRevokeRoleRequest &b);
+
+typedef struct _GrantRevokeRoleResponse__isset {
+  _GrantRevokeRoleResponse__isset() : success(false) {}
+  bool success;
+} _GrantRevokeRoleResponse__isset;
+
+class GrantRevokeRoleResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "BF054652DEF86253C2BEE7D947F167DD";
+  static const uint8_t binary_fingerprint[16]; // = {0xBF,0x05,0x46,0x52,0xDE,0xF8,0x62,0x53,0xC2,0xBE,0xE7,0xD9,0x47,0xF1,0x67,0xDD};
+
+  GrantRevokeRoleResponse() : success(0) {
+  }
+
+  virtual ~GrantRevokeRoleResponse() throw() {}
+
+  bool success;
+
+  _GrantRevokeRoleResponse__isset __isset;
+
+  void __set_success(const bool val) {
+    success = val;
+    __isset.success = true;
+  }
+
+  bool operator == (const GrantRevokeRoleResponse & rhs) const
+  {
+    if (__isset.success != rhs.__isset.success)
+      return false;
+    else if (__isset.success && !(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const GrantRevokeRoleResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GrantRevokeRoleResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(GrantRevokeRoleResponse &a, GrantRevokeRoleResponse &b);
 
 typedef struct _Database__isset {
   _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false) {}

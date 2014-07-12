@@ -442,6 +442,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("list_roles\n");
   }
 
+  void grant_revoke_role(GrantRevokeRoleResponse& _return, const GrantRevokeRoleRequest& request) {
+    // Your implementation goes here
+    printf("grant_revoke_role\n");
+  }
+
   void get_principals_in_role(GetPrincipalsInRoleResponse& _return, const GetPrincipalsInRoleRequest& request) {
     // Your implementation goes here
     printf("get_principals_in_role\n");

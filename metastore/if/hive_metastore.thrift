@@ -101,6 +101,11 @@ enum CompactionType {
     MAJOR = 2,
 }
 
+enum GrantRevokeType {
+    GRANT = 1,
+    REVOKE = 2,
+}
+
 struct HiveObjectRef{
   1: HiveObjectType objectType,
   2: string dbName,
@@ -166,6 +171,20 @@ struct GetPrincipalsInRoleRequest {
 
 struct GetPrincipalsInRoleResponse {
   1: required list<RolePrincipalGrant> principalGrants;
+}
+
+struct GrantRevokeRoleRequest {
+  1: GrantRevokeType requestType;
+  2: string roleName;
+  3: string principalName;
+  4: PrincipalType principalType;
+  5: optional string grantor;            // Needed for grant
+  6: optional PrincipalType grantorType; // Needed for grant
+  7: optional bool grantOption;
+}
+
+struct GrantRevokeRoleResponse {
+  1: optional bool success;
 }
 
 // namespace for tables
@@ -958,11 +977,14 @@ service ThriftHiveMetastore extends fb303.FacebookService
   bool create_role(1:Role role) throws(1:MetaException o1)
   bool drop_role(1:string role_name) throws(1:MetaException o1)
   list<string> get_role_names() throws(1:MetaException o1)
+  // Deprecated, use grant_revoke_role()
   bool grant_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type,
     4:string grantor, 5:PrincipalType grantorType, 6:bool grant_option) throws(1:MetaException o1)
+  // Deprecated, use grant_revoke_role()
   bool revoke_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type)
                         throws(1:MetaException o1)
   list<Role> list_roles(1:string principal_name, 2:PrincipalType principal_type) throws(1:MetaException o1)
+  GrantRevokeRoleResponse grant_revoke_role(1:GrantRevokeRoleRequest request) throws(1:MetaException o1)
 
   // get all role-grants for users/roles that have been granted the given role
   // Note that in the returned list of RolePrincipalGrants, the roleName is
