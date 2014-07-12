@@ -79,7 +79,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   private HiveRoleGrant adminRole;
   private final String ADMIN_ONLY_MSG = "User has to belong to ADMIN role and "
       + "have it as current role, for this action.";
-  private final String HAS_ADMIN_PRIV_MSG = "grantor need to have ADMIN privileges on role being"
+  private final String HAS_ADMIN_PRIV_MSG = "grantor need to have ADMIN OPTION on role being"
       + " granted and have it as a current role for this action.";
   public static final Log LOG = LogFactory.getLog(SQLStdHiveAccessController.class);
 
@@ -308,11 +308,6 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   public void revokeRole(List<HivePrincipal> hivePrincipals, List<String> roleNames,
     boolean grantOption, HivePrincipal grantorPrinc) throws HiveAuthzPluginException,
     HiveAccessControlException {
-    if (grantOption) {
-      // removing grant privileges only is not supported in metastore api
-      throw new HiveAuthzPluginException("Revoking only the admin privileges on "
-        + "role is not currently supported");
-    }
     if (!(isUserAdmin() || doesUserHasAdminOption(roleNames))) {
       throw new HiveAccessControlException("Current user : " + currentUserName+ " is not"
           + " allowed to revoke role. " + ADMIN_ONLY_MSG + " Otherwise, " + HAS_ADMIN_PRIV_MSG);
@@ -322,7 +317,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
         try {
           IMetaStoreClient mClient = metastoreClientFactory.getHiveMetastoreClient();
           mClient.revoke_role(roleName, hivePrincipal.getName(),
-              AuthorizationUtils.getThriftPrincipalType(hivePrincipal.getType()));
+              AuthorizationUtils.getThriftPrincipalType(hivePrincipal.getType()), grantOption);
         } catch (Exception e) {
           String msg = "Error revoking roles for " + hivePrincipal.getName() + " to role "
               + roleName + ": " + e.getMessage();

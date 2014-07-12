@@ -955,7 +955,7 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   public boolean revoke_role(String role_name, String user_name,
-      PrincipalType principalType) throws MetaException, TException;
+      PrincipalType principalType, boolean grantOption) throws MetaException, TException;
 
   /**
    *

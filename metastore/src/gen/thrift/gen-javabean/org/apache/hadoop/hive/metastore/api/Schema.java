@@ -456,7 +456,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
                 struct.fieldSchemas = new ArrayList<FieldSchema>(_list244.size);
                 for (int _i245 = 0; _i245 < _list244.size; ++_i245)
                 {
-                  FieldSchema _elem246; // required
+                  FieldSchema _elem246; // optional
                   _elem246 = new FieldSchema();
                   _elem246.read(iprot);
                   struct.fieldSchemas.add(_elem246);
@@ -582,7 +582,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
           struct.fieldSchemas = new ArrayList<FieldSchema>(_list255.size);
           for (int _i256 = 0; _i256 < _list255.size; ++_i256)
           {
-            FieldSchema _elem257; // required
+            FieldSchema _elem257; // optional
             _elem257 = new FieldSchema();
             _elem257.read(iprot);
             struct.fieldSchemas.add(_elem257);

@@ -73,6 +73,9 @@ import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
+import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleRequest;
+import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleResponse;
+import org.apache.hadoop.hive.metastore.api.GrantRevokeType;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
@@ -1443,8 +1446,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public boolean grant_role(String roleName, String userName,
       PrincipalType principalType, String grantor, PrincipalType grantorType,
       boolean grantOption) throws MetaException, TException {
-    return client.grant_role(roleName, userName, principalType, grantor,
-        grantorType, grantOption);
+    GrantRevokeRoleRequest req = new GrantRevokeRoleRequest();
+    req.setRequestType(GrantRevokeType.GRANT);
+    req.setRoleName(roleName);
+    req.setPrincipalName(userName);
+    req.setPrincipalType(principalType);
+    req.setGrantor(grantor);
+    req.setGrantorType(grantorType);
+    req.setGrantOption(grantOption);
+    GrantRevokeRoleResponse res = client.grant_revoke_role(req);
+    if (!res.isSetSuccess()) {
+      throw new MetaException("GrantRevokeResponse missing success field");
+    }
+    return res.isSuccess();
   }
 
   @Override
@@ -1489,8 +1503,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public boolean revoke_role(String roleName, String userName,
-      PrincipalType principalType) throws MetaException, TException {
-    return client.revoke_role(roleName, userName, principalType);
+      PrincipalType principalType, boolean grantOption) throws MetaException, TException {
+    GrantRevokeRoleRequest req = new GrantRevokeRoleRequest();
+    req.setRequestType(GrantRevokeType.REVOKE);
+    req.setRoleName(roleName);
+    req.setPrincipalName(userName);
+    req.setPrincipalType(principalType);
+    req.setGrantOption(grantOption);
+    GrantRevokeRoleResponse res = client.grant_revoke_role(req);
+    if (!res.isSetSuccess()) {
+      throw new MetaException("GrantRevokeResponse missing success field");
+    }
+    return res.isSuccess();
   }
 
   @Override
