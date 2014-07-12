@@ -34,7 +34,7 @@ public class MockRSyncCommandExecutor extends RSyncCommandExecutor {
   private final List<String> mCommands;
   private final Map<String, Queue<Integer>> mFailures;
   public MockRSyncCommandExecutor(Logger logger) {
-    super(logger);
+    super(logger, 0, null);
     mCommands = Lists.newArrayList();
     mFailures = Maps.newHashMap();
   }
