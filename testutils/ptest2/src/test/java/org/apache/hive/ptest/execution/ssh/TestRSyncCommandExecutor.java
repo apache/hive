@@ -50,7 +50,7 @@ public class TestRSyncCommandExecutor {
   public void testShutdownBeforeWaitFor() throws Exception {
     LocalCommand localCommand = mock(LocalCommand.class);
     localCommandFactory.setInstance(localCommand);
-    RSyncCommandExecutor executor = new RSyncCommandExecutor(LOG, localCommandFactory);
+    RSyncCommandExecutor executor = new RSyncCommandExecutor(LOG, 1, localCommandFactory);
     Assert.assertFalse(executor.isShutdown());
     executor.shutdownNow();
     RSyncCommand command = new RSyncCommand(executor, "privateKey", "user", "host", 1, "local", "remote", RSyncCommand.Type.FROM_LOCAL);
@@ -66,7 +66,7 @@ public class TestRSyncCommandExecutor {
   public void testShutdownDuringWaitFor() throws Exception {
     LocalCommand localCommand = mock(LocalCommand.class);
     localCommandFactory.setInstance(localCommand);
-    final RSyncCommandExecutor executor = new RSyncCommandExecutor(LOG, localCommandFactory);
+    final RSyncCommandExecutor executor = new RSyncCommandExecutor(LOG, 1, localCommandFactory);
     Assert.assertFalse(executor.isShutdown());
     when(localCommand.getExitCode()).thenAnswer(new Answer<Integer>() {
       @Override

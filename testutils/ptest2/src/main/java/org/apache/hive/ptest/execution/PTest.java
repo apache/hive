@@ -345,9 +345,10 @@ public class PTest {
           executionContextProvider = executionContextConfiguration
               .getExecutionContextProvider();
           executionContext = executionContextProvider.createExecutionContext();
+          LocalCommandFactory localCommandFactory = new LocalCommandFactory(LOG);
           PTest ptest = new PTest(conf, executionContext, buildTag, logDir,
-              new LocalCommandFactory(LOG), new SSHCommandExecutor(LOG),
-              new RSyncCommandExecutor(LOG), LOG);
+              localCommandFactory, new SSHCommandExecutor(LOG),
+              new RSyncCommandExecutor(LOG, 10, localCommandFactory), LOG);
           exitCode = ptest.run();
         } finally {
           if(executionContext != null) {
