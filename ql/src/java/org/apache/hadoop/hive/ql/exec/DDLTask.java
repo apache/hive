@@ -150,6 +150,7 @@ import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
@@ -430,6 +431,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return showCreateTable(db, showCreateTbl);
       }
 
+      ShowConfDesc showConf = work.getShowConfDesc();
+      if (showConf != null) {
+        return showConf(db, showConf);
+      }
+
       RoleDDLDesc roleDDLDesc = work.getRoleDDLDesc();
       if (roleDDLDesc != null) {
         return roleDDL(roleDDLDesc);
@@ -490,6 +496,38 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     assert false;
     return 0;
+  }
+
+  private int showConf(Hive db, ShowConfDesc showConf) throws Exception {
+    ConfVars conf = HiveConf.getConfVars(showConf.getConfName());
+    if (conf == null) {
+      throw new HiveException("invalid configuration name " + showConf.getConfName());
+    }
+    String description = conf.getDescription();
+    String defaltValue = conf.getDefaultValue();
+    DataOutputStream output = getOutputStream(showConf.getResFile());
+    try {
+      if (description != null) {
+        if (defaltValue != null) {
+          output.write(defaltValue.getBytes());
+        }
+        output.write(separator);
+        output.write(conf.typeString().getBytes());
+        output.write(separator);
+        if (description != null) {
+          output.write(description.replaceAll(" *\n *", " ").getBytes());
+        }
+        output.write(terminator);
+      }
+    } finally {
+      output.close();
+    }
+    return 0;
+  }
+
+  private DataOutputStream getOutputStream(Path outputFile) throws Exception {
+    FileSystem fs = outputFile.getFileSystem(conf);
+    return fs.create(outputFile);
   }
 
   /**

@@ -46,7 +46,7 @@ public class Operation2Privilege {
 
 
     private PrivRequirement(SQLPrivTypeGrant[] privs, IOType ioType) {
-      this(privs, ioType, (HivePrivObjectActionType) null);
+      this(privs, ioType, null);
     }
 
     private PrivRequirement(SQLPrivTypeGrant[] privs, IOType ioType,
@@ -290,6 +290,8 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.SHOW_COMPACTIONS, PrivRequirement.newIOPrivRequirement
 (null, null));
     op2Priv.put(HiveOperationType.SHOW_TRANSACTIONS, PrivRequirement.newIOPrivRequirement
+(null, null));
+    op2Priv.put(HiveOperationType.SHOWCONF, PrivRequirement.newIOPrivRequirement
 (null, null));
 
     op2Priv.put(HiveOperationType.LOCKTABLE, PrivRequirement.newIOPrivRequirement

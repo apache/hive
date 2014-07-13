@@ -57,7 +57,6 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -117,6 +116,7 @@ import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
@@ -333,6 +333,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOW_TRANSACTIONS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowTxns(ast);
+      break;
+    case HiveParser.TOK_SHOWCONF:
+      ctx.setResFile(ctx.getLocalTmpPath());
+      analyzeShowConf(ast);
       break;
     case HiveParser.TOK_DESCFUNCTION:
       ctx.setResFile(ctx.getLocalTmpPath());
@@ -2338,7 +2342,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ctx.setNeedLockMgr(true);
   }
 
-   /**
+  private void analyzeShowConf(ASTNode ast) throws SemanticException {
+    String confName = stripQuotes(ast.getChild(0).getText());
+    ShowConfDesc showConfDesc = new ShowConfDesc(ctx.getResFile(), confName);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showConfDesc), conf));
+    setFetchTask(createFetchTask(showConfDesc.getSchema()));
+  }
+
+  /**
    * Add the task according to the parsed command tree. This is used for the CLI
    * command "LOCK TABLE ..;".
    *
