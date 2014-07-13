@@ -67,6 +67,7 @@ public enum HiveOperation {
   SHOWINDEXES("SHOWINDEXES", null, null),
   SHOWPARTITIONS("SHOWPARTITIONS", null, null),
   SHOWLOCKS("SHOWLOCKS", null, null),
+  SHOWCONF("SHOWCONF", null, null),
   CREATEFUNCTION("CREATEFUNCTION", null, null),
   DROPFUNCTION("DROPFUNCTION", null, null),
   CREATEMACRO("CREATEMACRO", null, null),
