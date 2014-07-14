@@ -1182,10 +1182,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return phase1Result;
   }
 
-  private void getMetaData(QBExpr qbexpr) throws SemanticException {
-    getMetaData(qbexpr, null);
-  }
-
   private void getMetaData(QBExpr qbexpr, ReadEntity parentInput)
       throws SemanticException {
     if (qbexpr.getOpcode() == QBExpr.Opcode.NULLOP) {
@@ -1361,8 +1357,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       RowFormatParams rowFormatParams = new RowFormatParams();
-      AnalyzeCreateCommonVars shared = new AnalyzeCreateCommonVars();
-      StorageFormat storageFormat = new StorageFormat();
+      StorageFormat storageFormat = new StorageFormat(conf);
 
       LOG.info("Get metadata for destination tables");
       // Go over all the destination structures and populate the related
@@ -1457,10 +1452,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           int numCh = ast.getChildCount();
           for (int num = 1; num < numCh ; num++){
             ASTNode child = (ASTNode) ast.getChild(num);
-            if (ast.getChild(num) != null){
+            if (child != null) {
+              if (storageFormat.fillStorageFormat(child)) {
+                localDirectoryDesc.setOutputFormat(storageFormat.getOutputFormat());
+                localDirectoryDesc.setSerName(storageFormat.getSerde());
+                localDirectoryDescIsSet = true;
+                continue;
+              }
               switch (child.getToken().getType()) {
                 case HiveParser.TOK_TABLEROWFORMAT:
-                  rowFormatParams.analyzeRowFormat(shared, child);
+                  rowFormatParams.analyzeRowFormat(child);
                   localDirectoryDesc.setFieldDelim(rowFormatParams.fieldDelim);
                   localDirectoryDesc.setLineDelim(rowFormatParams.lineDelim);
                   localDirectoryDesc.setCollItemDelim(rowFormatParams.collItemDelim);
@@ -1471,18 +1472,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   break;
                 case HiveParser.TOK_TABLESERIALIZER:
                   ASTNode serdeChild = (ASTNode) child.getChild(0);
-                  shared.serde = unescapeSQLString(serdeChild.getChild(0).getText());
-                  localDirectoryDesc.setSerName(shared.serde);
-                  localDirectoryDescIsSet=true;
-                  break;
-                case HiveParser.TOK_TBLSEQUENCEFILE:
-                case HiveParser.TOK_TBLTEXTFILE:
-                case HiveParser.TOK_TBLRCFILE:
-                case HiveParser.TOK_TBLORCFILE:
-                case HiveParser.TOK_TABLEFILEFORMAT:
-                  storageFormat.fillStorageFormat(child, shared);
-                  localDirectoryDesc.setOutputFormat(storageFormat.outputFormat);
-                  localDirectoryDesc.setSerName(shared.serde);
+                  storageFormat.setSerde(unescapeSQLString(serdeChild.getChild(0).getText()));
+                  localDirectoryDesc.setSerName(storageFormat.getSerde());
                   localDirectoryDescIsSet=true;
                   break;
               }
@@ -10031,8 +10022,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean storedAsDirs = false;
 
     RowFormatParams rowFormatParams = new RowFormatParams();
-    StorageFormat storageFormat = new StorageFormat();
-    AnalyzeCreateCommonVars shared = new AnalyzeCreateCommonVars();
+    StorageFormat storageFormat = new StorageFormat(conf);
 
     LOG.info("Creating table " + tableName + " position="
         + ast.getCharPositionInLine());
@@ -10046,7 +10036,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      */
     for (int num = 1; num < numCh; num++) {
       ASTNode child = (ASTNode) ast.getChild(num);
-      if (storageFormat.fillStorageFormat(child, shared)) {
+      if (storageFormat.fillStorageFormat(child)) {
         continue;
       }
       switch (child.getToken().getType()) {
@@ -10118,7 +10108,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         break;
       case HiveParser.TOK_TABLEROWFORMAT:
-        rowFormatParams.analyzeRowFormat(shared, child);
+        rowFormatParams.analyzeRowFormat(child);
         break;
       case HiveParser.TOK_TABLELOCATION:
         location = unescapeSQLString(child.getChild(0).getText());
@@ -10130,15 +10120,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_TABLESERIALIZER:
         child = (ASTNode) child.getChild(0);
-        shared.serde = unescapeSQLString(child.getChild(0).getText());
+        storageFormat.setSerde(unescapeSQLString(child.getChild(0).getText()));
         if (child.getChildCount() == 2) {
           readProps((ASTNode) (child.getChild(1).getChild(0)),
-              shared.serdeProps);
+              storageFormat.getSerdeProps());
         }
-        break;
-
-      case HiveParser.TOK_FILEFORMAT_GENERIC:
-        handleGenericFileFormat(child);
         break;
       case HiveParser.TOK_TABLESKEWED:
         /**
@@ -10160,9 +10146,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    storageFormat.fillDefaultStorageFormat(shared);
+    storageFormat.fillDefaultStorageFormat();
 
-    if ((command_type == CTAS) && (storageFormat.storageHandler != null)) {
+    if ((command_type == CTAS) && (storageFormat.getStorageHandler() != null)) {
       throw new SemanticException(ErrorMsg.CREATE_NON_NATIVE_AS.getMsg());
     }
 
@@ -10174,7 +10160,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           return null;
         }
       } catch (HiveException e) {
-        e.printStackTrace();
+        // should not occur since second parameter to getTableWithQN is false
+        throw new IllegalStateException("Unxpected Exception thrown: " + e.getMessage(), e);
       }
     }
 
@@ -10215,8 +10202,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim,
           comment,
-          storageFormat.inputFormat, storageFormat.outputFormat, location, shared.serde,
-          storageFormat.storageHandler, shared.serdeProps, tblProps, ifNotExists, skewedColNames,
+          storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
+          storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists, skewedColNames,
           skewedValues);
       crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
       crtTblDesc.setNullFormat(rowFormatParams.nullFormat);
@@ -10240,8 +10227,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
       CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(tableName, isExt, isTemporary,
-          storageFormat.inputFormat, storageFormat.outputFormat, location,
-          shared.serde, shared.serdeProps, tblProps, ifNotExists, likeTableName);
+          storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location,
+          storageFormat.getSerde(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
+          likeTableName);
       SessionState.get().setCommandType(HiveOperation.CREATETABLE);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           crtTblLikeDesc), conf));
@@ -10265,10 +10253,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim,
-          comment, storageFormat.inputFormat,
-          storageFormat.outputFormat, location, shared.serde, storageFormat.storageHandler,
-          shared.serdeProps,
-          tblProps, ifNotExists, skewedColNames, skewedValues);
+          comment, storageFormat.getInputFormat(),
+          storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
+          storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
+          skewedColNames, skewedValues);
       crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
       crtTblDesc.setNullFormat(rowFormatParams.nullFormat);
       qb.setTableDesc(crtTblDesc);

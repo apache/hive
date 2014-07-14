@@ -681,6 +681,10 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe",
         "The default SerDe Hive will use for the RCFile format"),
 
+    HIVEDEFAULTSERDE("hive.default.serde",
+        "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe",
+        "The default SerDe Hive will use for storage formats that do not specify a SerDe."),
+
     SERDESUSINGMETASTOREFORSCHEMA("hive.serdes.using.metastore.for.schema",
         "org.apache.hadoop.hive.ql.io.orc.OrcSerde,org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe," +
         "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe,org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe," +

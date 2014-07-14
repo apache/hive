@@ -50,15 +50,6 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
-import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
-import org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -77,9 +68,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
-import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.mapred.TextInputFormat;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -87,7 +75,6 @@ import com.google.common.annotations.VisibleForTesting;
  * BaseSemanticAnalyzer.
  *
  */
-@SuppressWarnings("deprecation")
 public abstract class BaseSemanticAnalyzer {
   private static final Log STATIC_LOG = LogFactory.getLog(BaseSemanticAnalyzer.class.getName());
   protected final Hive db;
@@ -119,28 +106,6 @@ public abstract class BaseSemanticAnalyzer {
   protected TableAccessInfo tableAccessInfo;
   protected ColumnAccessInfo columnAccessInfo;
 
-  protected static final String TEXTFILE_INPUT = TextInputFormat.class
-      .getName();
-  protected static final String TEXTFILE_OUTPUT = IgnoreKeyTextOutputFormat.class
-      .getName();
-  protected static final String SEQUENCEFILE_INPUT = SequenceFileInputFormat.class
-      .getName();
-  protected static final String SEQUENCEFILE_OUTPUT = SequenceFileOutputFormat.class
-      .getName();
-  protected static final String RCFILE_INPUT = RCFileInputFormat.class
-      .getName();
-  protected static final String RCFILE_OUTPUT = RCFileOutputFormat.class
-      .getName();
-  protected static final String ORCFILE_INPUT = OrcInputFormat.class
-      .getName();
-  protected static final String ORCFILE_OUTPUT = OrcOutputFormat.class
-      .getName();
-  protected static final String ORCFILE_SERDE = OrcSerde.class
-      .getName();
-
-  protected static final String PARQUETFILE_INPUT = MapredParquetInputFormat.class.getName();
-  protected static final String PARQUETFILE_OUTPUT = MapredParquetOutputFormat.class.getName();
-  protected static final String PARQUETFILE_SERDE = ParquetHiveSerDe.class.getName();
 
   public boolean skipAuthorization() {
     return false;
@@ -154,7 +119,7 @@ public abstract class BaseSemanticAnalyzer {
     String lineDelim = null;
     String nullFormat = null;
 
-    protected void analyzeRowFormat(AnalyzeCreateCommonVars shared, ASTNode child) throws SemanticException {
+    protected void analyzeRowFormat(ASTNode child) throws SemanticException {
       child = (ASTNode) child.getChild(0);
       int numChildRowFormat = child.getChildCount();
       for (int numC = 0; numC < numChildRowFormat; numC++) {
@@ -190,93 +155,7 @@ public abstract class BaseSemanticAnalyzer {
                     .getText());
           break;
         default:
-          assert false;
-        }
-      }
-    }
-  }
-
-  class AnalyzeCreateCommonVars {
-    String serde = null;
-    Map<String, String> serdeProps = new HashMap<String, String>();
-  }
-
-  class StorageFormat {
-    String inputFormat = null;
-    String outputFormat = null;
-    String storageHandler = null;
-
-    protected boolean fillStorageFormat(ASTNode child, AnalyzeCreateCommonVars shared) {
-      boolean storageFormat = false;
-      switch(child.getToken().getType()) {
-      case HiveParser.TOK_TBLSEQUENCEFILE:
-        inputFormat = SEQUENCEFILE_INPUT;
-        outputFormat = SEQUENCEFILE_OUTPUT;
-        storageFormat = true;
-        break;
-      case HiveParser.TOK_TBLTEXTFILE:
-        inputFormat = TEXTFILE_INPUT;
-        outputFormat = TEXTFILE_OUTPUT;
-        storageFormat = true;
-        break;
-      case HiveParser.TOK_TBLRCFILE:
-        inputFormat = RCFILE_INPUT;
-        outputFormat = RCFILE_OUTPUT;
-        if (shared.serde == null) {
-          shared.serde = conf.getVar(HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE);
-        }
-        storageFormat = true;
-        break;
-      case HiveParser.TOK_TBLORCFILE:
-        inputFormat = ORCFILE_INPUT;
-        outputFormat = ORCFILE_OUTPUT;
-        shared.serde = ORCFILE_SERDE;
-        storageFormat = true;
-        break;
-      case HiveParser.TOK_TBLPARQUETFILE:
-        inputFormat = PARQUETFILE_INPUT;
-        outputFormat = PARQUETFILE_OUTPUT;
-        shared.serde = PARQUETFILE_SERDE;
-        storageFormat = true;
-        break;
-      case HiveParser.TOK_TABLEFILEFORMAT:
-        inputFormat = unescapeSQLString(child.getChild(0).getText());
-        outputFormat = unescapeSQLString(child.getChild(1).getText());
-        storageFormat = true;
-        break;
-      case HiveParser.TOK_STORAGEHANDLER:
-        storageHandler = unescapeSQLString(child.getChild(0).getText());
-        if (child.getChildCount() == 2) {
-          readProps(
-            (ASTNode) (child.getChild(1).getChild(0)),
-            shared.serdeProps);
-        }
-        storageFormat = true;
-        break;
-      }
-      return storageFormat;
-    }
-
-    protected void fillDefaultStorageFormat(AnalyzeCreateCommonVars shared) {
-      if ((inputFormat == null) && (storageHandler == null)) {
-        if ("SequenceFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
-          inputFormat = SEQUENCEFILE_INPUT;
-          outputFormat = SEQUENCEFILE_OUTPUT;
-        } else if ("RCFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
-          inputFormat = RCFILE_INPUT;
-          outputFormat = RCFILE_OUTPUT;
-          shared.serde = conf.getVar(HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE);
-        } else if ("ORC".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
-          inputFormat = ORCFILE_INPUT;
-          outputFormat = ORCFILE_OUTPUT;
-          shared.serde = ORCFILE_SERDE;
-        } else if ("PARQUET".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
-          inputFormat = PARQUETFILE_INPUT;
-          outputFormat = PARQUETFILE_OUTPUT;
-          shared.serde = PARQUETFILE_SERDE;
-        } else {
-          inputFormat = TEXTFILE_INPUT;
-          outputFormat = TEXTFILE_OUTPUT;
+          throw new AssertionError("Unkown Token: " + rowChild);
         }
       }
     }
@@ -605,13 +484,6 @@ public abstract class BaseSemanticAnalyzer {
 
   protected List<FieldSchema> getColumns(ASTNode ast) throws SemanticException {
     return getColumns(ast, true);
-  }
-
-  protected void handleGenericFileFormat(ASTNode node) throws SemanticException{
-
-  ASTNode child = (ASTNode)node.getChild(0);
-  throw new SemanticException("Unrecognized file format in STORED AS clause:"+
-         " "+ (child == null ? "" : child.getText()));
   }
 
   /**
@@ -966,7 +838,7 @@ public abstract class BaseSemanticAnalyzer {
    * @throws HiveException
    */
   public final boolean isValidPrefixSpec(Table tTable, Map<String, String> spec)
- throws HiveException {
+      throws HiveException {
 
     // TODO - types need to be checked.
     List<FieldSchema> partCols = tTable.getPartitionKeys();

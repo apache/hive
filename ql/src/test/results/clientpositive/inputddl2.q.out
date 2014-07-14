@@ -15,6 +15,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           partition columns: ds string, country string
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: INPUTDDL2
 
 PREHOOK: query: CREATE TABLE INPUTDDL2(key INT, value STRING) PARTITIONED BY(ds STRING, country STRING) STORED AS TEXTFILE

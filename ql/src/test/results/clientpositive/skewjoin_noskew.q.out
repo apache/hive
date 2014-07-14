@@ -146,6 +146,7 @@ STAGE PLANS:
           columns: key string, value string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: noskew
 
   Stage: Stage-3
