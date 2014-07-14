@@ -627,7 +627,7 @@ public class RelNodeConverter {
       }
       RelDataType rowType = TypeConverter.getType(ctx.cluster, rr, neededCols);
       RelOptHiveTable optTable = new RelOptHiveTable(ctx.schema, tableScanOp.getConf().getAlias(),
-          rowType, ctx.sA.getTable(tableScanOp), stats);
+          rowType, ctx.sA.getTable(tableScanOp), null, null);
       TableAccessRelBase tableRel = new HiveTableScanRel(ctx.cluster,
           ctx.cluster.traitSetOf(HiveRel.CONVENTION), optTable, rowType);
       ctx.buildColumnMap(tableScanOp, tableRel);

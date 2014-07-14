@@ -12090,8 +12090,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           cInfoLst.add(colInfo);
         }
         // TODO: Fix this
-        ArrayList<ColumnInfo> columnsThatNeedsStats = new ArrayList<ColumnInfo>(
+        ArrayList<ColumnInfo> nonPartitionColumns = new ArrayList<ColumnInfo>(
             cInfoLst);
+        ArrayList<ColumnInfo> partitionColumns = new ArrayList<ColumnInfo>();
 
         // 3.2 Add column info corresponding to partition columns
         for (FieldSchema part_col : tab.getPartCols()) {
@@ -12101,6 +12102,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               tableAlias, true);
           rr.put(tableAlias, colName, colInfo);
           cInfoLst.add(colInfo);
+          partitionColumns.add(colInfo);
         }
 
         // 3.3 Add column info corresponding to virtual columns
@@ -12119,7 +12121,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // 4. Build RelOptAbstractTable
         RelOptHiveTable optTable = new RelOptHiveTable(m_relOptSchema,
-            tableAlias, rowType, tab, columnsThatNeedsStats);
+            tableAlias, rowType, tab, nonPartitionColumns, partitionColumns);
 
         // 5. Build Hive Table Scan Rel
         tableRel = new HiveTableScanRel(m_cluster,
