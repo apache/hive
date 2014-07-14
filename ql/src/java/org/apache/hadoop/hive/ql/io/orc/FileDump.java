@@ -20,7 +20,12 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
@@ -147,7 +152,28 @@ public final class FileDump {
           }
         }
       }
+
+      FileSystem fs = path.getFileSystem(conf);
+      long fileLen = fs.getContentSummary(path).getLength();
+      long paddedBytes = getTotalPaddingSize(reader);
+      // empty ORC file is ~45 bytes. Assumption here is file length always >0
+      double percentPadding = ((double) paddedBytes / (double) fileLen) * 100;
+      DecimalFormat format = new DecimalFormat("##.##");
+      System.out.println("\nFile length: " + fileLen + " bytes");
+      System.out.println("Padding length: " + paddedBytes + " bytes");
+      System.out.println("Padding ratio: " + format.format(percentPadding) + "%");
       rows.close();
     }
+  }
+
+  private static long getTotalPaddingSize(Reader reader) throws IOException {
+    long paddedBytes = 0;
+    List<org.apache.hadoop.hive.ql.io.orc.StripeInformation> stripes = reader.getStripes();
+    for (int i = 1; i < stripes.size(); i++) {
+      long prevStripeOffset = stripes.get(i - 1).getOffset();
+      long prevStripeLen = stripes.get(i - 1).getLength();
+      paddedBytes += stripes.get(i).getOffset() - (prevStripeOffset + prevStripeLen);
+    }
+    return paddedBytes;
   }
 }
