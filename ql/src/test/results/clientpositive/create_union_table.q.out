@@ -14,6 +14,7 @@ STAGE PLANS:
           columns: mydata uniontype<int,double,array<string>,struct<a:int,b:string>>, strct struct<a:int,b:string,c:string>
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: abc
 
 PREHOOK: query: create table abc(mydata uniontype<int,double,array<string>,struct<a:int,b:string>>,

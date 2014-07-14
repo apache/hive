@@ -183,11 +183,6 @@ TOK_TABLEROWFORMATCOLLITEMS;
 TOK_TABLEROWFORMATMAPKEYS;
 TOK_TABLEROWFORMATLINES;
 TOK_TABLEROWFORMATNULL;
-TOK_TBLORCFILE;
-TOK_TBLPARQUETFILE;
-TOK_TBLSEQUENCEFILE;
-TOK_TBLTEXTFILE;
-TOK_TBLRCFILE;
 TOK_TABLEFILEFORMAT;
 TOK_FILEFORMAT_GENERIC;
 TOK_OFFLINE;
@@ -1267,12 +1262,7 @@ alterStatementSuffixCompact
 fileFormat
 @init { pushMsg("file format specification", state); }
 @after { popMsg(state); }
-    : KW_SEQUENCEFILE  -> ^(TOK_TBLSEQUENCEFILE)
-    | KW_TEXTFILE  -> ^(TOK_TBLTEXTFILE)
-    | KW_RCFILE  -> ^(TOK_TBLRCFILE)
-    | KW_ORCFILE -> ^(TOK_TBLORCFILE)
-    | KW_PARQUETFILE -> ^(TOK_TBLPARQUETFILE)
-    | KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral KW_SERDE serdeCls=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
+    : KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral KW_SERDE serdeCls=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $serdeCls $inDriver? $outDriver?)
     | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;
@@ -1818,12 +1808,7 @@ tableFileFormat
 @init { pushMsg("table file format specification", state); }
 @after { popMsg(state); }
     :
-      KW_STORED KW_AS KW_SEQUENCEFILE  -> TOK_TBLSEQUENCEFILE
-      | KW_STORED KW_AS KW_TEXTFILE  -> TOK_TBLTEXTFILE
-      | KW_STORED KW_AS KW_RCFILE  -> TOK_TBLRCFILE
-      | KW_STORED KW_AS KW_ORCFILE -> TOK_TBLORCFILE
-      | KW_STORED KW_AS KW_PARQUETFILE -> TOK_TBLPARQUETFILE
-      | KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
+      KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
       | KW_STORED KW_BY storageHandler=StringLiteral
          (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
