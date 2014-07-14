@@ -53,6 +53,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -4567,22 +4568,47 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private List<Path> getLocations(Hive db, Table table, Map<String, String> partSpec)
-      throws HiveException {
+      throws HiveException, InvalidOperationException {
     List<Path> locations = new ArrayList<Path>();
     if (partSpec == null) {
       if (table.isPartitioned()) {
         for (Partition partition : db.getPartitions(table)) {
           locations.add(partition.getDataLocation());
+          if (needToUpdateStats(partition.getParameters())) {
+            db.alterPartition(table.getDbName(), table.getTableName(), partition);
+          }
         }
       } else {
         locations.add(table.getPath());
+        if (needToUpdateStats(table.getParameters())) {
+          db.alterTable(table.getDbName()+"."+table.getTableName(), table);
+        }
       }
     } else {
       for (Partition partition : db.getPartitionsByNames(table, partSpec)) {
         locations.add(partition.getDataLocation());
+        if (needToUpdateStats(partition.getParameters())) {
+          db.alterPartition(table.getDbName(), table.getTableName(), partition);
+        }
       }
     }
     return locations;
+  }
+
+  private boolean needToUpdateStats(Map<String,String> props) {
+    if (null == props) {
+      return false;
+    }
+    boolean statsPresent = false;
+    for (String stat : StatsSetupConst.supportedStats) {
+      String statVal = props.get(stat);
+      if (statVal != null && Long.parseLong(statVal) > 0) {
+        statsPresent = true;
+        props.put(statVal, "0");
+        props.put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
+      }
+    }
+    return statsPresent;
   }
 
   private String escapeHiveCommand(String str) {
