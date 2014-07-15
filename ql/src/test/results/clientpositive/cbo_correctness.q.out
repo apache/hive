@@ -15695,3 +15695,84 @@ POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
 1	12
 1	2
+PREHOOK: query: -- 8. Test UDAF
+select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: -- 8. Test UDAF
+select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+20	18	18	1.0	1	1
+PREHOOK: query: select * from (select count(*) as a, count(distinct c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f from t1) t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select count(*) as a, count(distinct c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f from t1) t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+20	1	18	1.0	1	1
+PREHOOK: query: select f,a,e,b from (select count(*) as a, count(c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f from t1) t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select f,a,e,b from (select count(*) as a, count(c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f from t1) t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	20	1	18
+PREHOOK: query: select f,a,e,b from (select count(*) as a, count(distinct c_int) as b, sum(distinct c_int) as c, avg(distinct c_int) as d, max(distinct c_int) as e, min(distinct c_int) as f from t1) t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select f,a,e,b from (select count(*) as a, count(distinct c_int) as b, sum(distinct c_int) as c, avg(distinct c_int) as d, max(distinct c_int) as e, min(distinct c_int) as f from t1) t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	20	1	1
+PREHOOK: query: select count(c_int) as a, avg(c_float), key from t1 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(c_int) as a, avg(c_float), key from t1 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+2	1.0	 1
+2	1.0	 1 
+12	1.0	1
+2	1.0	1 
+0	NULL	null
+PREHOOK: query: select count(distinct c_int) as a, avg(c_float) from t1 group by c_float
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct c_int) as a, avg(c_float) from t1 group by c_float
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+0	NULL
+1	1.0
+PREHOOK: query: select count(distinct c_int) as a, avg(c_float) from t1 group by c_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct c_int) as a, avg(c_float) from t1 group by c_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+0	NULL
+1	1.0
+PREHOOK: query: select count(distinct c_int) as a, avg(c_float) from t1 group by c_float, c_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct c_int) as a, avg(c_float) from t1 group by c_float, c_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+0	NULL
+1	1.0
