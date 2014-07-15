@@ -641,6 +641,16 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateExprNodeDescRecursive(ExprNodeDesc desc) {
+    if (desc instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc c = (ExprNodeColumnDesc) desc;
+      // Currently, we do not support vectorized virtual columns (see HIVE-5570).
+      for (VirtualColumn vc : VirtualColumn.VIRTUAL_COLUMNS) {
+        if (c.getColumn().equals(vc.getName())) {
+            LOG.info("Cannot vectorize virtual column " + c.getColumn());
+            return false;
+        }
+      }
+    }
     String typeName = desc.getTypeInfo().getTypeName();
     boolean ret = validateDataType(typeName);
     if (!ret) {
@@ -724,6 +734,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     Map<String, Integer> cmap = new HashMap<String, Integer>();
     int columnCount = 0;
     for (ColumnInfo c : rs.getSignature()) {
+      // Earlier, validation code should have eliminated virtual columns usage (HIVE-5560).
       if (!isVirtualColumn(c)) {
         cmap.put(c.getInternalName(), columnCount++);
       }
