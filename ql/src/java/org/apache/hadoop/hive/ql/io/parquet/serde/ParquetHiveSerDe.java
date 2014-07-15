@@ -102,7 +102,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     final List<String> columnNames;
     final List<TypeInfo> columnTypes;
     // Get column names and sort order
-    final String columnNameProperty = tbl.getProperty(IOConstants.COLUMNS);
+    final String columnNameProperty = getColumnNames(tbl);
     final String columnTypeProperty = tbl.getProperty(IOConstants.COLUMNS_TYPES);
 
     if (columnNameProperty.length() == 0) {
@@ -129,6 +129,41 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     serializedSize = 0;
     deserializedSize = 0;
     status = LAST_OPERATION.UNKNOWN;
+  }
+
+   /**
+  * The function checks for the presense of "casesensitive" property; if the property is present
+  * the function returns the contents of this property instead of the contents of COLUMNS.
+  * An example use case in hive:
+  * CREATE EXTERNAL TABLE IF NOT EXISTS T(fieldName1 string, fieldname2 int, fieldNAME3 string)
+  * ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.SensitiveParquetHiveSerDe'
+  * WITH SERDEPROPERTIES ("casesensitive"="fieldName1,fieldname2,fieldNAME3)
+  * STORED AS INPUTFORMAT 'parquet.hive.DeprecatedParquetInputFormat'
+  * OUTPUTFORMAT 'parquet.hive.DeprecatedParquetOutputFormat'
+  * LOCATION '...';
+  * */
+  private String getColumnNames(final Properties tbl){
+    if (!tbl.containsKey("casesensitive"))
+      return tbl.getProperty(IOConstants.COLUMNS);
+    else{
+      List<String> hiveColumns;
+      List<String> propertyColumns;
+      hiveColumns = Arrays.asList(tbl.getProperty("columns").split(","));
+      propertyColumns = Arrays.asList(tbl.getProperty("casesensitive").split(","));
+      if(hiveColumns.size() != propertyColumns.size()) {
+        throw new IllegalArgumentException("ParquetHiveSerDe initialization Failed. " +
+            "Number of columns does not match casesensitive SerDe property");
+      }
+      for(int i=0;i<hiveColumns.size();i++) {
+        if (!propertyColumns.get(i).toLowerCase().equals(hiveColumns.get(i).toLowerCase())) {
+          throw new IllegalArgumentException("ParquetHiveSerDe initialization Failed. " +
+              "Column " + hiveColumns.get(i) + " is not compatible with field " + propertyColumns.get(i) +
+              " of casesensitive SerDe property");
+        }
+      }
+      return tbl.getProperty("casesensitive");
+
+    }
   }
 
   @Override
