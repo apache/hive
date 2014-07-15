@@ -3083,13 +3083,25 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean revokeRole(Role role, String userName, PrincipalType principalType) throws MetaException, NoSuchObjectException {
+  public boolean revokeRole(Role role, String userName, PrincipalType principalType,
+      boolean grantOption) throws MetaException, NoSuchObjectException {
     boolean success = false;
     try {
       openTransaction();
       MRoleMap roleMember = getMSecurityUserRoleMap(userName, principalType,
           role.getRoleName());
-      pm.deletePersistent(roleMember);
+      if (grantOption) {
+        // Revoke with grant option - only remove the grant option but keep the role.
+        if (roleMember.getGrantOption()) {
+          roleMember.setGrantOption(false);
+        } else {
+          throw new MetaException("User " + userName
+              + " does not have grant option with role " + role.getRoleName());
+        }
+      } else {
+        // No grant option in revoke, remove the whole role.
+        pm.deletePersistent(roleMember);
+      }
       success = commitTransaction();
     } finally {
       if (!success) {

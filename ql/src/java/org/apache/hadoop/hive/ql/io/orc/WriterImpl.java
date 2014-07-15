@@ -1938,7 +1938,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       if (availRatio < paddingTolerance && addBlockPadding) {
         long padding = blockSize - (start % blockSize);
         byte[] pad = new byte[(int) Math.min(HDFS_BUFFER_SIZE, padding)];
-        LOG.info(String.format("Padding ORC by %d bytes (<=  %0.2f * %d)", 
+        LOG.info(String.format("Padding ORC by %d bytes (<=  %.2f * %d)", 
             padding, availRatio, defaultStripeSize));
         start += padding;
         while (padding > 0) {

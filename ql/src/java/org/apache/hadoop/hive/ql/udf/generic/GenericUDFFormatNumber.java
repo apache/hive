@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.text.DecimalFormat;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
@@ -78,7 +80,8 @@ public class GenericUDFFormatNumber extends GenericUDF {
           + " or \"" + serdeConstants.INT_TYPE_NAME + "\""
           + " or \"" + serdeConstants.BIGINT_TYPE_NAME + "\""
           + " or \"" + serdeConstants.DOUBLE_TYPE_NAME + "\""
-          + " or \"" + serdeConstants.FLOAT_TYPE_NAME + "\", but \""
+          + " or \"" + serdeConstants.FLOAT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.DECIMAL_TYPE_NAME + "\", but \""
           + arguments[0].getTypeName() + "\" was found.");
     }
 
@@ -104,8 +107,9 @@ public class GenericUDFFormatNumber extends GenericUDF {
       case SHORT:
       case INT:
       case LONG:
-      case FLOAT:
       case DOUBLE:
+      case FLOAT:
+      case DECIMAL:
         break;
       default:
         throw new UDFArgumentTypeException(0, "Argument 1"
@@ -115,7 +119,8 @@ public class GenericUDFFormatNumber extends GenericUDF {
           + " or \"" + serdeConstants.INT_TYPE_NAME + "\""
           + " or \"" + serdeConstants.BIGINT_TYPE_NAME + "\""
           + " or \"" + serdeConstants.DOUBLE_TYPE_NAME + "\""
-          + " or \"" + serdeConstants.FLOAT_TYPE_NAME + "\", but \""
+          + " or \"" + serdeConstants.FLOAT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.DECIMAL_TYPE_NAME + "\", but \""
           + arguments[0].getTypeName() + "\" was found.");
     }
 
@@ -168,6 +173,7 @@ public class GenericUDFFormatNumber extends GenericUDF {
 
     double xDoubleValue = 0.0;
     float xFloatValue = 0.0f;
+    HiveDecimal xDecimalValue = null;
     int xIntValue = 0;
     long xLongValue = 0L;
 
@@ -181,6 +187,11 @@ public class GenericUDFFormatNumber extends GenericUDF {
       case FLOAT:
         xFloatValue = ((FloatObjectInspector) argumentOIs[0]).get(arguments[0].get());
         resultText.set(numberFormat.format(xFloatValue));
+        break;
+      case DECIMAL:
+        xDecimalValue = ((HiveDecimalObjectInspector) argumentOIs[0])
+            .getPrimitiveJavaObject(arguments[0].get());
+        resultText.set(numberFormat.format(xDecimalValue.bigDecimalValue()));
         break;
       case BYTE:
       case SHORT:
@@ -199,7 +210,8 @@ public class GenericUDFFormatNumber extends GenericUDF {
           + " or \"" + serdeConstants.INT_TYPE_NAME + "\""
           + " or \"" + serdeConstants.BIGINT_TYPE_NAME + "\""
           + " or \"" + serdeConstants.DOUBLE_TYPE_NAME + "\""
-          + " or \"" + serdeConstants.FLOAT_TYPE_NAME + "\", but \""
+          + " or \"" + serdeConstants.FLOAT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.DECIMAL_TYPE_NAME + "\", but \""
           + argumentOIs[0].getTypeName() + "\" was found.");
     }
     return resultText;

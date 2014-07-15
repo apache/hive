@@ -33,7 +33,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -46,7 +45,6 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -504,8 +502,7 @@ public class Partition implements Serializable {
   public List<FieldSchema> getCols() {
 
     try {
-      if (Hive.get().getConf().getStringCollection(ConfVars.SERDESUSINGMETASTOREFORSCHEMA.varname)
-        .contains(tPartition.getSd().getSerdeInfo().getSerializationLib())) {
+      if (Table.hasMetastoreBasedSchema(Hive.get().getConf(), tPartition.getSd())) {
         return tPartition.getSd().getCols();
       }
       return Hive.getFieldsFromDeserializer(table.getTableName(), getDeserializer());
@@ -643,5 +640,11 @@ public class Partition implements Serializable {
 
   public Map<List<String>, String> getSkewedColValueLocationMaps() {
     return tPartition.getSd().getSkewedInfo().getSkewedColValueLocationMaps();
+  }
+
+  public void checkValidity() throws HiveException {
+    if (!tPartition.getSd().equals(table.getSd())) {
+      Table.validateColumns(getCols(), table.getPartCols());
+    }
   }
 }

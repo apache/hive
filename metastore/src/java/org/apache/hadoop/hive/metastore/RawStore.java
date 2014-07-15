@@ -230,8 +230,8 @@ public interface RawStore extends Configurable {
       String grantor, PrincipalType grantorType, boolean grantOption)
       throws MetaException, NoSuchObjectException, InvalidObjectException;
 
-  public abstract boolean revokeRole(Role role, String userName, PrincipalType principalType)
-      throws MetaException, NoSuchObjectException;
+  public abstract boolean revokeRole(Role role, String userName, PrincipalType principalType,
+      boolean grantOption) throws MetaException, NoSuchObjectException;
 
   public abstract PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
       List<String> groupNames) throws InvalidObjectException, MetaException;

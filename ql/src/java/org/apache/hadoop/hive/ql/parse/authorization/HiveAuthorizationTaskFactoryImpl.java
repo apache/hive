@@ -212,7 +212,8 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     int rolesStartPos = 1;
     ASTNode wAdminOption = (ASTNode) ast.getChild(1);
     boolean isAdmin = false;
-    if(wAdminOption.getToken().getType() == HiveParser.TOK_GRANT_WITH_ADMIN_OPTION){
+    if((isGrant && wAdminOption.getToken().getType() == HiveParser.TOK_GRANT_WITH_ADMIN_OPTION) ||
+       (!isGrant && wAdminOption.getToken().getType() == HiveParser.TOK_ADMIN_OPTION_FOR)){
       rolesStartPos = 2; //start reading role names from next postion
       isAdmin = true;
     }

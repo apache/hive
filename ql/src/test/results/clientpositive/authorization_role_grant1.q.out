@@ -71,6 +71,18 @@ POSTHOOK: query: show role grant user user2
 POSTHOOK: type: SHOW_ROLE_GRANT
 public	false	-1	
 src_role_wadmin	true	-1	hive_admin_user
+PREHOOK: query: -- revoke admin option
+revoke admin option for src_role_wadmin from user user2
+PREHOOK: type: REVOKE_ROLE
+POSTHOOK: query: -- revoke admin option
+revoke admin option for src_role_wadmin from user user2
+POSTHOOK: type: REVOKE_ROLE
+PREHOOK: query: show role grant user user2
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user2
+POSTHOOK: type: SHOW_ROLE_GRANT
+public	false	-1	
+src_role_wadmin	false	-1	hive_admin_user
 PREHOOK: query: -- revoke role without role keyword
 revoke src_role_wadmin from user user2
 PREHOOK: type: REVOKE_ROLE

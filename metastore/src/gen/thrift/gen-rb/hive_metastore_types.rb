@@ -72,6 +72,13 @@ module CompactionType
   VALID_VALUES = Set.new([MINOR, MAJOR]).freeze
 end
 
+module GrantRevokeType
+  GRANT = 1
+  REVOKE = 2
+  VALUE_MAP = {1 => "GRANT", 2 => "REVOKE"}
+  VALID_VALUES = Set.new([GRANT, REVOKE]).freeze
+end
+
 module FunctionType
   JAVA = 1
   VALUE_MAP = {1 => "JAVA"}
@@ -384,6 +391,59 @@ class GetPrincipalsInRoleResponse
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field principalGrants is unset!') unless @principalGrants
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GrantRevokeRoleRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  REQUESTTYPE = 1
+  ROLENAME = 2
+  PRINCIPALNAME = 3
+  PRINCIPALTYPE = 4
+  GRANTOR = 5
+  GRANTORTYPE = 6
+  GRANTOPTION = 7
+
+  FIELDS = {
+    REQUESTTYPE => {:type => ::Thrift::Types::I32, :name => 'requestType', :enum_class => ::GrantRevokeType},
+    ROLENAME => {:type => ::Thrift::Types::STRING, :name => 'roleName'},
+    PRINCIPALNAME => {:type => ::Thrift::Types::STRING, :name => 'principalName'},
+    PRINCIPALTYPE => {:type => ::Thrift::Types::I32, :name => 'principalType', :enum_class => ::PrincipalType},
+    GRANTOR => {:type => ::Thrift::Types::STRING, :name => 'grantor', :optional => true},
+    GRANTORTYPE => {:type => ::Thrift::Types::I32, :name => 'grantorType', :optional => true, :enum_class => ::PrincipalType},
+    GRANTOPTION => {:type => ::Thrift::Types::BOOL, :name => 'grantOption', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @requestType.nil? || ::GrantRevokeType::VALID_VALUES.include?(@requestType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field requestType!')
+    end
+    unless @principalType.nil? || ::PrincipalType::VALID_VALUES.include?(@principalType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field principalType!')
+    end
+    unless @grantorType.nil? || ::PrincipalType::VALID_VALUES.include?(@grantorType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field grantorType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GrantRevokeRoleResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SUCCESS = 1
+
+  FIELDS = {
+    SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
   end
 
   ::Thrift::Struct.generate_accessors self

@@ -945,7 +945,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
                 struct.values = new ArrayList<String>(_list208.size);
                 for (int _i209 = 0; _i209 < _list208.size; ++_i209)
                 {
-                  String _elem210; // required
+                  String _elem210; // optional
                   _elem210 = iprot.readString();
                   struct.values.add(_elem210);
                 }
@@ -1184,7 +1184,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
           struct.values = new ArrayList<String>(_list219.size);
           for (int _i220 = 0; _i220 < _list219.size; ++_i220)
           {
-            String _elem221; // required
+            String _elem221; // optional
             _elem221 = iprot.readString();
             struct.values.add(_elem221);
           }

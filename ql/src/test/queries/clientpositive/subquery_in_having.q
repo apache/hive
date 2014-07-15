@@ -40,6 +40,8 @@ group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9'  and s1.value = b.value group by s1.key )
 ;
 
+set hive.optimize.correlation=false;
+
 -- agg, non corr
 explain
 select p_mfgr, avg(p_size)
@@ -47,6 +49,21 @@ from part b
 group by b.p_mfgr
 having b.p_mfgr in 
    (select p_mfgr 
+    from part
+    group by p_mfgr
+    having max(p_size) - min(p_size) < 20
+   )
+;
+
+set hive.optimize.correlation=true;
+
+-- agg, non corr
+explain
+select p_mfgr, avg(p_size)
+from part b
+group by b.p_mfgr
+having b.p_mfgr in
+   (select p_mfgr
     from part
     group by p_mfgr
     having max(p_size) - min(p_size) < 20
