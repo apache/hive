@@ -10,7 +10,6 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeFactory;
 import org.eigenbase.sql.SqlAggFunction;
@@ -19,31 +18,35 @@ import org.eigenbase.sql.SqlFunctionCategory;
 import org.eigenbase.sql.SqlKind;
 import org.eigenbase.sql.SqlOperator;
 import org.eigenbase.sql.fun.SqlStdOperatorTable;
+import org.eigenbase.sql.type.InferTypes;
 import org.eigenbase.sql.type.OperandTypes;
 import org.eigenbase.sql.type.ReturnTypes;
+import org.eigenbase.sql.type.SqlOperandTypeChecker;
+import org.eigenbase.sql.type.SqlOperandTypeInference;
 import org.eigenbase.sql.type.SqlReturnTypeInference;
-import org.eigenbase.sql.type.SqlTypeName;
+import org.eigenbase.sql.type.SqlTypeFamily;
+import org.eigenbase.util.Util;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 public class SqlFunctionConverter {
-  static final Map<String, SqlOperator>    operatorMap;
   static final Map<String, SqlOperator>    hiveToOptiq;
   static final Map<SqlOperator, HiveToken> optiqToHiveToken;
 
   static {
     Builder builder = new Builder();
-    operatorMap = ImmutableMap.copyOf(builder.operatorMap);
-    hiveToOptiq = ImmutableMap.copyOf(builder.hiveToOptiq);
-    optiqToHiveToken = ImmutableMap.copyOf(builder.optiqToHiveToken);
+    hiveToOptiq = builder.hiveToOptiq;
+    optiqToHiveToken = builder.optiqToHiveToken;
   }
 
-  public static SqlOperator getOptiqOperator(GenericUDF hiveUDF) {
-    return hiveToOptiq.get(getName(hiveUDF));
+  public static SqlOperator getOptiqOperator(GenericUDF hiveUDF,
+      ImmutableList<RelDataType> optiqArgTypes, RelDataType retType) {
+    return getOptiqFn(getName(hiveUDF), optiqArgTypes, retType);
   }
 
+  // TODO: 1) handle Agg Func Name translation 2) is it correct to add func args
+  // as child of func?
   public static ASTNode buildAST(SqlOperator op, List<ASTNode> children) {
     HiveToken hToken = optiqToHiveToken.get(op);
     ASTNode node;
@@ -52,8 +55,7 @@ public class SqlFunctionConverter {
     } else {
       node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
       if (op.kind != SqlKind.CAST)
-        node.addChild((ASTNode) ParseDriver.adaptor.create(
-            HiveParser.Identifier, op.getName()));
+        node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, op.getName()));
     }
 
     for (ASTNode c : children) {
@@ -89,135 +91,28 @@ public class SqlFunctionConverter {
   }
 
   private static class Builder {
-    final Map<String, SqlOperator>    operatorMap      = Maps.newHashMap();
     final Map<String, SqlOperator>    hiveToOptiq      = Maps.newHashMap();
     final Map<SqlOperator, HiveToken> optiqToHiveToken = Maps.newHashMap();
 
     Builder() {
-      registerFunction("concat", SqlStdOperatorTable.CONCAT, null);
-      registerFunction("substr", SqlStdOperatorTable.SUBSTRING, null);
-      registerFunction("substring", SqlStdOperatorTable.SUBSTRING, null);
-      stringFunction("space");
-      stringFunction("repeat");
-      numericFunction("ascii");
-      stringFunction("repeat");
-
-      numericFunction("size");
-
-      numericFunction("round");
-      registerFunction("floor", SqlStdOperatorTable.FLOOR, null);
-      registerFunction("sqrt", SqlStdOperatorTable.SQRT, null);
-      registerFunction("ceil", SqlStdOperatorTable.CEIL, null);
-      registerFunction("ceiling", SqlStdOperatorTable.CEIL, null);
-      numericFunction("rand");
-      operatorMap.put("abs", SqlStdOperatorTable.ABS);
-      numericFunction("pmod");
-
-      numericFunction("ln");
-      numericFunction("log2");
-      numericFunction("sin");
-      numericFunction("asin");
-      numericFunction("cos");
-      numericFunction("acos");
-      registerFunction("log10", SqlStdOperatorTable.LOG10, null);
-      numericFunction("log");
-      numericFunction("exp");
-      numericFunction("power");
-      numericFunction("pow");
-      numericFunction("sign");
-      numericFunction("pi");
-      numericFunction("degrees");
-      numericFunction("atan");
-      numericFunction("tan");
-      numericFunction("e");
-
-      registerFunction("upper", SqlStdOperatorTable.UPPER, null);
-      registerFunction("lower", SqlStdOperatorTable.LOWER, null);
-      registerFunction("ucase", SqlStdOperatorTable.UPPER, null);
-      registerFunction("lcase", SqlStdOperatorTable.LOWER, null);
-      registerFunction("trim", SqlStdOperatorTable.TRIM, null);
-      stringFunction("ltrim");
-      stringFunction("rtrim");
-      numericFunction("length");
-
-      stringFunction("like");
-      stringFunction("rlike");
-      stringFunction("regexp");
-      stringFunction("regexp_replace");
-
-      stringFunction("regexp_extract");
-      stringFunction("parse_url");
-
-      numericFunction("day");
-      numericFunction("dayofmonth");
-      numericFunction("month");
-      numericFunction("year");
-      numericFunction("hour");
-      numericFunction("minute");
-      numericFunction("second");
-
       registerFunction("+", SqlStdOperatorTable.PLUS, hToken(HiveParser.PLUS, "+"));
       registerFunction("-", SqlStdOperatorTable.MINUS, hToken(HiveParser.MINUS, "-"));
       registerFunction("*", SqlStdOperatorTable.MULTIPLY, hToken(HiveParser.STAR, "*"));
       registerFunction("/", SqlStdOperatorTable.DIVIDE, hToken(HiveParser.STAR, "/"));
       registerFunction("%", SqlStdOperatorTable.MOD, hToken(HiveParser.STAR, "%"));
-      numericFunction("div");
-
-      numericFunction("isnull");
-      numericFunction("isnotnull");
-
-      numericFunction("if");
-      numericFunction("in");
       registerFunction("and", SqlStdOperatorTable.AND, hToken(HiveParser.KW_AND, "and"));
       registerFunction("or", SqlStdOperatorTable.OR, hToken(HiveParser.KW_OR, "or"));
       registerFunction("=", SqlStdOperatorTable.EQUALS, hToken(HiveParser.EQUAL, "="));
-//      numericFunction("==");
-      numericFunction("<=>");
-      numericFunction("!=");
-
-      numericFunction("<>");
       registerFunction("<", SqlStdOperatorTable.LESS_THAN, hToken(HiveParser.LESSTHAN, "<"));
       registerFunction("<=", SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
           hToken(HiveParser.LESSTHANOREQUALTO, "<="));
       registerFunction(">", SqlStdOperatorTable.GREATER_THAN, hToken(HiveParser.GREATERTHAN, ">"));
       registerFunction(">=", SqlStdOperatorTable.GREATER_THAN_OR_EQUAL,
           hToken(HiveParser.GREATERTHANOREQUALTO, ">="));
-      numericFunction("not");
       registerFunction("!", SqlStdOperatorTable.NOT, hToken(HiveParser.KW_NOT, "not"));
-      numericFunction("between");
-
-      registerFunction("case", SqlStdOperatorTable.CASE, null);
-      numericFunction("when");
-
-      // implicit convert methods
-      numericFunction(serdeConstants.BOOLEAN_TYPE_NAME);
-      numericFunction(serdeConstants.TINYINT_TYPE_NAME);
-      numericFunction(serdeConstants.SMALLINT_TYPE_NAME);
-      numericFunction(serdeConstants.INT_TYPE_NAME);
-      numericFunction(serdeConstants.BIGINT_TYPE_NAME);
-      numericFunction(serdeConstants.FLOAT_TYPE_NAME);
-      numericFunction(serdeConstants.DOUBLE_TYPE_NAME);
-      stringFunction(serdeConstants.STRING_TYPE_NAME);
     }
 
-    private void stringFunction(String name) {
-      registerFunction(name, SqlFunctionCategory.STRING, ReturnTypes.explicit(SqlTypeName.VARCHAR));
-    }
-
-    private void numericFunction(String name) {
-      registerFunction(name, SqlFunctionCategory.NUMERIC, ReturnTypes.explicit(SqlTypeName.DECIMAL));
-    }
-
-    private void registerFunction(String name, SqlFunctionCategory cat, SqlReturnTypeInference rti) {
-      SqlOperator optiqFn = new SqlFunction(name.toUpperCase(), SqlKind.OTHER_FUNCTION, rti, null,
-          null, cat);
-      registerFunction(name, optiqFn, null);
-    }
-
-    private void registerFunction(String name, SqlOperator optiqFn,
-        HiveToken hiveToken) {
-      operatorMap.put(name, optiqFn);
-
+    private void registerFunction(String name, SqlOperator optiqFn, HiveToken hiveToken) {
       FunctionInfo hFn = FunctionRegistry.getFunctionInfo(name);
       if (hFn != null) {
         String hFnName = getName(hFn.getGenericUDF());
@@ -234,30 +129,90 @@ public class SqlFunctionConverter {
     return new HiveToken(type, text);
   }
 
-  public static SqlAggFunction hiveAggFunction(String name) {
-    return new HiveAggFunction(name);
+  public static class OptiqUDAF extends SqlAggFunction {
+    final ImmutableList<RelDataType> m_argTypes;
+    final RelDataType                m_retType;
+
+    public OptiqUDAF(String opName, SqlReturnTypeInference returnTypeInference,
+        SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker,
+        ImmutableList<RelDataType> argTypes, RelDataType retType) {
+      super(opName, SqlKind.OTHER_FUNCTION, returnTypeInference, operandTypeInference,
+          operandTypeChecker, SqlFunctionCategory.USER_DEFINED_FUNCTION);
+      m_argTypes = argTypes;
+      m_retType = retType;
+    }
+
+    public List<RelDataType> getParameterTypes(final RelDataTypeFactory typeFactory) {
+      return m_argTypes;
+    }
+
+    public RelDataType getReturnType(final RelDataTypeFactory typeFactory) {
+      return m_retType;
+    }
   }
 
-  static class HiveAggFunction extends SqlAggFunction {
+  private static class OptiqUDFInfo {
+    private String                     m_udfName;
+    private SqlReturnTypeInference     m_returnTypeInference;
+    private SqlOperandTypeInference    m_operandTypeInference;
+    private SqlOperandTypeChecker      m_operandTypeChecker;
+    private ImmutableList<RelDataType> m_argTypes;
+    private RelDataType                m_retType;
+  }
 
-    public HiveAggFunction(String name) {
-      super(name, SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT, null,
-          OperandTypes.ANY, SqlFunctionCategory.NUMERIC);
+  private static OptiqUDFInfo getUDFInfo(String hiveUdfName,
+      ImmutableList<RelDataType> optiqArgTypes, RelDataType optiqRetType) {
+    OptiqUDFInfo udfInfo = new OptiqUDFInfo();
+    udfInfo.m_udfName = hiveUdfName;
+    udfInfo.m_returnTypeInference = ReturnTypes.explicit(optiqRetType);
+    udfInfo.m_operandTypeInference = InferTypes.explicit(optiqArgTypes);
+    ImmutableList.Builder<SqlTypeFamily> typeFamilyBuilder = new ImmutableList.Builder<SqlTypeFamily>();
+    for (RelDataType at : optiqArgTypes) {
+      typeFamilyBuilder.add(Util.first(at.getSqlTypeName().getFamily(), SqlTypeFamily.ANY));
+    }
+    udfInfo.m_operandTypeChecker = OperandTypes.family(typeFamilyBuilder.build());
+
+    udfInfo.m_argTypes = ImmutableList.<RelDataType> copyOf(optiqArgTypes);
+    udfInfo.m_retType = optiqRetType;
+
+    return udfInfo;
+  }
+
+  public static SqlOperator getOptiqFn(String hiveUdfName,
+      ImmutableList<RelDataType> optiqArgTypes, RelDataType optiqRetType) {
+    SqlOperator optiqOp = hiveToOptiq.get(hiveUdfName);
+    if (optiqOp == null) {
+      OptiqUDFInfo uInf = getUDFInfo(hiveUdfName, optiqArgTypes, optiqRetType);
+      optiqOp = new SqlFunction(uInf.m_udfName, SqlKind.OTHER_FUNCTION, uInf.m_returnTypeInference,
+          uInf.m_operandTypeInference, uInf.m_operandTypeChecker,
+          SqlFunctionCategory.USER_DEFINED_FUNCTION);
+      hiveToOptiq.put(hiveUdfName, optiqOp);
+      HiveToken ht = hToken(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+      optiqToHiveToken.put(optiqOp, ht);
     }
 
-    public List<RelDataType> getParameterTypes(RelDataTypeFactory typeFactory) {
-      return ImmutableList.of(typeFactory.createSqlType(SqlTypeName.ANY));
+    return optiqOp;
+  }
+
+  public static SqlAggFunction getOptiqAggFn(String hiveUdfName,
+      ImmutableList<RelDataType> optiqArgTypes, RelDataType optiqRetType) {
+    SqlAggFunction optiqAggFn = (SqlAggFunction) hiveToOptiq.get(hiveUdfName);
+    if (optiqAggFn == null) {
+      OptiqUDFInfo uInf = getUDFInfo(hiveUdfName, optiqArgTypes, optiqRetType);
+
+      optiqAggFn = new OptiqUDAF(uInf.m_udfName, uInf.m_returnTypeInference,
+          uInf.m_operandTypeInference, uInf.m_operandTypeChecker, uInf.m_argTypes, uInf.m_retType);
+      hiveToOptiq.put(hiveUdfName, optiqAggFn);
+      HiveToken ht = hToken(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+      optiqToHiveToken.put(optiqAggFn, ht);
     }
 
-    public RelDataType getReturnType(RelDataTypeFactory typeFactory) {
-      return typeFactory.createSqlType(SqlTypeName.BIGINT);
-    }
-
+    return optiqAggFn;
   }
 
   static class HiveToken {
-    int    type;
-    String text;
+    int      type;
+    String   text;
     String[] args;
 
     HiveToken(int type, String text, String... args) {
@@ -265,5 +220,5 @@ public class SqlFunctionConverter {
       this.text = text;
       this.args = args;
     }
-  }  
+  }
 }

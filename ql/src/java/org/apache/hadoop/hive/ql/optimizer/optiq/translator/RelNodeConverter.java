@@ -87,7 +87,6 @@ public class RelNodeConverter {
       .put("count", (Aggregation) SqlStdOperatorTable.COUNT)
       .put("sum", SqlStdOperatorTable.SUM).put("min", SqlStdOperatorTable.MIN)
       .put("max", SqlStdOperatorTable.MAX).put("avg", SqlStdOperatorTable.AVG)
-      .put("stddev_samp", SqlFunctionConverter.hiveAggFunction("stddev_samp"))
       .build();
 
   public static RelNode convert(Operator<? extends OperatorDesc> sinkOp, RelOptCluster cluster,

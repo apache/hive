@@ -242,6 +242,7 @@ import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.relopt.hep.HepPlanner;
 import org.eigenbase.relopt.hep.HepProgramBuilder;
 import org.eigenbase.reltype.RelDataType;
+import org.eigenbase.reltype.RelDataTypeFactory;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.rex.RexInputRef;
@@ -250,6 +251,7 @@ import org.eigenbase.sql.fun.SqlStdOperatorTable;
 import org.eigenbase.util.CompositeList;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
@@ -12170,29 +12172,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return filterRel;
     }
 
-    private final Map<String, Aggregation> AGG_MAP = ImmutableMap
-                                                       .<String, Aggregation> builder()
-                                                       .put(
-                                                           "count",
-                                                           (Aggregation) SqlStdOperatorTable.COUNT)
-                                                       .put(
-                                                           "sum",
-                                                           SqlStdOperatorTable.SUM)
-                                                       .put(
-                                                           "min",
-                                                           SqlStdOperatorTable.MIN)
-                                                       .put(
-                                                           "max",
-                                                           SqlStdOperatorTable.MAX)
-                                                       .put(
-                                                           "avg",
-                                                           SqlStdOperatorTable.AVG)
-                                                       .put(
-                                                           "stddev_samp",
-                                                           SqlFunctionConverter
-                                                               .hiveAggFunction("stddev_samp"))
-                                                       .build();
-
     /**
      * Class to store GenericUDAF related information.
      */
@@ -12211,23 +12190,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    private AggregateCall convertAgg(AggInfo agg, RelNode input,
-        List<RexNode> gbChildProjLst, RexNodeConverter converter,
-        HashMap<String, Integer> rexNodeToPosMap, Integer childProjLstIndx)
-        throws SemanticException {
-      final Aggregation aggregation = AGG_MAP.get(agg.m_udfName);
-      if (aggregation == null) {
-        throw new AssertionError("agg not found: " + agg.m_udfName);
-      }
+    private AggregateCall convertGBAgg(AggInfo agg, RelNode input, List<RexNode> gbChildProjLst,
+        RexNodeConverter converter, HashMap<String, Integer> rexNodeToPosMap,
+        Integer childProjLstIndx) throws SemanticException {
 
-      List<Integer> argList = new ArrayList<Integer>();
-      RelDataType type = TypeConverter.convert(agg.m_returnType,
+      // 1. Get agg fn ret type in Optiq
+      RelDataType aggFnRetType = TypeConverter.convert(agg.m_returnType,
           this.m_cluster.getTypeFactory());
 
+      // 2. Convert Agg Fn args and type of args to Optiq
       // TODO: Does HQL allows expressions as aggregate args or can it only be
       // projections from child?
       Integer inputIndx;
+      List<Integer> argList = new ArrayList<Integer>();
       RexNode rexNd = null;
+      RelDataTypeFactory dtFactory = this.m_cluster.getTypeFactory();
+      ImmutableList.Builder<RelDataType> aggArgRelDTBldr = new ImmutableList.Builder<RelDataType>();
       for (ExprNodeDesc expr : agg.m_aggParams) {
         rexNd = converter.convert(expr);
         inputIndx = rexNodeToPosMap.get(rexNd.toString());
@@ -12238,17 +12216,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           childProjLstIndx++;
         }
         argList.add(inputIndx);
+
+        // TODO: does arg need type cast?
+        aggArgRelDTBldr.add(TypeConverter.convert(expr.getTypeInfo(), dtFactory));
       }
 
-      /*
-       * set the type to the first arg, it there is one; because the RTi set on
-       * Aggregation call assumes this is the output type.
-       */
-      if (argList.size() > 0) {
-        RexNode rex = converter.convert(agg.m_aggParams.get(0));
-        type = rex.getType();
-      }
-      return new AggregateCall(aggregation, agg.m_distinct, argList, type, null);
+      // 3. Get Aggregation FN from Optiq given name, ret type and input arg
+      // type
+      final Aggregation aggregation = SqlFunctionConverter.getOptiqAggFn(agg.m_udfName,
+          aggArgRelDTBldr.build(), aggFnRetType);
+
+      return new AggregateCall(aggregation, agg.m_distinct, argList, aggFnRetType, null);
     }
 
     private RelNode genGBRelNode(List<ExprNodeDesc> gbExprs,
@@ -12276,7 +12254,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<AggregateCall> aggregateCalls = Lists.newArrayList();
       int i = aggInfoLst.size();
       for (AggInfo agg : aggInfoLst) {
-        aggregateCalls.add(convertAgg(agg, srcRel, gbChildProjLst, converter,
+        aggregateCalls.add(convertGBAgg(agg, srcRel, gbChildProjLst, converter,
             rexNodeToPosMap, gbChildProjLst.size()));
       }
 
@@ -12341,6 +12319,39 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           groupByOutputRowResolver);
     }
 
+    private AggInfo getHiveAggInfo(ASTNode aggAst, int aggFnLstArgIndx, RowResolver inputRR)
+        throws SemanticException {
+      AggInfo aInfo = null;
+
+      // 1 Convert UDAF Params to ExprNodeDesc
+      ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
+      for (int i = 1; i <= aggFnLstArgIndx; i++) {
+        ASTNode paraExpr = (ASTNode) aggAst.getChild(i);
+        ExprNodeDesc paraExprNode = genExprNodeDesc(paraExpr, inputRR);
+        aggParameters.add(paraExprNode);
+      }
+
+      // 2 Determine type of UDAF
+      // This is the GenericUDAF name
+      String aggName = unescapeIdentifier(aggAst.getChild(0).getText());
+      boolean isDistinct = aggAst.getType() == HiveParser.TOK_FUNCTIONDI;
+      boolean isAllColumns = aggAst.getType() == HiveParser.TOK_FUNCTIONSTAR;
+
+      // 3 Get UDAF Evaluator
+      Mode amode = groupByDescModeToUDAFMode(GroupByDesc.Mode.COMPLETE, isDistinct);
+      GenericUDAFEvaluator genericUDAFEvaluator = getGenericUDAFEvaluator(aggName, aggParameters,
+          aggAst, isDistinct, isAllColumns);
+      assert (genericUDAFEvaluator != null);
+
+      // 4. Get UDAF Info using UDAF Evaluator
+      GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
+
+      // 5. Construct AggInfo
+      aInfo = new AggInfo(aggParameters, udaf.returnType, aggName, isDistinct);
+
+      return aInfo;
+    }
+
     /**
      * Generate GB plan.
      * 
@@ -12398,7 +12409,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
             boolean isAllColumns = value.getType() == HiveParser.TOK_FUNCTIONSTAR;
             if (isDistinct) {
-//              continue;
               numDistinctUDFs++;
             }
 
