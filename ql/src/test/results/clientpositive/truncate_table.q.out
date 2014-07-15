@@ -80,6 +80,38 @@ POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table sr
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=12
+PREHOOK: query: analyze table src_truncate     compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_truncate
+PREHOOK: Output: default@src_truncate
+POSTHOOK: query: analyze table src_truncate     compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_truncate
+POSTHOOK: Output: default@src_truncate
+PREHOOK: query: analyze table srcpart_truncate partition(ds,hr) compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_truncate
+PREHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_truncate
+PREHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=12
+POSTHOOK: query: analyze table srcpart_truncate partition(ds,hr) compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_truncate
+POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_truncate
+POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=12
 PREHOOK: query: -- truncate non-partitioned table
 explain TRUNCATE TABLE src_truncate
 PREHOOK: type: TRUNCATETABLE
@@ -109,6 +141,15 @@ POSTHOOK: query: select * from src_truncate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_truncate
 #### A masked pattern was here ####
+PREHOOK: query: select count (*) from src_truncate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_truncate
+#### A masked pattern was here ####
+POSTHOOK: query: select count (*) from src_truncate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_truncate
+#### A masked pattern was here ####
+0
 PREHOOK: query: -- truncate a partition
 explain TRUNCATE TABLE srcpart_truncate partition (ds='2008-04-08', hr='11')
 PREHOOK: type: TRUNCATETABLE
@@ -143,6 +184,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_truncate
 POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
+PREHOOK: query: select count(*) from srcpart_truncate where ds='2008-04-08' and hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_truncate
+PREHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart_truncate where ds='2008-04-08' and hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_truncate
+POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+0
 PREHOOK: query: -- truncate partitions with partial spec
 explain TRUNCATE TABLE srcpart_truncate partition (ds, hr='12')
 PREHOOK: type: TRUNCATETABLE
@@ -181,6 +233,19 @@ POSTHOOK: Input: default@srcpart_truncate
 POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
+PREHOOK: query: select count(*) from srcpart_truncate where hr='12'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_truncate
+PREHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart_truncate where hr='12'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_truncate
+POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+0
 PREHOOK: query: -- truncate partitioned table
 explain TRUNCATE TABLE srcpart_truncate
 PREHOOK: type: TRUNCATETABLE
@@ -224,3 +289,20 @@ POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
+PREHOOK: query: select count(*) from srcpart_truncate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_truncate
+PREHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart_truncate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_truncate
+POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_truncate@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+0

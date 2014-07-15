@@ -57,7 +57,6 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -117,6 +116,7 @@ import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
@@ -333,6 +333,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOW_TRANSACTIONS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowTxns(ast);
+      break;
+    case HiveParser.TOK_SHOWCONF:
+      ctx.setResFile(ctx.getLocalTmpPath());
+      analyzeShowConf(ast);
       break;
     case HiveParser.TOK_DESCFUNCTION:
       ctx.setResFile(ctx.getLocalTmpPath());
@@ -1032,17 +1036,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String indexComment = null;
 
     RowFormatParams rowFormatParams = new RowFormatParams();
-    StorageFormat storageFormat = new StorageFormat();
-    AnalyzeCreateCommonVars shared = new AnalyzeCreateCommonVars();
+    StorageFormat storageFormat = new StorageFormat(conf);
 
     for (int idx = 4; idx < ast.getChildCount(); idx++) {
       ASTNode child = (ASTNode) ast.getChild(idx);
-      if (storageFormat.fillStorageFormat(child, shared)) {
+      if (storageFormat.fillStorageFormat(child)) {
         continue;
       }
       switch (child.getToken().getType()) {
       case HiveParser.TOK_TABLEROWFORMAT:
-        rowFormatParams.analyzeRowFormat(shared, child);
+        rowFormatParams.analyzeRowFormat(child);
         break;
       case HiveParser.TOK_CREATEINDEX_INDEXTBLNAME:
         ASTNode ch = (ASTNode) child.getChild(0);
@@ -1063,10 +1066,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_TABLESERIALIZER:
         child = (ASTNode) child.getChild(0);
-        shared.serde = unescapeSQLString(child.getChild(0).getText());
+        storageFormat.setSerde(unescapeSQLString(child.getChild(0).getText()));
         if (child.getChildCount() == 2) {
           readProps((ASTNode) (child.getChild(1).getChild(0)),
-              shared.serdeProps);
+              storageFormat.getSerdeProps());
         }
         break;
       case HiveParser.TOK_INDEXCOMMENT:
@@ -1075,14 +1078,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    storageFormat.fillDefaultStorageFormat(shared);
+    storageFormat.fillDefaultStorageFormat();
 
 
     CreateIndexDesc crtIndexDesc = new CreateIndexDesc(tableName, indexName,
-        indexedCols, indexTableName, deferredRebuild, storageFormat.inputFormat,
-        storageFormat.outputFormat,
-        storageFormat.storageHandler, typeName, location, idxProps, tblProps,
-        shared.serde, shared.serdeProps, rowFormatParams.collItemDelim,
+        indexedCols, indexTableName, deferredRebuild, storageFormat.getInputFormat(),
+        storageFormat.getOutputFormat(),
+        storageFormat.getStorageHandler(), typeName, location, idxProps, tblProps,
+        storageFormat.getSerde(), storageFormat.getSerdeProps(), rowFormatParams.collItemDelim,
         rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
         rowFormatParams.lineDelim, rowFormatParams.mapKeyDelim, indexComment);
     Task<?> createIndex =
@@ -1317,69 +1320,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       HashMap<String, String> partSpec)
       throws SemanticException {
 
-    String inputFormat = null;
-    String outputFormat = null;
-    String storageHandler = null;
-    String serde = null;
+    StorageFormat format = new StorageFormat(conf);
     ASTNode child = (ASTNode) ast.getChild(0);
 
-    switch (child.getToken().getType()) {
-    case HiveParser.TOK_TABLEFILEFORMAT:
-      inputFormat = unescapeSQLString(((ASTNode) child.getChild(0)).getToken()
-          .getText());
-      outputFormat = unescapeSQLString(((ASTNode) child.getChild(1)).getToken()
-          .getText());
-      serde = unescapeSQLString(((ASTNode) child.getChild(2)).getToken()
-          .getText());
-      try {
-        Class.forName(inputFormat);
-        Class.forName(outputFormat);
-        Class.forName(serde);
-      } catch (ClassNotFoundException e) {
-        throw new SemanticException(e);
-      }
-      break;
-    case HiveParser.TOK_STORAGEHANDLER:
-      storageHandler =
-          unescapeSQLString(((ASTNode) child.getChild(1)).getToken().getText());
-      try {
-        Class.forName(storageHandler);
-      } catch (ClassNotFoundException e) {
-        throw new SemanticException(e);
-      }
-      break;
-    case HiveParser.TOK_TBLSEQUENCEFILE:
-      inputFormat = SEQUENCEFILE_INPUT;
-      outputFormat = SEQUENCEFILE_OUTPUT;
-      serde = org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName();
-      break;
-    case HiveParser.TOK_TBLTEXTFILE:
-      inputFormat = TEXTFILE_INPUT;
-      outputFormat = TEXTFILE_OUTPUT;
-      serde = org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName();
-      break;
-    case HiveParser.TOK_TBLRCFILE:
-      inputFormat = RCFILE_INPUT;
-      outputFormat = RCFILE_OUTPUT;
-      serde = conf.getVar(HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE);
-      break;
-    case HiveParser.TOK_TBLORCFILE:
-      inputFormat = ORCFILE_INPUT;
-      outputFormat = ORCFILE_OUTPUT;
-      serde = ORCFILE_SERDE;
-      break;
-    case HiveParser.TOK_TBLPARQUETFILE:
-      inputFormat = PARQUETFILE_INPUT;
-      outputFormat = PARQUETFILE_OUTPUT;
-      serde = PARQUETFILE_SERDE;
-      break;
-    case HiveParser.TOK_FILEFORMAT_GENERIC:
-      handleGenericFileFormat(child);
-      break;
+    if (!format.fillStorageFormat(child)) {
+      throw new AssertionError("Unknown token " + child.getText());
     }
 
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, inputFormat,
-        outputFormat, serde, storageHandler, partSpec);
+    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, format.getInputFormat(),
+        format.getOutputFormat(), format.getSerde(), format.getStorageHandler(), partSpec);
 
     addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
@@ -2338,7 +2287,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ctx.setNeedLockMgr(true);
   }
 
-   /**
+  private void analyzeShowConf(ASTNode ast) throws SemanticException {
+    String confName = stripQuotes(ast.getChild(0).getText());
+    ShowConfDesc showConfDesc = new ShowConfDesc(ctx.getResFile(), confName);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showConfDesc), conf));
+    setFetchTask(createFetchTask(showConfDesc.getSchema()));
+  }
+
+  /**
    * Add the task according to the parsed command tree. This is used for the CLI
    * command "LOCK TABLE ..;".
    *

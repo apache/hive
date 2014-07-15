@@ -107,6 +107,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  bool grant_role(string role_name, string principal_name, PrincipalType principal_type, string grantor, PrincipalType grantorType, bool grant_option)'
   print '  bool revoke_role(string role_name, string principal_name, PrincipalType principal_type)'
   print '   list_roles(string principal_name, PrincipalType principal_type)'
+  print '  GrantRevokeRoleResponse grant_revoke_role(GrantRevokeRoleRequest request)'
   print '  GetPrincipalsInRoleResponse get_principals_in_role(GetPrincipalsInRoleRequest request)'
   print '  GetRoleGrantsForPrincipalResponse get_role_grants_for_principal(GetRoleGrantsForPrincipalRequest request)'
   print '  PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject, string user_name,  group_names)'
@@ -684,6 +685,12 @@ elif cmd == 'list_roles':
     print 'list_roles requires 2 args'
     sys.exit(1)
   pp.pprint(client.list_roles(args[0],eval(args[1]),))
+
+elif cmd == 'grant_revoke_role':
+  if len(args) != 1:
+    print 'grant_revoke_role requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.grant_revoke_role(eval(args[0]),))
 
 elif cmd == 'get_principals_in_role':
   if len(args) != 1:

@@ -354,7 +354,7 @@ public class TableStatsResult implements org.apache.thrift.TBase<TableStatsResul
                 struct.tableStats = new ArrayList<ColumnStatisticsObj>(_list280.size);
                 for (int _i281 = 0; _i281 < _list280.size; ++_i281)
                 {
-                  ColumnStatisticsObj _elem282; // required
+                  ColumnStatisticsObj _elem282; // optional
                   _elem282 = new ColumnStatisticsObj();
                   _elem282.read(iprot);
                   struct.tableStats.add(_elem282);
@@ -425,7 +425,7 @@ public class TableStatsResult implements org.apache.thrift.TBase<TableStatsResul
         struct.tableStats = new ArrayList<ColumnStatisticsObj>(_list285.size);
         for (int _i286 = 0; _i286 < _list285.size; ++_i286)
         {
-          ColumnStatisticsObj _elem287; // required
+          ColumnStatisticsObj _elem287; // optional
           _elem287 = new ColumnStatisticsObj();
           _elem287.read(iprot);
           struct.tableStats.add(_elem287);

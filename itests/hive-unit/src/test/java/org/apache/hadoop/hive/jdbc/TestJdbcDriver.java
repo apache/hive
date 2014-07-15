@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.jdbc;
 
 import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
-import static org.apache.hadoop.hive.ql.processors.SetProcessor.SET_COLUMN_NAME;
+import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;

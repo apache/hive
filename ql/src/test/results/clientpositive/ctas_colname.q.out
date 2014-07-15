@@ -71,6 +71,7 @@ STAGE PLANS:
           columns: _col0 double, _col1 bigint, _c1 double, _c2 bigint
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: summary
 
   Stage: Stage-2
@@ -187,6 +188,7 @@ STAGE PLANS:
           columns: key string, value string, rr int
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: x4
 
   Stage: Stage-2
@@ -351,6 +353,7 @@ STAGE PLANS:
           columns: key string, value string, lead1 string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: x5
 
   Stage: Stage-3
@@ -493,6 +496,7 @@ STAGE PLANS:
           columns: _col0 string, _c1 string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: x6
 
   Stage: Stage-2
@@ -614,6 +618,7 @@ STAGE PLANS:
           columns: _col0 string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: x7
 
   Stage: Stage-2
@@ -1045,6 +1050,7 @@ STAGE PLANS:
           columns: _col0 string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: x8
 
   Stage: Stage-2
@@ -1178,6 +1184,7 @@ STAGE PLANS:
           columns: _c0 string, key string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: x9
 
   Stage: Stage-2

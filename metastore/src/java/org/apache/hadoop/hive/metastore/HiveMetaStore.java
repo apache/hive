@@ -85,6 +85,9 @@ import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
+import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleRequest;
+import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleResponse;
+import org.apache.hadoop.hive.metastore.api.GrantRevokeType;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
@@ -4073,6 +4076,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public boolean revoke_role(final String roleName, final String userName,
         final PrincipalType principalType) throws MetaException, TException {
+      return revoke_role(roleName, userName, principalType, false);
+    }
+
+    private boolean revoke_role(final String roleName, final String userName,
+        final PrincipalType principalType, boolean grantOption) throws MetaException, TException {
       incrementCounter("remove_role_member");
       firePreEvent(new PreAuthorizationCallEvent(this));
       if (PUBLIC.equals(roleName)) {
@@ -4082,13 +4090,41 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         RawStore ms = getMS();
         Role mRole = ms.getRole(roleName);
-        ret = ms.revokeRole(mRole, userName, principalType);
+        ret = ms.revokeRole(mRole, userName, principalType, grantOption);
       } catch (MetaException e) {
         throw e;
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
       return ret;
+    }
+
+    public GrantRevokeRoleResponse grant_revoke_role(GrantRevokeRoleRequest request)
+        throws MetaException, org.apache.thrift.TException {
+      GrantRevokeRoleResponse response = new GrantRevokeRoleResponse();
+      boolean grantOption = false;
+      if (request.isSetGrantOption()) {
+        grantOption = request.isGrantOption();
+      }
+      switch (request.getRequestType()) {
+        case GRANT: {
+          boolean result = grant_role(request.getRoleName(),
+              request.getPrincipalName(), request.getPrincipalType(),
+              request.getGrantor(), request.getGrantorType(), grantOption);
+          response.setSuccess(result);
+          break;
+        }
+        case REVOKE: {
+          boolean result = revoke_role(request.getRoleName(), request.getPrincipalName(),
+              request.getPrincipalType(), grantOption);
+          response.setSuccess(result);
+          break;
+        }
+        default:
+          throw new MetaException("Unknown request type " + request.getRequestType());
+      }
+
+      return response;
     }
 
     @Override

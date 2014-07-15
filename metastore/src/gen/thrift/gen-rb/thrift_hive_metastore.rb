@@ -1448,6 +1448,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'list_roles failed: unknown result')
     end
 
+    def grant_revoke_role(request)
+      send_grant_revoke_role(request)
+      return recv_grant_revoke_role()
+    end
+
+    def send_grant_revoke_role(request)
+      send_message('grant_revoke_role', Grant_revoke_role_args, :request => request)
+    end
+
+    def recv_grant_revoke_role()
+      result = receive_message(Grant_revoke_role_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'grant_revoke_role failed: unknown result')
+    end
+
     def get_principals_in_role(request)
       send_get_principals_in_role(request)
       return recv_get_principals_in_role()
@@ -2957,6 +2973,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'list_roles', seqid)
+    end
+
+    def process_grant_revoke_role(seqid, iprot, oprot)
+      args = read_args(iprot, Grant_revoke_role_args)
+      result = Grant_revoke_role_result.new()
+      begin
+        result.success = @handler.grant_revoke_role(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'grant_revoke_role', seqid)
     end
 
     def process_get_principals_in_role(seqid, iprot, oprot)
@@ -6519,6 +6546,40 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Role}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Grant_revoke_role_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::GrantRevokeRoleRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Grant_revoke_role_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GrantRevokeRoleResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

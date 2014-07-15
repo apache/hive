@@ -52,7 +52,7 @@ public class IntraQueryCorrelation {
   private final Set<ReduceSinkOperator> allReduceSinkOperators;
 
   // Since we merge multiple operation paths, we assign new tags to bottom layer
-  // ReduceSinkOperatos. This mapping is used to map new tags to original tags associated
+  // ReduceSinkOperators. This mapping is used to map new tags to original tags associated
   // to these bottom layer ReduceSinkOperators.
   private final Map<Integer, Integer> newTagToOldTag;
 

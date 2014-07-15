@@ -354,7 +354,7 @@ public class ShowCompactResponse implements org.apache.thrift.TBase<ShowCompactR
                 struct.compacts = new ArrayList<ShowCompactResponseElement>(_list434.size);
                 for (int _i435 = 0; _i435 < _list434.size; ++_i435)
                 {
-                  ShowCompactResponseElement _elem436; // required
+                  ShowCompactResponseElement _elem436; // optional
                   _elem436 = new ShowCompactResponseElement();
                   _elem436.read(iprot);
                   struct.compacts.add(_elem436);
@@ -425,7 +425,7 @@ public class ShowCompactResponse implements org.apache.thrift.TBase<ShowCompactR
         struct.compacts = new ArrayList<ShowCompactResponseElement>(_list439.size);
         for (int _i440 = 0; _i440 < _list439.size; ++_i440)
         {
-          ShowCompactResponseElement _elem441; // required
+          ShowCompactResponseElement _elem441; // optional
           _elem441 = new ShowCompactResponseElement();
           _elem441.read(iprot);
           struct.compacts.add(_elem441);

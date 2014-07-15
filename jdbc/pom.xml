@@ -121,6 +121,7 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <minimizeJar>true</minimizeJar>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>${hive.jdbc.driver.classifier}</shadedClassifierName>
               <artifactSet>
