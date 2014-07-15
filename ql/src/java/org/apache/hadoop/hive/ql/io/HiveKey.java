@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.io.Serializable;
-
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.WritableComparator;
 
@@ -27,11 +25,8 @@ import org.apache.hadoop.io.WritableComparator;
  * HiveKey is a simple wrapper on Text which allows us to set the hashCode
  * easily. hashCode is used for hadoop partitioner.
  * 
- * TODO: spark require key to be serializable, even if it's considered serializable by
- * Hadoop. For now, we let it implement Serializable. However, we expect that this is
- * not needed soon.
  */
-public class HiveKey extends BytesWritable implements Serializable {
+public class HiveKey extends BytesWritable {
 
   private static final int LENGTH_BYTES = 4;
 

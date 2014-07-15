@@ -76,7 +76,9 @@ public class SparkCompiler extends MapReduceCompiler {
     ReduceWork redWork = mrTask.getWork().getReduceWork();
     SparkWork sparkWork = new SparkWork("first spark #" + counter++);
     sparkWork.setMapWork(mapWork);
-    sparkWork.setReduceWork(redWork);
+    if (redWork != null) {
+      sparkWork.setReduceWork(redWork);
+    }
     SparkTask task = new SparkTask();
     task.setWork(sparkWork);
     task.setId(sparkWork.getName());
