@@ -30,6 +30,8 @@ show grant user user3 on table vt1;
 
 
 set user.name=user2;
+
+explain authorization select * from vt1;
 select * from vt1;
 
 set user.name=user1;
