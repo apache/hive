@@ -32,6 +32,7 @@ public class EmbeddedThriftBinaryCLIService extends ThriftBinaryCLIService {
   public EmbeddedThriftBinaryCLIService() {
     super(new CLIService());
     isEmbedded = true;
+    HiveConf.setLoadHiveServer2Config(true);
     cliService.init(new HiveConf());
     cliService.start();
   }

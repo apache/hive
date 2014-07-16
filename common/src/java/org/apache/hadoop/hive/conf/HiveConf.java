@@ -57,15 +57,22 @@ public class HiveConf extends Configuration {
   protected Properties origProp;
   protected String auxJars;
   private static final Log l4j = LogFactory.getLog(HiveConf.class);
+  private static boolean loadMetastoreConfig = false;
+  private static boolean loadHiveServer2Config = false;
   private static URL hiveDefaultURL = null;
   private static URL hiveSiteURL = null;
+  private static URL hivemetastoreSiteUrl = null;
+  private static URL hiveServer2SiteUrl = null;
+
   private static byte[] confVarByteArray = null;
+
 
   private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
 
   private boolean isWhiteListRestrictionEnabled = false;
   private final List<String> modWhiteList = new ArrayList<String>();
+
 
   static {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -77,6 +84,9 @@ public class HiveConf extends Configuration {
 
     // Look for hive-site.xml on the CLASSPATH and log its location if found.
     hiveSiteURL = classLoader.getResource("hive-site.xml");
+    hivemetastoreSiteUrl = classLoader.getResource("hivemetastore-site.xml");
+    hiveServer2SiteUrl = classLoader.getResource("hiveserver2-site.xml");
+
     for (ConfVars confVar : ConfVars.values()) {
       vars.put(confVar.varname, confVar);
     }
@@ -2052,6 +2062,26 @@ public class HiveConf extends Configuration {
       addResource(hiveSiteURL);
     }
 
+    // if embedded metastore is to be used as per config so far
+    // then this is considered like the metastore server case
+    String msUri = this.getVar(HiveConf.ConfVars.METASTOREURIS);
+    if(HiveConfUtil.isEmbeddedMetaStore(msUri)){
+      setLoadMetastoreConfig(true);
+    }
+
+    // load hivemetastore-site.xml if this is metastore and file exists
+    if (isLoadMetastoreConfig() && hivemetastoreSiteUrl != null) {
+      addResource(hivemetastoreSiteUrl);
+    }
+
+    // load hiveserver2-site.xml if this is hiveserver2 and file exists
+    // metastore can be embedded within hiveserver2, in such cases
+    // the conf params in hiveserver2-site.xml will override whats defined
+    // in hivemetastore-site.xml
+    if (isLoadHiveServer2Config() && hiveServer2SiteUrl != null) {
+      addResource(hiveServer2SiteUrl);
+    }
+
     // Overlay the values of any system properties whose names appear in the list of ConfVars
     applySystemProperties();
 
@@ -2110,7 +2140,6 @@ public class HiveConf extends Configuration {
     // setup list of conf vars that are not allowed to change runtime
     setupRestrictList();
   }
-
 
   /**
    * Apply system properties to this object if the property name is defined in ConfVars
@@ -2200,6 +2229,15 @@ public class HiveConf extends Configuration {
     return hiveSiteURL;
   }
 
+  public static URL getMetastoreSiteLocation() {
+    return hivemetastoreSiteUrl;
+  }
+
+  public static URL getHiveServer2SiteLocation() {
+    return hiveServer2SiteUrl;
+  }
+
+
   /**
    * @return the user name set in hadoop.job.ugi param or the current user from System
    * @throws IOException
@@ -2282,5 +2320,21 @@ public class HiveConf extends Configuration {
     }
     restrictList.add(ConfVars.HIVE_IN_TEST.varname);
     restrictList.add(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname);
+  }
+
+  public static boolean isLoadMetastoreConfig() {
+    return loadMetastoreConfig;
+  }
+
+  public static void setLoadMetastoreConfig(boolean loadMetastoreConfig) {
+    HiveConf.loadMetastoreConfig = loadMetastoreConfig;
+  }
+
+  public static boolean isLoadHiveServer2Config() {
+    return loadHiveServer2Config;
+  }
+
+  public static void setLoadHiveServer2Config(boolean loadHiveServer2Config) {
+    HiveConf.loadHiveServer2Config = loadHiveServer2Config;
   }
 }
