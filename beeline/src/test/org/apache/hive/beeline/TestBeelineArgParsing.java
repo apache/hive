@@ -104,12 +104,14 @@ public class TestBeelineArgParsing {
   @Test
   public void testBeelineOpts() throws Exception {
     TestBeeline bl = new TestBeeline();
-    String args[] = new String[] {"-u", "url", "-n", "name",
-      "-p", "password", "-d", "driver", "--autoCommit=true", "--verbose"};
+    String args[] =
+        new String[] { "-u", "url", "-n", "name", "-p", "password", "-d", "driver",
+            "--autoCommit=true", "--verbose", "--truncateTable" };
     Assert.assertTrue(bl.initArgs(args));
     Assert.assertTrue(bl.connectArgs.equals("url name password driver"));
     Assert.assertTrue(bl.getOpts().getAutoCommit());
     Assert.assertTrue(bl.getOpts().getVerbose());
+    Assert.assertTrue(bl.getOpts().getTruncateTable());
   }
 
   /**

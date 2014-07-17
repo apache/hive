@@ -515,11 +515,30 @@ public class SessionState {
     }
 
     if(LOG.isDebugEnabled()){
-      Object authorizationClass = getAuthorizationMode() == AuthorizationMode.V1 ?
-          getAuthorizer() : getAuthorizerV2();
-          LOG.debug("Session is using authorization class " + authorizationClass.getClass());
+      Object authorizationClass = getActiveAuthorizer();
+      LOG.debug("Session is using authorization class " + authorizationClass.getClass());
     }
     return;
+  }
+
+  public Object getActiveAuthorizer() {
+    return getAuthorizationMode() == AuthorizationMode.V1 ?
+        getAuthorizer() : getAuthorizerV2();
+  }
+
+  public Class getAuthorizerInterface() {
+    return getAuthorizationMode() == AuthorizationMode.V1 ?
+        HiveAuthorizationProvider.class : HiveAuthorizer.class;
+  }
+
+  public void setActiveAuthorizer(Object authorizer) {
+    if (authorizer instanceof HiveAuthorizationProvider) {
+      this.authorizer = (HiveAuthorizationProvider)authorizer;
+    } else if (authorizer instanceof HiveAuthorizer) {
+      this.authorizerV2 = (HiveAuthorizer) authorizer;
+    } else if (authorizer != null) {
+      throw new IllegalArgumentException("Invalid authorizer " + authorizer);
+    }
   }
 
   /**

@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.security.authorization;
 
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -27,13 +29,8 @@ import java.lang.reflect.Proxy;
 
 public class AuthorizationFactory {
 
-  public static HiveAuthorizationProvider create(HiveAuthorizationProvider delegated) {
-    return create(delegated, new DefaultAuthorizationExceptionHandler());
-  }
-
-  public static HiveAuthorizationProvider create(final HiveAuthorizationProvider delegated,
-      final AuthorizationExceptionHandler handler) {
-
+  public static <T> T create(
+      final Object delegated, final Class<T> itface, final AuthorizationExceptionHandler handler) {
     InvocationHandler invocation = new InvocationHandler() {
       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         invokeAuth(method, args);
@@ -44,27 +41,38 @@ public class AuthorizationFactory {
         try {
           method.invoke(delegated, args);
         } catch (InvocationTargetException e) {
-          if (e.getTargetException() instanceof AuthorizationException) {
-            handler.exception((AuthorizationException) e.getTargetException());
+          if (e.getTargetException() instanceof AuthorizationException ||
+              e.getTargetException() instanceof HiveAuthzPluginException||
+              e.getTargetException() instanceof HiveAccessControlException) {
+            handler.exception((Exception) e.getTargetException());
           }
         }
       }
     };
 
-    return (HiveAuthorizationProvider)Proxy.newProxyInstance(
-        AuthorizationFactory.class.getClassLoader(),
-        new Class[] {HiveAuthorizationProvider.class},
-        invocation);
+    return (T) Proxy.newProxyInstance(
+        AuthorizationFactory.class.getClassLoader(), new Class[]{itface}, invocation);
   }
 
   public static interface AuthorizationExceptionHandler {
-    void exception(AuthorizationException exception) throws AuthorizationException;
+    void exception(Exception exception)
+        throws AuthorizationException, HiveAuthzPluginException, HiveAccessControlException;
   }
 
   public static class DefaultAuthorizationExceptionHandler
       implements AuthorizationExceptionHandler {
-    public void exception(AuthorizationException exception) {
-      throw exception;
+    public void exception(Exception exception) throws
+        AuthorizationException, HiveAuthzPluginException, HiveAccessControlException {
+      if (exception instanceof AuthorizationException) {
+        throw (AuthorizationException) exception;
+      }
+      if (exception instanceof HiveAuthzPluginException) {
+        throw (HiveAuthzPluginException) exception;
+      }
+      if (exception instanceof HiveAccessControlException) {
+        throw (HiveAccessControlException) exception;
+      }
+      throw new RuntimeException(exception);
     }
   }
 }

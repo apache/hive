@@ -16,28 +16,23 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.cli.thrift;
+package org.apache.hadoop.hive.conf;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.service.cli.CLIService;
-import org.apache.hive.service.cli.ICLIService;
-
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 
 /**
- * EmbeddedThriftBinaryCLIService.
- *
+ * Hive Configuration utils
  */
-public class EmbeddedThriftBinaryCLIService extends ThriftBinaryCLIService {
-
-  public EmbeddedThriftBinaryCLIService() {
-    super(new CLIService());
-    isEmbedded = true;
-    HiveConf.setLoadHiveServer2Config(true);
-    cliService.init(new HiveConf());
-    cliService.start();
-  }
-
-  public ICLIService getService() {
-    return cliService;
+@Private
+public class HiveConfUtil {
+  /**
+   * Check if metastore is being used in embedded mode.
+   * This utility function exists so that the logic for determining the mode is same
+   * in HiveConf and HiveMetaStoreClient
+   * @param msUri - metastore server uri
+   * @return
+   */
+  public static boolean isEmbeddedMetaStore(String msUri) {
+    return (msUri == null) ? true : msUri.trim().isEmpty();
   }
 }

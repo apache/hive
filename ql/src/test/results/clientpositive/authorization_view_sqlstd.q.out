@@ -79,6 +79,19 @@ PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user3 on table vt1
 POSTHOOK: type: SHOW_GRANT
 default	vt1			user3	USER	INSERT	false	-1	user1
+PREHOOK: query: explain authorization select * from vt1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain authorization select * from vt1
+POSTHOOK: type: QUERY
+INPUTS: 
+  default@vt1
+  default@t1
+OUTPUTS: 
+#### A masked pattern was here ####
+CURRENT_USER: 
+  user2
+OPERATION: 
+  QUERY
 PREHOOK: query: select * from vt1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
