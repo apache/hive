@@ -1,0 +1,64 @@
+PREHOOK: query: CREATE TABLE src_null(a bigint) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TABLE src_null(a bigint) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_null
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_null
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_null
+PREHOOK: query: create table all_nulls as SELECT a, cast(a as double) as b, cast(a as decimal) as c  FROM src_null where a is null limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src_null
+POSTHOOK: query: create table all_nulls as SELECT a, cast(a as double) as b, cast(a as decimal) as c  FROM src_null where a is null limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src_null
+POSTHOOK: Output: default@all_nulls
+PREHOOK: query: analyze table all_nulls compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@all_nulls
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table all_nulls compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@all_nulls
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted all_nulls.a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@all_nulls
+POSTHOOK: query: describe formatted all_nulls.a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@all_nulls
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+a                   	bigint              	0                   	0                   	5                   	1                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted all_nulls.b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@all_nulls
+POSTHOOK: query: describe formatted all_nulls.b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@all_nulls
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+b                   	double              	0.0                 	0.0                 	5                   	1                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: drop table all_nulls
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@all_nulls
+PREHOOK: Output: default@all_nulls
+POSTHOOK: query: drop table all_nulls
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@all_nulls
+POSTHOOK: Output: default@all_nulls
+PREHOOK: query: drop table src_null
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_null
+PREHOOK: Output: default@src_null
+POSTHOOK: query: drop table src_null
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_null
+POSTHOOK: Output: default@src_null
