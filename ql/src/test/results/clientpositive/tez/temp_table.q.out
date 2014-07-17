@@ -45,6 +45,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
 #### A masked pattern was here ####
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: foo
           isTemporary: true
 
@@ -111,6 +112,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
 #### A masked pattern was here ####
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: bar
           isTemporary: true
 
