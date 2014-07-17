@@ -478,12 +478,15 @@ public final class VectorExpressionWriterFactory {
 
       @Override
       public Object setValue(Object field, Decimal128 value) {
+        if (null == field) {
+          field = initValue(null);
+        }
         return ((SettableHiveDecimalObjectInspector) this.objectInspector).set(field,
             HiveDecimal.create(value.toBigDecimal()));
       }
 
       @Override
-      public Object initValue(Object ignored) throws HiveException {
+      public Object initValue(Object ignored) {
         return ((SettableHiveDecimalObjectInspector) this.objectInspector).create(
             HiveDecimal.create(BigDecimal.ZERO));
       }

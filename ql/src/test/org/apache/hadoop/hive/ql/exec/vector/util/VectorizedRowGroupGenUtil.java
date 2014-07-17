@@ -20,9 +20,12 @@ package org.apache.hadoop.hive.ql.exec.vector.util;
 
 import java.util.Random;
 
+import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 
 public class VectorizedRowGroupGenUtil {
 
@@ -96,6 +99,42 @@ public class VectorizedRowGroupGenUtil {
         dcv.vector[i] = repeating ? repeatingValue : rand.nextDouble();
 
         if(dcv.vector[i] == 0) {
+          i--;
+        }
+      }
+    }
+    return dcv;
+  }
+
+  public static DecimalColumnVector generateDecimalColumnVector(DecimalTypeInfo typeInfo, boolean nulls,
+      boolean repeating, int size, Random rand) {
+    DecimalColumnVector dcv =
+        new DecimalColumnVector(size, typeInfo.precision(), typeInfo.scale());
+
+    dcv.noNulls = !nulls;
+    dcv.isRepeating = repeating;
+
+    Decimal128 repeatingValue = new Decimal128();
+    do{
+      repeatingValue.update(rand.nextDouble(), (short)typeInfo.scale());
+    }while(repeatingValue.doubleValue() == 0);
+
+    int nullFrequency = generateNullFrequency(rand);
+
+    for(int i = 0; i < size; i++) {
+      if(nulls && (repeating || i % nullFrequency == 0)) {
+        dcv.isNull[i] = true;
+        dcv.vector[i] = null;//Decimal128.ONE;
+
+      }else {
+        dcv.isNull[i] = false;
+        if (repeating) {
+          dcv.vector[i].update(repeatingValue);
+        } else {
+          dcv.vector[i].update(rand.nextDouble(), (short) typeInfo.scale());
+        }
+
+        if(dcv.vector[i].doubleValue() == 0) {
           i--;
         }
       }

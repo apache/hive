@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationFactory;
-import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -334,23 +333,27 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (analyzer.skipAuthorization()) {
       return object;
     }
-    HiveAuthorizationProvider delegate = SessionState.get().getAuthorizer();
 
     final List<String> exceptions = new ArrayList<String>();
-    HiveAuthorizationProvider authorizer = AuthorizationFactory.create(delegate,
-        new AuthorizationFactory.AuthorizationExceptionHandler() {
-          public void exception(AuthorizationException exception) {
-            exceptions.add(exception.getMessage());
-          }
-        });
 
-    SessionState.get().setAuthorizer(authorizer);
-    try {
-      Driver.doAuthorization(analyzer);
-    } finally {
-      SessionState.get().setAuthorizer(delegate);
+    Object delegate = SessionState.get().getActiveAuthorizer();
+    if (delegate != null) {
+      Class itface = SessionState.get().getAuthorizerInterface();
+
+      Object authorizer = AuthorizationFactory.create(delegate, itface,
+          new AuthorizationFactory.AuthorizationExceptionHandler() {
+            public void exception(Exception exception) {
+              exceptions.add(exception.getMessage());
+            }
+          });
+
+      SessionState.get().setActiveAuthorizer(authorizer);
+      try {
+        Driver.doAuthorization(analyzer);
+      } finally {
+        SessionState.get().setActiveAuthorizer(delegate);
+      }
     }
-
     if (!exceptions.isEmpty()) {
       Object jsonFails = toJson("AUTHORIZATION_FAILURES", exceptions, out, work);
       if (work.isFormatted()) {
