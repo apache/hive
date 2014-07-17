@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?xml-stylesheet type="text/xsl" href="configuration.xsl"?><!--
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!--
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -14,7 +16,8 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
---><configuration>
+-->
+<configuration>
   <!-- WARNING!!! This file is auto generated for documentation purposes ONLY! -->
   <!-- WARNING!!! Any changes you make to this file will be ignored by Hive.   -->
   <!-- WARNING!!! You must make your changes in hive-site.xml instead.         -->
