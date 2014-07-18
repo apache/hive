@@ -273,7 +273,7 @@ public class ASTConverter {
       SqlOperator op = call.getOperator();
       List<ASTNode> astNodeLst = new LinkedList<ASTNode>();
       if (op.kind == SqlKind.CAST) {
-        HiveToken ht = TypeConverter.convert(call.getType());
+        HiveToken ht = TypeConverter.hiveToken(call.getType());
         ASTBuilder astBldr = ASTBuilder.construct(ht.type, ht.text);
         if (ht.args != null) {
           for (String castArg : ht.args)

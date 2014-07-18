@@ -122,6 +122,7 @@ import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HiveMergeProjectRule;
+import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePartitionPrunerRule;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePullUpProjectsAboveJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePushFilterPastJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.optiq.rules.HivePushJoinThroughJoinRule;
@@ -237,6 +238,7 @@ import org.eigenbase.rel.metadata.RelMetadataProvider;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptQuery;
+import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptSchema;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.relopt.hep.HepPlanner;
@@ -247,7 +249,6 @@ import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
-import org.eigenbase.sql.fun.SqlStdOperatorTable;
 import org.eigenbase.util.CompositeList;
 
 import com.google.common.base.Function;
@@ -11860,9 +11861,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     public RelNode applyPreCBOTransforms(RelNode basePlan,
         RelMetadataProvider mdProvider) {
 
+      // TODO: Decorelation of subquery should be done before attempting
+      // Partition Pruning; otherwise Expression evaluation may try to execute
+      // corelated sub query.
+     basePlan = hepPlan(basePlan, mdProvider,
+          HivePushFilterPastJoinRule.FILTER_ON_JOIN,
+          HivePushFilterPastJoinRule.JOIN, new HivePartitionPrunerRule(
+              SemanticAnalyzer.this.conf));
+
+      HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null);
+      basePlan = fieldTrimmer.trim(basePlan);
+
+      return basePlan;
+    }
+    
+    private RelNode hepPlan(RelNode basePlan,
+        RelMetadataProvider mdProvider, RelOptRule...rules) {
+      
       HepProgramBuilder programBuilder = new HepProgramBuilder();
-      programBuilder.addRuleInstance(HivePushFilterPastJoinRule.FILTER_ON_JOIN);
-      programBuilder.addRuleInstance(HivePushFilterPastJoinRule.JOIN);
+      for(RelOptRule rule : rules) {
+        programBuilder.addRuleInstance(rule);
+      }
 
       HepPlanner planner = new HepPlanner(programBuilder.build());
       List<RelMetadataProvider> list = Lists.newArrayList();
@@ -11873,12 +11892,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           new CachingRelMetadataProvider(chainedProvider, planner));
 
       planner.setRoot(basePlan);
-      basePlan = planner.findBestExp();
-
-      HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null);
-      basePlan = fieldTrimmer.trim(basePlan);
-      return basePlan;
-
+      return planner.findBestExp();
     }
 
     private RelNode genUnionLogicalPlan(String unionalias, String leftalias,
@@ -12114,7 +12128,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // 4. Build RelOptAbstractTable
         RelOptHiveTable optTable = new RelOptHiveTable(m_relOptSchema,
-            tableAlias, rowType, tab, nonPartitionColumns, partitionColumns);
+            tableAlias, rowType, tab, nonPartitionColumns, partitionColumns, conf);
 
         // 5. Build Hive Table Scan Rel
         tableRel = new HiveTableScanRel(m_cluster,

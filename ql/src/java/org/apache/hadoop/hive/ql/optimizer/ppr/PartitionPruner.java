@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * The transformation step that does partition pruning.
@@ -155,7 +156,7 @@ public class PartitionPruner implements Transform {
    *         pruner condition.
    * @throws HiveException
    */
-  private static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
+  public static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
       HiveConf conf, String alias, Map<String, PrunedPartitionList> prunedPartitionsMap)
           throws HiveException {
     LOG.trace("Started pruning partiton");
@@ -177,6 +178,17 @@ public class PartitionPruner implements Transform {
     prunedPartitionsMap.put(key, ret);
     return ret;
   }
+    
+  private static ExprNodeDesc removeTruePredciates(ExprNodeDesc e) {
+    if (e instanceof ExprNodeConstantDesc) {
+      ExprNodeConstantDesc eC = (ExprNodeConstantDesc) e;
+      if (e.getTypeInfo() == TypeInfoFactory.booleanTypeInfo
+          && eC.getValue() == Boolean.TRUE) {
+        return null;
+      }
+    }
+    return e;
+  }
 
   /**
    * Taking a partition pruning expression, remove the null operands and non-partition columns.
@@ -187,7 +199,8 @@ public class PartitionPruner implements Transform {
    */
   static private ExprNodeDesc compactExpr(ExprNodeDesc expr) {
     if (expr instanceof ExprNodeConstantDesc) {
-      if (((ExprNodeConstantDesc)expr).getValue() == null) {
+      expr = removeTruePredciates(expr);
+      if (expr == null || ((ExprNodeConstantDesc)expr).getValue() == null) {
         return null;
       } else {
         throw new IllegalStateException("Unexpected non-null ExprNodeConstantDesc: "
@@ -198,10 +211,11 @@ public class PartitionPruner implements Transform {
       boolean isAnd = udf instanceof GenericUDFOPAnd;
       if (isAnd || udf instanceof GenericUDFOPOr) {
         List<ExprNodeDesc> children = expr.getChildren();
-        ExprNodeDesc left = children.get(0);
-        children.set(0, compactExpr(left));
-        ExprNodeDesc right = children.get(1);
-        children.set(1, compactExpr(right));
+        ExprNodeDesc left = removeTruePredciates(children.get(0));
+        children.set(0, left == null ? null : compactExpr(left));
+        ExprNodeDesc right = removeTruePredciates(children.get(1));
+        children.set(1, right == null ? null : compactExpr(right));
+
         // Note that one does not simply compact (not-null or null) to not-null.
         // Only if we have an "and" is it valid to send one side to metastore.
         if (children.get(0) == null && children.get(1) == null) {
