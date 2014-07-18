@@ -68,7 +68,7 @@ class CommandUtil {
   static void authorizeCommandThrowEx(SessionState ss, HiveOperationType type,
       List<String> command) throws HiveAuthzPluginException, HiveAccessControlException {
     HivePrivilegeObject commandObj = HivePrivilegeObject.createHivePrivilegeObject(command);
-    ss.getAuthorizerV2().checkPrivileges(type, Arrays.asList(commandObj), null);
+    ss.getAuthorizerV2().checkPrivileges(type, Arrays.asList(commandObj), null, null);
   }
 
 
