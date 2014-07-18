@@ -17,32 +17,42 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
+import java.util.List;
+
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 
 /**
- * Extends SQLStdHiveAccessController to relax the restriction of not being able to run dfs
- * and set commands, so that it is easy to test using .q file tests.
- * To be used for testing purposes only!
+ * Extends SQLStdHiveAuthorizationValidator to relax the restriction of not
+ * being able to run dfs,set commands. To be used for testing purposes only!
  */
 @Private
-public class SQLStdHiveAccessControllerForTest extends SQLStdHiveAccessController {
+public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthorizationValidator {
 
-  SQLStdHiveAccessControllerForTest(HiveMetastoreClientFactory metastoreClientFactory, HiveConf conf,
-      HiveAuthenticationProvider authenticator) throws HiveAuthzPluginException {
-    super(metastoreClientFactory, conf, authenticator);
+  public SQLStdHiveAuthorizationValidatorForTest(HiveMetastoreClientFactory metastoreClientFactory,
+      HiveConf conf, HiveAuthenticationProvider authenticator,
+      SQLStdHiveAccessController privController) {
+    super(metastoreClientFactory, conf, authenticator, privController);
   }
 
-
   @Override
-  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) {
-    super.applyAuthorizationConfigPolicy(hiveConf);
-
-    // remove restrictions on the variables that can be set using set command
-    hiveConf.setIsModWhiteListEnabled(false);
+  public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
+      List<HivePrivilegeObject> outputHObjs) throws HiveAuthzPluginException,
+      HiveAccessControlException {
+    switch (hiveOpType) {
+    case DFS:
+    case SET:
+      // allow SET and DFS commands to be used during testing
+      return;
+    default:
+      super.checkPrivileges(hiveOpType, inputHObjs, outputHObjs);
+    }
 
   }
 

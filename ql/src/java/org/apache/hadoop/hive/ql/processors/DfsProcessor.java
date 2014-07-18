@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.processors;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,6 +28,7 @@ import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
@@ -53,9 +55,11 @@ public class DfsProcessor implements CommandProcessor {
     dfsSchema.addToFieldSchemas(new FieldSchema(DFS_RESULT_HEADER, "string", ""));
   }
 
+  @Override
   public void init() {
   }
 
+  @Override
   public CommandProcessorResponse run(String command) {
 
 
@@ -64,6 +68,13 @@ public class DfsProcessor implements CommandProcessor {
       command = new VariableSubstitution().substitute(ss.getConf(),command);
 
       String[] tokens = command.split("\\s+");
+      CommandProcessorResponse authErrResp =
+          CommandUtil.authorizeCommand(ss, HiveOperationType.DFS, Arrays.asList(tokens));
+      if(authErrResp != null){
+        // there was an authorization issue
+        return authErrResp;
+      }
+
       PrintStream oldOut = System.out;
 
       if (ss != null && ss.out != null) {

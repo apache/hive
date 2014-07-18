@@ -677,9 +677,6 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     LOG.debug("Configuring hooks : " + hooks);
     hiveConf.setVar(ConfVars.PREEXECHOOKS, hooks);
 
-    // set security command list to only allow set command
-    hiveConf.setVar(ConfVars.HIVE_SECURITY_COMMAND_WHITELIST, "set");
-
     // restrict the variables that can be set using set command to a list in whitelist
     hiveConf.setIsModWhiteListEnabled(true);
     String whiteListParamsStr = hiveConf.getVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST);

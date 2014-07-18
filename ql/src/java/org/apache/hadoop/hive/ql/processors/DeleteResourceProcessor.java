@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
@@ -36,9 +37,11 @@ public class DeleteResourceProcessor implements CommandProcessor {
   public static final Log LOG = LogFactory.getLog(DeleteResourceProcessor.class.getName());
   public static final LogHelper console = new LogHelper(LOG);
 
+  @Override
   public void init() {
   }
 
+  @Override
   public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     command = new VariableSubstitution().substitute(ss.getConf(),command);
@@ -52,7 +55,12 @@ public class DeleteResourceProcessor implements CommandProcessor {
           + "] <value> [<value>]*");
       return new CommandProcessorResponse(1);
     }
-
+    CommandProcessorResponse authErrResp =
+        CommandUtil.authorizeCommand(ss, HiveOperationType.DELETE, Arrays.asList(tokens));
+    if(authErrResp != null){
+      // there was an authorization issue
+      return authErrResp;
+    }
     if (tokens.length >= 2) {
       ss.delete_resources(t, Arrays.asList(Arrays.copyOfRange(tokens, 1, tokens.length)));
     } else {
