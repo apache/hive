@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
@@ -45,12 +46,14 @@ public class GrantPrivAuthUtils {
     RequiredPrivileges reqPrivs = getGrantRequiredPrivileges(hivePrivileges);
 
     // check if this user has necessary privileges (reqPrivs) on this object
-    checkRequiredPrivileges(reqPrivs, hivePrivObject, metastoreClient, userName, curRoles, isAdmin);
+    checkRequiredPrivileges(reqPrivs, hivePrivObject, metastoreClient, userName, curRoles, isAdmin,
+        HiveOperationType.GRANT_PRIVILEGE);
   }
 
   private static void checkRequiredPrivileges(
       RequiredPrivileges reqPrivileges, HivePrivilegeObject hivePrivObject,
-      IMetaStoreClient metastoreClient, String userName, List<String> curRoles, boolean isAdmin)
+      IMetaStoreClient metastoreClient, String userName, List<String> curRoles, boolean isAdmin,
+      HiveOperationType opType)
           throws HiveAuthzPluginException, HiveAccessControlException {
 
     // keep track of the principals on which privileges have been checked for
@@ -63,7 +66,7 @@ public class GrantPrivAuthUtils {
     // check if required privileges is subset of available privileges
     Collection<SQLPrivTypeGrant> missingPrivs = reqPrivileges.findMissingPrivs(availPrivs);
     SQLAuthorizationUtils.assertNoMissingPrivilege(missingPrivs, new HivePrincipal(userName,
-        HivePrincipalType.USER), hivePrivObject);
+        HivePrincipalType.USER), hivePrivObject, opType);
   }
 
   private static RequiredPrivileges getGrantRequiredPrivileges(List<HivePrivilege> hivePrivileges)

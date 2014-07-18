@@ -127,8 +127,11 @@ public class TestJdbcWithSQLAuthorization {
         stmt.execute("dfs -ls /tmp/");
       } catch (SQLException e){
         caughtException = true;
-        assertTrue("Checking error message content",
-            e.getMessage().contains("Insufficient privileges to execute"));
+        String msg = "Principal [name=user1, type=USER] does not have following "
+            + "privileges on Object [type=COMMAND_PARAMS, name=[-ls, /tmp/]] for operation "
+            + "DFS : [ADMIN PRIVILEGE]";
+        assertTrue("Checking content of error message:" + e.getMessage(),
+            e.getMessage().contains(msg));
       }
       finally {
         stmt.close();

@@ -14,4 +14,4 @@ POSTHOOK: query: create view vt1 as select * from t1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@vt1
-FAILED: HiveAccessControlException Permission denied. Principal [name=user2, type=USER] does not have following privileges on Object [type=TABLE_OR_VIEW, name=default.vt1] : [OBJECT OWNERSHIP]
+FAILED: HiveAccessControlException Permission denied. Principal [name=user2, type=USER] does not have following privileges on Object [type=TABLE_OR_VIEW, name=default.vt1] for operation DROPVIEW : [OBJECT OWNERSHIP]
