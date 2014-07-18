@@ -5,14 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -20,11 +16,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeFactory;
+import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexBuilder;
 import org.eigenbase.sql.type.SqlTypeName;
 
@@ -200,9 +197,83 @@ public class TypeConverter {
     // @todo what do we about unions?
     throw new UnsupportedOperationException();
   }
+  
+  public static TypeInfo convert(RelDataType rType) {
+    if ( rType.isStruct() ) {
+      return convertStructType(rType);
+    } else if ( rType.getComponentType() != null ) {
+      return convertListType(rType);
+    } else if ( rType.getKeyType() != null ) {
+      return convertMapType(rType);
+    } else {
+      return convertPrimtiveType(rType);
+    }
+  }
+  
+  public static TypeInfo convertStructType(RelDataType rType) {
+    List<TypeInfo> fTypes = Lists.transform(
+        rType.getFieldList(),
+        new Function<RelDataTypeField, TypeInfo>() {
+          public TypeInfo apply(RelDataTypeField f) {
+            return convert(f.getType());
+          }
+        });
+    List<String> fNames = Lists.transform(
+        rType.getFieldList(),
+        new Function<RelDataTypeField, String>() {
+          public String apply(RelDataTypeField f) {
+            return f.getName();
+          }
+        });
+    return TypeInfoFactory.getStructTypeInfo(fNames, fTypes);
+  }
+  
+  public static TypeInfo convertMapType(RelDataType rType) {
+    return TypeInfoFactory.getMapTypeInfo(convert(rType.getKeyType()), 
+        convert(rType.getValueType()));
+  }
+  
+  public static TypeInfo convertListType(RelDataType rType) {
+    return TypeInfoFactory.getListTypeInfo(convert(rType.getComponentType()));
+  }
+  
+  public static TypeInfo convertPrimtiveType(RelDataType rType) {
+    switch(rType.getSqlTypeName()) {
+    case BOOLEAN:
+      return TypeInfoFactory.booleanTypeInfo;
+    case TINYINT:
+      return TypeInfoFactory.byteTypeInfo;
+    case SMALLINT:
+      return TypeInfoFactory.shortTypeInfo;
+    case INTEGER:
+      return TypeInfoFactory.intTypeInfo;
+    case BIGINT:
+      return TypeInfoFactory.longTypeInfo;
+    case FLOAT:
+      return TypeInfoFactory.floatTypeInfo;
+    case DOUBLE:
+      return TypeInfoFactory.doubleTypeInfo;
+    case DATE:
+      return TypeInfoFactory.dateTypeInfo;
+    case TIMESTAMP:
+      return TypeInfoFactory.timestampTypeInfo;
+    case BINARY:
+      return TypeInfoFactory.binaryTypeInfo;
+    case DECIMAL:
+      return TypeInfoFactory.getDecimalTypeInfo(rType.getPrecision(), rType.getScale());
+    case VARCHAR:
+      return TypeInfoFactory.getVarcharTypeInfo(rType.getPrecision());
+    case CHAR:
+      return TypeInfoFactory.getCharTypeInfo(rType.getPrecision());
+    case OTHER:
+      default:
+      return TypeInfoFactory.voidTypeInfo;
+    }
+    
+  }
 
   /*********************** Convert Optiq Types To Hive Types ***********************/
-  public static HiveToken convert(RelDataType optiqType) {
+  public static HiveToken hiveToken(RelDataType optiqType) {
     HiveToken ht = null;
 
     switch (optiqType.getSqlTypeName()) {

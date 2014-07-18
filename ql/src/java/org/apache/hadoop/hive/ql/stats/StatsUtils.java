@@ -87,6 +87,7 @@ public class StatsUtils {
 
   private static final Log LOG = LogFactory.getLog(StatsUtils.class.getName());
 
+
   /**
    * Collect table, partition and column level statistics
    * @param conf
@@ -103,11 +104,18 @@ public class StatsUtils {
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, TableScanOperator tableScanOperator) {
 
-    Statistics stats = new Statistics();
-
     // column level statistics are required only for the columns that are needed
     List<ColumnInfo> schema = tableScanOperator.getSchema().getSignature();
     List<String> neededColumns = tableScanOperator.getNeededColumns();
+    
+    return collectStatistics(conf, partList, table, schema, neededColumns);
+  }
+
+  public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
+      Table table, List<ColumnInfo> schema, List<String> neededColumns) {
+
+    Statistics stats = new Statistics();
+
     boolean fetchColStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
     boolean fetchPartStats =

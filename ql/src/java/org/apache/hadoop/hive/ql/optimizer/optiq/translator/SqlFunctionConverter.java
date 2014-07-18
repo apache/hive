@@ -28,21 +28,31 @@ import org.eigenbase.sql.type.SqlTypeFamily;
 import org.eigenbase.util.Util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 public class SqlFunctionConverter {
   static final Map<String, SqlOperator>    hiveToOptiq;
   static final Map<SqlOperator, HiveToken> optiqToHiveToken;
+  static final Map<SqlOperator, String>    reverseOperatorMap;
+
 
   static {
     Builder builder = new Builder();
     hiveToOptiq = builder.hiveToOptiq;
     optiqToHiveToken = builder.optiqToHiveToken;
+    reverseOperatorMap = ImmutableMap.copyOf(builder.reverseOperatorMap);
   }
 
   public static SqlOperator getOptiqOperator(GenericUDF hiveUDF,
       ImmutableList<RelDataType> optiqArgTypes, RelDataType retType) {
     return getOptiqFn(getName(hiveUDF), optiqArgTypes, retType);
+  }
+
+  public static GenericUDF getHiveUDF(SqlOperator op) {
+    String name = reverseOperatorMap.get(op);
+    FunctionInfo hFn = name != null ? FunctionRegistry.getFunctionInfo(name) : null;
+    return hFn == null ? null : hFn.getGenericUDF();
   }
 
   // TODO: 1) handle Agg Func Name translation 2) is it correct to add func args
@@ -93,7 +103,7 @@ public class SqlFunctionConverter {
   private static class Builder {
     final Map<String, SqlOperator>    hiveToOptiq      = Maps.newHashMap();
     final Map<SqlOperator, HiveToken> optiqToHiveToken = Maps.newHashMap();
-
+    final Map<SqlOperator, String>    reverseOperatorMap      = Maps.newHashMap();
     Builder() {
       registerFunction("+", SqlStdOperatorTable.PLUS, hToken(HiveParser.PLUS, "+"));
       registerFunction("-", SqlStdOperatorTable.MINUS, hToken(HiveParser.MINUS, "-"));
@@ -113,6 +123,7 @@ public class SqlFunctionConverter {
     }
 
     private void registerFunction(String name, SqlOperator optiqFn, HiveToken hiveToken) {
+      reverseOperatorMap.put(optiqFn, name);
       FunctionInfo hFn = FunctionRegistry.getFunctionInfo(name);
       if (hFn != null) {
         String hFnName = getName(hFn.getGenericUDF());
@@ -142,10 +153,12 @@ public class SqlFunctionConverter {
       m_retType = retType;
     }
 
+    @Override
     public List<RelDataType> getParameterTypes(final RelDataTypeFactory typeFactory) {
       return m_argTypes;
     }
 
+    @Override
     public RelDataType getReturnType(final RelDataTypeFactory typeFactory) {
       return m_retType;
     }
