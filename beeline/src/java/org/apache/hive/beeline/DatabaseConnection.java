@@ -30,7 +30,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -54,6 +53,9 @@ class DatabaseConnection {
   private Schema schema = null;
   private Completor sqlCompletor = null;
 
+  public boolean isClosed() {
+    return (null == connection);
+  }
 
   public DatabaseConnection(BeeLine beeLine, String driver, String url,
        Properties info) throws SQLException {
@@ -101,15 +103,6 @@ class DatabaseConnection {
 
   /**
    * Connection to the specified data source.
-   *
-   * @param driver
-   *          the driver class
-   * @param url
-   *          the connection URL
-   * @param username
-   *          the username
-   * @param password
-   *          the password
    */
   boolean connect() throws SQLException {
     try {
