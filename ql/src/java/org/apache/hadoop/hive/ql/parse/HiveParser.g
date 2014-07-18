@@ -264,6 +264,7 @@ TOK_RESOURCE_ALL;
 TOK_GRANT_WITH_OPTION;
 TOK_GRANT_WITH_ADMIN_OPTION;
 TOK_ADMIN_OPTION_FOR;
+TOK_GRANT_OPTION_FOR;
 TOK_PRIV_ALL;
 TOK_PRIV_ALTER_METADATA;
 TOK_PRIV_ALTER_DATA;
@@ -1388,8 +1389,8 @@ grantPrivileges
 revokePrivileges
 @init {pushMsg("revoke privileges", state);}
 @afer {popMsg(state);}
-    : KW_REVOKE privilegeList privilegeObject? KW_FROM principalSpecification
-    -> ^(TOK_REVOKE privilegeList principalSpecification privilegeObject?)
+    : KW_REVOKE grantOptionFor? privilegeList privilegeObject? KW_FROM principalSpecification
+    -> ^(TOK_REVOKE privilegeList principalSpecification privilegeObject? grantOptionFor?)
     ;
 
 grantRole
@@ -1525,6 +1526,13 @@ withGrantOption
     : KW_WITH KW_GRANT KW_OPTION
     -> ^(TOK_GRANT_WITH_OPTION)
     ;
+
+grantOptionFor
+@init {pushMsg("grant option for", state);}
+@after {popMsg(state);}
+    : KW_GRANT KW_OPTION KW_FOR
+    -> ^(TOK_GRANT_OPTION_FOR)
+;
 
 adminOptionFor
 @init {pushMsg("admin option for", state);}

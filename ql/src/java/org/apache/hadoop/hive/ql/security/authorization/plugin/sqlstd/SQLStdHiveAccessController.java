@@ -236,7 +236,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       // So this will revoke privileges that are granted by other users.This is
       // not SQL compliant behavior. Need to change/add a metastore api
       // that has desired behavior.
-      metastoreClient.revoke_privileges(new PrivilegeBag(revokePrivs));
+      metastoreClient.revoke_privileges(new PrivilegeBag(revokePrivs), grantOption);
     } catch (Exception e) {
       throw new HiveAuthzPluginException("Error revoking privileges", e);
     }
