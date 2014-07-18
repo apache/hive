@@ -70,6 +70,8 @@ import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
+import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeRequest;
+import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeResponse;
 import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GrantRevokeType;
@@ -1494,7 +1496,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public boolean grant_privileges(PrivilegeBag privileges)
       throws MetaException, TException {
-    return client.grant_privileges(privileges);
+    GrantRevokePrivilegeRequest req = new GrantRevokePrivilegeRequest();
+    req.setRequestType(GrantRevokeType.GRANT);
+    req.setPrivileges(privileges);
+    GrantRevokePrivilegeResponse res = client.grant_revoke_privileges(req);
+    if (!res.isSetSuccess()) {
+      throw new MetaException("GrantRevokePrivilegeResponse missing success field");
+    }
+    return res.isSuccess();
   }
 
   @Override
@@ -1514,9 +1523,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public boolean revoke_privileges(PrivilegeBag privileges) throws MetaException,
+  public boolean revoke_privileges(PrivilegeBag privileges, boolean grantOption) throws MetaException,
       TException {
-    return client.revoke_privileges(privileges);
+    GrantRevokePrivilegeRequest req = new GrantRevokePrivilegeRequest();
+    req.setRequestType(GrantRevokeType.REVOKE);
+    req.setPrivileges(privileges);
+    req.setRevokeGrantOption(grantOption);
+    GrantRevokePrivilegeResponse res = client.grant_revoke_privileges(req);
+    if (!res.isSetSuccess()) {
+      throw new MetaException("GrantRevokePrivilegeResponse missing success field");
+    }
+    return res.isSuccess();
   }
 
   @Override

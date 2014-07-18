@@ -85,6 +85,8 @@ import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
+import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeRequest;
+import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeResponse;
 import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GrantRevokeType;
@@ -4128,13 +4130,44 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public GrantRevokePrivilegeResponse grant_revoke_privileges(GrantRevokePrivilegeRequest request)
+        throws MetaException, org.apache.thrift.TException {
+      GrantRevokePrivilegeResponse response = new GrantRevokePrivilegeResponse();
+      switch (request.getRequestType()) {
+        case GRANT: {
+          boolean result = grant_privileges(request.getPrivileges());
+          response.setSuccess(result);
+          break;
+        }
+        case REVOKE: {
+          boolean revokeGrantOption = false;
+          if (request.isSetRevokeGrantOption()) {
+            revokeGrantOption = request.isRevokeGrantOption();
+          }
+          boolean result = revoke_privileges(request.getPrivileges(), revokeGrantOption);
+          response.setSuccess(result);
+          break;
+        }
+        default:
+          throw new MetaException("Unknown request type " + request.getRequestType());
+      }
+
+      return response;
+    }
+
+    @Override
     public boolean revoke_privileges(final PrivilegeBag privileges)
+        throws MetaException, TException {
+      return revoke_privileges(privileges, false);
+    }
+
+    public boolean revoke_privileges(final PrivilegeBag privileges, boolean grantOption)
         throws MetaException, TException {
       incrementCounter("revoke_privileges");
       firePreEvent(new PreAuthorizationCallEvent(this));
       Boolean ret = null;
       try {
-        ret = getMS().revokePrivileges(privileges);
+        ret = getMS().revokePrivileges(privileges, grantOption);
       } catch (MetaException e) {
         throw e;
       } catch (Exception e) {

@@ -74,6 +74,13 @@ set user.name=user2;
 SHOW GRANT USER user2 ON TABLE table_priv_rev;
 set user.name=user1;
 
+-- revoke grant option for select privilege from user2
+REVOKE GRANT OPTION FOR SELECT ON TABLE table_priv_rev FROM USER user2;
+
+set user.name=user2;
+SHOW GRANT USER user2 ON TABLE table_priv_rev;
+set user.name=user1;
+
 -- revoke select privilege from user2
 REVOKE SELECT ON TABLE table_priv_rev FROM USER user2;
 

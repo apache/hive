@@ -452,7 +452,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       RevokeDesc revokeDesc = work.getRevokeDesc();
       if (revokeDesc != null) {
         return grantOrRevokePrivileges(revokeDesc.getPrincipals(), revokeDesc
-            .getPrivileges(), revokeDesc.getPrivilegeSubjectDesc(), null, null, false, false);
+            .getPrivileges(), revokeDesc.getPrivilegeSubjectDesc(), null, null,
+            revokeDesc.isGrantOption(), false);
       }
 
       ShowGrantDesc showGrantDesc = work.getShowGrantDesc();
@@ -882,8 +883,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (isGrant) {
           db.grantPrivileges(privBag);
         } else {
-          db.revokePrivileges(privBag);
+          db.revokePrivileges(privBag, grantOption);
         }
+        
       }
     } catch (Exception e) {
       console.printError("Error: " + e.getMessage());

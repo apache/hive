@@ -3916,7 +3916,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean revokePrivileges(PrivilegeBag privileges)
+  public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
       throws InvalidObjectException, MetaException, NoSuchObjectException {
     boolean committed = false;
     try {
@@ -3950,6 +3950,14 @@ public class ObjectStore implements RawStore, Configurable {
                   String userGrantPrivs = userGrant.getPrivilege();
                   if (privilege.equals(userGrantPrivs)) {
                     found = true;
+                    if (grantOption) {
+                      if (userGrant.getGrantOption()) {
+                        userGrant.setGrantOption(false);
+                      } else {
+                        throw new MetaException("User " + userName
+                            + " does not have grant option with privilege " + privilege);
+                      }
+                    }
                     persistentObjs.add(userGrant);
                     break;
                   }
@@ -3973,6 +3981,14 @@ public class ObjectStore implements RawStore, Configurable {
                   String dbGrantPriv = dbGrant.getPrivilege();
                   if (privilege.equals(dbGrantPriv)) {
                     found = true;
+                    if (grantOption) {
+                      if (dbGrant.getGrantOption()) {
+                        dbGrant.setGrantOption(false);
+                      } else {
+                        throw new MetaException("User " + userName
+                            + " does not have grant option with privilege " + privilege);
+                      }
+                    }
                     persistentObjs.add(dbGrant);
                     break;
                   }
@@ -3994,6 +4010,14 @@ public class ObjectStore implements RawStore, Configurable {
                 String tableGrantPriv = tabGrant.getPrivilege();
                 if (privilege.equalsIgnoreCase(tableGrantPriv)) {
                   found = true;
+                  if (grantOption) {
+                    if (tabGrant.getGrantOption()) {
+                      tabGrant.setGrantOption(false);
+                    } else {
+                      throw new MetaException("User " + userName
+                          + " does not have grant option with privilege " + privilege);
+                    }
+                  }
                   persistentObjs.add(tabGrant);
                   break;
                 }
@@ -4020,6 +4044,14 @@ public class ObjectStore implements RawStore, Configurable {
                 String partPriv = partGrant.getPrivilege();
                 if (partPriv.equalsIgnoreCase(privilege)) {
                   found = true;
+                  if (grantOption) {
+                    if (partGrant.getGrantOption()) {
+                      partGrant.setGrantOption(false);
+                    } else {
+                      throw new MetaException("User " + userName
+                          + " does not have grant option with privilege " + privilege);
+                    }
+                  }
                   persistentObjs.add(partGrant);
                   break;
                 }
@@ -4051,6 +4083,14 @@ public class ObjectStore implements RawStore, Configurable {
                     String colPriv = col.getPrivilege();
                     if (colPriv.equalsIgnoreCase(privilege)) {
                       found = true;
+                      if (grantOption) {
+                        if (col.getGrantOption()) {
+                          col.setGrantOption(false);
+                        } else {
+                          throw new MetaException("User " + userName
+                              + " does not have grant option with privilege " + privilege);
+                        }
+                      }
                       persistentObjs.add(col);
                       break;
                     }
@@ -4075,6 +4115,14 @@ public class ObjectStore implements RawStore, Configurable {
                     String colPriv = col.getPrivilege();
                     if (colPriv.equalsIgnoreCase(privilege)) {
                       found = true;
+                      if (grantOption) {
+                        if (col.getGrantOption()) {
+                          col.setGrantOption(false);
+                        } else {
+                          throw new MetaException("User " + userName
+                              + " does not have grant option with privilege " + privilege);
+                        }
+                      }
                       persistentObjs.add(col);
                       break;
                     }
@@ -4095,7 +4143,12 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       if (persistentObjs.size() > 0) {
-        pm.deletePersistentAll(persistentObjs);
+        if (grantOption) {
+          // If grant option specified, only update the privilege, don't remove it.
+          // Grant option has already been removed from the privileges in the section above
+        } else {
+          pm.deletePersistentAll(persistentObjs);
+        }
       }
       committed = commitTransaction();
     } finally {

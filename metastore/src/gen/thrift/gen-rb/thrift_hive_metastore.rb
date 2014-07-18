@@ -1560,6 +1560,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'revoke_privileges failed: unknown result')
     end
 
+    def grant_revoke_privileges(request)
+      send_grant_revoke_privileges(request)
+      return recv_grant_revoke_privileges()
+    end
+
+    def send_grant_revoke_privileges(request)
+      send_message('grant_revoke_privileges', Grant_revoke_privileges_args, :request => request)
+    end
+
+    def recv_grant_revoke_privileges()
+      result = receive_message(Grant_revoke_privileges_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'grant_revoke_privileges failed: unknown result')
+    end
+
     def set_ugi(user_name, group_names)
       send_set_ugi(user_name, group_names)
       return recv_set_ugi()
@@ -3050,6 +3066,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'revoke_privileges', seqid)
+    end
+
+    def process_grant_revoke_privileges(seqid, iprot, oprot)
+      args = read_args(iprot, Grant_revoke_privileges_args)
+      result = Grant_revoke_privileges_result.new()
+      begin
+        result.success = @handler.grant_revoke_privileges(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'grant_revoke_privileges', seqid)
     end
 
     def process_set_ugi(seqid, iprot, oprot)
@@ -6795,6 +6822,40 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Grant_revoke_privileges_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::GrantRevokePrivilegeRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Grant_revoke_privileges_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GrantRevokePrivilegeResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

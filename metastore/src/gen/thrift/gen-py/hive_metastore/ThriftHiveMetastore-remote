@@ -114,6 +114,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   list_privileges(string principal_name, PrincipalType principal_type, HiveObjectRef hiveObject)'
   print '  bool grant_privileges(PrivilegeBag privileges)'
   print '  bool revoke_privileges(PrivilegeBag privileges)'
+  print '  GrantRevokePrivilegeResponse grant_revoke_privileges(GrantRevokePrivilegeRequest request)'
   print '   set_ugi(string user_name,  group_names)'
   print '  string get_delegation_token(string token_owner, string renewer_kerberos_principal_name)'
   print '  i64 renew_delegation_token(string token_str_form)'
@@ -727,6 +728,12 @@ elif cmd == 'revoke_privileges':
     print 'revoke_privileges requires 1 args'
     sys.exit(1)
   pp.pprint(client.revoke_privileges(eval(args[0]),))
+
+elif cmd == 'grant_revoke_privileges':
+  if len(args) != 1:
+    print 'grant_revoke_privileges requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.grant_revoke_privileges(eval(args[0]),))
 
 elif cmd == 'set_ugi':
   if len(args) != 2:
