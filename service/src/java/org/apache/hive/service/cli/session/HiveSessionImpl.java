@@ -98,6 +98,7 @@ public class HiveSessionImpl implements HiveSession {
     hiveConf.setInt(ListSinkOperator.OUTPUT_PROTOCOL, protocol.getValue());
 
     sessionState = new SessionState(hiveConf, username);
+    sessionState.setUserIpAddress(ipAddress);
     sessionState.setIsHiveServerQuery(true);
     SessionState.start(sessionState);
 

@@ -101,6 +101,8 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext.CLIENT_TYPE;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
@@ -445,7 +447,7 @@ public class Driver implements CommandProcessor {
 
         try {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
-          doAuthorization(sem);
+          doAuthorization(sem, command);
         } catch (AuthorizationException authExp) {
           console.printError("Authorization failed:" + authExp.getMessage()
               + ". Use SHOW GRANT to get more details.");
@@ -483,15 +485,25 @@ public class Driver implements CommandProcessor {
     }
   }
 
-  public static void doAuthorization(BaseSemanticAnalyzer sem)
+  /**
+   * Do authorization using post semantic analysis information in the semantic analyzer
+   * The original command is also passed so that authorization interface can provide
+   * more useful information in logs.
+   * @param sem
+   * @param command
+   * @throws HiveException
+   * @throws AuthorizationException
+   */
+  public static void doAuthorization(BaseSemanticAnalyzer sem, String command)
       throws HiveException, AuthorizationException {
     HashSet<ReadEntity> inputs = sem.getInputs();
     HashSet<WriteEntity> outputs = sem.getOutputs();
     SessionState ss = SessionState.get();
     HiveOperation op = ss.getHiveOperation();
     Hive db = sem.getDb();
+
     if (ss.isAuthorizationModeV2()) {
-      doAuthorizationV2(ss, op, inputs, outputs);
+      doAuthorizationV2(ss, op, inputs, outputs, command);
       return;
     }
     if (op == null) {
@@ -672,11 +684,20 @@ public class Driver implements CommandProcessor {
   }
 
   private static void doAuthorizationV2(SessionState ss, HiveOperation op, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) throws HiveException {
+      HashSet<WriteEntity> outputs, String command) throws HiveException {
+
+    HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
+
+    authzContextBuilder.setClientType(ss.isHiveServerQuery() ? CLIENT_TYPE.HIVESERVER2
+        : CLIENT_TYPE.HIVECLI);
+    authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
+    authzContextBuilder.setSessionString(ss.getSessionId());
+    authzContextBuilder.setCommandString(command);
+
     HiveOperationType hiveOpType = getHiveOperationType(op);
     List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputs);
     List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputs);
-    ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs);
+    ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs, authzContextBuilder.build());
     return;
   }
 
