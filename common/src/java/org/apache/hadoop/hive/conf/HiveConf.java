@@ -984,6 +984,7 @@ public class HiveConf extends Configuration {
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true,
         "Whether to push predicates down into storage handlers.  Ignored when hive.optimize.ppd is false."),
     HIVEMETADATAONLYQUERIES("hive.optimize.metadataonly", true, ""),
+    HIVENULLSCANOPTIMIZE("hive.optimize.null.scan", true, "Dont scan relations which are guaranteed to not generate any rows"),
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true,
         "Whether to push predicates down to storage handlers"),
     HIVEOPTGROUPBY("hive.optimize.groupby", true,
@@ -1820,19 +1821,25 @@ public class HiveConf extends Configuration {
 
     enum VarType {
       STRING {
+        @Override
         void checkType(String value) throws Exception { }
+        @Override
         String defaultValueString(ConfVars confVar) { return confVar.defaultStrVal; }
       },
       INT {
+        @Override
         void checkType(String value) throws Exception { Integer.valueOf(value); }
       },
       LONG {
+        @Override
         void checkType(String value) throws Exception { Long.valueOf(value); }
       },
       FLOAT {
+        @Override
         void checkType(String value) throws Exception { Float.valueOf(value); }
       },
       BOOLEAN {
+        @Override
         void checkType(String value) throws Exception { Boolean.valueOf(value); }
       };
 
