@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * Context class for vectorization execution.
@@ -393,13 +394,30 @@ public class VectorizationContext {
 
     List<ExprNodeDesc> childrenWithCasts = new ArrayList<ExprNodeDesc>();
     boolean atleastOneCastNeeded = false;
-    for (ExprNodeDesc child : children) {
-      ExprNodeDesc castExpression = getImplicitCastExpression(genericUDF, child, commonType);
-      if (castExpression != null) {
-        atleastOneCastNeeded = true;
-        childrenWithCasts.add(castExpression);
-      } else {
-        childrenWithCasts.add(child);
+    if (genericUDF instanceof GenericUDFElt) {
+      int i = 0;
+      for (ExprNodeDesc child : children) {
+        TypeInfo castType = commonType;
+        if (i++ == 0) {
+          castType = isIntFamily(child.getTypeString()) ? child.getTypeInfo() : TypeInfoFactory.intTypeInfo;
+        }
+        ExprNodeDesc castExpression = getImplicitCastExpression(genericUDF, child, castType);
+        if (castExpression != null) {
+          atleastOneCastNeeded = true;
+          childrenWithCasts.add(castExpression);
+        } else {
+          childrenWithCasts.add(child);
+        }
+      }
+    } else {
+      for (ExprNodeDesc child : children) {
+        ExprNodeDesc castExpression = getImplicitCastExpression(genericUDF, child, commonType);
+        if (castExpression != null) {
+          atleastOneCastNeeded = true;
+          childrenWithCasts.add(castExpression);
+        } else {
+          childrenWithCasts.add(child);
+        }
       }
     }
     if (atleastOneCastNeeded) {
@@ -484,7 +502,7 @@ public class VectorizationContext {
     } else {
 
       // Casts to exact types including long to double etc. are needed in some special cases.
-      if (udf instanceof GenericUDFCoalesce) {
+      if (udf instanceof GenericUDFCoalesce || udf instanceof GenericUDFElt) {
         GenericUDF genericUdf = getGenericUDFForCast(castType);
         List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
         children.add(child);
@@ -896,6 +914,10 @@ public class VectorizationContext {
 
       // Coalesce is a special case because it can take variable number of arguments.
       return getCoalesceExpression(childExpr, returnType);
+    } else if (udf instanceof GenericUDFElt) {
+
+      // Coalesce is a special case because it can take variable number of arguments.
+      return getEltExpression(childExpr, returnType);
     } else if (udf instanceof GenericUDFBridge) {
       VectorExpression v = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode,
           returnType);
@@ -938,6 +960,33 @@ public class VectorizationContext {
       vectorCoalesce.setOutputType(returnType.getTypeName());
       vectorCoalesce.setChildExpressions(vectorChildren);
       return vectorCoalesce;
+    } finally {
+      // Free the output columns of the child expressions.
+      if (vectorChildren != null) {
+        for (VectorExpression v : vectorChildren) {
+          ocm.freeOutputColumn(v.getOutputColumn());
+        }
+      }
+    }
+  }
+
+  private VectorExpression getEltExpression(List<ExprNodeDesc> childExpr, TypeInfo returnType)
+      throws HiveException {
+    int[] inputColumns = new int[childExpr.size()];
+    VectorExpression[] vectorChildren = null;
+    try {
+      vectorChildren = getVectorExpressions(childExpr, Mode.PROJECTION);
+
+      int i = 0;
+      for (VectorExpression ve : vectorChildren) {
+        inputColumns[i++] = ve.getOutputColumn();
+      }
+
+      int outColumn = ocm.allocateOutputColumn(getNormalizedTypeName(returnType.getTypeName()));
+      VectorElt vectorElt = new VectorElt(inputColumns, outColumn);
+      vectorElt.setOutputType(returnType.getTypeName());
+      vectorElt.setChildExpressions(vectorChildren);
+      return vectorElt;
     } finally {
       // Free the output columns of the child expressions.
       if (vectorChildren != null) {
