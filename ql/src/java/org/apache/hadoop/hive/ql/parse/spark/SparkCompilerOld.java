@@ -15,7 +15,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.parse.spark;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -33,6 +34,10 @@ import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.parse.GlobalLimitCtx;
+import org.apache.hadoop.hive.ql.parse.MapReduceCompiler;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -44,23 +49,28 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  * SparkCompiler translates the operator plan into SparkTask.
  * TODO: currently extending MapReduceCompiler in order to make POC work. It will
  *       stand alone parallel to MapReduceCompiler.
+ * TODO: remove this class.
  */
-public class SparkCompiler extends MapReduceCompiler {
+public class SparkCompilerOld extends MapReduceCompiler {
+  private final Log logger = LogFactory.getLog(SparkCompilerOld.class);
 
-  protected final Log LOG = LogFactory.getLog(SparkCompiler.class);
-
-  public SparkCompiler() {
+  public SparkCompilerOld() {
   }
 
   @Override
   public void init(HiveConf conf, LogHelper console, Hive db) {
     super.init(conf, console, db);
+
     // Any Spark specific configuration
+    // We require the use of recursive input dirs for union processing
+//    conf.setBoolean("mapred.input.dir.recursive", true);
+//    HiveConf.setBoolVar(conf, ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
   }
 
   @Override
   protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException {
+    // TODO: add optimization that's related to Spark
   }
 
   private static int counter = 0;

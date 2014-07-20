@@ -25,38 +25,45 @@ public class SparkEdgeProperty {
   public static long SHUFFLE_GROUP = 1; // Shuffle, keys are coming together
   public static long SHUFFLE_SORT = 2;  // Shuffle, keys are sorted
 
-  private long value;
+  private long edgeType;
   
-  public SparkEdgeProperty(long value) {
-    this.value = value;
+  private int numPartitions;
+  
+  public SparkEdgeProperty(long edgeType, int numPartitions) {
+    this.edgeType = edgeType;
+    this.numPartitions = numPartitions;
   }
   
+  public SparkEdgeProperty(int edgeType) {
+    this.edgeType = edgeType;
+  }
+
   public boolean isShuffleNone() {
-    return value == SHUFFLE_NONE;
+    return edgeType == SHUFFLE_NONE;
   }
   
   public void setShuffleNone() {
-    value = SHUFFLE_NONE;
+    edgeType = SHUFFLE_NONE;
   }
 
   public boolean isShuffleGroup() {
-    return (value & SHUFFLE_GROUP) != 0;
+    return (edgeType & SHUFFLE_GROUP) != 0;
   }
   
   public void setShuffleGroup() {
-    value |= SHUFFLE_GROUP;
+    edgeType |= SHUFFLE_GROUP;
   }
   
   public boolean isShuffleSort() {
-    return (value & SHUFFLE_SORT) != 0;
+    return (edgeType & SHUFFLE_SORT) != 0;
   }
 
   public void setShuffleSort() {
-    value |= SHUFFLE_SORT;
+    edgeType |= SHUFFLE_SORT;
   }
   
-  public long getValue() {
-    return value;
+  public long getEdgeType() {
+    return edgeType;
   }
 
   @Explain(displayName = "Shuffle Type")
@@ -79,6 +86,14 @@ public class SparkEdgeProperty {
     }
 
     return sb.toString();
+  }
+
+  public int getNumPartitions() {
+    return numPartitions;
+  }
+
+  public void setNumPartitions(int numPartitions) {
+    this.numPartitions = numPartitions;
   }
 }
 

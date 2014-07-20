@@ -307,8 +307,10 @@ public class SparkWork extends AbstractOperatorDesc {
   
   public ReduceWork getReduceWork() {
     Iterator<BaseWork> it = leaves.iterator();
-    if (it.hasNext())
-      return (ReduceWork)leaves.iterator().next();
+    if (it.hasNext()) {
+      BaseWork work = leaves.iterator().next();
+      return (work instanceof ReduceWork) ? (ReduceWork)work : null;
+    }
     return null;
   }
 
