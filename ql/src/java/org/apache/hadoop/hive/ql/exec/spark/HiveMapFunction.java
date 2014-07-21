@@ -51,11 +51,6 @@ BytesWritable, BytesWritable> {
   call(Iterator<Tuple2<BytesWritable, BytesWritable>> it) throws Exception {
     if (jobConf == null) {
       jobConf = KryoSerializer.deserializeJobConf(this.buffer);
-      Path path = new Path(jobConf.getWorkingDirectory(), "plan.xml");
-      FSDataInputStream in = path.getFileSystem(jobConf).open(path);
-      MapWork mw = Utilities.deserializePlan(in, MapWork.class, jobConf);
-      
-      Utilities.setMapWork(jobConf, mw);
       mapper = new ExecMapper();
       mapper.configure(jobConf);
       collector = new SparkCollector();
