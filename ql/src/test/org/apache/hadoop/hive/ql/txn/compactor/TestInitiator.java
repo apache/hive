@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -187,7 +186,7 @@ public class TestInitiator extends CompactorTest {
     startInitiator(conf);
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertNull(rsp.getCompacts());
+    Assert.assertEquals(0, rsp.getCompactsSize());
   }
 
   @Test
@@ -246,7 +245,7 @@ public class TestInitiator extends CompactorTest {
     startInitiator(conf);
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertNull(rsp.getCompacts());
+    Assert.assertEquals(0, rsp.getCompactsSize());
   }
 
   @Test
@@ -379,7 +378,7 @@ public class TestInitiator extends CompactorTest {
     startInitiator(conf);
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertNull(rsp.getCompacts());
+    Assert.assertEquals(0, rsp.getCompactsSize());
   }
 
   @Test
@@ -492,7 +491,7 @@ public class TestInitiator extends CompactorTest {
     startInitiator(conf);
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertNull(rsp.getCompacts());
+    Assert.assertEquals(0, rsp.getCompactsSize());
   }
 
   @Test
