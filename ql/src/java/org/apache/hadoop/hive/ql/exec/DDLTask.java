@@ -198,6 +198,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.hive.common.util.AnnotationUtils;
 import org.stringtemplate.v4.ST;
 
 /**
@@ -3214,7 +3215,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         funcClass = functionInfo.getFunctionClass();
       }
       if (funcClass != null) {
-        desc = funcClass.getAnnotation(Description.class);
+        desc = AnnotationUtils.getAnnotation(funcClass, Description.class);
       }
       if (desc != null) {
         outStream.writeBytes(desc.value().replace("_FUNC_", funcName));

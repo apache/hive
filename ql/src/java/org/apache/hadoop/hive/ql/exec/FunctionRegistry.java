@@ -144,6 +144,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.AnnotationUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -1613,14 +1614,14 @@ public final class FunctionRegistry {
       // the deterministic annotation declares
       return false;
     }
-    UDFType genericUDFType = genericUDF.getClass().getAnnotation(UDFType.class);
+    UDFType genericUDFType = AnnotationUtils.getAnnotation(genericUDF.getClass(), UDFType.class);
     if (genericUDFType != null && genericUDFType.deterministic() == false) {
       return false;
     }
 
     if (genericUDF instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) (genericUDF);
-      UDFType bridgeUDFType = bridge.getUdfClass().getAnnotation(UDFType.class);
+      UDFType bridgeUDFType = AnnotationUtils.getAnnotation(bridge.getUdfClass(), UDFType.class);
       if (bridgeUDFType != null && bridgeUDFType.deterministic() == false) {
         return false;
       }
@@ -1638,14 +1639,14 @@ public final class FunctionRegistry {
    * Returns whether a GenericUDF is stateful or not.
    */
   public static boolean isStateful(GenericUDF genericUDF) {
-    UDFType genericUDFType = genericUDF.getClass().getAnnotation(UDFType.class);
+    UDFType genericUDFType = AnnotationUtils.getAnnotation(genericUDF.getClass(), UDFType.class);
     if (genericUDFType != null && genericUDFType.stateful()) {
       return true;
     }
 
     if (genericUDF instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) genericUDF;
-      UDFType bridgeUDFType = bridge.getUdfClass().getAnnotation(UDFType.class);
+      UDFType bridgeUDFType = AnnotationUtils.getAnnotation(bridge.getUdfClass(), UDFType.class);
       if (bridgeUDFType != null && bridgeUDFType.stateful()) {
         return true;
       }
@@ -1884,7 +1885,7 @@ public final class FunctionRegistry {
   /**
    * Both UDF and UDAF functions can imply order for analytical functions
    *
-   * @param name
+   * @param functionName
    *          name of function
    * @return true if a GenericUDF or GenericUDAF exists for this name and implyOrder is true, false
    *         otherwise.
@@ -1894,7 +1895,8 @@ public final class FunctionRegistry {
     FunctionInfo info = getFunctionInfo(functionName);
     if (info != null) {
       if (info.isGenericUDF()) {
-        UDFType type = info.getGenericUDF().getClass().getAnnotation(UDFType.class);
+        UDFType type =
+            AnnotationUtils.getAnnotation(info.getGenericUDF().getClass(), UDFType.class);
         if (type != null) {
           return type.impliesOrder();
         }
@@ -1961,7 +1963,8 @@ public final class FunctionRegistry {
     FunctionInfo info = getFunctionInfo(name);
     GenericUDAFResolver res = info.getGenericUDAFResolver();
     if (res != null){
-      WindowFunctionDescription desc = res.getClass().getAnnotation(WindowFunctionDescription.class);
+      WindowFunctionDescription desc =
+          AnnotationUtils.getAnnotation(res.getClass(), WindowFunctionDescription.class);
       if (desc != null){
         return desc.rankingFunction();
       }
