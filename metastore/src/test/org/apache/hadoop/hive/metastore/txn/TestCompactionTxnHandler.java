@@ -17,15 +17,12 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import junit.framework.Assert;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -200,7 +197,7 @@ public class TestCompactionTxnHandler {
     assertEquals(0, txnHandler.findReadyToClean().size());
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    assertNull(rsp.getCompacts());
+    assertEquals(0, rsp.getCompactsSize());
   }
 
   @Test
