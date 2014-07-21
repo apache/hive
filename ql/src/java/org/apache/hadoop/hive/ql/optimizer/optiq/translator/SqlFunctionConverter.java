@@ -10,6 +10,8 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeFactory;
 import org.eigenbase.sql.SqlAggFunction;
@@ -49,10 +51,52 @@ public class SqlFunctionConverter {
     return getOptiqFn(getName(hiveUDF), optiqArgTypes, retType);
   }
 
-  public static GenericUDF getHiveUDF(SqlOperator op) {
+  public static GenericUDF getHiveUDF(SqlOperator op, RelDataType dt) {
     String name = reverseOperatorMap.get(op);
     FunctionInfo hFn = name != null ? FunctionRegistry.getFunctionInfo(name) : null;
+    if (hFn == null)
+      hFn = handleExplicitCast(op, dt);
     return hFn == null ? null : hFn.getGenericUDF();
+  }
+
+  private static FunctionInfo handleExplicitCast(SqlOperator op, RelDataType dt) {
+    FunctionInfo castUDF = null;
+
+    if (op.kind == SqlKind.CAST) {
+      TypeInfo castType = TypeConverter.convert(dt);
+
+      if (castType.equals(TypeInfoFactory.byteTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("tinyint");
+      } else if (castType.equals(TypeInfoFactory.charTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("char");
+      } else if (castType.equals(TypeInfoFactory.varcharTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("varchar");
+      } else if (castType.equals(TypeInfoFactory.stringTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("string");
+      } else if (castType.equals(TypeInfoFactory.booleanTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("boolean");
+      } else if (castType.equals(TypeInfoFactory.shortTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("smallint");
+      } else if (castType.equals(TypeInfoFactory.intTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("int");
+      } else if (castType.equals(TypeInfoFactory.longTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("bigint");
+      } else if (castType.equals(TypeInfoFactory.floatTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("float");
+      } else if (castType.equals(TypeInfoFactory.doubleTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("double");
+      } else if (castType.equals(TypeInfoFactory.timestampTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("timestamp");
+      } else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("datetime");
+      } else if (castType.equals(TypeInfoFactory.decimalTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("decimal");
+      } else if (castType.equals(TypeInfoFactory.binaryTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("binary");
+      }
+    }
+
+    return castUDF;
   }
 
   // TODO: 1) handle Agg Func Name translation 2) is it correct to add func args

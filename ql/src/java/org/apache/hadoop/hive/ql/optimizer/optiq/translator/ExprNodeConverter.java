@@ -41,11 +41,10 @@ import org.eigenbase.rex.RexVisitorImpl;
 public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
   RelDataType rType;
-  String tabAlias;
-  boolean partitioningExpr;
+  String      tabAlias;
+  boolean     partitioningExpr;
 
-  public ExprNodeConverter(String tabAlias, RelDataType rType,
-      boolean partitioningExpr) {
+  public ExprNodeConverter(String tabAlias, RelDataType rType, boolean partitioningExpr) {
     super(true);
     /*
      * hb: 6/25/14 for now we only support expressions that only contain
@@ -63,8 +62,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   @Override
   public ExprNodeDesc visitInputRef(RexInputRef inputRef) {
     RelDataTypeField f = rType.getFieldList().get(inputRef.getIndex());
-    return new ExprNodeColumnDesc(TypeConverter.convert(f.getType()),
-        f.getName(), tabAlias, partitioningExpr);
+    return new ExprNodeColumnDesc(TypeConverter.convert(f.getType()), f.getName(), tabAlias,
+        partitioningExpr);
   }
 
   @Override
@@ -80,59 +79,53 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     }
 
     return new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
-        SqlFunctionConverter.getHiveUDF(call.getOperator()), args);
+        SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType()), args);
   }
 
   @Override
   public ExprNodeDesc visitLiteral(RexLiteral literal) {
     RelDataType lType = literal.getType();
 
-    switch (literal.getTypeName()) {
+    switch (literal.getType().getSqlTypeName()) {
     case BOOLEAN:
-      return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo,
-          literal.getValue3());
+      return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, Boolean.valueOf(RexLiteral
+          .booleanValue(literal)));
     case TINYINT:
-      return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo,
-          literal.getValue3());
+      return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo, Byte.valueOf(((Number) literal
+          .getValue3()).byteValue()));
     case SMALLINT:
       return new ExprNodeConstantDesc(TypeInfoFactory.shortTypeInfo,
-          literal.getValue3());
+          Short.valueOf(((Number) literal.getValue3()).shortValue()));
     case INTEGER:
       return new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo,
-          literal.getValue3());
+          Integer.valueOf(((Number) literal.getValue3()).intValue()));
     case BIGINT:
-      return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo,
-          literal.getValue3());
+      return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long.valueOf(((Number) literal
+          .getValue3()).longValue()));
     case FLOAT:
       return new ExprNodeConstantDesc(TypeInfoFactory.floatTypeInfo,
-          literal.getValue3());
+          Float.valueOf(((Number) literal.getValue3()).floatValue()));
     case DOUBLE:
       return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo,
-          literal.getValue3());
+          Double.valueOf(((Number) literal.getValue3()).doubleValue()));
     case DATE:
-      return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
-          literal.getValue3());
+      return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo, literal.getValue3());
     case TIMESTAMP:
-      return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
-          literal.getValue3());
+      return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, literal.getValue3());
     case BINARY:
-      return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo,
-          literal.getValue3());
+      return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
     case DECIMAL:
-      return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(
-          lType.getPrecision(), lType.getScale()), literal.getValue3());
+      return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
+          lType.getScale()), literal.getValue3());
     case VARCHAR:
-      return new ExprNodeConstantDesc(TypeInfoFactory.getVarcharTypeInfo(lType
-          .getPrecision()), 
-          new HiveVarchar((String)literal.getValue3(), lType.getPrecision()));
+      return new ExprNodeConstantDesc(TypeInfoFactory.getVarcharTypeInfo(lType.getPrecision()),
+          new HiveVarchar((String) literal.getValue3(), lType.getPrecision()));
     case CHAR:
-      return new ExprNodeConstantDesc(TypeInfoFactory.getCharTypeInfo(lType
-          .getPrecision()), 
-          new HiveChar((String)literal.getValue3(), lType.getPrecision()));
+      return new ExprNodeConstantDesc(TypeInfoFactory.getCharTypeInfo(lType.getPrecision()),
+          new HiveChar((String) literal.getValue3(), lType.getPrecision()));
     case OTHER:
     default:
-      return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo,
-          literal.getValue3());
+      return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
     }
   }
 

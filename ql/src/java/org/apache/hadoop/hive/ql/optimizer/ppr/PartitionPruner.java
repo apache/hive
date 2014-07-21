@@ -162,7 +162,7 @@ public class PartitionPruner implements Transform {
     LOG.trace("Started pruning partiton");
     LOG.trace("dbname = " + tab.getDbName());
     LOG.trace("tabname = " + tab.getTableName());
-    LOG.trace("prune Expression = " + prunerExpr);
+//    LOG.trace("prune Expression = " + prunerExpr);
 
     String key = tab.getDbName() + "." + tab.getTableName() + ";";
 
