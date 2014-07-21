@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.thrift.TException;
 
 import com.google.common.collect.Lists;
@@ -229,7 +230,7 @@ public class StatsOptimizer implements Transform {
             // our stats for NDV is approx, not accurate.
             return null;
           }
-          if (aggr.getGenericUDAFName().equals(GenericUDAFSum.class.getAnnotation(
+          if (aggr.getGenericUDAFName().equals(AnnotationUtils.getAnnotation(GenericUDAFSum.class,
               Description.class).name())) {
             if(!(aggr.getParameters().get(0) instanceof ExprNodeConstantDesc)){
               return null;
@@ -243,7 +244,7 @@ public class StatsOptimizer implements Transform {
             ois.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
                 PrimitiveCategory.DECIMAL));
           }
-          else if (aggr.getGenericUDAFName().equals(GenericUDAFCount.class.getAnnotation(
+          else if (aggr.getGenericUDAFName().equals(AnnotationUtils.getAnnotation(GenericUDAFCount.class,
               Description.class).name())) {
             Long rowCnt = 0L;
             if ((aggr.getParameters().isEmpty() || aggr.getParameters().get(0) instanceof

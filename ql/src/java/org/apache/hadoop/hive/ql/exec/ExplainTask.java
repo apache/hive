@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -58,6 +57,7 @@ import org.apache.hadoop.hive.ql.security.authorization.AuthorizationFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.AnnotationUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -143,7 +143,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     if (work.getParseContext() != null) {
-      out.print("LOGICAL PLAN:");
+      if (out != null) {
+        out.print("LOGICAL PLAN:");
+      }
       JSONObject jsonPlan = outputMap(work.getParseContext().getTopOps(), true,
                                       out, jsonOutput, work.getExtended(), 0);
       if (out != null) {
@@ -526,7 +528,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private JSONObject outputPlan(Serializable work, PrintStream out,
       boolean extended, boolean jsonOutput, int indent, String appendToHeader) throws Exception {
     // Check if work has an explain annotation
-    Annotation note = work.getClass().getAnnotation(Explain.class);
+    Annotation note = AnnotationUtils.getAnnotation(work.getClass(), Explain.class);
 
     String keyJSONObject = null;
 
@@ -585,7 +587,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     for (Method m : methods) {
       int prop_indents = jsonOutput ? 0 : indent + 2;
-      note = m.getAnnotation(Explain.class);
+      note = AnnotationUtils.getAnnotation(m, Explain.class);
 
       if (note instanceof Explain) {
         Explain xpl_note = (Explain) note;
