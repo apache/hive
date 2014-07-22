@@ -371,10 +371,14 @@ public enum ErrorMsg {
   INVALID_DIR(10252, "{0} is not a directory", true),
   NO_VALID_LOCATIONS(10253, "Could not find any valid location to place the jars. " +
       "Please update hive.jar.directory or hive.user.install.directory with a valid location", false),
-  UNNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP(10254,
+  UNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP(10254,
       "Principal type GROUP is not supported in this authorization setting", "28000"),
   INVALID_TABLE_NAME(10255, "Invalid table name {0}", true),
   INSERT_INTO_IMMUTABLE_TABLE(10256, "Inserting into a non-empty immutable table is not allowed"),
+  UNSUPPORTED_AUTHORIZATION_RESOURCE_TYPE_GLOBAL(10257,
+      "Resource type GLOBAL is not supported in this authorization setting", "28000"),
+  UNSUPPORTED_AUTHORIZATION_RESOURCE_TYPE_COLUMN(10258,
+      "Resource type COLUMN is not supported in this authorization setting", "28000"),
 
   TXNMGR_NOT_SPECIFIED(10260, "Transaction manager not specified correctly, " +
       "set hive.txn.manager"),

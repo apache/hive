@@ -1,4 +1,3 @@
 PREHOOK: query: create role PUBLIC
 PREHOOK: type: CREATEROLE
-Error in role operation create_role on role name public, error message MetaException(message:public role implictly exists. It can't be created.)
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: MetaException(message:public role implictly exists. It can't be created.)

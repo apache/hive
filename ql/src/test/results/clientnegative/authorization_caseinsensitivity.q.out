@@ -59,4 +59,4 @@ testrole
 
 PREHOOK: query: create role TESTRoLE
 PREHOOK: type: CREATEROLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidObjectException(message:Role testrole already exists.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Role testrole already exists.

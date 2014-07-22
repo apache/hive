@@ -18,22 +18,32 @@
 package org.apache.hadoop.hive.ql.security.authorization;
 
 import org.apache.hadoop.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.hooks.Entity;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
+import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
+import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.session.SessionState;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility code shared by hive internal code and sql standard authorization plugin implementation
@@ -48,13 +58,19 @@ public class AuthorizationUtils {
    * @throws HiveException
    */
   public static HivePrincipalType getHivePrincipalType(PrincipalType type) throws HiveException {
+    if (type == null) {
+      return null;
+    }
     switch(type){
     case USER:
       return HivePrincipalType.USER;
     case ROLE:
       return HivePrincipalType.ROLE;
     case GROUP:
-      throw new HiveException(ErrorMsg.UNNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP);
+      if (SessionState.get().getAuthorizationMode() == SessionState.AuthorizationMode.V2) {
+        throw new HiveException(ErrorMsg.UNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP);
+      }
+      return HivePrincipalType.GROUP;
     default:
       //should not happen as we take care of all existing types
       throw new AssertionError("Unsupported authorization type specified");
@@ -68,6 +84,9 @@ public class AuthorizationUtils {
    * @return
    */
   public static HivePrivilegeObjectType getHivePrivilegeObjectType(Type type) {
+    if (type == null){
+      return null;
+    }
     switch(type){
     case DATABASE:
       return HivePrivilegeObjectType.DATABASE;
@@ -85,6 +104,95 @@ public class AuthorizationUtils {
     }
   }
 
+  public static HivePrivilegeObjectType getPrivObjectType(PrivilegeObjectDesc privSubjectDesc) {
+    if (privSubjectDesc.getObject() == null) {
+      return null;
+    }
+    return privSubjectDesc.getTable() ? HivePrivilegeObjectType.TABLE_OR_VIEW :
+        HivePrivilegeObjectType.DATABASE;
+  }
+
+  public static List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges) {
+    List<HivePrivilege> hivePrivileges = new ArrayList<HivePrivilege>();
+    for(PrivilegeDesc privilege : privileges){
+      Privilege priv = privilege.getPrivilege();
+      hivePrivileges.add(
+          new HivePrivilege(priv.toString(), privilege.getColumns(), priv.getScopeList()));
+    }
+    return hivePrivileges;
+  }
+
+  public static List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals)
+      throws HiveException {
+
+    ArrayList<HivePrincipal> hivePrincipals = new ArrayList<HivePrincipal>();
+    for(PrincipalDesc principal : principals){
+      hivePrincipals.add(getHivePrincipal(principal));
+    }
+    return hivePrincipals;
+  }
+
+  public static HivePrincipal getHivePrincipal(PrincipalDesc principal) throws HiveException {
+    if (principal == null) {
+      return null;
+    }
+    return getHivePrincipal(principal.getName(), principal.getType());
+  }
+
+  public static HivePrincipal getHivePrincipal(String name, PrincipalType type) throws HiveException {
+    return new HivePrincipal(name, AuthorizationUtils.getHivePrincipalType(type));
+  }
+
+  public static List<HivePrivilegeInfo> getPrivilegeInfos(List<HiveObjectPrivilege> privs)
+      throws HiveException {
+    List<HivePrivilegeInfo> hivePrivs = new ArrayList<HivePrivilegeInfo>();
+    for (HiveObjectPrivilege priv : privs) {
+      PrivilegeGrantInfo grantorInfo = priv.getGrantInfo();
+      HiveObjectRef privObject = priv.getHiveObject();
+      HivePrincipal hivePrincipal =
+          getHivePrincipal(priv.getPrincipalName(), priv.getPrincipalType());
+      HivePrincipal grantor =
+          getHivePrincipal(grantorInfo.getGrantor(), grantorInfo.getGrantorType());
+      HivePrivilegeObject object = getHiveObjectRef(privObject);
+      HivePrivilege privilege = new HivePrivilege(grantorInfo.getPrivilege(), null);
+      hivePrivs.add(new HivePrivilegeInfo(hivePrincipal, privilege, object, grantor,
+          grantorInfo.isGrantOption(), grantorInfo.getCreateTime()));
+    }
+    return hivePrivs;
+  }
+
+  public static HivePrivilegeObject getHiveObjectRef(HiveObjectRef privObj) throws HiveException {
+    if (privObj == null) {
+      return null;
+    }
+    HivePrivilegeObjectType objType = getHiveObjType(privObj.getObjectType());
+    return new HivePrivilegeObject(objType, privObj.getDbName(), privObj.getObjectName(),
+        privObj.getPartValues(), privObj.getColumnName());
+  }
+
+  public static HivePrivilegeObject getHivePrivilegeObject(
+      PrivilegeObjectDesc privSubjectDesc, List<String> columns) throws HiveException {
+
+    // null means ALL for show grants, GLOBAL for grant/revoke
+    HivePrivilegeObjectType objectType = null;
+
+    String[] dbTable;
+    List<String> partSpec = null;
+    if (privSubjectDesc == null) {
+      dbTable = new String[] {null, null};
+    } else {
+      if (privSubjectDesc.getTable()) {
+        dbTable = Utilities.getDbTableName(privSubjectDesc.getObject());
+      } else {
+        dbTable = new String[] {privSubjectDesc.getObject(), null};
+      }
+      if (privSubjectDesc.getPartSpec() != null) {
+        partSpec = new ArrayList<String>(privSubjectDesc.getPartSpec().values());
+      }
+      objectType = getPrivObjectType(privSubjectDesc);
+    }
+    return new HivePrivilegeObject(objectType, dbTable[0], dbTable[1], partSpec, columns, null);
+  }
 
   /**
    * Convert authorization plugin principal type to thrift principal type
@@ -99,13 +207,14 @@ public class AuthorizationUtils {
     switch(type){
     case USER:
       return PrincipalType.USER;
+    case GROUP:
+      return PrincipalType.GROUP;
     case ROLE:
       return PrincipalType.ROLE;
     default:
       throw new AssertionError("Invalid principal type " + type);
     }
   }
-
 
   /**
    * Get thrift privilege grant info
@@ -134,12 +243,16 @@ public class AuthorizationUtils {
       return null;
     }
     switch(type){
+    case GLOBAL:
+      return HiveObjectType.GLOBAL;
     case DATABASE:
       return HiveObjectType.DATABASE;
     case TABLE_OR_VIEW:
       return HiveObjectType.TABLE;
     case PARTITION:
       return HiveObjectType.PARTITION;
+    case COLUMN:
+      return HiveObjectType.COLUMN;
     case LOCAL_URI:
     case DFS_URI:
       throw new HiveException("Unsupported type " + type);
@@ -149,6 +262,33 @@ public class AuthorizationUtils {
     }
   }
 
+  // V1 to V2 conversion.
+  private static HivePrivilegeObjectType getHiveObjType(HiveObjectType type) throws HiveException {
+    if (type == null) {
+      return null;
+    }
+    switch(type){
+      case GLOBAL:
+        if (SessionState.get().getAuthorizationMode() == SessionState.AuthorizationMode.V2) {
+          throw new HiveException(ErrorMsg.UNSUPPORTED_AUTHORIZATION_RESOURCE_TYPE_GLOBAL);
+        }
+        return HivePrivilegeObjectType.GLOBAL;
+      case DATABASE:
+        return HivePrivilegeObjectType.DATABASE;
+      case TABLE:
+        return HivePrivilegeObjectType.TABLE_OR_VIEW;
+      case PARTITION:
+        return HivePrivilegeObjectType.PARTITION;
+      case COLUMN:
+        if (SessionState.get().getAuthorizationMode() == SessionState.AuthorizationMode.V2) {
+          throw new HiveException(ErrorMsg.UNSUPPORTED_AUTHORIZATION_RESOURCE_TYPE_COLUMN);
+        }
+        return HivePrivilegeObjectType.COLUMN;
+      default:
+        //should not happen as we have accounted for all types
+        throw new AssertionError("Unsupported type " + type);
+    }
+  }
 
   /**
    * Convert thrift HiveObjectRef to plugin HivePrivilegeObject

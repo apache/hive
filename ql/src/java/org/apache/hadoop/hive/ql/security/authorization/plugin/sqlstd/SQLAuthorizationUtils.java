@@ -186,8 +186,12 @@ public class SQLAuthorizationUtils {
     // get privileges for this user and its role on this object
     PrincipalPrivilegeSet thrifPrivs = null;
     try {
+      HiveObjectRef objectRef = AuthorizationUtils.getThriftHiveObjectRef(hivePrivObject);
+      if (objectRef.getObjectType() == null) {
+        objectRef.setObjectType(HiveObjectType.GLOBAL);
+      }
       thrifPrivs = metastoreClient.get_privilege_set(
-          AuthorizationUtils.getThriftHiveObjectRef(hivePrivObject), userName, null);
+          objectRef, userName, null);
     } catch (MetaException e) {
       throwGetPrivErr(e, hivePrivObject, userName);
     } catch (TException e) {
