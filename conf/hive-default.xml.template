@@ -1711,6 +1711,11 @@
     <description/>
   </property>
   <property>
+    <key>hive.optimize.null.scan</key>
+    <value>true</value>
+    <description>Dont scan relations which are guaranteed to not generate any rows</description>
+  </property>
+  <property>
     <key>hive.optimize.ppd.storage</key>
     <value>true</value>
     <description>Whether to push predicates down to storage handlers</description>
