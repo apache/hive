@@ -1,8 +1,10 @@
 package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -38,11 +40,10 @@ public class SqlFunctionConverter {
   static final Map<SqlOperator, HiveToken> optiqToHiveToken;
   static final Map<SqlOperator, String>    reverseOperatorMap;
 
-
   static {
     Builder builder = new Builder();
-    hiveToOptiq = builder.hiveToOptiq;
-    optiqToHiveToken = builder.optiqToHiveToken;
+    hiveToOptiq = ImmutableMap.copyOf(builder.hiveToOptiq);
+    optiqToHiveToken = ImmutableMap.copyOf(builder.optiqToHiveToken);
     reverseOperatorMap = ImmutableMap.copyOf(builder.reverseOperatorMap);
   }
 
@@ -53,6 +54,8 @@ public class SqlFunctionConverter {
 
   public static GenericUDF getHiveUDF(SqlOperator op, RelDataType dt) {
     String name = reverseOperatorMap.get(op);
+    if (name == null)
+      name = op.getName();
     FunctionInfo hFn = name != null ? FunctionRegistry.getFunctionInfo(name) : null;
     if (hFn == null)
       hFn = handleExplicitCast(op, dt);
@@ -137,17 +140,36 @@ public class SqlFunctionConverter {
   }
 
   private static String getName(GenericUDF hiveUDF) {
+    String udfName = null;
     if (hiveUDF instanceof GenericUDFBridge) {
-      return ((GenericUDFBridge) hiveUDF).getUdfName();
+      udfName = ((GenericUDFBridge) hiveUDF).getUdfName();
     } else {
-      return hiveUDF.getClass().getName();
+      Class udfClass = hiveUDF.getClass();
+      Annotation udfAnnotation = udfClass.getAnnotation(Description.class);
+
+      if (udfAnnotation != null && udfAnnotation instanceof Description) {
+        Description udfDescription = (Description) udfAnnotation;
+        udfName = udfDescription.name();
+      }
+
+      if (udfName == null || udfName.isEmpty()) {
+        udfName = hiveUDF.getClass().getName();
+        int indx = udfName.lastIndexOf(".");
+        if (indx >= 0) {
+          indx += 1;
+          udfName = udfName.substring(indx);
+        }
+      }
     }
+
+    return udfName;
   }
 
   private static class Builder {
-    final Map<String, SqlOperator>    hiveToOptiq      = Maps.newHashMap();
-    final Map<SqlOperator, HiveToken> optiqToHiveToken = Maps.newHashMap();
-    final Map<SqlOperator, String>    reverseOperatorMap      = Maps.newHashMap();
+    final Map<String, SqlOperator>    hiveToOptiq        = Maps.newHashMap();
+    final Map<SqlOperator, HiveToken> optiqToHiveToken   = Maps.newHashMap();
+    final Map<SqlOperator, String>    reverseOperatorMap = Maps.newHashMap();
+
     Builder() {
       registerFunction("+", SqlStdOperatorTable.PLUS, hToken(HiveParser.PLUS, "+"));
       registerFunction("-", SqlStdOperatorTable.MINUS, hToken(HiveParser.MINUS, "-"));
@@ -243,9 +265,6 @@ public class SqlFunctionConverter {
       optiqOp = new SqlFunction(uInf.m_udfName, SqlKind.OTHER_FUNCTION, uInf.m_returnTypeInference,
           uInf.m_operandTypeInference, uInf.m_operandTypeChecker,
           SqlFunctionCategory.USER_DEFINED_FUNCTION);
-      hiveToOptiq.put(hiveUdfName, optiqOp);
-      HiveToken ht = hToken(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
-      optiqToHiveToken.put(optiqOp, ht);
     }
 
     return optiqOp;
@@ -259,9 +278,6 @@ public class SqlFunctionConverter {
 
       optiqAggFn = new OptiqUDAF(uInf.m_udfName, uInf.m_returnTypeInference,
           uInf.m_operandTypeInference, uInf.m_operandTypeChecker, uInf.m_argTypes, uInf.m_retType);
-      hiveToOptiq.put(hiveUdfName, optiqAggFn);
-      HiveToken ht = hToken(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
-      optiqToHiveToken.put(optiqAggFn, ht);
     }
 
     return optiqAggFn;
