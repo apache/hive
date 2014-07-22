@@ -33,36 +33,36 @@ import org.apache.tez.runtime.api.events.InputReadErrorEvent;
 
 import com.google.common.collect.Multimap;
 
-public class CustomPartitionEdge implements EdgeManager {
+public class CustomPartitionEdge extends EdgeManager {
 
   private static final Log LOG = LogFactory.getLog(CustomPartitionEdge.class.getName());
 
   CustomEdgeConfiguration conf = null;
+  EdgeManagerContext context = null;
 
   // used by the framework at runtime. initialize is the real initializer at runtime
   public CustomPartitionEdge() {  
   }
 
   @Override
-  public int getNumDestinationTaskPhysicalInputs(int numSourceTasks, 
-      int destinationTaskIndex) {
+  public int getNumDestinationTaskPhysicalInputs(int numSourceTasks) {
     return numSourceTasks;
   }
 
   @Override
-  public int getNumSourceTaskPhysicalOutputs(int numDestinationTasks, 
-      int sourceTaskIndex) {
+  public int getNumSourceTaskPhysicalOutputs(int numDestinationTasks) {
     return conf.getNumBuckets();
   }
 
   @Override
-  public int getNumDestinationConsumerTasks(int sourceTaskIndex, int numDestinationTasks) {
-    return numDestinationTasks;
+  public int getNumDestinationConsumerTasks(int sourceTaskIndex) {
+    return sourceTaskIndex;
   }
 
   // called at runtime to initialize the custom edge.
   @Override
   public void initialize(EdgeManagerContext context) {
+    this.context = context;
     byte[] payload = context.getUserPayload();
     LOG.info("Initializing the edge, payload: " + payload);
     if (payload == null) {
@@ -91,16 +91,16 @@ public class CustomPartitionEdge implements EdgeManager {
   }
 
   @Override
-  public void routeInputSourceTaskFailedEventToDestination(int sourceTaskIndex, 
-      int numDestinationTasks, Map<Integer, List<Integer>> mapDestTaskIndices) {
+  public void routeInputSourceTaskFailedEventToDestination(int
+      sourceTaskIndex, Map<Integer, List<Integer>> mapDestTaskIndices) {
     List<Integer> destTaskIndices = new ArrayList<Integer>();
-    addAllDestinationTaskIndices(numDestinationTasks, destTaskIndices);
+    addAllDestinationTaskIndices(context.getDestinationVertexNumTasks(), destTaskIndices);
     mapDestTaskIndices.put(new Integer(sourceTaskIndex), destTaskIndices);
   }
 
   @Override
   public int routeInputErrorEventToSource(InputReadErrorEvent event, 
-      int destinationTaskIndex) {
+      int destinationTaskIndex, int destinationFailedInputIndex) {
     return event.getIndex();
   }
 

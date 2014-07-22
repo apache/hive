@@ -64,7 +64,7 @@ import com.google.common.collect.Multimap;
  * Only works with old mapred API
  * Will only work with a single MRInput for now.
  */
-public class CustomPartitionVertex implements VertexManagerPlugin {
+public class CustomPartitionVertex extends VertexManagerPlugin {
 
   private static final Log LOG = LogFactory.getLog(CustomPartitionVertex.class.getName());
 
@@ -90,9 +90,9 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
   @Override
   public void onVertexStarted(Map<String, List<Integer>> completions) {
     int numTasks = context.getVertexNumTasks(context.getVertexName());
-    List<Integer> scheduledTasks = new ArrayList<Integer>(numTasks);
+    List<VertexManagerPluginContext.TaskWithLocationHint> scheduledTasks = new ArrayList<VertexManagerPluginContext.TaskWithLocationHint>(numTasks);
     for (int i = 0; i < numTasks; ++i) {
-      scheduledTasks.add(new Integer(i));
+      scheduledTasks.add(new VertexManagerPluginContext.TaskWithLocationHint(new Integer(i), null));
     }
     context.scheduleVertexTasks(scheduledTasks);
   }
@@ -195,7 +195,7 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
         getBucketSplitMapForPath(pathFileSplitsMap);
 
     try {
-      int totalResource = context.getTotalAVailableResource().getMemory();
+      int totalResource = context.getTotalAvailableResource().getMemory();
       int taskResource = context.getVertexTaskResource().getMemory();
       float waves =
           conf.getFloat(TezConfiguration.TEZ_AM_GROUPING_SPLIT_WAVES,
@@ -267,7 +267,7 @@ public class CustomPartitionVertex implements VertexManagerPlugin {
     context.setVertexParallelism(
         taskCount,
         new VertexLocationHint(grouper.createTaskLocationHints(finalSplits
-            .toArray(new InputSplit[finalSplits.size()]))), emMap);
+            .toArray(new InputSplit[finalSplits.size()]))), emMap, null);
 
     // Set the actual events for the tasks.
     context.addRootInputEvents(inputName, taskEvents);

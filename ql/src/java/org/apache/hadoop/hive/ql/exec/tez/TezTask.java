@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -247,16 +246,14 @@ public class TezTask extends Task<TezWork> {
         }
         VertexGroup group = dag.createVertexGroup(w.getName(), vertexArray);
 
+        // For a vertex group, all Outputs use the same Key-class, Val-class and partitioner.
+        // Pick any one source vertex to figure out the Edge configuration.
+        JobConf parentConf = workToConf.get(unionWorkItems.get(0));
+
         // now hook up the children
         for (BaseWork v: children) {
-          // need to pairwise patch up the configuration of the vertices
-          for (BaseWork part: unionWorkItems) {
-            utils.updateConfigurationForEdge(workToConf.get(part), workToVertex.get(part),
-                 workToConf.get(v), workToVertex.get(v));
-          }
-
           // finally we can create the grouped edge
-          GroupInputEdge e = utils.createEdge(group, workToConf.get(v),
+          GroupInputEdge e = utils.createEdge(group, parentConf,
                workToVertex.get(v), work.getEdgeProperty(w, v));
 
           dag.addEdge(e);
@@ -279,7 +276,7 @@ public class TezTask extends Task<TezWork> {
 
           TezEdgeProperty edgeProp = work.getEdgeProperty(w, v);
 
-          e = utils.createEdge(wxConf, wx, workToConf.get(v), workToVertex.get(v), edgeProp);
+          e = utils.createEdge(wxConf, wx, workToVertex.get(v), edgeProp);
           dag.addEdge(e);
         }
       }
@@ -305,7 +302,8 @@ public class TezTask extends Task<TezWork> {
 
     try {
       // ready to start execution on the cluster
-      dagClient = sessionState.getSession().submitDAG(dag, resourceMap);
+      sessionState.getSession().addAppMasterLocalResources(resourceMap);
+      dagClient = sessionState.getSession().submitDAG(dag);
     } catch (SessionNotRunning nr) {
       console.printInfo("Tez session was closed. Reopening...");
 
@@ -313,7 +311,7 @@ public class TezTask extends Task<TezWork> {
       TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf);
       console.printInfo("Session re-established.");
 
-      dagClient = sessionState.getSession().submitDAG(dag, resourceMap);
+      dagClient = sessionState.getSession().submitDAG(dag);
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
